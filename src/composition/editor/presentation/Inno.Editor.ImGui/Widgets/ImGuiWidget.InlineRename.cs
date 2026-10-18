@@ -50,8 +50,8 @@ public static partial class ImGuiWidget
         ref bool requestFocus,
         float rowHeight,
         nuint capacity = 512,
-        float width = -1f)
-    {
+        float width = -1f
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (!float.IsFinite(rowHeight) || rowHeight <= 0f)
         {
@@ -177,8 +177,8 @@ public sealed class InlineRenamePresentation
         string id,
         float width,
         float rowHeight,
-        nuint bufferSize = 512)
-    {
+        nuint bufferSize = 512
+    ) {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("An inline rename identifier is required.", nameof(id));
         if (!float.IsFinite(width) || width <= 0f)

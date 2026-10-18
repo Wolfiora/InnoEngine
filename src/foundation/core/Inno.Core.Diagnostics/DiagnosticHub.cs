@@ -19,8 +19,7 @@ public sealed class DiagnosticHub
     private readonly List<IDiagnosticSink> m_sinks = [];
     private readonly object m_sync = new();
 
-    internal static DiagnosticHub current
-        => S_CURRENT_SCOPE.current;
+    internal static DiagnosticHub current => S_CURRENT_SCOPE.current;
 
     internal object synchronizationRoot => m_sync;
 
@@ -53,8 +52,11 @@ public sealed class DiagnosticHub
         }
     }
 
-    internal void SetOwned(DiagnosticSource source, long epoch, IReadOnlyList<Diagnostic> diagnostics)
-    {
+    internal void SetOwned(
+        DiagnosticSource source,
+        long epoch,
+        IReadOnlyList<Diagnostic> diagnostics
+    ) {
         lock (m_sync)
         {
             if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
@@ -63,8 +65,10 @@ public sealed class DiagnosticHub
         }
     }
 
-    internal void ReleaseOwned(DiagnosticSource source, long epoch)
-    {
+    internal void ReleaseOwned(
+        DiagnosticSource source,
+        long epoch
+    ) {
         lock (m_sync)
         {
             if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
@@ -150,8 +154,10 @@ public sealed class DiagnosticHub
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="diagnostics"/> is <see langword="null"/>.
     /// </exception>
-    public void Set(DiagnosticSource source, IEnumerable<Diagnostic> diagnostics)
-    {
+    public void Set(
+        DiagnosticSource source,
+        IEnumerable<Diagnostic> diagnostics
+    ) {
         ValidateSource(source);
         ArgumentNullException.ThrowIfNull(diagnostics);
         Diagnostic[] entries = diagnostics.ToArray();
@@ -166,7 +172,10 @@ public sealed class DiagnosticHub
         lock (m_sync)
         {
             m_reports[source.id] = report;
-            NotifySinks(static (sink, value) => sink.Replace(value), report);
+            NotifySinks(static (
+                sink,
+                value
+            ) => sink.Replace(value), report);
         }
     }
 
@@ -186,12 +195,17 @@ public sealed class DiagnosticHub
         {
             if (!m_reports.Remove(source.id, out DiagnosticReport? report))
                 return;
-            NotifySinks(static (sink, value) => sink.Clear(value), report.source);
+            NotifySinks(static (
+                sink,
+                value
+            ) => sink.Clear(value), report.source);
         }
     }
 
-    private void NotifySinks<TValue>(Action<IDiagnosticSink, TValue> callback, TValue value)
-    {
+    private void NotifySinks<TValue>(
+        Action<IDiagnosticSink, TValue> callback,
+        TValue value
+    ) {
         IDiagnosticSink[] sinks = m_sinks.ToArray();
         for (int index = 0; index < sinks.Length; index++)
         {
@@ -209,7 +223,10 @@ public sealed class DiagnosticHub
                 {
                     foreach (Action<Exception> handler in observer.GetInvocationList())
                     {
-                        try { handler(exception); }
+                        try
+                        {
+                            handler(exception);
+                        }
                         catch (Exception observerFailure)
                         {
                             Console.Error.WriteLine($"Diagnostic failure observer failed: {observerFailure}");

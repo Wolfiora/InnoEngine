@@ -5,7 +5,7 @@
 Editor extension snapshot 现在使用 TypeRegistry 的统一 `DisposeExtensions`，去重、逆序并尝试全部实例后聚合失败。
 Dispose 异常不再只写 LogError：调用者收到异常，共享 generation gate 进入 Faulted，禁止继续 reload。
 当前 shutdown 的 Panel → Module → History/Interactions → extension Dispose 顺序不变；相关测试同时验证顺序、次数与 Fault。
-这不表示所有 Stop/Detach 分支都已完成相同审计，剩余范围见[续轮报告](../architecture/ENGINE_CLOSURE_CONTINUATION_2026_09_07.md)。
+当前验证范围与尚未执行的产品回归见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。
 
 [Editor 索引](README.md) · [Core](Inno.Editor.Core.md) · [ImGui](Inno.Editor.ImGui.md) · [Identity、Missing 与 reload 标准](../architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)
 
@@ -14,14 +14,18 @@ Dispose 异常不再只写 LogError：调用者收到异常，共享 generation 
 ## 最小心智模型
 
 ```csharp
-EditorInteraction interaction = interactions.For(
-    AnimationInteractionIds.C_GRAPH_AREA,
-    selectedState);
+using Inno.Core.Identity;
+using Inno.Editor.Interactions;
 
-interaction.Focus();
-interaction.Select();
-interaction.Execute(AnimationInteractionIds.C_RENAME_STATE);
-EditorMenuModel menu = interaction.BuildMenu();
+static EditorMenuModel SelectAndReadMenu(
+    EditorInteractions interactions,
+    IdentityObject target
+) {
+    EditorInteraction row = interactions.For("sample/items", target);
+    row.Focus();
+    row.Select();
+    return row.BuildMenu();
+}
 ```
 
 - Attribute 和运行时 API 都直接使用 feature 自己维护的稳定 `const string`。
@@ -35,13 +39,10 @@ EditorMenuModel menu = interaction.BuildMenu();
 每个 feature 在自己的项目根目录保留一个常量类：
 
 ```csharp
-internal static class AnimationInteractionIds
+internal static class ItemInteractionIds
 {
-    internal const string C_GRAPH_AREA = "panel/animation.graph";
-    internal const string C_STATE_AREA = "panel/animation.graph/state";
-    internal const string C_DELETE_STATE = "animation.state.delete";
-    internal const string C_RENAME_STATE = "animation.state.rename";
-    internal const string C_CREATE_TEMPLATE = "animation.template.create";
+    internal const string C_AREA = "sample/items";
+    internal const string C_SELECT = "sample/items/select";
 }
 ```
 
@@ -49,25 +50,17 @@ internal static class AnimationInteractionIds
 
 ## Action
 
-立即完成的操作：
+立即完成的选择操作（只改变交互状态，不修改项目数据）：
 
 ```csharp
-[EditorAction(
-    AnimationInteractionIds.C_DELETE_STATE,
-    AnimationInteractionIds.C_STATE_AREA)]
-public sealed class DeleteAnimationStateAction : EditorAction<AnimationState>
-{
-    protected override EditorActionState Query(
-        EditorActionContext<AnimationState> context)
-        => context.target.canDelete
-            ? EditorActionState.enabled
-            : EditorActionState.disabled;
+using Inno.Core.Identity;
+using Inno.Editor.Interactions;
 
-    protected override void Execute(
-        EditorActionContext<AnimationState> context)
-    {
-        context.target.Delete();
-    }
+[EditorAction("sample/items/select", "sample/items")]
+public sealed class SelectItemAction : EditorAction<IdentityObject>
+{
+    protected override void Execute(EditorActionContext<IdentityObject> context)
+        => context.interactions.For(context.area, context.target).Select();
 }
 ```
 
@@ -75,29 +68,40 @@ public sealed class DeleteAnimationStateAction : EditorAction<AnimationState>
 
 ### 多帧 Action
 
-Rename、分步创建和参数预览仍是普通 `EditorAction`。Action 自己持有状态，并调用 `Activate`、`Complete`、`Cancel`；视图只在目标位置调用 `Present`：
+Rename、分步创建和参数预览仍是普通 `EditorAction`。下例使用确认选择说明多帧状态。Action 调用 `Activate`、`Complete`、`Cancel`；视图只在目标位置调用 `Present`：
 
 ```csharp
-protected override void Execute(EditorActionContext<AnimationState> context)
-{
-    m_name = context.target.name;
-    Activate(context);
-}
+using Inno.Core.Identity;
+using Inno.Editor.Interactions;
 
-protected override bool Present(
-    EditorActionContext<AnimationState, RenamePresentation> context)
+public readonly record struct SelectionConfirmation(
+    bool accept,
+    bool cancel
+);
+
+[EditorAction("sample/items/confirm-selection", "sample/items")]
+public sealed class ConfirmSelectionAction
+    : EditorPresentationAction<IdentityObject, SelectionConfirmation>
 {
-    RenamePresentation presentation = context.argument;
-    m_name = presentation.value;
-    if (presentation.cancel)
-        Cancel();
-    else if (presentation.submit && TryCommit(context.target, m_name))
-        Complete();
-    return true;
+    protected override void Execute(EditorActionContext<IdentityObject> context)
+        => Activate(context);
+
+    protected override bool Present(
+        EditorActionContext<IdentityObject, SelectionConfirmation> context
+    ) {
+        if (context.argument.cancel)
+            Cancel();
+        else if (context.argument.accept)
+        {
+            context.interactions.For(context.area, context.target).Select();
+            Complete();
+        }
+        return true;
+    }
 }
 ```
 
-上述 Rename 以 `EditorPresentationAction<AnimationState,RenamePresentation>` 实现。调用方用同一 action ID 的 `Execute(id)` 启动、`Present(id, presentation)` 呈现；presentation 数据在 Action 实现中始终是编译期强类型。Action 执行或呈现抛异常时，运行时会尝试取消其活动状态；取消回调本身失败也会被独立记录，不会破坏后续 Action。
+上述确认选择以 `EditorPresentationAction<IdentityObject,SelectionConfirmation>` 实现。调用方用同一 action ID 的 `Execute(id)` 启动、`Present(id, presentation)` 呈现；presentation 数据在 Action 实现中始终是编译期强类型。Action 执行或呈现抛异常时，运行时会尝试取消其活动状态；取消回调本身失败也会被独立记录，不会破坏后续 Action。
 
 没有单独的 `EditorActionInteraction<TState>` 或全局 Rename service。FileBrowser 和 Hierarchy 各自拥有 Rename Action，因为验证、提交和呈现目标属于各自 feature。
 
@@ -108,34 +112,33 @@ Selection 切换 target 时，Interactions 会通知旧 target 上仍活跃的�
 Action 可声明任意层级菜单路径：
 
 ```csharp
-[EditorAction("animation.state.create", AnimationInteractionIds.C_GRAPH_AREA)]
-[EditorMenu(
-    AnimationInteractionIds.C_GRAPH_AREA,
-    "Create/Animation/State",
-    order: 200,
-    separatorBefore: true)]
-public sealed class CreateAnimationStateAction : EditorAction<AnimationGraph>
+using Inno.Core.Identity;
+using Inno.Editor.Interactions;
+
+[EditorAction("sample/items/select", "sample/items")]
+[EditorMenu("sample/items", "Selection/Select Item", order: 200)]
+public sealed class SelectItemMenuAction : EditorAction<IdentityObject>
 {
-    protected override void Execute(EditorActionContext<AnimationGraph> context)
-    {
-    }
+    protected override void Execute(EditorActionContext<IdentityObject> context)
+        => context.interactions.For(context.area, context.target).Select();
 }
 ```
 
 同一个 Attribute 同时适用于主菜单和右键菜单；区别只在 area。`EditorMenuRenderer` 会递归创建一级、二级或任意更深的菜单。Create 类命令应使用 `Create/...` 路径形成统一子菜单，不在 label 中手写层级或分隔线。`separatorBefore` 只表达两个相邻可见命令组之间的边界；当前菜单/子菜单的首个可见项永远不会绘制分隔线，因此前置命令被 Query 隐藏时也不会留下孤立横线。
 
-动态列表使用 `EditorMenuSource`：
+动态列表使用 `EditorMenuSource`。下例与前面的静态菜单是两种替代注册方式，同一个 Action 实现和菜单位置不要同时重复注册：
 
 ```csharp
-[EditorMenuSource(AnimationInteractionIds.C_GRAPH_AREA)]
-public sealed class AnimationTemplateMenu : EditorMenuSource
+using Inno.Editor.Interactions;
+
+[EditorMenuSource("sample/items")]
+public sealed class ItemMenuSource : EditorMenuSource
 {
-    public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-    {
-        builder.Add(
-            "Create/From Template/Humanoid",
-            AnimationInteractionIds.C_CREATE_TEMPLATE,
-            argument: "Humanoid");
+    public override void Build(
+        EditorMenuContext context,
+        EditorMenuBuilder builder
+    ) {
+        builder.Add("Selection/Select Item", "sample/items/select");
     }
 }
 ```
@@ -153,20 +156,10 @@ Panel 主菜单使用同一棵层级菜单模型。`EditorPanelAttribute.menuPat
 紧凑 icon toolbar 与 Menu 复用同一个 Action resolver，不引入 command service：
 
 ```csharp
-[EditorAction("simulation.toggle", "editor/main-menu")]
-[EditorToolbarItem(
-    "editor/main-menu",
-    EditorToolbarIcon.Play,
-    "Start Simulation",
-    activeIcon: EditorToolbarIcon.Stop)]
-public sealed class ToggleSimulationAction : EditorAction
-{
-    protected override EditorActionState Query(EditorActionContext context)
-        => new(true, true, isChecked: Simulation.isRunning);
+using Inno.Editor.Interactions;
 
-    protected override void Execute(EditorActionContext context)
-        => Simulation.Toggle();
-}
+static EditorToolbarModel ReadToolbar(EditorInteractions interactions)
+    => interactions.For("editor/main-menu").BuildToolbar();
 ```
 
 `EditorInteraction.BuildToolbar()` 返回 immutable `EditorToolbarModel`。每个 `EditorToolbarItem` 包含 `actionId`、解析后的语义 `EditorToolbarIcon`、`tooltip`、`order` 与完整 `EditorActionState`。checked 时使用 `activeIcon`；`displayName` 非空时替代 Attribute 的静态 tooltip。Toolbar Action 必须无 target、无 argument，且 placement area 不能越过 Action 自己的精确 area；重复 placement 会在 candidate Build 时拒绝。表现层只把语义 icon 映射到自己的 glyph，不把 ImGui 字符串带入 Interactions。
@@ -174,11 +167,21 @@ public sealed class ToggleSimulationAction : EditorAction
 ## Selection 与 Focus
 
 ```csharp
-EditorInteraction row = interactions.For(AnimationInteractionIds.C_STATE_AREA, state);
-if (clicked)
-    row.Select();
-if (panelFocused)
-    row.Focus();
+using Inno.Core.Identity;
+using Inno.Editor.Interactions;
+
+static void UpdateSelection(
+    EditorInteractions interactions,
+    IdentityObject target,
+    bool clicked,
+    bool focused
+) {
+    EditorInteraction row = interactions.For("sample/items", target);
+    if (clicked)
+        row.Select();
+    if (focused)
+        row.Focus();
+}
 ```
 
 `Select()` 本身走内建 Action，因此和其他操作共享队列与代际规则。`EditorSelectionState` 只公开读取和 `TryGet<T>`，不公开可绕过 Action 的 mutator。
@@ -214,22 +217,23 @@ static Vector2 Zoom(Vector2 origin, Vector2 cursor, float previous, float next)
 ## Drag and Drop
 
 ```csharp
-[EditorDrop(AnimationInteractionIds.C_GRAPH_AREA)]
-public sealed class ClipToStateDrop
-    : EditorDrop<AnimationClipAsset, AnimationGraph>
+using Inno.Core.Identity;
+using Inno.Editor.Interactions;
+
+[EditorDrop("sample/items")]
+public sealed class SelectDroppedItem : EditorDrop<IdentityObject, IdentityObject>
 {
     protected override EditorDropStatus Query(
-        EditorDropContext<AnimationClipAsset, AnimationGraph> context)
-        => EditorDropStatus.Accept(EditorDropVisual.Highlight);
+        EditorDropContext<IdentityObject, IdentityObject> context
+    ) => EditorDropStatus.Accept(EditorDropVisual.Highlight);
 
     protected override EditorDropResult Drop(
-        EditorDropContext<AnimationClipAsset, AnimationGraph> context)
-    {
-        AnimationState state = context.target.CreateState(context.source);
-        return EditorDropResult.Accepted(selectionTarget: state);
-    }
+        EditorDropContext<IdentityObject, IdentityObject> context
+    ) => EditorDropResult.Accepted(selectionTarget: context.source);
 }
 ```
+
+此 Drop 示例只选择源对象，不改变内容。真正的移动、插入与复制应调用领域 mutation facade 并记录 History。
 
 视图提交 `EditorDragData(IdentityObject source, string label)`；该值只保存 `RuntimeIdentity sourceIdentity` 和显示文本，
 不保存源对象。内部 BeginDrag/QueryDrop/Drop 按 domain 选择已注册的 `IdentityAllocator`，Preview 与 Delivery 均重新解析
@@ -239,6 +243,8 @@ generation 变化、源注销、domain 不匹配或成功 Drop 会结束当前�
 ## Runtime 与热重载
 
 `EditorInteractionRuntime` 从当前 TypeCache snapshot 原子构建 Module、Action、Menu source、Drop、Panel 和 Modal。候选冲突或构造失败会拒绝新 snapshot，旧 generation 继续工作。Host 类型实例会尽量保留；插件类型会 Detach/Stop/Dispose，避免固定旧 ALC。
+
+`EditorModalExtension.Presentation` 捕获 Modal 的移动、缩放、初始尺寸与 `allowScrolling` 布局策略，供表现层决定窗口标志。其值只在当前 generation 的展示快照内有效，不作为持久状态保存。
 
 Editor 同时拥有 Scene、Asset、Graph 等多个 `IdentityAllocator` domain。需要跨帧保留对象身份的通用 UI（例如 Inspector lock）必须保存完整 `RuntimeIdentity`，并通过 `EditorInteractions.TryResolveIdentity` 回到该 identity 自己的 domain；不得使用 `IdentityAllocator.current` 猜测当前 domain，也不得只保存 persistent Guid 后在错误 allocator 中查询。Inspector lock 同时保留原 domain 与 persistent ID，当前 runtime slot 退休后只在原 domain 重绑定同一稳定对象，因此 generation 替换不会锁到同 ID 的其他域。非 identity 的 collectible 插件对象只允许弱引用，避免 lock 阻止旧 ALC 回收。
 
@@ -273,55 +279,34 @@ Host workflow 可使用 `EditorInteractions.BeginHistoryIsolation()` 临时切�
 - `payload`：只含 ID、索引、字符串和序列化字节的中立数据。
 - `mergeKey`：可选的连续编辑合并键。
 
-领域 Module 在修改成功后使用 `RecordApplied`：
+领域 Module 在修改成功后使用 `RecordApplied`。下例接收已注册 kind 与由领域序列化器编码的中立 payload；payload 必须与对应 Handler 的当前契约一致，不能包含对象、Type 或 delegate。History 会保留独立数据，原 change 的所有权在调用后结束：
 
 ```csharp
-byte[] data = AnimationHistoryData.Encode(
-    controllerId,
-    stateId,
-    beforeName,
-    afterName);
+using System;
+using Inno.Editor.Interactions;
 
-context.history.RecordApplied(
-    "Rename Animation State",
-    new EditorHistoryChange(
-        "animation/state-name",
-        EditorHistoryPayload.FromBytes(data),
-        mergeKey: $"animation-state:{stateId}:name"));
+static void RecordAppliedChange(
+    IEditorHistory history,
+    string displayName,
+    string registeredKind,
+    ReadOnlySpan<byte> neutralPayload
+) {
+    using var change = new EditorHistoryChange(
+        registeredKind, EditorHistoryPayload.FromBytes(neutralPayload));
+    history.RecordApplied(displayName, change);
+}
 ```
 
-当前 generation 的 Handler 由 TypeCache 自动发现：
+当前 generation 的 Handler 由 TypeCache 自动发现。领域实现派生 `EditorHistoryHandler`，声明带稳定 kind 的 `[EditorHistoryHandler(kind)]`，并实现 `Query` 和 `Apply`。必须使用所属领域的 resolver 与事务，不能另建全局 live-object 数据库。可参考 [Scene scalar handler 源码](../../src/composition/editor/features/Inno.Editor.Scene/History/SceneScalarHistoryHandler.cs)（内部实现示例，并非公开类型）。调用者通过 History 查询当前 Handler 的结果：
 
 ```csharp
-[EditorHistoryHandler("animation/state-name")]
-public sealed class AnimationStateNameHistoryHandler : EditorHistoryHandler
-{
-    protected override EditorHistoryAvailability Query(
-        EditorHistoryContext context,
-        EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
-        AnimationHistoryData data = AnimationHistoryData.Decode(
-            change.payload.ReadBytes());
-        return AnimationDatabase.Contains(data.controllerId, data.stateId)
-            ? EditorHistoryAvailability.Available()
-            : EditorHistoryAvailability.Unavailable("The animation state no longer exists.");
-    }
+using Inno.Editor.Interactions;
 
-    protected override EditorHistoryResult Apply(
-        EditorHistoryContext context,
-        EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
-        AnimationHistoryData data = AnimationHistoryData.Decode(
-            change.payload.ReadBytes());
-        string value = direction == EditorHistoryDirection.Undo
-            ? data.beforeName
-            : data.afterName;
-        AnimationDatabase.Rename(data.controllerId, data.stateId, value);
-        return EditorHistoryResult.Success();
-    }
-}
+static EditorHistoryResult UndoAvailableChange(IEditorHistory history)
+    => history.canUndo
+        ? history.Undo()
+        : EditorHistoryResult.Failure(
+            history.undoUnavailableReason ?? "There is no undoable change.");
 ```
 
 `Query` 不修改状态，只给菜单和快捷键提供可用性与 barrier 原因。`Apply` 必须在修改前捕获最小 rollback state；普通 `Failure` 表示操作失败但输入状态已严格保留，失败的 Undo/Redo 不移动栈指针，可以重试。只有 History 内部可以生成 `statePreserved=false` 的状态完整性丢失结果；此时 History 进入 faulted，拒绝继续记录、Undo 和 Redo，直到宿主显式 Clear。Handler 缺失、目标删除或 Stable Type ID 不可解析是可诊断 barrier，不会丢弃记录或使用错误对象。
@@ -332,12 +317,26 @@ public sealed class AnimationStateNameHistoryHandler : EditorHistoryHandler
 
 ### 事务与资源预算
 
-多个已经独立可逆的修改可以组成一个顶层事务：
+多个已经独立可逆的修改可以组成一个顶层事务。下例借用两个独立 change，由调用方以 `using` 管理；已执行的 change 被 History 消费，未执行者仍由调用方释放。发生失败时，未 Commit 的事务负责回滚此前成功的子操作：
 
 ```csharp
-using EditorHistoryTransaction transaction = context.history.BeginTransaction("Create Controller");
-// Apply and RecordApplied each independent neutral child change.
-transaction.Commit();
+using Inno.Editor.Interactions;
+
+static EditorHistoryResult ApplyPair(
+    IEditorHistory history,
+    EditorHistoryChange first,
+    EditorHistoryChange second
+) {
+    using EditorHistoryTransaction transaction = history.BeginTransaction("Apply Pair");
+    EditorHistoryResult firstResult = history.Execute("First", first);
+    if (!firstResult.succeeded)
+        return firstResult;
+    EditorHistoryResult secondResult = history.Execute("Second", second);
+    if (!secondResult.succeeded)
+        return secondResult;
+    transaction.Commit();
+    return EditorHistoryResult.Success();
+}
 ```
 
 事务 Undo 按反序、Redo 按正序执行；任一 child 失败时验证并执行相反方向补偿。全部补偿成功返回原失败且顶层栈不移动；任一补偿失败会 fault History。显式 Rollback 只有完整成功后才出栈和释放，普通失败时 transaction 与 child 保持可重试；未 Commit 的 Dispose 若遇到状态仍完整的回滚失败，会把仍然应用的 transaction 提交到 Undo 栈并抛出明确异常，避免修改成为无 History 状态。
@@ -392,3 +391,1484 @@ Scene 内容历史由独立的 [Inno.Editor.Scene](Inno.Editor.Scene.md) 实现�
 物理源码无论位于 `Actions`、`Menus`、`DragDrop`、`Runtime` 或 `Selection`，都使用项目级 namespace `Inno.Editor.Interactions`。EditorScripts 对应的唯一逻辑 namespace 是 `InnoEditor.Interactions`。
 
 脚本只能看到明确导出的契约，不能看到 Router、Catalog、TypeCache snapshot 或实现侧 `Inno.*`。完全禁止 global using。
+
+## 当前源码公开 API 清单
+
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+
+### `Inno.Editor.Interactions.EditorAction`
+
+<!-- api: T:Inno.Editor.Interactions.EditorAction 04c6ba43a2be75216bc3e517c96dd09f729d30fb58993df34e12584da7c7f236 -->
+<!-- api: P:Inno.Editor.Interactions.EditorAction.isActive c16b48e8ed388ee9aa9d3dd344fe736294738133ae185b7c6f163cfb575643c7 -->
+<!-- api: P:Inno.Editor.Interactions.EditorAction.targetType dcc47820f20a66b82dfc4b9c03e53091f1359a33f41560fef70a92b8c2913dfa -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.Activate(Inno.Editor.Interactions.EditorActionContext) bdc08e74c6c933549a10dea73e26610c0ee8f7518f8ec5bd33d546456efefe96 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.Complete bc7050e4c1cc25ca80cec745017de0afa4947544c4dba5786b74ae5a7f524c95 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.Cancel 7ec34a2f616b8992a0fced45f9d0e89317deb9f384a50b6c22a0218096d08694 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.Query(Inno.Editor.Interactions.EditorActionContext) 64302a954fbd9a87b916f2ddac175159f816a99b0ba5d0dd8bb9f4b14c7c3aea -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.Execute(Inno.Editor.Interactions.EditorActionContext) 2affa850e242b34da68481c811ba0cd45578f9c3cec8882d999cb15561178548 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.Present(Inno.Editor.Interactions.EditorActionContext) fdb25e4b16b8414c7ba0b85a3c621d652618e6712e08d05a3482219ad43fea09 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.OnCompleted d8bd72955bcaa79e153f8d47e4aa6fc064ba1067638b4337d35333a18fd5e8ab -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.OnCancelled 94526f8642dc6de5095c8fa1493c6d7fce6308bd46c115a226e7ae65315bd7db -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.OnPresentationLost 7abfd4a3cf5ea5c92ad188beef9bbc1f9f17d63a207babb2de443cf8f2d59351 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.Dispose ca797df6f0740d88604ef00292aff82b50e0bfd5e83e2ba17defb8eb0dd2aec0 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction.#ctor 743919a5adead66e3aff7cd493feca65972a3d8093d5a9285d97fd0724d73324 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-14b987ec96e0f207"></a>[`protected Inno.Editor.Interactions.EditorAction.EditorAction()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L8) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-b8a1196568088ce8"></a>[`protected void Inno.Editor.Interactions.EditorAction.Activate(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L72) | Activates this action for a target and cancels any operation it previously owned.<br>`context`：The contextual request that starts the operation. | — | `System.ArgumentNullException`：Thrown when context is null. |
+| <a id="api-23b0a6072589a341"></a>[`protected void Inno.Editor.Interactions.EditorAction.Cancel()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L95) | Cancels the current operation and returns the action to its idle state. | — | — |
+| <a id="api-5f3819d110a8bbfb"></a>[`protected void Inno.Editor.Interactions.EditorAction.Complete()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L83) | Completes the current operation and returns the action to its idle state. | — | — |
+| <a id="api-e3e2bb391980bd33"></a>[`public void Inno.Editor.Interactions.EditorAction.Dispose()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L161) | Cancels active work and releases this action instance. | — | — |
+| <a id="api-f7138d4162f38eaf"></a>[`protected abstract void Inno.Editor.Interactions.EditorAction.Execute(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L121) | Executes the action for the supplied context.<br>`context`：The editor, area, target, and optional argument for the operation. | — | — |
+| <a id="api-3efbeb94910e1bc3"></a>[`protected virtual void Inno.Editor.Interactions.EditorAction.OnCancelled()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L144) | Runs after an active operation is cancelled. | — | — |
+| <a id="api-b39479da13794635"></a>[`protected virtual void Inno.Editor.Interactions.EditorAction.OnCompleted()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L137) | Runs after an active operation completes successfully. | — | — |
+| <a id="api-8705ab61acb889ce"></a>[`protected virtual void Inno.Editor.Interactions.EditorAction.OnPresentationLost()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L156) | Runs when this action's active target loses editor presentation focus. | The default behavior cancels the active operation. An action that owns an editable value may override this method to validate and commit that value. The operation is cancelled automatically when an override returns without calling Inno.Editor.Interactions.EditorAction.Complete or Inno.Editor.Interactions.EditorAction.Cancel. | — |
+| <a id="api-3aba94b5bfaf0b67"></a>[`protected virtual bool Inno.Editor.Interactions.EditorAction.Present(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L132) | Presents an active action at the current target location.<br>返回：true when the action replaced the target's normal content; otherwise, false.<br>`context`：The current presentation area and target. | — | — |
+| <a id="api-6605dfdb929fc6d8"></a>[`protected virtual Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorAction.Query(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L113) | Evaluates the action for the supplied context.<br>返回：The current presentation and availability state.<br>`context`：The editor, area, target, and optional argument for the query. | — | — |
+| <a id="api-1ac4c5505c0dfb63"></a>[`public bool Inno.Editor.Interactions.EditorAction.isActive { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L17) | Gets whether the action currently owns an active multi-frame operation. | — | — |
+| <a id="api-8f7d7b00c04b659c"></a>[`public virtual System.Type? Inno.Editor.Interactions.EditorAction.targetType { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L22) | Gets the required target type, or null for a targetless action. | — | — |
+| <a id="api-1aceda58ded34ab6"></a>[`public abstract class Inno.Editor.Interactions.EditorAction : System.IDisposable`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L8) | Defines one automatically discovered editor operation and owns its complete multi-frame lifecycle. | — | — |
+
+### `Inno.Editor.Interactions.EditorAction`1`
+
+<!-- api: T:Inno.Editor.Interactions.EditorAction`1 d8f5f79f7c5d59521cc7ee84e52d216e9157e5894a16ed914dd222f6b120705a -->
+<!-- api: P:Inno.Editor.Interactions.EditorAction`1.targetType 00fb89ecd4ee78250346187da781a0ae0c409df10d5a0343e9c05173d79c6893 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`1.Query(Inno.Editor.Interactions.EditorActionContext) 87805ad2431fe08e25da54a856edf8846f16dd9a6aaeb7dd268810afc3ce8f19 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`1.Execute(Inno.Editor.Interactions.EditorActionContext) 01c490d1bd56729eaaf00bb5168ea84591c55c62fef447456f32dfb3461b6fdd -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`1.Present(Inno.Editor.Interactions.EditorActionContext) edd540ad27e13b2b87014ecacd82806c544bdc1306dec190040eac5a4f38cc90 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`1.Query(Inno.Editor.Interactions.EditorActionContext{`0}) 2c64d9efb60c56a2bd87d46d53ae99dae4a929aa9e17991609b8848e77facfac -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`1.Execute(Inno.Editor.Interactions.EditorActionContext{`0}) 9828fd47be5d9aefefbf90b01630d0131890a7402b09ebdc05cc490c75affe33 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`1.Present(Inno.Editor.Interactions.EditorActionContext{`0}) 1d04ea7a492690b97d13bc5cd0b1d3d8feb4c11d494ea7cfdf0fc2098a7aaea3 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`1.#ctor 3c31785dabd27d7e6aadfdece06d54f4910141a9861b85925c24e089770f9364 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-02512251dd34a42c"></a>[`protected Inno.Editor.Interactions.EditorAction<TTarget>.EditorAction()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L380) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-1d8bea7fec6d5778"></a>[`protected override sealed void Inno.Editor.Interactions.EditorAction<TTarget>.Execute(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L411) | Applies the editor action to the supplied interaction context.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-c76252d8f8e1daf6"></a>[`protected abstract void Inno.Editor.Interactions.EditorAction<TTarget>.Execute(Inno.Editor.Interactions.EditorActionContext<TTarget> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L455) | Executes the action for a strongly typed target.<br>`context`：The contextual request containing the typed target. | — | — |
+| <a id="api-9390d9a47ec244ec"></a>[`protected override sealed bool Inno.Editor.Interactions.EditorAction<TTarget>.Present(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L431) | Presents this action through the current editor interaction surface.<br>返回：true when the operation succeeds or its condition is satisfied; otherwise, false.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-91207ac3f377e7be"></a>[`protected virtual bool Inno.Editor.Interactions.EditorAction<TTarget>.Present(Inno.Editor.Interactions.EditorActionContext<TTarget> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L466) | Presents an active action for a strongly typed target.<br>返回：true when content was presented; otherwise, false.<br>`context`：The current presentation request containing the typed target. | — | — |
+| <a id="api-8fa06a8844de7a68"></a>[`protected override sealed Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorAction<TTarget>.Query(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L397) | Evaluates the operation's current availability and presentation state.<br>返回：The validated editor action state that represents the completed operation.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-96a9be010218d5ac"></a>[`protected virtual Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorAction<TTarget>.Query(Inno.Editor.Interactions.EditorActionContext<TTarget> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L447) | Evaluates the action for a strongly typed target.<br>返回：The current presentation and availability state.<br>`context`：The contextual request containing the typed target. | — | — |
+| <a id="api-5b7242c5581fa4bc"></a>[`public override sealed System.Type Inno.Editor.Interactions.EditorAction<TTarget>.targetType { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L386) | Gets the concrete type handled by this extension implementation. | — | — |
+| <a id="api-8978533587d95f0d"></a>[`public abstract class Inno.Editor.Interactions.EditorAction<TTarget> where TTarget : class : Inno.Editor.Interactions.EditorAction`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L380) | Defines a discoverable action whose target must be assignable to a specific reference type. | — | — |
+
+### `Inno.Editor.Interactions.EditorAction`2`
+
+<!-- api: T:Inno.Editor.Interactions.EditorAction`2 38eb9153b66826cb2e61fbab5fe8b7ff219648fe7af6940951c8acf8c58ac60f -->
+<!-- api: P:Inno.Editor.Interactions.EditorAction`2.targetType d9469c64946db1ff6794eed3c78c3ff2b1e5faf43ec6a362d59d03a084d0cf52 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`2.Query(Inno.Editor.Interactions.EditorActionContext) 5ebd9a781fa2c75d4003c3c3750cbb6a5f62ef9722b5663a20c7e3698d403600 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`2.Execute(Inno.Editor.Interactions.EditorActionContext) 1f3a07c7b8a32806a3d031808eb4b8ae1fef36acb98fc4fcdbe3172b6a922748 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`2.Present(Inno.Editor.Interactions.EditorActionContext) cf29c095ef40109a0447e52210c9d73825b995be0805b336f558c87d144c8cb5 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`2.Query(Inno.Editor.Interactions.EditorActionContext{`0,`1}) 417e000da867bd47e911862f26c4c82ac9f2c5eb9061652d961d9a604f78e9de -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`2.Execute(Inno.Editor.Interactions.EditorActionContext{`0,`1}) 1b8e50dddb87a99e491907464c14dae49bb13a36331d5f84b36279657b511736 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`2.Present(Inno.Editor.Interactions.EditorActionContext{`0,`1}) 945fa70c416b67318130abc5f259decf1fe34bb353d3b2a08411c691f35fc7d3 -->
+<!-- api: M:Inno.Editor.Interactions.EditorAction`2.#ctor e6a1202089c91a6c7a5a1e8b7e16f8b79827a2a4f5334ed1e1c9521e16353a7b -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-6323bcfd5f2e8e94"></a>[`protected Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.EditorAction()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L180) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-0a7453a141a18a77"></a>[`protected override sealed void Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.Execute(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L210) | Applies the editor action to the supplied interaction context.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-a2ee805414b15d62"></a>[`protected abstract void Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.Execute(Inno.Editor.Interactions.EditorActionContext<TTarget, TArgument> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L250) | Executes the action for a typed target and argument.<br>`context`：The typed contextual request. | — | — |
+| <a id="api-d090efbdcbfeb4e5"></a>[`protected override sealed bool Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.Present(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L230) | Presents this action through the current editor interaction surface.<br>返回：true when the operation succeeds or its condition is satisfied; otherwise, false.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-0391be560aceddde"></a>[`protected virtual bool Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.Present(Inno.Editor.Interactions.EditorActionContext<TTarget, TArgument> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L261) | Presents an active action for a typed target and argument.<br>返回：true when content was presented.<br>`context`：The typed presentation request. | — | — |
+| <a id="api-205bbafffdf07b1d"></a>[`protected override sealed Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.Query(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L199) | Evaluates the operation's current availability and presentation state.<br>返回：The validated editor action state that represents the completed operation.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-8f6f7217982cb7d8"></a>[`protected virtual Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.Query(Inno.Editor.Interactions.EditorActionContext<TTarget, TArgument> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L242) | Evaluates the action for a typed target and argument.<br>返回：The current presentation and availability state.<br>`context`：The typed contextual request. | — | — |
+| <a id="api-14cb443230e594a7"></a>[`public override sealed System.Type Inno.Editor.Interactions.EditorAction<TTarget, TArgument>.targetType { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L186) | Gets the concrete type handled by this extension implementation. | — | — |
+| <a id="api-2c8417110b03bd5e"></a>[`public abstract class Inno.Editor.Interactions.EditorAction<TTarget, TArgument> where TTarget : class : Inno.Editor.Interactions.EditorAction`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L180) | Defines a target action that requires one strongly typed command argument. | — | — |
+
+### `Inno.Editor.Interactions.EditorActionArgumentContext`1`
+
+<!-- api: T:Inno.Editor.Interactions.EditorActionArgumentContext`1 7fe9d1b52910b850bb8ae353e1b628198cf828e67169763047db417eeb4d4407 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionArgumentContext`1.argument 7ece092dd6ff8810c710db93e4d00ff273e336ecb3ceffec665a359050856887 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-0a338dee816d8e23"></a>[`public TArgument Inno.Editor.Interactions.EditorActionArgumentContext<TArgument>.argument { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L160) | Gets the strongly typed action argument. | — | — |
+| <a id="api-2efcac326ce7b7ce"></a>[`public sealed class Inno.Editor.Interactions.EditorActionArgumentContext<TArgument> : Inno.Editor.Interactions.EditorActionContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L146) | Provides a strongly typed action argument to a targetless editor action. | — | — |
+
+### `Inno.Editor.Interactions.EditorActionAttribute`
+
+<!-- api: T:Inno.Editor.Interactions.EditorActionAttribute 6c73c4168e7f9a2987ba9d3e570788a69074d1229b9aad312992fb533cde4d2a -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionAttribute.#ctor(System.String,System.Int32) 287626bbc419fdfb023f74a2a93f376e3af326983de0106846f2a28b00eb7458 -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionAttribute.#ctor(System.String,System.String,System.Int32) 4f520599f44aacfdd3c022f4df504598da3ad8a6e6f0961ace06d932693027fd -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionAttribute.action e5810c817cfcd458c936e27bfd0531b7195b26836d1b8d4c5559d8e43c2dedf6 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionAttribute.area 0680748470ef23bbc8fe1db3782e2fc261abd43ad48c87ed4440334de53231bc -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionAttribute.priority b68b77ce5026660ec31dea7f0c5be90b90110e84e3ae87e493845b47d2b650fb -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-c2cac4da993af781"></a>[`public Inno.Editor.Interactions.EditorActionAttribute.EditorActionAttribute(string action, int priority = 0)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionAttribute.cs#L23) | Creates an action registration available from every area.<br>`action`：The stable semantic action name.<br>`priority`：The tie-breaking priority used after target specificity. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-804a95cd2796204b"></a>[`public Inno.Editor.Interactions.EditorActionAttribute.EditorActionAttribute(string action, string area, int priority = 0)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionAttribute.cs#L46) | Creates an action registration restricted to one exact area.<br>`action`：The stable semantic action name.<br>`area`：The exact area, or an empty string for every area.<br>`priority`：The tie-breaking priority. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-8f3ae2b1853c2c4c"></a>[`public string Inno.Editor.Interactions.EditorActionAttribute.action { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionAttribute.cs#L61) | Gets the stable action name. | — | — |
+| <a id="api-ae614fbc51e3ccfb"></a>[`public string Inno.Editor.Interactions.EditorActionAttribute.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionAttribute.cs#L66) | Gets the optional exact interaction area. | — | — |
+| <a id="api-7b773451ca86d97f"></a>[`public int Inno.Editor.Interactions.EditorActionAttribute.priority { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionAttribute.cs#L71) | Gets the tie-breaking priority. | — | — |
+| <a id="api-acb0ccc7c65019c1"></a>[`public sealed class Inno.Editor.Interactions.EditorActionAttribute : System.Attribute`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionAttribute.cs#L9) | Registers an editor action for automatic discovery and dispatch. | — | — |
+
+### `Inno.Editor.Interactions.EditorActionContext`
+
+<!-- api: T:Inno.Editor.Interactions.EditorActionContext d6ba85112d56ad426564a5a4cd0a121abb23ea0a826eecc25703572afe252436 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext.editor ff08aca4611e2f5cb41fa2880dd71b81a3d2eebfdf11a6cbad8c601507ed9600 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext.interactions 275b35136c0411b5a8e113c1f3df721e182cae87ac3496cd7cec777fd64fb529 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext.history 263dbe99fac9a5e8c4efcf8e6199c1cefd78db6c13c9de764ccbe1f027027906 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext.area 796bc31420f38b8485a5d27bfd61314caf959bfc6dccdb8f021187a14b2ff769 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext.target 19d53e285f48911d275053c787538d436800e8de2f91a145869786ef82139d6f -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-5b6adb3b31e1b11d"></a>[`public string Inno.Editor.Interactions.EditorActionContext.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L69) | Gets the stable interaction area. | — | — |
+| <a id="api-09175151643ad0ef"></a>[`public Inno.Editor.Core.EditorContext Inno.Editor.Interactions.EditorActionContext.editor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L54) | Gets the shared passive editor context. | — | — |
+| <a id="api-4f5529aeb56877f1"></a>[`public Inno.Editor.Interactions.IEditorHistory Inno.Editor.Interactions.EditorActionContext.history { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L64) | Gets the transactional history used to record reversible mutations performed by this action. | — | — |
+| <a id="api-bf8950acc0a5879b"></a>[`public Inno.Editor.Interactions.EditorInteractions Inno.Editor.Interactions.EditorActionContext.interactions { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L59) | Gets the active interaction entry point. | — | — |
+| <a id="api-6eaba7a2c27f1e67"></a>[`public object? Inno.Editor.Interactions.EditorActionContext.target { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L74) | Gets the contextual action target. | — | — |
+| <a id="api-75920a6c5895965a"></a>[`public class Inno.Editor.Interactions.EditorActionContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L10) | Provides contextual state to an editor action. | — | — |
+
+### `Inno.Editor.Interactions.EditorActionContext`1`
+
+<!-- api: T:Inno.Editor.Interactions.EditorActionContext`1 f2c51db05a470c0bf4b0931eb2fdeee952d1c906236bcee7929803bb7619aaaa -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext`1.target 73644ee5a68f3d3df3775d834d223bd3120674a0a3b82dcfc8d1686cfcef1f35 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-4fcae0005720eaee"></a>[`public TTarget Inno.Editor.Interactions.EditorActionContext<TTarget>.target { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L103) | Gets the strongly typed action target. | — | — |
+| <a id="api-2aec9efa23547a9c"></a>[`public sealed class Inno.Editor.Interactions.EditorActionContext<TTarget> where TTarget : class : Inno.Editor.Interactions.EditorActionContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L88) | Provides a strongly typed target to an editor action implementation. | — | — |
+
+### `Inno.Editor.Interactions.EditorActionContext`2`
+
+<!-- api: T:Inno.Editor.Interactions.EditorActionContext`2 5c235a9125c67f5e41d813a6808fbe6efa2396063c71953a9150809f68e0592e -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext`2.target 8ee42d852248ad17e37f677f3aa9b224944023d046196c251716cf30fee11562 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionContext`2.argument 3a398351bbf11359bf86b414c94adaec46f2a3e16256a1ef2ae11dce001d5c80 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-8b44ef1d618702ac"></a>[`public TArgument Inno.Editor.Interactions.EditorActionContext<TTarget, TArgument>.argument { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L137) | Gets the strongly typed action argument. | — | — |
+| <a id="api-0504bf4fe1ab423a"></a>[`public TTarget Inno.Editor.Interactions.EditorActionContext<TTarget, TArgument>.target { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L132) | Gets the strongly typed action target. | — | — |
+| <a id="api-9762c3ea4f12f04b"></a>[`public sealed class Inno.Editor.Interactions.EditorActionContext<TTarget, TArgument> where TTarget : class : Inno.Editor.Interactions.EditorActionContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionContext.cs#L115) | Provides a strongly typed target and action argument to an editor action. | — | — |
+
+### `Inno.Editor.Interactions.EditorActionState`
+
+<!-- api: T:Inno.Editor.Interactions.EditorActionState 2bed2c9274c41c53af9a287e03b8c09001a9d64c9d8f0bb81191333f16c9dd7f -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionState.#ctor(System.Boolean,System.Boolean,System.Boolean,System.String) 758e5fd0cfc6daa85263e282a3b8c276ceb81e078a8b82e9f87267e8e021909a -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionState.isVisible 5bbd1f1bd7c04f92eb12c24b5ebf410a9b128734cd7424661327194ea4213543 -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionState.isEnabled 530109aac8b3313cb926319fc98ed48fea145177fc35a0c94fdc749ec7528cea -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionState.isChecked 8432441340feac338bba4ad0c15ef9a450475dce73ed30370e701dbbf013e5ca -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionState.displayName a5af03380a8e0685c7b436c9ec353b17d6635b5dc8c109e3c3e511be4d1527ba -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionState.enabled 694f8ff6f96cc14cd9008a7bfb02670d1031d4748661a3f8a02419cfe609e60a -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionState.disabled 9812ce31a07df1bec96130563c67dac53d4f0c6172f44d4699ee9a05f8eb9d2c -->
+<!-- api: P:Inno.Editor.Interactions.EditorActionState.hidden 7bcd50d6e15d56a9d1f540c69343fd28b106a1e32378cfa7d567b39ce4fac810 -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionState.ToString 2126dccfbb85d46e0f9a75f7487eb179ea0ad81d74a36279b915ebd42f8027dd -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionState.op_Inequality(Inno.Editor.Interactions.EditorActionState,Inno.Editor.Interactions.EditorActionState) d770bb5ed9d19aebca61f5c8475050ba37ae8914cee7b7966e522abe21ca6b55 -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionState.op_Equality(Inno.Editor.Interactions.EditorActionState,Inno.Editor.Interactions.EditorActionState) 181c7e5990ed3b607cc840cfe6a594a0dea96de870be694cd3ff284b5be7b634 -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionState.GetHashCode 096478fee31b945c129f5fd1b871b31d2356de48dfa6352cd47f02fccac65f0e -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionState.Equals(System.Object) d4735070b11fa703e289c30c54ab65cf0eca17d64d4d0cf191de69b346875efc -->
+<!-- api: M:Inno.Editor.Interactions.EditorActionState.Equals(Inno.Editor.Interactions.EditorActionState) c0ea9bbf1f9b6ecbc1079e8482d248565e88ec72b361d8b7614f0e439d0aa1e6 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-77cc1578e31bff93"></a>[`public Inno.Editor.Interactions.EditorActionState.EditorActionState(bool isVisible, bool isEnabled, bool isChecked = false, string? displayName = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L23) | Creates the contextual presentation state of an editor action.<br>`isVisible`：Whether the action should be included in the current presentation.<br>`isEnabled`：Whether the action can execute in the current context.<br>`isChecked`：Whether the action is currently presented as checked.<br>`displayName`：An optional contextual label that replaces the static placement label. | — | — |
+| <a id="api-5284fe2f0474d71a"></a>[`public bool Inno.Editor.Interactions.EditorActionState.Equals(Inno.Editor.Interactions.EditorActionState other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-64daa5adb0b418e1"></a>[`public override bool Inno.Editor.Interactions.EditorActionState.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L6) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-73842ef7f6da7103"></a>[`public override int Inno.Editor.Interactions.EditorActionState.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L6) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-c1921afe1928de4d"></a>[`public static bool Inno.Editor.Interactions.EditorActionState.operator ==(Inno.Editor.Interactions.EditorActionState left, Inno.Editor.Interactions.EditorActionState right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L6) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-bd31ae3af034bd4e"></a>[`public static bool Inno.Editor.Interactions.EditorActionState.operator !=(Inno.Editor.Interactions.EditorActionState left, Inno.Editor.Interactions.EditorActionState right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L6) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-1a2bde052de329bc"></a>[`public override string Inno.Editor.Interactions.EditorActionState.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L6) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-aaa5c03e5693eba9"></a>[`public static Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorActionState.disabled { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L63) | Gets a visible but disabled action state. | — | — |
+| <a id="api-b4247c6c2ee1566f"></a>[`public string? Inno.Editor.Interactions.EditorActionState.displayName { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L53) | Gets an optional contextual display name. | — | — |
+| <a id="api-e769442397af0097"></a>[`public static Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorActionState.enabled { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L58) | Gets a visible and enabled action state. | — | — |
+| <a id="api-e07a421be4db4a45"></a>[`public static Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorActionState.hidden { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L68) | Gets a hidden action state. | — | — |
+| <a id="api-4e8103be2b818df5"></a>[`public bool Inno.Editor.Interactions.EditorActionState.isChecked { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L48) | Gets whether the action is currently checked. | — | — |
+| <a id="api-73e93f8c74020017"></a>[`public bool Inno.Editor.Interactions.EditorActionState.isEnabled { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L43) | Gets whether the action can execute. | — | — |
+| <a id="api-51a25ee79e090f19"></a>[`public bool Inno.Editor.Interactions.EditorActionState.isVisible { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L38) | Gets whether the action should be displayed. | — | — |
+| <a id="api-1c4b78162b994ebe"></a>[`public readonly record struct Inno.Editor.Interactions.EditorActionState : System.IEquatable<Inno.Editor.Interactions.EditorActionState>`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorActionState.cs#L6) | Describes the current presentation and availability of an editor action. | — | — |
+
+### `Inno.Editor.Interactions.EditorArgumentAction`1`
+
+<!-- api: T:Inno.Editor.Interactions.EditorArgumentAction`1 3064fcfd5edf0744b75f213fb960d2bb809cbb73a228cad23b704bf1c596232f -->
+<!-- api: M:Inno.Editor.Interactions.EditorArgumentAction`1.Query(Inno.Editor.Interactions.EditorActionContext) cce41e0de82667c0c8de83a1e51e0bb3ecdeea2437aa3491b190abbd345c96fc -->
+<!-- api: M:Inno.Editor.Interactions.EditorArgumentAction`1.Execute(Inno.Editor.Interactions.EditorActionContext) e9b7bae6f79ccb945fb4376e7e6be9df229beeb23fa02ce02eed94831b3f490c -->
+<!-- api: M:Inno.Editor.Interactions.EditorArgumentAction`1.Query(Inno.Editor.Interactions.EditorActionArgumentContext{`0}) d78740a3e78c7b6264b47194bd52a7b6a14fbf591929f7d39227dedc3e9ce887 -->
+<!-- api: M:Inno.Editor.Interactions.EditorArgumentAction`1.Execute(Inno.Editor.Interactions.EditorActionArgumentContext{`0}) 6ffa29071438199cf082bc1812bf3c0dcd358c9c129ea7fc4168b586eda3b59c -->
+<!-- api: M:Inno.Editor.Interactions.EditorArgumentAction`1.#ctor 732ef03170a8110d6173309ab2b169059c89b971827600f4e728f40bdf7dbb3a -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-d9a3ef4f1bc8c2dd"></a>[`protected Inno.Editor.Interactions.EditorArgumentAction<TArgument>.EditorArgumentAction()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L283) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-8773d5e85b5ab2e3"></a>[`protected abstract void Inno.Editor.Interactions.EditorArgumentAction<TArgument>.Execute(Inno.Editor.Interactions.EditorActionArgumentContext<TArgument> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L334) | Executes the action for a typed argument.<br>`context`：The typed contextual request. | — | — |
+| <a id="api-aa3ef1f01ce9883c"></a>[`protected override sealed void Inno.Editor.Interactions.EditorArgumentAction<TArgument>.Execute(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L307) | Applies the editor action to the supplied interaction context.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-6673020262a9d277"></a>[`protected virtual Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorArgumentAction<TArgument>.Query(Inno.Editor.Interactions.EditorActionArgumentContext<TArgument> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L326) | Evaluates the action for a typed argument.<br>返回：The current presentation and availability state.<br>`context`：The typed contextual request. | — | — |
+| <a id="api-bc44252343807683"></a>[`protected override sealed Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorArgumentAction<TArgument>.Query(Inno.Editor.Interactions.EditorActionContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L296) | Evaluates the operation's current availability and presentation state.<br>返回：The validated editor action state that represents the completed operation.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-3a8cf4859e570fc3"></a>[`public abstract class Inno.Editor.Interactions.EditorArgumentAction<TArgument> : Inno.Editor.Interactions.EditorAction`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L283) | Defines a targetless editor action that requires one strongly typed command argument. | — | — |
+
+### `Inno.Editor.Interactions.EditorDocumentCloseMode`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDocumentCloseMode 51c654f680dce2282282a5f5bd58fe04a9658b4745fca6ea89cc8192d7da3321 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDocumentCloseMode.Cancel 4ffff51dad0675a86e18cf697131afb4023ccbd034bde5d9e38505ef70e17e42 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDocumentCloseMode.Save 2fa79c49defaa20b652f544b825e080dbb0ef3c6917d5a43d0c6abe932c95ee2 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDocumentCloseMode.Discard 57495ae2e85edada6e06e7ebb7a0ed49937d6398644e04cfb44f881cc454bdb8 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-63696611af094c6f"></a>[`Inno.Editor.Interactions.EditorDocumentCloseMode.Cancel = 0`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L14) | Keeps the document open. | — | — |
+| <a id="api-05af7010d672d0ec"></a>[`Inno.Editor.Interactions.EditorDocumentCloseMode.Discard = 2`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L22) | Closes the document and discards unsaved state. | — | — |
+| <a id="api-a01f66463e992bb1"></a>[`Inno.Editor.Interactions.EditorDocumentCloseMode.Save = 1`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L18) | Closes the document after saving. | — | — |
+| <a id="api-ca74e9e356cb5500"></a>[`public enum Inno.Editor.Interactions.EditorDocumentCloseMode : int`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L9) | Selects how a dirty document responds to a close request. | — | — |
+
+### `Inno.Editor.Interactions.EditorDocumentContext`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDocumentContext 45e594c5608307d885cdbf4fa79dbea89d33ca18748f5a708ac80a6db760cc9d -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.documentId a002e9bf891ce4e7321259df58a4dd66e25fc47fb14e6e79b609fd322cca65f1 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.assetId 0cf7d8b6345cfeb4919622b4f4e2f5052664d48556da29816f06ea4372dbf00a -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.assetPath 3a31d3cc59ba0ec25ef205a787eaac1e52a7fb419d696e0fd60913fdf870f912 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.providerId 750aac4663e5f69333ea94717887b15ff0ea7274f2ee2cc65934e99bcb0fe044 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.title ac66e528e6c2d30a29323a28a3a4fae2ed75a000704c8a8605237afd044bd245 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.isDirty 00eef0a0631773944e766e6e4f530c7c80dab8b879c0c58f35fbc80463697671 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.isProviderAvailable 926721d3758661983211d9e261ee3dff562a53bd886d0a1ea95ae63a50cd074a -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentContext.viewParameters 7e6615783556e4409e9f45aa0ecd26738e23617ec08e5fb5918ea3325b8b1495 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentContext.SetViewParameter(System.String,System.String) 7e5405c77f2d117c890265e16ea63d5cbc3255af4ae4f561f5eeda459062d6d7 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentContext.TryGetViewParameter(System.String,System.String@) 556ea3a9cb9026af4e19c2b04f6b8e7c870505fb755aa8f5b1a9a4d4e7160ed4 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-ebc620b4e8d95c6c"></a>[`public void Inno.Editor.Interactions.EditorDocumentContext.SetViewParameter(string key, string value)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L76) | Adds or replaces one stable scalar or JSON-formatted view parameter.<br>`key`：Stable provider-local parameter name.<br>`value`：Persistent scalar or JSON-formatted value. | — | — |
+| <a id="api-aafd928cf5606862"></a>[`public bool Inno.Editor.Interactions.EditorDocumentContext.TryGetViewParameter(string key, out string value)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L97) | Tries to read one stable view parameter.<br>返回：true when the parameter exists.<br>`key`：Stable provider-local parameter name.<br>`value`：Receives the stored value. | — | — |
+| <a id="api-136ebace2b5bdf6b"></a>[`public System.Guid Inno.Editor.Interactions.EditorDocumentContext.assetId { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L35) | Gets the persistent asset identity, or an empty value before the source has one. | — | — |
+| <a id="api-b8abd71107268fe5"></a>[`public string Inno.Editor.Interactions.EditorDocumentContext.assetPath { get; internal set; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L40) | Gets the normalized project asset path. | — | — |
+| <a id="api-5d7df649dc4f498c"></a>[`public System.Guid Inno.Editor.Interactions.EditorDocumentContext.documentId { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L30) | Gets the stable identity of this open source document. | — | — |
+| <a id="api-8f52cdb5155cfb0f"></a>[`public bool Inno.Editor.Interactions.EditorDocumentContext.isDirty { get; internal set; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L55) | Gets whether unsaved source or staged changes exist. | — | — |
+| <a id="api-40d8676cee1885f6"></a>[`public bool Inno.Editor.Interactions.EditorDocumentContext.isProviderAvailable { get; internal set; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L60) | Gets whether a current-generation provider is available. | — | — |
+| <a id="api-00114a26cc2a85dd"></a>[`public string Inno.Editor.Interactions.EditorDocumentContext.providerId { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L45) | Gets the stable provider identity used to recover across extension reload. | — | — |
+| <a id="api-d23ec6177d28743c"></a>[`public string Inno.Editor.Interactions.EditorDocumentContext.title { get; set; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L50) | Gets or sets the author-facing source title used by diagnostics and dedicated editors. | — | — |
+| <a id="api-422a5198c8fe913e"></a>[`public System.Collections.Generic.IReadOnlyDictionary<string, string> Inno.Editor.Interactions.EditorDocumentContext.viewParameters { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L65) | Gets an immutable snapshot of stable view parameters. | — | — |
+| <a id="api-f264244e42e86b1a"></a>[`public sealed class Inno.Editor.Interactions.EditorDocumentContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentContext.cs#L10) | Stores only stable, reload-safe document identity and provider-owned draft parameters. | — | — |
+
+### `Inno.Editor.Interactions.EditorDocumentProvider`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDocumentProvider bd6a7774ac8c12d92d1a07a77c4d9f830d741e3df9c6f2247d32389b5c8ebd55 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDocumentProvider.id 024e800c9a22daa6ca46de06513e6c581b2d6c08f80ca7fb4c740e8f685c8c39 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentProvider.CanOpen(System.String) 5424711fbc264a2589b86cfcb349524bea5f52276caee55512bea4d5cb0d1103 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentProvider.Open(Inno.Editor.Interactions.EditorDocumentContext) 6f850b34fb54313e11f735686b58e3c936bc9472cc5ff953a9ca12b356694802 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentProvider.Save(Inno.Editor.Interactions.EditorDocumentContext) 2aecfb9a1eb1a5e311baa26adce5d50b0c2974a1886f402d1d45ab4ab8a1a523 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentProvider.Apply(Inno.Editor.Interactions.EditorDocumentContext) b81283298035d2a97ec29785e759fe7a24ecb3089f81700e03fa2735b489591b -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentProvider.Revert(Inno.Editor.Interactions.EditorDocumentContext) 21be3827a25e230d17b772f81a4c4c8af13a4aa81d09c45bd37201d4ba082208 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentProvider.Close(Inno.Editor.Interactions.EditorDocumentContext) 0b13326910054d53a248bdfb5df9dc9bd454f7915b2e7390db00fc9df62d8b76 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDocumentProvider.#ctor 351ba9f014b0dc1c189f074f6796e5759941daa945b33e29cd9f9cf0f6103a39 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-42a84cefe4518488"></a>[`protected Inno.Editor.Interactions.EditorDocumentProvider.EditorDocumentProvider()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L8) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-091115a4c409fc7a"></a>[`public virtual bool Inno.Editor.Interactions.EditorDocumentProvider.Apply(Inno.Editor.Interactions.EditorDocumentContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L54) | Applies staged authoring changes and saves their asset source.<br>返回：true when staged changes are applied.<br>`context`：Stable document context owned by the host. | — | — |
+| <a id="api-2838443c67d360e5"></a>[`public abstract bool Inno.Editor.Interactions.EditorDocumentProvider.CanOpen(string assetPath)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L24) | Returns whether this provider can open the supplied project asset path.<br>返回：true when the path is supported.<br>`assetPath`：Normalized project asset path. | — | — |
+| <a id="api-7def4bf03adf9d79"></a>[`public virtual void Inno.Editor.Interactions.EditorDocumentProvider.Close(Inno.Editor.Interactions.EditorDocumentContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L77) | Releases transient provider state after a document closes.<br>`context`：Stable document context owned by the host. | — | — |
+| <a id="api-651669fe0a7a776b"></a>[`public virtual void Inno.Editor.Interactions.EditorDocumentProvider.Open(Inno.Editor.Interactions.EditorDocumentContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L32) | Initializes transient provider state for an opened or restored document.<br>`context`：Stable document context owned by the host. | — | — |
+| <a id="api-026223b2b179a61d"></a>[`public virtual bool Inno.Editor.Interactions.EditorDocumentProvider.Revert(Inno.Editor.Interactions.EditorDocumentContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L65) | Discards staged authoring changes and reloads the last saved source.<br>返回：true when the source is restored.<br>`context`：Stable document context owned by the host. | — | — |
+| <a id="api-c6d8404aee373c33"></a>[`public abstract bool Inno.Editor.Interactions.EditorDocumentProvider.Save(Inno.Editor.Interactions.EditorDocumentContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L43) | Saves all document changes to its asset source.<br>返回：true when the source is saved.<br>`context`：Stable document context owned by the host. | — | — |
+| <a id="api-0aec504589973262"></a>[`public abstract string Inno.Editor.Interactions.EditorDocumentProvider.id { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L13) | Gets the globally stable provider identifier. | — | — |
+| <a id="api-1a91669968465750"></a>[`public abstract class Inno.Editor.Interactions.EditorDocumentProvider`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/EditorDocumentProvider.cs#L8) | Implements one reloadable asset-document kind without owning presentation or source identity. | — | — |
+
+### `Inno.Editor.Interactions.EditorDragContext`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDragContext 7a7652612ad3543837937b3dfb944aa813385d8ae55643d64e4a34763cf54b9f -->
+<!-- api: M:Inno.Editor.Interactions.EditorDragContext.#ctor(Inno.Editor.Core.EditorContext,Inno.Editor.Interactions.EditorInteractions,System.String,Inno.Editor.Interactions.EditorDragData) 1e6856d9a81865a158d9fed26d646e2266007d5dcb4c4b99a8975a8ae247908f -->
+<!-- api: P:Inno.Editor.Interactions.EditorDragContext.editor 255236c258640d410c8fc0c99c3581ba2c240336d9f182b014c8187c46050ebf -->
+<!-- api: P:Inno.Editor.Interactions.EditorDragContext.interactions d4f6de43658b4703053b8ff8f61a2049e9bb99901b3f5ed69b826c4bcd495cc3 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDragContext.area 31afee56eb5888e4410a32aa00a706d1edd1b3ec76b7c8765b7b454ccf06e9be -->
+<!-- api: P:Inno.Editor.Interactions.EditorDragContext.data a6e2f2a85e9c7be754cd0907cce71c5e2b66305360aa12fd775d98d2116bd0b9 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-b38795d5ee5d9666"></a>[`public Inno.Editor.Interactions.EditorDragContext.EditorDragContext(Inno.Editor.Core.EditorContext editor, Inno.Editor.Interactions.EditorInteractions interactions, string area, Inno.Editor.Interactions.EditorDragData data)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragContext.cs#L33) | Creates a managed editor drag request.<br>`editor`：The shared passive editor context.<br>`interactions`：The active interaction entry point.<br>`area`：The interaction area that produced the source.<br>`data`：The transient source identity and preview label. | — | `System.ArgumentNullException`：Thrown when editor, interactions, or data is null.<br>`System.ArgumentException`：Thrown when area is empty. |
+| <a id="api-a9f394b01f24edfc"></a>[`public string Inno.Editor.Interactions.EditorDragContext.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragContext.cs#L59) | Gets the source interaction area. | — | — |
+| <a id="api-648ccc6de43583d4"></a>[`public Inno.Editor.Interactions.EditorDragData Inno.Editor.Interactions.EditorDragContext.data { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragContext.cs#L64) | Gets the managed drag data. | — | — |
+| <a id="api-2d15ff72d22967b9"></a>[`public Inno.Editor.Core.EditorContext Inno.Editor.Interactions.EditorDragContext.editor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragContext.cs#L49) | Gets the shared passive editor context. | — | — |
+| <a id="api-6208ab71672a02cf"></a>[`public Inno.Editor.Interactions.EditorInteractions Inno.Editor.Interactions.EditorDragContext.interactions { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragContext.cs#L54) | Gets the active interaction entry point. | — | — |
+| <a id="api-e51b951c9a587beb"></a>[`public sealed class Inno.Editor.Interactions.EditorDragContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragContext.cs#L10) | Provides contextual state while beginning an editor drag. | — | — |
+
+### `Inno.Editor.Interactions.EditorDragData`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDragData 60d72c6bd87fa6b5a2c0bcee4c19ddcdda47c5b0a85d95c385f5dd5947b0fbb2 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDragData.#ctor(Inno.Core.Identity.IdentityObject,System.String) 37c177c267a62c4c3d9463447f872a8c54212d00d4460742d30dd60908064ff8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDragData.sourceIdentity f047b734ceac96786b4f41f4eecff559e35a08e878da2dfffd85d87a8d16b235 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDragData.label c264217d3028ac23f6077584ced787987edc11a549807ea0a44521c72392bdea -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-1dd92b83d406018a"></a>[`public Inno.Editor.Interactions.EditorDragData.EditorDragData(Inno.Core.Identity.IdentityObject source, string label)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragData.cs#L27) | Creates drag data for a registered identity object.<br>`source`：The registered source object resolved again for each drop query and delivery.<br>`label`：The human-readable label used by drag previews. | — | `System.ArgumentNullException`：Thrown when source is null.<br>`System.InvalidOperationException`：Thrown when source is not registered in a live identity domain. |
+| <a id="api-e0d67bd547f7b1ba"></a>[`public string Inno.Editor.Interactions.EditorDragData.label { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragData.cs#L46) | Gets the drag preview label. | — | — |
+| <a id="api-74f65b7947393f02"></a>[`public Inno.Core.Identity.RuntimeIdentity Inno.Editor.Interactions.EditorDragData.sourceIdentity { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragData.cs#L41) | Gets the domain-qualified transient identity written to the native drag protocol. | — | — |
+| <a id="api-8035be291dd9c450"></a>[`public sealed class Inno.Editor.Interactions.EditorDragData`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDragData.cs#L10) | Contains the transient identity and preview label for one editor drag operation. | — | — |
+
+### `Inno.Editor.Interactions.EditorDrop`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDrop 1f04cebf69ce744567e853a71c2dd7770e102774d363aa5f5c8a7441c72d483e -->
+<!-- api: P:Inno.Editor.Interactions.EditorDrop.sourceType d3d103d3ca4a667d3f1e637c0edede8d5b5094d1ba7bd28edb3dcc74447f9c57 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDrop.targetType e8b43a9e280278b7a4c619ee05ba37f271322ea61f97221f6d3715068bcbca47 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop.Query(Inno.Editor.Interactions.EditorDropContext) 8bfbd582f45b5fa96bc6a868f4c5c89999ba29067891128302ec751561e51b8a -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop.Drop(Inno.Editor.Interactions.EditorDropContext) 50f3c3a1d23e23aedc66d2a74aacdaf38941178baa021466fc63ec187a57088c -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop.#ctor 74ea0ddf18d53dd2cd92f8dee43ae20419eb95a726699938d0af62a04275fe32 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-31b7f560922de3d0"></a>[`protected Inno.Editor.Interactions.EditorDrop.EditorDrop()`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L11) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-47babd2325d8ecea"></a>[`public abstract Inno.Editor.Interactions.EditorDropResult Inno.Editor.Interactions.EditorDrop.Drop(Inno.Editor.Interactions.EditorDropContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L43) | Executes a delivered drop after a successful compatibility query.<br>返回：The observable selection and reveal result of the operation.<br>`context`：The untyped source, target, surface, and requested placement. | — | — |
+| <a id="api-ec2f2e721953e424"></a>[`public abstract Inno.Editor.Interactions.EditorDropStatus Inno.Editor.Interactions.EditorDrop.Query(Inno.Editor.Interactions.EditorDropContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L32) | Evaluates whether the current managed source may be dropped on the supplied target.<br>返回：The compatibility state and standard target visual.<br>`context`：The untyped source, target, surface, and requested placement. | — | — |
+| <a id="api-e3a9e6c0fa823b1c"></a>[`public abstract System.Type Inno.Editor.Interactions.EditorDrop.sourceType { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L16) | Gets the accepted drag source type. | — | — |
+| <a id="api-5937097701fa7e45"></a>[`public abstract System.Type Inno.Editor.Interactions.EditorDrop.targetType { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L21) | Gets the accepted drop target type. | — | — |
+| <a id="api-bcb0df6c8d496566"></a>[`public abstract class Inno.Editor.Interactions.EditorDrop`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L11) | Defines one discoverable typed editor drop operation. | — | — |
+
+### `Inno.Editor.Interactions.EditorDrop`2`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDrop`2 384e08e922d42f6295530af252cfd6e96c94f520c9d7cf94c2d414cf4ce1c400 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDrop`2.sourceType dcd76d8f6e138e50a704941dc172ea705c51091c1f951c52b51f2f5bd1db0920 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDrop`2.targetType 0f18bfef479b557b83685db29f86154ea385afe4548def3483c3a86ce80dd09b -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop`2.Query(Inno.Editor.Interactions.EditorDropContext) 6cc84fa0d44b815be57adafcc8b271b8ccec1be7248acfdb9688a122f998ea39 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop`2.Drop(Inno.Editor.Interactions.EditorDropContext) 73b5f4640e035c500034b26dcbd82bb7c05999cfd2ea57549d1e05e50d4557b5 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop`2.Query(Inno.Editor.Interactions.EditorDropContext{`0,`1}) 34f8ff1044bdf27908f27b4750d9ed3a96671913923028707647f34c06655a4e -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop`2.Drop(Inno.Editor.Interactions.EditorDropContext{`0,`1}) 1f9cf288ccc9fe08bbdb77636b0d32b830fc0d0f8672fc06fb822eed17f16e2c -->
+<!-- api: M:Inno.Editor.Interactions.EditorDrop`2.#ctor fcc329618d69cf2876a9c4aa7d0f990950ec23b5cefc94f60d7c26032610adcd -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-0de0427f82f3f318"></a>[`protected Inno.Editor.Interactions.EditorDrop<TSource, TTarget>.EditorDrop()`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L55) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-6701032ce129f329"></a>[`public override sealed Inno.Editor.Interactions.EditorDropResult Inno.Editor.Interactions.EditorDrop<TSource, TTarget>.Drop(Inno.Editor.Interactions.EditorDropContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L95) | Validates and applies the current editor drag-and-drop interaction atomically.<br>返回：The validated editor drop result that represents the completed operation.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-8159c18b3bab6ef6"></a>[`protected abstract Inno.Editor.Interactions.EditorDropResult Inno.Editor.Interactions.EditorDrop<TSource, TTarget>.Drop(Inno.Editor.Interactions.EditorDropContext<TSource, TTarget> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L123) | Executes a delivered drop for the strongly typed source and target.<br>返回：The observable selection and reveal result of the operation.<br>`context`：The typed source, target, surface, and requested placement. | — | — |
+| <a id="api-765b9ecc892ef307"></a>[`public override sealed Inno.Editor.Interactions.EditorDropStatus Inno.Editor.Interactions.EditorDrop<TSource, TTarget>.Query(Inno.Editor.Interactions.EditorDropContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L78) | Evaluates the operation's current availability and presentation state.<br>返回：The validated editor drop status that represents the completed operation.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-74a9fc5e70751a96"></a>[`protected abstract Inno.Editor.Interactions.EditorDropStatus Inno.Editor.Interactions.EditorDrop<TSource, TTarget>.Query(Inno.Editor.Interactions.EditorDropContext<TSource, TTarget> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L112) | Evaluates whether the strongly typed source may be dropped on the strongly typed target.<br>返回：The compatibility state and standard target visual.<br>`context`：The typed source, target, surface, and requested placement. | — | — |
+| <a id="api-66c1830493f79651"></a>[`public override sealed System.Type Inno.Editor.Interactions.EditorDrop<TSource, TTarget>.sourceType { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L62) | Gets the concrete type handled by this extension implementation. | — | — |
+| <a id="api-4ade1b2fe25744a8"></a>[`public override sealed System.Type Inno.Editor.Interactions.EditorDrop<TSource, TTarget>.targetType { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L67) | Gets the concrete type handled by this extension implementation. | — | — |
+| <a id="api-b26d3b6076d96255"></a>[`public abstract class Inno.Editor.Interactions.EditorDrop<TSource, TTarget> where TSource : Inno.Core.Identity.IdentityObject where TTarget : class : Inno.Editor.Interactions.EditorDrop`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L55) | Defines a typed drop operation for one managed source and target pair. | — | — |
+
+### `Inno.Editor.Interactions.EditorDropAttribute`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDropAttribute 519e8c2e5273401fb733c020e914e99acd247483b0ad428eeff18d3c75a6ca76 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropAttribute.#ctor(System.Int32) 5fa7e5720177e9629a1e4252451d49aeaf8c3d0256d0e84fc0719c2f8c615c64 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropAttribute.#ctor(System.String,System.Int32) 29f3ca4fe1d9b2ad0b0003a9a2c25c045450c11a02d2e933d491a0de9955243a -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropAttribute.area 46fe0c71b8591384de1cfaea261d3a0c15a193735abc5325693c07e61c549c3d -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropAttribute.priority 4a4f1a33027ff4adf76fc89baea5efad8a7a73ec6bbaa51ac7bc9a08c7b31f7a -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-0490f5d30f3e6597"></a>[`public Inno.Editor.Interactions.EditorDropAttribute.EditorDropAttribute(int priority = 0)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropAttribute.cs#L17) | Creates a drop registration that can participate on any interaction surface.<br>`priority`：The tie-breaking priority used after source and target specificity. | — | — |
+| <a id="api-03cd360a7f80d184"></a>[`public Inno.Editor.Interactions.EditorDropAttribute.EditorDropAttribute(string area, int priority = 0)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropAttribute.cs#L31) | Creates a drop registration scoped to an exact interaction area.<br>`area`：The exact target area handled by this registration, or an empty string for any area.<br>`priority`：The tie-breaking priority used after source and target specificity. | — | — |
+| <a id="api-7eeafe1881f998db"></a>[`public string Inno.Editor.Interactions.EditorDropAttribute.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropAttribute.cs#L42) | Gets the optional exact interaction area. | — | — |
+| <a id="api-b2bc5f641957a7bd"></a>[`public int Inno.Editor.Interactions.EditorDropAttribute.priority { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropAttribute.cs#L47) | Gets the tie-breaking priority. | — | — |
+| <a id="api-cd14be88f6eaa498"></a>[`public sealed class Inno.Editor.Interactions.EditorDropAttribute : System.Attribute`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropAttribute.cs#L9) | Registers a typed editor drop handler for an optional exact area. | — | — |
+
+### `Inno.Editor.Interactions.EditorDropContext`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDropContext 3cc44804c831287235e4e87b31e3c01c5b238f6db59f5633cd2331986efd412e -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropContext.#ctor(Inno.Editor.Core.EditorContext,Inno.Editor.Interactions.EditorInteractions,System.String,Inno.Editor.Interactions.EditorDragData,Inno.Core.Identity.IdentityObject,System.Object,Inno.Editor.Interactions.EditorDropPlacement) a7d2bb7611a28ba9064983a5c1e8976c3bb16152dd3052de30663b4777098264 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext.editor 93123ceb162a5f274ab770b80af3aae6126053e7a8a622b9a355fd2f3303e85e -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext.interactions 35196e3ab34f63a42abb2bebac373a8380dc0f04de087bd6738df7db1f549467 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext.area 9b19eb7ac628290dce1cf97c570570c457b1bf832680781d70ed63a00eb4eccb -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext.data 9536d7c540b0f19513d79c88b1185ef639660d5f8f4a3537be5ee0bafe494cfc -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext.source 9bc07087e94a78d2a410d6daa8244bb162543cb90ff893c607e894a2ca527faa -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext.target 30fb729c4ddf5a63c75aa5627b6496c86dcb0d0c419618c1de95131dff9843ca -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext.placement 477914b653ddf9e590a41bf8e765d35d54bb86eb1ba355b0eae8c98607abed32 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-b64f45a31adc1939"></a>[`public Inno.Editor.Interactions.EditorDropContext.EditorDropContext(Inno.Editor.Core.EditorContext editor, Inno.Editor.Interactions.EditorInteractions interactions, string area, Inno.Editor.Interactions.EditorDragData data, Inno.Core.Identity.IdentityObject source, object target, Inno.Editor.Interactions.EditorDropPlacement placement = Inno.Editor.Interactions.EditorDropPlacement.None)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L44) | Creates a managed drop request.<br>`editor`：The shared passive editor context.<br>`interactions`：The active interaction entry point.<br>`area`：The target interaction area.<br>`data`：The active identity-based drag data.<br>`source`：The live source resolved from data for this operation only.<br>`target`：The managed target object exposed to typed handlers.<br>`placement`：The requested position relative to the target. | — | `System.ArgumentNullException`：Thrown when editor, interactions, data, source, or target is null.<br>`System.ArgumentException`：Thrown when area is empty. |
+| <a id="api-3fa68b0261499ea5"></a>[`public string Inno.Editor.Interactions.EditorDropContext.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L76) | Gets the target interaction area. | — | — |
+| <a id="api-e8e2fbc98a92a3a4"></a>[`public Inno.Editor.Interactions.EditorDragData Inno.Editor.Interactions.EditorDropContext.data { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L81) | Gets the active managed drag data. | — | — |
+| <a id="api-a5b6f484d14a1430"></a>[`public Inno.Editor.Core.EditorContext Inno.Editor.Interactions.EditorDropContext.editor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L66) | Gets the shared passive editor context. | — | — |
+| <a id="api-a2d5908e96f5224e"></a>[`public Inno.Editor.Interactions.EditorInteractions Inno.Editor.Interactions.EditorDropContext.interactions { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L71) | Gets the active interaction entry point. | — | — |
+| <a id="api-21deabfcd5e921ec"></a>[`public Inno.Editor.Interactions.EditorDropPlacement Inno.Editor.Interactions.EditorDropContext.placement { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L96) | Gets the requested placement relative to the target. | — | — |
+| <a id="api-93e81fb008c9f31e"></a>[`public Inno.Core.Identity.IdentityObject Inno.Editor.Interactions.EditorDropContext.source { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L86) | Gets the live source resolved for this query or delivery operation. | — | — |
+| <a id="api-51be0e8b03ad33d3"></a>[`public object Inno.Editor.Interactions.EditorDropContext.target { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L91) | Gets the managed drop target. | — | — |
+| <a id="api-24a630a13c028a18"></a>[`public sealed class Inno.Editor.Interactions.EditorDropContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropContext.cs#L11) | Provides contextual state to an editor drop handler. | — | — |
+
+### `Inno.Editor.Interactions.EditorDropContext`2`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDropContext`2 32b2b7304aceeba41e1a8421fd3ca5875af5fa6bc1f8c2ab98c3f39e49e46ca8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext`2.untyped f75d3b7ba71dc534f42c0ff08bda31a7bf40b993076f4f6e4178e3244f8d3506 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext`2.editor c7716d44aca6a85555f95f47f8dd2a14b769a2f954847d0a6f2239852c3be6bf -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext`2.interactions 2e1fe4cf9a17866b6be0e43b9e1712fb766b62204186b79183129c866a7b42d2 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext`2.area a73276ceb74e3f60f15560bc1ded042fd012d3705eec9d9fc970edbc28906d47 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext`2.source 2079993b444ebf6d36591a237740f11c0f3d2dd4c0c3c2e7a2192cee5de9fb40 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext`2.target c7580e99916a076b14ac1226b8f80b68cf9a961b552d6c6c674933493bb9cbd5 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropContext`2.placement 7c47e9e48619457ccff1c6ad4239888846667ca9a4b33d3e8ed320c28ace80c8 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-fa0a5d2cff65beff"></a>[`public string Inno.Editor.Interactions.EditorDropContext<TSource, TTarget>.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L167) | Gets the interaction area. | — | — |
+| <a id="api-292fbed047e6f532"></a>[`public Inno.Editor.Core.EditorContext Inno.Editor.Interactions.EditorDropContext<TSource, TTarget>.editor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L157) | Gets the active editor context. | — | — |
+| <a id="api-74fb26f93b6ba38b"></a>[`public Inno.Editor.Interactions.EditorInteractions Inno.Editor.Interactions.EditorDropContext<TSource, TTarget>.interactions { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L162) | Gets the active interaction entry point. | — | — |
+| <a id="api-ff24b830a777eb5b"></a>[`public Inno.Editor.Interactions.EditorDropPlacement Inno.Editor.Interactions.EditorDropContext<TSource, TTarget>.placement { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L182) | Gets the requested placement. | — | — |
+| <a id="api-f45590f39b50d5ba"></a>[`public TSource Inno.Editor.Interactions.EditorDropContext<TSource, TTarget>.source { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L172) | Gets the typed drag source. | — | — |
+| <a id="api-bc4c383930caa0d2"></a>[`public TTarget Inno.Editor.Interactions.EditorDropContext<TSource, TTarget>.target { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L177) | Gets the typed drop target. | — | — |
+| <a id="api-deede0048cae33f5"></a>[`public Inno.Editor.Interactions.EditorDropContext Inno.Editor.Interactions.EditorDropContext<TSource, TTarget>.untyped { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L152) | Gets the untyped drop context. | — | — |
+| <a id="api-c0b713a2d6d9666e"></a>[`public sealed class Inno.Editor.Interactions.EditorDropContext<TSource, TTarget> where TSource : class where TTarget : class`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDrop.cs#L135) | Provides strongly typed source and target values to a drop operation. | — | — |
+
+### `Inno.Editor.Interactions.EditorDropPlacement`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDropPlacement b82e2e722c6fd9e8adfe2bd5fcb8f1cf7cf42a737b479ffddc1498843ec3591b -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropPlacement.None 993614bbb631ae72ceeb8db46317ebac2a06b012b7aa0fb901b998ec52535466 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropPlacement.Before b259f84e92ae759ed6b99deafa2ecf0d8750f92f762b4ea2b51299548ea017b1 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropPlacement.Into c790c1c1defa7cabf96f89517649b431d434c41b7ecba73297366e907eb4bc00 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropPlacement.After 7197caa124258af49f641277b3426605ea286c1430d7808d990bdd614b4fda87 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-de3ae1501f7060f5"></a>[`Inno.Editor.Interactions.EditorDropPlacement.After = 3`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropPlacement.cs#L26) | Insert after the target. | — | — |
+| <a id="api-70a81b41f6f1e5da"></a>[`Inno.Editor.Interactions.EditorDropPlacement.Before = 1`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropPlacement.cs#L16) | Insert before the target. | — | — |
+| <a id="api-80b60143e1a8090e"></a>[`Inno.Editor.Interactions.EditorDropPlacement.Into = 2`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropPlacement.cs#L21) | Drop into the target. | — | — |
+| <a id="api-dcc85ced9ea1eb19"></a>[`Inno.Editor.Interactions.EditorDropPlacement.None = 0`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropPlacement.cs#L11) | No positional placement is requested. | — | — |
+| <a id="api-1b39545bf495a2e4"></a>[`public enum Inno.Editor.Interactions.EditorDropPlacement : int`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropPlacement.cs#L6) | Describes the requested placement relative to an editor drop target. | — | — |
+
+### `Inno.Editor.Interactions.EditorDropResult`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDropResult 47783d7d963c82bfee425e37884e4edc96ae58e14cdeb05607c979606772ce06 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.#ctor(System.Boolean,System.Object,System.Object) edb48c532eef515f2c5f1c240fd2fca7c73f0d030aa3c50d6e0225b35ba59258 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropResult.accepted 05c8ac81a1e83e698716872a41c872b105a29ee0c2f6b99b0cc2fa31869d95c8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropResult.selectionTarget 621d2537ee69c402b9968aaaae0e5457616ff8c0bc600f32f661850ca1dfea00 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropResult.revealTarget a40be1b87601e7b5f832bc0a78d814f24ddf6dda790afa2f307dc54140e11ba8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropResult.rejected 027d748ca89b79889c3f01547b5d959650712d2cd82d479ed7ca2af6b82ef891 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.Accepted(System.Object,System.Object) 228d9813bcaa1310e8ae7940f01e5fb44510eea9cb126f5febadfbe786ea6980 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.ToString 1cd969bbe07e14e44674055b8ba1aeb8d3b425c32d96a1015419c4075e6c4f18 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.op_Inequality(Inno.Editor.Interactions.EditorDropResult,Inno.Editor.Interactions.EditorDropResult) 8fcee5e3306cb87dffb6e93f27ee923b9db18e7c80f57865180f0528e40129ea -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.op_Equality(Inno.Editor.Interactions.EditorDropResult,Inno.Editor.Interactions.EditorDropResult) c1b10cebc7c47ad468dab870995cd246d0c6a131f25ff32ac7045a68452f89cf -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.GetHashCode 311575bdccc016395f1cb7b1d46c700d4cb041a62456fdf1c951f48c167ca0ef -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.Equals(System.Object) f2c4e1ae667d343146b2284e79a208dd36b34aacc23111c148587889a30f8fa9 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropResult.Equals(Inno.Editor.Interactions.EditorDropResult) 4f0febd2da6dcf0e903eaa874f5b31fb00ee2bd21eae913b90992bae77fc7fcf -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-8c00879dca61c371"></a>[`public Inno.Editor.Interactions.EditorDropResult.EditorDropResult(bool accepted, object? selectionTarget = null, object? revealTarget = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L20) | Creates the observable result of a completed drop operation.<br>`accepted`：Whether the handler accepted and completed the drop.<br>`selectionTarget`：An optional object that the originating view should select.<br>`revealTarget`：An optional object that the originating view should reveal or expand. | — | — |
+| <a id="api-37234f88c2ab6b0b"></a>[`public static Inno.Editor.Interactions.EditorDropResult Inno.Editor.Interactions.EditorDropResult.Accepted(object? selectionTarget = null, object? revealTarget = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L62) | Creates an accepted drop result with optional presentation requests.<br>返回：An accepted drop result containing the supplied presentation requests.<br>`selectionTarget`：An optional object that the originating view should select.<br>`revealTarget`：An optional object that the originating view should reveal or expand. | — | — |
+| <a id="api-b30eb3cfe81b4062"></a>[`public bool Inno.Editor.Interactions.EditorDropResult.Equals(Inno.Editor.Interactions.EditorDropResult other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-ff68772bc48e1fc2"></a>[`public override bool Inno.Editor.Interactions.EditorDropResult.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L6) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-884c0d95715eea4b"></a>[`public override int Inno.Editor.Interactions.EditorDropResult.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L6) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-a40e32d588a57367"></a>[`public static bool Inno.Editor.Interactions.EditorDropResult.operator ==(Inno.Editor.Interactions.EditorDropResult left, Inno.Editor.Interactions.EditorDropResult right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L6) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-a74ff2e8ad906cc9"></a>[`public static bool Inno.Editor.Interactions.EditorDropResult.operator !=(Inno.Editor.Interactions.EditorDropResult left, Inno.Editor.Interactions.EditorDropResult right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L6) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-671be72241e85435"></a>[`public override string Inno.Editor.Interactions.EditorDropResult.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L6) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-82cfd91eeb388029"></a>[`public bool Inno.Editor.Interactions.EditorDropResult.accepted { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L33) | Gets whether the drop was accepted. | — | — |
+| <a id="api-025d10b95aa5afc3"></a>[`public static Inno.Editor.Interactions.EditorDropResult Inno.Editor.Interactions.EditorDropResult.rejected { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L48) | Gets a rejected drop result. | — | — |
+| <a id="api-b3b0fabb96bf6db2"></a>[`public object? Inno.Editor.Interactions.EditorDropResult.revealTarget { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L43) | Gets the optional hierarchy target that should be revealed. | — | — |
+| <a id="api-ace5f28bd05c3888"></a>[`public object? Inno.Editor.Interactions.EditorDropResult.selectionTarget { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L38) | Gets the optional target that should become selected. | — | — |
+| <a id="api-fcf95f2080ed0bd4"></a>[`public readonly record struct Inno.Editor.Interactions.EditorDropResult : System.IEquatable<Inno.Editor.Interactions.EditorDropResult>`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropResult.cs#L6) | Describes the observable result of a completed editor drop. | — | — |
+
+### `Inno.Editor.Interactions.EditorDropStatus`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDropStatus 976b5303b57aa7874a745ad12d274630bf2b8a1d40717da3729e86233bcef2e0 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.#ctor(System.Boolean,Inno.Editor.Interactions.EditorDropVisual) 9867f9861a7046ca83b53c3225e40070d11eb0f3cd4fffb542f783095e35cfa8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropStatus.canDrop 436b68a7e3dc5d6f0378d36b14b2a168a9870fe9a7179f98bcdfb6dad84c4de8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropStatus.visual fc56bbb889e290aaaa253876b1bd3190e13e31c69bb97470ecc2c21ecf400b35 -->
+<!-- api: P:Inno.Editor.Interactions.EditorDropStatus.rejected f0a6f328111fa78bcafcfcf5b7abbd0e50f798193853f89663b3b13ad06a8072 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.Accept(Inno.Editor.Interactions.EditorDropVisual) 3916b8a1d6415c7dd01f40efcfcbbac9f88ffa43aa1a3ed253b565be9efd3b02 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.ToString c9b73f49e716e1aa7b9084de3fdefa2545861cc9b2059c42c5df07df3515578c -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.op_Inequality(Inno.Editor.Interactions.EditorDropStatus,Inno.Editor.Interactions.EditorDropStatus) 21a3bb653e6ed0ed97db602033f867080e42a9f841d7425b6e3c39bff21935f4 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.op_Equality(Inno.Editor.Interactions.EditorDropStatus,Inno.Editor.Interactions.EditorDropStatus) 912aab6e1ae790cc06ac103c8fd4b7161276fbc4910f49b4e300f83bf1c07f5f -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.GetHashCode d260f9955203785a4cc62390f8cb6015b82de59e1b9f8b4972ead119d6337483 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.Equals(System.Object) e68d1287a219db1374a619d88c464be35e851b9548f0e5ad10e2dd103f19f3e7 -->
+<!-- api: M:Inno.Editor.Interactions.EditorDropStatus.Equals(Inno.Editor.Interactions.EditorDropStatus) 22d56b94cdc312df5caaefee1d4c9e8a9e6f4fbe4b02e6d9db670521331b7335 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-4a51487ff4828ebc"></a>[`public Inno.Editor.Interactions.EditorDropStatus.EditorDropStatus(bool canDrop, Inno.Editor.Interactions.EditorDropVisual visual)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L17) | Creates the compatibility and presentation state of a potential drop target.<br>`canDrop`：Whether the active source may be delivered to the target.<br>`visual`：The standard visual requested for the target. | — | — |
+| <a id="api-39a644805516446d"></a>[`public static Inno.Editor.Interactions.EditorDropStatus Inno.Editor.Interactions.EditorDropStatus.Accept(Inno.Editor.Interactions.EditorDropVisual visual = Inno.Editor.Interactions.EditorDropVisual.Highlight)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L49) | Creates an accepted drop status with the requested standard target visual.<br>返回：An accepted drop status.<br>`visual`：The standard visual drawn while the compatible source hovers the target. | — | — |
+| <a id="api-e49c02be39ef2b27"></a>[`public bool Inno.Editor.Interactions.EditorDropStatus.Equals(Inno.Editor.Interactions.EditorDropStatus other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-6dfa4e22d2a6d870"></a>[`public override bool Inno.Editor.Interactions.EditorDropStatus.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L6) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-bd715a3d5cbf0439"></a>[`public override int Inno.Editor.Interactions.EditorDropStatus.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L6) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-48cea816f5c41a6c"></a>[`public static bool Inno.Editor.Interactions.EditorDropStatus.operator ==(Inno.Editor.Interactions.EditorDropStatus left, Inno.Editor.Interactions.EditorDropStatus right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L6) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-91ac93d64536c33e"></a>[`public static bool Inno.Editor.Interactions.EditorDropStatus.operator !=(Inno.Editor.Interactions.EditorDropStatus left, Inno.Editor.Interactions.EditorDropStatus right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L6) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-d7bf44e91332a5ed"></a>[`public override string Inno.Editor.Interactions.EditorDropStatus.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L6) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-3283ad3054fdcade"></a>[`public bool Inno.Editor.Interactions.EditorDropStatus.canDrop { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L28) | Gets whether the active source may be dropped. | — | — |
+| <a id="api-3c7dbacfd0af2dfd"></a>[`public static Inno.Editor.Interactions.EditorDropStatus Inno.Editor.Interactions.EditorDropStatus.rejected { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L38) | Gets an incompatible drop status. | — | — |
+| <a id="api-ffb659bdcf55ce6d"></a>[`public Inno.Editor.Interactions.EditorDropVisual Inno.Editor.Interactions.EditorDropStatus.visual { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L33) | Gets the standard target visual. | — | — |
+| <a id="api-a1ec64775e5e0f67"></a>[`public readonly record struct Inno.Editor.Interactions.EditorDropStatus : System.IEquatable<Inno.Editor.Interactions.EditorDropStatus>`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropStatus.cs#L6) | Describes whether and how a target accepts the active drag. | — | — |
+
+### `Inno.Editor.Interactions.EditorDropVisual`
+
+<!-- api: T:Inno.Editor.Interactions.EditorDropVisual 57e3790d221c9cbeaff9eb7a31127625fd9ca5da8dc1fe5136dde40509fae352 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropVisual.None 9fc5e70a023a8942ec84a40a407048d80ab1c296d3c73c5531fbd28b0e72c9c1 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropVisual.Highlight 3b0e4e0cc76bebe181fcdcc8583dbf9584fd09a6d722c92aeef33a97de6465cb -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropVisual.InsertBefore 2b3ef3348c37f276a9bd7f93308e6a9c0c0c4e09ad665d6229f412bf622e6ac5 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropVisual.InsertAfter 6060c52715c567da1c2fb08d5d47803131e268627852a84158c68fa26a91d3a8 -->
+<!-- api: F:Inno.Editor.Interactions.EditorDropVisual.Disabled ebdfc2ad9d2e4d8b26bdebe17ae4368b01deafbd1ec23e175b23b9ec6ced2343 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-eab6df7fdb651868"></a>[`Inno.Editor.Interactions.EditorDropVisual.Disabled = 4`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropVisual.cs#L31) | Draw a disabled target visual. | — | — |
+| <a id="api-1ce1f551122c95d0"></a>[`Inno.Editor.Interactions.EditorDropVisual.Highlight = 1`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropVisual.cs#L16) | Draw a content highlight. | — | — |
+| <a id="api-c6be329805002343"></a>[`Inno.Editor.Interactions.EditorDropVisual.InsertAfter = 3`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropVisual.cs#L26) | Draw an insertion line after the target. | — | — |
+| <a id="api-9690f5a4ce8780d0"></a>[`Inno.Editor.Interactions.EditorDropVisual.InsertBefore = 2`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropVisual.cs#L21) | Draw an insertion line before the target. | — | — |
+| <a id="api-3138bc2f1c73feb6"></a>[`Inno.Editor.Interactions.EditorDropVisual.None = 0`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropVisual.cs#L11) | No visual is drawn. | — | — |
+| <a id="api-31bc2b26f85aff6e"></a>[`public enum Inno.Editor.Interactions.EditorDropVisual : int`](../../src/composition/editor/framework/Inno.Editor.Interactions/DragDrop/EditorDropVisual.cs#L6) | Defines the standard visual used for a compatible drop target. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryAvailability`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryAvailability 1c5ab2c55fb822aa6bb62e78b7e88badd674a0a83777441e8195c030023d6476 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryAvailability.isAvailable 9ec99845efd1121e382e03cdc6f25816912701152ae70155a92466459a8992a1 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryAvailability.message e3cafa8c6a732ced89d0a9d27f369cbb4846b21657f7a049a67726393afbb8a1 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.Available 4834864ccad970cd841cfa98938ecd351a649b0de249b7f110416bc268878776 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.Unavailable(System.String) ee3ee4175b4d6f704ae8cdbc6aee884b3555e7237f8bafcd10e821a9af3b6f42 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.ToString 030fd363dfc3a6d1762a99a10d974e40ccccad2786514483ac405c01bd2b2280 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.op_Inequality(Inno.Editor.Interactions.EditorHistoryAvailability,Inno.Editor.Interactions.EditorHistoryAvailability) fc9ec18592588afaa696faaf5dd74836ad7bc41952a830d69ffd0137f3ccaa97 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.op_Equality(Inno.Editor.Interactions.EditorHistoryAvailability,Inno.Editor.Interactions.EditorHistoryAvailability) 34b1be92f7b01635b0a87deff755422c06f824490c83ff91789997739cd7d5e6 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.GetHashCode 387f41cbfe1610a05d300db577692b8948f59fb552e6e34d48499871b340ca6f -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.Equals(System.Object) 6bec39584c7dc0b06dc8282b26b1276b35b22e970cf716c27817eaca48dd1c32 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryAvailability.Equals(Inno.Editor.Interactions.EditorHistoryAvailability) f11dacf9bef788eebe031fc418b09d65971c3b4ec918a2d44201235c0fe113d6 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-9cf646c112a21979"></a>[`public static Inno.Editor.Interactions.EditorHistoryAvailability Inno.Editor.Interactions.EditorHistoryAvailability.Available()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L34) | Creates an available transition result.<br>返回：An availability value that permits the transition. | — | — |
+| <a id="api-684b64ee14e3ae49"></a>[`public bool Inno.Editor.Interactions.EditorHistoryAvailability.Equals(Inno.Editor.Interactions.EditorHistoryAvailability other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-ad44396222348a9d"></a>[`public override bool Inno.Editor.Interactions.EditorHistoryAvailability.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L8) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-bc7be3bd1369f3ec"></a>[`public override int Inno.Editor.Interactions.EditorHistoryAvailability.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L8) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-86a935e528ee47ad"></a>[`public static bool Inno.Editor.Interactions.EditorHistoryAvailability.operator ==(Inno.Editor.Interactions.EditorHistoryAvailability left, Inno.Editor.Interactions.EditorHistoryAvailability right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L8) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-724f51298c71c380"></a>[`public static bool Inno.Editor.Interactions.EditorHistoryAvailability.operator !=(Inno.Editor.Interactions.EditorHistoryAvailability left, Inno.Editor.Interactions.EditorHistoryAvailability right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L8) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-6a6cbd386e1a8dd3"></a>[`public override string Inno.Editor.Interactions.EditorHistoryAvailability.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L8) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-14226bc84d4c2f20"></a>[`public static Inno.Editor.Interactions.EditorHistoryAvailability Inno.Editor.Interactions.EditorHistoryAvailability.Unavailable(string message)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L48) | Creates an unavailable transition result.<br>返回：An availability value that rejects the transition.<br>`message`：The non-empty diagnostic explaining why the transition is unavailable. | — | `System.ArgumentException`：Thrown when message is empty. |
+| <a id="api-2a7459dcee7e990e"></a>[`public bool Inno.Editor.Interactions.EditorHistoryAvailability.isAvailable { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L21) | Gets whether the requested transition is currently available. | — | — |
+| <a id="api-23bd0f55e53fa895"></a>[`public string Inno.Editor.Interactions.EditorHistoryAvailability.message { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L26) | Gets the diagnostic explaining why the transition is unavailable, or an empty string when available. | — | — |
+| <a id="api-3375fb21c2a233bf"></a>[`public readonly record struct Inno.Editor.Interactions.EditorHistoryAvailability : System.IEquatable<Inno.Editor.Interactions.EditorHistoryAvailability>`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryAvailability.cs#L8) | Describes whether a history change can currently move in one direction. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryChange`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryChange c186770f067bcb1c5036bd06c8c45308eb10266bcc5865be925e8558155dc7f5 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryChange.#ctor(System.String,Inno.Editor.Interactions.EditorHistoryPayload,System.String) 4ea2f0440fcf6cc6a83fac2a16860bbe2545bb4a5015abaea73e6ccc1d678c19 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryChange.kind d374961b87593399da7f4c58772a26c4c689e725e9fe3abf76bb25c05f69a3f0 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryChange.payload 19a86f44cd0f9707eeb0022b898e26442ced87a3e34f854a79b2ce597dd19696 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryChange.mergeKey 2c8b0820fc118ccb5999d761dbbba18a5145be586c84b446bee129bd96550e9c -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryChange.Dispose 066916c210f554e4f2ee1eb405ff51c37c3bab4996fd23dcee946b03ba75f0b3 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-44bf62f494911288"></a>[`public Inno.Editor.Interactions.EditorHistoryChange.EditorHistoryChange(string kind, Inno.Editor.Interactions.EditorHistoryPayload payload, string? mergeKey = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryChange.cs#L30) | Creates a neutral history change.<br>`kind`：The stable globally unique handler protocol identifier.<br>`payload`：The immutable neutral payload interpreted by the handler.<br>`mergeKey`：An optional stable key used by the handler to merge adjacent changes. | — | `System.ArgumentException`：Thrown when kind is empty.<br>`System.ArgumentNullException`：Thrown when payload is null. |
+| <a id="api-ae448dff97791093"></a>[`public void Inno.Editor.Interactions.EditorHistoryChange.Dispose()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryChange.cs#L73) | Releases the payload storage owned by this history change. | — | — |
+| <a id="api-19deab77d90edf12"></a>[`public string Inno.Editor.Interactions.EditorHistoryChange.kind { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryChange.cs#L44) | Gets the stable globally unique handler protocol identifier. | — | — |
+| <a id="api-f5a4fd4bd9c11416"></a>[`public string? Inno.Editor.Interactions.EditorHistoryChange.mergeKey { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryChange.cs#L54) | Gets the optional stable key used to merge adjacent changes to the same logical value. | — | — |
+| <a id="api-e36a375b043c50de"></a>[`public Inno.Editor.Interactions.EditorHistoryPayload Inno.Editor.Interactions.EditorHistoryChange.payload { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryChange.cs#L49) | Gets the immutable neutral payload interpreted by the active handler generation. | — | — |
+| <a id="api-209cf03422f12410"></a>[`public sealed class Inno.Editor.Interactions.EditorHistoryChange : System.IDisposable`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryChange.cs#L8) | Describes one neutral reload-safe mutation interpreted by an attribute-discovered history handler. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryContext`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryContext ce805416fd3073b653d8c42a36a96eb948088875e71876cda719bd9cfb8fe2bd -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryContext.editor f39911a709249ab972b8a081f7826b6d87d83f0bcc728873f42038a07308203f -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryContext.interactions be10a16f3fe3d9485816b7a9e478c634f823abe1e5fa0f7f3794d0f5ca3c03f4 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-751d2a736ffae8c0"></a>[`public Inno.Editor.Core.EditorContext Inno.Editor.Interactions.EditorHistoryContext.editor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryContext.cs#L23) | Gets the passive editor context for the active project. | — | — |
+| <a id="api-d6f5e8c6bc9b0f1d"></a>[`public Inno.Editor.Interactions.EditorInteractions Inno.Editor.Interactions.EditorHistoryContext.interactions { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryContext.cs#L28) | Gets the active interaction entry point used for selection and feature coordination. | — | — |
+| <a id="api-1fb31ab99be66812"></a>[`public sealed class Inno.Editor.Interactions.EditorHistoryContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryContext.cs#L10) | Provides current-generation editor services to a history change handler. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryDirection`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryDirection 867d8dcd063a29f4e0ec747ce96553b6c6b84d8a4c06262a9172d1f8dcc47073 -->
+<!-- api: F:Inno.Editor.Interactions.EditorHistoryDirection.Undo 12453041ca48750ec0ddef939dc3e0fd7a42b192cac2e619d348ac976ce4e40a -->
+<!-- api: F:Inno.Editor.Interactions.EditorHistoryDirection.Redo 3774690d740ed2fa236904e1372fefffcc8268a226c063e86b4bdcb6eb946730 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-567d1e320d363a5a"></a>[`Inno.Editor.Interactions.EditorHistoryDirection.Redo = 1`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryDirection.cs#L16) | Restores the state produced by the committed change. | — | — |
+| <a id="api-05a9e21b84c7f87f"></a>[`Inno.Editor.Interactions.EditorHistoryDirection.Undo = 0`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryDirection.cs#L11) | Restores the state that existed before the change was committed. | — | — |
+| <a id="api-4e86d2ae59fe2dfb"></a>[`public enum Inno.Editor.Interactions.EditorHistoryDirection : int`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryDirection.cs#L6) | Identifies the direction in which an editor history change is being applied. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryHandler`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryHandler f9d50ec19c4e95586c81286ebe0c3d79f0c763e538eee83d6ce8b0f26d652bca -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryHandler.Query(Inno.Editor.Interactions.EditorHistoryContext,Inno.Editor.Interactions.EditorHistoryChange,Inno.Editor.Interactions.EditorHistoryDirection) def73cc2fca6163f197b11084983d0be8fc9040cc1e4b2282d49f5c84c38df24 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryHandler.Apply(Inno.Editor.Interactions.EditorHistoryContext,Inno.Editor.Interactions.EditorHistoryChange,Inno.Editor.Interactions.EditorHistoryDirection) c21d44e272c23a977aa0474cb34b51c5d4dbc7d9feca15d9476fd3e1463067a5 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryHandler.TryMerge(Inno.Editor.Interactions.EditorHistoryChange,Inno.Editor.Interactions.EditorHistoryChange,Inno.Editor.Interactions.EditorHistoryChange@) a3aeeb86e5272a944ab41078448ffe01be34e73eed91124fa52c5504031ac742 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryHandler.StateIntegrityFailure(System.String) 2b2d24c7d311aefc13946c63fb04939da611e0f63e45b7b115d67fd1659bd342 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryHandler.#ctor 1db1f93d62ce497b063e141e681cda0191fceaa510d4372b34a4ce717f4f2102 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-2dcb5ae03e5eb054"></a>[`protected Inno.Editor.Interactions.EditorHistoryHandler.EditorHistoryHandler()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandler.cs#L8) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-bff2a1f0ba486c3a"></a>[`protected abstract Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.EditorHistoryHandler.Apply(Inno.Editor.Interactions.EditorHistoryContext context, Inno.Editor.Interactions.EditorHistoryChange change, Inno.Editor.Interactions.EditorHistoryDirection direction)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandler.cs#L46) | Atomically applies a neutral history change in the requested direction.<br>返回：The transition result. A failure must leave the feature in its original state.<br>`context`：The current-generation editor services.<br>`change`：The neutral history change.<br>`direction`：The requested Undo or Redo direction. | — | — |
+| <a id="api-35dec4d4fffdc638"></a>[`protected abstract Inno.Editor.Interactions.EditorHistoryAvailability Inno.Editor.Interactions.EditorHistoryHandler.Query(Inno.Editor.Interactions.EditorHistoryContext context, Inno.Editor.Interactions.EditorHistoryChange change, Inno.Editor.Interactions.EditorHistoryDirection direction)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandler.cs#L25) | Determines whether a neutral change can currently transition in the requested direction.<br>返回：The current transition availability.<br>`context`：The current-generation editor services.<br>`change`：The neutral history change.<br>`direction`：The requested Undo or Redo direction. | — | — |
+| <a id="api-ef7ad26fbf50e7c4"></a>[`protected static Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.EditorHistoryHandler.StateIntegrityFailure(string message)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandler.cs#L85) | Creates a failed result for a transition whose compensation also failed.<br>返回：A failure that faults the owning history.<br>`message`：The diagnostic containing both the transition and compensation failures. | — | — |
+| <a id="api-9a6842892243e1f6"></a>[`protected virtual bool Inno.Editor.Interactions.EditorHistoryHandler.TryMerge(Inno.Editor.Interactions.EditorHistoryChange older, Inno.Editor.Interactions.EditorHistoryChange newer, out Inno.Editor.Interactions.EditorHistoryChange? merged)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandler.cs#L67) | Attempts to merge two adjacent changes to the same logical value.<br>返回：true when merged replaces both input changes.<br>`older`：The existing older history change.<br>`newer`：The newly recorded adjacent history change.<br>`merged`：The independently owned merged change when successful. | — | — |
+| <a id="api-b5f50b986f63fa2e"></a>[`public abstract class Inno.Editor.Interactions.EditorHistoryHandler`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandler.cs#L8) | Interprets neutral editor history payloads for one current-generation feature protocol. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryHandlerAttribute`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryHandlerAttribute afc816dd856bff0f042d72c0b023d0d90ddbd15397bcfa1fa7f956e0a66fe679 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryHandlerAttribute.#ctor(System.String) f455e3556376f1c62c3aa778dafbc2dbc5db6683ab6bed2e9b0a10479060ca3a -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryHandlerAttribute.kind c5bd3866e1d7f64fe6d4c3645cfb7b601086390dc6140e0eca71909aac069521 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-b9a0a8ea4f77523d"></a>[`public Inno.Editor.Interactions.EditorHistoryHandlerAttribute.EditorHistoryHandlerAttribute(string kind)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandlerAttribute.cs#L20) | Creates a history handler registration.<br>`kind`：The stable globally unique change protocol identifier. | — | `System.ArgumentException`：Thrown when kind is empty. |
+| <a id="api-1835ef7501eeef8f"></a>[`public string Inno.Editor.Interactions.EditorHistoryHandlerAttribute.kind { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandlerAttribute.cs#L29) | Gets the stable globally unique change protocol identifier. | — | — |
+| <a id="api-8d4ce9d2bdb341f4"></a>[`public sealed class Inno.Editor.Interactions.EditorHistoryHandlerAttribute : System.Attribute`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryHandlerAttribute.cs#L9) | Registers a stateless editor history handler for one stable change protocol. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryOptions`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryOptions fc19ccd2b4d9bd6f996b3317db9b8e2e185b57a9a495fea01facdf0697f5fe10 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryOptions.maxEntries 3b4ed59640504070b9396f090a1ca484c7b1936c43c92242bf2a126226db1356 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryOptions.maxResidentBytes 435e76cc3cd5b6feeafc3d66f65c11d962549689138656a7a7b622fbd47c6d6c -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryOptions.maxDiskBytes c57d351da946273dafa971d2e2987750634695900844359f526992d24c8845f4 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryOptions.inlinePayloadThreshold 91496d473c453cad4cc57ea0ec4d5e02f48b5e1c8910b1308a11946fbf2ced67 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryOptions.cacheDirectory 90064892fba6120254899cca9159732521ca159e94b3e6c6cc9f53cd7965e737 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryOptions.#ctor 927f80b351e80a18fb95edddb8600784559b0f33bfb18575e41ebf193d6ab2f8 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-e7e7ffc29630181f"></a>[`public Inno.Editor.Interactions.EditorHistoryOptions.EditorHistoryOptions()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryOptions.cs#L8) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-2644972cb5c3c5b6"></a>[`public string? Inno.Editor.Interactions.EditorHistoryOptions.cacheDirectory { get; init; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryOptions.cs#L33) | Gets or initializes the optional directory that owns temporary history payloads for this editor session. | — | — |
+| <a id="api-062ff79fd88264b8"></a>[`public int Inno.Editor.Interactions.EditorHistoryOptions.inlinePayloadThreshold { get; init; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryOptions.cs#L28) | Gets or initializes the payload size at which immutable bytes are moved to the temporary disk store. | — | — |
+| <a id="api-00f8eebd7b0926ee"></a>[`public long Inno.Editor.Interactions.EditorHistoryOptions.maxDiskBytes { get; init; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryOptions.cs#L23) | Gets or initializes the maximum payload bytes retained in the temporary disk store. | — | — |
+| <a id="api-5cc42335aaef37fb"></a>[`public int Inno.Editor.Interactions.EditorHistoryOptions.maxEntries { get; init; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryOptions.cs#L13) | Gets or initializes the maximum number of committed top-level entries retained in memory. | — | — |
+| <a id="api-72d0f9599ef2ac1c"></a>[`public long Inno.Editor.Interactions.EditorHistoryOptions.maxResidentBytes { get; init; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryOptions.cs#L18) | Gets or initializes the maximum estimated resident payload bytes retained by the history. | — | — |
+| <a id="api-6ce72d94ee27a552"></a>[`public sealed class Inno.Editor.Interactions.EditorHistoryOptions`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryOptions.cs#L8) | Configures retention and payload storage for one editor history. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryPayload`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryPayload 0f02daea6d2742bff929309656bfe99d186ef77fc721a4fdd0d88991dd74be80 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryPayload.length d8a53f50234edc30e54904909e9522fcab6dd2b2dd322ce36045bd12e783f77e -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryPayload.isStoredOnDisk aa49cff6b93d315cc37fde207ee5da3819c6a12851d8e12f4fc392db0a932bd0 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryPayload.FromBytes(System.ReadOnlySpan{System.Byte}) 8cb66b9bebc75a79ffa3847602f722674ee77f7667ade758fa52876d62a59849 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryPayload.ReadBytes f21243c933b199a975a06bbc00d3137adbdf0f911e1eeb0cd83985df54f5e3a0 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryPayload.Dispose f7ab20b5148f1826e2ab111c9de34f1c6b6cee247bb9db077d9042b9c29f2faf -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-996f241e2253adf2"></a>[`public void Inno.Editor.Interactions.EditorHistoryPayload.Dispose()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryPayload.cs#L90) | Releases the resident or temporary disk storage owned by this payload. | — | — |
+| <a id="api-199ef3a291ed67fb"></a>[`public static Inno.Editor.Interactions.EditorHistoryPayload Inno.Editor.Interactions.EditorHistoryPayload.FromBytes(System.ReadOnlySpan<byte> bytes)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryPayload.cs#L55) | Creates an immutable history payload by copying the supplied bytes.<br>返回：A new independently owned payload.<br>`bytes`：The neutral bytes to retain for future Undo and Redo transitions. | — | — |
+| <a id="api-197849f49e24d7c5"></a>[`public byte[] Inno.Editor.Interactions.EditorHistoryPayload.ReadBytes()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryPayload.cs#L66) | Reads the complete immutable payload into a newly allocated byte array.<br>返回：A copy of the payload bytes. | — | `System.ObjectDisposedException`：Thrown after the payload has been disposed. |
+| <a id="api-39019b82987048f0"></a>[`public bool Inno.Editor.Interactions.EditorHistoryPayload.isStoredOnDisk { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryPayload.cs#L40) | Gets whether the payload is retained in the temporary disk store instead of resident memory. | — | — |
+| <a id="api-3b7d0f52a2f07516"></a>[`public long Inno.Editor.Interactions.EditorHistoryPayload.length { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryPayload.cs#L35) | Gets the number of immutable bytes represented by this payload. | — | — |
+| <a id="api-8ad6c774847c38c1"></a>[`public sealed class Inno.Editor.Interactions.EditorHistoryPayload : System.IDisposable`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryPayload.cs#L9) | Owns immutable neutral bytes used by a reload-safe editor history change. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryResult`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryResult 123e3963020209b7c6d5ae034076c0def46c1bebd86dd385c46336d046c548f1 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryResult.succeeded faf8000c137eac9a884bd38872931a067926c8d020725a90bd2e84cb83b8f593 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryResult.statePreserved 56a29c442f057ed8ae4e151031fa857c387984f73c9753b08086ed1a55e1c9f5 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryResult.message b4c474da5ec37e06969f133a8decc4e1cb2887df67c0451dac86c09ea4b3ba8b -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.Success ed6fc951bcf3f48ab832f6e1ab7f58ae3e6351fc48dfae32604b69dfe6370c2b -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.Failure(System.String) a8afd3b076d58d0f25666ec2326be5731d5b3d821b54f228a44c06a022acee3d -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.ToString b8e083cabc4942c29f858d3f0a54ca58bfa5368d6f71a7ceed9991b9c3760e36 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.op_Inequality(Inno.Editor.Interactions.EditorHistoryResult,Inno.Editor.Interactions.EditorHistoryResult) ab00b24ab43ad4e429d857c2fc612390787190b2ca98c07e7a5e94b0d03f9148 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.op_Equality(Inno.Editor.Interactions.EditorHistoryResult,Inno.Editor.Interactions.EditorHistoryResult) 33fd54ac91e2b0caa7db8ecda12379ea31812c11f1bf3f703eea1f6dd1ffe4b6 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.GetHashCode cece8f0c7f04ed6a41ddcbf0928fb85f208fb9ed3de2a4f5c9f4aebe39125050 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.Equals(System.Object) 23601606c8eccef044901fa181c3bf0c0cc0b488026f973fe3855db081673d52 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryResult.Equals(Inno.Editor.Interactions.EditorHistoryResult) 9b8ceb076e251210b09ccbd5849cc78da7a92fce6a15f34337b53c2105b93f04 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-6655ad6b85b64cf7"></a>[`public bool Inno.Editor.Interactions.EditorHistoryResult.Equals(Inno.Editor.Interactions.EditorHistoryResult other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-0a6d20e4773165e3"></a>[`public override bool Inno.Editor.Interactions.EditorHistoryResult.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L8) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-af3da82aae586f5e"></a>[`public static Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.EditorHistoryResult.Failure(string message)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L59) | Creates a failed history result without changing the owning history stack.<br>返回：A result representing a rejected or failed transition.<br>`message`：The non-empty diagnostic explaining why the transition could not complete. | — | `System.ArgumentException`：Thrown when message is empty. |
+| <a id="api-dcbdd72a45be7752"></a>[`public override int Inno.Editor.Interactions.EditorHistoryResult.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L8) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-3605e74d018a5296"></a>[`public static bool Inno.Editor.Interactions.EditorHistoryResult.operator ==(Inno.Editor.Interactions.EditorHistoryResult left, Inno.Editor.Interactions.EditorHistoryResult right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L8) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-d79d873c0e71be7e"></a>[`public static bool Inno.Editor.Interactions.EditorHistoryResult.operator !=(Inno.Editor.Interactions.EditorHistoryResult left, Inno.Editor.Interactions.EditorHistoryResult right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L8) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-4217d67de8efb637"></a>[`public static Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.EditorHistoryResult.Success()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L45) | Creates a successful history result.<br>返回：A result representing a completed transition. | — | — |
+| <a id="api-17fa4ab8b4113261"></a>[`public override string Inno.Editor.Interactions.EditorHistoryResult.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L8) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-57950e12cc171017"></a>[`public string Inno.Editor.Interactions.EditorHistoryResult.message { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L37) | Gets the diagnostic message associated with a failed transition, or an empty string after success. | — | — |
+| <a id="api-c813b81c3a66827e"></a>[`public bool Inno.Editor.Interactions.EditorHistoryResult.statePreserved { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L32) | Gets whether a failed transition restored the domain state that existed before the attempt. | Successful results always preserve a valid state. A failed result with this value set to false faults the owning history because the transition can no longer be retried safely. | — |
+| <a id="api-fe96b6ac16d90990"></a>[`public bool Inno.Editor.Interactions.EditorHistoryResult.succeeded { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L23) | Gets whether the requested history transition completed successfully. | — | — |
+| <a id="api-51b34588fc9e01d5"></a>[`public readonly record struct Inno.Editor.Interactions.EditorHistoryResult : System.IEquatable<Inno.Editor.Interactions.EditorHistoryResult>`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryResult.cs#L8) | Describes the outcome of applying, undoing, or redoing an editor history operation. | — | — |
+
+### `Inno.Editor.Interactions.EditorHistoryTransaction`
+
+<!-- api: T:Inno.Editor.Interactions.EditorHistoryTransaction f2c4b561c077b0a06af02e92e07a017245640d333e863e3c077f9f0217ef9853 -->
+<!-- api: P:Inno.Editor.Interactions.EditorHistoryTransaction.name 78da8c5560698924c6b6442770babf63604547a291c319d399c09f1919819c2c -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryTransaction.Commit a89146be30e50746068da065a48bb51abc0237c0f217e6ffa1f8c3d9d877667d -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryTransaction.Rollback 5abe856fdcd97e996ff21788066771d586bbca4d8ff550c2b898066add832751 -->
+<!-- api: M:Inno.Editor.Interactions.EditorHistoryTransaction.Dispose 8a28b04110e752434c8d19618d49283d91e80b41466ca95a5aa7e47202d78056 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-d69695aa86018792"></a>[`public void Inno.Editor.Interactions.EditorHistoryTransaction.Commit()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryTransaction.cs#L36) | Commits all recorded child operations as one atomic history entry. | — | `System.InvalidOperationException`：Thrown when the transaction is no longer active. |
+| <a id="api-462037318bf87863"></a>[`public void Inno.Editor.Interactions.EditorHistoryTransaction.Dispose()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryTransaction.cs#L66) | Rolls back an uncommitted transaction before releasing it. | — | — |
+| <a id="api-005583595d3ff5d8"></a>[`public Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.EditorHistoryTransaction.Rollback()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryTransaction.cs#L52) | Reverts every operation recorded by the transaction and does not add a history entry.<br>返回：The result of the atomic rollback attempt. | — | `System.InvalidOperationException`：Thrown when the transaction is no longer active. |
+| <a id="api-6224186d6b92a716"></a>[`public string Inno.Editor.Interactions.EditorHistoryTransaction.name { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryTransaction.cs#L26) | Gets the user-facing name assigned to the transaction. | — | — |
+| <a id="api-0d1a32a55a93dcdf"></a>[`public sealed class Inno.Editor.Interactions.EditorHistoryTransaction : System.IDisposable`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/EditorHistoryTransaction.cs#L8) | Collects several history operations into one atomic undo and redo entry. | — | — |
+
+### `Inno.Editor.Interactions.EditorInteraction`
+
+<!-- api: T:Inno.Editor.Interactions.EditorInteraction 6deb5cdaef95a81f6898ab9d315264a04e5832c17cbc7bc4fc9dd0cac279bce8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteraction.area 26ef11c3a68a325a9aeb3496e452798b8bb10818d60f92cbe3fcc61a9c0f0da4 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteraction.target 85324efcf4783fc83ee40f2d6d07cfef68bd670808bfcd712ac758b50b414c0b -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteraction.isSelected d4d2b90d2d505ae7db83d1b019f7f91345a21324a4a60efbb1aba31989b59beb -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.Focus 97e6476a5f8befd63b14ba6f86d24955ac6d235a98db329e4889f6f303be79f6 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.Select 0361ed3214aea540610cc30eb3ed69b1b90c6f57aba1cee1c9553b77c9961eb6 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.Query(System.String,System.Object) e4ef8665c061d523cb987618c6f719593139c79772980129a5552b30aa03fe46 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.Execute(System.String,System.Object) eb76e0f23808ab5b6fad50358a811a426eff1a31e130b886562874ff873c567f -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.Enqueue(System.String,System.Object) 1f23517b6c3739d21562b504f5e24920e3edbe95564604bdcb750bbec731888d -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.Present(System.String,System.Object) b954abc5077419128a1fb901ff692ed464317fa1b45d0f6587ea55aa16b3c442 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.IsActive(System.String) 7f653c9a38f3e350f3a86f71d4506c9113141d52a83289f7b80adc09cdcd2c63 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.BuildMenu 8a76f49b6acd8c3c5df2302642111d01c339adaaf3dc29c1431bf631172e98c6 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.BuildToolbar 3dfdcac9635231f49b56578807f329e80db226af8b4ed7ac02ca404bbcf5e1a7 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.TryGetShortcut(System.String,Inno.Editor.Interactions.HotKeyGesture@) fba5cc4ba03bbc58d9c7f55de1cc4c69e2b2ed8c2f6c18964f5aa9d844bc1068 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.TryGetActiveDragIdentity(Inno.Core.Identity.RuntimeIdentity@) 31c146c3289e8c8674247c7129e8f7e37913e946038ffe685ad129d4f6a5ef8c -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.BeginDrag(Inno.Editor.Interactions.EditorDragData) a9a0f545f5ce1f162c4ac11f0349317be1cc254d24c93573d07e1cd5880f6f94 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.QueryDrop(Inno.Core.Identity.RuntimeIdentity,Inno.Editor.Interactions.EditorDropPlacement) b5410cca93716bc7b792c7e836b3f45552968fa49b43c32238163fb9fad52ac2 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteraction.Drop(Inno.Core.Identity.RuntimeIdentity,Inno.Editor.Interactions.EditorDropPlacement) 47206d3766011bea1fa811ccd59a0f8aefbde9759568201dbadf16c09af5176c -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-157c954cb5bc8970"></a>[`public Inno.Core.Identity.RuntimeIdentity Inno.Editor.Interactions.EditorInteraction.BeginDrag(Inno.Editor.Interactions.EditorDragData data)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L205) | Begins a managed drag originating from this area.<br>返回：The source object's domain-qualified transient identity.<br>`data`：The managed source data. | — | — |
+| <a id="api-25125c520766b0e3"></a>[`public Inno.Editor.Interactions.EditorMenuModel Inno.Editor.Interactions.EditorInteraction.BuildMenu()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L154) | Builds the complete contextual menu for this area and target.<br>返回：The immutable resolved menu model. | — | — |
+| <a id="api-9b37162b0ae966cf"></a>[`public Inno.Editor.Interactions.EditorToolbarModel Inno.Editor.Interactions.EditorInteraction.BuildToolbar()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L162) | Builds the complete compact toolbar for this area and target.<br>返回：The immutable resolved toolbar model. | — | — |
+| <a id="api-0d1c134b834e4be6"></a>[`public Inno.Editor.Interactions.EditorDropResult Inno.Editor.Interactions.EditorInteraction.Drop(Inno.Core.Identity.RuntimeIdentity identity, Inno.Editor.Interactions.EditorDropPlacement placement = Inno.Editor.Interactions.EditorDropPlacement.None)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L237) | Delivers a managed drop to this target.<br>返回：The completed drop result.<br>`identity`：The active domain-qualified runtime identity.<br>`placement`：The requested placement relative to the target. | — | — |
+| <a id="api-605bd5c625efbe44"></a>[`public void Inno.Editor.Interactions.EditorInteraction.Enqueue(string action, object? argument = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L109) | Queues an action until the current UI traversal completes.<br>`action`：The stable action name.<br>`argument`：An optional action argument. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-412b9ad6577b5dd1"></a>[`public bool Inno.Editor.Interactions.EditorInteraction.Execute(string action, object? argument = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L92) | Executes an action for this area and target.<br>返回：true when a visible and enabled action executed; otherwise, false.<br>`action`：The stable action name.<br>`argument`：An optional action argument. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-c94ccd2428f5cebc"></a>[`public void Inno.Editor.Interactions.EditorInteraction.Focus()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L44) | Marks this area and target as the active keyboard context. | — | — |
+| <a id="api-d797dfe8d37689b0"></a>[`public bool Inno.Editor.Interactions.EditorInteraction.IsActive(string action)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L146) | Gets whether an action owns an active multi-frame operation for this target.<br>返回：true when the action is active for this exact target; otherwise, false.<br>`action`：The stable action name. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-fca0d428bef70fb4"></a>[`public bool Inno.Editor.Interactions.EditorInteraction.Present(string action, object? argument = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L129) | Presents an active action in place of this target's normal content.<br>返回：true when the action presented content; otherwise, false.<br>`action`：The stable action name.<br>`argument`：Optional presentation data supplied by the current view. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-75542c3d39cef89f"></a>[`public Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorInteraction.Query(string action, object? argument = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L72) | Queries an action for this area and target.<br>返回：The current action state.<br>`action`：The stable action name.<br>`argument`：An optional action argument. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-9719150757a7d71d"></a>[`public Inno.Editor.Interactions.EditorDropStatus Inno.Editor.Interactions.EditorInteraction.QueryDrop(Inno.Core.Identity.RuntimeIdentity identity, Inno.Editor.Interactions.EditorDropPlacement placement = Inno.Editor.Interactions.EditorDropPlacement.None)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L219) | Queries this handle as a drop target.<br>返回：The drop compatibility and visual state.<br>`identity`：The active domain-qualified runtime identity.<br>`placement`：The requested placement relative to the target. | — | — |
+| <a id="api-3571067764e7ce43"></a>[`public bool Inno.Editor.Interactions.EditorInteraction.Select()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L52) | Selects this target, or clears selection when the target is null.<br>返回：true when the built-in selection action executed; otherwise, false. | — | — |
+| <a id="api-d00030344aacfbb6"></a>[`public bool Inno.Editor.Interactions.EditorInteraction.TryGetActiveDragIdentity(out Inno.Core.Identity.RuntimeIdentity identity)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L194) | Gets the currently active drag identity, if its source remains registered.<br>返回：true when a live drag source exists; otherwise, false.<br>`identity`：The active domain-qualified runtime identity when available. | — | — |
+| <a id="api-5a12e4bc9ae99897"></a>[`public bool Inno.Editor.Interactions.EditorInteraction.TryGetShortcut(string action, out Inno.Editor.Interactions.HotKeyGesture gesture)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L179) | Resolves the shortcut displayed for an action in this area.<br>返回：true when a compatible shortcut exists; otherwise, false.<br>`action`：The stable action name.<br>`gesture`：The resolved gesture when successful. | — | `System.ArgumentException`：Thrown when action is empty. |
+| <a id="api-4ff1607f673af859"></a>[`public string Inno.Editor.Interactions.EditorInteraction.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L28) | Gets the stable interaction area. | — | — |
+| <a id="api-ca9925a09d6ff988"></a>[`public bool Inno.Editor.Interactions.EditorInteraction.isSelected { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L38) | Gets whether this handle's target is the current editor selection. | — | — |
+| <a id="api-be4b39a71476fb45"></a>[`public object? Inno.Editor.Interactions.EditorInteraction.target { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L33) | Gets the optional target represented by this handle. | — | — |
+| <a id="api-52ffc819216973e2"></a>[`public readonly struct Inno.Editor.Interactions.EditorInteraction`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteraction.cs#L10) | Provides a lightweight fluent handle for one interaction area and optional target. | — | — |
+
+### `Inno.Editor.Interactions.EditorInteractionRuntime`
+
+<!-- api: T:Inno.Editor.Interactions.EditorInteractionRuntime 23680778df7eccf049365b48d270f44eb90b8e7d7f3b06255c18d2c831077e12 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.#ctor(System.String,Inno.Extensibility.Types.TypeCatalog,Inno.Core.Logging.LogRouter,Inno.Editor.Core.EditorKeyboardPolicy) 6513d8fd8d6f5586b931a579127243b65cb7da8e30160edeb2de382de251460b -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.#ctor(Inno.Editor.Core.EditorContext,Inno.Extensibility.Types.TypeCatalog,Inno.Core.Logging.LogRouter) 66d20fc907ceecab02e9bce55d5a3c791a896cd1e1251f76b4c525b204e570c7 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.#ctor(Inno.Editor.Core.EditorContext,Inno.Extensibility.Types.TypeCatalog,Inno.Core.Logging.LogRouter,System.Collections.Generic.IEnumerable{System.Object}) 70e0384e4d0e0f78421a556855fdc2bcda151a1fad5b7330264d63df7e694d76 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractionRuntime.interactions 3d55ca24dc5eb244f27cd0d27cf7c74c63de85c7cc50e1ce524ccb6e55ca9b0c -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractionRuntime.panels 09a9e0a91beec16dd6167461a5de613f3ca623f0eea148bfc1a94a7f55ee94b9 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractionRuntime.modals 31a938599a3c6f1b35d8c6ef331ea8d26a1967faa92deac6f5db7ec17bc7ae79 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractionRuntime.panelCount 0292e5cbadae1e2b5115b2174cf5eaa4b72c9b0c48622fe0fef2fa891374270e -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.Start 22e611e26bdaf089002f884f2cba3b36e1f3495a086c994fc065d51e0b39d82a -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.Update(Inno.Editor.Core.EditorFrame) aa0759adb5703097f589a8a2524e0dc1b55c214a2a364e985590e70e47320d49 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.Flush 5fb05b891a7730eb80a06bf51918560f6e0f31783fd8b18875bbeda4400892cf -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.SaveState 3be93e258f208d5f57d8c94a37b0231eb08e40c5491d6b860c39af8d32e371ab -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.PrepareShutdown cab1b7bd858216b430c228d7cb641665ad0047f2d5cb80d0d4b2fb21a665db93 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.HandleKeyPressed(Inno.Core.Events.KeyPressedEvent) 84980f2ba94add2fdae225938bbe8f0cdefc40503e5316472f9648f00278b6a1 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractionRuntime.Dispose d60cb27d2e8b959ff5c8ff66aa89e43169b90313df7f9b615e80ce7a20a5dc76 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-0001d1f4bd085d65"></a>[`public Inno.Editor.Interactions.EditorInteractionRuntime.EditorInteractionRuntime(Inno.Editor.Core.EditorContext context, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Logging.LogRouter logs, System.Collections.Generic.IEnumerable<object> hostServices)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L98) | Creates an interaction runtime with stable host-owned extension services.<br>`context`：The passive editor context shared with the presentation backend.<br>`hostServices`：Stable host-owned services that editor extension constructors may request by assignable contract.<br>`logs`：The host-owned logging router used by editor infrastructure.<br>`types`：The type catalog that owns editor extension generations. | — | `System.ArgumentNullException`：Thrown when context or hostServices is null. |
+| <a id="api-43c52e63c51fd011"></a>[`public Inno.Editor.Interactions.EditorInteractionRuntime.EditorInteractionRuntime(Inno.Editor.Core.EditorContext context, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Logging.LogRouter logs)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L71) | Creates an interaction runtime for an existing passive editor context.<br>`context`：The passive editor context shared with the presentation backend.<br>`types`：The type catalog that owns editor extension generations.<br>`logs`：The host-owned logging router used by editor infrastructure. | — | `System.ArgumentNullException`：Thrown when context or logs is null. |
+| <a id="api-e4241534c9781cc7"></a>[`public Inno.Editor.Interactions.EditorInteractionRuntime.EditorInteractionRuntime(string projectDirectory, Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Logging.LogRouter logs, Inno.Editor.Core.EditorKeyboardPolicy keyboard)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L46) | Creates an interaction runtime for one project.<br>`projectDirectory`：The project root containing Assets and Library.<br>`types`：The type catalog that owns editor extension generations.<br>`logs`：The host-owned logging router used by editor infrastructure.<br>`keyboard`：The explicit immutable product keyboard conventions. | — | — |
+| <a id="api-3ac22066fce98db8"></a>[`public override void Inno.Editor.Interactions.EditorInteractionRuntime.Dispose()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L248) | Releases the resources owned by this implementation. | — | `System.AggregateException`：Thrown after all shutdown stages have been attempted when one or more stages failed.<br>`Inno.Core.Execution.RetirementPendingException`：A stage still owns live work. This runtime retains all remaining stages and rejects new updates. |
+| <a id="api-9538fcfe33cf575b"></a>[`public void Inno.Editor.Interactions.EditorInteractionRuntime.Flush()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L194) | Flushes actions queued during the current presentation traversal. | — | — |
+| <a id="api-2acba40474e38bbd"></a>[`public void Inno.Editor.Interactions.EditorInteractionRuntime.HandleKeyPressed(Inno.Core.Events.KeyPressedEvent keyEvent)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L232) | Dispatches an unhandled keyboard event through contextual shortcuts.<br>`keyEvent`：The keyboard event received from the application event stream. | — | — |
+| <a id="api-1f0d11dec8e0cfbf"></a>[`public void Inno.Editor.Interactions.EditorInteractionRuntime.PrepareShutdown()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L220) | Freezes automatic extension-state persistence and writes the final state before modules begin shutting down. | This operation is idempotent. After it succeeds, later disposal cannot recapture transient teardown state such as an empty scene workspace. | `System.ObjectDisposedException`：Thrown after this runtime has been disposed. |
+| <a id="api-fb2574fa3e2c56bf"></a>[`public void Inno.Editor.Interactions.EditorInteractionRuntime.SaveState()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L203) | Captures every stateful active module and panel and atomically flushes changed project state to disk. | — | `System.ObjectDisposedException`：Thrown after this runtime has been disposed. |
+| <a id="api-b3b02a65e605223e"></a>[`public override void Inno.Editor.Interactions.EditorInteractionRuntime.Start()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L162) | Starts value processing after validating the current state. | — | — |
+| <a id="api-0bfba6e9e0d5704c"></a>[`public override void Inno.Editor.Interactions.EditorInteractionRuntime.Update(Inno.Editor.Core.EditorFrame frame)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L179) | Recomputes owned state from the current validated inputs.<br>`frame`：The frame consumed by update; ownership remains with the caller unless explicitly stated otherwise. | — | — |
+| <a id="api-36d69ec9eeca36e8"></a>[`public Inno.Editor.Interactions.EditorInteractions Inno.Editor.Interactions.EditorInteractionRuntime.interactions { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L128) | Gets the active presentation-independent interaction entry point. | — | — |
+| <a id="api-da3f749b9420e2f1"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Editor.Interactions.EditorModalExtension> Inno.Editor.Interactions.EditorInteractionRuntime.modals { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L145) | Gets active modal extensions in deterministic order. | — | — |
+| <a id="api-8bf72d3f1797e3d0"></a>[`public int Inno.Editor.Interactions.EditorInteractionRuntime.panelCount { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L157) | Gets the number of active dockable panels. | — | — |
+| <a id="api-8f871903c08fd05f"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Editor.Interactions.EditorPanelExtension> Inno.Editor.Interactions.EditorInteractionRuntime.panels { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L133) | Gets active dockable panel extensions in deterministic order. | — | — |
+| <a id="api-470449256a99ee92"></a>[`public sealed class Inno.Editor.Interactions.EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractionRuntime.cs#L17) | Hosts attribute-discovered editor extensions without depending on a presentation backend. | — | — |
+
+### `Inno.Editor.Interactions.EditorInteractions`
+
+<!-- api: T:Inno.Editor.Interactions.EditorInteractions 109fc8e106832a09f45f65db23f153cad634e6c4a57dbfb39d3c13d672ed28f0 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractions.selection 1b9994de27ce7c85c93a16d32c3f01112fc253b3a45c52724eb6736881f96bbd -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractions.history e4be4cac48ff39e45d880dc5aa4b35e0fdae3ebbb208bfe6ca67a090a77d7072 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractions.documents d28b04516a1bbb3a82e2f8d2f26013f046e83ac615ab83c1b00d31f8d2ad9ad6 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.TryGetModule``1(``0@) 86225a8c9cf272a4e6c1e7041cd6cadfb4d3bd3ec3f4aeafe30507f347509e29 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.BeginHistoryIsolation 2c8279b5d7e9ac10449b355e5d5f10b28062ca493846e927f4a592d86dc7f643 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractions.focusedArea cfef1568c709413f96a39c23b91b98d61278e7e055453291eb0094696fb13365 -->
+<!-- api: P:Inno.Editor.Interactions.EditorInteractions.focusedTarget 325fc3cc3ce2ad053c4978f9284fcb11418a0567ae1ddece20617b7929368654 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.For(System.String,System.Object) f9585b1a74871b6d1003da8d6f8356c122c48dcef7e3a922bb681aac6c97b6be -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.SetSelection(System.Object) 84097791a011a2bacf3203d5e2c88efacc7f864ada24e9247bf9bb628401f7fb -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.TryGetDragSource(Inno.Core.Identity.RuntimeIdentity,Inno.Core.Identity.IdentityObject@) d4aec5df3cc775e8519d6ea10dc9a95343b523b2a09b3f0ce19ed8429ca064a2 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.TryGetActiveDragIdentity(Inno.Core.Identity.RuntimeIdentity@) 7a7dc68a69c4438f76fba3272955563697dc1f396014bbc3cdc24876b5a30145 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.TogglePanel(System.String) e544b191cbd0fb554db2f0d6e4ed167b5e52f3a4e1758ce35b952d9405c45803 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.TryResolveIdentity(Inno.Core.Identity.RuntimeIdentity,Inno.Core.Identity.IdentityObject@) 5bf8693d666ee38e49555d9d6867a07de08434e5d08e25e7698a29643e01244a -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.TryResolveIdentity(Inno.Core.Identity.IdentityDomainId,System.Guid,Inno.Core.Identity.IdentityObject@) 8dc562942ae6632194aae6fcc0f178e14e7a30448c750d26a9159252d5548ba7 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.OpenPanel(System.String) 72908515f0326302dcf403e4142b42d512426b22e76cc695d251f94763273650 -->
+<!-- api: M:Inno.Editor.Interactions.EditorInteractions.ClosePanel(System.String) a66b5656b0ef1c1aaff6ede0a0d7eb54b8905a3c77b316b1ae5a3dd11463ca6f -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-29330961e9c2b565"></a>[`public System.IDisposable Inno.Editor.Interactions.EditorInteractions.BeginHistoryIsolation()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L108) | Starts an isolated temporary Undo and Redo branch while retaining the current editing branch.<br>返回：A scope that restores the retained history branch when disposed. | Disposing the returned scope releases every temporary operation and restores the retained branch. This host-level boundary is intended for transient editor sessions such as Play Mode. | `System.InvalidOperationException`：Thrown during an Undo, Redo, transaction, or another isolated branch. |
+| <a id="api-6df798df48c99ff3"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.ClosePanel(string panelId)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L284) | Closes one panel in the active extension generation without toggling its current state.<br>返回：true when an available panel was found.<br>`panelId`：The stable panel identifier to resolve. | — | `System.ArgumentException`：Thrown when panelId is empty. |
+| <a id="api-9df5cf164e5d89a6"></a>[`public Inno.Editor.Interactions.EditorInteraction Inno.Editor.Interactions.EditorInteractions.For(string area, object? target = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L137) | Creates a lightweight interaction handle for one area and optional target.<br>返回：A lightweight interaction handle.<br>`area`：The stable interaction area.<br>`target`：The optional object represented by the area. | — | `System.ArgumentException`：Thrown when area is empty. |
+| <a id="api-56a6bb564392da4a"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.OpenPanel(string panelId)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L266) | Opens and requests presentation focus for one panel in the active extension generation.<br>返回：true when an available panel was found.<br>`panelId`：The stable panel identifier to resolve. | — | `System.ArgumentException`：Thrown when panelId is empty. |
+| <a id="api-00cbb11ebcef45ce"></a>[`public void Inno.Editor.Interactions.EditorInteractions.SetSelection(object? target)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L148) | Replaces the editor selection after closing presentations owned by other targets.<br>`target`：The target to select, or null to clear the selection. | — | — |
+| <a id="api-c596e15bf18e6387"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.TogglePanel(string panelId)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L197) | Toggles one panel in the currently active extension generation.<br>返回：true when an available panel was found and toggled.<br>`panelId`：The stable panel identifier to resolve. | — | `System.ArgumentException`：Thrown when panelId is empty. |
+| <a id="api-cdfb6508266f43cd"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.TryGetActiveDragIdentity(out Inno.Core.Identity.RuntimeIdentity identity)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L183) | Gets the active drag identity used to select the matching native payload domain.<br>返回：true when a live drag source exists; otherwise, false.<br>`identity`：The active runtime identity when one remains valid. | — | — |
+| <a id="api-10fad60239fa7cfd"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.TryGetDragSource(Inno.Core.Identity.RuntimeIdentity identity, out Inno.Core.Identity.IdentityObject? source)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L169) | Resolves the live source for an active runtime identity.<br>返回：true when the identity is active and resolves to a live source; otherwise, false.<br>`identity`：The domain-qualified runtime identity carried by the drag protocol.<br>`source`：The currently registered drag source when resolution succeeds. | — | — |
+| <a id="api-1ba6c9ce21fce782"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.TryGetModule<TModule>(out TModule? module) where TModule : Inno.Editor.Core.EditorModule`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L86) | Resolves an active feature module for immediate use in the current Editor callback.<br>返回：True when the active generation supplies the requested module.<br>`module`：The started, non-quarantined module, or null when unavailable. | Do not retain the result across callbacks or generation changes. Candidate modules are never exposed. | — |
+| <a id="api-df00ca2a1a25d2c8"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.TryResolveIdentity(Inno.Core.Identity.IdentityDomainId domainId, System.Guid persistentId, out Inno.Core.Identity.IdentityObject? target)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L242) | Resolves a persistent identity through one explicitly selected Editor identity domain.<br>返回：true when the stable identity resolves in the requested domain.<br>`domainId`：Identity domain that owns the object and any replacement generation.<br>`persistentId`：Stable object identity to resolve inside that domain.<br>`target`：Receives the current live object, or null when the domain or object is unavailable. | — | — |
+| <a id="api-e1f1f41d986ab499"></a>[`public bool Inno.Editor.Interactions.EditorInteractions.TryResolveIdentity(Inno.Core.Identity.RuntimeIdentity identity, out Inno.Core.Identity.IdentityObject? target)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L216) | Resolves a domain-qualified runtime identity through the Editor's complete identity-domain set.<br>返回：true when the exact identity resolves in its owning domain.<br>`identity`：Runtime identity captured from a live Editor target.<br>`target`：Receives the current live object, or null when its domain or generation is unavailable. | — | — |
+| <a id="api-1b9a01c34de149a6"></a>[`public Inno.Editor.Interactions.IEditorDocumentService Inno.Editor.Interactions.EditorInteractions.documents { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L69) | Gets the headless reload-safe document lifetime used by dedicated asset editors and Inspectors. | — | — |
+| <a id="api-b99defe56446b8a5"></a>[`public string Inno.Editor.Interactions.EditorInteractions.focusedArea { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L115) | Gets the area that most recently received keyboard focus. | — | — |
+| <a id="api-f9720500a2139181"></a>[`public object? Inno.Editor.Interactions.EditorInteractions.focusedTarget { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L120) | Gets the target associated with the focused area. | — | — |
+| <a id="api-e6a0d7fc2a854104"></a>[`public Inno.Editor.Interactions.IEditorHistory Inno.Editor.Interactions.EditorInteractions.history { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L64) | Gets the transactional Undo and Redo history owned by this editor runtime. | — | — |
+| <a id="api-fb55b93eb85546e0"></a>[`public Inno.Editor.Interactions.EditorSelectionState Inno.Editor.Interactions.EditorInteractions.selection { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L57) | Gets the shared read-only editor selection state. | — | — |
+| <a id="api-272861538ee12f87"></a>[`public sealed class Inno.Editor.Interactions.EditorInteractions : Inno.Editor.Interactions.IEditorSelectionCoordinator, Inno.Editor.Interactions.IEditorHistoryIsolation`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorInteractions.cs#L18) | Provides the single presentation-independent entry point for editor actions, menus, selection, focus, and drag-and-drop. | — | — |
+
+### `Inno.Editor.Interactions.EditorMenuAttribute`
+
+<!-- api: T:Inno.Editor.Interactions.EditorMenuAttribute 0cf400d4bef07668990b7671b90d566d6895b607468866e6dee0797d2d56e0da -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuAttribute.#ctor(System.String,System.String,System.Int32,System.Boolean) 9f5cbd703d312a294fa383ee39b269974735188e4f30b75ae399f859cfc23cb1 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuAttribute.area 8322f7a83da0549b7f466a266031284a847055bbc7876101337d0e2bee970d03 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuAttribute.path d2560b9754c2bc2a596578150951ece6ff5dddee79ed9b2624869612e26c31dd -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuAttribute.order 01c89460815937b1108ef6011e6f3ffb198adb3f1b00ea1e65295d5fd19b0bc9 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuAttribute.separatorBefore c6703f01e3bb85e2ca6d347a8f643b58083ee293e91c05a443d7884d6644dd08 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-18e6cca7040a5766"></a>[`public Inno.Editor.Interactions.EditorMenuAttribute.EditorMenuAttribute(string area, string path, int order = 0, bool separatorBefore = false)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuAttribute.cs#L29) | Creates a static placement for the annotated action on an exact menu surface.<br>`area`：The exact interaction area whose menu receives the action.<br>`path`：The slash-delimited path used to create parent menus and the leaf label.<br>`order`：The stable ordering value among sibling placements.<br>`separatorBefore`：Whether a visual separator should precede the leaf placement. | — | `System.ArgumentException`：Thrown when area or path is empty. |
+| <a id="api-c008b61d0f3aa851"></a>[`public string Inno.Editor.Interactions.EditorMenuAttribute.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuAttribute.cs#L48) | Gets the menu area. | — | — |
+| <a id="api-6eb83f1753c18d7b"></a>[`public int Inno.Editor.Interactions.EditorMenuAttribute.order { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuAttribute.cs#L58) | Gets the stable menu ordering value. | — | — |
+| <a id="api-55bad2e16de75db7"></a>[`public string Inno.Editor.Interactions.EditorMenuAttribute.path { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuAttribute.cs#L53) | Gets the slash-delimited menu path. | — | — |
+| <a id="api-6eb0bc32d8e1e634"></a>[`public bool Inno.Editor.Interactions.EditorMenuAttribute.separatorBefore { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuAttribute.cs#L63) | Gets whether a separator is rendered before the item. | — | — |
+| <a id="api-b6567fd27bbfedd4"></a>[`public sealed class Inno.Editor.Interactions.EditorMenuAttribute : System.Attribute`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuAttribute.cs#L9) | Places an editor action at an arbitrary path on a menu surface. | — | — |
+
+### `Inno.Editor.Interactions.EditorMenuBuilder`
+
+<!-- api: T:Inno.Editor.Interactions.EditorMenuBuilder 49978d57ff8ffedb8d4f96af4d89f4b167739330d9b373eadaa7211c32bc1b8b -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuBuilder.AddGroup(System.String,System.Int32,System.Boolean) 2b22fdb912e39ad1ef73f09f468d877fedb1c636147f72f3517259129810cf9e -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuBuilder.Add(System.String,System.String,System.Int32,System.Boolean,System.Object) 427339c65bf904702fb13beb25b25187c41faa62ac03bc3f56403448e21eff3a -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuBuilder.#ctor 945a24f54b7c6f3a17684a89ec1020cc8abaa3817fc3e588a244d790fac6ba1a -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-d58382e9e8a7bdb4"></a>[`public Inno.Editor.Interactions.EditorMenuBuilder.EditorMenuBuilder()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuBuilder.cs#L9) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-a878ff544896dab7"></a>[`public void Inno.Editor.Interactions.EditorMenuBuilder.Add(string path, string actionId, int order = 0, bool separatorBefore = false, object? argument = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuBuilder.cs#L57) | Adds a dynamic action placement to the menu currently being constructed.<br>`path`：The slash-delimited path used to create parent menus and the leaf label.<br>`actionId`：The stable action identifier invoked by the leaf.<br>`order`：The stable ordering value among sibling placements.<br>`separatorBefore`：Whether a visual separator should precede the leaf placement.<br>`argument`：An optional argument captured for this menu generation. | — | `System.ArgumentException`：Thrown when path or actionId is empty. |
+| <a id="api-3e9d589f3f4e90c6"></a>[`public void Inno.Editor.Interactions.EditorMenuBuilder.AddGroup(string path, int order = 0, bool separatorBefore = false)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuBuilder.cs#L26) | Declares presentation for an intermediate menu group without inventing a no-op action.<br>`path`：The slash-delimited path of the group.<br>`order`：The stable ordering value among sibling groups and items.<br>`separatorBefore`：Whether a separator precedes this group at its own level. | — | — |
+| <a id="api-822619b7d91bd18e"></a>[`public sealed class Inno.Editor.Interactions.EditorMenuBuilder`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuBuilder.cs#L9) | Collects dynamic menu item placements. | — | — |
+
+### `Inno.Editor.Interactions.EditorMenuContext`
+
+<!-- api: T:Inno.Editor.Interactions.EditorMenuContext 48085a2cf906f91fa4268bc1e467bf5edd89a5f120029714fd14be2ddc75cf85 -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuContext.#ctor(Inno.Editor.Core.EditorContext,Inno.Editor.Interactions.EditorInteractions,System.String,System.Object) ef5c268b5077dec3b8b124a5e6d1e07705835dd522c05c71ed59088c6f652348 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuContext.editor de1f6a5f1b6b32756f8c2ae5707e6570f74c88af5b46732ad21a1e9ead294fd2 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuContext.interactions c033d2581e8d38b463d7d9b936ab145fa684370c65254f175de665630ce1a6b7 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuContext.area 9f9907108381a2f4b94f70d9315c99e8a410a164cc80c685c9f1ad85f81c2473 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuContext.target f874e5e1dedb09706dd050a793c6a9e6aa2a3a44502753af046ccd7bca84c5cb -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-dc9c5b120fd004fa"></a>[`public Inno.Editor.Interactions.EditorMenuContext.EditorMenuContext(Inno.Editor.Core.EditorContext editor, Inno.Editor.Interactions.EditorInteractions interactions, string area, object? target = null)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuContext.cs#L33) | Creates a contextual menu request.<br>`editor`：The shared passive editor context.<br>`interactions`：The active interaction entry point.<br>`area`：The exact menu area being requested.<br>`target`：The optional object the menu operates on. | — | `System.ArgumentNullException`：Thrown when editor or interactions is null.<br>`System.ArgumentException`：Thrown when area is empty. |
+| <a id="api-668b857fb09fbdec"></a>[`public string Inno.Editor.Interactions.EditorMenuContext.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuContext.cs#L59) | Gets the requested menu area. | — | — |
+| <a id="api-716c97a48da91387"></a>[`public Inno.Editor.Core.EditorContext Inno.Editor.Interactions.EditorMenuContext.editor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuContext.cs#L49) | Gets the shared passive editor context. | — | — |
+| <a id="api-64782b4655b3865f"></a>[`public Inno.Editor.Interactions.EditorInteractions Inno.Editor.Interactions.EditorMenuContext.interactions { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuContext.cs#L54) | Gets the active interaction entry point. | — | — |
+| <a id="api-32487f23a1b25c99"></a>[`public object? Inno.Editor.Interactions.EditorMenuContext.target { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuContext.cs#L64) | Gets the contextual menu target. | — | — |
+| <a id="api-4cb200d2d9eaeae0"></a>[`public sealed class Inno.Editor.Interactions.EditorMenuContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuContext.cs#L10) | Provides contextual state while constructing an editor menu. | — | — |
+
+### `Inno.Editor.Interactions.EditorMenuItem`
+
+<!-- api: T:Inno.Editor.Interactions.EditorMenuItem fb9aca0e02642895dbc86aad2bc2da4050873e86cbfe44330fd2f6c5ce124bc4 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuItem.label d6625246f7acaaf07807504caa6fd463bcab7bc5d884b43d63b62b1946298633 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuItem.actionId 367271e41bd9759a7298c7744e8316314b9e60f8bf86eab8b30129354b9d980d -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuItem.order f88d46921acee88c476bec29cc994e489242e6477be9f4a4a32c26b696dbbaaf -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuItem.separatorBefore b94eeae41651e154effd872b4d1fde418b21ab301a19225fcfdc2e1f487d026c -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuItem.status 5fea3b1d6a7a4ab32f9996d23011fa5aa851a7d66c29cff89e1749d88acd5e01 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuItem.children daad811d0625ad9347bb96331028a41c4aaf3ddd9916c14d43e0e7ae97363708 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuItem.argument 4329ab00376ee1c8befa78c5fe0b272931986ade8171fb880667ca2db1cb00c6 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-1eabde63e580f363"></a>[`public string Inno.Editor.Interactions.EditorMenuItem.actionId { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L64) | Gets the stable action identifier consumed by a presentation backend. | — | — |
+| <a id="api-a549dd73c5118f07"></a>[`public object? Inno.Editor.Interactions.EditorMenuItem.argument { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L90) | Gets the generation-local action argument consumed by a presentation backend. | — | — |
+| <a id="api-243dd780780e184c"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Editor.Interactions.EditorMenuItem> Inno.Editor.Interactions.EditorMenuItem.children { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L84) | Gets child menu nodes. | — | — |
+| <a id="api-5876a95e5ba00219"></a>[`public string Inno.Editor.Interactions.EditorMenuItem.label { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L58) | Gets the visible node label. | — | — |
+| <a id="api-d0fc5379c6508cca"></a>[`public int Inno.Editor.Interactions.EditorMenuItem.order { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L69) | Gets the stable ordering value. | — | — |
+| <a id="api-6cb35224ac2475c3"></a>[`public bool Inno.Editor.Interactions.EditorMenuItem.separatorBefore { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L74) | Gets whether a separator precedes this node. | — | — |
+| <a id="api-7cf63cd0497b2197"></a>[`public Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorMenuItem.status { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L79) | Gets the current command presentation state. | — | — |
+| <a id="api-dc492a727d975049"></a>[`public sealed class Inno.Editor.Interactions.EditorMenuItem`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuItem.cs#L11) | Represents one immutable contextual menu node. | — | — |
+
+### `Inno.Editor.Interactions.EditorMenuModel`
+
+<!-- api: T:Inno.Editor.Interactions.EditorMenuModel fda7faabf1cb021325dde52a58e4c13d87cf43590520c22682c20a2fa6db0058 -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuModel.#ctor(System.Collections.Generic.IReadOnlyList{Inno.Editor.Interactions.EditorMenuItem}) b3bfffb3e79d5de3c07d1715d397a1f01773cade1c16435f2d092ed90e02161e -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuModel.items e9814295c6cf4032de15b4033d4131091e34fe2df794a360cad591dabb1e2190 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-3a4d0e02b60b8bf9"></a>[`public Inno.Editor.Interactions.EditorMenuModel.EditorMenuModel(System.Collections.Generic.IReadOnlyList<Inno.Editor.Interactions.EditorMenuItem>? items)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuModel.cs#L17) | Creates a complete immutable menu tree from resolved root nodes.<br>`items`：The root nodes in stable display order, or null for an empty menu. | — | — |
+| <a id="api-781b1af6826f0fb9"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Editor.Interactions.EditorMenuItem> Inno.Editor.Interactions.EditorMenuModel.items { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuModel.cs#L25) | Gets root menu nodes in display order. | — | — |
+| <a id="api-e0d9ee2f42da4670"></a>[`public sealed class Inno.Editor.Interactions.EditorMenuModel`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuModel.cs#L9) | Contains a complete immutable menu tree. | — | — |
+
+### `Inno.Editor.Interactions.EditorMenuSource`
+
+<!-- api: T:Inno.Editor.Interactions.EditorMenuSource 179b17da3241f8eb88c2651332b57e9e86ca1142a14c32cae43566d35a7f11c3 -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuSource.Build(Inno.Editor.Interactions.EditorMenuContext,Inno.Editor.Interactions.EditorMenuBuilder) be39670e1b0ad30dcbdc01694be33eb97366a90ec9db30af24848b8eaeba29fa -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuSource.#ctor 1e828d20675f49f43d6c5522027a9a3d1eca37e6d251eec1f8402af39e49a70d -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-b883580843a590f8"></a>[`protected Inno.Editor.Interactions.EditorMenuSource.EditorMenuSource()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuSource.cs#L8) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-f184ffcda5bdadd1"></a>[`public abstract void Inno.Editor.Interactions.EditorMenuSource.Build(Inno.Editor.Interactions.EditorMenuContext context, Inno.Editor.Interactions.EditorMenuBuilder builder)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuSource.cs#L19) | Adds context-dependent placements for the supplied menu request.<br>`context`：The requested menu surface, target, and shared editor context.<br>`builder`：The collector that receives dynamic action placements. | — | — |
+| <a id="api-e77a8c29877f7dae"></a>[`public abstract class Inno.Editor.Interactions.EditorMenuSource`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuSource.cs#L8) | Contributes dynamic entries to one or more editor menu surfaces. | — | — |
+
+### `Inno.Editor.Interactions.EditorMenuSourceAttribute`
+
+<!-- api: T:Inno.Editor.Interactions.EditorMenuSourceAttribute 78af5d687bb27794424ae5f362f30b49fd326a957c8d0eb4e2b33723cfcf2cc8 -->
+<!-- api: M:Inno.Editor.Interactions.EditorMenuSourceAttribute.#ctor(System.String,System.Int32) 2cb81869e67462fb01cf70a4af48ca9ae7de120e1ea09e604e391cb239880633 -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuSourceAttribute.area b57eddf60badde4e6afa91255ad8b0376dfb3ba60a9c9d17df4e9bdaa139a69e -->
+<!-- api: P:Inno.Editor.Interactions.EditorMenuSourceAttribute.priority 4e808adafc07434da7ddb70f420411fd53214414e70e7df4f466d876e0e57fcf -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-3162529796a6f554"></a>[`public Inno.Editor.Interactions.EditorMenuSourceAttribute.EditorMenuSourceAttribute(string area, int priority = 0)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuSourceAttribute.cs#L23) | Creates a dynamic menu-source registration for an exact interaction surface.<br>`area`：The exact menu area that receives placements from the source.<br>`priority`：The ordering priority used when multiple dynamic sources contribute to the surface. | — | `System.ArgumentException`：Thrown when area is empty. |
+| <a id="api-6c2e5e3165d4eda9"></a>[`public string Inno.Editor.Interactions.EditorMenuSourceAttribute.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuSourceAttribute.cs#L36) | Gets the contributed menu area. | — | — |
+| <a id="api-051085f98699a047"></a>[`public int Inno.Editor.Interactions.EditorMenuSourceAttribute.priority { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuSourceAttribute.cs#L41) | Gets the provider ordering priority. | — | — |
+| <a id="api-4f3a0a47bea190a6"></a>[`public sealed class Inno.Editor.Interactions.EditorMenuSourceAttribute : System.Attribute`](../../src/composition/editor/framework/Inno.Editor.Interactions/Menus/EditorMenuSourceAttribute.cs#L9) | Registers a dynamic editor menu source. | — | — |
+
+### `Inno.Editor.Interactions.EditorModalExtension`
+
+<!-- api: T:Inno.Editor.Interactions.EditorModalExtension cc7404c6561944ef39f5d5860b2e33d2c9ab32e4089a57fe210ae27a37f77320 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.id 9122a760e1dab27b676e4cf96d89876eea90c0662015fdd8e1527233e0b5519b -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.title 0a8dea569564adabed3bb74afde68c249d67cb8aa3be77ba70931933908f4e79 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.order 6400e1a7717efedc01cf3d080b0b1e426558eaa267a8a7ae8abf465f35c9173f -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.TryGetPresentation(Inno.Editor.Interactions.EditorModalExtension.Presentation@) d9aa9a1da7e633f4658f0f1f07417510d93ab18810367e26ea127a18e60181e2 -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Draw(Inno.Editor.Core.EditorContext) afd0236ef40286459d277c43a8f3104cef046aef6f64f0e5d3d7de70a1f74638 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-9f5c0aaf09d1411f"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.Draw(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L95) | Safely draws the modal body and quarantines a failing extension instance.<br>返回：true when the modal completed drawing without being quarantined.<br>`context`：The active editor context supplied by the presentation backend. | — | `System.ArgumentNullException`：Thrown when context is null. |
+| <a id="api-4339db7f35a986ce"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.TryGetPresentation(out Inno.Editor.Interactions.EditorModalExtension.Presentation presentation)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L55) | Safely captures generation-local modal presentation values.<br>返回：true when every presentation value was read successfully.<br>`presentation`：The captured immutable presentation, or its default value when the modal is quarantined. | — | — |
+| <a id="api-0a3ed40e0c313c3a"></a>[`public string Inno.Editor.Interactions.EditorModalExtension.id { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L34) | Gets the stable modal identifier. | — | — |
+| <a id="api-7f0f79bb6e5be032"></a>[`public int Inno.Editor.Interactions.EditorModalExtension.order { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L44) | Gets the stable modal ordering value. | — | — |
+| <a id="api-009f3c0dfb8ac1a7"></a>[`public string Inno.Editor.Interactions.EditorModalExtension.title { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L39) | Gets the visible modal title. | — | — |
+| <a id="api-edcec1edcce291e9"></a>[`public sealed class Inno.Editor.Interactions.EditorModalExtension`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L11) | Describes one active modal extension. | — | — |
+
+### `Inno.Editor.Interactions.EditorModalExtension.Presentation`
+
+<!-- api: T:Inno.Editor.Interactions.EditorModalExtension.Presentation 40412fb3f06c22bb98c23b08a7ea54d5ba98e6ee9eb3f383fc98873654aeb689 -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Presentation.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Numerics.Vector2,System.Numerics.Vector2) 4bde8b680593689a821b485e9281c05cc07934a796272324db7425a1fefb61e2 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.Presentation.isVisible 892e5a383a68da732707ee66e73a8f85de55624c2b5dce3a2d30d542e104f3c0 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.Presentation.blocksInteraction f99469fb734c3eea805e63a76ec51e73ebaf86e0f047152a71a267ba48224d38 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.Presentation.canMove 61751196a98060fa2bd4171acc5390c56ff7d3a874f36b99906fe543132c2582 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.Presentation.canResize f8d30fa1b462fcf7133346e14b6f5c2f5325c8e0abd9fc6c03838f48e88fc664 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.Presentation.allowScrolling a1932eee9b06a5d28fbc7d96c3d1e23a058041a3ba032fac2652718c7c51fd12 -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.Presentation.initialSize 1a2e2d6777e7d4717fcd540f37b62b9f0c326b0a1088374aa53de05999e32bfd -->
+<!-- api: P:Inno.Editor.Interactions.EditorModalExtension.Presentation.minimumSize f2585dc304b539c75016f66c53f0fafbc94afa757cbcbf1861a738520539e0a3 -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Presentation.ToString 26e84cd02111f15186db75cad2e6ddea8806cfa73e1c5a35ec614100a6a2865b -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Presentation.op_Inequality(Inno.Editor.Interactions.EditorModalExtension.Presentation,Inno.Editor.Interactions.EditorModalExtension.Presentation) 417fc7f2dac023d2b52b7deb3ffa16e991efc2cccfa7f254a9e09812e5e53ee1 -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Presentation.op_Equality(Inno.Editor.Interactions.EditorModalExtension.Presentation,Inno.Editor.Interactions.EditorModalExtension.Presentation) 3ecf16f45dd98b52196d9e8fc7fb1ac4a85bd266fe6495ea375fdf64e9ca1fda -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Presentation.GetHashCode d92081ee0b6082b4b22b3b89f8c28bd9f8f7adafb0df9fdb5d283ea5f2f40e52 -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Presentation.Equals(System.Object) 2d585c34b0f6f7586a146954572556c0300d37761b070d1a5b3d90648fc526a5 -->
+<!-- api: M:Inno.Editor.Interactions.EditorModalExtension.Presentation.Equals(Inno.Editor.Interactions.EditorModalExtension.Presentation) cdcb8e469595f378d4b18ce8aa531c891a5b4583d08774e96ea1592d4f9d30e1 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-94235cdfac09f0ab"></a>[`public Inno.Editor.Interactions.EditorModalExtension.Presentation.Presentation(bool isVisible, bool blocksInteraction, bool canMove, bool canResize, bool allowScrolling, System.Numerics.Vector2 initialSize, System.Numerics.Vector2 minimumSize)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L142) | Creates an immutable modal presentation snapshot.<br>`isVisible`：Whether the modal should currently be visible.<br>`blocksInteraction`：Whether the modal blocks regular editor interaction.<br>`canMove`：Whether the modal window can be moved.<br>`canResize`：Whether the modal window can be resized.<br>`allowScrolling`：Whether the modal window owns overflow scrolling.<br>`initialSize`：The initial size in unscaled editor units.<br>`minimumSize`：The minimum size in unscaled editor units. | — | — |
+| <a id="api-4c4b179f047617b9"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.Presentation.Equals(Inno.Editor.Interactions.EditorModalExtension.Presentation other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L116) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-9d85c00ddea5415f"></a>[`public override bool Inno.Editor.Interactions.EditorModalExtension.Presentation.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L116) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-17dd2a8f242ec547"></a>[`public override int Inno.Editor.Interactions.EditorModalExtension.Presentation.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L116) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-e08943f78f7c16ae"></a>[`public static bool Inno.Editor.Interactions.EditorModalExtension.Presentation.operator ==(Inno.Editor.Interactions.EditorModalExtension.Presentation left, Inno.Editor.Interactions.EditorModalExtension.Presentation right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L116) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-ac08bbb566f6f29f"></a>[`public static bool Inno.Editor.Interactions.EditorModalExtension.Presentation.operator !=(Inno.Editor.Interactions.EditorModalExtension.Presentation left, Inno.Editor.Interactions.EditorModalExtension.Presentation right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L116) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-4eeab27fae56868b"></a>[`public override string Inno.Editor.Interactions.EditorModalExtension.Presentation.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L116) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-74060a2c8ad9c083"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.Presentation.allowScrolling { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L183) | Gets whether overflow scrolling belongs to the modal window. | — | — |
+| <a id="api-ee01e2f01b8319b5"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.Presentation.blocksInteraction { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L168) | Gets whether the modal blocks regular editor interaction. | — | — |
+| <a id="api-e62163d6ac5b274f"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.Presentation.canMove { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L173) | Gets whether the modal window can be moved. | — | — |
+| <a id="api-85f689c01e866460"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.Presentation.canResize { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L178) | Gets whether the modal window can be resized. | — | — |
+| <a id="api-44b95ff11bbcea3c"></a>[`public System.Numerics.Vector2 Inno.Editor.Interactions.EditorModalExtension.Presentation.initialSize { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L188) | Gets the initial size in unscaled editor units. | — | — |
+| <a id="api-467d52dd8be34b87"></a>[`public bool Inno.Editor.Interactions.EditorModalExtension.Presentation.isVisible { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L163) | Gets whether the modal should currently be visible. | — | — |
+| <a id="api-6eb7d52d4df223a8"></a>[`public System.Numerics.Vector2 Inno.Editor.Interactions.EditorModalExtension.Presentation.minimumSize { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L193) | Gets the minimum size in unscaled editor units. | — | — |
+| <a id="api-9f0300123a850e3f"></a>[`public readonly record struct Inno.Editor.Interactions.EditorModalExtension.Presentation : System.IEquatable<Inno.Editor.Interactions.EditorModalExtension.Presentation>`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorModalExtension.cs#L116) | Stores immutable modal window policy values read from one extension generation. | — | — |
+
+### `Inno.Editor.Interactions.EditorPanelExtension`
+
+<!-- api: T:Inno.Editor.Interactions.EditorPanelExtension 185352d1ead3ad51310db71ade2b61f5503552c438dc38a02d596a1796a70171 -->
+<!-- api: P:Inno.Editor.Interactions.EditorPanelExtension.id 296cc01b0664aaf635766349e923b9cdca8d64f715a2ac93694e940ca0089c8b -->
+<!-- api: P:Inno.Editor.Interactions.EditorPanelExtension.title 70e5363fa996073e2a34f246ade872625e9d2a998c5284feb8f2601905f4aed1 -->
+<!-- api: P:Inno.Editor.Interactions.EditorPanelExtension.order 66d69974995429af2354b52319f059b7a0691f6a15cd97f95142901ea363a0bb -->
+<!-- api: P:Inno.Editor.Interactions.EditorPanelExtension.isOpen d60e53c41cf9d46a5c5a85ae0d003770994ed59fc98109d1c529070cbf3b94e8 -->
+<!-- api: M:Inno.Editor.Interactions.EditorPanelExtension.TakeFocusRequest 3a22b3bf86a514cab62ca2e72755ace0269006896319f092642ce4f691b70b14 -->
+<!-- api: M:Inno.Editor.Interactions.EditorPanelExtension.TryGetWindowPresentation(System.Boolean@,System.Boolean@,System.Numerics.Vector2@) 06c62c9ef6fc7dac32cb19c75a7eb8eda7ba596c712a3fb9d44cc3644d0fb8f1 -->
+<!-- api: M:Inno.Editor.Interactions.EditorPanelExtension.Draw(Inno.Editor.Core.EditorContext) 0a914dd0d3f397f7b9551135fd046faa6d77194d7bdae6dad518af7c3c7f1542 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-7bddc496338e0c09"></a>[`public bool Inno.Editor.Interactions.EditorPanelExtension.Draw(Inno.Editor.Core.EditorContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L118) | Safely draws the panel body and quarantines a failing extension instance.<br>返回：true when the panel completed drawing without being quarantined.<br>`context`：The active editor context supplied by the presentation backend. | — | `System.ArgumentNullException`：Thrown when context is null. |
+| <a id="api-870e5254d8f3910f"></a>[`public bool Inno.Editor.Interactions.EditorPanelExtension.TakeFocusRequest()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L64) | Consumes a pending request to focus this panel window.<br>返回：true once for each accepted focus request. | — | — |
+| <a id="api-59fafdc5da258cde"></a>[`public bool Inno.Editor.Interactions.EditorPanelExtension.TryGetWindowPresentation(out bool useWindowPadding, out bool allowScrolling, out System.Numerics.Vector2 initialSize)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L81) | Safely reads the panel window-presentation policy through the active extension boundary.<br>返回：true when the policy was read without quarantining the panel.<br>`useWindowPadding`：The requested padding policy, or the safe default when the panel is quarantined.<br>`allowScrolling`：The requested scrolling policy, or the safe default when the panel is quarantined.<br>`initialSize`：The preferred first-use floating size, or zero when native sizing is requested. | — | — |
+| <a id="api-16bd49064bd3bd72"></a>[`public string Inno.Editor.Interactions.EditorPanelExtension.id { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L37) | Gets the stable panel identifier. | — | — |
+| <a id="api-55028ca2ccac00ff"></a>[`public bool Inno.Editor.Interactions.EditorPanelExtension.isOpen { get; set; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L52) | Gets or sets whether this panel is open in the current extension generation. | — | — |
+| <a id="api-93062be4382d0edb"></a>[`public int Inno.Editor.Interactions.EditorPanelExtension.order { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L47) | Gets the stable panel ordering value. | — | — |
+| <a id="api-ef1a3a44f1448412"></a>[`public string Inno.Editor.Interactions.EditorPanelExtension.title { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L42) | Gets the visible panel title. | — | — |
+| <a id="api-d99ab915f62861b8"></a>[`public sealed class Inno.Editor.Interactions.EditorPanelExtension`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorPanelExtension.cs#L11) | Describes one active dockable panel extension. | — | — |
+
+### `Inno.Editor.Interactions.EditorPlanarNavigation`
+
+<!-- api: T:Inno.Editor.Interactions.EditorPlanarNavigation 05fa0699f6dd38b7e2be565dc2ffae3fbd5f0bf5af3897313b6c6f9e76412f0f -->
+<!-- api: P:Inno.Editor.Interactions.EditorPlanarNavigation.isPanning 3c4e2072e199cfbf7a8cefc2a7ce95bf17ebdc35cd6e620a83a8ad6872b8027a -->
+<!-- api: M:Inno.Editor.Interactions.EditorPlanarNavigation.Update(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean) 1f5e4b702648955fc4ab84a2bd772880ae78e06fee80c291a84eb18f234b02af -->
+<!-- api: M:Inno.Editor.Interactions.EditorPlanarNavigation.Cancel 999a1dc4033fc699872def778db122d9e889da47475a32e83cba0edc2486b98b -->
+<!-- api: M:Inno.Editor.Interactions.EditorPlanarNavigation.WheelFactor(System.Single,System.Single) cf2ae6645fd9197518dc22e4f6f7cfd78d90a425d11bc98aeaa5412be01e8338 -->
+<!-- api: M:Inno.Editor.Interactions.EditorPlanarNavigation.ZoomOrigin(System.Numerics.Vector2,System.Numerics.Vector2,System.Single,System.Single) 52042db4f36f26a7b17832a5608803a7142e7bdc3fb6dd4a78644736989f432c -->
+<!-- api: M:Inno.Editor.Interactions.EditorPlanarNavigation.#ctor 95cea3b5df6b2e79959c613f8641a6d3994ed825e42a8a22f8abcd679f5b4975 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-36621881dd547ce3"></a>[`public Inno.Editor.Interactions.EditorPlanarNavigation.EditorPlanarNavigation()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorPlanarNavigation.cs#L9) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-b761ff7298bfc380"></a>[`public void Inno.Editor.Interactions.EditorPlanarNavigation.Cancel()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorPlanarNavigation.cs#L67) | Releases capture when a canvas closes or a gesture is cancelled. | — | — |
+| <a id="api-9278fa96cd991bff"></a>[`public bool Inno.Editor.Interactions.EditorPlanarNavigation.Update(bool hovered, bool primaryPressed, bool middlePressed, bool primaryDown, bool middleDown, bool alt, bool allowAltPrimary = true)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorPlanarNavigation.cs#L45) | Advances pointer capture using logical button state rather than window-local release events.<br>返回：Whether this canvas owns the current pointer gesture.<br>`hovered`：Whether a new gesture may start in this canvas.<br>`primaryPressed`：Whether the primary button was pressed this frame.<br>`middlePressed`：Whether the middle button was pressed this frame.<br>`primaryDown`：Current global primary button state.<br>`middleDown`：Current global middle button state.<br>`alt`：Whether Alt is held when the gesture starts.<br>`allowAltPrimary`：Whether Alt-primary belongs to pan rather than another navigation mode. | — | — |
+| <a id="api-5a7dcb2efca83dc4"></a>[`public static float Inno.Editor.Interactions.EditorPlanarNavigation.WheelFactor(float wheel, float sensitivity = 0.16)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorPlanarNavigation.cs#L84) | Converts wheel input to the common exponential magnification used by Editor canvases.<br>返回：A finite positive magnification factor; positive wheel magnifies content.<br>`wheel`：Logical wheel units, independent of framebuffer DPI.<br>`sensitivity`：Positive exponential sensitivity. | — | `System.ArgumentOutOfRangeException`：Input is non-finite or sensitivity is not positive. |
+| <a id="api-426b6efc27c6d95b"></a>[`public static System.Numerics.Vector2 Inno.Editor.Interactions.EditorPlanarNavigation.ZoomOrigin(System.Numerics.Vector2 origin, System.Numerics.Vector2 pivot, float previousScale, float nextScale)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorPlanarNavigation.cs#L116) | Changes the screen-space origin so zoom preserves the same content point beneath the cursor.<br>返回：The origin preserving the pivot's content coordinate.<br>`origin`：Current logical-pixel content origin.<br>`pivot`：Logical-pixel cursor position relative to the canvas.<br>`previousScale`：Previous positive content magnification.<br>`nextScale`：New positive content magnification after clamping. | — | `System.ArgumentOutOfRangeException`：An input is non-finite or a scale is not positive. |
+| <a id="api-78a5b841dbc34931"></a>[`public bool Inno.Editor.Interactions.EditorPlanarNavigation.isPanning { get; private set; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorPlanarNavigation.cs#L16) | Gets whether this canvas owns a pan gesture, including while the pointer is outside its bounds. | — | — |
+| <a id="api-29518bcb008c0bcd"></a>[`public sealed class Inno.Editor.Interactions.EditorPlanarNavigation`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorPlanarNavigation.cs#L9) | Shares captured planar gestures and mouse-anchored zoom math between scene and graph canvases. | — | — |
+
+### `Inno.Editor.Interactions.EditorPresentationAction`2`
+
+<!-- api: T:Inno.Editor.Interactions.EditorPresentationAction`2 f68f4f5511255a3ca0da5211b1ee28514ca8cebddc9242b072836611b2b7b8bf -->
+<!-- api: M:Inno.Editor.Interactions.EditorPresentationAction`2.Present(Inno.Editor.Interactions.EditorActionContext{`0}) 8e5c32698914b47e8f228177b74e22cce454aec184bd704bc174f7adffba93a7 -->
+<!-- api: M:Inno.Editor.Interactions.EditorPresentationAction`2.Present(Inno.Editor.Interactions.EditorActionContext{`0,`1}) 0fd5f37ed2e880d2e1953153bbc6654f1d2279637b32c9e3eeb82edc0bf92ef5 -->
+<!-- api: M:Inno.Editor.Interactions.EditorPresentationAction`2.#ctor 8c556b52112ee99f5b7e4668dd71d8fa64c5985db08513e23dfac75aef229d82 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-18185fe70cdc022c"></a>[`protected Inno.Editor.Interactions.EditorPresentationAction<TTarget, TPresentation>.EditorPresentationAction()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L346) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-f31c7e6cc975cf88"></a>[`protected abstract bool Inno.Editor.Interactions.EditorPresentationAction<TTarget, TPresentation>.Present(Inno.Editor.Interactions.EditorActionContext<TTarget, TPresentation> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L371) | Presents active content using strongly typed presentation data.<br>返回：true when content was presented.<br>`context`：The typed presentation request. | — | — |
+| <a id="api-a43a09399825513a"></a>[`protected override sealed bool Inno.Editor.Interactions.EditorPresentationAction<TTarget, TPresentation>.Present(Inno.Editor.Interactions.EditorActionContext<TTarget> context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L358) | Presents this action through the current editor interaction surface.<br>返回：true when the operation succeeds or its condition is satisfied; otherwise, false.<br>`context`：The context that supplies state and services for this operation. | — | — |
+| <a id="api-b52038e0a3af411c"></a>[`public abstract class Inno.Editor.Interactions.EditorPresentationAction<TTarget, TPresentation> where TTarget : class : Inno.Editor.Interactions.EditorAction<TTarget> where TTarget : class`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorAction.cs#L346) | Defines a target action with a typed presentation-only argument. | — | — |
+
+### `Inno.Editor.Interactions.EditorSelectionState`
+
+<!-- api: T:Inno.Editor.Interactions.EditorSelectionState e660b467dbb779c4880881cc0dda960b0a286dae53f5fc003d3280c569e8a888 -->
+<!-- api: P:Inno.Editor.Interactions.EditorSelectionState.selectedTarget d7f3363655b026da05b3543404b72504a4a55cd20d8f3cb8139a911cf271c043 -->
+<!-- api: P:Inno.Editor.Interactions.EditorSelectionState.version 9ec6ff5166962d5a68ced67281b4c8929ecb2dd0e3fd351e1ff3a28e4af5aa00 -->
+<!-- api: M:Inno.Editor.Interactions.EditorSelectionState.TryGet``1(``0@) e3910fa1da7292d5cfb727736ccc74b26d4b05935c6f1cc6fe077bd01882af34 -->
+<!-- api: M:Inno.Editor.Interactions.EditorSelectionState.#ctor 3ee5021d1956bb337c5023dd8af831b00e0ec14247019ee95b1183a51e6b57ca -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-138a0825186c6504"></a>[`public Inno.Editor.Interactions.EditorSelectionState.EditorSelectionState()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorSelectionState.cs#L9) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-eb9af785be97ea2e"></a>[`public bool Inno.Editor.Interactions.EditorSelectionState.TryGet<TTarget>(out TTarget? target)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorSelectionState.cs#L67) | Tries to read the current target as a requested type.<br>返回：true when the current target is compatible.<br>`target`：Typed target when successful. | — | — |
+| <a id="api-d5c3b408ba018df2"></a>[`public object? Inno.Editor.Interactions.EditorSelectionState.selectedTarget { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorSelectionState.cs#L16) | Gets the selected target, or null when nothing is selected. | — | — |
+| <a id="api-d1a8f858c17fb386"></a>[`public ulong Inno.Editor.Interactions.EditorSelectionState.version { get; private set; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorSelectionState.cs#L21) | Gets a monotonically increasing selection change version. | — | — |
+| <a id="api-7819b00345dc2033"></a>[`public sealed class Inno.Editor.Interactions.EditorSelectionState`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/EditorSelectionState.cs#L9) | Stores editor-wide object selection state. | — | — |
+
+### `Inno.Editor.Interactions.EditorShortcutAttribute`
+
+<!-- api: T:Inno.Editor.Interactions.EditorShortcutAttribute 947390faf291792cb015fe612301a7405e5d408e3811a4cfc3800238349c141e -->
+<!-- api: M:Inno.Editor.Interactions.EditorShortcutAttribute.#ctor(Inno.Core.Input.KeyCode,Inno.Core.Input.KeyModifier,System.Boolean) 0d468e7c09ebcacf4852746ac2c84edf3a6a32fdba9f7c2f6439f51dd2a81ab4 -->
+<!-- api: M:Inno.Editor.Interactions.EditorShortcutAttribute.#ctor(System.String,Inno.Core.Input.KeyCode,Inno.Core.Input.KeyModifier,System.Boolean) 5c8ac783d9f2676a0f26c50074662c858c5717df1ebdd3da5b3ab9c87693680b -->
+<!-- api: P:Inno.Editor.Interactions.EditorShortcutAttribute.area ed666a89d40eae142b2769383ab5ddb7fbe763661d079a92960012edf688781f -->
+<!-- api: P:Inno.Editor.Interactions.EditorShortcutAttribute.key a5178b2544589c594d62400403b1b8edec2d7c958520d734bfc408826cf79167 -->
+<!-- api: P:Inno.Editor.Interactions.EditorShortcutAttribute.modifiers dfae8881c0468d4ac2b82a1c93f7b4c38a1f37cee64f7a53c0318b369b241a1d -->
+<!-- api: P:Inno.Editor.Interactions.EditorShortcutAttribute.primary d5485107edbb17660a9a4f9906d8f5906d1e0ecde4427c082d0c922a87c41579 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-ddb4080323af04c6"></a>[`public Inno.Editor.Interactions.EditorShortcutAttribute.EditorShortcutAttribute(Inno.Core.Input.KeyCode key, Inno.Core.Input.KeyModifier modifiers = Inno.Core.Input.KeyModifier.None, bool primary = false)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorShortcutAttribute.cs#L25) | Creates a shortcut that can be dispatched from any focused interaction surface.<br>`key`：The non-modifier key that triggers the action.<br>`modifiers`：The exact additional modifier keys required by the gesture.<br>`primary`：Whether the platform primary modifier, Command on macOS or Control elsewhere, is required. | — | — |
+| <a id="api-77fc037fcb818a1b"></a>[`public Inno.Editor.Interactions.EditorShortcutAttribute.EditorShortcutAttribute(string area, Inno.Core.Input.KeyCode key, Inno.Core.Input.KeyModifier modifiers = Inno.Core.Input.KeyModifier.None, bool primary = false)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorShortcutAttribute.cs#L49) | Creates a shortcut scoped to an exact interaction area.<br>`area`：The exact focused area that accepts the shortcut, or an empty string for any area.<br>`key`：The non-modifier key that triggers the action.<br>`modifiers`：The exact additional modifier keys required by the gesture.<br>`primary`：Whether the platform primary modifier, Command on macOS or Control elsewhere, is required. | — | — |
+| <a id="api-67c686f9254975fd"></a>[`public string Inno.Editor.Interactions.EditorShortcutAttribute.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorShortcutAttribute.cs#L64) | Gets the optional exact interaction area. | — | — |
+| <a id="api-03690846a10d765c"></a>[`public Inno.Core.Input.KeyCode Inno.Editor.Interactions.EditorShortcutAttribute.key { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorShortcutAttribute.cs#L69) | Gets the shortcut key. | — | — |
+| <a id="api-8df0c24489be6ea8"></a>[`public Inno.Core.Input.KeyModifier Inno.Editor.Interactions.EditorShortcutAttribute.modifiers { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorShortcutAttribute.cs#L74) | Gets additional shortcut modifiers. | — | — |
+| <a id="api-4520aa0ff1fe4b64"></a>[`public bool Inno.Editor.Interactions.EditorShortcutAttribute.primary { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorShortcutAttribute.cs#L79) | Gets whether the platform primary modifier is required. | — | — |
+| <a id="api-fc45943e651691e5"></a>[`public sealed class Inno.Editor.Interactions.EditorShortcutAttribute : System.Attribute`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorShortcutAttribute.cs#L11) | Associates an editor action with a keyboard shortcut. | — | — |
+
+### `Inno.Editor.Interactions.EditorToolbarIcon`
+
+<!-- api: T:Inno.Editor.Interactions.EditorToolbarIcon 4b6086e05f875f220e5246719aadd6573b5f6865fb0051366f27c200bf4a59b7 -->
+<!-- api: F:Inno.Editor.Interactions.EditorToolbarIcon.None 111497190d8fc31e5165539e25020bd377e8f444486eb019ea12566b3b2dd761 -->
+<!-- api: F:Inno.Editor.Interactions.EditorToolbarIcon.Play a9284c1373163bf91abeec61d5ee66f5fd1e6d05edd34ac8cb5a99b0d0671408 -->
+<!-- api: F:Inno.Editor.Interactions.EditorToolbarIcon.Stop b0d3757ce76fc21557d5bbe90348bb102fc40442b2a60a4ce1b38ededf2bce20 -->
+<!-- api: F:Inno.Editor.Interactions.EditorToolbarIcon.Pause 2f0ebe29edefb7a43a55d33957638b746b890fb57287eafdc8c39bfe82e3b86c -->
+<!-- api: F:Inno.Editor.Interactions.EditorToolbarIcon.Step 80ceaf7170f089ceec1f59cf6338bcb7a5f8bcb8e5520361184e4014f19473b5 -->
+<!-- api: F:Inno.Editor.Interactions.EditorToolbarIcon.Edit d3017d3c05c1f7829975879849528531c9ae089bb8c82ec27a083b6288589f4e -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-73cae23e8629e366"></a>[`Inno.Editor.Interactions.EditorToolbarIcon.Edit = 5`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarIcon.cs#L36) | Returns to an editing state. | — | — |
+| <a id="api-9b1f67128938942f"></a>[`Inno.Editor.Interactions.EditorToolbarIcon.None = 0`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarIcon.cs#L11) | No symbol is requested. | — | — |
+| <a id="api-8e14c4e68ed531b4"></a>[`Inno.Editor.Interactions.EditorToolbarIcon.Pause = 3`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarIcon.cs#L26) | Pauses an operation or simulation. | — | — |
+| <a id="api-64a3bcf7cc58f849"></a>[`Inno.Editor.Interactions.EditorToolbarIcon.Play = 1`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarIcon.cs#L16) | Starts an operation or simulation. | — | — |
+| <a id="api-07cc563a3489eb19"></a>[`Inno.Editor.Interactions.EditorToolbarIcon.Step = 4`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarIcon.cs#L31) | Advances a paused operation by one step. | — | — |
+| <a id="api-3d2ed396028b2c14"></a>[`Inno.Editor.Interactions.EditorToolbarIcon.Stop = 2`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarIcon.cs#L21) | Stops an operation or simulation. | — | — |
+| <a id="api-8b978f5981365170"></a>[`public enum Inno.Editor.Interactions.EditorToolbarIcon : int`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarIcon.cs#L6) | Identifies a presentation-independent symbol for an editor toolbar command. | — | — |
+
+### `Inno.Editor.Interactions.EditorToolbarItem`
+
+<!-- api: T:Inno.Editor.Interactions.EditorToolbarItem 54e377e89351886a2b3ce805dab8716ccad8221ae58f1f4d30c41934d2baa489 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItem.actionId 91222b6994e7f6156ced0925cd6915045afc07cac75a5eea5eb49924ab1b5bb4 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItem.icon fdd8cef72144798ee17f101c9b770ec3e5c84dff4ba41b5498beb31525a74bd8 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItem.tooltip 10cb9dce979ca690f1c43d2e9ad887ac5901f21e18968a699e3829c68624f8c0 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItem.order c998990de5291603e9ffd7f8934f00808882c1eeb90841d401e1ff86ee6536a6 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItem.status 31867c3913e462524145fa056113ffaf4a20ad248bce97f54bf5632b7028f995 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-6182bb4cdcc54168"></a>[`public string Inno.Editor.Interactions.EditorToolbarItem.actionId { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItem.cs#L25) | Gets the stable action dispatched when this item is pressed. | — | — |
+| <a id="api-a728382ece18b048"></a>[`public Inno.Editor.Interactions.EditorToolbarIcon Inno.Editor.Interactions.EditorToolbarItem.icon { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItem.cs#L30) | Gets the resolved presentation-independent symbol. | — | — |
+| <a id="api-c35b42a510fb64e0"></a>[`public int Inno.Editor.Interactions.EditorToolbarItem.order { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItem.cs#L40) | Gets the stable ordering value. | — | — |
+| <a id="api-f6aa342f1fc05fc1"></a>[`public Inno.Editor.Interactions.EditorActionState Inno.Editor.Interactions.EditorToolbarItem.status { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItem.cs#L45) | Gets the current action availability and checked state. | — | — |
+| <a id="api-b4019a1ce092d75c"></a>[`public string Inno.Editor.Interactions.EditorToolbarItem.tooltip { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItem.cs#L35) | Gets the resolved contextual tooltip. | — | — |
+| <a id="api-802a0b6147324452"></a>[`public sealed class Inno.Editor.Interactions.EditorToolbarItem`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItem.cs#L6) | Describes one resolved toolbar command. | — | — |
+
+### `Inno.Editor.Interactions.EditorToolbarItemAttribute`
+
+<!-- api: T:Inno.Editor.Interactions.EditorToolbarItemAttribute 62f85165277490566c6d4ec78515a8ac7b71109474e614f289edf47ac1971f8c -->
+<!-- api: M:Inno.Editor.Interactions.EditorToolbarItemAttribute.#ctor(System.String,Inno.Editor.Interactions.EditorToolbarIcon,System.String,System.Int32,Inno.Editor.Interactions.EditorToolbarIcon) 3f9c5d79dc37f4347d8541e1bf02abf768d13bb2723b88c8c385118cdbb5bb63 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItemAttribute.area 56fcd3410353dbc66afe9c9c02b056823f60082cc4c7ad90d476e3ec6c39b386 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItemAttribute.icon 44c50e4a388b03e7754943c33e764e9e0283e05b636efed505e277d0b76f96d2 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItemAttribute.activeIcon 22c5a7a57e259f13526c9a996e948c1d979209441d9291c333de2ee349239148 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItemAttribute.tooltip 6aa86b0d3a6ca47516890763fd536825c9c52e97bd98ce47270c88521ebb2d3b -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarItemAttribute.order 859fa9d6714e6092ef82aa12d8a4f7eef6ec46aa78b96e60e1c8c66b7d8a02ec -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-4710cf3b878a7bfb"></a>[`public Inno.Editor.Interactions.EditorToolbarItemAttribute.EditorToolbarItemAttribute(string area, Inno.Editor.Interactions.EditorToolbarIcon icon, string tooltip, int order = 0, Inno.Editor.Interactions.EditorToolbarIcon activeIcon = Inno.Editor.Interactions.EditorToolbarIcon.None)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItemAttribute.cs#L37) | Creates a toolbar placement for the annotated targetless action.<br>`area`：The exact interaction area whose toolbar receives the action.<br>`icon`：The symbol shown while the action is not checked.<br>`tooltip`：The fallback tooltip shown when the action has no contextual display name.<br>`order`：The stable ordering value within the toolbar.<br>`activeIcon`：The symbol shown while the action is checked, or Inno.Editor.Interactions.EditorToolbarIcon.None to retain icon. | — | `System.ArgumentException`：Thrown when area or tooltip is empty, or when icon is Inno.Editor.Interactions.EditorToolbarIcon.None.<br>`System.ArgumentOutOfRangeException`：Thrown when an icon value is not defined. |
+| <a id="api-32979925eeeaf2ee"></a>[`public Inno.Editor.Interactions.EditorToolbarIcon Inno.Editor.Interactions.EditorToolbarItemAttribute.activeIcon { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItemAttribute.cs#L75) | Gets the optional replacement symbol shown while the action is checked. | — | — |
+| <a id="api-4f5d03fb6e2ae92c"></a>[`public string Inno.Editor.Interactions.EditorToolbarItemAttribute.area { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItemAttribute.cs#L65) | Gets the exact toolbar interaction area. | — | — |
+| <a id="api-0250029003c4e307"></a>[`public Inno.Editor.Interactions.EditorToolbarIcon Inno.Editor.Interactions.EditorToolbarItemAttribute.icon { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItemAttribute.cs#L70) | Gets the symbol shown while the action is not checked. | — | — |
+| <a id="api-f9f02fea9fdadc0b"></a>[`public int Inno.Editor.Interactions.EditorToolbarItemAttribute.order { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItemAttribute.cs#L85) | Gets the stable ordering value. | — | — |
+| <a id="api-bece7c5c84d2b4a6"></a>[`public string Inno.Editor.Interactions.EditorToolbarItemAttribute.tooltip { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItemAttribute.cs#L80) | Gets the fallback tooltip. | — | — |
+| <a id="api-a2a796924140f755"></a>[`public sealed class Inno.Editor.Interactions.EditorToolbarItemAttribute : System.Attribute`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarItemAttribute.cs#L9) | Places an editor action on a compact toolbar surface. | — | — |
+
+### `Inno.Editor.Interactions.EditorToolbarModel`
+
+<!-- api: T:Inno.Editor.Interactions.EditorToolbarModel b8acdfe14fc34ef99e1c60ef879f278eeb87e6d9c4ddb1e7045fc8983a80df37 -->
+<!-- api: P:Inno.Editor.Interactions.EditorToolbarModel.items b496bbcacfcc7ad88e32787d64f4a10d1a1c336d8bc4e544c534b61d4a29dea3 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-dc4a9dc7008296a0"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Editor.Interactions.EditorToolbarItem> Inno.Editor.Interactions.EditorToolbarModel.items { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarModel.cs#L18) | Gets visible toolbar commands in deterministic display order. | — | — |
+| <a id="api-370c91e5e0bf433d"></a>[`public sealed class Inno.Editor.Interactions.EditorToolbarModel`](../../src/composition/editor/framework/Inno.Editor.Interactions/Toolbars/EditorToolbarModel.cs#L8) | Contains an immutable resolved toolbar for one interaction area. | — | — |
+
+### `Inno.Editor.Interactions.EditorValidationResult`
+
+<!-- api: T:Inno.Editor.Interactions.EditorValidationResult 70e47605eb5d1fb1b3bb9b01dba7e6ae4d84a54708efefbb5cbd67b5f01fcee7 -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.#ctor(System.Boolean,System.String) 434aa9854924f8f33ae59057473228b9082d51c6f9c7671bbec1b26108ac64f1 -->
+<!-- api: P:Inno.Editor.Interactions.EditorValidationResult.isValid b8ecee58e93c765ee70aa1fa2a70413062bc97664b1c4f6e8da50ef440763ba7 -->
+<!-- api: P:Inno.Editor.Interactions.EditorValidationResult.message df6438ad74be8cbb1a2c1cd64ebc49c6a602c2deee86d1334a839819ded42db6 -->
+<!-- api: P:Inno.Editor.Interactions.EditorValidationResult.valid 0d6bdc3b4f142d1013c4c0dd6e03e801a8118e216a8937915a33f5f4d3323356 -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.Invalid(System.String) 975b0a2a1c6882c202ed1a35e4dcf4dc620ff874a539d51988bf3101b8d89ba6 -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.ToString 8df69f778a88915d2886cbcc650ee762d028f1743519e2e9dfc182fd9c9e056a -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.op_Inequality(Inno.Editor.Interactions.EditorValidationResult,Inno.Editor.Interactions.EditorValidationResult) d374d1b5d58a7770a70d48b757b2e3159e7aa85ab69238600c081f2f9d3d8062 -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.op_Equality(Inno.Editor.Interactions.EditorValidationResult,Inno.Editor.Interactions.EditorValidationResult) 2c6d00aa7eb395145d161326a9dd1aa8644d8cce1c6e23ac2efcf14deb128214 -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.GetHashCode 8cae60de5616c2c52ed92cfa9194ef5323576d040d5a0633389c87fdd061fd0b -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.Equals(System.Object) 025d07518b5feccfe130178e2be2f4d6a1fbbe81b4f029a13609c572823723bf -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.Equals(Inno.Editor.Interactions.EditorValidationResult) 35a69894ed88f6a3c007fd024b03fbdfe91c5fe197b023040436fcc817360ba4 -->
+<!-- api: M:Inno.Editor.Interactions.EditorValidationResult.Deconstruct(System.Boolean@,System.String@) 0a60a4c4e1d4c3d7e3f2a865ac97c5b8ec7767e5f31bf300f9ce856de259ca66 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-3b0407b59969606e"></a>[`public Inno.Editor.Interactions.EditorValidationResult.EditorValidationResult(bool isValid, string message)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | Describes whether a requested editor operation is valid and carries a diagnostic when it is rejected.<br>`isValid`：Whether the requested operation may proceed.<br>`message`：The user-facing validation diagnostic, or an empty string for a valid result. | — | — |
+| <a id="api-29c79e499303b821"></a>[`public void Inno.Editor.Interactions.EditorValidationResult.Deconstruct(out bool isValid, out string message)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | C# record 生成的解构入口，按主构造声明顺序返回位置成员。 | — | — |
+| <a id="api-4b232abe116264c5"></a>[`public bool Inno.Editor.Interactions.EditorValidationResult.Equals(Inno.Editor.Interactions.EditorValidationResult other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-572fb54845f544a5"></a>[`public override bool Inno.Editor.Interactions.EditorValidationResult.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-bc976612a7e5c1d9"></a>[`public override int Inno.Editor.Interactions.EditorValidationResult.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-051ecc0f410ee3b9"></a>[`public static Inno.Editor.Interactions.EditorValidationResult Inno.Editor.Interactions.EditorValidationResult.Invalid(string message)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L30) | Creates a failed validation result with a user-facing diagnostic.<br>返回：An invalid result containing the supplied diagnostic.<br>`message`：The diagnostic that explains why the operation cannot proceed. | — | — |
+| <a id="api-0c99487363366249"></a>[`public static bool Inno.Editor.Interactions.EditorValidationResult.operator ==(Inno.Editor.Interactions.EditorValidationResult left, Inno.Editor.Interactions.EditorValidationResult right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-3cee76b484949e6f"></a>[`public static bool Inno.Editor.Interactions.EditorValidationResult.operator !=(Inno.Editor.Interactions.EditorValidationResult left, Inno.Editor.Interactions.EditorValidationResult right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-2d1b1cac99f77dc4"></a>[`public override string Inno.Editor.Interactions.EditorValidationResult.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-bf06b38c363706e8"></a>[`public bool Inno.Editor.Interactions.EditorValidationResult.isValid { get; init; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L13) | Whether the requested operation may proceed. | — | — |
+| <a id="api-0558fc92233adc43"></a>[`public string Inno.Editor.Interactions.EditorValidationResult.message { get; init; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L14) | The user-facing validation diagnostic, or an empty string for a valid result. | — | — |
+| <a id="api-62e9435d7ca25aae"></a>[`public static Inno.Editor.Interactions.EditorValidationResult Inno.Editor.Interactions.EditorValidationResult.valid { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L19) | Gets a successful validation result. | — | — |
+| <a id="api-26b5af875a996ae9"></a>[`public readonly record struct Inno.Editor.Interactions.EditorValidationResult : System.IEquatable<Inno.Editor.Interactions.EditorValidationResult>`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/EditorValidationResult.cs#L12) | Describes whether a requested editor operation is valid and carries a diagnostic when it is rejected.<br>`isValid`：Whether the requested operation may proceed.<br>`message`：The user-facing validation diagnostic, or an empty string for a valid result. | — | — |
+
+### `Inno.Editor.Interactions.EditorViewportCursor`
+
+<!-- api: T:Inno.Editor.Interactions.EditorViewportCursor 1012182201d43f8240e83e90dd6f87d9a1e792136f7d2a158f9e65ea67dcc5ee -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportCursor.Arrow 6553b4c8d5f3bc1f51066c2c0545600b65be4c73c14194902226dff87e11c27f -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportCursor.Crosshair e924727d53e5c735fedb169ab0a7ce3aa43d1be1ee1b3b6a8038744f8e2297cd -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportCursor.Hand 4bf8439831e5600be18fc0c3baa24997553e451a97e7f6f5c1cf8b2ca9d09dd2 -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportCursor.Move 26a8aa00af9b6ee34256ed63b43d715be288474c1d242228091b13838d1a2dd6 -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportCursor.ResizeHorizontal 66aeb8365548455d6e9b438190bb36493ff5e76a78badd7ec2ecae1cd5273591 -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportCursor.ResizeVertical 15d821a4df6e0ee94257fef877373dab6425e4051f5251a7731a17d14d60a83d -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportCursor.Hidden 4cb6e8191ee3d924247e5780a7b87706204c9b75a4dadefdd1e77e2fd1f0f05d -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-03b2a36b0811db84"></a>[`Inno.Editor.Interactions.EditorViewportCursor.Arrow = 0`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L38) | Uses the normal arrow cursor. | — | — |
+| <a id="api-78d246237e716d9b"></a>[`Inno.Editor.Interactions.EditorViewportCursor.Crosshair = 1`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L42) | Uses a precise crosshair. | — | — |
+| <a id="api-7fded7fa9fb7b78b"></a>[`Inno.Editor.Interactions.EditorViewportCursor.Hand = 2`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L46) | Uses a hand suitable for panning. | — | — |
+| <a id="api-ccb437d8d7320d9c"></a>[`Inno.Editor.Interactions.EditorViewportCursor.Hidden = 6`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L62) | Hides the pointer while the tool owns it. | — | — |
+| <a id="api-de77935492e7c344"></a>[`Inno.Editor.Interactions.EditorViewportCursor.Move = 3`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L50) | Uses four-direction movement arrows. | — | — |
+| <a id="api-7608dcae29515e01"></a>[`Inno.Editor.Interactions.EditorViewportCursor.ResizeHorizontal = 4`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L54) | Uses horizontal resizing arrows. | — | — |
+| <a id="api-c270990d2da5b4df"></a>[`Inno.Editor.Interactions.EditorViewportCursor.ResizeVertical = 5`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L58) | Uses vertical resizing arrows. | — | — |
+| <a id="api-f534c65fa4eeebc5"></a>[`public enum Inno.Editor.Interactions.EditorViewportCursor : int`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L33) | Selects a presentation-independent cursor requested by a viewport tool. | — | — |
+
+### `Inno.Editor.Interactions.EditorViewportPointerEvent`
+
+<!-- api: T:Inno.Editor.Interactions.EditorViewportPointerEvent 7ddab7922adf8854af3cd41b0e216bf39f91f959b43eb009ee7a640413519d4e -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportPointerEvent.#ctor(System.Int32,Inno.Editor.Interactions.EditorViewportPointerPhase,Inno.Core.Mathematics.Vector2,Inno.Core.Mathematics.Vector2,System.Int32,Inno.Core.Input.KeyModifier) 87015b10cad84941e665a1ebe95c886a629ed41379b7ee03441a97e47fbb8c3d -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportPointerEvent.pointerId 15ad3127169bc8036f7d00e689c2bc8e0a02edb08d9c78f943454030f95936eb -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportPointerEvent.phase 308a671aff2075dc2ca63c0ec65024f78d4accb0340cc28d81d1aa19f585eed9 -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportPointerEvent.screenPosition 8927d33f713db9a67081d413d7b301b00f725006719cbfb6e782fab581c8ede3 -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportPointerEvent.worldPosition 2111970dc945745db3a2465176ce24be14b5e03c3cd980bfb1eae851f01967db -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportPointerEvent.button 16fa9fbe4b728f4880363d4dcd40ed78916f8f9ad9e3e7bfeee1242cbcf48234 -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportPointerEvent.modifiers 253e7088d807c2595535a240788665ee8a7c16af7c8a860f6bf08715f178af41 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportPointerEvent.ToString 3c69aaa214436e7dde8fdade0eb8fbc5c8c9f941e0b57934c1032e7afd8b7b5e -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportPointerEvent.op_Inequality(Inno.Editor.Interactions.EditorViewportPointerEvent,Inno.Editor.Interactions.EditorViewportPointerEvent) f5dd49349486d081a93f1c3cb649171f27e4201cbf1c31b2f878ce06fa90fb13 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportPointerEvent.op_Equality(Inno.Editor.Interactions.EditorViewportPointerEvent,Inno.Editor.Interactions.EditorViewportPointerEvent) df8826bd96ffc796ae163e3fd62de2590a7864ec3a93158d87b1cc48adeb0c8d -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportPointerEvent.GetHashCode 0ab2d0c7a8b273eeb1f342f4b36695a92b716c5edf47f2cb60642f0b9e726af5 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportPointerEvent.Equals(System.Object) db7ac0177e21d275f8d413748f9f997f583c12de35d82cf68df5b3624a1a1b82 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportPointerEvent.Equals(Inno.Editor.Interactions.EditorViewportPointerEvent) 1df2b727256e8ebba3c3d81082404a7ac34f9c525f3ade02875749289a652ba4 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-11e3ffd7951261a3"></a>[`public Inno.Editor.Interactions.EditorViewportPointerEvent.EditorViewportPointerEvent(int pointerId, Inno.Editor.Interactions.EditorViewportPointerPhase phase, Inno.Core.Mathematics.Vector2 screenPosition, Inno.Core.Mathematics.Vector2 worldPosition, int button, Inno.Core.Input.KeyModifier modifiers)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L134) | Creates one viewport pointer sample.<br>`pointerId`：Platform pointer identity.<br>`phase`：Gesture lifecycle phase.<br>`screenPosition`：Viewport-local pixel position.<br>`worldPosition`：Corresponding world position.<br>`button`：Platform button number.<br>`modifiers`：Active keyboard modifiers. | — | — |
+| <a id="api-9a261da2716a84f7"></a>[`public bool Inno.Editor.Interactions.EditorViewportPointerEvent.Equals(Inno.Editor.Interactions.EditorViewportPointerEvent other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L111) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-fe4a48e31b021352"></a>[`public override bool Inno.Editor.Interactions.EditorViewportPointerEvent.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L111) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-e53141b108f766fe"></a>[`public override int Inno.Editor.Interactions.EditorViewportPointerEvent.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L111) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-3094d96d1e6b26d5"></a>[`public static bool Inno.Editor.Interactions.EditorViewportPointerEvent.operator ==(Inno.Editor.Interactions.EditorViewportPointerEvent left, Inno.Editor.Interactions.EditorViewportPointerEvent right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L111) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-e06bc240871c51a4"></a>[`public static bool Inno.Editor.Interactions.EditorViewportPointerEvent.operator !=(Inno.Editor.Interactions.EditorViewportPointerEvent left, Inno.Editor.Interactions.EditorViewportPointerEvent right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L111) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-786dd3561541bca9"></a>[`public override string Inno.Editor.Interactions.EditorViewportPointerEvent.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L111) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-ce54e05b0a9964a8"></a>[`public int Inno.Editor.Interactions.EditorViewportPointerEvent.button { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L173) | Gets the platform button number. | — | — |
+| <a id="api-708a10f45cfd401b"></a>[`public Inno.Core.Input.KeyModifier Inno.Editor.Interactions.EditorViewportPointerEvent.modifiers { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L178) | Gets active keyboard modifiers. | — | — |
+| <a id="api-e883c46c5d6fa54a"></a>[`public Inno.Editor.Interactions.EditorViewportPointerPhase Inno.Editor.Interactions.EditorViewportPointerEvent.phase { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L158) | Gets the gesture lifecycle phase. | — | — |
+| <a id="api-0b93f75437de1731"></a>[`public int Inno.Editor.Interactions.EditorViewportPointerEvent.pointerId { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L153) | Gets the platform pointer identity. | — | — |
+| <a id="api-31657312d3a39016"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Editor.Interactions.EditorViewportPointerEvent.screenPosition { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L163) | Gets the viewport-local pixel position. | — | — |
+| <a id="api-71108fa7ba0ae6b1"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Editor.Interactions.EditorViewportPointerEvent.worldPosition { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L168) | Gets the corresponding world position. | — | — |
+| <a id="api-2a7d76275fd599c8"></a>[`public readonly record struct Inno.Editor.Interactions.EditorViewportPointerEvent : System.IEquatable<Inno.Editor.Interactions.EditorViewportPointerEvent>`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L111) | Contains one immutable viewport pointer sample in screen and world coordinates. | — | — |
+
+### `Inno.Editor.Interactions.EditorViewportPointerPhase`
+
+<!-- api: T:Inno.Editor.Interactions.EditorViewportPointerPhase 0ce63273faa6d99ddb0e5cf00ef5adc194a2cf6eb4757674acabcf328299d141 -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportPointerPhase.Down 4ae4770293727cc0484749471c9f1c1d8d1c44ce14db5bcb2fcfd922a2d45537 -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportPointerPhase.Move 26e28a274aea74abcb6682199e338ef492c5254df89229cf72ff724f694ad22a -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportPointerPhase.Up b07a8059f33b27c3294b266aef9bbd3c3125635caf23ddfba2895b28e4cdfa18 -->
+<!-- api: F:Inno.Editor.Interactions.EditorViewportPointerPhase.Cancel 1c8853850bdafca497d101cb9bcc6571e902e1428537345998fbecf9f2e0aa09 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-819caa86668ee9af"></a>[`Inno.Editor.Interactions.EditorViewportPointerPhase.Cancel = 3`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L27) | The platform cancelled the gesture. | — | — |
+| <a id="api-f54b503cb875b20e"></a>[`Inno.Editor.Interactions.EditorViewportPointerPhase.Down = 0`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L15) | The pointer button began a gesture. | — | — |
+| <a id="api-926652c6496fd2b4"></a>[`Inno.Editor.Interactions.EditorViewportPointerPhase.Move = 1`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L19) | The pointer moved or changed hover position. | — | — |
+| <a id="api-507baf03d761e780"></a>[`Inno.Editor.Interactions.EditorViewportPointerPhase.Up = 2`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L23) | The pointer button ended a gesture. | — | — |
+| <a id="api-57f16c90b92060c2"></a>[`public enum Inno.Editor.Interactions.EditorViewportPointerPhase : int`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L10) | Selects the lifecycle phase of one viewport pointer sample. | — | — |
+
+### `Inno.Editor.Interactions.EditorViewportShortcut`
+
+<!-- api: T:Inno.Editor.Interactions.EditorViewportShortcut d1a654cdf0997b89aac5f9aae3126853b670c792415cd0428ef80abe53e95d86 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportShortcut.#ctor(Inno.Core.Input.KeyCode,Inno.Core.Input.KeyModifier,System.Boolean) e38e97faa211bdf6f0404db6ef2aeb71eac693486a2462d57837440b799ff09c -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportShortcut.key f1fae4bfafc6a5d2ff2065d507730298e3cfaeb308e59b60c2ccfb0b5fa32bbc -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportShortcut.modifiers 3f86d4617f76bdd296b706b588db8ab624b23c9efa5146976cc11a148050090b -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportShortcut.repeat d27407ebdc661fc6048fbc4265f8711edc81377303c51e3db6dfd3542e5d522f -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportShortcut.ToString 4d2709388cb83a5538f588bada515b06007242f11fa836da7617863fd61092fe -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportShortcut.op_Inequality(Inno.Editor.Interactions.EditorViewportShortcut,Inno.Editor.Interactions.EditorViewportShortcut) 22406511acf0a18ab17588f4c4b7fac1d1b95820e77d26f1b38348f43fbda41c -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportShortcut.op_Equality(Inno.Editor.Interactions.EditorViewportShortcut,Inno.Editor.Interactions.EditorViewportShortcut) 8c1d04c8926adc1c15fb34249385b9b525f7e487ab240408ea0fbb5b307ffa55 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportShortcut.GetHashCode 68c064a3e1966ae8b6675a68944516b6a1f8b5bf156334bb8805bc696da335dc -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportShortcut.Equals(System.Object) 17a8febab2a5974af7c944d473dd088ea8a8035b0ae58edd352c093b870f7988 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportShortcut.Equals(Inno.Editor.Interactions.EditorViewportShortcut) 01b3b4d34f9f76d64890f4d50b1193c0c132e7a61eb5fb99b17d84076cffd467 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-a06ae63f8d85205a"></a>[`public Inno.Editor.Interactions.EditorViewportShortcut.EditorViewportShortcut(Inno.Core.Input.KeyCode key, Inno.Core.Input.KeyModifier modifiers = Inno.Core.Input.KeyModifier.None, bool repeat = false)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L82) | Creates one viewport shortcut sample.<br>`key`：Pressed key.<br>`modifiers`：Active keyboard modifiers.<br>`repeat`：Whether the platform generated an auto-repeat press. | — | — |
+| <a id="api-6678c0717f042db0"></a>[`public bool Inno.Editor.Interactions.EditorViewportShortcut.Equals(Inno.Editor.Interactions.EditorViewportShortcut other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L68) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-713352f63b75dad4"></a>[`public override bool Inno.Editor.Interactions.EditorViewportShortcut.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L68) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-8e2bd53f4f2f895d"></a>[`public override int Inno.Editor.Interactions.EditorViewportShortcut.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L68) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-0b4b54d54a118417"></a>[`public static bool Inno.Editor.Interactions.EditorViewportShortcut.operator ==(Inno.Editor.Interactions.EditorViewportShortcut left, Inno.Editor.Interactions.EditorViewportShortcut right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L68) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-a000863247faf28e"></a>[`public static bool Inno.Editor.Interactions.EditorViewportShortcut.operator !=(Inno.Editor.Interactions.EditorViewportShortcut left, Inno.Editor.Interactions.EditorViewportShortcut right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L68) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-c1c50633935f97ec"></a>[`public override string Inno.Editor.Interactions.EditorViewportShortcut.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L68) | Returns the fully qualified type name of this instance.<br>返回：The fully qualified type name. | — | — |
+| <a id="api-e394495fbb36c84b"></a>[`public Inno.Core.Input.KeyCode Inno.Editor.Interactions.EditorViewportShortcut.key { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L95) | Gets the pressed key. | — | — |
+| <a id="api-d6b0379d43984a8c"></a>[`public Inno.Core.Input.KeyModifier Inno.Editor.Interactions.EditorViewportShortcut.modifiers { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L100) | Gets active keyboard modifiers. | — | — |
+| <a id="api-31645600ab207ad2"></a>[`public bool Inno.Editor.Interactions.EditorViewportShortcut.repeat { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L105) | Gets whether the shortcut is an auto-repeat press. | — | — |
+| <a id="api-c0c4d985beab9075"></a>[`public readonly record struct Inno.Editor.Interactions.EditorViewportShortcut : System.IEquatable<Inno.Editor.Interactions.EditorViewportShortcut>`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L68) | Contains one presentation-independent shortcut sample for a focused viewport tool. | — | — |
+
+### `Inno.Editor.Interactions.EditorViewportTool`
+
+<!-- api: T:Inno.Editor.Interactions.EditorViewportTool df5ad6fa24394baec7e2e6356149741caee7e09334cab383f4a164b788ebb397 -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportTool.id 4849a2227815a8b0cc71e99851fc555676fb0f14f1053f4cd7df38beb6572aa4 -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportTool.cursor 3891d27395654582194cb41686e719dde944b55cafc72a47faf7aa2e60d066fe -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportTool.OnPointerDown(Inno.Editor.Interactions.EditorViewportToolContext,Inno.Editor.Interactions.EditorViewportPointerEvent) ed3b0991872567d7eb12896ac94855ce7609fe64b92a44706145a873678e1814 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportTool.OnPointerMove(Inno.Editor.Interactions.EditorViewportToolContext,Inno.Editor.Interactions.EditorViewportPointerEvent) 27b0f5a6edf4d2d22e50e2c85c7f9763acc87653b2751c3fa522a9f5dec4a7ff -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportTool.OnPointerUp(Inno.Editor.Interactions.EditorViewportToolContext,Inno.Editor.Interactions.EditorViewportPointerEvent) cb5d5fe2a9c56ac66c34d786f9dfd41e718ed7593909a1583691280133012e87 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportTool.OnPointerCancel(Inno.Editor.Interactions.EditorViewportToolContext,Inno.Editor.Interactions.EditorViewportPointerEvent) 4479dcc6c75be0cac33f1c46f12aeb2a80ae0cf1b3b339864261600f35373068 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportTool.OnShortcut(Inno.Editor.Interactions.EditorViewportToolContext,Inno.Editor.Interactions.EditorViewportShortcut) 397ddd817e5e31e9ab5a1563c1f5155c88e2259ca1eb03e8b824844a36aff75a -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportTool.DrawOverlay(Inno.Editor.Interactions.EditorViewportToolContext) e9db12476c03ae886ec987149abf055b04db2425dc454fc74c2cb19f3f175523 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportTool.#ctor 144617f9c82e89a1fb862b7d3309d1f395b13025bbffceeeacb3c144bbdbe453 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-cb7e2bb9cdbd7f7c"></a>[`protected Inno.Editor.Interactions.EditorViewportTool.EditorViewportTool()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L212) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-6b4100081928eac6"></a>[`public virtual void Inno.Editor.Interactions.EditorViewportTool.DrawOverlay(Inno.Editor.Interactions.EditorViewportToolContext context)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L316) | Draws transient gizmos and diagnostics over the viewport.<br>`context`：Gesture and coordinate context. | — | — |
+| <a id="api-16e6dca3e97ba1fc"></a>[`public virtual void Inno.Editor.Interactions.EditorViewportTool.OnPointerCancel(Inno.Editor.Interactions.EditorViewportToolContext context, Inno.Editor.Interactions.EditorViewportPointerEvent pointer)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L281) | Handles platform cancellation of an active gesture.<br>`context`：Gesture and coordinate context.<br>`pointer`：Immutable pointer sample. | — | — |
+| <a id="api-1efc191513bf3b95"></a>[`public virtual void Inno.Editor.Interactions.EditorViewportTool.OnPointerDown(Inno.Editor.Interactions.EditorViewportToolContext context, Inno.Editor.Interactions.EditorViewportPointerEvent pointer)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L233) | Handles a pointer press.<br>`context`：Gesture and coordinate context.<br>`pointer`：Immutable pointer sample. | — | — |
+| <a id="api-d89802118e09cf98"></a>[`public virtual void Inno.Editor.Interactions.EditorViewportTool.OnPointerMove(Inno.Editor.Interactions.EditorViewportToolContext context, Inno.Editor.Interactions.EditorViewportPointerEvent pointer)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L249) | Handles pointer movement or hover.<br>`context`：Gesture and coordinate context.<br>`pointer`：Immutable pointer sample. | — | — |
+| <a id="api-312a47b9477d2e08"></a>[`public virtual void Inno.Editor.Interactions.EditorViewportTool.OnPointerUp(Inno.Editor.Interactions.EditorViewportToolContext context, Inno.Editor.Interactions.EditorViewportPointerEvent pointer)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L265) | Handles a pointer release.<br>`context`：Gesture and coordinate context.<br>`pointer`：Immutable pointer sample. | — | — |
+| <a id="api-eb699757aad5dcd4"></a>[`public virtual bool Inno.Editor.Interactions.EditorViewportTool.OnShortcut(Inno.Editor.Interactions.EditorViewportToolContext context, Inno.Editor.Interactions.EditorViewportShortcut shortcut)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L302) | Handles a focused viewport shortcut before global action routing.<br>返回：true when the tool consumed the key.<br>`context`：Gesture and coordinate context.<br>`shortcut`：Pressed key sample. | — | — |
+| <a id="api-9ae8b191808ae9e0"></a>[`public virtual Inno.Editor.Interactions.EditorViewportCursor Inno.Editor.Interactions.EditorViewportTool.cursor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L222) | Gets the cursor requested while this tool is active. | — | — |
+| <a id="api-ffc120aecfba1823"></a>[`public abstract string Inno.Editor.Interactions.EditorViewportTool.id { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L217) | Gets the globally stable tool identity. | — | — |
+| <a id="api-8f8090b5929fe9a5"></a>[`public abstract class Inno.Editor.Interactions.EditorViewportTool`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L212) | Defines one presentation-independent, reloadable viewport editing tool. | — | — |
+
+### `Inno.Editor.Interactions.EditorViewportToolContext`
+
+<!-- api: T:Inno.Editor.Interactions.EditorViewportToolContext d25a6f5a3d52f996be0000c176db0b4b82507d07a3cbf9f099245b76cd1d3829 -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportToolContext.hasPointerCapture 3493cd10e878ae153d27f2479fac3c6552c60a41c462949c0b83d74eaa4d0205 -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportToolContext.capturedPointerId 81a2395d13a1c93284573ab837d4d7963d0deeaaec3bf4673c50906c3a139c1f -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportToolContext.hasHistoryGesture 6d0c1543c12a6074137d971d24079d6ab7bf262aec6565543e64f53b9cfdaa0a -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolContext.CapturePointer(System.Int32) 0cd51dfc7498b74cbf3119b732ffcc21cb2280314f48fa8d02e0e2c33bd75868 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolContext.ReleasePointer 63b13f6390dfa5c7acfdeb96edfb2bee6d24361564b3b2a1b610201f2c34f9ae -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolContext.BeginHistoryGesture(System.String) 553f539656530502a4baa1f3715b13e0e09bbe2b89e320783b4ccdf1a98e5b84 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolContext.CompleteHistoryGesture(System.Boolean) 464e20b441104a28e6cdbcde66efbf7863582b05e8d52d3f427fa81c2729d346 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolContext.ScreenToWorld(Inno.Core.Mathematics.Vector2) 7215e0d327c27faa54b5d4192077222eac218723af077bc760106bdf7d655f2d -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolContext.WorldToScreen(Inno.Core.Mathematics.Vector2) 2a18a208532a78811fac0623b3fd0f920c386641c28aaa04ecc5d3075b4faeb6 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-820b073333938660"></a>[`public void Inno.Editor.Interactions.EditorViewportToolContext.BeginHistoryGesture(string name)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L68) | Begins the only history transaction allowed for the current captured gesture.<br>`name`：User-facing Undo operation name. | — | — |
+| <a id="api-b7aecf0148e710b7"></a>[`public void Inno.Editor.Interactions.EditorViewportToolContext.CapturePointer(int pointerId)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L45) | Captures one pointer until explicit release or cancellation.<br>`pointerId`：Platform pointer identity. | — | — |
+| <a id="api-7c9f26144163a180"></a>[`public void Inno.Editor.Interactions.EditorViewportToolContext.CompleteHistoryGesture(bool commit)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L84) | Commits or rolls back the current gesture transaction exactly once.<br>`commit`：true to commit; otherwise, roll back. | — | — |
+| <a id="api-908a1e66d28fdc81"></a>[`public void Inno.Editor.Interactions.EditorViewportToolContext.ReleasePointer()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L55) | Releases the currently captured pointer. | — | — |
+| <a id="api-bdfc6620fd319518"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Editor.Interactions.EditorViewportToolContext.ScreenToWorld(Inno.Core.Mathematics.Vector2 screenPosition)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L106) | Converts viewport-local pixel coordinates to world coordinates.<br>返回：World coordinates.<br>`screenPosition`：Viewport-local pixel coordinates. | — | — |
+| <a id="api-971fbc6bfb774c03"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Editor.Interactions.EditorViewportToolContext.WorldToScreen(Inno.Core.Mathematics.Vector2 worldPosition)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L117) | Converts world coordinates to viewport-local pixel coordinates.<br>返回：Viewport-local pixel coordinates.<br>`worldPosition`：World coordinates. | — | — |
+| <a id="api-00e80aca871a96ea"></a>[`public int? Inno.Editor.Interactions.EditorViewportToolContext.capturedPointerId { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L32) | Gets the captured pointer identity, or null. | — | — |
+| <a id="api-09e4088978c8c2c5"></a>[`public bool Inno.Editor.Interactions.EditorViewportToolContext.hasHistoryGesture { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L37) | Gets whether a history transaction is active for the current gesture. | — | — |
+| <a id="api-ce98eaf75495fc38"></a>[`public bool Inno.Editor.Interactions.EditorViewportToolContext.hasPointerCapture { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L27) | Gets whether this tool owns a pointer. | — | — |
+| <a id="api-7e1fc2b03877620c"></a>[`public sealed class Inno.Editor.Interactions.EditorViewportToolContext`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolContext.cs#L9) | Coordinates pointer capture, transforms, and one history transaction for a viewport gesture. | — | — |
+
+### `Inno.Editor.Interactions.EditorViewportToolSession`
+
+<!-- api: T:Inno.Editor.Interactions.EditorViewportToolSession ea9c1bc94abe5c9fd4eaef23b9061205a3fb885f89b3f89ff8476540254d68e0 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolSession.#ctor(Inno.Editor.Interactions.IEditorHistory,Inno.Editor.Interactions.IEditorViewportCoordinateConverter) 0d004734d3cd3a3c2837a05c5d1cb31e98e12bb638c6f57dce966e10dd504c6e -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportToolSession.tool c9e483a59607cd98c253b2d0f32ee700cbb21e73d0fa4eaec50b18d9cf7efe2e -->
+<!-- api: P:Inno.Editor.Interactions.EditorViewportToolSession.cursor 529864aa8575b09bb25809bdae032499bd7abcdca08bc5a0a5801c230601f6eb -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolSession.SetTool(Inno.Editor.Interactions.EditorViewportTool) d4e686a4ee9f85fb37e888d3dbb46c37d28a38bec66c6d19c3d141b74f1c9a0e -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolSession.HandlePointer(Inno.Editor.Interactions.EditorViewportPointerEvent) 68c0d138a39677ae9d9e86ecc74bf4db4b3c6bb5487bf988fe2a2d84ab3a24af -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolSession.HandleShortcut(Inno.Editor.Interactions.EditorViewportShortcut) 6963c154d40b0e06a42db9ae0fa921662405b936a61db75cc184b0deaa38d994 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolSession.DrawOverlay 54301c037ac05765c9e53067f5f087244cc734b481567e89e8a54b99125e9684 -->
+<!-- api: M:Inno.Editor.Interactions.EditorViewportToolSession.Dispose 8f3bbdf9ee1fe06f0857325041e0e891384a38058b09c31e11384ac9c253f743 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-62155119e47b4a87"></a>[`public Inno.Editor.Interactions.EditorViewportToolSession.EditorViewportToolSession(Inno.Editor.Interactions.IEditorHistory history, Inno.Editor.Interactions.IEditorViewportCoordinateConverter coordinates)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L23) | Creates a viewport tool session.<br>`history`：History stack used by gesture transactions.<br>`coordinates`：Current viewport coordinate converter. | — | — |
+| <a id="api-95159c7ca431e8c1"></a>[`public void Inno.Editor.Interactions.EditorViewportToolSession.Dispose()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L115) | Cancels active gesture state and deactivates the tool. | — | — |
+| <a id="api-c9a654b7a58ca922"></a>[`public void Inno.Editor.Interactions.EditorViewportToolSession.DrawOverlay()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L106) | Draws the active tool overlay. | — | — |
+| <a id="api-531301eb1222738a"></a>[`public bool Inno.Editor.Interactions.EditorViewportToolSession.HandlePointer(Inno.Editor.Interactions.EditorViewportPointerEvent pointer)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L64) | Routes one immutable pointer sample.<br>返回：true when an active tool accepted the sample.<br>`pointer`：Pointer sample with precomputed world coordinates. | — | — |
+| <a id="api-fa7bbc8e113182b2"></a>[`public bool Inno.Editor.Interactions.EditorViewportToolSession.HandleShortcut(Inno.Editor.Interactions.EditorViewportShortcut shortcut)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L97) | Routes one focused keyboard shortcut.<br>返回：true when consumed.<br>`shortcut`：Pressed key sample. | — | — |
+| <a id="api-bbdf3400d49a9438"></a>[`public void Inno.Editor.Interactions.EditorViewportToolSession.SetTool(Inno.Editor.Interactions.EditorViewportTool? tool)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L46) | Activates a tool after cancelling any current gesture.<br>`tool`：Tool to activate, or null to deactivate. | — | — |
+| <a id="api-509b4ff02e8e52f6"></a>[`public Inno.Editor.Interactions.EditorViewportCursor Inno.Editor.Interactions.EditorViewportToolSession.cursor { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L38) | Gets the requested cursor for the active tool. | — | — |
+| <a id="api-22036bbe6bf93edc"></a>[`public Inno.Editor.Interactions.EditorViewportTool? Inno.Editor.Interactions.EditorViewportToolSession.tool { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L33) | Gets the active tool, or null. | — | — |
+| <a id="api-807e4b9fffa0e60f"></a>[`public sealed class Inno.Editor.Interactions.EditorViewportToolSession : System.IDisposable`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportToolSession.cs#L8) | Routes focused viewport input to one active tool while enforcing pointer-capture ownership. | — | — |
+
+### `Inno.Editor.Interactions.HotKeyGesture`
+
+<!-- api: T:Inno.Editor.Interactions.HotKeyGesture a086c1c8e56e1a0d9f0c62808719e0b3a015091ba4bf4ad00b4e7f42ab63f046 -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.#ctor(Inno.Core.Input.KeyCode,Inno.Core.Input.KeyModifier,System.String) 30863aac2deaba4729c89d1e6dccafe5ca261894b751e6c679d62544fa5b12e4 -->
+<!-- api: P:Inno.Editor.Interactions.HotKeyGesture.key 19d90ebdbbca1ade58a1b7ebd6b30dc87700f71d7b258eb626f754c2d96d2dce -->
+<!-- api: P:Inno.Editor.Interactions.HotKeyGesture.modifiers 7a589f33f9066aef05be0da56d73f89cccd7b2132df8ff19b6e37d410d341ce2 -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.Primary(Inno.Core.Input.KeyCode,Inno.Editor.Core.EditorKeyboardPolicy,Inno.Core.Input.KeyModifier) 31e8b996547869a2cff1ba9abdfa310e40bce7bcd919143bba02b08bfcda904d -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.ToString 53614740622066b35d4bfbebd459e7c578980dbda3e1a53ab57a2ee0688047b9 -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.op_Inequality(Inno.Editor.Interactions.HotKeyGesture,Inno.Editor.Interactions.HotKeyGesture) 20d5388003f9bad52afb6e86be4436725773c4c5959f8b0ba6cacc9b269bbedf -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.op_Equality(Inno.Editor.Interactions.HotKeyGesture,Inno.Editor.Interactions.HotKeyGesture) 5c5bc228f8d784e746286bf7f2c45e2b1faf5f523abbf4dbdf3db99be88ecb0e -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.GetHashCode cb2ea29f568bcb10269b409cce1d3d201d8c0ef531ed692fc708dbf219b90d51 -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.Equals(System.Object) 31972807fac7bedea53f0e4c67d82cf773cba0fde0a2a39c078602257cce2250 -->
+<!-- api: M:Inno.Editor.Interactions.HotKeyGesture.Equals(Inno.Editor.Interactions.HotKeyGesture) 3154bd5f2529b83c341f3eb98ea8bcd2658a16debb43c1aeb70cb302d73be1ac -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-2a00fd914c892e16"></a>[`public Inno.Editor.Interactions.HotKeyGesture.HotKeyGesture(Inno.Core.Input.KeyCode key, Inno.Core.Input.KeyModifier modifiers = Inno.Core.Input.KeyModifier.None, string superModifierLabel = "Super")`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L31) | Creates a keyboard gesture with an exact set of modifier keys after symbolic-key normalization.<br>`key`：The non-modifier key in the gesture.<br>`modifiers`：The modifier keys required by the gesture.<br>`superModifierLabel`：The display name of the Super modifier; the neutral name is used for explicitly constructed gestures. | — | `System.ArgumentException`：The modifier label is empty. |
+| <a id="api-c19c869760e1def4"></a>[`public bool Inno.Editor.Interactions.HotKeyGesture.Equals(Inno.Editor.Interactions.HotKeyGesture other)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L12) | Indicates whether the current object is equal to another object of the same type.<br>返回：true if the current object is equal to the other parameter; otherwise, false.<br>`other`：An object to compare with this object. | — | — |
+| <a id="api-0fa3285647d65753"></a>[`public override bool Inno.Editor.Interactions.HotKeyGesture.Equals(object obj)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L12) | Indicates whether this instance and a specified object are equal.<br>返回：true if obj and this instance are the same type and represent the same value; otherwise, false.<br>`obj`：The object to compare with the current instance. | — | — |
+| <a id="api-8a83c4298f271c7a"></a>[`public override int Inno.Editor.Interactions.HotKeyGesture.GetHashCode()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L12) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — | — |
+| <a id="api-f20f498c010f8af9"></a>[`public static bool Inno.Editor.Interactions.HotKeyGesture.operator ==(Inno.Editor.Interactions.HotKeyGesture left, Inno.Editor.Interactions.HotKeyGesture right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L12) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-b9c0bf6690adbdec"></a>[`public static bool Inno.Editor.Interactions.HotKeyGesture.operator !=(Inno.Editor.Interactions.HotKeyGesture left, Inno.Editor.Interactions.HotKeyGesture right)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L12) | C# record 生成的值相等性成员；比较当前 record 状态，并保持相等值的哈希一致。 | — | — |
+| <a id="api-3fe29ed133613e95"></a>[`public static Inno.Editor.Interactions.HotKeyGesture Inno.Editor.Interactions.HotKeyGesture.Primary(Inno.Core.Input.KeyCode key, Inno.Editor.Core.EditorKeyboardPolicy keyboard, Inno.Core.Input.KeyModifier additionalModifiers = Inno.Core.Input.KeyModifier.None)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L67) | Creates a gesture that includes the product-selected primary modifier.<br>返回：A product-resolved keyboard gesture.<br>`key`：The non-modifier key in the gesture.<br>`keyboard`：The product-selected immutable keyboard policy.<br>`additionalModifiers`：Additional modifiers combined with the product-selected primary modifier. | — | — |
+| <a id="api-1f4f6e5d4a614538"></a>[`public override string Inno.Editor.Interactions.HotKeyGesture.ToString()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L82) | Formats the gesture as a human-readable editor menu shortcut label.<br>返回：A product-resolved textual representation of the gesture. | — | — |
+| <a id="api-14f626c90d0242b6"></a>[`public Inno.Core.Input.KeyCode Inno.Editor.Interactions.HotKeyGesture.key { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L45) | Gets the main key. | — | — |
+| <a id="api-7e5d4a59f8ce6185"></a>[`public Inno.Core.Input.KeyModifier Inno.Editor.Interactions.HotKeyGesture.modifiers { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L50) | Gets the required modifiers. | — | — |
+| <a id="api-ca6a7c5f44cdf142"></a>[`public readonly record struct Inno.Editor.Interactions.HotKeyGesture : System.IEquatable<Inno.Editor.Interactions.HotKeyGesture>`](../../src/composition/editor/framework/Inno.Editor.Interactions/Actions/HotKeyGesture.cs#L12) | Describes one keyboard gesture used to invoke an editor command. | — | — |
+
+### `Inno.Editor.Interactions.IEditorDocumentService`
+
+<!-- api: T:Inno.Editor.Interactions.IEditorDocumentService 4494899f5b6f657c405bdc3f89b028ad00bfc2022fd99831e3ebe73b842f4985 -->
+<!-- api: P:Inno.Editor.Interactions.IEditorDocumentService.documents 9476ead8efb56a27ea329ad3e6fdf8a81031681bd6ef4400b981e6c293c9764f -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.RegisterProvider(Inno.Editor.Interactions.EditorDocumentProvider) 3e604f6658b52b0c6190a4baa75cb3ee7b35de68eb0c67e8c57b0e67f09715e9 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.Open(System.String,System.Guid) 35b5d1482877975ee3375b641c902b0828b50a6ea90fd1540c175d9d42432339 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.UpdateAssetPath(System.Guid,System.String) 0d9f3fa898ba9f6bff917e8248a6d6a5cba18ba6283e8a36d2938ba82e445200 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.SetDirty(System.Guid,System.Boolean) 901638aa95034f50d207a2ed2397fc05864a9ef5c783e714ea42cfa1b7aaa164 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.Save(System.Guid) 122bd4c3dacf822cf244fba396ec95b5b09e3736b944ed59716cc2ff1c0cb8bf -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.SaveAll 730788cb543a573c4aed025b2f563879af4734d5bc8902ab8d24e4b839aca162 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.Apply(System.Guid) 92a2c319d2225820c272f66f2caf4fb6105c0c3d6626602abfdc13f235ce5d7b -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.Revert(System.Guid) 9cc3254ee5f07121e8c3487f9cd27869904d58da8e187937a86139162a67ce70 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorDocumentService.Close(System.Guid,Inno.Editor.Interactions.EditorDocumentCloseMode) 463787e0e122608a018d151930f7d9e1627c0ab1cd3fa3b48953b4455e1447d1 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-a193768558cd7fcd"></a>[`bool Inno.Editor.Interactions.IEditorDocumentService.Apply(System.Guid documentId)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L122) | Applies staged changes through the current provider.<br>返回：true when changes are applied.<br>`documentId`：Stable tab identity. | — | — |
+| <a id="api-f43f8397949c1c11"></a>[`bool Inno.Editor.Interactions.IEditorDocumentService.Close(System.Guid documentId, Inno.Editor.Interactions.EditorDocumentCloseMode mode)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L147) | Closes one document using an explicit dirty-document decision.<br>返回：true when the document closed.<br>`documentId`：Stable tab identity.<br>`mode`：Explicit close behavior. | — | — |
+| <a id="api-1fef2fabdef30b30"></a>[`Inno.Editor.Interactions.EditorDocumentContext Inno.Editor.Interactions.IEditorDocumentService.Open(string assetPath, System.Guid assetId = default(System.Guid))`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L58) | Opens a document or returns its existing single instance.<br>返回：The stable document context.<br>`assetPath`：Project asset path.<br>`assetId`：Persistent asset identity when available. | — | — |
+| <a id="api-6f474cebbbe55468"></a>[`System.IDisposable Inno.Editor.Interactions.IEditorDocumentService.RegisterProvider(Inno.Editor.Interactions.EditorDocumentProvider provider)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L44) | Registers one current-generation document provider.<br>返回：A lease that detaches only this provider instance.<br>`provider`：Provider instance to register. | — | — |
+| <a id="api-721ee0e280612605"></a>[`bool Inno.Editor.Interactions.IEditorDocumentService.Revert(System.Guid documentId)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L133) | Reverts staged changes through the current provider.<br>返回：true when changes are reverted.<br>`documentId`：Stable tab identity. | — | — |
+| <a id="api-3c6cec3606f30e5c"></a>[`bool Inno.Editor.Interactions.IEditorDocumentService.Save(System.Guid documentId)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L103) | Saves one open document through its current provider.<br>返回：true when the document is saved.<br>`documentId`：Stable tab identity. | — | — |
+| <a id="api-807e01b455a9e4cd"></a>[`bool Inno.Editor.Interactions.IEditorDocumentService.SaveAll()`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L111) | Saves every dirty open document.<br>返回：true when every dirty document is saved. | — | — |
+| <a id="api-dd777f902129d6c0"></a>[`void Inno.Editor.Interactions.IEditorDocumentService.SetDirty(System.Guid documentId, bool isDirty = true)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L89) | Updates a document's unsaved state without saving, discarding or changing its History.<br>`documentId`：Stable tab identity.<br>`isDirty`：Whether the provider's current draft differs from its saved baseline. | — | — |
+| <a id="api-b908ec33c7f3a3e5"></a>[`bool Inno.Editor.Interactions.IEditorDocumentService.UpdateAssetPath(System.Guid documentId, string assetPath)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L75) | Updates an open document's source location after an identity-preserving asset move, without changing history or focus.<br>返回：Whether the document exists.<br>`documentId`：Existing document identity.<br>`assetPath`：Current authoritative source location for the same persistent asset. | — | — |
+| <a id="api-38ead3e14d663293"></a>[`System.Collections.Generic.IReadOnlyList<Inno.Editor.Interactions.EditorDocumentContext> Inno.Editor.Interactions.IEditorDocumentService.documents { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L33) | Gets the currently owned source documents. | — | — |
+| <a id="api-10540acc5ca8eae4"></a>[`public interface Inno.Editor.Interactions.IEditorDocumentService`](../../src/composition/editor/framework/Inno.Editor.Interactions/Documents/IEditorDocumentService.cs#L28) | Owns single-instance editor documents independently from reloadable providers and presentation. | — | — |
+
+### `Inno.Editor.Interactions.IEditorHistory`
+
+<!-- api: T:Inno.Editor.Interactions.IEditorHistory 0cbd8b134a5b88b07948f19c422329b89a595752871fb49e9b2175df92f94a1e -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.canUndo 0e893d0d49cacda88f807301ed398c0bb2d44d097a19e0bbe1aa0996539b01cb -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.canRedo 7fb77374ff3673ddce81568b154c676e06c5e6323352be790c021d6cadf1841a -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.isFaulted 43d21e8d145929340db1642c5510800e28079a553587c1922dd9c62e3238e3f0 -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.undoName 00f30ba1adb36aef8668e1dbc8e7b630d3bad10e13002a5f1a985da840e4295f -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.redoName e70d55004c05fe6304d3a877414d279d10acf46500650152eb4350a1cccb5fd6 -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.undoUnavailableReason c134b983e6d9f348e6480bc51ac1515921d3196030bba6bc6c520ed65503db06 -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.redoUnavailableReason 0d7db5319171a2a0525c650fd21d06097c72b883299b902b80d4a01b52cc7717 -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.faultReason d5982aed69aa3af29061eb44a5b381921329a19b492a8baa4788843473e0924b -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.residentBytes 316e2cc13b467110de07bc8b5d34618b0d350857517c3c529e845aab573e7a24 -->
+<!-- api: P:Inno.Editor.Interactions.IEditorHistory.diskBytes c316fb6b27e3385caa17035a1d59ee61b81e8435c16ed5e1dd58525ee78df651 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorHistory.BeginTransaction(System.String) d4e65b7b052114716989eb33bb685842c3c2fd3399393000d130b88c7307bbf0 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorHistory.Execute(System.String,Inno.Editor.Interactions.EditorHistoryChange) e25f3d2faa745ac37351ac6f130e7eaa101a328a467a5c05722e5a227ed0af81 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorHistory.RecordApplied(System.String,Inno.Editor.Interactions.EditorHistoryChange) dff3a3f325ff143b30106233a79dcc6d340c5e94c86cfda8d3af7091e2e300de -->
+<!-- api: M:Inno.Editor.Interactions.IEditorHistory.Undo 3e4bb3b20df9698174cf72b807ba4b3114e86755c0fb0d38dfb47ee3a2d31961 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorHistory.Redo fdfda19617ae073d162f8edb604d52943eb6da276d15619b16f18dbf58688589 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-96b7f505234d7711"></a>[`Inno.Editor.Interactions.EditorHistoryTransaction Inno.Editor.Interactions.IEditorHistory.BeginTransaction(string name)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L67) | Begins an atomic group of neutral history operations.<br>返回：A transaction that must be committed or rolled back.<br>`name`：The user-facing grouped operation name. | — | — |
+| <a id="api-ed997203c9567f7a"></a>[`Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.IEditorHistory.Execute(string name, Inno.Editor.Interactions.EditorHistoryChange change)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L81) | Applies and records a neutral change through its current-generation handler.<br>返回：The result of applying the change in the Redo direction.<br>`name`：The user-facing operation name.<br>`change`：The independently owned neutral change. | — | — |
+| <a id="api-3f11c5cfec83120f"></a>[`void Inno.Editor.Interactions.IEditorHistory.RecordApplied(string name, Inno.Editor.Interactions.EditorHistoryChange change)`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L95) | Records a neutral change whose domain mutation is already applied.<br>`name`：The user-facing operation name.<br>`change`：The independently owned neutral change. | — | — |
+| <a id="api-e25abd6bbad207d0"></a>[`Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.IEditorHistory.Redo()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L114) | Attempts to reapply the newest reverted operation.<br>返回：The transition result. A state-preserving failure remains available for retry. | — | — |
+| <a id="api-b2375ae68f8d4ac4"></a>[`Inno.Editor.Interactions.EditorHistoryResult Inno.Editor.Interactions.IEditorHistory.Undo()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L106) | Attempts to restore the state preceding the newest committed operation.<br>返回：The transition result. A state-preserving failure remains available for retry. | — | — |
+| <a id="api-4e3ba21478cf45fa"></a>[`bool Inno.Editor.Interactions.IEditorHistory.canRedo { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L16) | Gets whether a Redo transition is currently available. | — | — |
+| <a id="api-c8c924e2202827f1"></a>[`bool Inno.Editor.Interactions.IEditorHistory.canUndo { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L11) | Gets whether an Undo transition is currently available. | — | — |
+| <a id="api-7d082d25f71d9bf6"></a>[`long Inno.Editor.Interactions.IEditorHistory.diskBytes { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L56) | Gets the temporary disk payload bytes retained by committed entries. | — | — |
+| <a id="api-50c08388b4a5c643"></a>[`string? Inno.Editor.Interactions.IEditorHistory.faultReason { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L46) | Gets the diagnostic that faulted this history, or null. | — | — |
+| <a id="api-830cde5dc2e1b0ca"></a>[`bool Inno.Editor.Interactions.IEditorHistory.isFaulted { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L21) | Gets whether a failed compensation left the domain state indeterminate. | — | — |
+| <a id="api-e69abf0668519cc0"></a>[`string? Inno.Editor.Interactions.IEditorHistory.redoName { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L31) | Gets the next Redo operation name, or null. | — | — |
+| <a id="api-8a76ac5792e41a30"></a>[`string? Inno.Editor.Interactions.IEditorHistory.redoUnavailableReason { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L41) | Gets why the next Redo entry is unavailable, or null. | — | — |
+| <a id="api-516c50534dc7bcd3"></a>[`long Inno.Editor.Interactions.IEditorHistory.residentBytes { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L51) | Gets the resident payload bytes retained by committed entries. | — | — |
+| <a id="api-0ff807a81e151595"></a>[`string? Inno.Editor.Interactions.IEditorHistory.undoName { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L26) | Gets the next Undo operation name, or null. | — | — |
+| <a id="api-7fc71156682571ba"></a>[`string? Inno.Editor.Interactions.IEditorHistory.undoUnavailableReason { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L36) | Gets why the next Undo entry is unavailable, or null. | — | — |
+| <a id="api-6e8895a5356b1768"></a>[`public interface Inno.Editor.Interactions.IEditorHistory`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistory.cs#L6) | Exposes reload-safe Undo and Redo operations based exclusively on neutral history changes. | — | — |
+
+### `Inno.Editor.Interactions.IEditorHistoryIsolation`
+
+<!-- api: T:Inno.Editor.Interactions.IEditorHistoryIsolation feac9874d5755cc5d25bba9e2b4afdff936ed63197c8a2b0c25076c6b1096311 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorHistoryIsolation.BeginHistoryIsolation be7af2b7b7be2b0dd767f89f35e6849f0803ab4943e62d646b98af62b9dc609c -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-3631aa191004ac61"></a>[`System.IDisposable Inno.Editor.Interactions.IEditorHistoryIsolation.BeginHistoryIsolation()`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistoryIsolation.cs#L19) | Starts an independently disposable history branch while retaining the current editing branch.<br>返回：A lease that releases the temporary branch and restores the retained branch when disposed. | — | `System.InvalidOperationException`：Thrown while another history transition, transaction, or isolated branch is active. |
+| <a id="api-3fcca375f5dc0c28"></a>[`public interface Inno.Editor.Interactions.IEditorHistoryIsolation`](../../src/composition/editor/framework/Inno.Editor.Interactions/History/IEditorHistoryIsolation.cs#L8) | Creates temporary history branches for transient editor workflows without exposing history internals. | — | — |
+
+### `Inno.Editor.Interactions.IEditorSelectionCoordinator`
+
+<!-- api: T:Inno.Editor.Interactions.IEditorSelectionCoordinator 545698c58b88f17b5da1dc380e70ae32e9b4e0f51a89f67a9896470709503de1 -->
+<!-- api: P:Inno.Editor.Interactions.IEditorSelectionCoordinator.selectedTarget 77ecbc23087d925c23456697d3fa1b1aa20cc2f5ffe3c660043317e7290a0ed6 -->
+<!-- api: M:Inno.Editor.Interactions.IEditorSelectionCoordinator.SetSelection(System.Object) 22af3ac8b0bd5506ee1669858cedb5b2ab384493b0cbbb2d39e36c19d2a801af -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-126a7cd67c25eef8"></a>[`void Inno.Editor.Interactions.IEditorSelectionCoordinator.SetSelection(object? target)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/IEditorSelectionCoordinator.cs#L19) | Replaces the current target after closing presentations owned by another target.<br>`target`：The new target, or null to clear selection. | — | — |
+| <a id="api-b2630d20a7058fe2"></a>[`object? Inno.Editor.Interactions.IEditorSelectionCoordinator.selectedTarget { get; }`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/IEditorSelectionCoordinator.cs#L11) | Gets the currently selected target, or null when selection is empty. | — | — |
+| <a id="api-83dc74edddaf73ea"></a>[`public interface Inno.Editor.Interactions.IEditorSelectionCoordinator`](../../src/composition/editor/framework/Inno.Editor.Interactions/Runtime/IEditorSelectionCoordinator.cs#L6) | Provides the narrow selection boundary used by editor features that replace object instances. | — | — |
+
+### `Inno.Editor.Interactions.IEditorViewportCoordinateConverter`
+
+<!-- api: T:Inno.Editor.Interactions.IEditorViewportCoordinateConverter 08ea81c2e32f87c2643a3c221bacd799c247ca8009b9642d24dc918a1d7355ad -->
+<!-- api: M:Inno.Editor.Interactions.IEditorViewportCoordinateConverter.ScreenToWorld(Inno.Core.Mathematics.Vector2) 59263173411be43ce9dc2b43df0d69fd12fe0b48ce1f7bf5ea8dfaf3855cefdd -->
+<!-- api: M:Inno.Editor.Interactions.IEditorViewportCoordinateConverter.WorldToScreen(Inno.Core.Mathematics.Vector2) b776149d1d70325891de399354351350ef39276e9a5059cff27865fab5f4f16c -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-c105d3a620ccd457"></a>[`Inno.Core.Mathematics.Vector2 Inno.Editor.Interactions.IEditorViewportCoordinateConverter.ScreenToWorld(Inno.Core.Mathematics.Vector2 screenPosition)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L195) | Converts viewport-local pixel coordinates to world coordinates.<br>返回：World coordinates.<br>`screenPosition`：Viewport-local pixel coordinates. | — | — |
+| <a id="api-b75c5aedd18f2b16"></a>[`Inno.Core.Mathematics.Vector2 Inno.Editor.Interactions.IEditorViewportCoordinateConverter.WorldToScreen(Inno.Core.Mathematics.Vector2 worldPosition)`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L206) | Converts world coordinates to viewport-local pixel coordinates.<br>返回：Viewport-local pixel coordinates.<br>`worldPosition`：World coordinates. | — | — |
+| <a id="api-f06a59fae419198a"></a>[`public interface Inno.Editor.Interactions.IEditorViewportCoordinateConverter`](../../src/composition/editor/framework/Inno.Editor.Interactions/Viewport/EditorViewportTool.cs#L184) | Converts coordinates for one viewport camera without exposing its presentation backend. | — | — |
+
+## 项目依赖
+
+- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Events](../core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Input](../core/Inno.Core.Input.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Mathematics](../core/Inno.Core.Mathematics.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

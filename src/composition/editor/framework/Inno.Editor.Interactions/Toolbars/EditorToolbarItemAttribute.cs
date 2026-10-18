@@ -39,8 +39,8 @@ public sealed class EditorToolbarItemAttribute : Attribute
         EditorToolbarIcon icon,
         string tooltip,
         int order = 0,
-        EditorToolbarIcon activeIcon = EditorToolbarIcon.None)
-    {
+        EditorToolbarIcon activeIcon = EditorToolbarIcon.None
+    ) {
         if (string.IsNullOrWhiteSpace(area))
             throw new ArgumentException("An editor toolbar area is required.", nameof(area));
         if (!Enum.IsDefined(icon))

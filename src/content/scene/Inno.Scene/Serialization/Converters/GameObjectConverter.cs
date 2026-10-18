@@ -24,8 +24,10 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, GameObject value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        GameObject value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         if (SceneGraphReferenceMap.TryGetCurrent(out SceneGraphReferenceMap? activeReferences))
@@ -197,8 +199,8 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
     private static void WriteReference(
         SerializationWriter writer,
         SceneGraphReferenceMap references,
-        GameObject gameObject)
-    {
+        GameObject gameObject
+    ) {
         EngineReferenceToken token = references.Capture(gameObject, writer.path);
         writer.Write("kind", (int)token.kind);
         writer.Write("sourceId", token.sourceId);
@@ -206,8 +208,8 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
 
     private static EngineObject ReadReference(
         SerializationReader reader,
-        SceneGraphReferenceMap references)
-    {
+        SceneGraphReferenceMap references
+    ) {
         var token = new EngineReferenceToken(
             (EngineReferenceKind)reader.Read<int>("kind"),
             reader.Read<Guid>("sourceId"));
@@ -232,8 +234,10 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
         }
     }
 
-    private static void CollectSubtree(GameObject gameObject, ICollection<GameObject> result)
-    {
+    private static void CollectSubtree(
+        GameObject gameObject,
+        ICollection<GameObject> result
+    ) {
         result.Add(gameObject);
         IReadOnlyList<Transform> children = gameObject.transform.children;
         for (int i = 0; i < children.Count; i++)

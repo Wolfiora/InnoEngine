@@ -20,8 +20,7 @@ public static class InputExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no input scope is active.
     /// </exception>
-    public static IInputService current
-        => S_CURRENT_SCOPE.current;
+    public static IInputService current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Tries to read input when a host has installed an input subsystem for this frame.

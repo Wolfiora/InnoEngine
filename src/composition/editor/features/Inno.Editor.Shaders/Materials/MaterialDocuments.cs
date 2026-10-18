@@ -12,7 +12,8 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Rendering;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.MaterialAsset>.Draft;
+using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.Assets.MaterialAsset>.Draft;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Shaders;
 
@@ -30,8 +31,12 @@ public sealed class MaterialDocuments : EditorModule
     internal readonly EditorInteractions interactions;
     internal readonly IEditorPreviewService previews;
 
-    internal MaterialDocuments(AssetPipeline assets, SerializationRegistry serialization, EditorInteractions interactions, IEditorPreviewService previews)
-    {
+    internal MaterialDocuments(
+        AssetPipeline assets,
+        SerializationRegistry serialization,
+        EditorInteractions interactions,
+        IEditorPreviewService previews
+    ) {
         this.assets = assets; this.interactions = interactions; this.previews = previews;
         m_serialization = serialization;
         m_documents = new(assets, serialization, interactions, "inno.material", C_HISTORY, ".imaterial", "Material");
@@ -71,7 +76,11 @@ public sealed class MaterialDocuments : EditorModule
     /// <param name="finishGesture">
     /// Whether this sample finishes the active gesture.
     /// </param>
-    public void Replace(Guid assetId, MaterialAsset candidate, bool finishGesture = true)
+    public void Replace(
+        Guid assetId,
+        MaterialAsset candidate,
+        bool finishGesture = true
+    )
         => m_documents.Replace(assetId, candidate, finishGesture);
 
     /// <summary>
@@ -91,7 +100,10 @@ public sealed class MaterialDocuments : EditorModule
     /// <param name="finishGesture">
     /// Whether this sample finishes the shared gesture.
     /// </param>
-    public void ReplaceMany(IReadOnlyDictionary<Guid, MaterialAsset> candidates, bool finishGesture = true)
+    public void ReplaceMany(
+        IReadOnlyDictionary<Guid, MaterialAsset> candidates,
+        bool finishGesture = true
+    )
         => m_documents.ReplaceMany(candidates, finishGesture);
 
     /// <summary>
@@ -110,25 +122,44 @@ public sealed class MaterialDocuments : EditorModule
         return OpenDraft(info.assetPath);
     }
     internal void TouchInspection(Draft draft) => m_documents.TouchInspection(draft.id);
-    internal ShaderParameterPresentation Presentation(ShaderAsset shader, ShaderPropertyId propertyId, out string error)
-    {
+    internal ShaderParameterPresentation Presentation(
+        ShaderAsset shader,
+        ShaderPropertyId propertyId,
+        out string error
+    ) {
         PresentationCache cache = m_presentations.GetValue(shader, static _ => new());
         if (cache.contentVersion != shader.contentVersion)
         {
             cache.contentVersion = shader.contentVersion;
             cache.graph = null;
             cache.error = "";
-            try { cache.graph = ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(shader, assets), m_serialization); }
-            catch (Exception failure) when (Recoverable(failure)) { cache.error = failure.Message; }
+            try
+            {
+                cache.graph = ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(shader, assets), m_serialization);
+            }
+            catch (Exception failure) when (Recoverable(failure))
+            {
+                cache.error = failure.Message;
+            }
         }
         error = cache.error;
         return cache.graph is null ? new() : ShaderParameterPresentation.Read(cache.graph, propertyId,
             m_serialization, AssetSerializationContext.Create(assets));
     }
-    internal void Edit(Draft draft, MaterialAsset candidate, bool finishGesture) => Replace(draft.id, candidate, finishGesture);
+    internal void Edit(
+        Draft draft,
+        MaterialAsset candidate,
+        bool finishGesture
+    ) => Replace(draft.id, candidate, finishGesture);
     internal void Commit(Draft draft) => Commit(draft.id);
-    internal void ValidateHistory(EditorHistoryChange change, EditorHistoryDirection direction) => m_documents.ValidateHistory(change, direction);
-    internal void ApplyHistory(EditorHistoryChange change, EditorHistoryDirection direction) => m_documents.ApplyHistory(change, direction);
+    internal void ValidateHistory(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) => m_documents.ValidateHistory(change, direction);
+    internal void ApplyHistory(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) => m_documents.ApplyHistory(change, direction);
     internal static bool Recoverable(Exception error) => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
         && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
 
@@ -184,10 +215,20 @@ internal sealed class MaterialDraftHistory(MaterialDocuments documents) : Editor
     /// <returns>
     /// The validated editor history availability that represents the completed operation.
     /// </returns>
-protected override EditorHistoryAvailability Query(EditorHistoryContext context, EditorHistoryChange change, EditorHistoryDirection direction)
-    {
-        try { documents.ValidateHistory(change, direction); return EditorHistoryAvailability.Available(); }
-        catch (Exception error) when (MaterialDocuments.Recoverable(error)) { return EditorHistoryAvailability.Unavailable(error.Message); }
+protected override EditorHistoryAvailability Query(
+    EditorHistoryContext context,
+    EditorHistoryChange change,
+    EditorHistoryDirection direction
+) {
+        try
+        {
+            documents.ValidateHistory(change, direction);
+            return EditorHistoryAvailability.Available();
+        }
+        catch (Exception error) when (MaterialDocuments.Recoverable(error))
+        {
+            return EditorHistoryAvailability.Unavailable(error.Message);
+        }
     }
     /// <summary>
     /// Applies a validated change atomically at the caller-controlled commit point.
@@ -204,9 +245,19 @@ protected override EditorHistoryAvailability Query(EditorHistoryContext context,
     /// <returns>
     /// The validated editor history result that represents the completed operation.
     /// </returns>
-protected override EditorHistoryResult Apply(EditorHistoryContext context, EditorHistoryChange change, EditorHistoryDirection direction)
-    {
-        try { documents.ApplyHistory(change, direction); return EditorHistoryResult.Success(); }
-        catch (Exception error) when (MaterialDocuments.Recoverable(error)) { return EditorHistoryResult.Failure(error.Message); }
+protected override EditorHistoryResult Apply(
+    EditorHistoryContext context,
+    EditorHistoryChange change,
+    EditorHistoryDirection direction
+) {
+        try
+        {
+            documents.ApplyHistory(change, direction);
+            return EditorHistoryResult.Success();
+        }
+        catch (Exception error) when (MaterialDocuments.Recoverable(error))
+        {
+            return EditorHistoryResult.Failure(error.Message);
+        }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Inno.Rendering;
 
@@ -25,5 +26,22 @@ public interface IRenderingBackendFactory
     /// <returns>
     /// A caller-owned backend-neutral rendering device.
     /// </returns>
-    IRenderDevice CreateDevice(RenderingBackendId backend, RenderingBackendOptions options);
+    IRenderDevice CreateDevice(
+        RenderingBackendId backend,
+        RenderingBackendOptions options
+    );
+
+    /// <summary>
+    /// Creates the composition program provider owned by the selected rendering backend.
+    /// </summary>
+    /// <param name="backend">
+    /// Stable identity of the selected rendering backend.
+    /// </param>
+    /// <returns>
+    /// A provider whose target programs are compatible with that backend.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// No provider is registered for the requested backend identity.
+    /// </exception>
+    IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend);
 }

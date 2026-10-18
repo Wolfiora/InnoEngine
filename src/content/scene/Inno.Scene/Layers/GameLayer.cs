@@ -99,7 +99,10 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
     /// <returns>
     /// <see langword="true"/> when the identifiers are equal.
     /// </returns>
-    public static bool operator ==(GameLayer left, GameLayer right) => left.Equals(right);
+    public static bool operator ==(
+        GameLayer left,
+        GameLayer right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two layer identifiers contain different indices.
@@ -113,5 +116,8 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
     /// <returns>
     /// <see langword="true"/> when the identifiers are different.
     /// </returns>
-    public static bool operator !=(GameLayer left, GameLayer right) => !left.Equals(right);
+    public static bool operator !=(
+        GameLayer left,
+        GameLayer right
+    ) => !left.Equals(right);
 }

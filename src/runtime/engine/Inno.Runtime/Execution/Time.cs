@@ -99,8 +99,7 @@ internal sealed class RuntimeClock
 {
     private static readonly ExecutionSlot<RuntimeClock> S_CURRENT_SCOPE = new("clock");
 
-    internal static RuntimeClock current
-        => S_CURRENT_SCOPE.current;
+    internal static RuntimeClock current => S_CURRENT_SCOPE.current;
 
     internal float time { get; private set; }
 

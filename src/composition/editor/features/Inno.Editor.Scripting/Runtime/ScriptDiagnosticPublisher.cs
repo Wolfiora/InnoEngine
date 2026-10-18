@@ -45,14 +45,11 @@ internal static class ScriptDiagnosticPublisher
             Diagnostic.Error("INNO-ALC-UNLOAD", exception.Message));
     }
 
-    internal static void ClearReload()
-        => Diagnostics.Clear(C_RELOAD_DIAGNOSTICS);
+    internal static void ClearReload() => Diagnostics.Clear(C_RELOAD_DIAGNOSTICS);
 
-    internal static void ClearIdeProjection()
-        => Diagnostics.Clear(C_IDE_PROJECTION_DIAGNOSTICS);
+    internal static void ClearIdeProjection() => Diagnostics.Clear(C_IDE_PROJECTION_DIAGNOSTICS);
 
-    internal static void ClearUnload()
-        => Diagnostics.Clear(C_UNLOAD_DIAGNOSTICS);
+    internal static void ClearUnload() => Diagnostics.Clear(C_UNLOAD_DIAGNOSTICS);
 
     internal static void ClearAll()
     {

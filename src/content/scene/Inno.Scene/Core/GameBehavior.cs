@@ -36,8 +36,7 @@ public abstract class GameBehavior : GameComponent, ISceneLifecycleObject
     /// <summary>
     /// Gets whether this component is enabled and active in its owning hierarchy.
     /// </summary>
-    public bool isActiveAndEnabled
-        => !isDestroyed && ownerOrNull is { activeInHierarchy: true } && m_enabled;
+    public bool isActiveAndEnabled => !isDestroyed && ownerOrNull is { activeInHierarchy: true } && m_enabled;
 
     /// <summary>
     /// Called once before this behavior first becomes active.

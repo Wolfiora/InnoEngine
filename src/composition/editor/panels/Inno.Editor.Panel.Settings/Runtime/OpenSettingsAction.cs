@@ -12,6 +12,5 @@ internal sealed class OpenSettingsAction(SettingsWindowModule window) : EditorAc
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void Execute(EditorActionContext context)
-        => window.Open();
+    protected override void Execute(EditorActionContext context) => window.Open();
 }

@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <InnoBgfxShaderTarget>macos-arm64</InnoBgfxShaderTarget>
+    <InnoBgfxShaderApis>Metal;Vulkan;OpenGL</InnoBgfxShaderApis>
+  </PropertyGroup>
+</Project>

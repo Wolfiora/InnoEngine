@@ -176,8 +176,8 @@ public sealed record AudioCapabilities
         bool supportsScheduledPlayback,
         bool supportsSpatialAudio,
         int maxListeners,
-        int sampleRate)
-    {
+        int sampleRate
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(maxListeners);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         this.supportsStreaming = supportsStreaming;
@@ -233,8 +233,12 @@ public readonly record struct AudioStatistics
     /// <param name="stolenVoiceCount">
     /// Voices reclaimed since runtime creation.
     /// </param>
-    public AudioStatistics(int activeVoices, int loadedClips, long decodedBytes, long stolenVoiceCount)
-    {
+    public AudioStatistics(
+        int activeVoices,
+        int loadedClips,
+        long decodedBytes,
+        long stolenVoiceCount
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(activeVoices);
         ArgumentOutOfRangeException.ThrowIfNegative(loadedClips);
         ArgumentOutOfRangeException.ThrowIfNegative(decodedBytes);
@@ -321,8 +325,8 @@ public readonly record struct AudioSpatialOptions
         float coneInnerAngle = 360f,
         float coneOuterAngle = 360f,
         float coneOuterGain = 1f,
-        float dopplerFactor = 1f)
-    {
+        float dopplerFactor = 1f
+    ) {
         AudioValueValidation.RequireFinite(position, nameof(position));
         AudioValueValidation.RequireFinite(direction, nameof(direction));
         AudioValueValidation.RequireFinite(velocity, nameof(velocity));
@@ -462,8 +466,8 @@ public readonly record struct AudioPlayOptions
         int priority = 0,
         AudioBusId? bus = null,
         AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
-        AudioSpatialOptions? spatial = null)
-    {
+        AudioSpatialOptions? spatial = null
+    ) {
         if (!float.IsFinite(volume) || volume < 0f)
             throw new ArgumentOutOfRangeException(nameof(volume));
         if (!float.IsFinite(pitch) || pitch <= 0f)
@@ -554,8 +558,12 @@ public readonly record struct AudioVoiceParameters
     /// <exception cref="ArgumentOutOfRangeException">
     /// Gain, pitch, or pan is non-finite or outside its valid range.
     /// </exception>
-    public AudioVoiceParameters(float volume, float pitch, float pan, AudioSpatialOptions? spatial = null)
-    {
+    public AudioVoiceParameters(
+        float volume,
+        float pitch,
+        float pan,
+        AudioSpatialOptions? spatial = null
+    ) {
         if (!float.IsFinite(volume) || volume < 0f)
             throw new ArgumentOutOfRangeException(nameof(volume));
         if (!float.IsFinite(pitch) || pitch <= 0f)
@@ -612,8 +620,12 @@ public readonly record struct AudioListenerState
     /// <exception cref="ArgumentOutOfRangeException">
     /// Any position, direction, up, or velocity component is non-finite.
     /// </exception>
-    public AudioListenerState(Vector3 position, Vector3 direction, Vector3 up, Vector3 velocity)
-    {
+    public AudioListenerState(
+        Vector3 position,
+        Vector3 direction,
+        Vector3 up,
+        Vector3 velocity
+    ) {
         AudioValueValidation.RequireFinite(position, nameof(position));
         AudioValueValidation.RequireFinite(direction, nameof(direction));
         AudioValueValidation.RequireFinite(up, nameof(up));

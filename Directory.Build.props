@@ -1,0 +1,32 @@
+<Project>
+  <Import Project="build/msbuild/Inno.Packages.props" />
+  <Import Project="$(InnoProductBuildProperties)" Condition="'$(InnoProductBuildProperties)' != ''" />
+
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <InnoShaderToolSourceRoot Condition="'$(InnoShaderToolSourceRoot)' == ''">$(MSBuildThisFileDirectory)</InnoShaderToolSourceRoot>
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+    <!-- Preserve all global properties without placing IDE-sized values on the command line. -->
+    <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
+    <PathMap>$(PathMap);$(MSBuildThisFileDirectory)=/_/InnoEngine/</PathMap>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == '$(InnoBuildToolProject)' and '$(InnoBuildToolOutputPath)' != ''">
+    <BaseIntermediateOutputPath>$(InnoBuildToolOutputPath)/obj/</BaseIntermediateOutputPath>
+    <OutputPath>$(InnoBuildToolOutputPath)</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
+    <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/$(InnoNativeTarget)/</BaseOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(InnoNativeBuildFingerprint)' != '' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
+    <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/$(InnoNativeTarget)/$(InnoNativeBuildFingerprint)/</BaseOutputPath>
+  </PropertyGroup>
+</Project>

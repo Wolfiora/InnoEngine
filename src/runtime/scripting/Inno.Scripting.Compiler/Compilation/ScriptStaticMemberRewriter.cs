@@ -17,8 +17,7 @@ internal sealed class ScriptStaticMemberRewriter(SemanticModel model) : CSharpSy
     /// <returns>
     /// The validated syntax node? that represents the completed operation.
     /// </returns>
-public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
-        => Qualify(node) ?? base.VisitIdentifierName(node);
+public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node) => Qualify(node) ?? base.VisitIdentifierName(node);
 
     /// <summary>
     /// Visits generic name in deterministic order using the supplied visitor.
@@ -29,15 +28,16 @@ public override SyntaxNode? VisitIdentifierName(IdentifierNameSyntax node)
     /// <returns>
     /// The validated syntax node? that represents the completed operation.
     /// </returns>
-public override SyntaxNode? VisitGenericName(GenericNameSyntax node)
-        => Qualify(node) ?? base.VisitGenericName(node);
+public override SyntaxNode? VisitGenericName(GenericNameSyntax node) => Qualify(node) ?? base.VisitGenericName(node);
 
     private SyntaxNode? Qualify(SimpleNameSyntax node)
     {
         if (node.Parent is MemberAccessExpressionSyntax member && member.Name == node
-            || node.Parent is QualifiedNameSyntax or AliasQualifiedNameSyntax) return null;
+            || node.Parent is QualifiedNameSyntax or AliasQualifiedNameSyntax)
+                return null;
         if (model.GetSymbolInfo(node).Symbol is not IMethodSymbol { IsStatic: true, MethodKind: MethodKind.Ordinary } method
-            || !SymbolEqualityComparer.Default.Equals(method.ContainingAssembly, model.Compilation.Assembly)) return null;
+            || !SymbolEqualityComparer.Default.Equals(method.ContainingAssembly, model.Compilation.Assembly))
+                return null;
         return SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
             SyntaxFactory.ParseExpression(method.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
             node.WithoutTrivia()).WithTriviaFrom(node);

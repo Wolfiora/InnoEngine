@@ -42,8 +42,7 @@ internal sealed class SceneViewBackgroundSetting : EditorSetting
             setting.SetAsSingleArray("value", [value.X, value.Y, value.Z, value.W]);
     }
 
-    internal static Vector4 Read(EditorSettings settings)
-        => ReadVector(settings.Get(C_PATH));
+    internal static Vector4 Read(EditorSettings settings) => ReadVector(settings.Get(C_PATH));
 
     private static EditorSettingObject CreateDefault()
     {

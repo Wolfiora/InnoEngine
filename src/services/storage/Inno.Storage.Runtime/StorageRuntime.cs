@@ -30,13 +30,17 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// <param name="maxWriteBytes">
     /// Positive maximum value size accepted by one write.
     /// </param>
-    public StorageRuntime(IApplicationStorage storage, int maxPendingOperations = 128, int maxWriteBytes = 64 * 1024 * 1024)
-    {
+    public StorageRuntime(
+        IApplicationStorage storage,
+        int maxPendingOperations = 128,
+        int maxWriteBytes = 64 * 1024 * 1024
+    ) {
         m_storage = storage ?? throw new ArgumentNullException(nameof(storage));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxWriteBytes);
         m_maxWriteBytes = maxWriteBytes;
         m_operations = lifetime.Own(new LifetimeScope(maxPendingOperations));
-        if (storage is IDisposable disposable) m_operations.Own(disposable);
+        if (storage is IDisposable disposable)
+            m_operations.Own(disposable);
     }
 
     /// <summary>
@@ -63,7 +67,10 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// <returns>
     /// <see langword="true"/> when the value exists.
     /// </returns>
-    public ValueTask<bool> ExistsAsync(StorageKey key, CancellationToken cancellationToken = default)
+    public ValueTask<bool> ExistsAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    )
         => new(m_operations.RunAsync(token => m_storage.ExistsAsync(key, token), cancellationToken));
     /// <summary>
     /// Reads a complete immutable value.
@@ -77,7 +84,10 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// <returns>
     /// The stored bytes, or <see langword="null"/> when the key does not exist.
     /// </returns>
-    public ValueTask<byte[]?> ReadAsync(StorageKey key, CancellationToken cancellationToken = default)
+    public ValueTask<byte[]?> ReadAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    )
         => new(m_operations.RunAsync(token => m_storage.ReadAsync(key, token), cancellationToken));
     /// <summary>
     /// Atomically replaces a complete value.
@@ -94,10 +104,15 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// <returns>
     /// A task that completes after the value is durably replaced.
     /// </returns>
-    public ValueTask WriteAsync(StorageKey key, ReadOnlyMemory<byte> value, CancellationToken cancellationToken = default)
+    public ValueTask WriteAsync(
+        StorageKey key,
+        ReadOnlyMemory<byte> value,
+        CancellationToken cancellationToken = default
+    )
         => new(m_operations.RunAsync(async token =>
         {
-            if (value.Length > m_maxWriteBytes) throw new ArgumentException("The storage value exceeds its write byte budget.", nameof(value));
+            if (value.Length > m_maxWriteBytes)
+                throw new ArgumentException("The storage value exceeds its write byte budget.", nameof(value));
             byte[] snapshot = value.ToArray();
             await m_storage.WriteAsync(key, snapshot, token).ConfigureAwait(false);
             return true;
@@ -114,7 +129,10 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// <returns>
     /// <see langword="true"/> when an existing value was deleted.
     /// </returns>
-    public ValueTask<bool> DeleteAsync(StorageKey key, CancellationToken cancellationToken = default)
+    public ValueTask<bool> DeleteAsync(
+        StorageKey key,
+        CancellationToken cancellationToken = default
+    )
         => new(m_operations.RunAsync(token => m_storage.DeleteAsync(key, token), cancellationToken));
     /// <summary>
     /// Lists immutable keys below an optional logical prefix.
@@ -128,7 +146,10 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// <returns>
     /// Keys in deterministic ordinal order.
     /// </returns>
-    public ValueTask<IReadOnlyList<StorageKey>> ListAsync(StorageKey? prefix = null, CancellationToken cancellationToken = default)
+    public ValueTask<IReadOnlyList<StorageKey>> ListAsync(
+        StorageKey? prefix = null,
+        CancellationToken cancellationToken = default
+    )
         => new(m_operations.RunAsync(token => m_storage.ListAsync(prefix, token), cancellationToken));
 
     /// <summary>

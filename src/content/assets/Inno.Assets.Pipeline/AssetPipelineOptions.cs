@@ -70,8 +70,10 @@ public readonly struct AssetPipelineOptions
     /// <returns>
     /// Initialized options value.
     /// </returns>
-    public static AssetPipelineOptions Create(string assetRoot, string libraryRoot)
-    {
+    public static AssetPipelineOptions Create(
+        string assetRoot,
+        string libraryRoot
+    ) {
         if (string.IsNullOrWhiteSpace(assetRoot))
             throw new ArgumentException("Asset root is required.", nameof(assetRoot));
         if (string.IsNullOrWhiteSpace(libraryRoot))

@@ -11,8 +11,10 @@ namespace Inno.Editor.Inspection;
 /// </summary>
 internal static class EditorCollectionUtility
 {
-    internal static bool TryGetSequenceElementType(Type type, out Type elementType)
-    {
+    internal static bool TryGetSequenceElementType(
+        Type type,
+        out Type elementType
+    ) {
         Type normalizedType = Nullable.GetUnderlyingType(type) ?? type;
         if (normalizedType == typeof(string))
         {
@@ -48,8 +50,11 @@ internal static class EditorCollectionUtility
         return false;
     }
 
-    internal static bool TryGetMapTypes(Type type, out Type keyType, out Type valueType)
-    {
+    internal static bool TryGetMapTypes(
+        Type type,
+        out Type keyType,
+        out Type valueType
+    ) {
         Type normalizedType = Nullable.GetUnderlyingType(type) ?? type;
         foreach (Type candidate in EnumerateSelfAndInterfaces(normalizedType))
         {
@@ -108,8 +113,8 @@ internal static class EditorCollectionUtility
     internal static bool TryEnumerateMap(
         object? map,
         Type mapType,
-        out List<KeyValuePair<object?, object?>> entries)
-    {
+        out List<KeyValuePair<object?, object?>> entries
+    ) {
         entries = [];
         if (!TryGetMapTypes(mapType, out _, out _))
         {
@@ -156,8 +161,8 @@ internal static class EditorCollectionUtility
     internal static object BuildSequence(
         Type targetType,
         Type elementType,
-        IReadOnlyList<object?> values)
-    {
+        IReadOnlyList<object?> values
+    ) {
         if (targetType.IsArray)
         {
             Array array = Array.CreateInstance(elementType, values.Count);
@@ -211,8 +216,8 @@ internal static class EditorCollectionUtility
         Type targetType,
         Type keyType,
         Type valueType,
-        IReadOnlyList<KeyValuePair<object?, object?>> entries)
-    {
+        IReadOnlyList<KeyValuePair<object?, object?>> entries
+    ) {
         Type dictionaryType = typeof(Dictionary<,>).MakeGenericType(keyType, valueType);
         object dictionary = BuildTypedDictionary(dictionaryType, entries);
         if (targetType.IsAssignableFrom(dictionaryType))
@@ -255,8 +260,10 @@ internal static class EditorCollectionUtility
             $"Cannot construct map type '{targetType.FullName}'. Provide ctor(IEnumerable<KeyValuePair<K,V>>), static CreateRange/Create, or Add(K,V).");
     }
 
-    private static object BuildTypedList(Type elementType, IReadOnlyList<object?> values)
-    {
+    private static object BuildTypedList(
+        Type elementType,
+        IReadOnlyList<object?> values
+    ) {
         Type listType = typeof(List<>).MakeGenericType(elementType);
         IList list = (IList)Activator.CreateInstance(listType)!;
         for (int i = 0; i < values.Count; i++)
@@ -269,8 +276,8 @@ internal static class EditorCollectionUtility
 
     private static object BuildTypedDictionary(
         Type dictionaryType,
-        IReadOnlyList<KeyValuePair<object?, object?>> entries)
-    {
+        IReadOnlyList<KeyValuePair<object?, object?>> entries
+    ) {
         IDictionary dictionary = (IDictionary)Activator.CreateInstance(dictionaryType)!;
         for (int i = 0; i < entries.Count; i++)
         {
@@ -285,8 +292,8 @@ internal static class EditorCollectionUtility
 
     private static object BuildTypedKeyValueList(
         Type pairType,
-        IReadOnlyList<KeyValuePair<object?, object?>> entries)
-    {
+        IReadOnlyList<KeyValuePair<object?, object?>> entries
+    ) {
         Type listType = typeof(List<>).MakeGenericType(pairType);
         IList list = (IList)Activator.CreateInstance(listType)!;
         for (int i = 0; i < entries.Count; i++)
@@ -300,8 +307,8 @@ internal static class EditorCollectionUtility
 
     private static ConstructorInfo? FindSingleArgumentConstructor(
         Type targetType,
-        params Type[] candidateArgumentTypes)
-    {
+        params Type[] candidateArgumentTypes
+    ) {
         ConstructorInfo[] constructors = targetType.GetConstructors(
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         for (int i = 0; i < constructors.Length; i++)
@@ -324,8 +331,10 @@ internal static class EditorCollectionUtility
         return null;
     }
 
-    private static MethodInfo? FindFactory(Type targetType, Type argumentType)
-    {
+    private static MethodInfo? FindFactory(
+        Type targetType,
+        Type argumentType
+    ) {
         return targetType
             .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
             .FirstOrDefault(method =>
@@ -335,8 +344,10 @@ internal static class EditorCollectionUtility
                 method.GetParameters()[0].ParameterType.IsAssignableFrom(argumentType));
     }
 
-    private static MethodInfo? ResolveSequenceAddMethod(Type targetType, Type elementType)
-    {
+    private static MethodInfo? ResolveSequenceAddMethod(
+        Type targetType,
+        Type elementType
+    ) {
         MethodInfo? direct = targetType.GetMethod(
             "Add",
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -354,8 +365,11 @@ internal static class EditorCollectionUtility
             : null;
     }
 
-    private static MethodInfo? ResolveMapAddMethod(Type targetType, Type keyType, Type valueType)
-    {
+    private static MethodInfo? ResolveMapAddMethod(
+        Type targetType,
+        Type keyType,
+        Type valueType
+    ) {
         MethodInfo? direct = targetType.GetMethod(
             "Add",
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,

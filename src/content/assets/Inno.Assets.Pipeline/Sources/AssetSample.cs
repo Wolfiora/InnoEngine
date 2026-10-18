@@ -61,19 +61,21 @@ public static class AssetSample
     /// <see langword="true"/> when the path belongs to an installed Plugin source and any directory
     /// segment starts with <c>~</c>. Project content is never hidden from authoring import by this method.
     /// </returns>
-    public static bool Contains(AssetPath path, bool isDirectory)
-    {
+    public static bool Contains(
+        AssetPath path,
+        bool isDirectory
+    ) {
         return path.source != AssetSourceId.project && ContainsTildeDirectory(path, isDirectory);
     }
 
     /// <summary>
-    /// Gets a writable runtime-eligible directory name scoped to the source Plugin.
+    /// Gets the original sample directory name for a writable Project copy.
     /// </summary>
     /// <param name="path">
     /// A sample directory path whose final segment starts with <c>~</c>.
     /// </param>
     /// <returns>
-    /// A distinct Plugin ID and sample name without the authoring-only <c>~</c> prefix.
+    /// The unchanged final directory segment, including every leading <c>~</c>.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="path"/> does not identify a sample directory or has no
@@ -86,7 +88,7 @@ public static class AssetSample
         string name = Path.GetFileName(path.localPath);
         if (string.IsNullOrWhiteSpace(name.TrimStart('~')))
             throw new ArgumentException("A sample directory requires a name after its '~' prefix.", nameof(path));
-        return path.source.value + "-" + name.TrimStart('~');
+        return name;
     }
 
     /// <summary>
@@ -103,11 +105,15 @@ public static class AssetSample
     /// <see langword="true"/> when any directory segment starts with <c>~</c>, including in the
     /// writable Project source.
     /// </returns>
-    public static bool IsRuntimeExcluded(AssetPath path, bool isDirectory)
-        => ContainsTildeDirectory(path, isDirectory);
+    public static bool IsRuntimeExcluded(
+        AssetPath path,
+        bool isDirectory
+    ) => ContainsTildeDirectory(path, isDirectory);
 
-    private static bool ContainsTildeDirectory(AssetPath path, bool isDirectory)
-    {
+    private static bool ContainsTildeDirectory(
+        AssetPath path,
+        bool isDirectory
+    ) {
         if (!path.isValid || string.IsNullOrEmpty(path.localPath))
             return false;
         string[] segments = path.localPath.Split('/', StringSplitOptions.RemoveEmptyEntries);

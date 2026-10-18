@@ -20,8 +20,10 @@ public readonly record struct FontMetadata
     /// <param name="encodedByteLength">
     /// The encoded source length in bytes.
     /// </param>
-    public FontMetadata(int faceCount, long encodedByteLength)
-    {
+    public FontMetadata(
+        int faceCount,
+        long encodedByteLength
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(faceCount);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(encodedByteLength);
         this.faceCount = faceCount;
@@ -115,8 +117,8 @@ public sealed class FontAsset : AssetObject
     /// </param>
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
-        ReadOnlyMemory<byte> currentPayload)
-    {
+        ReadOnlyMemory<byte> currentPayload
+    ) {
         m_metadata = currentPayload.IsEmpty ? null : FontMetadataCodec.Decode(currentPayload.Span);
     }
 }

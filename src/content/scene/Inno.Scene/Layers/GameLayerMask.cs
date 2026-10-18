@@ -138,7 +138,10 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     /// <returns>
     /// The bitwise union of both masks.
     /// </returns>
-    public static GameLayerMask operator |(GameLayerMask left, GameLayerMask right) => new(left.value | right.value);
+    public static GameLayerMask operator |(
+        GameLayerMask left,
+        GameLayerMask right
+    ) => new(left.value | right.value);
 
     /// <summary>
     /// Retains only layer bits enabled in both masks.
@@ -152,7 +155,10 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     /// <returns>
     /// The bitwise intersection of both masks.
     /// </returns>
-    public static GameLayerMask operator &(GameLayerMask left, GameLayerMask right) => new(left.value & right.value);
+    public static GameLayerMask operator &(
+        GameLayerMask left,
+        GameLayerMask right
+    ) => new(left.value & right.value);
 
     /// <summary>
     /// Inverts every layer bit in a mask.
@@ -177,7 +183,10 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     /// <returns>
     /// <see langword="true"/> when both masks are equal.
     /// </returns>
-    public static bool operator ==(GameLayerMask left, GameLayerMask right) => left.Equals(right);
+    public static bool operator ==(
+        GameLayerMask left,
+        GameLayerMask right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two masks contain different bits.
@@ -191,5 +200,8 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     /// <returns>
     /// <see langword="true"/> when both masks differ.
     /// </returns>
-    public static bool operator !=(GameLayerMask left, GameLayerMask right) => !left.Equals(right);
+    public static bool operator !=(
+        GameLayerMask left,
+        GameLayerMask right
+    ) => !left.Equals(right);
 }

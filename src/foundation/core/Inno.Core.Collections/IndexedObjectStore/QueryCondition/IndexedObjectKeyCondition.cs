@@ -26,8 +26,10 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// <param name="value">
     /// The required key value.
     /// </param>
-    public IndexedObjectKeyCondition(IndexedObjectKey<TKey> key, TKey value)
-    {
+    public IndexedObjectKeyCondition(
+        IndexedObjectKey<TKey> key,
+        TKey value
+    ) {
         m_key = key;
         m_value = value;
     }
@@ -42,8 +44,7 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// The store consumed by get candidate count; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int GetCandidateCount(IndexedObjectStore<T> store)
-        => store.GetCountUnsafe(m_key, m_value);
+    public int GetCandidateCount(IndexedObjectStore<T> store) => store.GetCountUnsafe(m_key, m_value);
 
     /// <summary>
     /// Attempts to get single without changing state when the operation cannot complete.
@@ -58,8 +59,10 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetSingle(IndexedObjectStore<T> store, out T item)
-    {
+    public bool TryGetSingle(
+        IndexedObjectStore<T> store,
+        out T item
+    ) {
         if (store.TryGetSingleUnsafe(m_key, m_value, out var found) && found != null)
         {
             item = found;
@@ -80,8 +83,7 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// The store consumed by get set; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public HashSet<T>? GetSet(IndexedObjectStore<T> store)
-        => store.GetSetUnsafe(m_key, m_value);
+    public HashSet<T>? GetSet(IndexedObjectStore<T> store) => store.GetSetUnsafe(m_key, m_value);
 
     /// <summary>
     /// Validates the supplied input and rejects state that cannot satisfy this contract.
@@ -96,6 +98,8 @@ public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCond
     /// The stored item associated with the validated handle.
     /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Validate(IndexedObjectStore<T> store, T item)
-        => store.ContainsInSet(m_key, m_value, item);
+    public bool Validate(
+        IndexedObjectStore<T> store,
+        T item
+    ) => store.ContainsInSet(m_key, m_value, item);
 }

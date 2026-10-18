@@ -25,7 +25,8 @@ internal static class GraphHistoryDocumentCodec
     /// </returns>
     public static byte[] Encode(
         GraphDocument document,
-        SerializationRegistry serialization)
+        SerializationRegistry serialization
+    )
         => GraphDocumentCodec.Encode(document, serialization);
 
     /// <summary>
@@ -42,7 +43,8 @@ internal static class GraphHistoryDocumentCodec
     /// </returns>
     public static GraphDocument Decode(
         ReadOnlySpan<byte> bytes,
-        SerializationRegistry serialization)
+        SerializationRegistry serialization
+    )
         => GraphDocumentCodec.Decode(bytes, serialization);
 }
 
@@ -50,8 +52,8 @@ internal sealed record GraphHistoryData(
     Guid documentId,
     byte[] before,
     byte[] after,
-    long timestamp)
-{
+    long timestamp
+) {
     /// <summary>
     /// The c kind value used as part of this type's public representation.
     /// </summary>
@@ -80,8 +82,8 @@ internal sealed record GraphHistoryData(
         Guid documentId,
         ReadOnlySpan<byte> before,
         ReadOnlySpan<byte> after,
-        string? mergeKey)
-    {
+        string? mergeKey
+    ) {
         var data = new GraphHistoryData(documentId, before.ToArray(), after.ToArray(), Stopwatch.GetTimestamp());
         return new EditorHistoryChange(C_KIND, EditorHistoryPayload.FromBytes(data.Encode()), mergeKey);
     }
@@ -126,12 +128,13 @@ internal sealed record GraphHistoryData(
     /// </returns>
     public static GraphHistoryData Decode(
         ReadOnlySpan<byte> payload,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         int offset = 0;
         int idLength = ReadLength(payload, ref offset);
         Guid id = Guid.ParseExact(S_UTF8.GetString(ReadSlice(payload, ref offset, idLength)), "D");
-        if (id == Guid.Empty) throw new InvalidDataException("Graph history requires a persistent document identity.");
+        if (id == Guid.Empty)
+            throw new InvalidDataException("Graph history requires a persistent document identity.");
         int beforeLength = ReadLength(payload, ref offset);
         byte[] before = ReadSlice(payload, ref offset, beforeLength).ToArray();
         int afterLength = ReadLength(payload, ref offset);
@@ -147,8 +150,10 @@ internal sealed record GraphHistoryData(
         return new GraphHistoryData(id, before, after, timestamp);
     }
 
-    private static int ReadLength(ReadOnlySpan<byte> payload, ref int offset)
-    {
+    private static int ReadLength(
+        ReadOnlySpan<byte> payload,
+        ref int offset
+    ) {
         if (payload.Length - offset < sizeof(int))
         {
             throw new InvalidDataException("Graph History payload is truncated.");
@@ -164,8 +169,11 @@ internal sealed record GraphHistoryData(
         return length;
     }
 
-    private static ReadOnlySpan<byte> ReadSlice(ReadOnlySpan<byte> payload, ref int offset, int length)
-    {
+    private static ReadOnlySpan<byte> ReadSlice(
+        ReadOnlySpan<byte> payload,
+        ref int offset,
+        int length
+    ) {
         ReadOnlySpan<byte> result = payload.Slice(offset, length);
         offset += length;
         return result;
@@ -174,7 +182,8 @@ internal sealed record GraphHistoryData(
 
 internal readonly record struct GraphHistoryTransitionResult(
     EditorHistoryResult result,
-    bool stateIntegrityLost);
+    bool stateIntegrityLost
+);
 
 internal static class GraphHistoryTransition
 {
@@ -196,8 +205,8 @@ internal static class GraphHistoryTransition
     public static GraphHistoryTransitionResult Apply(
         GraphEditorModule module,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             GraphHistoryData data = GraphHistoryData.Decode(
@@ -267,8 +276,8 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         _ = context;
         _ = direction;
         try
@@ -304,8 +313,8 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         _ = context;
         GraphHistoryTransitionResult transition = GraphHistoryTransition.Apply(module, change, direction);
         return transition.stateIntegrityLost
@@ -331,8 +340,8 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
     protected override bool TryMerge(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
-    {
+        out EditorHistoryChange? merged
+    ) {
         merged = null;
         if (older.mergeKey is null || !StringComparer.Ordinal.Equals(older.mergeKey, newer.mergeKey))
         {

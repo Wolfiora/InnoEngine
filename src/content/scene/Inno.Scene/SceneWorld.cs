@@ -38,8 +38,10 @@ public sealed class SceneWorld : IDisposable
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="identities"/> is null.
     /// </exception>
-    public SceneWorld(IdentityAllocator identities, TypeCatalog types)
-    {
+    public SceneWorld(
+        IdentityAllocator identities,
+        TypeCatalog types
+    ) {
         m_identities = identities ?? throw new ArgumentNullException(nameof(identities));
         ArgumentNullException.ThrowIfNull(types);
         m_types = new SceneTypeCatalog(types);
@@ -51,8 +53,7 @@ public sealed class SceneWorld : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the caller is outside a scene execution scope.
     /// </exception>
-    internal static SceneWorld current
-        => S_CURRENT_SCOPE.current;
+    internal static SceneWorld current => S_CURRENT_SCOPE.current;
 
     internal SceneTypeCatalog typeCatalog => m_types;
 
@@ -71,8 +72,8 @@ public sealed class SceneWorld : IDisposable
     [Inno.Scripting.Api.ScriptingApiIgnore]
     public void ConfigurePrefabInstantiation(
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -82,8 +83,11 @@ public sealed class SceneWorld : IDisposable
         m_prefabAssets = assets;
     }
 
-    internal GameObject InstantiatePrefab(PrefabAsset prefab, GameScene scene, Transform? parent)
-    {
+    internal GameObject InstantiatePrefab(
+        PrefabAsset prefab,
+        GameScene scene,
+        Transform? parent
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(prefab);
         ArgumentNullException.ThrowIfNull(scene);
@@ -178,8 +182,10 @@ public sealed class SceneWorld : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the scene is not loaded by this world.
     /// </exception>
-    public void SetSceneIndex(GameScene scene, int sceneIndex)
-    {
+    public void SetSceneIndex(
+        GameScene scene,
+        int sceneIndex
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(scene);
         int currentIndex = m_loadedScenes.IndexOf(scene);
@@ -221,8 +227,10 @@ public sealed class SceneWorld : IDisposable
     /// <param name="makeActive">
     /// Whether the loaded scene becomes active.
     /// </param>
-    public void LoadSceneAdditive(GameScene scene, bool makeActive = true)
-    {
+    public void LoadSceneAdditive(
+        GameScene scene,
+        bool makeActive = true
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(scene);
         if (!m_loadedScenes.Contains(scene))
@@ -264,8 +272,10 @@ public sealed class SceneWorld : IDisposable
     /// <returns>
     /// The newly created and loaded scene.
     /// </returns>
-    public GameScene LoadNewSceneAdditive(string name = "Untitled Scene", bool makeActive = true)
-    {
+    public GameScene LoadNewSceneAdditive(
+        string name = "Untitled Scene",
+        bool makeActive = true
+    ) {
         EnsureActive();
         var scene = new GameScene(m_types, name, persistentId: null);
         LoadSceneAdditive(scene, makeActive);
@@ -302,8 +312,10 @@ public sealed class SceneWorld : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when either scene is not loaded or the object is not live.
     /// </exception>
-    public void MoveGameObjectToScene(GameObject gameObject, GameScene destination)
-    {
+    public void MoveGameObjectToScene(
+        GameObject gameObject,
+        GameScene destination
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(gameObject);
         ArgumentNullException.ThrowIfNull(destination);
@@ -440,16 +452,16 @@ public sealed class SceneWorld : IDisposable
         }
     }
 
-    private GameScene[] GetLoadedSceneSnapshot()
-        => m_loadedSceneSnapshot ??= [.. m_loadedScenes];
+    private GameScene[] GetLoadedSceneSnapshot() => m_loadedSceneSnapshot ??= [.. m_loadedScenes];
 
-    private void InvalidateSnapshot()
-        => m_loadedSceneSnapshot = null;
+    private void InvalidateSnapshot() => m_loadedSceneSnapshot = null;
 
-    private void EnsureActive()
-        => ObjectDisposedException.ThrowIf(m_disposed, this);
+    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
-    private sealed class Scope(IDisposable worldScope, IDisposable identityScope) : IDisposable
+    private sealed class Scope(
+        IDisposable worldScope,
+        IDisposable identityScope
+    ) : IDisposable
     {
         private bool m_disposed;
 

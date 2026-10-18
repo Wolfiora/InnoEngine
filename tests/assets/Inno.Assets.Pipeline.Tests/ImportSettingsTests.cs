@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -172,9 +174,9 @@ public sealed class ImportSettingsTests
             Directory.CreateDirectory(Path.Combine(m_root, "EmptyProject"));
             File.WriteAllText(sourcePath, "source");
             m_scope = m_identities.EnterScope();
-            m_modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = Path.Combine(m_root, "Assemblies") });
-            m_types = new TypeCatalog(m_modules);
-            m_serialization = new SerializationRegistry(m_types);
+            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImportSettingsTests).Assembly)});
+            m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+            m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         }
         internal string assetRoot => Path.Combine(m_root, "Assets");
         internal string sourcePath => Path.Combine(assetRoot, "value.configured");

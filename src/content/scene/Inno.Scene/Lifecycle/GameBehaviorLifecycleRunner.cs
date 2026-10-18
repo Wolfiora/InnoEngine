@@ -238,8 +238,8 @@ internal sealed class GameBehaviorLifecycleRunner
 
     private void UpdateStartEligibility(
         GameBehavior behavior,
-        GameBehaviorLifecyclePhase phases)
-    {
+        GameBehaviorLifecyclePhase phases
+    ) {
         if ((phases & GameBehaviorLifecyclePhase.VariableFrame) == 0 ||
             behavior.isDestroyed ||
             behavior.lifecycleStartCalled ||
@@ -267,6 +267,5 @@ internal sealed class GameBehaviorLifecycleRunner
         return (active && !behavior.lifecycleAwakeCalled) || active != behavior.lifecycleWasEnabled;
     }
 
-    private GameBehaviorLifecyclePhase GetPhases(GameBehavior behavior)
-        => behavior.lifecyclePhases;
+    private GameBehaviorLifecyclePhase GetPhases(GameBehavior behavior) => behavior.lifecyclePhases;
 }

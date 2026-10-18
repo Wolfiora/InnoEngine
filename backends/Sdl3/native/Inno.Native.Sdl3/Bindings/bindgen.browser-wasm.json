@@ -1,0 +1,12 @@
+{
+  "baseConfig": {
+    "url": "file://common.json"
+  },
+  "preset": "emscripten-c,c-library",
+  "libName": "libSDL3",
+  "outputPath": "../obj/browser-wasm/Generated",
+  "targetSysRoot": "%EM_CACHE%/sysroot",
+  "systemIncludeFolders": [
+    "%EM_CACHE%/sysroot/include"
+  ]
+}

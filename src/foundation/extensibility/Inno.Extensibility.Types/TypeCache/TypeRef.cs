@@ -22,8 +22,10 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     {
     }
 
-    internal TypeRef(Guid stableId, int runtimeId)
-    {
+    internal TypeRef(
+        Guid stableId,
+        int runtimeId
+    ) {
         this.stableId = stableId;
         this.runtimeId = runtimeId;
     }
@@ -153,7 +155,10 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// <returns>
     /// <see langword="true"/> when both references have the same stable identity.
     /// </returns>
-    public static bool operator ==(TypeRef left, TypeRef right) => left.Equals(right);
+    public static bool operator ==(
+        TypeRef left,
+        TypeRef right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two references identify different logical types.
@@ -167,7 +172,10 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// <returns>
     /// <see langword="true"/> when the references have different stable identities.
     /// </returns>
-    public static bool operator !=(TypeRef left, TypeRef right) => !left.Equals(right);
+    public static bool operator !=(
+        TypeRef left,
+        TypeRef right
+    ) => !left.Equals(right);
 
     private InvalidOperationException CreateResolutionException(long? snapshotVersion = null)
     {

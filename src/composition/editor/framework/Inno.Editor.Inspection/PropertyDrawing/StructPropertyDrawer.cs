@@ -111,8 +111,10 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
         };
     }
 
-    private static object? GetMemberValue(MemberInfo member, object target)
-    {
+    private static object? GetMemberValue(
+        MemberInfo member,
+        object target
+    ) {
         return member switch
         {
             FieldInfo field => field.GetValue(target),
@@ -131,8 +133,11 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
         };
     }
 
-    private static void SetMemberValue(MemberInfo member, object target, object? value)
-    {
+    private static void SetMemberValue(
+        MemberInfo member,
+        object target,
+        object? value
+    ) {
         switch (member)
         {
             case FieldInfo field:

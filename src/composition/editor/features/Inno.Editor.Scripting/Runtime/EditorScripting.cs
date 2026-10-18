@@ -25,6 +25,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     private readonly ProjectSettingsStore m_settings;
     private readonly EditorReloadCoordinator m_reloads;
     private readonly ScriptCompiler m_compiler;
+    private readonly Func<ScriptModuleDeployment, IModuleSource> m_moduleSourceFactory;
     private readonly Logger m_log;
     private ScriptReloadHost? m_manager;
     private Task<ScriptCompilationResult>? m_compilation;
@@ -35,6 +36,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     private bool m_hideCompilationOnNextUpdate;
     private bool m_showCompilation;
     private bool m_explicitReloadPending;
+    private bool m_reportedReloadWait;
     private string? m_activationFailure;
     private long m_nextRequestId;
 
@@ -45,13 +47,15 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         ProjectSettingsStore settings,
         ScriptCompiler compiler,
         EditorReloadCoordinator reloads,
-        LogRouter logs)
-    {
+        LogRouter logs,
+        Func<ScriptModuleDeployment, IModuleSource> moduleSourceFactory
+    ) {
         m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
         m_plugins = plugins ?? throw new ArgumentNullException(nameof(plugins));
         m_modules = modules ?? throw new ArgumentNullException(nameof(modules));
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
+        m_moduleSourceFactory = moduleSourceFactory ?? throw new ArgumentNullException(nameof(moduleSourceFactory));
         m_reloads = reloads ?? throw new ArgumentNullException(nameof(reloads));
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorScripting>();
@@ -75,6 +79,11 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             m_manager?.isCompilationPending == true);
 
     internal bool isAvailable => m_manager is not null;
+
+    internal bool requiresExclusiveProgress => isCompiling && m_reloads.CanActivateReload(out _);
+
+    internal bool canReload => m_manager is not null && !isCompiling && !m_manager.isFaulted
+        && m_reloads.CanRequestReload(out _);
 
     /// <summary>
     /// Gets the current lifecycle state observed by callers.
@@ -109,8 +118,9 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// <summary>
     /// Gets the current compiler stage.
     /// </summary>
-    public string status
-        => m_activationFailure ?? m_manager?.compilationStatus ?? "Initializing project scripting.";
+    public string status => m_activationFailure ?? (!m_reloads.CanActivateReload(out string? reason)
+        ? reason ?? "Waiting for Play Mode to stop."
+        : m_manager?.compilationStatus ?? "Initializing project scripting.");
 
     /// <summary>
     /// Gets the most recently completed compiler result, which may still await activation and retirement verification.
@@ -125,12 +135,15 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// </returns>
     public IScriptCompilationTicket RequestCompilation()
     {
-        m_currentTicket?.MarkSuperseded();
         var ticket = new ScriptCompilationTicket(
             ++m_nextRequestId,
             "Script compilation is queued.");
-        m_currentTicket = ticket;
         ScriptReloadHost? manager = m_manager;
+        if (!m_reloads.CanRequestReload(out string? reason))
+        {
+            ticket.MarkFailed(result: null, reason ?? "Stop Play Mode before requesting compilation.");
+            return ticket;
+        }
         if (manager is null || manager.isFaulted)
         {
             ticket.MarkFailed(result: null, manager?.isFaulted == true
@@ -138,26 +151,30 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
                 : "Project scripting is not available.");
             return ticket;
         }
+        m_currentTicket?.MarkSuperseded();
+        m_currentTicket = ticket;
         QueueReload(static value => value.RecompileScripting(), supersedeCurrentTicket: false);
         return ticket;
     }
 
     /// <summary>
-    /// Gets the ticket for the newest requested compilation, or null when idle.
+    /// Gets the ticket for the newest accepted compilation, or null when idle; rejected requests do not replace it.
     /// </summary>
     public IScriptCompilationTicket? currentTicket => m_currentTicket;
 
-    internal void RecompileScripting()
-        => QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
-
     internal void ReloadScripting()
-        => QueueReload(static manager => manager.ReloadScripting(), supersedeCurrentTicket: true);
+    {
+        if (canReload)
+            QueueReload(static manager => manager.RecompileScripting(), supersedeCurrentTicket: true);
+    }
 
     internal void ReloadPlugins()
-        => QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
+    {
+        if (canReload)
+            QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
+    }
 
-    internal void CancelCompilation()
-        => m_manager?.CancelCompilation();
+    internal void CancelCompilation() => m_manager?.CancelCompilation();
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -174,7 +191,8 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             m_plugins,
             m_modules,
             m_settings,
-            m_reloads);
+            m_reloads,
+            m_moduleSourceFactory);
         m_manager.Start();
         if (m_manager.TryCompilePending(out Task<ScriptCompilationResult>? compilation))
         {
@@ -203,6 +221,16 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             AdvanceUnloadVerification();
             return;
         }
+        if (!m_reloads.CanActivateReload(out string? waitingReason))
+        {
+            if (m_manager?.isCompilationPending == true && !m_reportedReloadWait)
+            {
+                m_log.Write(LogLevel.Info, "{0}", [waitingReason ?? "Script changes are queued until Play Mode stops."]);
+                m_reportedReloadWait = true;
+            }
+            return;
+        }
+        m_reportedReloadWait = false;
         CompleteCompilation();
         if (m_manager is null || m_compilation is not null)
             return;
@@ -230,19 +258,19 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStop(EditorContext context)
-        => DisposeManager();
+    protected override void OnStop(EditorContext context) => DisposeManager();
 
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
-    protected override void OnDispose()
-        => DisposeManager();
+    protected override void OnDispose() => DisposeManager();
 
     private void CompleteCompilation()
     {
         Task<ScriptCompilationResult>? compilation = m_compilation;
         if (compilation is null || !compilation.IsCompleted || m_manager is null)
+            return;
+        if (!m_reloads.CanActivateReload(out _))
             return;
         ScriptCompilationTicket? ticket = m_compilationTicket;
         try
@@ -387,8 +415,10 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         }
     }
 
-    private void QueueReload(Action<ScriptReloadHost> request, bool supersedeCurrentTicket)
-    {
+    private void QueueReload(
+        Action<ScriptReloadHost> request,
+        bool supersedeCurrentTicket
+    ) {
         ScriptReloadHost? manager = m_manager;
         if (manager is null)
             return;
@@ -434,5 +464,6 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         ScriptCompilationTicket? ticket,
         ScriptCompilationResult result,
         bool succeeded,
-        string status);
+        string status
+    );
 }

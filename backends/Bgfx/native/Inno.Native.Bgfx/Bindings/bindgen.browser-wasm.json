@@ -1,0 +1,14 @@
+{
+  "baseConfig": {
+    "url": "file://common.json"
+  },
+  "preset": "emscripten-c,c-library,opaque-callbacks",
+  "libName": "bgfxRelease",
+  "includeFolders": [
+    "../../../../../extern/bgfx/include",
+    "../../../../../extern/bx/include",
+    "%EM_CACHE%/sysroot/include"
+  ],
+  "outputPath": "../obj/browser-wasm/Generated",
+  "targetSysRoot": "%EM_CACHE%/sysroot"
+}

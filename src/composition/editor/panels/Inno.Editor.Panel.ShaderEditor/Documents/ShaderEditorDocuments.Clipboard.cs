@@ -6,15 +6,20 @@ using Inno.Rendering.Shaders;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
-internal sealed record ShaderClipboardData(byte[] graph, Guid owner);
+internal sealed record ShaderClipboardData(
+    byte[] graph,
+    Guid owner
+);
 
 internal sealed partial class ShaderEditorDocuments
 {
     internal ShaderClipboardData Copy(Draft draft)
         => new(GraphDocumentCodec.Encode(ShaderGraphClipboard.Copy(Controller(draft).document, draft.canvas.selectedNodes, serialization, context), serialization), draft.id);
 
-    internal bool CanPaste(Draft draft, ShaderClipboardData data)
-    {
+    internal bool CanPaste(
+        Draft draft,
+        ShaderClipboardData data
+    ) {
         GraphDocument destination = Controller(draft).document;
         GraphDocument fragment = GraphDocumentCodec.Decode(data.graph, serialization);
         var existingStages = destination.nodes.Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
@@ -25,8 +30,10 @@ internal sealed partial class ShaderEditorDocuments
             .Any(existingStages.Contains);
     }
 
-    internal void Paste(Draft draft, ShaderClipboardData clipboard)
-    {
+    internal void Paste(
+        Draft draft,
+        ShaderClipboardData clipboard
+    ) {
         if (!CanPaste(draft, clipboard))
             throw new InvalidOperationException("The shader already contains an output for one of the copied stages.");
         GraphDocumentController controller = Controller(draft);

@@ -18,8 +18,10 @@ internal sealed class GameSystemReferenceConverter : SerializationConverter<Game
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, GameSystem value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        GameSystem value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         EngineReferenceToken token = SceneGraphReferenceMap.current.Capture(value, writer.path);

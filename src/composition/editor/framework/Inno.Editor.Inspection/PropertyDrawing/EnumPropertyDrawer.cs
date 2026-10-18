@@ -43,11 +43,14 @@ internal sealed class EnumPropertyDrawer : IPropertyDrawer
             }
         }
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
     }
 
-    private static void DrawFlags(PropertyDrawContext context, Type enumType, object value)
-    {
+    private static void DrawFlags(
+        PropertyDrawContext context,
+        Type enumType,
+        object value
+    ) {
         ulong currentBits = ToBits(enumType, value);
         string preview = value.ToString() ?? currentBits.ToString();
         if (!EditorWidget.BeginBoundedCombo($"##{context.path}", preview))
@@ -77,11 +80,13 @@ internal sealed class EnumPropertyDrawer : IPropertyDrawer
             context.SetValue(Enum.ToObject(enumType, currentBits));
         }
 
-        NativeImGui.EndCombo();
+        EditorWidget.EndBoundedCombo();
     }
 
-    private static ulong ToBits(Type enumType, object value)
-    {
+    private static ulong ToBits(
+        Type enumType,
+        object value
+    ) {
         Type underlyingType = Enum.GetUnderlyingType(enumType);
         return Type.GetTypeCode(underlyingType) switch
         {

@@ -129,7 +129,7 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         }
         finally
         {
-            NativeImGui.EndCombo();
+            EditorWidget.EndBoundedCombo();
         }
     }
 
@@ -164,7 +164,10 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
                 }
             }
 
-            candidates.Sort(static (left, right) =>
+            candidates.Sort(static (
+                left,
+                right
+            ) =>
                 string.Compare(
                     left.displayName,
                     right.displayName,
@@ -175,14 +178,13 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         }
     }
 
-    private static Guid ReadPersistentId(object? reference)
-        => reference is AssetObject asset ? asset.identity.persistentId : Guid.Empty;
+    private static Guid ReadPersistentId(object? reference) => reference is AssetObject asset ? asset.identity.persistentId : Guid.Empty;
 
     private void AssignAsset(
         PropertyDrawContext context,
         Type assetType,
-        AssetCandidate candidate)
-    {
+        AssetCandidate candidate
+    ) {
         if (ReadPersistentId(context.GetValue()) == candidate.persistentId)
             return;
         object asset = m_assets.Load(candidate.assetPath, assetType);
@@ -199,6 +201,7 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         AssetPath assetPath,
         Guid persistentId,
         string displayName,
-        string fullPath);
+        string fullPath
+    );
     private sealed record CandidatesBox(AssetCandidate[] candidates);
 }

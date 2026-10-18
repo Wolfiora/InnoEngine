@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,10 +44,8 @@ public sealed class EditorRuntimeTests : IDisposable
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-        });
-        m_types = new TypeCatalog(m_modules);
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorRuntimeTests).Assembly)        });
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
 
         TestModule.startCount = 0;
         TestModule.stopCount = 0;
@@ -83,7 +82,7 @@ public sealed class EditorRuntimeTests : IDisposable
         ZThrowingDisposeModule.throwOnDispose = false;
         ShutdownOrder.events.Clear();
 
-        m_runtime = CreateRuntime(new EditorContext(m_projectRoot));
+        m_runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
         m_runtime.Start();
     }
 
@@ -100,7 +99,8 @@ public sealed class EditorRuntimeTests : IDisposable
 
     private EditorInteractionRuntime CreateRuntime(
         EditorContext context,
-        params object[] hostServices)
+        params object[] hostServices
+    )
         => new(context, m_types, m_logs, [m_types, m_identities, m_secondaryIdentities, .. hostServices]);
 
     [Fact]
@@ -152,7 +152,7 @@ public sealed class EditorRuntimeTests : IDisposable
         var service = new TestHostService();
         HostServicePanel.current = null;
         using EditorInteractionRuntime runtime = CreateRuntime(
-            new EditorContext(m_projectRoot),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             service);
 
         runtime.Start();
@@ -165,7 +165,7 @@ public sealed class EditorRuntimeTests : IDisposable
     public void InteractionRuntimeRejectsExtensionWhenHostServiceIsUnavailable()
     {
         HostServicePanel.current = null;
-        using EditorInteractionRuntime runtime = CreateRuntime(new EditorContext(m_projectRoot));
+        using EditorInteractionRuntime runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
 
         runtime.Start();
 
@@ -593,6 +593,28 @@ public sealed class EditorRuntimeTests : IDisposable
     }
 
     [Fact]
+    public void ProductKeyboardPolicyControlsDiscoveryLabelsAndShortcutDispatch()
+    {
+        using var runtime = CreateRuntime(new EditorContext(m_projectRoot,
+            new EditorKeyboardPolicy(KeyModifier.Super, "Cmd")));
+        runtime.Start();
+        NeutralHistoryHandler.value = 1;
+        runtime.interactions.history.RecordApplied("Change Test Value",
+            NeutralHistoryHandler.CreateChange(before: 0, after: 1));
+        EditorInteraction global = runtime.interactions.For("editor/global");
+        global.Focus();
+
+        Assert.True(global.TryGetShortcut("editor/undo", out HotKeyGesture gesture));
+        Assert.Equal(KeyModifier.Super, gesture.modifiers);
+        Assert.Equal("Cmd+Z", gesture.ToString());
+        runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.Z, KeyModifier.Control));
+        Assert.Equal(1, NeutralHistoryHandler.value);
+        runtime.HandleKeyPressed(new KeyPressedEvent(0, KeyCode.Z, KeyModifier.Super));
+        Assert.Equal(0, NeutralHistoryHandler.value);
+        Assert.True(runtime.interactions.history.canRedo);
+    }
+
+    [Fact]
     public void ActionExecutionFailureCancelsStateActivatedBeforeTheException()
     {
         EditorInteraction interaction = m_runtime.interactions.For("tests/throw-after-activate");
@@ -776,7 +798,7 @@ public sealed class EditorRuntimeTests : IDisposable
         m_runtime.Dispose();
         int stops = TestModule.stopCount;
         TestModule.throwOnStart = true;
-        using var runtime = CreateRuntime(new EditorContext(m_projectRoot));
+        using var runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
         try
         {
             Assert.Throws<InvalidOperationException>(runtime.Start);
@@ -792,7 +814,7 @@ public sealed class EditorRuntimeTests : IDisposable
         m_runtime.Dispose();
         int detaches = TestPanel.detachCount;
         TestPanel.throwOnAttach = true;
-        using var runtime = CreateRuntime(new EditorContext(m_projectRoot));
+        using var runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
         try
         {
             runtime.Start();
@@ -875,7 +897,7 @@ public sealed class EditorRuntimeTests : IDisposable
         Assert.Contains("[InnoEditor][Module.tests.state]", document);
         Assert.DoesNotContain("[InnoEditor][Module.tests.update-barrier]", document);
 
-        using EditorInteractionRuntime restored = CreateRuntime(new EditorContext(m_projectRoot));
+        using EditorInteractionRuntime restored = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
         restored.Start();
 
         Assert.Equal(42, TestModule.restoredStateValue);
@@ -887,7 +909,7 @@ public sealed class EditorRuntimeTests : IDisposable
     public void MalformedModuleStateValueUsesTheExtensionFallback()
     {
         m_runtime.Dispose();
-        var context = new EditorContext(m_projectRoot);
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
         context.SetLayoutSection("Module.tests.state", new Dictionary<string, string>
         {
             ["value"] = "not-json"
@@ -933,7 +955,7 @@ public sealed class EditorRuntimeTests : IDisposable
     public void UnifiedEditorIniPreservesLayoutAndExtensionStateSectionsTogether()
     {
         const string layout = "[Window][Hierarchy]\nPos=10,20\nSize=300,400";
-        var context = new EditorContext(m_projectRoot);
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
         context.SetImGuiLayout(layout);
         context.SetLayoutSection("Module.tests", new Dictionary<string, string>
         {
@@ -941,7 +963,7 @@ public sealed class EditorRuntimeTests : IDisposable
         });
 
         Assert.True(context.SaveLayoutIfChanged());
-        var restored = new EditorContext(m_projectRoot);
+        var restored = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
 
         Assert.Equal(layout, restored.imguiLayout);
         Assert.True(restored.TryGetLayoutSection(
@@ -959,7 +981,7 @@ public sealed class EditorRuntimeTests : IDisposable
     public void StartupRegistryRefreshCannotOverwriteModuleStateBeforeRestore()
     {
         m_runtime.Dispose();
-        var context = new EditorContext(m_projectRoot);
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
         context.SetLayoutSection("Module.tests.state", new Dictionary<string, string>
         {
             ["value"] = "91"
@@ -969,7 +991,7 @@ public sealed class EditorRuntimeTests : IDisposable
         TestModule.restoredStateValue = 0;
         TestModule.rebuildDuringRestore = true;
 
-        using EditorInteractionRuntime restored = CreateRuntime(new EditorContext(m_projectRoot));
+        using EditorInteractionRuntime restored = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
         restored.Start();
         Assert.Equal(91, TestModule.restoredStateValue);
         TestModule.stateValue = TestModule.restoredStateValue;
@@ -1010,7 +1032,11 @@ public sealed class InteractionTarget
     public string? validationMessage { get; set; }
 }
 
-public sealed record InteractionPresentation(string value, bool submit, bool cancel = false);
+public sealed record InteractionPresentation(
+    string value,
+    bool submit,
+    bool cancel = false
+);
 
 [EditorHistoryHandler(NeutralHistoryHandler.KIND)]
 public sealed class NeutralHistoryHandler : EditorHistoryHandler
@@ -1019,8 +1045,10 @@ public sealed class NeutralHistoryHandler : EditorHistoryHandler
 
     public static int value;
 
-    public static EditorHistoryChange CreateChange(int before, int after)
-    {
+    public static EditorHistoryChange CreateChange(
+        int before,
+        int after
+    ) {
         byte[] bytes = new byte[sizeof(int) * 2];
         BitConverter.GetBytes(before).CopyTo(bytes, 0);
         BitConverter.GetBytes(after).CopyTo(bytes, sizeof(int));
@@ -1030,7 +1058,8 @@ public sealed class NeutralHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => change.payload.length >= sizeof(int) * 2
             ? EditorHistoryAvailability.Available()
             : EditorHistoryAvailability.Unavailable("The neutral value payload is truncated.");
@@ -1038,8 +1067,8 @@ public sealed class NeutralHistoryHandler : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         byte[] bytes = change.payload.ReadBytes();
         value = BitConverter.ToInt32(
             bytes,
@@ -1429,8 +1458,10 @@ public sealed class MenuAction : EditorAction
 [EditorMenuSource("tests/menu")]
 public sealed class DynamicMenuSource : EditorMenuSource
 {
-    public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-    {
+    public override void Build(
+        EditorMenuContext context,
+        EditorMenuBuilder builder
+    ) {
         builder.AddGroup("Tools/Create/Libraries", order: 150, separatorBefore: true);
         builder.Add("Tools/Create/Libraries/Function", "tests.menu", order: 150);
         builder.Add("Tools/Create/Generated", "tests.menu", order: 200);
@@ -1493,8 +1524,8 @@ public sealed class TestViewportTool(IEditorHistory history) : EditorViewportToo
 
     public override void OnPointerDown(
         EditorViewportToolContext context,
-        EditorViewportPointerEvent pointer)
-    {
+        EditorViewportPointerEvent pointer
+    ) {
         downCount++;
         context.CapturePointer(pointer.pointerId);
         context.BeginHistoryGesture("Paint Tile");
@@ -1506,8 +1537,8 @@ public sealed class TestViewportTool(IEditorHistory history) : EditorViewportToo
 
     public override void OnPointerUp(
         EditorViewportToolContext context,
-        EditorViewportPointerEvent pointer)
-    {
+        EditorViewportPointerEvent pointer
+    ) {
         upCount++;
         context.CompleteHistoryGesture(commit: true);
         context.ReleasePointer();

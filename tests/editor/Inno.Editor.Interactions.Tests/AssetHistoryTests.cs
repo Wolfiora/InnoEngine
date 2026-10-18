@@ -1,3 +1,6 @@
+using Inno.Core.IO;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 
@@ -43,11 +46,9 @@ public sealed class AssetHistoryTests : IDisposable
         _ = typeof(AssetEditorModule);
         _ = typeof(TextAsset);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-        });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetHistoryTests).Assembly)        });
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         string libraryRoot = Path.Combine(m_projectRoot, "Library");
         string pluginRoot = Path.Combine(m_projectRoot, "Plugins");
         var pluginSources = new PluginSourceService(
@@ -71,7 +72,7 @@ public sealed class AssetHistoryTests : IDisposable
             m_logs,
             options);
         m_settings = new ProjectSettingsStore(
-            Path.Combine(m_projectRoot, "Settings.Project.inno"),
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_projectRoot, "Settings.Project.inno"))),
             m_types,
             m_serialization,
             new ProjectId("tests.editor"),
@@ -85,7 +86,7 @@ public sealed class AssetHistoryTests : IDisposable
             pluginScan,
             m_modules.generations);
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_types, m_serialization, m_identities, m_assets, m_plugins]);

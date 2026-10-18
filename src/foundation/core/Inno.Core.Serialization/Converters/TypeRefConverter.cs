@@ -16,8 +16,10 @@ internal sealed class TypeRefConverter : SerializationConverter<TypeRef>
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, TypeRef value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        TypeRef value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         writer.Write("stableId", value.stableId);
     }

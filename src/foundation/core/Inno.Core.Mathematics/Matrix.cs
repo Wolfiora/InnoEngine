@@ -152,11 +152,23 @@ public struct Matrix : IEquatable<Matrix>
     /// Row 4, Column 4.
     /// </param>
     public Matrix(
-        float m11, float m12, float m13, float m14,
-        float m21, float m22, float m23, float m24,
-        float m31, float m32, float m33, float m34,
-        float m41, float m42, float m43, float m44)
-    {
+        float m11,
+        float m12,
+        float m13,
+        float m14,
+        float m21,
+        float m22,
+        float m23,
+        float m24,
+        float m31,
+        float m32,
+        float m33,
+        float m34,
+        float m41,
+        float m42,
+        float m43,
+        float m44
+    ) {
         this.m11 = m11; this.m12 = m12; this.m13 = m13; this.m14 = m14;
         this.m21 = m21; this.m22 = m22; this.m23 = m23; this.m24 = m24;
         this.m31 = m31; this.m32 = m32; this.m33 = m33; this.m34 = m34;
@@ -191,8 +203,11 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// A translation matrix whose translation resides in (m14, m24, m34).
     /// </returns>
-    public static Matrix CreateTranslation(float x, float y, float z)
-    {
+    public static Matrix CreateTranslation(
+        float x,
+        float y,
+        float z
+    ) {
         return new Matrix(
             1, 0, 0, x,
             0, 1, 0, y,
@@ -237,8 +252,11 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// A scale matrix.
     /// </returns>
-    public static Matrix CreateScale(float x, float y, float z)
-    {
+    public static Matrix CreateScale(
+        float x,
+        float y,
+        float z
+    ) {
         return new Matrix(
             x, 0, 0, 0,
             0, y, 0, 0,
@@ -361,8 +379,12 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// A perspective projection matrix.
     /// </returns>
-    public static Matrix CreatePerspectiveFieldOfView(float fov, float aspect, float near, float far)
-    {
+    public static Matrix CreatePerspectiveFieldOfView(
+        float fov,
+        float aspect,
+        float near,
+        float far
+    ) {
         float f  = 1f / MathF.Tan(fov * 0.5f);
         float nf = 1f / (far - near);
 
@@ -391,8 +413,12 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// The validated matrix that represents the completed operation.
     /// </returns>
-    public static Matrix CreatePerspectiveFieldOfViewRH(float fov, float aspect, float near, float far)
-    {
+    public static Matrix CreatePerspectiveFieldOfViewRH(
+        float fov,
+        float aspect,
+        float near,
+        float far
+    ) {
         float f = 1f / MathF.Tan(fov * 0.5f);
         float nf = 1f / (near - far);
 
@@ -421,8 +447,12 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// An orthographic projection matrix.
     /// </returns>
-    public static Matrix CreateOrthographic(float width, float height, float near, float far)
-    {
+    public static Matrix CreateOrthographic(
+        float width,
+        float height,
+        float near,
+        float far
+    ) {
         return CreateOrthographicOffCenter(
             -width * 0.5f,
             width * 0.5f,
@@ -456,8 +486,14 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// An orthographic projection matrix.
     /// </returns>
-    public static Matrix CreateOrthographicOffCenter(float left, float right, float bottom, float top, float near, float far)
-    {
+    public static Matrix CreateOrthographicOffCenter(
+        float left,
+        float right,
+        float bottom,
+        float top,
+        float near,
+        float far
+    ) {
         float m00 = 2f / (right - left);
         float m11 = 2f / (top - bottom);
         float m22 = 1f / (far - near);
@@ -492,8 +528,11 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// A view matrix.
     /// </returns>
-    public static Matrix CreateLookAt(Vector3 eye, Vector3 target, Vector3 up)
-    {
+    public static Matrix CreateLookAt(
+        Vector3 eye,
+        Vector3 target,
+        Vector3 up
+    ) {
         // LH: forward points from eye to target
         Vector3 z = (target - eye).normalized;          // forward (+Z)
         Vector3 x = Vector3.Cross(up, z).normalized;    // right
@@ -521,8 +560,11 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// The validated matrix that represents the completed operation.
     /// </returns>
-    public static Matrix CreateLookAtRH(Vector3 eye, Vector3 target, Vector3 up)
-    {
+    public static Matrix CreateLookAtRH(
+        Vector3 eye,
+        Vector3 target,
+        Vector3 up
+    ) {
         // RH: forward points from eye to target but is -Z in view space
         Vector3 z = (eye - target).normalized;          // forward (-Z)
         Vector3 x = Vector3.Cross(up, z).normalized;    // right
@@ -552,8 +594,10 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// The product matrix <c>a * b</c>.
     /// </returns>
-    public static Matrix Multiply(Matrix a, Matrix b)
-    {
+    public static Matrix Multiply(
+        Matrix a,
+        Matrix b
+    ) {
         if (Sse.IsSupported || AdvSimd.IsSupported)
         {
             var col0 = Vector128.Create(b.m11, b.m21, b.m31, b.m41);
@@ -662,8 +706,12 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool Decompose(Matrix m, out Vector3 scale, out Quaternion rotation, out Vector3 translation)
-    {
+    public static bool Decompose(
+        Matrix m,
+        out Vector3 scale,
+        out Quaternion rotation,
+        out Vector3 translation
+    ) {
         translation = new Vector3(m.m14, m.m24, m.m34);
 
         Vector3 col0 = new Vector3(m.m11, m.m21, m.m31);
@@ -807,8 +855,10 @@ public struct Matrix : IEquatable<Matrix>
     /// <param name="startIndex">
     /// Start index in the destination array.
     /// </param>
-    public void CopyToColumnMajor(float[] destination, int startIndex = 0)
-    {
+    public void CopyToColumnMajor(
+        float[] destination,
+        int startIndex = 0
+    ) {
         if (destination == null)
         {
             throw new ArgumentNullException(nameof(destination));
@@ -866,7 +916,10 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// The product matrix.
     /// </returns>
-    public static Matrix operator *(Matrix a, Matrix b) => Multiply(a, b);
+    public static Matrix operator *(
+        Matrix a,
+        Matrix b
+    ) => Multiply(a, b);
 
     /// <summary>
     /// Tests matrices for approximate equality (per-element).
@@ -880,8 +933,10 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// <c>true</c> if all elements are approximately equal.
     /// </returns>
-    public static bool operator ==(Matrix matrix1, Matrix matrix2)
-    {
+    public static bool operator ==(
+        Matrix matrix1,
+        Matrix matrix2
+    ) {
         return
             MathHelper.AlmostEquals(matrix1.m11, matrix2.m11) &&
             MathHelper.AlmostEquals(matrix1.m12, matrix2.m12) &&
@@ -913,7 +968,10 @@ public struct Matrix : IEquatable<Matrix>
     /// <returns>
     /// <c>true</c> if matrices are not equal.
     /// </returns>
-    public static bool operator !=(Matrix a, Matrix b) => !(a == b);
+    public static bool operator !=(
+        Matrix a,
+        Matrix b
+    ) => !(a == b);
 
     /// <summary>
     /// Converts to <see cref="System.Numerics.Matrix4x4"/> preserving element order.

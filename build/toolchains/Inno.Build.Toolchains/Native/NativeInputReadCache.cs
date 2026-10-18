@@ -1,0 +1,146 @@
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
+
+namespace Inno.Build.Toolchains;
+
+internal sealed class NativeInputReadCache
+{
+    private readonly NativeBuildInputState m_state;
+    private readonly string m_phase;
+    private readonly Dictionary<string, IReadOnlyList<(string relative, string physical)>> m_roots;
+    private readonly Dictionary<string, byte[]> m_hashes;
+    private readonly Dictionary<string, string> m_physicalPaths;
+    private readonly Dictionary<string, string> m_readingPaths;
+
+    internal NativeInputReadCache(
+        NativeBuildInputState state,
+        string phase = "initial"
+    ) {
+        m_state = state;
+        m_phase = phase;
+        m_roots = new(pathComparer);
+        m_hashes = new(pathComparer);
+        m_physicalPaths = new(pathComparer);
+        m_readingPaths = new(pathComparer);
+    }
+
+    internal StringComparer pathComparer => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
+    internal byte[] GetFrozenHash(string path)
+        => m_hashes.TryGetValue(ResolvePhysicalPath(path), out byte[]? hash) ? hash
+            : throw new InvalidOperationException($"Native input '{path}' was not frozen by this operation's recipe.");
+
+    internal NativeInputSnapshot CaptureRecordedInputs(string engineRoot)
+        => new(m_readingPaths.Select(entry => new NativeInputSnapshot.Entry(
+            NativeBuildInput.FromPath(engineRoot, entry.Key).logicalPath, entry.Key, m_hashes[entry.Value])));
+
+    internal IReadOnlyList<(string relative, string physical)> Enumerate(
+        string path,
+        CancellationToken cancellationToken
+    ) {
+        if (m_roots.TryGetValue(path, out IReadOnlyList<(string relative, string physical)>? cached))
+            return cached;
+        List<(string relative, string physical)> files = [];
+        if (File.Exists(path))
+            files.Add((string.Empty, path));
+        else if (Directory.Exists(path))
+            EnumerateDirectory(path, string.Empty, files, new HashSet<string>(pathComparer), cancellationToken);
+        else
+            throw new FileNotFoundException("A declared native build input is unavailable.", path);
+        cached = files.AsReadOnly();
+        m_roots.Add(path, cached);
+        return cached;
+    }
+
+    internal byte[] Hash(
+        string path,
+        CancellationToken cancellationToken
+    ) {
+        string readingPath = Path.GetFullPath(path);
+        path = ResolvePhysicalPath(readingPath);
+        m_readingPaths[readingPath] = path;
+        if (m_hashes.TryGetValue(path, out byte[]? hash))
+        {
+            m_state.RecordReuse(m_phase);
+            return hash;
+        }
+        using FileStream input = File.OpenRead(path);
+        using IncrementalHash digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
+        long bytes = 0;
+        try
+        {
+            int length;
+            while ((length = input.Read(buffer)) != 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                digest.AppendData(buffer.AsSpan(0, length));
+                bytes += length;
+            }
+            hash = digest.GetHashAndReset();
+            m_hashes.Add(path, hash);
+            return hash;
+        }
+        finally
+        {
+            m_state.RecordHash(bytes, m_phase);
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
+    private string ResolvePhysicalPath(string path)
+    {
+        string absolute = Path.GetFullPath(path);
+        if (m_physicalPaths.TryGetValue(absolute, out string? resolved))
+            return resolved;
+        string? parent = Path.GetDirectoryName(absolute);
+        if (parent is null)
+            return absolute;
+        string physicalParent = ResolvePhysicalPath(parent);
+        string candidate = Path.Combine(physicalParent, Path.GetFileName(absolute));
+        FileSystemInfo info = Directory.Exists(candidate) ? new DirectoryInfo(candidate) : new FileInfo(candidate);
+        resolved = (info.Attributes & FileAttributes.ReparsePoint) != 0
+            ? ResolvePhysicalPath(info.ResolveLinkTarget(returnFinalTarget: true)?.FullName
+                ?? throw new IOException($"Native input link '{candidate}' has no resolvable target.")) : candidate;
+        m_physicalPaths.Add(absolute, resolved);
+        return resolved;
+    }
+
+    private void EnumerateDirectory(
+        string directory,
+        string relativeRoot,
+        List<(string relative, string physical)> files,
+        HashSet<string> ancestors,
+        CancellationToken cancellationToken
+    ) {
+        cancellationToken.ThrowIfCancellationRequested();
+        string physicalRoot = ResolvePhysicalPath(directory);
+        if (!ancestors.Add(physicalRoot))
+            throw new IOException($"A native input contains a directory link cycle at '{directory}'.");
+        try
+        {
+            foreach (string file in Directory.EnumerateFiles(physicalRoot))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (Path.GetFileName(file) != ".git")
+                    files.Add((relativeRoot + Path.GetFileName(file), Path.Combine(directory, Path.GetFileName(file))));
+            }
+            foreach (string child in Directory.EnumerateDirectories(physicalRoot))
+            {
+                string name = Path.GetFileName(child);
+                if (name is ".git" or ".build" or "bin" or "obj" or "__pycache__")
+                    continue;
+                EnumerateDirectory(Path.Combine(directory, name), relativeRoot + name + "/", files, ancestors, cancellationToken);
+            }
+        }
+        finally
+        {
+            ancestors.Remove(physicalRoot);
+        }
+    }
+}

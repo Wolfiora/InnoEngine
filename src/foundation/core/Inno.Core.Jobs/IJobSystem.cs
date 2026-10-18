@@ -53,7 +53,11 @@ internal interface IJobSystem : IDisposable
     /// <returns>
     /// A generation-scoped handle that represents the scheduled completion.
     /// </returns>
-    JobHandle Schedule(Action<object?> job, object? state, ReadOnlySpan<JobHandle> dependencies);
+    JobHandle Schedule(
+        Action<object?> job,
+        object? state,
+        ReadOnlySpan<JobHandle> dependencies
+    );
 
     /// <summary>
     /// Creates a synchronization handle that completes after all provided dependencies complete.
@@ -81,7 +85,11 @@ internal interface IJobSystem : IDisposable
     /// <returns>
     /// A handle that completes after every scheduled batch.
     /// </returns>
-    JobHandle ParallelFor(int length, int batchSize, Action<int, int> body);
+    JobHandle ParallelFor(
+        int length,
+        int batchSize,
+        Action<int, int> body
+    );
 
     /// <summary>
     /// Blocks until the given handle is completed.

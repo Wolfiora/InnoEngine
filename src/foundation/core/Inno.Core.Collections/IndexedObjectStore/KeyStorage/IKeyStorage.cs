@@ -16,7 +16,10 @@ internal interface IKeyStorage<TKey, T> where T : class where TKey : notnull
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    bool Add(TKey key, T item);
+    bool Add(
+        TKey key,
+        T item
+    );
     /// <summary>
     /// Removes the requested value while preserving the collection's invariants.
     /// </summary>
@@ -26,7 +29,10 @@ internal interface IKeyStorage<TKey, T> where T : class where TKey : notnull
     /// <param name="item">
     /// The stored item associated with the validated handle.
     /// </param>
-    void Remove(TKey key, T item);
+    void Remove(
+        TKey key,
+        T item
+    );
     /// <summary>
     /// Attempts to get single without changing state when the operation cannot complete.
     /// </summary>
@@ -39,7 +45,10 @@ internal interface IKeyStorage<TKey, T> where T : class where TKey : notnull
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    bool TryGetSingle(TKey key, out T? item);
+    bool TryGetSingle(
+        TKey key,
+        out T? item
+    );
     /// <summary>
     /// Retrieves the requested count value from current authoritative state.
     /// </summary>
@@ -62,7 +71,10 @@ internal interface IKeyStorage<TKey, T> where T : class where TKey : notnull
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    bool Contains(TKey key, T item);
+    bool Contains(
+        TKey key,
+        T item
+    );
     /// <summary>
     /// Determines whether a key currently has no indexed values.
     /// </summary>

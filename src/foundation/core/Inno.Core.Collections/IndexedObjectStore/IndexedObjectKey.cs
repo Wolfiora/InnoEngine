@@ -54,8 +54,11 @@ public readonly struct IndexedObjectKey<TKey>
         }
     }
 
-    internal IndexedObjectKey(WeakReference<IIndexedObjectStore> storeRef, int id, string name)
-    {
+    internal IndexedObjectKey(
+        WeakReference<IIndexedObjectStore> storeRef,
+        int id,
+        string name
+    ) {
         this.storeRef = storeRef;
         this.id = id;
         this.name = name;

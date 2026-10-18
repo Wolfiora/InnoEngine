@@ -39,8 +39,8 @@ public sealed class EditorPanelAttribute : Attribute
         int order = 0,
         bool defaultOpen = true,
         string menuPath = "",
-        bool separatorBefore = false)
-    {
+        bool separatorBefore = false
+    ) {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("An editor panel identifier is required.", nameof(id));
         if (string.IsNullOrWhiteSpace(title))

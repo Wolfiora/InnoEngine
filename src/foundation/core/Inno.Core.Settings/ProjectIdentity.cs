@@ -81,8 +81,7 @@ public readonly record struct ProjectId
     /// <returns>
     /// The complete project-scoped identity.
     /// </returns>
-    public ProjectScopedId Qualify(ProjectLocalId name)
-        => new(this, name);
+    public ProjectScopedId Qualify(ProjectLocalId name) => new(this, name);
 
     /// <summary>
     /// Formats the canonical identifier.
@@ -92,8 +91,11 @@ public readonly record struct ProjectId
     /// </returns>
     public override string ToString() => value ?? string.Empty;
 
-    internal static void ValidatePortable(string value, string label, string parameterName)
-    {
+    internal static void ValidatePortable(
+        string value,
+        string label,
+        string parameterName
+    ) {
         if (value.Length > 128)
             throw new ArgumentException($"{label} cannot exceed 128 characters.", parameterName);
         for (int index = 0; index < value.Length; index++)
@@ -190,8 +192,10 @@ public readonly record struct ProjectLocalId
     /// </returns>
     public override string ToString() => value ?? string.Empty;
 
-    private static void AppendSeparator(StringBuilder builder, ref bool pendingSeparator)
-    {
+    private static void AppendSeparator(
+        StringBuilder builder,
+        ref bool pendingSeparator
+    ) {
         if (pendingSeparator && builder.Length > 0)
             builder.Append('-');
         pendingSeparator = false;
@@ -212,8 +216,10 @@ public readonly record struct ProjectScopedId
     /// <param name="name">
     /// The stable local identity.
     /// </param>
-    public ProjectScopedId(ProjectId projectId, ProjectLocalId name)
-    {
+    public ProjectScopedId(
+        ProjectId projectId,
+        ProjectLocalId name
+    ) {
         if (!projectId.isValid)
             throw new ArgumentException("A valid Project ID is required.", nameof(projectId));
         if (string.IsNullOrEmpty(name.value))
@@ -289,6 +295,5 @@ public sealed class ProjectIdentitySettings : ISerializable
     /// <returns>
     /// The complete project-scoped identity.
     /// </returns>
-    public ProjectScopedId Qualify(string name)
-        => id.Qualify(ProjectLocalId.FromName(name));
+    public ProjectScopedId Qualify(string name) => id.Qualify(ProjectLocalId.FromName(name));
 }

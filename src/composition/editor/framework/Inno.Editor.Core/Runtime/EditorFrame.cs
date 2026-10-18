@@ -15,4 +15,5 @@ namespace Inno.Editor.Core;
 public readonly record struct EditorFrame(
     float deltaTime,
     float totalTime,
-    bool isFocused);
+    bool isFocused
+);

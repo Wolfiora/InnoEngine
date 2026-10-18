@@ -53,8 +53,8 @@ public sealed class PluginSourceService
         SerializationRegistry serialization,
         string pluginRoot,
         string libraryRoot,
-        PluginSourceLimits? limits = null)
-    {
+        PluginSourceLimits? limits = null
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentException.ThrowIfNullOrWhiteSpace(pluginRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(libraryRoot);
@@ -162,8 +162,8 @@ public sealed class PluginSourceService
         string packagePath,
         PluginSourceKind sourceKind,
         int depth,
-        ref int embeddedCount)
-    {
+        ref int embeddedCount
+    ) {
         if (depth > m_limits.maximumEmbeddedDepth)
             throw new InvalidDataException("Plugin dependency packages exceed the configured nesting limit.");
         using ZipArchive archive = ZipFile.OpenRead(packagePath);
@@ -179,6 +179,7 @@ public sealed class PluginSourceService
         string contentRoot = Path.Combine(destinationRoot, "Assets");
         if (!Directory.Exists(contentRoot))
             ExtractAtomically(archive, entries, destinationRoot);
+        ValidateMaterializedSnapshot(entries, destinationRoot);
 
         bool containsCode = ContainsCode(entries.Select(static entry => entry.path));
         var candidates = new List<PluginCandidate>
@@ -223,7 +224,8 @@ public sealed class PluginSourceService
         string contentHash,
         PluginManifest manifest,
         string contentRoot,
-        bool containsCode)
+        bool containsCode
+    )
         => new(
             Path.GetFullPath(sourcePath),
             sourceKind,
@@ -265,8 +267,11 @@ public sealed class PluginSourceService
         }
     }
 
-    private void ValidateFileSize(string path, long length, ref long totalBytes)
-    {
+    private void ValidateFileSize(
+        string path,
+        long length,
+        ref long totalBytes
+    ) {
         if (length > m_limits.maximumFileBytes)
             throw new InvalidDataException($"Plugin source '{path}' exceeds the file-size limit.");
         totalBytes = checked(totalBytes + length);
@@ -328,8 +333,8 @@ public sealed class PluginSourceService
 
     private static IReadOnlyList<PluginCandidate> ValidateDependencyGraph(
         IReadOnlyList<PluginCandidate> candidates,
-        List<PluginDiagnostic> diagnostics)
-    {
+        List<PluginDiagnostic> diagnostics
+    ) {
         var byId = new Dictionary<string, PluginCandidate>(StringComparer.Ordinal);
         var rejected = new HashSet<string>(StringComparer.Ordinal);
         foreach (IGrouping<string, PluginCandidate> group in candidates.GroupBy(
@@ -478,14 +483,13 @@ public sealed class PluginSourceService
             && name[3] is >= '1' and <= '9';
     }
 
-    private static bool IsSymbolicLink(ZipArchiveEntry entry)
-        => ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000;
+    private static bool IsSymbolicLink(ZipArchiveEntry entry) => ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000;
 
     private void ExtractAtomically(
         ZipArchive archive,
         IReadOnlyList<ValidatedPackageEntry> entries,
-        string destinationRoot)
-    {
+        string destinationRoot
+    ) {
         string stagingRoot = Path.Combine(m_cacheRoot, ".staging", Guid.NewGuid().ToString("N"));
         try
         {
@@ -505,7 +509,18 @@ public sealed class PluginSourceService
 
             Directory.CreateDirectory(Path.GetDirectoryName(destinationRoot)!);
             if (!Directory.Exists(destinationRoot))
-                Directory.Move(stagingRoot, destinationRoot);
+            {
+                try
+                {
+                    AtomicDirectory.Publish(stagingRoot, destinationRoot);
+                }
+                catch (IOException) when (Directory.Exists(destinationRoot))
+                {
+                    // A concurrent publisher may have committed the same immutable snapshot.
+                    // Accept it only after checking its exact files and bytes against this archive.
+                    ValidateMaterializedSnapshot(entries, destinationRoot);
+                }
+            }
         }
         finally
         {
@@ -514,8 +529,38 @@ public sealed class PluginSourceService
         }
     }
 
-    private static string ResolveContainedPath(string root, string relativePath)
-    {
+    private static void ValidateMaterializedSnapshot(
+        IReadOnlyList<ValidatedPackageEntry> entries,
+        string destinationRoot
+    ) {
+        ValidatedPackageEntry[] files = entries.Where(static item => !item.path.EndsWith("/", StringComparison.Ordinal))
+            .OrderBy(static item => item.path, StringComparer.Ordinal).ToArray();
+        string[] actual = PathBoundary.EnumerateFiles(destinationRoot)
+            .Select(path => Path.GetRelativePath(destinationRoot, path).Replace('\\', '/'))
+            .Order(StringComparer.Ordinal).ToArray();
+        if (!actual.SequenceEqual(files.Select(static item => item.path), StringComparer.Ordinal))
+            throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has an incomplete or unexpected file set.");
+        foreach (ValidatedPackageEntry item in entries.Where(static item => item.path.EndsWith("/", StringComparison.Ordinal)))
+        {
+            if (!Directory.Exists(ResolveContainedPath(destinationRoot, item.path.TrimEnd('/'))))
+                throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' is missing directory '{item.path}'.");
+        }
+        foreach (ValidatedPackageEntry item in files)
+        {
+            string physical = ResolveContainedPath(destinationRoot, item.path);
+            if (new FileInfo(physical).Length != item.entry.Length)
+                throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has an invalid length for '{item.path}'.");
+            using Stream expected = item.entry.Open();
+            using FileStream materialized = new(physical, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            if (!SHA256.HashData(materialized).AsSpan().SequenceEqual(SHA256.HashData(expected)))
+                throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has invalid bytes for '{item.path}'.");
+        }
+    }
+
+    private static string ResolveContainedPath(
+        string root,
+        string relativePath
+    ) {
         try
         {
             return PathBoundary.Resolve(root, relativePath);
@@ -542,8 +587,10 @@ public sealed class PluginSourceService
         return Convert.ToHexString(hash.GetHashAndReset());
     }
 
-    private static void AppendPath(IncrementalHash hash, string path)
-    {
+    private static void AppendPath(
+        IncrementalHash hash,
+        string path
+    ) {
         byte[] pathBytes = Encoding.UTF8.GetBytes(path);
         Span<byte> lengthBytes = stackalloc byte[sizeof(int)];
         BinaryPrimitives.WriteInt32LittleEndian(lengthBytes, pathBytes.Length);
@@ -551,8 +598,10 @@ public sealed class PluginSourceService
         hash.AppendData(pathBytes);
     }
 
-    private static void AppendStream(IncrementalHash hash, Stream stream)
-    {
+    private static void AppendStream(
+        IncrementalHash hash,
+        Stream stream
+    ) {
         byte[] buffer = new byte[64 * 1024];
         int read;
         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
@@ -577,5 +626,8 @@ public sealed class PluginSourceService
         }
     }
 
-    private sealed record ValidatedPackageEntry(string path, ZipArchiveEntry entry);
+    private sealed record ValidatedPackageEntry(
+        string path,
+        ZipArchiveEntry entry
+    );
 }

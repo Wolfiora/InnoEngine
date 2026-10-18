@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Inno.Player.Runtime</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../default/Inno.Engine.Default/Inno.Engine.Default.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../content/animation/Inno.Animation.Runtime/Inno.Animation.Runtime.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../content/animation/Inno.Animation/Inno.Animation.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../services/audio/Inno.Audio.Runtime/Inno.Audio.Runtime.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../services/audio/Inno.Audio/Inno.Audio.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../foundation/core/Inno.Core.Events/Inno.Core.Events.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../foundation/core/Inno.Core.Settings/Inno.Core.Settings.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../services/platform/Inno.Platform/Inno.Platform.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../content/references/Inno.References/Inno.References.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../services/text/Inno.Text/Inno.Text.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../services/text/Inno.Text.Runtime/Inno.Text.Runtime.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference Include="../../../services/ui/Inno.UI/Inno.UI.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../services/ui/Inno.UI.Runtime/Inno.UI.Runtime.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../content/scene/Inno.Scene/Inno.Scene.csproj" PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../services/storage/Inno.Storage.Runtime/Inno.Storage.Runtime.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj"
+      PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../adapters/common/Inno.Adapter/Inno.Adapter.csproj" />
+    <ProjectReference Include="../../shell/Inno.Shell/Inno.Shell.csproj" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
+    <ProjectReference Include="../../../content/deployment/Inno.Content/Inno.Content.csproj" />
+    <ProjectReference Include="../../../services/storage/Inno.Storage/Inno.Storage.csproj" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+  </ItemGroup>
+</Project>

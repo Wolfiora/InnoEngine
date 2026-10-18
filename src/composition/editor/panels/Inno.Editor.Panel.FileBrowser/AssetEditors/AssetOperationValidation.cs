@@ -14,8 +14,10 @@ public readonly record struct AssetOperationValidation
     /// <param name="message">
     /// The user-facing rejection diagnostic, or an empty string for a valid result.
     /// </param>
-    public AssetOperationValidation(bool isValid, string message)
-    {
+    public AssetOperationValidation(
+        bool isValid,
+        string message
+    ) {
         this.isValid = isValid;
         this.message = message ?? string.Empty;
     }
@@ -44,6 +46,5 @@ public readonly record struct AssetOperationValidation
     /// <returns>
     /// An invalid validation result containing the supplied diagnostic.
     /// </returns>
-    public static AssetOperationValidation Invalid(string message)
-        => new(false, message ?? string.Empty);
+    public static AssetOperationValidation Invalid(string message) => new(false, message ?? string.Empty);
 }

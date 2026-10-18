@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Inno.Storage;
 
 namespace Inno.Adapter.Storage;
@@ -8,13 +9,18 @@ namespace Inno.Adapter.Storage;
 public interface IStorageBackendFactory
 {
     /// <summary>
-    /// Creates storage rooted at the supplied host-owned directory.
+    /// Gets the exact registrations available in this composition snapshot.
+    /// </summary>
+    IReadOnlyList<StorageBackendId> supportedBackends { get; }
+
+    /// <summary>
+    /// Creates isolated storage for a logical application namespace.
     /// </summary>
     /// <param name="backend">
-    /// Built-in storage backend selected by the composition root.
+    /// storage implementation selected by the composition root.
     /// </param>
-    /// <param name="rootDirectory">
-    /// Absolute or relative root assigned exclusively to the returned storage instance.
+    /// <param name="scope">
+    /// The application namespace mapped to a location by the selected provider.
     /// </param>
     /// <returns>
     /// A caller-owned backend-neutral application storage service.
@@ -22,5 +28,8 @@ public interface IStorageBackendFactory
     /// <exception cref="System.NotSupportedException">
     /// Thrown when the catalog does not contain the selected backend.
     /// </exception>
-    IApplicationStorage CreateStorage(StorageBackend backend, string rootDirectory);
+    IApplicationStorage CreateStorage(
+        StorageBackendId backend,
+        StorageScope scope
+    );
 }

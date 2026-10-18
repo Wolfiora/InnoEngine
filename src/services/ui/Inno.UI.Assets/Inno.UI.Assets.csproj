@@ -6,10 +6,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Inno.UI\Inno.UI.csproj" />
-    <ProjectReference Include="..\..\..\content\assets\Inno.Assets.Pipeline\Inno.Assets.Pipeline.csproj" />
-    <ProjectReference Include="..\..\..\foundation\core\Inno.Core.Serialization\Inno.Core.Serialization.csproj" />
-    <ProjectReference Include="..\..\..\foundation\extensibility\Inno.Extensibility.Types\Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../Inno.UI/Inno.UI.csproj" />
+    <ProjectReference Include="../../../content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

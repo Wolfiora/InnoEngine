@@ -11,8 +11,8 @@ public sealed class GameBuildContentContext
     internal GameBuildContentContext(
         BuildProfile profile,
         string outputDirectory,
-        SerializationGeneration serialization)
-    {
+        SerializationGeneration serialization
+    ) {
         this.profile = profile;
         this.outputDirectory = outputDirectory;
         this.serialization = serialization;

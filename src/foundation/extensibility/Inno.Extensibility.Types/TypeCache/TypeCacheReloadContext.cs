@@ -10,8 +10,10 @@ public sealed class TypeCacheReloadContext
     private TypeCacheSnapshot? m_previous;
     private TypeCacheSnapshot? m_candidate;
 
-    internal TypeCacheReloadContext(TypeCacheSnapshot previous, TypeCacheSnapshot candidate)
-    {
+    internal TypeCacheReloadContext(
+        TypeCacheSnapshot previous,
+        TypeCacheSnapshot candidate
+    ) {
         m_previous = previous;
         m_candidate = candidate;
     }
@@ -54,8 +56,10 @@ public sealed class TypeCacheReloadContext
     /// <returns>
     /// <see langword="true"/> when a distinct replacement exists.
     /// </returns>
-    public bool TryResolveReplacement(TypeRef previousType, out TypeRef replacement)
-    {
+    public bool TryResolveReplacement(
+        TypeRef previousType,
+        out TypeRef replacement
+    ) {
         if (!previous.TryResolve(previousType, out Type? previousRuntimeType) ||
             !candidate.TryResolve(previousType, out Type? replacementType) ||
             replacementType == previousRuntimeType)

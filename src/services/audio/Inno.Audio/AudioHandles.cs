@@ -5,8 +5,10 @@ namespace Inno.Audio;
 /// </summary>
 public readonly record struct AudioClipHandle
 {
-    internal AudioClipHandle(ulong value, uint deviceGeneration)
-    {
+    internal AudioClipHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }
@@ -29,8 +31,10 @@ public readonly record struct AudioClipHandle
 /// </summary>
 public readonly record struct AudioVoiceHandle
 {
-    internal AudioVoiceHandle(ulong value, uint ownerGeneration)
-    {
+    internal AudioVoiceHandle(
+        ulong value,
+        uint ownerGeneration
+    ) {
         this.value = value;
         this.ownerGeneration = ownerGeneration;
     }
@@ -53,8 +57,10 @@ public readonly record struct AudioVoiceHandle
 /// </summary>
 public readonly record struct AudioBusHandle
 {
-    internal AudioBusHandle(ulong value, uint deviceGeneration)
-    {
+    internal AudioBusHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }
@@ -77,8 +83,10 @@ public readonly record struct AudioBusHandle
 /// </summary>
 public readonly record struct AudioListenerHandle
 {
-    internal AudioListenerHandle(ulong value, uint deviceGeneration)
-    {
+    internal AudioListenerHandle(
+        ulong value,
+        uint deviceGeneration
+    ) {
         this.value = value;
         this.deviceGeneration = deviceGeneration;
     }

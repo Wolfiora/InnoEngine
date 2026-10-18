@@ -14,8 +14,13 @@ public sealed class AssetSourceStore
     private readonly AssetPipeline m_assets;
     private readonly AssetSerializationServices m_serialization;
 
-    internal AssetSourceStore(AssetPipeline assets, AssetSerializationServices serialization)
-    { m_assets = assets; m_serialization = serialization; }
+    internal AssetSourceStore(
+        AssetPipeline assets,
+        AssetSerializationServices serialization
+    ) {
+        m_assets = assets;
+        m_serialization = serialization;
+    }
 
     /// <summary>
     /// Reads a mounted source without modifying its canonical asset or compiled artifacts.
@@ -45,8 +50,7 @@ public sealed class AssetSourceStore
     /// <returns>
     /// Native source bytes, with no canonical asset mutation.
     /// </returns>
-    public byte[] Encode<TAsset>(TAsset asset) where TAsset : AssetObject
-        => NativeAssetSourceSerialization.Export(asset, m_serialization);
+    public byte[] Encode<TAsset>(TAsset asset) where TAsset : AssetObject => NativeAssetSourceSerialization.Export(asset, m_serialization);
 
     /// <summary>
     /// Restores a detached native value using current-generation asset references.
@@ -78,22 +82,31 @@ public sealed class AssetSourceStore
     /// <returns>
     /// The saved fingerprint.
     /// </returns>
-    public string Save(AssetPath path, byte[] bytes, string? expectedHash)
-    {
+    public string Save(
+        AssetPath path,
+        byte[] bytes,
+        string? expectedHash
+    ) {
         ArgumentNullException.ThrowIfNull(bytes);
         AssetSourceMount mount = Mount(path);
-        if (mount.isReadOnly) throw new InvalidOperationException("Installed assets are read-only. Copy the asset to the project before editing.");
+        if (mount.isReadOnly)
+            throw new InvalidOperationException("Installed assets are read-only. Copy the asset to the project before editing.");
         string destination = mount.Resolve(path.localPath);
         bool exists = File.Exists(destination);
         if (expectedHash is null ? exists : !exists || Hash(File.ReadAllBytes(destination)) != expectedHash)
             throw new IOException("The asset source changed externally. Draft and history are retained; reload or save a project copy explicitly.");
-        if (expectedHash is null) AtomicFile.WriteAllBytes(destination, bytes, overwrite: false);
-        else ReplaceExisting(destination, bytes, expectedHash);
+        if (expectedHash is null)
+            AtomicFile.WriteAllBytes(destination, bytes, overwrite: false);
+        else
+            ReplaceExisting(destination, bytes, expectedHash);
         return Hash(bytes);
     }
 
-    private static void ReplaceExisting(string destination, byte[] bytes, string expectedHash)
-    {
+    private static void ReplaceExisting(
+        string destination,
+        byte[] bytes,
+        string expectedHash
+    ) {
         string token = Guid.NewGuid().ToString("N");
         string candidate = destination + ".staging-" + token;
         string replaced = destination + ".staging-previous-" + token;
@@ -111,13 +124,15 @@ public sealed class AssetSourceStore
         }
         finally
         {
-            if (File.Exists(candidate)) File.Delete(candidate);
+            if (File.Exists(candidate))
+                File.Delete(candidate);
         }
     }
 
     private AssetSourceMount Mount(AssetPath path)
     {
-        if (!path.isValid) throw new ArgumentException("A valid mounted asset path is required.", nameof(path));
+        if (!path.isValid)
+            throw new ArgumentException("A valid mounted asset path is required.", nameof(path));
         return m_assets.sourceMounts.SingleOrDefault(mount => mount.id == path.source)
             ?? throw new InvalidOperationException($"Asset source mount '{path.source}' is unavailable.");
     }
@@ -131,8 +146,15 @@ public sealed class AssetSourceStore
 public sealed class AssetSourceSnapshot
 {
     private readonly byte[] m_bytes;
-    internal AssetSourceSnapshot(byte[] bytes, string hash, bool readOnly)
-    { m_bytes = bytes; contentHash = hash; isReadOnly = readOnly; }
+    internal AssetSourceSnapshot(
+        byte[] bytes,
+        string hash,
+        bool readOnly
+    ) {
+        m_bytes = bytes;
+        contentHash = hash;
+        isReadOnly = readOnly;
+    }
     /// <summary>
     /// Gets a copy of the captured native source bytes.
     /// </summary>

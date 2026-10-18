@@ -16,21 +16,25 @@
 空白区域、Scene 和 GameObject 使用同一个 area，target 类型区分匹配：
 
 ```csharp
-internal static class SceneExportInteractionIds
-{
-    internal const string C_EXPORT = "scene/export";
-    internal const string C_HIERARCHY_AREA = "panel/scene.hierarchy";
-}
+using Inno.Editor.Interactions;
+using Inno.Editor.Scene;
+using Inno.Scene;
 
-[EditorAction(SceneExportInteractionIds.C_EXPORT, SceneExportInteractionIds.C_HIERARCHY_AREA)]
-[EditorMenu(SceneExportInteractionIds.C_HIERARCHY_AREA, "Export/Scene Package", order: 500)]
-public sealed class ExportSceneAction : EditorAction<GameScene>
+[EditorAction("sample/scene/activate", "panel/scene.hierarchy")]
+[EditorMenu("panel/scene.hierarchy", "Set Active Scene", order: 500)]
+public sealed class ActivateSceneAction : EditorAction<GameScene>
 {
+    private readonly IEditorSceneWorkspace m_workspace;
+
+    public ActivateSceneAction(IEditorSceneWorkspace workspace)
+        => m_workspace = workspace;
+
     protected override void Execute(EditorActionContext<GameScene> context)
-    {
-    }
+        => m_workspace.SetActiveScene(context.target);
 }
 ```
+
+本例由宿主扩展激活器注入现有 Scene workspace；切换 active Scene 属于导航，不创建内容 Undo。菜单目标必须是当前 workspace 中的已加载 Scene。
 
 同一路径可由其他 target 类型贡献不同 Action。只有 `Query` 可见的最具体实现进入菜单。
 
@@ -50,7 +54,7 @@ Scene、GameObject 的创建、删除、排序、parent 修改、跨 Scene 移�
 
 Play Scene 完整提交后，Hierarchy 的 Scene 集合、active Scene、Selection 与全部 Action 都切换到 runtime copy。Play 中允许创建、删除、重命名和重排对象，这些操作进入隔离 History 分支；`IsDirty` 不显示 `*`，Save/Open 被禁用。停止后 Play 分支和 runtime graph 一起释放，Hierarchy 重新显示从未被修改的 Edit Scene，并按 persistent ID 恢复可对应的 Selection。
 
-Hierarchy Panel 关闭根 window padding，正文 child 也不重复添加内边距，因此 Scene/GameObject 行与 Dock body 边缘对齐，不会出现双层外边缘空隙。Tree 行保持原有紧凑内容高度，只使用可缩放的 `hierarchyItemSpacing` 控制行距；父 connector 从父行真实垂直中心开始，纵向 segment 延伸到当前行真实底边、间距和 overlap，因此父子与 sibling 线段连续，但完全不通过增加栏目高度补线。Scene 黑底、selection 与 hover 背景也通过 Tree row 的后景 draw-list channel 使用同一帧最终几何绘制，不缓存上一帧矩形；拖拽、窗口移动和主窗口拉伸都不会再因旧几何失效而闪烁。它仍与 FileBrowser Tree 保持相同滚动语义：普通短内容不会产生横向 scroll range，只有真实名称或深层缩进超出 viewport 时才允许必要的最小横向移动，并显示原生水平 scrollbar。Tree 内容、图标与 hit area 共享一个滚动坐标系；Scene、selection 和交替行背景固定覆盖可视宽度，不随 `ScrollX` 移出或在滚动帧变透明。Tree 行的可交互右边界采用 ImGui `WorkRect`，不再把 window padding 误算成内容溢出。行尾 active eye 使用 `drawViewportOverlay` 固定在 work region 右边界并内缩统一的 `windowPadding.X`；它使用方形 compact icon slot、按 glyph 可见边界垂直居中，同时不参与 Tree 内容宽度。Hierarchy 拉宽再缩窄时，旧眼睛位置和整行 hit area 不会形成持久 `ScrollMaxX`。
+Hierarchy Panel 关闭根 window padding 与根窗口滚动，正文 child 独占滚动且不重复添加内边距，因此 Scene/GameObject 行与 Dock body 边缘对齐，不会出现双层外边缘空隙或重复滚动条。Tree 行保持原有紧凑内容高度，只使用可缩放的 `hierarchyItemSpacing` 控制行距；父 connector 从父行真实垂直中心开始，纵向 segment 延伸到当前行真实底边、间距和 overlap，因此父子与 sibling 线段连续，但完全不通过增加栏目高度补线。Scene 黑底、selection 与 hover 背景也通过 Tree row 的后景 draw-list channel 使用同一帧最终几何绘制，不缓存上一帧矩形；拖拽、窗口移动和主窗口拉伸都不会再因旧几何失效而闪烁。它仍与 FileBrowser Tree 保持相同滚动语义：普通短内容不会产生横向 scroll range，只有真实名称或深层缩进超出 viewport 时才允许必要的最小横向移动，并显示原生水平 scrollbar。Tree 内容、图标与 hit area 共享一个滚动坐标系；Scene、selection 和交替行背景固定覆盖可视宽度，不随 `ScrollX` 移出或在滚动帧变透明。Tree 行的可交互右边界采用 ImGui `WorkRect`，不再把 window padding 误算成内容溢出。行尾 active eye 使用 `drawViewportOverlay` 固定在 work region 右边界并内缩统一的 `windowPadding.X`；它使用方形 compact icon slot、按 glyph 可见边界垂直居中，同时不参与 Tree 内容宽度。Hierarchy 拉宽再缩窄时，旧眼睛位置和整行 hit area 不会形成持久 `ScrollMaxX`。
 
 Scene、GameObject 不再直接绑定 `ImGuiIcon` 常量。Hierarchy、`.iscene` / `.iprefab` Asset 和 Inspector Header 分别用 `EditorSettings.Get("Editor/Appearance/Icons/...")` 读取对象的 `value`。默认视觉仍是 Cubes、Cube、Cube；用户可以在 `Edit/Settings... → Editor/Appearance/Icons` 一次修改所有消费点。路径就是原始字符串，没有 `EditorIcons` 或 resolver facade。
 
@@ -75,3 +79,51 @@ Command/Ctrl+S 使用原始 Action ID `editor/save`，由本 feature 提供实�
 ## Scripting API
 
 EditorScripts 使用 `InnoEditor.Hierarchy` 获取公开 drop target；Attribute 与运行时 API 共用 feature-owned `const string` ID/area。Workspace 查询与工作流接口 `IEditorSceneWorkspace`、可逆编辑门面 `SceneEdits` 位于 `InnoEditor.Scene`。没有 global using。
+
+## 当前源码公开 API 清单
+
+按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+
+### `Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget`
+
+<!-- api: T:Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget 15c7707d4ce6f3f9fe02e0a43f1612d3d7e497076bafb494a2e1d2aae84ca4cf -->
+<!-- api: M:Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.#ctor(Inno.Scene.GameObject) 0d31f36c3a00a3ed8e9836a2f3df8c0c478c39f80be7e6f39c0db7e7add56b43 -->
+<!-- api: P:Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.gameObject 253035626711ef11dc31af24276ab33048a6715342af0e129f58771ddc7057c3 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-91a27db89734994e"></a>[`public Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.HierarchyObjectDropTarget(Inno.Scene.GameObject gameObject)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L22) | Creates a hierarchy drop target representing one live game object row.<br>`gameObject`：The game object represented by the target row. | — | `System.ArgumentNullException`：Thrown when gameObject is null. |
+| <a id="api-ec612092b5d3515e"></a>[`public Inno.Scene.GameObject Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget.gameObject { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L30) | Gets the target game object. | — | — |
+| <a id="api-9bd18483af53fd25"></a>[`public sealed class Inno.Editor.Panel.Hierarchy.HierarchyObjectDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchyObjectDropTarget.cs#L11) | Identifies a game object hierarchy drop target. | — | — |
+
+### `Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget`
+
+<!-- api: T:Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget 6dcfa56ee2b7fb2c9b6cbf7a0efd55e2d4aab2fea416214c587b79db306715cd -->
+<!-- api: M:Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.#ctor(Inno.Scene.GameScene) d5c48102e124cb07f38825a947029656e68959a7f7004cf5d047617caee0eede -->
+<!-- api: P:Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.scene 1a42b012a5b3a656cd2adeb91f2f5e3602ea99be4e2a4ef591e9d2dea8f8a45d -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-741e7235d3f3d8b3"></a>[`public Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.HierarchySceneDropTarget(Inno.Scene.GameScene scene)`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L22) | Creates a hierarchy drop target representing one loaded scene row or root.<br>`scene`：The loaded scene represented by the target. | — | `System.ArgumentNullException`：Thrown when scene is null. |
+| <a id="api-357da9dd8b24a4c0"></a>[`public Inno.Scene.GameScene Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget.scene { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L30) | Gets the target scene. | — | — |
+| <a id="api-d713793e6ceab109"></a>[`public sealed class Inno.Editor.Panel.Hierarchy.HierarchySceneDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Interactions/HierarchySceneDropTarget.cs#L11) | Identifies a scene row or scene root hierarchy drop target. | — | — |
+
+## 项目依赖
+
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene.Assets](../scene/Inno.Scene.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene](../scene/Inno.Scene.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

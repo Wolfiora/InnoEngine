@@ -38,8 +38,8 @@ public class EditorActionContext
         EditorInteractions interactions,
         string area,
         object? target = null,
-        object? argument = null)
-    {
+        object? argument = null
+    ) {
         this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
@@ -88,7 +88,10 @@ public class EditorActionContext
 public sealed class EditorActionContext<TTarget> : EditorActionContext
     where TTarget : class
 {
-    internal EditorActionContext(EditorActionContext context, TTarget target)
+    internal EditorActionContext(
+        EditorActionContext context,
+        TTarget target
+    )
         : base(context.editor, context.interactions, context.area, target, context.argument)
     {
         this.target = target;
@@ -112,7 +115,11 @@ public sealed class EditorActionContext<TTarget> : EditorActionContext
 public sealed class EditorActionContext<TTarget, TArgument> : EditorActionContext
     where TTarget : class
 {
-    internal EditorActionContext(EditorActionContext context, TTarget target, TArgument argument)
+    internal EditorActionContext(
+        EditorActionContext context,
+        TTarget target,
+        TArgument argument
+    )
         : base(context.editor, context.interactions, context.area, target, argument)
     {
         this.target = target;
@@ -138,7 +145,10 @@ public sealed class EditorActionContext<TTarget, TArgument> : EditorActionContex
 /// </typeparam>
 public sealed class EditorActionArgumentContext<TArgument> : EditorActionContext
 {
-    internal EditorActionArgumentContext(EditorActionContext context, TArgument argument)
+    internal EditorActionArgumentContext(
+        EditorActionContext context,
+        TArgument argument
+    )
         : base(context.editor, context.interactions, context.area, target: null, argument: argument)
     {
         this.argument = argument;

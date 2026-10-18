@@ -28,8 +28,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <param name="y">
     /// The vertical or second component.
     /// </param>
-    public Vector2Int(int x, int y)
-    {
+    public Vector2Int(
+        int x,
+        int y
+    ) {
         this.x = x;
         this.y = y;
     }
@@ -66,8 +68,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
 
     // Operators
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2Int operator +(Vector2Int a, Vector2Int b)
-        => new(a.x + b.x, a.y + b.y);
+    public static Vector2Int operator +(
+        Vector2Int a,
+        Vector2Int b
+    ) => new(a.x + b.x, a.y + b.y);
 
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
@@ -82,8 +86,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// The validated vector2int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2Int operator -(Vector2Int a, Vector2Int b)
-        => new(a.x - b.x, a.y - b.y);
+    public static Vector2Int operator -(
+        Vector2Int a,
+        Vector2Int b
+    ) => new(a.x - b.x, a.y - b.y);
 
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
@@ -95,8 +101,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// The validated vector2int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2Int operator -(Vector2Int v)
-        => new(-v.x, -v.y);
+    public static Vector2Int operator -(Vector2Int v) => new(-v.x, -v.y);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -111,8 +116,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// The validated vector2int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2Int operator *(Vector2Int v, int scalar)
-        => new(v.x * scalar, v.y * scalar);
+    public static Vector2Int operator *(
+        Vector2Int v,
+        int scalar
+    ) => new(v.x * scalar, v.y * scalar);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -127,8 +134,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// The validated vector2int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2Int operator *(int scalar, Vector2Int v)
-        => v * scalar;
+    public static Vector2Int operator *(
+        int scalar,
+        Vector2Int v
+    ) => v * scalar;
 
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
@@ -143,8 +152,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// The validated vector2int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2Int operator /(Vector2Int v, int scalar)
-        => new(v.x / scalar, v.y / scalar);
+    public static Vector2Int operator /(
+        Vector2Int v,
+        int scalar
+    ) => new(v.x / scalar, v.y / scalar);
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -159,8 +170,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Vector2Int a, Vector2Int b)
-        => a.x == b.x && a.y == b.y;
+    public static bool operator ==(
+        Vector2Int a,
+        Vector2Int b
+    ) => a.x == b.x && a.y == b.y;
 
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
@@ -175,8 +188,10 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Vector2Int a, Vector2Int b)
-        => !(a == b);
+    public static bool operator !=(
+        Vector2Int a,
+        Vector2Int b
+    ) => !(a == b);
     /// <summary>
     /// Converts the supplied value to <see cref="Vector2"/>.
     /// </summary>
@@ -189,8 +204,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
 
     // Conversions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Vector2(Vector2Int v)
-        => new(v.x, v.y);
+    public static explicit operator Vector2(Vector2Int v) => new(v.x, v.y);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Vector2Int"/>.
@@ -202,8 +216,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// The validated vector2int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Vector2Int(Vector2 v)
-        => new((int)v.x, (int)v.y);
+    public static explicit operator Vector2Int(Vector2 v) => new((int)v.x, (int)v.y);
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
@@ -215,8 +228,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// </returns>
 
     // Equality
-    public override bool Equals(object? obj)
-        => obj is Vector2Int other && Equals(other);
+    public override bool Equals(object? obj) => obj is Vector2Int other && Equals(other);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
@@ -227,8 +239,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <returns>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool Equals(Vector2Int other)
-        => x == other.x && y == other.y;
+    public bool Equals(Vector2Int other) => x == other.x && y == other.y;
 
     /// <summary>
     /// Computes a hash code consistent with the implemented equality contract.
@@ -236,8 +247,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public override int GetHashCode()
-        => HashCode.Combine(x, y);
+    public override int GetHashCode() => HashCode.Combine(x, y);
 
     /// <summary>
     /// Formats this value as a human-readable component list.
@@ -245,6 +255,5 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <returns>
     /// The validated text representation owned by the caller.
     /// </returns>
-    public override string ToString()
-        => $"({x}, {y})";
+    public override string ToString() => $"({x}, {y})";
 }

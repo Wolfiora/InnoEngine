@@ -37,8 +37,11 @@ public static class MathHelper
   /// otherwise, <c>false</c>.
   /// </returns>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static bool AlmostEquals(float a, float b, float relTolerance = C_TOLERANCE)
-  {
+  public static bool AlmostEquals(
+      float a,
+      float b,
+      float relTolerance = C_TOLERANCE
+  ) {
     return MathF.Abs(a - b) <= relTolerance * MathF.Max(MathF.Abs(a), MathF.Abs(b));
   }
   
@@ -65,12 +68,12 @@ public static class MathHelper
   /// </returns>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static float Barycentric(
-    float value1,
-    float value2,
-    float value3,
-    float amount1,
-    float amount2)
-  {
+      float value1,
+      float value2,
+      float value3,
+      float amount1,
+      float amount2
+  ) {
     return (float) ((double) value1 + ((double) value2 - (double) value1) * (double) amount1 + ((double) value3 - (double) value1) * (double) amount2);
   }
 
@@ -97,12 +100,12 @@ public static class MathHelper
   /// </returns>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static float CatmullRom(
-    float value1,
-    float value2,
-    float value3,
-    float value4,
-    float amount)
-  {
+      float value1,
+      float value2,
+      float value3,
+      float value4,
+      float amount
+  ) {
     double num1 = (double) amount * (double) amount;
     double num2 = num1 * (double) amount;
     return (float) (0.5 * (2.0 * (double) value2 + ((double) value3 - (double) value1) * (double) amount + (2.0 * (double) value1 - 5.0 * (double) value2 + 4.0 * (double) value3 - (double) value4) * num1 + (3.0 * (double) value2 - (double) value1 - 3.0 * (double) value3 + (double) value4) * num2));
@@ -121,7 +124,10 @@ public static class MathHelper
   /// The value2 consumed by distance; ownership remains with the caller unless explicitly stated otherwise.
   /// </param>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static float Distance(float value1, float value2) => MathF.Abs(value1 - value2);
+  public static float Distance(
+      float value1,
+      float value2
+  ) => MathF.Abs(value1 - value2);
 
   /// <summary>
   /// Performs a Hermite spline interpolation.
@@ -146,12 +152,12 @@ public static class MathHelper
   /// </returns>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static float Hermite(
-    float value1,
-    float tangent1,
-    float value2,
-    float tangent2,
-    float amount)
-  {
+      float value1,
+      float tangent1,
+      float value2,
+      float tangent2,
+      float amount
+  ) {
     double num1 = (double) value1;
     double num2 = (double) value2;
     double num3 = (double) tangent1;
@@ -183,8 +189,11 @@ public static class MathHelper
   /// See <see cref="M:MathHelper.LerpPrecise(System.Single,System.Single,System.Single)" /> for a less efficient version with more precision around edge cases.
   /// </remarks>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static float Lerp(float value1, float value2, float amount)
-  {
+  public static float Lerp(
+      float value1,
+      float value2,
+      float amount
+  ) {
     return value1 + (value2 - value1) * amount;
   }
 
@@ -204,8 +213,11 @@ public static class MathHelper
   /// The scalar result calculated from the supplied inputs.
   /// </returns>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static float LerpUnclamped(float value1, float value2, float amount)
-  {
+  public static float LerpUnclamped(
+      float value1,
+      float value2,
+      float amount
+  ) {
     return value1 + (value2 - value1) * amount;
   }
 
@@ -238,8 +250,11 @@ public static class MathHelper
   /// Relevant StackOverflow Answer: http://stackoverflow.com/questions/4353525/floating-point-linear-interpolation#answer-23716956
   /// </remarks>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static float LerpPrecise(float value1, float value2, float amount)
-  {
+  public static float LerpPrecise(
+      float value1,
+      float value2,
+      float amount
+  ) {
     return (float) ((1.0 - (double) amount) * (double) value1 + (double) value2 * (double) amount);
   }
 
@@ -259,8 +274,11 @@ public static class MathHelper
   /// Interpolated value.
   /// </returns>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static float SmoothStep(float value1, float value2, float amount)
-  {
+  public static float SmoothStep(
+      float value1,
+      float value2,
+      float amount
+  ) {
     float amount1 = Math.Clamp(amount, 0.0f, 1f);
     return Hermite(value1, 0.0f, value2, 0.0f, amount1);
   }
@@ -315,7 +333,11 @@ public static class MathHelper
   /// The max consumed by clamp; ownership remains with the caller unless explicitly stated otherwise.
   /// </param>
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static float Clamp(float value, float min, float max) => Math.Clamp(value, min, max);
+  public static float Clamp(
+      float value,
+      float min,
+      float max
+  ) => Math.Clamp(value, min, max);
 
   /// <summary>
   /// Clamps a value to the inclusive range [0, 1].

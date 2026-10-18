@@ -20,8 +20,10 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, GameScene value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        GameScene value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         if (value.isDestroyed)
@@ -95,8 +97,10 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    public override void Restore(SerializationReader reader, GameScene target)
-    {
+    public override void Restore(
+        SerializationReader reader,
+        GameScene target
+    ) {
         ArgumentNullException.ThrowIfNull(reader);
         ArgumentNullException.ThrowIfNull(target);
         SceneGraphSerialization.ValidateScene(reader);
@@ -125,8 +129,8 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
     private static void RestoreSceneGraph(
         GameScene scene,
         SerializationReader reader,
-        bool preservePersistentIds)
-    {
+        bool preservePersistentIds
+    ) {
         var references = new SceneGraphReferenceMap(scene);
         RestoredSceneGraph graph = SceneGraphSerialization.RestoreObjects(
             scene,

@@ -25,8 +25,8 @@ public sealed class RenderViewTransform
     /// </param>
     public RenderViewTransform(
         ReadOnlySpan<float> viewMatrix,
-        ReadOnlySpan<float> projectionMatrix)
-    {
+        ReadOnlySpan<float> projectionMatrix
+    ) {
         if (viewMatrix.Length != 16)
         {
             throw new ArgumentException("A view matrix requires exactly sixteen values.", nameof(viewMatrix));
@@ -65,8 +65,8 @@ public sealed class CompiledRenderTexture
         RenderTextureDescriptor descriptor,
         bool imported,
         PersistentTextureHandle persistentHandle,
-        int physicalSlot)
-    {
+        int physicalSlot
+    ) {
         this.handle = handle;
         this.name = name;
         this.descriptor = descriptor;
@@ -117,8 +117,8 @@ public sealed class CompiledRenderBuffer
         RenderBufferDescriptor descriptor,
         bool imported,
         PersistentBufferHandle persistentHandle,
-        int physicalSlot)
-    {
+        int physicalSlot
+    ) {
         this.handle = handle;
         this.name = name;
         this.descriptor = descriptor;
@@ -247,8 +247,8 @@ public sealed class CompiledRenderPass
         RenderClearColor presentationClearColor,
         RenderViewTransform? viewTransform,
         RenderPassRecordingMode recordingMode,
-        Action<RenderPassContext> execute)
-    {
+        Action<RenderPassContext> execute
+    ) {
         this.name = name;
         this.phase = phase;
         this.kind = kind;
@@ -369,8 +369,8 @@ public sealed class CompiledRenderGraph
         uint generation,
         IReadOnlyList<CompiledRenderPass> passes,
         IReadOnlyList<CompiledRenderTexture> textures,
-        IReadOnlyList<CompiledRenderBuffer> buffers)
-    {
+        IReadOnlyList<CompiledRenderBuffer> buffers
+    ) {
         this.generation = generation;
         m_passes = Array.AsReadOnly(passes.ToArray());
         m_textures = Array.AsReadOnly(textures.ToArray());
@@ -409,8 +409,10 @@ public sealed class CompiledRenderGraph
     /// <exception cref="AggregateException">
     /// Thrown when execution and cleanup both fail.
     /// </exception>
-    public void Execute(IRenderGraphBackend backend, ulong frameIndex)
-    {
+    public void Execute(
+        IRenderGraphBackend backend,
+        ulong frameIndex
+    ) {
         ArgumentNullException.ThrowIfNull(backend);
         List<Exception>? errors = null;
         bool graphStarted = false;
@@ -477,8 +479,7 @@ public sealed class CompiledRenderGraph
         throw new AggregateException("Render graph execution failed during recording or cleanup.", errors);
     }
 
-    private Dictionary<CompiledRenderPass, RecordedRenderCommandEncoder> RecordParallelPasses(
-        ulong frameIndex)
+    private Dictionary<CompiledRenderPass, RecordedRenderCommandEncoder> RecordParallelPasses(ulong frameIndex)
     {
         CompiledRenderPass[] parallelPasses = m_passes
             .Where(static pass => pass.recordingMode == RenderPassRecordingMode.Parallel)
@@ -516,8 +517,8 @@ public sealed class RenderGraphCompileResult
     internal RenderGraphCompileResult(
         CompiledRenderGraph? graph,
         IReadOnlyList<RenderGraphDiagnostic> diagnostics,
-        int culledPassCount = 0)
-    {
+        int culledPassCount = 0
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(culledPassCount);
         this.graph = graph;
         m_diagnostics = Array.AsReadOnly(diagnostics.ToArray());

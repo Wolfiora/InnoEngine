@@ -23,8 +23,8 @@ internal static class ScriptProjectGenerator
     internal static void Generate(
         ScriptCompilerOptions options,
         AssetPipeline assets,
-        PluginEnvironment plugins)
-    {
+        PluginEnvironment plugins
+    ) {
         Directory.CreateDirectory(options.projectRootDirectory);
         RemoveStalePluginProjectionFiles(options);
         ScriptSourceSet sources = ScriptSourceSet.Discover(assets, plugins, includeEditor: true);
@@ -76,7 +76,8 @@ internal static class ScriptProjectGenerator
                         .OrderBy(static value => value, StringComparer.Ordinal)
                         .ToArray(),
                     assembly.nullable,
-                    assembly.allowUnsafe)
+                    assembly.allowUnsafe,
+                    ScriptSourceLocations.CreateProjectPathMap(assembly.sources))
                 .Save(Path.Combine(options.projectRootDirectory, assembly.name + ".csproj"));
         }
         File.WriteAllText(
@@ -87,8 +88,8 @@ internal static class ScriptProjectGenerator
     private static string[] ResolvePluginReferences(
         ScriptSourceSet sources,
         ScriptAssemblyInput userAssembly,
-        IReadOnlyDictionary<string, string> pluginReferences)
-    {
+        IReadOnlyDictionary<string, string> pluginReferences
+    ) {
         IReadOnlyDictionary<string, ScriptAssemblyInput> assemblies = sources.assemblies.ToDictionary(
             static assembly => assembly.name,
             StringComparer.OrdinalIgnoreCase);
@@ -156,8 +157,9 @@ internal static class ScriptProjectGenerator
         IReadOnlyList<string> projectReferences,
         IReadOnlyList<string> defines,
         bool nullable,
-        bool allowUnsafe)
-    {
+        bool allowUnsafe,
+        string sourcePathMap
+    ) {
         var earlyPropertyGroup = new XElement("PropertyGroup",
             new XElement("BaseOutputPath", "Library/IDE/bin/" + assemblyName + "/"),
             new XElement("BaseIntermediateOutputPath", "Library/IDE/obj/" + assemblyName + "/"),
@@ -173,6 +175,7 @@ internal static class ScriptProjectGenerator
             new XElement("Nullable", nullable ? "enable" : "disable"),
             new XElement("AllowUnsafeBlocks", allowUnsafe ? "true" : "false"),
             new XElement("DefineConstants", string.Join(";", defines)),
+            new XElement("PathMap", sourcePathMap),
             new XElement("LangVersion", "latest"));
         var compileGroup = new XElement(
             "ItemGroup",
@@ -227,14 +230,17 @@ internal static class ScriptProjectGenerator
 
     private static string[] ToProjectRelativePaths(
         ScriptCompilerOptions options,
-        IReadOnlyList<string> absolutePaths)
+        IReadOnlyList<string> absolutePaths
+    )
         => absolutePaths
             .Select(path => Path.GetRelativePath(options.projectRootDirectory, path).Replace('\\', '/'))
             .OrderBy(static path => path, StringComparer.Ordinal)
             .ToArray();
 
-    private static void AddReference(XElement group, string path)
-    {
+    private static void AddReference(
+        XElement group,
+        string path
+    ) {
         var reference = new XElement("Reference",
             new XAttribute("Include", Path.GetFileNameWithoutExtension(path)),
             new XElement("HintPath", path),

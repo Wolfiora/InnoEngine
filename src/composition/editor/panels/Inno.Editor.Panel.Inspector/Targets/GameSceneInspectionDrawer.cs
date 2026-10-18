@@ -53,8 +53,8 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         SceneEdits edits,
         EditorSettings settings,
         SerializationRegistry serialization,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
@@ -82,7 +82,8 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
     /// </returns>
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
-        GameScene target)
+        GameScene target
+    )
         => (target.name, name => m_edits.RenameScene(target, name));
 
     /// <summary>
@@ -94,7 +95,10 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    protected override void DrawHeader(InspectionDrawContext context, GameScene target)
+    protected override void DrawHeader(
+        InspectionDrawContext context,
+        GameScene target
+    )
         => NativeImGui.TextUnformatted(target.isLoaded ? "Loaded Scene" : "Scene");
 
     /// <summary>
@@ -106,8 +110,10 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
     /// <param name="scene">
     /// The scene consumed by draw; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected override void Draw(InspectionDrawContext context, GameScene scene)
-    {
+    protected override void Draw(
+        InspectionDrawContext context,
+        GameScene scene
+    ) {
         if (!scene.isLoaded || scene.isDestroyed)
         {
             _ = context.interactions.For(context.interactions.focusedArea).Select();
@@ -128,8 +134,10 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         }
     }
 
-    private void DrawSystems(InspectionDrawContext context, GameScene scene)
-    {
+    private void DrawSystems(
+        InspectionDrawContext context,
+        GameScene scene
+    ) {
         IReadOnlyList<GameSystem> systems = scene.GetSystems();
         for (int i = 0; i < systems.Count; i++)
         {
@@ -233,8 +241,10 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
 
     }
 
-    private void DrawAddSystem(InspectionDrawContext context, GameScene scene)
-    {
+    private void DrawAddSystem(
+        InspectionDrawContext context,
+        GameScene scene
+    ) {
         if (EditorWidget.CenteredButton(
                 "Add System",
                 EditorWidget.style.inspectorAddButtonTopPadding))

@@ -1,27 +1,27 @@
-# 架构治理
+# 架构
 
-[Wiki 首页](../README.md) · [完整项目架构 Overview](ENGINE_ARCHITECTURE_OVERVIEW.md) · [Identity、可恢复引用与热重载标准](IDENTITY_REFERENCE_RELOAD_STANDARD.md) · [当前已知问题](CURRENT_ISSUES.md)
+[Wiki 首页](../README.md) · [当前验收](CURRENT_ACCEPTANCE.md) · [当前问题](CURRENT_ISSUES.md)
 
-本分类记录跨越多个程序集、无法准确归属到单个项目页的架构事实。它不替代各项目的 API
-Wiki，也不把未来规划描述为当前能力。
+本分类解释跨程序集的依赖、所有权与扩展规则。具体签名和工作流位于各项目的唯一项目页。
 
-## 文档
+| 页面 | 适用问题 |
+| --- | --- |
+| [架构总览](ENGINE_ARCHITECTURE_OVERVIEW.md) | 每层负责什么，项目应该放在哪里？ |
+| [开发入口](DEVELOPMENT_ENTRY_ARCHITECTURE.md) | 两个入口如何选择宿主、准备和启动？ |
+| [构建缓存](BUILD_CACHE_ARCHITECTURE.md) | 源码、工作目录、产物和读取保护分别由谁拥有？ |
+| [Wiki 维护](DOCUMENTATION_STANDARD.md) | 页面、API、示例和当前证据怎样核查？ |
+| [平台与运行时](PLATFORM_RUNTIME_ARCHITECTURE.md) | 平台、运行目标、产品和部署方式如何分离？ |
+| [平台扩展指南](PLATFORM_EXTENSION_GUIDE.md) | 如何添加平台、backend 和必要的集成？ |
+| [Web Player](WEB_PLAYER_ARCHITECTURE.md) | 浏览器启动、回调、链接与运行生命周期如何组合？ |
+| [Identity 与热重载](IDENTITY_REFERENCE_RELOAD_STANDARD.md) | 如何跨代定位对象、保留 Missing、退休旧模块？ |
+| [C# 开发规范](CSHARP_DEVELOPMENT_STANDARD.md) | 如何组织源码、公开契约、错误和注释？ |
+| [当前问题](CURRENT_ISSUES.md) | 哪些能力或证据仍未收口？ |
+| [当前验收](CURRENT_ACCEPTANCE.md) | 当前代码实际验证了什么，有哪些环境限制？ |
 
-| 页面 | 内容 | 维护要求 |
-| --- | --- | --- |
-| [2026-09-26 Rendering / Canvas 验收记录](RENDER_CANVAS_ACCEPTANCE_2026_09_26.md) | 本轮实现边界、TestProject 实测、包核对和未收口门禁 | 未通过项目不得标记为完整验收 |
-| [2026-09-08 实现交付与集中验收](ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md) | 全清单剩余实现、公开 API、资源 owner 与集中验收 | 当前唯一状态入口，实现与验证分开 |
-| [2026-09-07—09-08 累积收口报告](ENGINE_CLOSURE_CONTINUATION_2026_09_07.md) | 之前 Source/Scene Recovery、Asset/Audio/Rendering 退休与 996 项基线 | 保留历史证据，不代替最新验收 |
-| [2026-09-07 前轮收口报告](ENGINE_CLOSURE_ACCEPTANCE_2026_09_07.md) | 前轮实现与 742 项测试、发布证据 | 保留历史证据；当前状态以续轮报告为准 |
-| [引擎统一收口实施与验收](ENGINE_CONSOLIDATION_IMPLEMENTATION.md) | 2026-09-07 批准的子系统、Execution、Diagnostics、Recovery、默认装配完整实施清单 | 逐项分别记录实现状态与实际验证结果 |
-| [完整项目架构 Overview 与本体收口方案](ENGINE_ARCHITECTURE_OVERVIEW.md) | 概念分层、磁盘/Solution/Distribution 视图、生命周期、backend 政策与实施顺序 | 新系统立项、跨域引用或 Host composition 改变时必须先核对此页 |
-| [Identity、可恢复引用与热重载强制标准](IDENTITY_REFERENCE_RELOAD_STANDARD.md) | 跨域 Identity、ImGui runtime ID payload、Missing 保留/恢复、History 和 GC unload barrier | 修改 Scripting、Plugins、Assets、Scene、Editor 引用或任何 collectible generation 时必须核对此页 |
-| [当前已知问题](CURRENT_ISSUES.md) | 已确认缺陷、架构债务、验证缺口和整改顺序 | 问题修复时必须同步更新状态、证据与验证结果 |
+## 依赖原则
 
-## 优先级定义
+共同领域依赖中立契约与 Foundation。平台模块负责系统和 SDK；backend 负责共享实现；integration 连接真实差异；产品入口和发行组合选择实现。
 
-- **P0**：已确认的运行正确性问题，或直接违反项目强制架构边界的问题。
-- **P1**：阻碍可靠发布、可复现构建、跨平台交付或长期扩展的结构性问题。
-- **P2**：当前可以工作，但会持续增加维护、诊断、性能或 API 使用成本的问题。
+运行时不引用构建工具。共同 Editor Hosting 不选择命名平台或第三方实现。当前可用实现与未来接入方法分别描述，未实测的平台不标记为已经验收。
 
-优先级不是兼容格式或持久化 schema。问题编号只用于代码审查、测试和文档之间的稳定引用。
+日期化计划、阶段报告和旧审查保存于仓库 records 目录；当前 Wiki 不通过历史完成声明解释当前能力。

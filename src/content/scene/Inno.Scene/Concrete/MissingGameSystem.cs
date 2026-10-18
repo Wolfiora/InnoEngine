@@ -27,8 +27,8 @@ public sealed class MissingGameSystem : GameSystem
         TypeRef missingType,
         string missingTypeName,
         ReadOnlySpan<byte> serializedState,
-        IReadOnlyList<AssetDependency>? dependencies = null)
-    {
+        IReadOnlyList<AssetDependency>? dependencies = null
+    ) {
         if (missingType.stableId == Guid.Empty)
             throw new ArgumentException("The missing system type identity cannot be empty.", nameof(missingType));
         this.missingType = missingType;

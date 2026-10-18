@@ -10,8 +10,8 @@ namespace Inno.Editor.Interactions;
 internal sealed class EditorMenuCatalog(
     EditorExtensionCatalog catalog,
     EditorActionRouter actions,
-    Logger log)
-{
+    Logger log
+) {
     private readonly HashSet<string> m_sourceFailures = new(StringComparer.Ordinal);
 
     internal EditorMenuModel Build(EditorMenuContext context)
@@ -91,10 +91,7 @@ internal sealed class EditorMenuCatalog(
                     panel.attribute.order,
                     panel.attribute.separatorBefore,
                     panel.attribute.id,
-                    new EditorActionState(
-                        isVisible: true,
-                        isEnabled: true,
-                        isChecked: panel.panel.isOpen),
+                    new EditorActionState(isVisible: true, isEnabled: true, isChecked: panel.panel.isOpen),
                     isGroup: false));
             }
         }
@@ -109,8 +106,11 @@ internal sealed class EditorMenuCatalog(
         return new EditorMenuModel(Freeze(root.children.Values));
     }
 
-    private void AddPlacement(MutableNode root, Placement placement, EditorMenuContext context)
-    {
+    private void AddPlacement(
+        MutableNode root,
+        Placement placement,
+        EditorMenuContext context
+    ) {
         EditorActionContext actionContext = context.CreateActionContext(placement.argument);
         EditorActionState state = placement.isGroup
             ? EditorActionState.enabled
@@ -185,10 +185,14 @@ internal sealed class EditorMenuCatalog(
         bool separatorBefore,
         object? argument,
         EditorActionState? status,
-        bool isGroup);
+        bool isGroup
+    );
 
-    private sealed class MutableNode(string label, int order, bool separatorBefore)
-    {
+    private sealed class MutableNode(
+        string label,
+        int order,
+        bool separatorBefore
+    ) {
         internal string label = label;
         internal int order = order;
         internal bool separatorBefore = separatorBefore;

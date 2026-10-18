@@ -44,8 +44,8 @@ public sealed class AssetIconAttribute : Attribute
         Type assetType,
         string icon,
         bool useForChildren = false,
-        int priority = 0)
-    {
+        int priority = 0
+    ) {
         this.assetType = assetType ?? throw new ArgumentNullException(nameof(assetType));
         this.icon = ValidateIcon(icon);
         this.useForChildren = useForChildren;
@@ -71,8 +71,8 @@ public sealed class AssetIconAttribute : Attribute
     public AssetIconAttribute(
         string extension,
         string icon,
-        int priority = 0)
-    {
+        int priority = 0
+    ) {
         this.extension = NormalizeExtension(extension);
         this.icon = ValidateIcon(icon);
         this.priority = priority;

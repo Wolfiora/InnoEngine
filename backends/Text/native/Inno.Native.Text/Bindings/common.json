@@ -1,0 +1,45 @@
+{
+  "includeTransitivelyReferencedHeaders": false,
+  "generateRuntimeSource": false,
+  "mergeGeneratedFilesToSingleFile": true,
+  "singleFileOutputName": "Bindings.cs",
+  "namespace": "Inno.Native.Text",
+  "apiName": "TextNative",
+  "marshallingMappings": {
+    "inno_text_RuntimeCreate": {
+      "return": {
+        "strategy": "Handle",
+        "ownership": "Owned",
+        "allocatorKind": "NativeFunction",
+        "allocatorFunction": "inno_text_RuntimeCreate",
+        "cleanupFunction": "inno_text_RuntimeDestroy",
+        "requiresCleanup": true
+      }
+    },
+    "inno_text_Runtime_LoadFont": {
+      "parameters": {
+        "data": {
+          "strategy": "Span",
+          "ownership": "Borrowed",
+          "lengthParameter": "length"
+        }
+      }
+    },
+    "inno_text_Runtime_ResultMessage": {
+      "return": {
+        "strategy": "String",
+        "ownership": "Borrowed",
+        "encoding": "Utf8",
+        "nullTerminated": true
+      }
+    }
+  },
+  "functionPrefixes": [
+    "inno_text_Runtime_",
+    "inno_text_Runtime",
+    "inno_text_"
+  ],
+  "typePrefixes": [
+    "inno_text_"
+  ]
+}

@@ -11,8 +11,8 @@ public sealed class EditorConsoleSnapshot
     internal EditorConsoleSnapshot(
         long revision,
         EditorConsoleOccurrence[] occurrences,
-        EditorConsoleGroup[] groups)
-    {
+        EditorConsoleGroup[] groups
+    ) {
         this.revision = revision;
         this.occurrences = Array.AsReadOnly(occurrences);
         this.groups = Array.AsReadOnly(groups);

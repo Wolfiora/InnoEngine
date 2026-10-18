@@ -12,8 +12,8 @@ internal static class BuildFileSystem
     internal static async ValueTask MergeDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         if (!Directory.Exists(source))
             return;
         Directory.CreateDirectory(destination);
@@ -36,8 +36,8 @@ internal static class BuildFileSystem
     internal static async ValueTask CopyDirectoryAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         if (!Directory.Exists(source))
             throw new DirectoryNotFoundException($"Build input directory '{source}' does not exist.");
         Directory.CreateDirectory(destination);
@@ -58,8 +58,8 @@ internal static class BuildFileSystem
     internal static async ValueTask CopyFileAsync(
         string source,
         string destination,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         await using FileStream input = new(
             source,
             FileMode.Open,
@@ -80,7 +80,9 @@ internal static class BuildFileSystem
             File.SetUnixFileMode(destination, File.GetUnixFileMode(source));
     }
 
-    internal static void InstallDirectoryAtomically(string source, string destination)
-        => AtomicDirectory.Install(source, destination);
+    internal static void InstallDirectoryAtomically(
+        string source,
+        string destination
+    ) => AtomicDirectory.Install(source, destination);
 
 }

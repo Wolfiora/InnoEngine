@@ -27,5 +27,6 @@ public interface IRenderFrameUploadService
     RenderBufferSlice UploadBuffer(
         RenderBufferUploadDescriptor descriptor,
         ReadOnlyMemory<byte> data,
-        string name);
+        string name
+    );
 }

@@ -29,8 +29,10 @@ public sealed class ContentReadScope : IDisposable
     /// <exception cref="ArgumentException">
     /// A root is detached, duplicated, or the active root is not present.
     /// </exception>
-    public ContentReadScope(IEnumerable<Identity> contents, Guid? activeContent = null)
-    {
+    public ContentReadScope(
+        IEnumerable<Identity> contents,
+        Guid? activeContent = null
+    ) {
         ArgumentNullException.ThrowIfNull(contents);
         Identity[] snapshot = contents.ToArray();
         if (snapshot.Any(static identity => identity.runtimeIdentity is null))
@@ -101,7 +103,10 @@ public sealed class ContentReadScope : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Lookup occurs off the owning control thread.
     /// </exception>
-    public bool TryGetValue<TValue>(Guid id, out TValue? value) where TValue : IdentityObject
+    public bool TryGetValue<TValue>(
+        Guid id,
+        out TValue? value
+    ) where TValue : IdentityObject
     {
         EnsureActive();
         foreach (Identity identity in m_contents)

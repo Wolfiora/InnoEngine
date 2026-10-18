@@ -106,8 +106,12 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         }
     }
 
-    private static void DrawText(string label, string id, string value, Action<string> apply)
-    {
+    private static void DrawText(
+        string label,
+        string id,
+        string value,
+        Action<string> apply
+    ) {
         NativeImGui.TextUnformatted(label);
         NativeImGui.SetNextItemWidth(-1f);
         if (EditorImGui.InputText($"##{id}", ref value, C_TEXT_CAPACITY))

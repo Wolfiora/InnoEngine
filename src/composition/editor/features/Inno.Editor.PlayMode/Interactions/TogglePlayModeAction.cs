@@ -3,7 +3,7 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.PlayMode;
 
-[EditorAction(PlayModeInteractionIds.C_TOGGLE_PLAY_MODE, PlayModeInteractionIds.C_MAIN_MENU_AREA)]
+[EditorAction(PlayModeInteractionIds.C_TOGGLE_PLAY_MODE)]
 [EditorToolbarItem(
     PlayModeInteractionIds.C_MAIN_MENU_AREA,
     EditorToolbarIcon.Play,

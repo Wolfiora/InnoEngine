@@ -45,14 +45,19 @@ public sealed partial class AssetEditorModule
     /// <exception cref="InvalidOperationException">
     /// The source mount is unavailable/read-only or history cannot retain the change.
     /// </exception>
-    public AssetFileEntry CreateSource(AssetPath path, ReadOnlySpan<byte> bytes)
-    {
+    public AssetFileEntry CreateSource(
+        AssetPath path,
+        ReadOnlySpan<byte> bytes
+    ) {
         AssetSourceMount mount = m_pipeline.sourceMounts.SingleOrDefault(source => source.id == path.source)
             ?? throw new InvalidOperationException("The asset source mount is unavailable.");
-        if (mount.isReadOnly) throw new InvalidOperationException("Installed asset sources are read-only.");
+        if (mount.isReadOnly)
+            throw new InvalidOperationException("Installed asset sources are read-only.");
         string destination = mount.Resolve(path.localPath);
-        if (!Directory.Exists(Path.GetDirectoryName(destination))) throw new IOException("The asset's parent directory does not exist.");
-        if (File.Exists(destination + ".imeta")) throw new IOException("The new asset path already has an identity sidecar.");
+        if (!Directory.Exists(Path.GetDirectoryName(destination)))
+            throw new IOException("The asset's parent directory does not exist.");
+        if (File.Exists(destination + ".imeta"))
+            throw new IOException("The new asset path already has an identity sidecar.");
         AtomicFile.WriteAllBytes(destination, bytes, overwrite: false);
         try
         {
@@ -60,8 +65,15 @@ public sealed partial class AssetEditorModule
             byte[] archive = AssetSourceArchive.Capture(m_pipeline, path.ToString(), out bool isDirectory);
             var data = new AssetHistoryData(AssetHistoryOperationKind.CreateAsset, path.ToString(), string.Empty, isDirectory, archive);
             var change = new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()));
-            try { m_interactions.history.RecordApplied("Create Asset", change); }
-            catch { change.Dispose(); throw; }
+            try
+            {
+                m_interactions.history.RecordApplied("Create Asset", change);
+            }
+            catch
+            {
+                change.Dispose();
+                throw;
+            }
         }
         catch
         {

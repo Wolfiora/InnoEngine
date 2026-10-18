@@ -12,7 +12,7 @@ namespace Inno.Animation.Assets;
 /// Imports and exports structured <c>.ianim</c> animation clip sources.
 /// </summary>
 [AssetImporter("inno.animation.clip")]
-public sealed class AnimationClipImporter : AssetImporter<AnimationClipAsset>
+public sealed partial class AnimationClipImporter : AssetImporter<AnimationClipAsset>
 {
     private static readonly IReadOnlyList<string> S_EXTENSIONS = [".ianim"];
 
@@ -39,8 +39,8 @@ public sealed class AnimationClipImporter : AssetImporter<AnimationClipAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<AnimationClipAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         AnimationClipSource source = context.serialization.Deserialize<AnimationClipSource>(
             context.sourceBytes.ToArray());
@@ -76,8 +76,8 @@ public sealed class AnimationClipImporter : AssetImporter<AnimationClipAsset>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         AnimationClipAsset asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         asset.Validate();
         byte[] bytes = context.serialization.Serialize(new AnimationClipSource

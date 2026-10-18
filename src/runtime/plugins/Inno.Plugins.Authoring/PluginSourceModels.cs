@@ -76,8 +76,8 @@ public sealed class PluginCandidate
         string contentHash,
         PluginManifest manifest,
         AssetSourceMount sourceMount,
-        bool containsCode)
-    {
+        bool containsCode
+    ) {
         this.sourcePath = sourcePath;
         this.sourceKind = sourceKind;
         this.contentHash = contentHash;
@@ -141,8 +141,10 @@ public sealed class PluginDiagnostic
     /// <param name="message">
     /// Actionable problem description.
     /// </param>
-    public PluginDiagnostic(string sourcePath, string message)
-    {
+    public PluginDiagnostic(
+        string sourcePath,
+        string message
+    ) {
         this.sourcePath = sourcePath ?? string.Empty;
         this.message = message ?? string.Empty;
     }
@@ -165,8 +167,8 @@ public sealed class PluginScanResult
 {
     internal PluginScanResult(
         IReadOnlyList<PluginCandidate> candidates,
-        IReadOnlyList<PluginDiagnostic> diagnostics)
-    {
+        IReadOnlyList<PluginDiagnostic> diagnostics
+    ) {
         this.candidates = Array.AsReadOnly(candidates.ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }

@@ -92,7 +92,10 @@ internal sealed class MaximumFrameRateSetting : EditorSetting
 }
 
 [EditorModule("editor-frame-pacing", order: 20)]
-internal sealed class EditorFramePacingModule(EditorSettings settings, FramePacingOptions pacing) : EditorModule
+internal sealed class EditorFramePacingModule(
+    EditorSettings settings,
+    FramePacingOptions pacing
+) : EditorModule
 {
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.

@@ -36,6 +36,11 @@ internal sealed class InspectorPanel : EditorPanel
     public override bool useWindowPadding => false;
 
     /// <summary>
+    /// Lets the inspector content child own vertical scrolling.
+    /// </summary>
+    public override bool allowScrolling => false;
+
+    /// <summary>
     /// Creates the panel.
     /// </summary>
     /// <param name="inspection">
@@ -61,8 +66,8 @@ internal sealed class InspectorPanel : EditorPanel
         EditorInteractions interactions,
         SceneEdits sceneEdits,
         IEditorPlayMode playMode,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         m_inspection = inspection ?? throw new ArgumentNullException(nameof(inspection));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_sceneEdits = sceneEdits ?? throw new ArgumentNullException(nameof(sceneEdits));
@@ -134,8 +139,14 @@ internal sealed class InspectorPanel : EditorPanel
         {
             m_targetHeader.Draw(drawer, drawContext, readOnlyScene, notice);
             NativeImGui.BeginDisabled(readOnlyScene);
-            try { EditorWidget.SectionLayout(() => drawer.Draw(drawContext)); }
-            finally { NativeImGui.EndDisabled(); }
+            try
+            {
+                EditorWidget.SectionLayout(() => drawer.Draw(drawContext));
+            }
+            finally
+            {
+                NativeImGui.EndDisabled();
+            }
             m_failureState = string.Empty;
         }
         catch (Exception exception)

@@ -1,0 +1,33 @@
+# Inno.Native.ImGui ABI 参考
+
+[权威项目页](../Inno.Native.ImGui.md)
+
+以下参考保留当前宿主 ABI 的全部语义签名和源码位置；它们不是服务层或脚本 API。原生调用的 owner、线程和关闭顺序从项目页进入。
+
+- [AdapterIndexToStorageId → ImDrawListFlags](ABI-01.md)
+- [ImDrawListPtr → ImFontAtlasBuilder](ABI-02.md)
+- [ImFontAtlasBuilderPtr → ImFontStackData](ABI-03.md)
+- [ImGui → ImGui](ABI-04.md)
+- [ImGui → ImGui](ABI-05.md)
+- [ImGui → ImGui](ABI-06.md)
+- [ImGui → ImGui](ABI-07.md)
+- [ImGui → ImGui](ABI-08.md)
+- [ImGui → ImGui](ABI-09.md)
+- [ImGui → ImGuiConfigFlags](ABI-10.md)
+- [ImGuiContext → ImGuiContext](ABI-11.md)
+- [ImGuiContext → ImGuiDataTypeInfo](ABI-12.md)
+- [ImGuiDataTypeInfoPtr → ImGuiInputFlags](ABI-13.md)
+- [ImGuiInputFlagsPrivate → ImGuiInputTextStatePtr](ABI-14.md)
+- [ImGuiIO → ImGuiItemStatusFlags](ABI-15.md)
+- [ImGuiKey → ImGuiMenuColumns](ABI-16.md)
+- [ImGuiMenuColumnsPtr → ImGuiOnceUponAFramePtr](ABI-17.md)
+- [ImGuiP → ImGuiP](ABI-18.md)
+- [ImGuiP → ImGuiP](ABI-19.md)
+- [ImGuiP → ImGuiP](ABI-20.md)
+- [ImGuiP → ImGuiSelectionBasicStorage](ABI-21.md)
+- [ImGuiSelectionBasicStoragePtr → ImGuiStyleVarInfo](ABI-22.md)
+- [ImGuiStyleVarInfoPtr → ImGuiTableHeaderData](ABI-23.md)
+- [ImGuiTableHeaderDataPtr → ImGuiTextFilterPtr](ABI-24.md)
+- [ImGuiTextFlags → ImGuiWindowClass](ABI-25.md)
+- [ImGuiWindowClassPtr → ImTextureRef](ABI-26.md)
+- [ImTextureRefPtr → WriteAllFn](ABI-27.md)

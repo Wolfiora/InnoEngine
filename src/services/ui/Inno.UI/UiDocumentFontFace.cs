@@ -23,11 +23,17 @@ public readonly record struct UiDocumentFontFace
     /// <param name="weight">
     /// Declared face weight.
     /// </param>
-    public UiDocumentFontFace(Guid assetId, string family, TextFontStyle style, int weight)
-    {
-        if (assetId == Guid.Empty) throw new ArgumentException("A font asset ID is required.", nameof(assetId));
+    public UiDocumentFontFace(
+        Guid assetId,
+        string family,
+        TextFontStyle style,
+        int weight
+    ) {
+        if (assetId == Guid.Empty)
+            throw new ArgumentException("A font asset ID is required.", nameof(assetId));
         ArgumentException.ThrowIfNullOrWhiteSpace(family);
-        if (weight is < 100 or > 1000) throw new ArgumentOutOfRangeException(nameof(weight));
+        if (weight is < 100 or > 1000)
+            throw new ArgumentOutOfRangeException(nameof(weight));
         this.assetId = assetId;
         this.family = family;
         this.style = style;

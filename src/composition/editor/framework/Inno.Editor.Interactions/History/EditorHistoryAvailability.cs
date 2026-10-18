@@ -7,8 +7,10 @@ namespace Inno.Editor.Interactions;
 /// </summary>
 public readonly record struct EditorHistoryAvailability
 {
-    private EditorHistoryAvailability(bool isAvailable, string message)
-    {
+    private EditorHistoryAvailability(
+        bool isAvailable,
+        string message
+    ) {
         this.isAvailable = isAvailable;
         this.message = message;
     }

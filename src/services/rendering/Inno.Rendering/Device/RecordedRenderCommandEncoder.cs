@@ -25,8 +25,7 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="pipeline">
     /// The pipeline consumed by bind graphics pipeline; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindGraphicsPipeline(GraphicsPipelineHandle pipeline)
-        => Add(commands => commands.BindGraphicsPipeline(pipeline));
+    public override void BindGraphicsPipeline(GraphicsPipelineHandle pipeline) => Add(commands => commands.BindGraphicsPipeline(pipeline));
 
     /// <summary>
     /// Binds the compute pipeline used by subsequent dispatch commands.
@@ -34,8 +33,7 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="pipeline">
     /// The pipeline consumed by bind compute pipeline; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindComputePipeline(ComputePipelineHandle pipeline)
-        => Add(commands => commands.BindComputePipeline(pipeline));
+    public override void BindComputePipeline(ComputePipelineHandle pipeline) => Add(commands => commands.BindComputePipeline(pipeline));
 
     /// <summary>
     /// Binds a texture resource to the requested shader binding.
@@ -52,7 +50,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void BindTexture(
         RenderBindingId binding,
         RenderTextureHandle texture,
-        RenderSamplerState sampler)
+        RenderSamplerState sampler
+    )
         => Add(commands => commands.BindTexture(binding, texture, sampler));
 
     /// <summary>
@@ -70,7 +69,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void BindTexture(
         RenderBindingId binding,
         PersistentTextureHandle texture,
-        RenderSamplerState sampler)
+        RenderSamplerState sampler
+    )
         => Add(commands => commands.BindTexture(binding, texture, sampler));
 
     /// <summary>
@@ -88,7 +88,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void BindStorageTexture(
         RenderBindingId binding,
         RenderTextureHandle texture,
-        int mipLevel = 0)
+        int mipLevel = 0
+    )
         => Add(commands => commands.BindStorageTexture(binding, texture, mipLevel));
 
     /// <summary>
@@ -106,7 +107,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void BindStorageTexture(
         RenderBindingId binding,
         PersistentTextureHandle texture,
-        int mipLevel = 0)
+        int mipLevel = 0
+    )
         => Add(commands => commands.BindStorageTexture(binding, texture, mipLevel));
 
     /// <summary>
@@ -118,7 +120,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="buffer">
     /// The buffer consumed by bind buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindBuffer(RenderBindingId binding, RenderBufferHandle buffer)
+    public override void BindBuffer(
+        RenderBindingId binding,
+        RenderBufferHandle buffer
+    )
         => Add(commands => commands.BindBuffer(binding, buffer));
 
     /// <summary>
@@ -130,7 +135,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="buffer">
     /// The buffer consumed by bind buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindBuffer(RenderBindingId binding, PersistentBufferHandle buffer)
+    public override void BindBuffer(
+        RenderBindingId binding,
+        PersistentBufferHandle buffer
+    )
         => Add(commands => commands.BindBuffer(binding, buffer));
 
     /// <summary>
@@ -142,8 +150,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void SetUniform(RenderBindingId binding, ReadOnlySpan<byte> value)
-    {
+    public override void SetUniform(
+        RenderBindingId binding,
+        ReadOnlySpan<byte> value
+    ) {
         byte[] snapshot = value.ToArray();
         Add(commands => commands.SetUniform(binding, snapshot));
     }
@@ -199,8 +209,12 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="height">
     /// The height in logical units or pixels required by this operation.
     /// </param>
-    public override void SetViewport(int x, int y, int width, int height)
-        => Add(commands => commands.SetViewport(x, y, width, height));
+    public override void SetViewport(
+        int x,
+        int y,
+        int width,
+        int height
+    ) => Add(commands => commands.SetViewport(x, y, width, height));
 
     /// <summary>
     /// Updates the scissor state and applies the resulting invariants.
@@ -217,8 +231,12 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="height">
     /// The height in logical units or pixels required by this operation.
     /// </param>
-    public override void SetScissor(int x, int y, int width, int height)
-        => Add(commands => commands.SetScissor(x, y, width, height));
+    public override void SetScissor(
+        int x,
+        int y,
+        int width,
+        int height
+    ) => Add(commands => commands.SetScissor(x, y, width, height));
 
     /// <summary>
     /// Binds a vertex buffer and its first vertex for subsequent draws.
@@ -229,7 +247,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="firstVertex">
     /// The first vertex consumed by bind vertex buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindVertexBuffer(RenderBufferHandle buffer, int firstVertex = 0)
+    public override void BindVertexBuffer(
+        RenderBufferHandle buffer,
+        int firstVertex = 0
+    )
         => Add(commands => commands.BindVertexBuffer(buffer, firstVertex));
 
     /// <summary>
@@ -241,7 +262,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="firstVertex">
     /// The first vertex consumed by bind vertex buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindVertexBuffer(PersistentBufferHandle buffer, int firstVertex = 0)
+    public override void BindVertexBuffer(
+        PersistentBufferHandle buffer,
+        int firstVertex = 0
+    )
         => Add(commands => commands.BindVertexBuffer(buffer, firstVertex));
 
     /// <summary>
@@ -253,7 +277,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="firstIndex">
     /// The first index consumed by bind index buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindIndexBuffer(RenderBufferHandle buffer, int firstIndex = 0)
+    public override void BindIndexBuffer(
+        RenderBufferHandle buffer,
+        int firstIndex = 0
+    )
         => Add(commands => commands.BindIndexBuffer(buffer, firstIndex));
 
     /// <summary>
@@ -265,7 +292,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="firstIndex">
     /// The first index consumed by bind index buffer; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void BindIndexBuffer(PersistentBufferHandle buffer, int firstIndex = 0)
+    public override void BindIndexBuffer(
+        PersistentBufferHandle buffer,
+        int firstIndex = 0
+    )
         => Add(commands => commands.BindIndexBuffer(buffer, firstIndex));
 
     /// <summary>
@@ -283,7 +313,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void BindInstanceBuffer(
         RenderBufferHandle buffer,
         int firstInstance,
-        int instanceCount)
+        int instanceCount
+    )
         => Add(commands => commands.BindInstanceBuffer(buffer, firstInstance, instanceCount));
 
     /// <summary>
@@ -301,7 +332,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void BindInstanceBuffer(
         PersistentBufferHandle buffer,
         int firstInstance,
-        int instanceCount)
+        int instanceCount
+    )
         => Add(commands => commands.BindInstanceBuffer(buffer, firstInstance, instanceCount));
 
     /// <summary>
@@ -313,8 +345,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="instanceCount">
     /// The instance count consumed by draw; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void Draw(int vertexCount, int instanceCount = 1)
-        => Add(commands => commands.Draw(vertexCount, instanceCount));
+    public override void Draw(
+        int vertexCount,
+        int instanceCount = 1
+    ) => Add(commands => commands.Draw(vertexCount, instanceCount));
 
     /// <summary>
     /// Renders the procedural presentation for the current editor frame.
@@ -325,7 +359,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="instanceCount">
     /// The instance count consumed by draw procedural; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void DrawProcedural(int vertexCount, int instanceCount = 1)
+    public override void DrawProcedural(
+        int vertexCount,
+        int instanceCount = 1
+    )
         => Add(commands => commands.DrawProcedural(vertexCount, instanceCount));
 
     /// <summary>
@@ -337,7 +374,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="instanceCount">
     /// The instance count consumed by draw indexed; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void DrawIndexed(int indexCount, int instanceCount = 1)
+    public override void DrawIndexed(
+        int indexCount,
+        int instanceCount = 1
+    )
         => Add(commands => commands.DrawIndexed(indexCount, instanceCount));
 
     /// <summary>
@@ -355,7 +395,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void DrawIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => Add(commands => commands.DrawIndirect(buffer, firstCommand, commandCount));
 
     /// <summary>
@@ -373,7 +414,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void DrawIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => Add(commands => commands.DrawIndirect(buffer, firstCommand, commandCount));
 
     /// <summary>
@@ -388,7 +430,11 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="groupCountZ">
     /// The group count z consumed by dispatch; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public override void Dispatch(int groupCountX, int groupCountY = 1, int groupCountZ = 1)
+    public override void Dispatch(
+        int groupCountX,
+        int groupCountY = 1,
+        int groupCountZ = 1
+    )
         => Add(commands => commands.Dispatch(groupCountX, groupCountY, groupCountZ));
 
     /// <summary>
@@ -406,7 +452,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void DispatchIndirect(
         RenderBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => Add(commands => commands.DispatchIndirect(buffer, firstCommand, commandCount));
 
     /// <summary>
@@ -424,7 +471,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     public override void DispatchIndirect(
         PersistentBufferHandle buffer,
         int firstCommand = 0,
-        int commandCount = 1)
+        int commandCount = 1
+    )
         => Add(commands => commands.DispatchIndirect(buffer, firstCommand, commandCount));
 
     /// <summary>
@@ -436,7 +484,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="destination">
     /// The destination that receives the completed result.
     /// </param>
-    public override void CopyTexture(RenderTextureHandle source, RenderTextureHandle destination)
+    public override void CopyTexture(
+        RenderTextureHandle source,
+        RenderTextureHandle destination
+    )
         => Add(commands => commands.CopyTexture(source, destination));
 
     /// <summary>
@@ -458,7 +509,8 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
         RenderTextureHandle source,
         RenderTextureRegion sourceRegion,
         RenderTextureHandle destination,
-        RenderTextureRegion destinationRegion)
+        RenderTextureRegion destinationRegion
+    )
         => Add(commands => commands.BlitTexture(source, sourceRegion, destination, destinationRegion));
 
     /// <summary>
@@ -470,7 +522,10 @@ internal sealed class RecordedRenderCommandEncoder : RenderCommandEncoder
     /// <param name="destination">
     /// The destination that receives the completed result.
     /// </param>
-    public override void CopyBuffer(RenderBufferHandle source, RenderBufferHandle destination)
+    public override void CopyBuffer(
+        RenderBufferHandle source,
+        RenderBufferHandle destination
+    )
         => Add(commands => commands.CopyBuffer(source, destination));
 
     private void Add(Action<RenderCommandEncoder> command)

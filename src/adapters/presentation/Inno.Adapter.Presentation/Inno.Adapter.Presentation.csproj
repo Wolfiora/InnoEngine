@@ -6,10 +6,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\common\Inno.Adapter\Inno.Adapter.csproj" />
-    <ProjectReference Include="..\..\rendering\Inno.Adapter.Rendering.Authoring\Inno.Adapter.Rendering.Authoring.csproj" />
-    <ProjectReference Include="..\..\..\services\platform\Inno.Platform\Inno.Platform.csproj" />
-    <ProjectReference Include="..\..\..\services\rendering\Inno.Rendering\Inno.Rendering.csproj" />
+    <ProjectReference Include="../../common/Inno.Adapter/Inno.Adapter.csproj" />
+    <ProjectReference Include="../../rendering/Inno.Adapter.Rendering.Authoring/Inno.Adapter.Rendering.Authoring.csproj" />
+    <ProjectReference Include="../../../services/platform/Inno.Platform/Inno.Platform.csproj" />
+    <ProjectReference Include="../../../services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+    <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

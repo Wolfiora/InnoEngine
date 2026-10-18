@@ -23,8 +23,10 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
-    public override void Write(SerializationWriter writer, SceneSubtreeState value)
-    {
+    public override void Write(
+        SerializationWriter writer,
+        SceneSubtreeState value
+    ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         GameObject root = value.root;
@@ -111,8 +113,10 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
             .Concat(scene.GetSystems())
             .ToArray();
 
-    private static void CollectSubtree(GameObject gameObject, ISet<GameObject> result)
-    {
+    private static void CollectSubtree(
+        GameObject gameObject,
+        ISet<GameObject> result
+    ) {
         _ = result.Add(gameObject);
         IReadOnlyList<Transform> children = gameObject.transform.children;
         for (int i = 0; i < children.Count; i++)

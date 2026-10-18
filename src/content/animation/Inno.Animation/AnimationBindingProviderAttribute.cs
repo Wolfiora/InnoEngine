@@ -23,8 +23,11 @@ public sealed class AnimationBindingProviderAttribute : Attribute
     /// <exception cref="ArgumentException">
     /// An identifier is blank or the value representation is undefined.
     /// </exception>
-    public AnimationBindingProviderAttribute(string id, string bindingId, AnimationValueKind kind)
-    {
+    public AnimationBindingProviderAttribute(
+        string id,
+        string bindingId,
+        AnimationValueKind kind
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(bindingId);
         if (!Enum.IsDefined(kind))

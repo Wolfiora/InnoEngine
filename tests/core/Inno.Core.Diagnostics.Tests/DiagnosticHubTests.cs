@@ -170,6 +170,25 @@ public sealed class DiagnosticHubTests : IDisposable
     }
 
     [Fact]
+    public void ReporterDoesNotRepublishUnchangedIssueOrAlreadyResolvedIdentity()
+    {
+        var sink = new CountingSink();
+        m_hub.RegisterSink(sink);
+        using var reporter = m_hub.CreateReporter(new DiagnosticSource("tests.frame", "Frame"));
+        reporter.Publish(Diagnostic.Error("FRAME", "Same failure"));
+        int published = sink.replaceCount;
+
+        reporter.Publish(Diagnostic.Error("FRAME", "Same failure"));
+        Assert.Equal(published, sink.replaceCount);
+
+        reporter.Resolve("FRAME");
+        int resolved = sink.replaceCount;
+        reporter.Resolve("FRAME");
+        Assert.Equal(resolved, sink.replaceCount);
+        m_hub.UnregisterSink(sink);
+    }
+
+    [Fact]
     public void OldReporterCannotPublishOrClearReplacementGeneration()
     {
         var sink = new ProbeSink();
@@ -224,6 +243,15 @@ public sealed class DiagnosticHubTests : IDisposable
 
         public void Clear(DiagnosticSource source)
             => throw new InvalidOperationException("Expected test failure.");
+    }
+
+    private sealed class CountingSink : IDiagnosticSink
+    {
+        internal int replaceCount { get; private set; }
+
+        public void Replace(DiagnosticReport report) => replaceCount++;
+
+        public void Clear(DiagnosticSource source) { }
     }
 
     private static class OtherProducer

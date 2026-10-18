@@ -23,8 +23,8 @@ public sealed class UiBackendCapabilities
     /// </param>
     public UiBackendCapabilities(
         IEnumerable<UiDocumentLanguageId> documentLanguages,
-        bool supportsFontCollectionFaces)
-    {
+        bool supportsFontCollectionFaces
+    ) {
         ArgumentNullException.ThrowIfNull(documentLanguages);
         UiDocumentLanguageId[] languages = documentLanguages.Distinct().ToArray();
         if (languages.Length == 0 || languages.Any(static language => !language.isValid))

@@ -28,6 +28,5 @@ internal sealed class ResetComponentCommand(SceneEdits edits) : EditorAction<Com
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-    protected override void Execute(EditorActionContext<ComponentEditorTarget> context)
-        => edits.ResetComponent(context.target.component);
+    protected override void Execute(EditorActionContext<ComponentEditorTarget> context) => edits.ResetComponent(context.target.component);
 }

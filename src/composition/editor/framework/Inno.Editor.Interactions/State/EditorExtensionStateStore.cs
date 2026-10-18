@@ -22,15 +22,19 @@ internal sealed class EditorExtensionStateStore
     private double m_nextSaveTime;
     private bool m_isShutdownPrepared;
 
-    internal EditorExtensionStateStore(EditorContext context, Logger log)
-    {
+    internal EditorExtensionStateStore(
+        EditorContext context,
+        Logger log
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         m_context = context;
         m_log = log ?? throw new ArgumentNullException(nameof(log));
     }
 
-    internal bool TryGetPanelOpen(string panelId, out bool isOpen)
-    {
+    internal bool TryGetPanelOpen(
+        string panelId,
+        out bool isOpen
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
         if (m_context.TryGetLayoutSection(C_PANELS_SECTION, out IReadOnlyDictionary<string, string> values) &&
             values.TryGetValue(panelId, out string? stored) &&
@@ -44,8 +48,8 @@ internal sealed class EditorExtensionStateStore
 
     internal void Capture(
         IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations,
-        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels)
-    {
+        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
+    ) {
         var failures = new List<(string Message, Exception Exception)>();
         for (int i = 0; i < registrations.Count; i++)
         {
@@ -125,14 +129,13 @@ internal sealed class EditorExtensionStateStore
         SaveIfChanged();
     }
 
-    internal void ClearDiagnostics()
-        => m_diagnostics.Dispose();
+    internal void ClearDiagnostics() => m_diagnostics.Dispose();
 
     internal void Update(
         double elapsedSeconds,
         IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations,
-        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels)
-    {
+        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
+    ) {
         if (m_isShutdownPrepared || elapsedSeconds < m_nextSaveTime)
             return;
         m_nextSaveTime = elapsedSeconds + C_SAVE_INTERVAL_SECONDS;
@@ -142,8 +145,8 @@ internal sealed class EditorExtensionStateStore
 
     internal void Save(
         IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations,
-        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels)
-    {
+        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
+    ) {
         if (m_isShutdownPrepared)
         {
             SaveIfChanged();
@@ -155,8 +158,8 @@ internal sealed class EditorExtensionStateStore
 
     internal void PrepareShutdown(
         IReadOnlyList<EditorExtensionCatalog.StateRegistration> registrations,
-        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels)
-    {
+        IReadOnlyList<EditorExtensionCatalog.PanelRegistration> panels
+    ) {
         if (m_isShutdownPrepared)
             return;
 

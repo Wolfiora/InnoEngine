@@ -91,8 +91,8 @@ public readonly record struct TextStyle
         int faceIndex = 0,
         int weight = 400,
         TextFontStyle style = TextFontStyle.Normal,
-        float letterSpacing = 0f)
-    {
+        float letterSpacing = 0f
+    ) {
         if (!float.IsFinite(fontSize) || fontSize <= 0f)
             throw new ArgumentOutOfRangeException(nameof(fontSize));
         ArgumentOutOfRangeException.ThrowIfNegative(faceIndex);
@@ -155,8 +155,8 @@ public readonly record struct TextShapingOptions
     public TextShapingOptions(
         TextDirection direction = TextDirection.Automatic,
         string? language = null,
-        string? script = null)
-    {
+        string? script = null
+    ) {
         if (!Enum.IsDefined(direction))
             throw new ArgumentOutOfRangeException(nameof(direction));
         this.direction = direction;
@@ -209,7 +209,8 @@ public readonly record struct TextGlyph(
     float advanceX,
     float advanceY,
     float offsetX,
-    float offsetY);
+    float offsetY
+);
 
 /// <summary>
 /// Describes scalable metrics for one font face and logical size.
@@ -234,7 +235,8 @@ public readonly record struct TextMetrics(
     float descender,
     float lineHeight,
     float underlinePosition,
-    float underlineThickness);
+    float underlineThickness
+);
 
 /// <summary>
 /// Contains immutable positioned glyphs and aggregate bounds for one shaped string.
@@ -258,8 +260,12 @@ public sealed class TextLayout
     /// <param name="height">
     /// The logical line height.
     /// </param>
-    public TextLayout(IEnumerable<TextGlyph> glyphs, TextMetrics metrics, float width, float height)
-    {
+    public TextLayout(
+        IEnumerable<TextGlyph> glyphs,
+        TextMetrics metrics,
+        float width,
+        float height
+    ) {
         ArgumentNullException.ThrowIfNull(glyphs);
         if (!float.IsFinite(width) || width < 0f)
             throw new ArgumentOutOfRangeException(nameof(width));
@@ -317,8 +323,14 @@ public sealed class GlyphBitmap
     /// <param name="pixels">
     /// Tightly packed row-major 8-bit coverage.
     /// </param>
-    public GlyphBitmap(int width, int height, int bearingX, int bearingY, float advanceX, ReadOnlySpan<byte> pixels)
-    {
+    public GlyphBitmap(
+        int width,
+        int height,
+        int bearingX,
+        int bearingY,
+        float advanceX,
+        ReadOnlySpan<byte> pixels
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(width);
         ArgumentOutOfRangeException.ThrowIfNegative(height);
         if (pixels.Length != checked(width * height))

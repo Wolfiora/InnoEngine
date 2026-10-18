@@ -17,7 +17,10 @@ public sealed class TypeCacheBuildException : Exception
     /// <param name="loaderExceptions">
     /// The underlying type-loader failures.
     /// </param>
-    public TypeCacheBuildException(string message, IReadOnlyList<Exception> loaderExceptions)
+    public TypeCacheBuildException(
+        string message,
+        IReadOnlyList<Exception> loaderExceptions
+    )
         : base(message, loaderExceptions.Count > 0 ? loaderExceptions[0] : null)
     {
         this.loaderExceptions = loaderExceptions;

@@ -21,8 +21,10 @@ internal sealed class AssetArtifactStore
     private readonly string m_stagingRoot;
     private readonly SerializationRegistry m_serialization;
 
-    internal AssetArtifactStore(string libraryRoot, SerializationRegistry serialization)
-    {
+    internal AssetArtifactStore(
+        string libraryRoot,
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(serialization);
         m_serialization = serialization;
         m_root = Path.Combine(libraryRoot, "Artifacts");
@@ -37,8 +39,8 @@ internal sealed class AssetArtifactStore
         string inputFingerprint,
         IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
         IReadOnlySet<string>? authoringOutputs = null,
-        SerializationGeneration? serialization = null)
-    {
+        SerializationGeneration? serialization = null
+    ) {
         if (outputs.Count == 0)
             throw new InvalidOperationException("An artifact bundle requires at least one output.");
 
@@ -54,7 +56,10 @@ internal sealed class AssetArtifactStore
         {
             AssetArtifactOutputData[] entries = outputs
                 .OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-                .Select((pair, index) => WriteOutput(outputRoot, pair.Key, pair.Value, index,
+                .Select((
+                    pair,
+                    index
+                ) => WriteOutput(outputRoot, pair.Key, pair.Value, index,
                     authoringOutputs?.Contains(pair.Key) == true ? AssetDeploymentScope.AuthoringOnly : AssetDeploymentScope.Runtime))
                 .ToArray();
             var manifest = new AssetArtifactManifest
@@ -69,7 +74,7 @@ internal sealed class AssetArtifactStore
             Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
             try
             {
-                Directory.Move(stagingPath, finalPath);
+                AtomicDirectory.Publish(stagingPath, finalPath);
             }
             catch (IOException) when (Directory.Exists(finalPath))
             {
@@ -88,15 +93,16 @@ internal sealed class AssetArtifactStore
     internal bool TryGet(
         AssetArtifactKey key,
         string outputName,
-        out AssetArtifactInfo? artifact)
+        out AssetArtifactInfo? artifact
+    )
         => TryGet(key, outputName, serialization: null, out artifact);
 
     internal bool TryGet(
         AssetArtifactKey key,
         string outputName,
         SerializationGeneration? serialization,
-        out AssetArtifactInfo? artifact)
-    {
+        out AssetArtifactInfo? artifact
+    ) {
         artifact = null;
         if (key.isEmpty || string.IsNullOrWhiteSpace(outputName))
             return false;
@@ -105,25 +111,61 @@ internal sealed class AssetArtifactStore
             string.Equals(value.name, outputName, StringComparison.Ordinal)) ?? default;
         if (string.IsNullOrEmpty(output.fileName))
             return false;
-        string path = Path.Combine(GetBundlePath(key), "outputs", output.fileName);
+        string path = PathBoundary.Resolve(Path.Combine(GetBundlePath(key), "outputs"), output.fileName);
         if (!IOFile.Exists(path))
             return false;
-        artifact = new AssetArtifactInfo(key, output.name, path, output.contentHash, output.length);
+        if (new FileInfo(path).Length != output.length)
+            throw new InvalidDataException($"Artifact '{key}/{output.name}' has an invalid output length.");
+        artifact = new AssetArtifactInfo(key, output.name, output.contentHash, output.length);
         return true;
     }
 
-    internal byte[] Read(AssetArtifactKey key, string outputName)
-    {
+    internal byte[] Read(
+        AssetArtifactKey key,
+        string outputName
+    ) {
         return TryGet(key, outputName, out AssetArtifactInfo? artifact) && artifact is not null
-            ? IOFile.ReadAllBytes(artifact.absolutePath)
+            ? ReadOutputBytes(artifact, ResolveOutput(artifact))
             : [];
+    }
+
+    internal Func<Stream> CreateReadFactory(AssetArtifactInfo artifact)
+    {
+        string path = ResolveOutput(artifact);
+        return () =>
+        {
+            FileStream input = new(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            try
+            {
+                if (input.Length != artifact.length
+                    || Convert.ToHexString(SHA256.HashData(input)) != artifact.contentHash)
+                    throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' failed integrity validation.");
+                input.Position = 0;
+                return input;
+            }
+            catch
+            {
+                input.Dispose();
+                throw;
+            }
+        };
+    }
+
+    private string ResolveOutput(AssetArtifactInfo artifact)
+    {
+        AssetArtifactManifest manifest = ReadManifest(artifact.key, serialization: null)
+            ?? throw new InvalidDataException($"Artifact bundle '{artifact.key}' has no manifest.");
+        AssetArtifactOutputData output = manifest.outputs.Single(value => value.name == artifact.outputName);
+        if (output.length != artifact.length || output.contentHash != artifact.contentHash)
+            throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' changed its metadata.");
+        return PathBoundary.Resolve(Path.Combine(GetBundlePath(artifact.key), "outputs"), output.fileName);
     }
 
     internal int Collect(
         IReadOnlySet<string> reachableKeys,
         TimeSpan gracePeriod,
-        long maximumSizeBytes)
-    {
+        long maximumSizeBytes
+    ) {
         DateTime cutoff = DateTime.UtcNow - (gracePeriod < TimeSpan.Zero ? TimeSpan.Zero : gracePeriod);
         ArtifactDirectory[] bundles = EnumerateBundles();
         long totalSize = bundles.Sum(static bundle => bundle.size);
@@ -155,8 +197,8 @@ internal sealed class AssetArtifactStore
 
     private AssetArtifactManifest? ReadManifest(
         AssetArtifactKey key,
-        SerializationGeneration? serialization)
-    {
+        SerializationGeneration? serialization
+    ) {
         string path = Path.Combine(GetBundlePath(key), "manifest");
         if (!IOFile.Exists(path))
             return null;
@@ -171,11 +213,16 @@ internal sealed class AssetArtifactStore
                 || manifest.outputs.Any(static output =>
                     string.IsNullOrWhiteSpace(output.name)
                     || string.IsNullOrWhiteSpace(output.fileName)
-                    || string.IsNullOrWhiteSpace(output.contentHash)
+                    || output.fileName is "." or ".."
+                    || output.fileName.IndexOfAny(['/', '\\', ':']) >= 0
+                    || !IsContentHash(output.contentHash)
                     || output.length < 0 || !Enum.IsDefined(output.deploymentScope)))
             {
                 throw new InvalidDataException($"Artifact bundle '{key}' has an invalid manifest contract.");
             }
+            if (manifest.outputs.Select(static output => output.name).Distinct(StringComparer.Ordinal).Count() != manifest.outputs.Length
+                || manifest.outputs.Select(static output => output.fileName).Distinct(StringComparer.Ordinal).Count() != manifest.outputs.Length)
+                throw new InvalidDataException($"Artifact bundle '{key}' contains duplicate output identities.");
             return manifest;
         }
         catch (Exception exception) when (exception is IOException
@@ -219,7 +266,7 @@ internal sealed class AssetArtifactStore
     private string GetBundlePath(AssetArtifactKey key)
     {
         string value = key.value;
-        if (value.Length < 4)
+        if (key.isEmpty)
             throw new ArgumentException("Artifact keys must contain a SHA-256 value.", nameof(key));
         return Path.Combine(m_root, value[..2].ToLowerInvariant(), value[2..4].ToLowerInvariant(), value);
     }
@@ -229,8 +276,8 @@ internal sealed class AssetArtifactStore
         string outputName,
         ReadOnlyMemory<byte> bytes,
         int index,
-        AssetDeploymentScope deploymentScope)
-    {
+        AssetDeploymentScope deploymentScope
+    ) {
         string fileName = index.ToString("D4") + ".bin";
         string path = Path.Combine(outputRoot, fileName);
         IOFile.WriteAllBytes(path, bytes.Span);
@@ -247,8 +294,8 @@ internal sealed class AssetArtifactStore
     private static AssetArtifactKey ComputeKey(
         string inputFingerprint,
         IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
-        IReadOnlySet<string>? authoringOutputs)
-    {
+        IReadOnlySet<string>? authoringOutputs
+    ) {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         Append(hash, "Inno.AssetArtifact");
         Append(hash, inputFingerprint);
@@ -262,28 +309,52 @@ internal sealed class AssetArtifactStore
         return new AssetArtifactKey(Convert.ToHexString(hash.GetHashAndReset()));
     }
 
-    internal AssetArtifactKey ExportRuntime(AssetArtifactKey key, AssetArtifactStore destination,
-        SerializationGeneration? serialization, System.Threading.CancellationToken cancellationToken)
-    {
+    internal AssetArtifactKey ExportRuntime(
+        AssetArtifactKey key,
+        AssetArtifactStore destination,
+        SerializationGeneration? serialization,
+        System.Threading.CancellationToken cancellationToken
+    ) {
         AssetArtifactManifest manifest = ReadManifest(key, serialization)
             ?? throw new InvalidDataException($"Artifact bundle '{key}' has no manifest.");
         var outputs = new Dictionary<string, ReadOnlyMemory<byte>>(StringComparer.Ordinal);
         foreach (AssetArtifactOutputData output in manifest.outputs)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (output.deploymentScope == AssetDeploymentScope.AuthoringOnly) continue;
-            if (Path.GetFileName(output.fileName) != output.fileName)
-                throw new InvalidDataException("An artifact output must be a bundle-local file.");
-            byte[] bytes = IOFile.ReadAllBytes(Path.Combine(GetBundlePath(key), "outputs", output.fileName));
-            if (bytes.LongLength != output.length || Convert.ToHexString(SHA256.HashData(bytes)) != output.contentHash)
-                throw new InvalidDataException($"Artifact '{key}/{output.name}' failed integrity validation during deployment.");
+            if (output.deploymentScope == AssetDeploymentScope.AuthoringOnly)
+                continue;
+            string path = PathBoundary.Resolve(Path.Combine(GetBundlePath(key), "outputs"), output.fileName);
+            byte[] bytes = ReadOutputBytes(new AssetArtifactInfo(key, output.name, output.contentHash, output.length), path);
             outputs.Add(output.name, bytes);
         }
-        return destination.Commit("Inno.RuntimeProjection/v1:" + key.value, outputs, serialization: serialization);
+        return destination.Commit("Inno.RuntimeProjection:" + key.value, outputs, serialization: serialization);
     }
 
-    private static void Append(IncrementalHash hash, string value)
+    private static bool IsContentHash(string value)
     {
+        if (string.IsNullOrEmpty(value) || value.Length != C_SHA256_HEX_LENGTH)
+            return false;
+        foreach (char digit in value)
+            if (digit is not (>= '0' and <= '9') and not (>= 'A' and <= 'F'))
+                return false;
+        return true;
+    }
+
+    private static byte[] ReadOutputBytes(
+        AssetArtifactInfo artifact,
+        string path
+    )
+    {
+        byte[] bytes = IOFile.ReadAllBytes(path);
+        if (bytes.LongLength != artifact.length || Convert.ToHexString(SHA256.HashData(bytes)) != artifact.contentHash)
+            throw new InvalidDataException($"Artifact '{artifact.key}/{artifact.outputName}' failed integrity validation.");
+        return bytes;
+    }
+
+    private static void Append(
+        IncrementalHash hash,
+        string value
+    ) {
         byte[] bytes = Encoding.UTF8.GetBytes(value ?? string.Empty);
         hash.AppendData(BitConverter.GetBytes(bytes.Length));
         hash.AppendData(bytes);
@@ -293,5 +364,6 @@ internal sealed class AssetArtifactStore
         string key,
         string path,
         DateTime lastWriteUtc,
-        long size);
+        long size
+    );
 }

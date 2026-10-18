@@ -24,10 +24,14 @@ namespace Inno.Scripting.Compiler;
 internal sealed class ScriptAuthoringAnnotationRewriter(
     SemanticModel semanticModel,
     HashSet<string> annotationTypes,
-    HashSet<string> annotationNamespaces) : CSharpSyntaxRewriter
+    HashSet<string> annotationNamespaces
+) : CSharpSyntaxRewriter
 {
-    internal static SyntaxTree[] Erase(CSharpCompilation compilation, ScriptApiProfile api, CancellationToken cancellationToken)
-    {
+    internal static SyntaxTree[] Erase(
+        CSharpCompilation compilation,
+        ScriptApiProfile api,
+        CancellationToken cancellationToken
+    ) {
         Type[] types = api.exports.SelectMany(export => export.assembly
                 .GetCustomAttributes(typeof(ScriptingApiExportAttribute), false)
                 .Cast<ScriptingApiExportAttribute>())

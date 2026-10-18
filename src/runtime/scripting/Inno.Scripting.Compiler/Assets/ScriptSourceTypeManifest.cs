@@ -27,8 +27,8 @@ internal sealed class ScriptSourceTypeManifest : ISerializable
     public ScriptSourceTypeManifest(
         Guid sourcePersistentId,
         string sourcePath,
-        ScriptSourceTypeDeclaration[] declarations)
-    {
+        ScriptSourceTypeDeclaration[] declarations
+    ) {
         this.sourcePersistentId = sourcePersistentId;
         this.sourcePath = sourcePath;
         this.declarations = declarations;
@@ -78,8 +78,8 @@ internal struct ScriptSourceTypeDeclaration
         string declarationKind,
         bool partial,
         int line,
-        int column)
-    {
+        int column
+    ) {
         this.typeName = typeName;
         this.declarationKind = declarationKind;
         this.partial = partial;

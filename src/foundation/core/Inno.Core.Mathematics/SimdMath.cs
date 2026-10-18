@@ -20,8 +20,10 @@ internal static class SimdMath
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot4(Vector128<float> a, Vector128<float> b)
-    {
+    public static float Dot4(
+        Vector128<float> a,
+        Vector128<float> b
+    ) {
         if (Sse.IsSupported)
         {
             var mul = Sse.Multiply(a, b);
@@ -59,8 +61,12 @@ internal static class SimdMath
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot2(float ax, float ay, float bx, float by)
-    {
+    public static float Dot2(
+        float ax,
+        float ay,
+        float bx,
+        float by
+    ) {
         if (Sse.IsSupported)
         {
             var a = Vector128.Create(ax, ay, 0f, 0f);
@@ -105,8 +111,14 @@ internal static class SimdMath
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot3(float ax, float ay, float az, float bx, float by, float bz)
-    {
+    public static float Dot3(
+        float ax,
+        float ay,
+        float az,
+        float bx,
+        float by,
+        float bz
+    ) {
         if (Sse.IsSupported)
         {
             var a = Vector128.Create(ax, ay, az, 0f);
@@ -157,8 +169,16 @@ internal static class SimdMath
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Dot4(float ax, float ay, float az, float aw, float bx, float by, float bz, float bw)
-    {
+    public static float Dot4(
+        float ax,
+        float ay,
+        float az,
+        float aw,
+        float bx,
+        float by,
+        float bz,
+        float bw
+    ) {
         if (Sse.IsSupported)
         {
             var a = Vector128.Create(ax, ay, az, aw);

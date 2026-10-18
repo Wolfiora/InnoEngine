@@ -30,8 +30,7 @@ public readonly record struct LogSessionId
     /// <returns>
     /// A newly allocated non-empty session identifier.
     /// </returns>
-    public static LogSessionId Create()
-        => new(Guid.NewGuid());
+    public static LogSessionId Create() => new(Guid.NewGuid());
 
     /// <summary>
     /// Returns the stable textual representation used by diagnostics and persisted logs.
@@ -39,6 +38,5 @@ public readonly record struct LogSessionId
     /// <returns>
     /// The lowercase hexadecimal identifier, or an empty string for process-level work.
     /// </returns>
-    public override string ToString()
-        => m_value == Guid.Empty ? string.Empty : m_value.ToString("N");
+    public override string ToString() => m_value == Guid.Empty ? string.Empty : m_value.ToString("N");
 }

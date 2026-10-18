@@ -26,9 +26,12 @@ public sealed class EditorGizmoContext
     /// <param name="pixelHeight">
     /// The Scene viewport height.
     /// </param>
-    public EditorGizmoContext(ContentReadScope content, RuntimeIdentity? selected,
-        int pixelWidth, int pixelHeight)
-    {
+    public EditorGizmoContext(
+        ContentReadScope content,
+        RuntimeIdentity? selected,
+        int pixelWidth,
+        int pixelHeight
+    ) {
         this.content = content ?? throw new ArgumentNullException(nameof(content));
         this.selected = selected;
         this.pixelWidth = pixelWidth;
@@ -70,7 +73,11 @@ public interface IEditorGizmoSink
     /// <param name="iconId">
     /// A stable semantic icon ID. Unknown IDs use the generic scene icon.
     /// </param>
-    void Icon(Identity owner, Vector3 position, string iconId);
+    void Icon(
+        Identity owner,
+        Vector3 position,
+        string iconId
+    );
 
     /// <summary>
     /// Adds a non-interactive world-space line, normally for selected bounds.
@@ -81,7 +88,10 @@ public interface IEditorGizmoSink
     /// <param name="end">
     /// The second world-space endpoint.
     /// </param>
-    void Line(Vector3 start, Vector3 end);
+    void Line(
+        Vector3 start,
+        Vector3 end
+    );
 }
 
 /// <summary>
@@ -98,7 +108,10 @@ public abstract class EditorGizmoProvider
     /// <param name="sink">
     /// The collector that owns submitted primitives for this frame.
     /// </param>
-    public abstract void Collect(EditorGizmoContext context, IEditorGizmoSink sink);
+    public abstract void Collect(
+        EditorGizmoContext context,
+        IEditorGizmoSink sink
+    );
 }
 
 /// <summary>
@@ -137,7 +150,11 @@ public sealed class EditorGizmoProviderExtensionAttribute : Attribute
 /// <param name="iconId">
 /// The stable visual identity resolved by the Scene View presentation.
 /// </param>
-public readonly record struct EditorGizmoIcon(Identity owner, Vector3 position, string iconId);
+public readonly record struct EditorGizmoIcon(
+    Identity owner,
+    Vector3 position,
+    string iconId
+);
 
 /// <summary>
 /// One non-interactive Editor line.
@@ -148,7 +165,10 @@ public readonly record struct EditorGizmoIcon(Identity owner, Vector3 position, 
 /// <param name="end">
 /// The vector3 value used to initialize this instance.
 /// </param>
-public readonly record struct EditorGizmoLine(Vector3 start, Vector3 end);
+public readonly record struct EditorGizmoLine(
+    Vector3 start,
+    Vector3 end
+);
 
 /// <summary>
 /// Holds the transient gizmo primitives for one Scene viewport frame.
@@ -179,8 +199,11 @@ public sealed class EditorGizmoFrame : IEditorGizmoSink
     /// <param name="iconId">
     /// The stable icon identity resolved by the Scene View.
     /// </param>
-    public void Icon(Identity owner, Vector3 position, string iconId)
-    {
+    public void Icon(
+        Identity owner,
+        Vector3 position,
+        string iconId
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(iconId);
         m_icons.Add(new EditorGizmoIcon(owner, position, iconId));
     }
@@ -194,6 +217,8 @@ public sealed class EditorGizmoFrame : IEditorGizmoSink
     /// <param name="end">
     /// The end consumed by line; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void Line(Vector3 start, Vector3 end)
-        => m_lines.Add(new EditorGizmoLine(start, end));
+    public void Line(
+        Vector3 start,
+        Vector3 end
+    ) => m_lines.Add(new EditorGizmoLine(start, end));
 }

@@ -21,8 +21,7 @@ public static class ProjectSettingsExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no settings lookup is active for the caller.
     /// </exception>
-    public static IProjectSettingsLookup current
-        => S_CURRENT_SCOPE.current;
+    public static IProjectSettingsLookup current => S_CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds a settings lookup until the returned strict last-in-first-out scope is disposed.

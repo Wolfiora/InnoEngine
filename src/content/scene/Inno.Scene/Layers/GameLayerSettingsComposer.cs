@@ -27,8 +27,8 @@ internal sealed class GameLayerSettingsComposer
     /// </returns>
     protected override GameLayerSettingContribution CaptureContribution(
         GameLayerCatalog baseline,
-        GameLayerCatalog value)
-    {
+        GameLayerCatalog value
+    ) {
         var removedSlots = new List<int>();
         var removedLocalIds = new List<string>();
         var upsertSlots = new List<int>();
@@ -116,8 +116,8 @@ internal sealed class GameLayerSettingsComposer
     /// </param>
     protected override void Compose(
         GameLayerCatalog target,
-        IReadOnlyList<ProjectSettingContribution<GameLayerSettingContribution>> contributions)
-    {
+        IReadOnlyList<ProjectSettingContribution<GameLayerSettingContribution>> contributions
+    ) {
         var slotOwners = new string?[GameLayer.C_MAX_COUNT];
         var localIdOwners = new Dictionary<ProjectLocalId, string>();
         var interactionOwners = new string[GameLayer.C_MAX_COUNT, GameLayer.C_MAX_COUNT];
@@ -146,8 +146,8 @@ internal sealed class GameLayerSettingsComposer
         GameLayerCatalog target,
         ProjectSettingContribution<GameLayerSettingContribution> contribution,
         string?[] slotOwners,
-        Dictionary<ProjectLocalId, string> localIdOwners)
-    {
+        Dictionary<ProjectLocalId, string> localIdOwners
+    ) {
         for (int index = 0; index < contribution.value.removedSlots.Length; index++)
         {
             var layer = new GameLayer(contribution.value.removedSlots[index]);
@@ -174,8 +174,8 @@ internal sealed class GameLayerSettingsComposer
         GameLayerCatalog target,
         ProjectSettingContribution<GameLayerSettingContribution> contribution,
         string?[] slotOwners,
-        Dictionary<ProjectLocalId, string> localIdOwners)
-    {
+        Dictionary<ProjectLocalId, string> localIdOwners
+    ) {
         for (int index = 0; index < contribution.value.upsertSlots.Length; index++)
         {
             var layer = new GameLayer(contribution.value.upsertSlots[index]);
@@ -220,8 +220,8 @@ internal sealed class GameLayerSettingsComposer
     private static void ApplyInteractions(
         GameLayerCatalog target,
         ProjectSettingContribution<GameLayerSettingContribution> contribution,
-        string[,] interactionOwners)
-    {
+        string[,] interactionOwners
+    ) {
         for (int index = 0; index < contribution.value.interactionFirstSlots.Length; index++)
         {
             var first = new GameLayer(contribution.value.interactionFirstSlots[index]);
@@ -244,7 +244,8 @@ internal sealed class GameLayerSettingsComposer
 
     private static InvalidOperationException Conflict(
         ProjectSettingContributionContext context,
-        string message)
+        string message
+    )
         => new($"GameLayer contribution '{context.contributorId}' {message}");
 }
 

@@ -33,8 +33,8 @@ public sealed class ReferenceResolution
         ReferenceDescriptor descriptor,
         ReferenceResolutionState state,
         RuntimeIdentity? runtimeIdentity = null,
-        string? diagnostic = null)
-    {
+        string? diagnostic = null
+    ) {
         ArgumentNullException.ThrowIfNull(descriptor);
         if ((state == ReferenceResolutionState.Resolved) != runtimeIdentity.HasValue)
             throw new ArgumentException("Only a resolved reference can carry a runtime identity.", nameof(runtimeIdentity));

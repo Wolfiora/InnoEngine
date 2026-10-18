@@ -85,8 +85,10 @@ public static class EditorAssets
     /// <exception cref="InvalidOperationException">
     /// Thrown when the current execution context is not bound to an authoring asset pipeline.
     /// </exception>
-    public static bool Save(AssetPath path, AssetObject asset)
-    {
+    public static bool Save(
+        AssetPath path,
+        AssetObject asset
+    ) {
         ArgumentNullException.ThrowIfNull(asset);
         if (AssetExecutionContext.current is not AssetPipeline pipeline)
         {

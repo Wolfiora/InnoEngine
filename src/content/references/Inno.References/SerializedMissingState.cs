@@ -24,8 +24,11 @@ public sealed class SerializedMissingState
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="descriptor"/> is null.
     /// </exception>
-    public SerializedMissingState(ReferenceKey key, ReferenceDescriptor descriptor, ReadOnlySpan<byte> payload)
-    {
+    public SerializedMissingState(
+        ReferenceKey key,
+        ReferenceDescriptor descriptor,
+        ReadOnlySpan<byte> payload
+    ) {
         ArgumentNullException.ThrowIfNull(descriptor);
         this.key = key;
         this.descriptor = descriptor;

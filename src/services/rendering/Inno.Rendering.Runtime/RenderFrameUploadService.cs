@@ -26,8 +26,10 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
     private bool m_disposed;
     private RenderRetirementQueue? m_retirement;
 
-    internal RenderFrameUploadService(IRenderDevice device, RenderResourceLimits limits)
-    {
+    internal RenderFrameUploadService(
+        IRenderDevice device,
+        RenderResourceLimits limits
+    ) {
         m_device = device ?? throw new ArgumentNullException(nameof(device));
         m_limits = limits;
     }
@@ -50,8 +52,8 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
     public RenderBufferSlice UploadBuffer(
         RenderBufferUploadDescriptor descriptor,
         ReadOnlyMemory<byte> data,
-        string name)
-    {
+        string name
+    ) {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         if (!m_frameOpen)
             throw new InvalidOperationException("Frame uploads are only accepted during an open render frame.");
@@ -163,7 +165,11 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
             {
                 m_sweep ??= new RenderRetirementQueue();
                 m_sweep.Add(() => m_device.DestroyBuffer(page.handle));
-                m_sweep.Add(() => { m_residentBytes -= page.bytes; m_pageCount--; });
+                m_sweep.Add(() =>
+                {
+                    m_residentBytes -= page.bytes;
+                    m_pageCount--;
+                });
                 pool.pages.Remove(page);
             }
             if (pool.pages.Count == 0)
@@ -183,12 +189,19 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
-            if (m_sweep is not null) m_retirement.Add(m_sweep.Dispose);
+            if (m_sweep is not null)
+                m_retirement.Add(m_sweep.Dispose);
             foreach (UploadPage page in m_pools.Values.SelectMany(static pool => pool.pages))
                 m_retirement.Add(() => m_device.DestroyBuffer(page.handle));
         }
-        try { m_retirement.Dispose(); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            m_retirement.Dispose();
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_pools.Clear();
@@ -211,10 +224,21 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
 
     private void DrainSweep()
     {
-        if (m_sweep is null) return;
-        try { m_sweep.Dispose(); }
-        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null) { throw; }
-        catch { m_sweep = null; throw; }
+        if (m_sweep is null)
+            return;
+        try
+        {
+            m_sweep.Dispose();
+        }
+        catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+        {
+            throw;
+        }
+        catch
+        {
+            m_sweep = null;
+            throw;
+        }
         m_sweep = null;
     }
 
@@ -230,15 +254,19 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
         int elementStride,
         RenderBufferUsage usage,
         RenderVertexLayout? vertexLayout,
-        RenderIndexFormat indexFormat);
+        RenderIndexFormat indexFormat
+    );
 
     private sealed class UploadPool
     {
         internal List<UploadPage> pages { get; } = [];
     }
 
-    private sealed class UploadPage(PersistentBufferHandle handle, int capacity, long bytes)
-    {
+    private sealed class UploadPage(
+        PersistentBufferHandle handle,
+        int capacity,
+        long bytes
+    ) {
         internal PersistentBufferHandle handle { get; } = handle;
         internal int capacity { get; } = capacity;
         internal long bytes { get; } = bytes;

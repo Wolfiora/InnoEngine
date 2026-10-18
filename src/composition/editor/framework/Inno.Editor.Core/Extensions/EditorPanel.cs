@@ -85,8 +85,14 @@ public abstract class EditorPanel
         if (!m_attached)
             return;
         m_ready = false;
-        try { OnDetach(context); }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        try
+        {
+            OnDetach(context);
+        }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch
         {
             m_attached = false;

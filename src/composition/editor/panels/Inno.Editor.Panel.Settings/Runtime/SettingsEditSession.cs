@@ -98,8 +98,8 @@ internal sealed class SettingsEditSession
         ProjectSettingsEditor projectSettings,
         BuildPipeline buildPipeline,
         BuildSettingsStore buildSettings,
-        IEditorHistory history)
-    {
+        IEditorHistory history
+    ) {
         m_editorSettings = editorSettings ?? throw new ArgumentNullException(nameof(editorSettings));
         m_projectSettings = projectSettings ?? throw new ArgumentNullException(nameof(projectSettings));
         m_buildPipeline = buildPipeline ?? throw new ArgumentNullException(nameof(buildPipeline));
@@ -237,8 +237,10 @@ internal sealed class SettingsEditSession
             Reset(page.children[i]);
     }
 
-    internal void UpdateDirty(SettingsField field, bool differsFromDrawBaseline)
-    {
+    internal void UpdateDirty(
+        SettingsField field,
+        bool differsFromDrawBaseline
+    ) {
         if (field.build is not null)
             return;
         if (field.editor is EditorSetting editor)
@@ -358,7 +360,8 @@ internal sealed class SettingsEditSession
         bool differs,
         ISet<T> modified,
         ISet<T> resets,
-        ISet<T> resetIntent)
+        ISet<T> resetIntent
+    )
         where T : notnull
     {
         if (differs)
@@ -376,7 +379,8 @@ internal sealed class SettingsEditSession
         T id,
         bool changesEffectiveValue,
         ISet<T> resetIntent,
-        ISet<T> resets)
+        ISet<T> resets
+    )
         where T : notnull
     {
         if (changesEffectiveValue)
@@ -391,8 +395,8 @@ internal sealed class SettingsEditSession
 
     private static SettingsPage[] BuildPages(
         IReadOnlyList<EditorSetting> editorDefinitions,
-        IReadOnlyList<SettingsField> fields)
-    {
+        IReadOnlyList<SettingsField> fields
+    ) {
         var root = new MutablePage(string.Empty, string.Empty);
         var byPath = new Dictionary<string, MutablePage>(StringComparer.Ordinal)
         {
@@ -417,8 +421,10 @@ internal sealed class SettingsEditSession
             .ToArray();
     }
 
-    private static MutablePage EnsurePage(string path, IDictionary<string, MutablePage> byPath)
-    {
+    private static MutablePage EnsurePage(
+        string path,
+        IDictionary<string, MutablePage> byPath
+    ) {
         if (byPath.TryGetValue(path, out MutablePage? existing))
             return existing;
         string[] segments = path.Split('/');
@@ -440,8 +446,10 @@ internal sealed class SettingsEditSession
         return parent;
     }
 
-    private sealed class MutablePage(string path, string label)
-    {
+    private sealed class MutablePage(
+        string path,
+        string label
+    ) {
         internal readonly List<MutablePage> children = [];
         internal readonly List<SettingsField> settings = [];
         internal string? description;
@@ -481,7 +489,7 @@ internal sealed record SettingsPage(
     string label,
     string description,
     IReadOnlyList<SettingsField> settings,
-    IReadOnlyList<SettingsPage> children)
-{
+    IReadOnlyList<SettingsPage> children
+) {
     internal bool hasSettings => settings.Count > 0;
 }

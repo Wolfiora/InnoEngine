@@ -1,0 +1,20 @@
+<Project>
+  <Target
+    Name="PrepareNativeTestDeployment"
+    AfterTargets="Build"
+    DependsOnTargets="PrepareInnoBuildTaskHost"
+    Condition="'$(InnoTestNativeProduct)' != '' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(VSTestListTests)' != 'true'">
+    <ItemGroup>
+      <_InnoNativeTestReference
+        Include="@(ReferenceCopyLocalPaths)"
+        Condition="$([System.String]::Copy('%(Filename)').StartsWith('Inno.Native.')) and '%(Filename)' != 'Inno.Native.LibraryLoading'" />
+    </ItemGroup>
+    <Inno.Build.Tasks.PrepareProductNativeTask
+      Condition="'@(_InnoNativeTestReference)' != ''"
+      EngineRoot="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../'))"
+      ProductId="$(InnoTestNativeProduct)"
+      TargetId="$(InnoTestNativeTarget)"
+      Configuration="$(Configuration)"
+      OutputDirectory="$(TargetDir)" />
+  </Target>
+</Project>

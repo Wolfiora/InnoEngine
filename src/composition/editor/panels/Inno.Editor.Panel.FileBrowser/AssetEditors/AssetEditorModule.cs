@@ -64,8 +64,8 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         AssetPipeline pipeline,
         PluginEnvironment plugins,
         TypeCatalog types,
-        LogRouter logs)
-    {
+        LogRouter logs
+    ) {
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
@@ -119,8 +119,10 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         browser.Restore(restoredRoot, assetsDirectory, pluginsDirectory);
     }
 
-    private string RestoreDirectory(AssetBrowserRoot root, string path)
-    {
+    private string RestoreDirectory(
+        AssetBrowserRoot root,
+        string path
+    ) {
         string directory = NormalizePath(path);
         if (string.IsNullOrEmpty(directory))
             return string.Empty;
@@ -145,11 +147,12 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
 
     internal AssetPipeline pipeline => m_pipeline;
 
-    internal IReadOnlyList<AssetCreationRegistry.Registration> creationTemplates
-        => m_creations.templates;
+    internal IReadOnlyList<AssetCreationRegistry.Registration> creationTemplates => m_creations.templates;
 
-    internal bool CanCreateAsset(string directory, string templateId)
-    {
+    internal bool CanCreateAsset(
+        string directory,
+        string templateId
+    ) {
         if (!m_pipeline.isInitialized || !m_creations.TryGet(templateId, out _))
             return false;
         AssetPath path = AssetPath.Parse(NormalizePath(directory));
@@ -159,8 +162,10 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
                 || m_pipeline.TryGetFileSystemEntry(path, out AssetFileEntry entry) && entry.isDirectory);
     }
 
-    internal AssetFileEntry CreateAsset(string directory, string templateId)
-    {
+    internal AssetFileEntry CreateAsset(
+        string directory,
+        string templateId
+    ) {
         if (!m_creations.TryGet(templateId, out AssetCreationRegistry.Registration? registration)
             || registration is null)
         {
@@ -204,8 +209,7 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         return CreateSource(path, source);
     }
 
-    internal bool IsPluginSource(AssetSourceId source)
-        => m_plugins.TryGet(source, out _);
+    internal bool IsPluginSource(AssetSourceId source) => m_plugins.TryGet(source, out _);
 
     internal bool IsPluginRoot(AssetFileEntry entry)
     {
@@ -220,8 +224,8 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
     internal bool TryCreateContext(
         EditorContext editor,
         string relativePath,
-        out AssetEditorContext? context)
-    {
+        out AssetEditorContext? context
+    ) {
         if (!m_pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry))
         {
             context = null;
@@ -263,8 +267,8 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
 
     internal EditorValidationResult ValidateRename(
         AssetEditorContext context,
-        string newName)
-    {
+        string newName
+    ) {
         AssetEditor editor = m_editors.Resolve(context.assetType);
         return ToEditorValidation(ValidateRename(
             editor,
@@ -275,8 +279,10 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
             out _));
     }
 
-    internal void Rename(AssetEditorContext context, string newName)
-    {
+    internal void Rename(
+        AssetEditorContext context,
+        string newName
+    ) {
         AssetEditor editor = m_editors.Resolve(context.assetType);
         AssetOperationValidation validation = ValidateRename(
             editor,
@@ -325,7 +331,10 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
     /// <returns>
     /// <see langword="true"/> when the requested move is valid.
     /// </returns>
-    internal bool CanMoveToDirectory(string sourcePath, string targetDirectory)
+    internal bool CanMoveToDirectory(
+        string sourcePath,
+        string targetDirectory
+    )
         => TryPrepareMove(
             sourcePath,
             targetDirectory,
@@ -358,8 +367,8 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
     internal AssetFileEntry MoveToDirectoryWithHistory(
         string sourcePath,
         string targetDirectory,
-        IEditorHistory history)
-    {
+        IEditorHistory history
+    ) {
         ArgumentNullException.ThrowIfNull(history);
         if (!TryPrepareMove(
                 sourcePath,
@@ -435,8 +444,10 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         return true;
     }
 
-    internal bool DeleteWithHistory(EditorActionContext context, AssetEditorContext asset)
-    {
+    internal bool DeleteWithHistory(
+        EditorActionContext context,
+        AssetEditorContext asset
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(asset);
         byte[] archive = AssetSourceArchive.Capture(m_pipeline, asset.relativePath, out bool isDirectory);
@@ -469,8 +480,10 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         return true;
     }
 
-    internal void MoveFromHistory(string sourcePath, string targetPath)
-    {
+    internal void MoveFromHistory(
+        string sourcePath,
+        string targetPath
+    ) {
         EditorContext editorContext = m_context
             ?? throw new InvalidOperationException("Asset editor module is not attached.");
         if (!TryCreateContext(editorContext, sourcePath, out AssetEditorContext? context) || context is null)
@@ -499,8 +512,10 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         _ = m_interactions.For(FileBrowserInteractionIds.C_AREA, target).Select();
     }
 
-    internal bool TryCreateDragData(AssetEditorContext context, out EditorDragData? data)
-    {
+    internal bool TryCreateDragData(
+        AssetEditorContext context,
+        out EditorDragData? data
+    ) {
         AssetEditor editor = m_editors.Resolve(context.assetType);
         if (!editor.CanStartDrag(context))
         {
@@ -577,8 +592,8 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         string sourcePath,
         string newName,
         bool validateEditor,
-        out string targetPath)
-    {
+        out string targetPath
+    ) {
         newName = newName.Trim();
         targetPath = string.Empty;
         if (string.IsNullOrEmpty(newName))
@@ -609,8 +624,8 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         bool validateEditor,
         out AssetEditorContext? context,
         out AssetEditor? editor,
-        out string targetPath)
-    {
+        out string targetPath
+    ) {
         context = null;
         editor = null;
         targetPath = string.Empty;
@@ -661,8 +676,8 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         AssetEditor editor,
         AssetEditorContext context,
         string sourcePath,
-        string targetPath)
-    {
+        string targetPath
+    ) {
         m_pipeline.Move(AssetPath.Parse(sourcePath), AssetPath.Parse(targetPath));
         try
         {
@@ -682,15 +697,17 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
         AssetEditor editor,
         AssetEditorContext context,
         string sourcePath,
-        string targetPath)
-    {
+        string targetPath
+    ) {
         EditorHistoryResult result = MoveAsset(editor, context, sourcePath, targetPath);
         if (!result.succeeded)
             throw new InvalidOperationException(result.message);
     }
 
-    private static void RollbackAndRethrow(Exception failure, Action rollback)
-    {
+    private static void RollbackAndRethrow(
+        Exception failure,
+        Action rollback
+    ) {
         try
         {
             rollback();
@@ -713,6 +730,5 @@ public sealed partial class AssetEditorModule : EditorModule, IInspectionIconPro
             ? string.Empty
             : path.Replace('\\', '/').Trim('/');
 
-    private static EditorDragData CreateDefaultDragData(AssetFileEntry entry)
-        => new(entry, entry.name);
+    private static EditorDragData CreateDefaultDragData(AssetFileEntry entry) => new(entry, entry.name);
 }

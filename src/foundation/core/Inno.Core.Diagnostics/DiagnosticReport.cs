@@ -12,8 +12,8 @@ public sealed class DiagnosticReport
     internal DiagnosticReport(
         DiagnosticSource source,
         IReadOnlyList<Diagnostic> diagnostics,
-        DateTime publishedAt)
-    {
+        DateTime publishedAt
+    ) {
         this.source = source;
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
         this.publishedAt = publishedAt;

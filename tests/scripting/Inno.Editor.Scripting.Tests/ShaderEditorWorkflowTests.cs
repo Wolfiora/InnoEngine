@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
@@ -31,6 +33,7 @@ using Inno.Rendering.Shaders;
 using Inno.Native.ImGui;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using Xunit;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Scripting.Tests;
 
@@ -65,9 +68,9 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         _ = typeof(ShaderNodeDrawer);
         _ = typeof(ShaderGraphSourceStore);
         _ = typeof(GraphEditorModule);
-        m_modules = new(new() { cacheDirectory = Path.Combine(m_root, "Library", "Assemblies") });
-        m_types = new(m_modules);
-        m_serialization = new(m_types);
+        m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderEditorWorkflowTests).Assembly)});
+        m_types = new(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
         m_diagnostics = new DiagnosticHub();
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_reporter = m_diagnostics.CreateReporter(new("tests.shader-editor", "Shader Editor workflow"));
@@ -226,8 +229,10 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     [InlineData(1.25f, true)]
     [InlineData(1.5f, true)]
     [InlineData(2f, true)]
-    public void NativeCanvasResizeCompletesLayoutAtFractionalUiScales(float scale, bool emptyGraph)
-    {
+    public void NativeCanvasResizeCompletesLayoutAtFractionalUiScales(
+        float scale,
+        bool emptyGraph
+    ) {
         AssetFileEntry entry = Create("Resize.ishader");
         SelectAndDraw(entry);
         GraphDocumentController controller = Controller(entry);
@@ -595,7 +600,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         Assert.Equal(before, asset.contentVersion);
         var interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
         interaction.Focus();
-        HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S);
+        HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         m_runtime.HandleKeyPressed(new KeyPressedEvent(0, save.key, save.modifiers));
         Tick();
         Assert.True(m_assets.TryLoad(AssetId(entry), out ShaderAsset? saved));
@@ -698,7 +703,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     {
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
         var capabilities = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.None, new(256, 8, 8192, 16), formats, formats, formats, formats, false, false);
-        var runtime = new EditorInteractionRuntime(new EditorContext(m_root), m_types, m_logs,
+        var runtime = new EditorInteractionRuntime(new EditorContext(m_root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), m_types, m_logs,
             [m_types, m_serialization, m_assets, m_sink, new EditorReloadCoordinator(), new EditorShaderCompilation(m_artifacts, capabilities), new EmptyPreviews()]);
         runtime.Start();
         return runtime;
@@ -712,8 +717,10 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         Guid id = documents.Open(path);
         byte[] original = File.ReadAllBytes(Path.Combine(m_root, "Assets", path.localPath));
         MaterialAsset canonical = m_assets.Load<MaterialAsset>(path);
-        void Set(float value, bool finish = true)
-        {
+        void Set(
+            float value,
+            bool finish = true
+        ) {
             MaterialAsset candidate = documents.Read(id);
             candidate.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(value, 1, 1, 1)));
             documents.Replace(id, candidate, finish);
@@ -958,7 +965,10 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         return controller!;
     }
 
-    private GraphPosition ReadPosition(AssetFileEntry entry, GraphNodeId id) => m_source.Read(entry.assetPath).document.FindNode(id)!.position;
+    private GraphPosition ReadPosition(
+        AssetFileEntry entry,
+        GraphNodeId id
+    ) => m_source.Read(entry.assetPath).document.FindNode(id)!.position;
     private Guid AssetId(AssetFileEntry entry)
     {
         Assert.True(m_assets.TryGetInfo(entry.assetPath, out AssetInfo? info));
@@ -1034,29 +1044,54 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     [EditorModule("tests.shader-workflow", order: 160)]
     public sealed class WorkflowProbe : EditorModule
     {
-        public WorkflowProbe(GraphEditorModule graphs, MaterialDocuments materials, PipelineDocuments pipelines, WorkflowSink sink)
-        { sink.graphs = graphs; sink.materials = materials; sink.pipelines = pipelines; }
+        public WorkflowProbe(
+            GraphEditorModule graphs,
+            MaterialDocuments materials,
+            PipelineDocuments pipelines,
+            WorkflowSink sink
+        ) { sink.graphs = graphs; sink.materials = materials; sink.pipelines = pipelines; }
     }
 
     private sealed class WorkflowCompiler : IShaderCompilerToolchain
     {
         public string implementationId => "tests.workflow";
         public IReadOnlyList<string> supportedSourceLanguages => [];
-        public ShaderCompileTarget CreateTarget(GraphicsCapabilities capabilities, bool optimize = true, bool debugInformation = false)
+        public ShaderCompileTarget CreateTarget(
+            GraphicsCapabilities capabilities,
+            bool optimize = true,
+            bool debugInformation = false
+        )
             => new("tests:workflow", capabilities, optimize, debugInformation);
-        public ValueTask<ShaderStageToolResult> CompileAsync(ShaderStageToolRequest request, CancellationToken cancellationToken)
+        public ValueTask<ShaderStageToolResult> CompileAsync(
+            ShaderStageToolRequest request,
+            CancellationToken cancellationToken
+        )
             => ValueTask.FromResult(new ShaderStageToolResult([1, 2, 3], request.stage.inputs.Where(input => input.kind == ShaderIrInputKind.Uniform)
                 .Select(input => new ShaderStageBinding(input.id, "native_" + input.id, 0)), []));
     }
 
     private sealed class EmptyPreviews : IEditorPreviewService
     {
-        public bool TryRender(EditorViewportComposition composition, out EditorPreviewHandle handle) { handle = default; return false; }
+        public bool TryRender(
+            EditorViewportComposition composition,
+            out EditorPreviewHandle handle
+        ) { handle = default; return false; }
         public void ReleaseRendered(string viewportId) { }
         public uint deviceGeneration => 1;
-        public bool TryGetTexture(TextureAsset texture, out EditorPreviewHandle handle) { handle = default; return false; }
-        public bool TryGetTextureArtifact(RenderTextureArtifactReference texture, int pixelWidth, int pixelHeight, out EditorPreviewHandle handle) { handle = default; return false; }
-        public void Draw(EditorPreviewHandle handle, Vector2 logicalSize) => throw new InvalidOperationException("No texture was requested by this workflow.");
+        public bool TryGetTexture(
+            TextureAsset texture,
+            out EditorPreviewHandle handle
+        ) { handle = default; return false; }
+        public bool TryGetTextureArtifact(
+            RenderTextureArtifactReference texture,
+            int pixelWidth,
+            int pixelHeight,
+            out EditorPreviewHandle handle
+        ) { handle = default; return false; }
+        public void Draw(
+            EditorPreviewHandle handle,
+            Vector2 logicalSize
+        ) => throw new InvalidOperationException("No texture was requested by this workflow.");
         public bool Release(EditorPreviewHandle handle) => false;
         public void ReleaseAll() { }
     }

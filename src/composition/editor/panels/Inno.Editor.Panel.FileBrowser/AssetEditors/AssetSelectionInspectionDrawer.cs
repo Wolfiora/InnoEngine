@@ -47,8 +47,10 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     /// <returns>
     /// The validated text representation owned by the caller.
     /// </returns>
-    protected override string GetIcon(InspectionDrawContext context, AssetFileEntry target)
-        => m_assets.GetIcon(target);
+    protected override string GetIcon(
+        InspectionDrawContext context,
+        AssetFileEntry target
+    ) => m_assets.GetIcon(target);
 
     /// <summary>
     /// Binds a caller-visible label to the current inspection target.
@@ -64,7 +66,8 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     /// </returns>
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
-        AssetFileEntry target)
+        AssetFileEntry target
+    )
         => (target.nameWithoutExtension, null);
 
     /// <summary>
@@ -76,7 +79,10 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    protected override void DrawHeader(InspectionDrawContext context, AssetFileEntry target)
+    protected override void DrawHeader(
+        InspectionDrawContext context,
+        AssetFileEntry target
+    )
         => EditorWidget.ColoredText(EditorPalette.assetBreadcrumbText, target.assetPath.ToString());
 
     /// <summary>
@@ -88,8 +94,10 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     /// <param name="entry">
     /// The entry consumed by draw; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected override void Draw(InspectionDrawContext context, AssetFileEntry entry)
-    {
+    protected override void Draw(
+        InspectionDrawContext context,
+        AssetFileEntry entry
+    ) {
         if (!EditorWidget.SectionHeader(
                 "Asset",
                 "This view describes the selected source entry. Structured assets may replace it with a dedicated authoring drawer."))
@@ -112,8 +120,10 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
         }
     }
 
-    private static void DrawMetadata(string label, string value)
-    {
+    private static void DrawMetadata(
+        string label,
+        string value
+    ) {
         EditorWidget.PropertyRow(
             "asset.metadata." + label,
             label,

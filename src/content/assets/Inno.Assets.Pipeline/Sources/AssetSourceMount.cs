@@ -32,8 +32,8 @@ public sealed class AssetSourceMount
         AssetSourceId id,
         string rootPath,
         bool isReadOnly,
-        IEnumerable<AssetSourceId>? dependencies = null)
-    {
+        IEnumerable<AssetSourceId>? dependencies = null
+    ) {
         if (!id.isValid)
             throw new ArgumentException("An asset source ID must be valid.", nameof(id));
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);

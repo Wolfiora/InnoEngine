@@ -46,8 +46,10 @@ internal static class BinarySerializationFormat
         }
     }
 
-    private static void WriteNode(BinaryWriter writer, SerializationNode node)
-    {
+    private static void WriteNode(
+        BinaryWriter writer,
+        SerializationNode node
+    ) {
         switch (node)
         {
             case NullSerializationNode:
@@ -80,7 +82,10 @@ internal static class BinarySerializationFormat
             case MapSerializationNode map:
                 writer.Write((byte)NodeKind.Map);
                 KeyValuePair<SerializationNode, SerializationNode>[] entries = [.. map.values];
-                Array.Sort(entries, static (left, right) => CompareBytes(EncodeNode(left.Key), EncodeNode(right.Key)));
+                Array.Sort(entries, static (
+                    left,
+                    right
+                ) => CompareBytes(EncodeNode(left.Key), EncodeNode(right.Key)));
                 writer.Write(entries.Length);
                 for (int i = 0; i < entries.Length; i++)
                 {
@@ -93,8 +98,10 @@ internal static class BinarySerializationFormat
         }
     }
 
-    private static SerializationNode ReadNode(BinaryReader reader, string path)
-    {
+    private static SerializationNode ReadNode(
+        BinaryReader reader,
+        string path
+    ) {
         NodeKind kind = (NodeKind)reader.ReadByte();
         return kind switch
         {
@@ -121,8 +128,10 @@ internal static class BinarySerializationFormat
         };
     }
 
-    private static void WriteScalar(BinaryWriter writer, object value)
-    {
+    private static void WriteScalar(
+        BinaryWriter writer,
+        object value
+    ) {
         switch (value)
         {
             case bool typed: writer.Write((byte)NodeKind.Boolean); writer.Write(typed); return;
@@ -144,8 +153,10 @@ internal static class BinarySerializationFormat
         }
     }
 
-    private static ObjectSerializationNode ReadObject(BinaryReader reader, string path)
-    {
+    private static ObjectSerializationNode ReadObject(
+        BinaryReader reader,
+        string path
+    ) {
         int count = ReadCount(reader, "object member", path);
         var node = new ObjectSerializationNode();
         for (int i = 0; i < count; i++)
@@ -158,8 +169,10 @@ internal static class BinarySerializationFormat
         return node;
     }
 
-    private static ArraySerializationNode ReadArray(BinaryReader reader, string path)
-    {
+    private static ArraySerializationNode ReadArray(
+        BinaryReader reader,
+        string path
+    ) {
         int count = ReadCount(reader, "array element", path);
         var node = new ArraySerializationNode();
         node.values.Capacity = count;
@@ -168,8 +181,10 @@ internal static class BinarySerializationFormat
         return node;
     }
 
-    private static MapSerializationNode ReadMap(BinaryReader reader, string path)
-    {
+    private static MapSerializationNode ReadMap(
+        BinaryReader reader,
+        string path
+    ) {
         int count = ReadCount(reader, "map entry", path);
         var node = new MapSerializationNode();
         node.values.Capacity = count;
@@ -182,8 +197,10 @@ internal static class BinarySerializationFormat
         return node;
     }
 
-    private static byte[] ReadBytes(BinaryReader reader, string path)
-    {
+    private static byte[] ReadBytes(
+        BinaryReader reader,
+        string path
+    ) {
         int count = ReadCount(reader, "binary byte", path);
         byte[] bytes = reader.ReadBytes(count);
         if (bytes.Length != count)
@@ -191,24 +208,31 @@ internal static class BinarySerializationFormat
         return bytes;
     }
 
-    private static Guid ReadGuid(BinaryReader reader, string path)
-    {
+    private static Guid ReadGuid(
+        BinaryReader reader,
+        string path
+    ) {
         byte[] bytes = reader.ReadBytes(16);
         if (bytes.Length != 16)
             throw new InvalidDataException($"Serialization Guid value at '{path}' is truncated.");
         return new Guid(bytes);
     }
 
-    private static int ReadCount(BinaryReader reader, string kind, string path)
-    {
+    private static int ReadCount(
+        BinaryReader reader,
+        string kind,
+        string path
+    ) {
         int count = reader.ReadInt32();
         if (count < 0 || count > C_MAX_COLLECTION_COUNT)
             throw new InvalidDataException($"Invalid serialization {kind} count {count} at '{path}'.");
         return count;
     }
 
-    private static string AppendPath(string path, string name)
-        => path == "$" ? $"$.{name}" : $"{path}.{name}";
+    private static string AppendPath(
+        string path,
+        string name
+    ) => path == "$" ? $"$.{name}" : $"{path}.{name}";
 
     private static byte[] EncodeNode(SerializationNode node)
     {
@@ -219,8 +243,10 @@ internal static class BinarySerializationFormat
         return stream.ToArray();
     }
 
-    private static int CompareBytes(byte[] left, byte[] right)
-    {
+    private static int CompareBytes(
+        byte[] left,
+        byte[] right
+    ) {
         int length = Math.Min(left.Length, right.Length);
         for (int i = 0; i < length; i++)
         {

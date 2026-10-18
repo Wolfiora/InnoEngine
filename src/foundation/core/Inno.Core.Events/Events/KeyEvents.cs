@@ -16,7 +16,11 @@ namespace Inno.Core.Events;
 /// <param name="modifiers">
 /// The modifiers used to initialize this instance.
 /// </param>
-public abstract class KeyEvent(uint windowId, KeyCode key, KeyModifier modifiers = KeyModifier.None)
+public abstract class KeyEvent(
+    uint windowId,
+    KeyCode key,
+    KeyModifier modifiers = KeyModifier.None
+)
     : Event
 {
     /// <summary>
@@ -54,7 +58,8 @@ public class KeyPressedEvent(
     uint windowId,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None,
-    bool repeat = false)
+    bool repeat = false
+)
     : KeyEvent(windowId, key, modifiers)
 {
     /// <summary>
@@ -75,7 +80,11 @@ public class KeyPressedEvent(
 /// <param name="modifiers">
 /// The modifiers used to initialize this instance.
 /// </param>
-public class KeyReleasedEvent(uint windowId, KeyCode key, KeyModifier modifiers = KeyModifier.None)
+public class KeyReleasedEvent(
+    uint windowId,
+    KeyCode key,
+    KeyModifier modifiers = KeyModifier.None
+)
     : KeyEvent(windowId, key, modifiers)
 {
 }
@@ -89,7 +98,10 @@ public class KeyReleasedEvent(uint windowId, KeyCode key, KeyModifier modifiers 
 /// <param name="text">
 /// The committed Unicode text.
 /// </param>
-public sealed class TextInputEvent(uint windowId, string text) : Event
+public sealed class TextInputEvent(
+    uint windowId,
+    string text
+) : Event
 {
     /// <summary>
     /// Gets the source window identifier.

@@ -19,8 +19,10 @@ public sealed class ShaderGraphPass
     /// <param name="stages">
     /// Complete raster or compute stage set.
     /// </param>
-    public ShaderGraphPass(string name, IEnumerable<ShaderIrStage> stages)
-    {
+    public ShaderGraphPass(
+        string name,
+        IEnumerable<ShaderIrStage> stages
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(stages);
         this.name = name;
@@ -41,8 +43,10 @@ public sealed class ShaderGraphPass
 /// </summary>
 public sealed class ShaderGraphProgramResult
 {
-    internal ShaderGraphProgramResult(IEnumerable<ShaderGraphPass> passes, IEnumerable<ShaderGraphDiagnostic> diagnostics)
-    {
+    internal ShaderGraphProgramResult(
+        IEnumerable<ShaderGraphPass> passes,
+        IEnumerable<ShaderGraphDiagnostic> diagnostics
+    ) {
         this.passes = Array.AsReadOnly(passes.ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
     }

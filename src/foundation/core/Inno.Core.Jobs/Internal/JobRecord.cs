@@ -14,8 +14,10 @@ internal sealed class JobRecord
     internal Exception? exception;
     internal List<int>? dependents;
 
-    internal void ResetForAllocation(Action<object?> callback, object? state)
-    {
+    internal void ResetForAllocation(
+        Action<object?> callback,
+        object? state
+    ) {
         inUse = true;
         executionState = JobExecutionState.Created;
         remainingDependencies = 0;

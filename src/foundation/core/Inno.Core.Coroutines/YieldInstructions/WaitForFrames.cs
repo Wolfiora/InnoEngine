@@ -13,8 +13,10 @@ public sealed class WaitForFrames(int frames) : YieldInstruction
     /// </summary>
     public int frames { get; } = frames;
 
-    internal override CoroutineWaitDelegate CreateWaiter(double now, ulong frame)
-    {
+    internal override CoroutineWaitDelegate CreateWaiter(
+        double now,
+        ulong frame
+    ) {
         ulong targetFrame = frame + 1;
         if (frames <= 0)
         {

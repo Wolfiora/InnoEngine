@@ -39,8 +39,10 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         NativeImGui.TextUnformatted($"Unsupported collection: {context.propertyType.Name}");
     }
 
-    private static void DrawSequence(PropertyDrawContext context, Type elementType)
-    {
+    private static void DrawSequence(
+        PropertyDrawContext context,
+        Type elementType
+    ) {
         List<object?> values = EditorCollectionUtility.EnumerateSequence(context.GetValue());
         if (!NativeImGui.TreeNodeEx(
                 $"Count: {values.Count}##{context.path}_sequence",
@@ -82,8 +84,8 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         PropertyDrawContext context,
         Type elementType,
         int index,
-        int count)
-    {
+        int count
+    ) {
         bool changed = false;
         if (NativeImGui.SmallButton($"Up##{context.path}_{index}_up") && index > 0)
         {
@@ -114,8 +116,11 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         return changed;
     }
 
-    private static void DrawMap(PropertyDrawContext context, Type keyType, Type valueType)
-    {
+    private static void DrawMap(
+        PropertyDrawContext context,
+        Type keyType,
+        Type valueType
+    ) {
         List<KeyValuePair<object?, object?>> entries = EnumerateMap(context);
         if (!NativeImGui.TreeNodeEx(
                 $"Count: {entries.Count}##{context.path}_map",
@@ -149,7 +154,10 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
                 key =>
                 {
                     List<KeyValuePair<object?, object?>> updated = EnumerateMap(context);
-                    bool duplicate = updated.Where((_, candidateIndex) => candidateIndex != index)
+                    bool duplicate = updated.Where((
+                        _,
+                        candidateIndex
+                    ) => candidateIndex != index)
                         .Any(entry => Equals(entry.Key, key));
                     if (duplicate)
                     {

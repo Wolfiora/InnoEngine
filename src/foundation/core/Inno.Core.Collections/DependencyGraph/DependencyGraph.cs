@@ -25,8 +25,7 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         internal HashSet<TKey> dependents = null!;
     }
 
-    private sealed class NodePriorityComparer(
-        IComparer<TKey>? orderingComparer) : IComparer<NodePriority>
+    private sealed class NodePriorityComparer(IComparer<TKey>? orderingComparer) : IComparer<NodePriority>
     {
         /// <summary>
         /// Compares two values according to the deterministic ordering used by this collection.
@@ -40,8 +39,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         /// <returns>
         /// The scalar result calculated from the supplied inputs.
         /// </returns>
-        public int Compare(NodePriority x, NodePriority y)
-        {
+        public int Compare(
+            NodePriority x,
+            NodePriority y
+        ) {
             if (orderingComparer is not null)
             {
                 int keyComparison = orderingComparer.Compare(x.key, y.key);
@@ -53,8 +54,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         }
     }
 
-    private readonly struct NodePriority(TKey key, long order)
-    {
+    private readonly struct NodePriority(
+        TKey key,
+        long order
+    ) {
         internal TKey key { get; } = key;
         internal long order { get; } = order;
     }
@@ -79,8 +82,8 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     /// </param>
     public DependencyGraph(
         IEqualityComparer<TKey>? equalityComparer = null,
-        IComparer<TKey>? orderingComparer = null)
-    {
+        IComparer<TKey>? orderingComparer = null
+    ) {
         m_equalityComparer = equalityComparer ?? EqualityComparer<TKey>.Default;
         m_orderingComparer = orderingComparer;
         m_nodes = new Dictionary<TKey, Node>(m_equalityComparer);
@@ -225,8 +228,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     /// <returns>
     /// <see langword="true"/> when the edge was added.
     /// </returns>
-    public bool AddDependency(TKey node, TKey dependency)
-    {
+    public bool AddDependency(
+        TKey node,
+        TKey dependency
+    ) {
         m_sync.EnterWriteLock();
         try
         {
@@ -257,8 +262,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     /// <returns>
     /// <see langword="true"/> when the edge was removed.
     /// </returns>
-    public bool RemoveDependency(TKey node, TKey dependency)
-    {
+    public bool RemoveDependency(
+        TKey node,
+        TKey dependency
+    ) {
         m_sync.EnterWriteLock();
         try
         {
@@ -292,8 +299,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="dependencies"/> is <see langword="null"/>.
     /// </exception>
-    public void ReplaceDependencies(TKey node, IEnumerable<TKey> dependencies)
-    {
+    public void ReplaceDependencies(
+        TKey node,
+        IEnumerable<TKey> dependencies
+    ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         var replacement = new HashSet<TKey>(dependencies, m_equalityComparer);
 
@@ -338,7 +347,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     /// <returns>
     /// A stable dependency snapshot, or an empty list when the node is absent.
     /// </returns>
-    public IReadOnlyList<TKey> GetDependencies(TKey node, bool recursive = false)
+    public IReadOnlyList<TKey> GetDependencies(
+        TKey node,
+        bool recursive = false
+    )
         => GetConnectedNodes(node, recursive, static value => value.dependencies);
 
     /// <summary>
@@ -353,7 +365,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     /// <returns>
     /// A stable dependent snapshot, or an empty list when the node is absent.
     /// </returns>
-    public IReadOnlyList<TKey> GetDependents(TKey node, bool recursive = false)
+    public IReadOnlyList<TKey> GetDependents(
+        TKey node,
+        bool recursive = false
+    )
         => GetConnectedNodes(node, recursive, static value => value.dependents);
 
     /// <summary>
@@ -371,8 +386,11 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     /// <returns>
     /// <see langword="true"/> when the dependency exists.
     /// </returns>
-    public bool DependsOn(TKey node, TKey dependency, bool recursive = false)
-    {
+    public bool DependsOn(
+        TKey node,
+        TKey dependency,
+        bool recursive = false
+    ) {
         m_sync.EnterReadLock();
         try
         {
@@ -498,7 +516,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
                     Visit(node);
             }
 
-            components.Sort((left, right) => CompareNodes(left[0], right[0]));
+            components.Sort((
+                left,
+                right
+            ) => CompareNodes(left[0], right[0]));
             return components.ToArray();
 
             void Visit(TKey node)
@@ -580,8 +601,8 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
     private IReadOnlyList<TKey> GetConnectedNodes(
         TKey node,
         bool recursive,
-        Func<Node, HashSet<TKey>> selector)
-    {
+        Func<Node, HashSet<TKey>> selector
+    ) {
         m_sync.EnterReadLock();
         try
         {
@@ -623,8 +644,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         }
         return Array.Empty<TKey>();
 
-        bool Visit(TKey node, out IReadOnlyList<TKey> cycle)
-        {
+        bool Visit(
+            TKey node,
+            out IReadOnlyList<TKey> cycle
+        ) {
             states[node] = 1;
             pathIndexes[node] = path.Count;
             path.Add(node);
@@ -662,8 +685,10 @@ public sealed class DependencyGraph<TKey> where TKey : notnull
         return result;
     }
 
-    private int CompareNodes(TKey left, TKey right)
-    {
+    private int CompareNodes(
+        TKey left,
+        TKey right
+    ) {
         if (m_orderingComparer is not null)
         {
             int comparison = m_orderingComparer.Compare(left, right);

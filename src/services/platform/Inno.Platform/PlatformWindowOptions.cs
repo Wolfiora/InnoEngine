@@ -32,4 +32,9 @@ public readonly struct PlatformWindowOptions()
     /// Gets whether high pixel density is requested for the window.
     /// </summary>
     public bool highPixelDensity { get; init; } = true;
+
+    /// <summary>
+    /// Gets whether the window is initially shown; hidden windows retain their rendering surface.
+    /// </summary>
+    public bool visible { get; init; } = true;
 }

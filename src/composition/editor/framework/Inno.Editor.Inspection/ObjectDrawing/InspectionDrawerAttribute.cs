@@ -46,8 +46,12 @@ public sealed class InspectionDrawerAttribute : Attribute
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="targetType"/> is <see langword="null"/>.
     /// </exception>
-    public InspectionDrawerAttribute(Type targetType, bool useForChildren = false, int priority = 0, bool conditional = false)
-    {
+    public InspectionDrawerAttribute(
+        Type targetType,
+        bool useForChildren = false,
+        int priority = 0,
+        bool conditional = false
+    ) {
         this.targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
         this.useForChildren = useForChildren;
         this.priority = priority;

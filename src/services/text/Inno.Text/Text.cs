@@ -52,7 +52,11 @@ public static class Text
     /// <returns>
     /// The immutable shaped layout.
     /// </returns>
-    public static TextLayout Shape(FontAsset font, string text, TextStyle style)
+    public static TextLayout Shape(
+        FontAsset font,
+        string text,
+        TextStyle style
+    )
         => TextExecutionContext.current.Shape(font, text, style, TextShapingOptions.automatic);
 
     /// <summary>
@@ -77,7 +81,8 @@ public static class Text
         FontAsset font,
         string text,
         TextStyle style,
-        TextShapingOptions options)
+        TextShapingOptions options
+    )
         => TextExecutionContext.current.Shape(font, text, style, options);
 
     /// <summary>
@@ -98,6 +103,11 @@ public static class Text
     /// <returns>
     /// The immutable glyph bitmap.
     /// </returns>
-    public static GlyphBitmap Rasterize(FontAsset font, int faceIndex, uint glyphId, float fontSize)
+    public static GlyphBitmap Rasterize(
+        FontAsset font,
+        int faceIndex,
+        uint glyphId,
+        float fontSize
+    )
         => TextExecutionContext.current.Rasterize(font, faceIndex, glyphId, fontSize);
 }

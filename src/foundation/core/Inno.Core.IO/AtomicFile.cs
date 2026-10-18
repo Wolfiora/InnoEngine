@@ -20,8 +20,11 @@ public static class AtomicFile
     /// <param name="overwrite">
     /// Whether an existing destination may be replaced; false atomically rejects name collisions.
     /// </param>
-    public static void WriteAllBytes(string path, ReadOnlySpan<byte> data, bool overwrite = true)
-    {
+    public static void WriteAllBytes(
+        string path,
+        ReadOnlySpan<byte> data,
+        bool overwrite = true
+    ) {
         string destination = NormalizeDestination(path);
         string candidate = destination + ".staging-" + Guid.NewGuid().ToString("N");
         try
@@ -58,24 +61,27 @@ public static class AtomicFile
     /// <param name="overwrite">
     /// Whether an existing destination may be replaced; false never overwrites an external creator.
     /// </param>
-    public static void Install(string source, string destination, bool overwrite = true)
-    {
+    public static void Install(
+        string source,
+        string destination,
+        bool overwrite = true
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         string candidate = Path.GetFullPath(source);
         string target = NormalizeDestination(destination);
         if (!File.Exists(candidate))
             throw new FileNotFoundException("The atomic file candidate does not exist.", candidate);
-        if (string.Equals(candidate, target, PathComparison()))
+        if (string.Equals(candidate, target, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("The atomic file candidate and destination must be different paths.", nameof(source));
 
         string candidateDirectory = Path.GetDirectoryName(candidate)!;
         string targetDirectory = Path.GetDirectoryName(target)!;
-        if (!string.Equals(candidateDirectory, targetDirectory, PathComparison()))
+        if (!string.Equals(candidateDirectory, targetDirectory, StringComparison.Ordinal))
             throw new ArgumentException(
                 "Atomic file installation requires the candidate and destination to share a directory.",
                 nameof(source));
 
-        File.Move(candidate, target, overwrite);
+        FileSystemRename.MoveFile(candidate, target, overwrite);
     }
 
     private static string NormalizeDestination(string path)
@@ -89,8 +95,4 @@ public static class AtomicFile
         return destination;
     }
 
-    private static StringComparison PathComparison()
-        => OperatingSystem.IsWindows() || OperatingSystem.IsMacOS()
-            ? StringComparison.OrdinalIgnoreCase
-            : StringComparison.Ordinal;
 }

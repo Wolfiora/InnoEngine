@@ -27,8 +27,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         TypeCacheReloadContext context,
         SerializationRegistry serialization,
         IAssetReferenceResolver assets,
-        List<SceneState> scenes)
-    {
+        List<SceneState> scenes
+    ) {
         m_context = context;
         m_serialization = serialization;
         m_assets = assets;
@@ -47,8 +47,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         SceneWorld world,
         TypeCacheReloadContext context,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(serialization);
@@ -180,7 +180,10 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             {
                 RestoreState(sceneState, useCurrentTargets: false);
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 failures ??= [];
@@ -205,7 +208,10 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 else if (replacement.previous is GameSystem system && !system.isDestroyed)
                     system.Detach();
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 failures.Add(exception);
@@ -269,8 +275,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         EngineObject target,
         TypeCacheSnapshot types,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         TypeRef activeType = types.GetTypeRef(target.GetType());
         if (target is MissingGameComponent missingComponent)
         {
@@ -307,8 +313,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
 
     private static void RestorePreviousLifecycleState(
         SceneState sceneState,
-        ref List<Exception>? failures)
-    {
+        ref List<Exception>? failures
+    ) {
         foreach (ObjectState state in sceneState.states)
         {
             if (state.target is not ISceneLifecycleObject lifecycle ||
@@ -325,7 +331,10 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 else
                     lifecycle.DispatchDisable();
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 failures ??= [];
@@ -336,8 +345,10 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         }
     }
 
-    private static EngineObject CreateReplacement(ObjectState state, Type replacementType)
-    {
+    private EngineObject CreateReplacement(
+        ObjectState state,
+        Type replacementType
+    ) {
         if (replacementType == typeof(MissingGameComponent))
             return new MissingGameComponent(
                 state.logicalType,
@@ -353,9 +364,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         try
         {
             return state.target is GameComponent
-                ? ComponentFactory.Create(replacementType)
-                : (EngineObject)(Activator.CreateInstance(replacementType, nonPublic: true)
-                    ?? throw new InvalidOperationException("Activator returned null."));
+                ? ComponentFactory.Create(replacementType, m_context.candidate)
+                : (EngineObject)m_context.candidate.CreateInstance(replacementType);
         }
         catch (Exception exception)
         {
@@ -365,8 +375,10 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         }
     }
 
-    private static void CopyLifecycle(EngineObject previous, EngineObject replacement)
-    {
+    private static void CopyLifecycle(
+        EngineObject previous,
+        EngineObject replacement
+    ) {
         if (previous is GameBehavior previousBehavior && replacement is GameBehavior replacementBehavior)
         {
             replacementBehavior.enabled = previousBehavior.enabled;
@@ -387,8 +399,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
     private static void ValidateMultiplicity(
         GameScene scene,
         SceneStructureSnapshot structure,
-        TypeCacheReloadContext context)
-    {
+        TypeCacheReloadContext context
+    ) {
         foreach (SceneObjectStructureSnapshot entry in structure.objects)
         {
             var groups = new Dictionary<TypeRef, MultiplicityGroup>();
@@ -434,8 +446,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
 
     private static ActiveTypeInfo ResolveActiveType(
         EngineObject target,
-        TypeCacheReloadContext context)
-    {
+        TypeCacheReloadContext context
+    ) {
         bool isSystem = target is GameSystem;
         Type type = target.GetType();
         Type activeType = type;
@@ -471,8 +483,10 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             allowsMultiple);
     }
 
-    private void RestoreState(SceneState sceneState, bool useCurrentTargets)
-    {
+    private void RestoreState(
+        SceneState sceneState,
+        bool useCurrentTargets
+    ) {
         EngineObject[] currentObjects = sceneState.engineObjects
             .Select(engineObject => sceneState.states.FirstOrDefault(state => ReferenceEquals(state.target, engineObject))
                 is ObjectState state
@@ -562,8 +576,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             throw new AggregateException("One or more previous scene objects could not be restored.", restoreFailures);
     }
 
-    private static string GetTypeDisplayName(Type type)
-        => type.FullName ?? type.Name;
+    private static string GetTypeDisplayName(Type type) => type.FullName ?? type.Name;
 
     private IEnumerable<ObjectState> RetiredStates()
         => m_scenes.SelectMany(static scene => scene.states)
@@ -579,7 +592,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         GameScene scene,
         EngineObject[] engineObjects,
         IReadOnlyDictionary<EngineObject, Guid> sourceIds,
-        List<ObjectState> states);
+        List<ObjectState> states
+    );
 
     private sealed class ObjectState(
         EngineObject target,
@@ -587,8 +601,8 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         TypeRef logicalType,
         string typeName,
         byte[] data,
-        AssetDependency[] dependencies)
-    {
+        AssetDependency[] dependencies
+    ) {
         internal EngineObject target { get; } = target;
         internal TypeRef activeType { get; } = activeType;
         internal TypeRef logicalType { get; } = logicalType;
@@ -604,10 +618,13 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         GameScene scene,
         EngineObject previous,
         EngineObject current,
-        TypeRef previousType);
+        TypeRef previousType
+    );
 
-    private sealed class MultiplicityGroup(string displayName, bool allowsMultiple)
-    {
+    private sealed class MultiplicityGroup(
+        string displayName,
+        bool allowsMultiple
+    ) {
         internal string displayName { get; } = displayName;
         internal bool allowsMultiple { get; } = allowsMultiple;
         internal int count { get; set; } = 1;
@@ -616,10 +633,13 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
     private readonly record struct ActiveTypeInfo(
         TypeRef typeRef,
         string displayName,
-        bool allowsMultiple);
+        bool allowsMultiple
+    );
 
-    private static Type? ResolveCandidateType(ObjectState state, TypeCacheReloadContext context)
-    {
+    private static Type? ResolveCandidateType(
+        ObjectState state,
+        TypeCacheReloadContext context
+    ) {
         Type requiredBase = state.target is GameSystem ? typeof(GameSystem) : typeof(GameComponent);
         Type? candidate = null;
         if (state.target is MissingGameComponent or MissingGameSystem)
@@ -638,8 +658,11 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         return candidate;
     }
 
-    private static bool TryResolve(TypeRef typeRef, TypeCacheSnapshot snapshot, out Type? type)
-    {
+    private static bool TryResolve(
+        TypeRef typeRef,
+        TypeCacheSnapshot snapshot,
+        out Type? type
+    ) {
         try
         {
             type = typeRef.Resolve(snapshot);

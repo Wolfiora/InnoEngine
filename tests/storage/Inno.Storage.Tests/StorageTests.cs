@@ -1,3 +1,6 @@
+using Inno.Core.Logging;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Runtime.Contracts;
 using System;
 using System.IO;
@@ -15,6 +18,24 @@ namespace Inno.Storage.Tests;
 
 public sealed class StorageTests
 {
+    [Theory]
+    [InlineData("CON")]
+    [InlineData("nul.save")]
+    [InlineData("com1")]
+    [InlineData("LPT9")]
+    [InlineData("../other")]
+    public void ScopeRejectsNamesThatCannotBeMappedPortably(string value)
+        => Assert.Throws<ArgumentException>(() => new StorageScope(value));
+
+    [Fact]
+    public async Task FileSystemAdapterAcceptsAnExplicitVolumeRoot()
+    {
+        string root = Path.GetPathRoot(Path.GetFullPath(Path.GetTempPath()))!;
+        using var storage = new FileSystemApplicationStorage(root);
+
+        Assert.False(await storage.ExistsAsync(new StorageKey("InnoStorageProbe-" + Guid.NewGuid().ToString("N"))));
+    }
+
     [Fact]
     public async Task AdmissionRejectsBeforeBackendAndAcceptedWriteOwnsItsBytes()
     {
@@ -135,19 +156,20 @@ public sealed class StorageTests
         try
         {
             using EngineHost host = new EngineHostBuilder()
-                .UseMetadataCache(Path.Combine(root, "Metadata"))
+                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(StorageTests).Assembly),
+                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
                 .Build();
             var options = new RuntimeSessionOptions
             {
                 kind = RuntimeSessionKind.Play,
                 applicationId = "tests.storage",
-                persistentDataDirectory = Path.Combine(root, "tests.storage"),
+                createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "tests.storage"), "Logs")),
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                 createSubsystems = owner =>
                 [
                     new StorageRuntimeFactory(context =>
                         new FileSystemApplicationStorage(Path.Combine(
-                            context.persistentDataDirectory,
+                            root, "tests.storage",
                             "Storage"))),
                     new StorageProbeFactory()
                 ]

@@ -26,8 +26,8 @@ public readonly struct AssetChange
         AssetChangeKind kind,
         Guid persistentId,
         AssetPath assetPath,
-        AssetPath? previousAssetPath = null)
-    {
+        AssetPath? previousAssetPath = null
+    ) {
         this.kind = kind;
         this.persistentId = persistentId;
         this.assetPath = assetPath;

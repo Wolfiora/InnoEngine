@@ -15,7 +15,8 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
 
     internal ProjectSettingEditorCatalog(
         TypeCatalog types,
-        SerializationRegistry serialization)
+        SerializationRegistry serialization
+    )
         : base(types)
     {
         ArgumentNullException.ThrowIfNull(serialization);
@@ -72,8 +73,7 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
     /// <param name="snapshot">
     /// The immutable state snapshot consumed by this operation.
     /// </param>
-    protected override void DisposeSnapshot(Snapshot snapshot)
-        => DisposeExtensions(snapshot.definitions);
+    protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.definitions);
 
     private ProjectSettingEditor CreateDefinition(Type type)
     {
@@ -93,5 +93,8 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
         return definition;
     }
 
-    internal sealed record Snapshot(long revision, ProjectSettingEditor[] definitions);
+    internal sealed record Snapshot(
+        long revision,
+        ProjectSettingEditor[] definitions
+    );
 }

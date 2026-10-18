@@ -38,8 +38,8 @@ public sealed class FontImporter : AssetImporter<FontAsset>
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<FontAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         FontMetadata metadata = ReadMetadata(context.sourceBytes.Span);
         output.SetAsset(new FontAsset());
         await output.WriteArtifactAsync(

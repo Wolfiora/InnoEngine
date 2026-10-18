@@ -34,8 +34,8 @@ public sealed class SceneReloadService
     public SceneReloadService(
         SceneWorld world,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         m_world = world ?? throw new ArgumentNullException(nameof(world));
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         m_assets = assets ?? throw new ArgumentNullException(nameof(assets));

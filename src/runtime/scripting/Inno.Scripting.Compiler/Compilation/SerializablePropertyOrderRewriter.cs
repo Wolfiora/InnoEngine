@@ -70,7 +70,8 @@ internal sealed class SerializablePropertyOrderRewriter : CSharpSyntaxRewriter
 
     private TMember RewriteMember<TMember>(
         TMember member,
-        SyntaxList<AttributeListSyntax> attributeLists)
+        SyntaxList<AttributeListSyntax> attributeLists
+    )
         where TMember : MemberDeclarationSyntax
     {
         if (m_nextOrders.Count == 0 || !TryFindSerializableAttribute(attributeLists, out AttributeSyntax attribute))
@@ -94,8 +95,8 @@ internal sealed class SerializablePropertyOrderRewriter : CSharpSyntaxRewriter
 
     private static bool TryFindSerializableAttribute(
         SyntaxList<AttributeListSyntax> attributeLists,
-        out AttributeSyntax result)
-    {
+        out AttributeSyntax result
+    ) {
         foreach (AttributeSyntax attribute in attributeLists.SelectMany(static list => list.Attributes))
         {
             string name = GetRightmostName(attribute.Name);

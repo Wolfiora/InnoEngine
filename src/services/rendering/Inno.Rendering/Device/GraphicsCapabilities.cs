@@ -8,40 +8,120 @@ namespace Inno.Rendering;
 /// Pipelines use this value only for capability-aware choices and target artifact selection;
 /// it does not require separate pipeline or shader source implementations.
 /// </summary>
-public enum GraphicsApi
+public readonly record struct GraphicsApi : IComparable<GraphicsApi>
 {
     /// <summary>
     /// Headless validation backend.
     /// </summary>
-    Noop,
+    public static GraphicsApi Noop { get; } = new("Noop");
     /// <summary>
     /// Direct3D 11 renderer.
     /// </summary>
-    Direct3D11,
+    public static GraphicsApi Direct3D11 { get; } = new("Direct3D11");
     /// <summary>
     /// Direct3D 12 renderer.
     /// </summary>
-    Direct3D12,
+    public static GraphicsApi Direct3D12 { get; } = new("Direct3D12");
     /// <summary>
     /// Apple Metal renderer.
     /// </summary>
-    Metal,
+    public static GraphicsApi Metal { get; } = new("Metal");
     /// <summary>
     /// Khronos Vulkan renderer.
     /// </summary>
-    Vulkan,
+    public static GraphicsApi Vulkan { get; } = new("Vulkan");
     /// <summary>
     /// Desktop OpenGL renderer.
     /// </summary>
-    OpenGL,
+    public static GraphicsApi OpenGL { get; } = new("OpenGL");
     /// <summary>
     /// OpenGL ES renderer.
     /// </summary>
-    OpenGLES,
+    public static GraphicsApi OpenGLES { get; } = new("OpenGLES");
     /// <summary>
     /// WebGPU renderer.
     /// </summary>
-    WebGPU
+    public static GraphicsApi WebGPU { get; } = new("WebGPU");
+
+    /// <summary>
+    /// Creates an open, stable backend identity without registering a backend implementation.
+    /// </summary>
+    /// <param name="value">
+    /// A portable case-sensitive identifier used in target artifact paths.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The identifier is empty or contains nonportable characters.
+    /// </exception>
+    public GraphicsApi(string value)
+    {
+        if (!IsPortableIdentifier(value))
+            throw new ArgumentException(
+                "Graphics API IDs must begin with a letter or digit and use only portable letters, numbers, dots, underscores or hyphens.",
+                nameof(value));
+        this.value = value;
+    }
+
+    /// <summary>
+    /// Gets the stable backend identity used by target artifacts and provider selection.
+    /// </summary>
+    public string value { get; }
+
+    /// <summary>
+    /// Gets whether this value contains an initialized backend identity.
+    /// </summary>
+    public bool isValid => !string.IsNullOrEmpty(value);
+
+    /// <summary>
+    /// Parses an open backend identity without consulting a closed engine-side backend list.
+    /// </summary>
+    /// <param name="value">
+    /// The exact stable backend identity.
+    /// </param>
+    /// <param name="api">
+    /// The parsed value, or default when parsing fails.
+    /// </param>
+    /// <returns>
+    /// True when the identifier is portable and nonempty.
+    /// </returns>
+    public static bool TryParse(
+        string? value,
+        out GraphicsApi api
+    ) {
+        api = default;
+        if (!IsPortableIdentifier(value))
+            return false;
+        api = new GraphicsApi(value!);
+        return true;
+    }
+
+    /// <summary>
+    /// Compares two backend identities using stable ordinal ordering.
+    /// </summary>
+    /// <param name="other">
+    /// The other backend identity.
+    /// </param>
+    /// <returns>
+    /// A negative, zero, or positive value according to ordinal identifier order.
+    /// </returns>
+    public int CompareTo(GraphicsApi other) => string.Compare(value, other.value, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Formats the exact stable backend identity.
+    /// </summary>
+    /// <returns>
+    /// The identity, or an empty string for an uninitialized value.
+    /// </returns>
+    public override string ToString() => value ?? string.Empty;
+
+    private static bool IsPortableIdentifier(string? candidate)
+    {
+        if (string.IsNullOrEmpty(candidate) || !char.IsAsciiLetterOrDigit(candidate[0]))
+            return false;
+        foreach (char character in candidate)
+            if (!(char.IsAsciiLetterOrDigit(character) || character is '-' or '_' or '.'))
+                return false;
+        return true;
+    }
 }
 
 /// <summary>
@@ -156,8 +236,12 @@ public sealed class GraphicsLimits
     /// <param name="maxComputeBindings">
     /// Maximum storage bindings in one compute pass.
     /// </param>
-    public GraphicsLimits(int maxViews, int maxColorAttachments, int maxTextureSize, int maxComputeBindings)
-    {
+    public GraphicsLimits(
+        int maxViews,
+        int maxColorAttachments,
+        int maxTextureSize,
+        int maxComputeBindings
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxViews);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxColorAttachments);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxTextureSize);
@@ -253,13 +337,15 @@ public sealed class GraphicsCapabilities
         bool homogeneousDepth,
         IEnumerable<RenderTextureFormat>? sampled3DFormats = null,
         IEnumerable<RenderTextureFormat>? sampledCubeFormats = null,
-        IEnumerable<RenderTextureFormat>? multisampleRenderTargetFormats = null)
-    {
+        IEnumerable<RenderTextureFormat>? multisampleRenderTargetFormats = null
+    ) {
         ArgumentNullException.ThrowIfNull(limits);
         ArgumentNullException.ThrowIfNull(sampledFormats);
         ArgumentNullException.ThrowIfNull(renderTargetFormats);
         ArgumentNullException.ThrowIfNull(storageReadFormats);
         ArgumentNullException.ThrowIfNull(storageWriteFormats);
+        if (!backend.isValid)
+            throw new ArgumentException("Graphics capabilities require a backend identity.", nameof(backend));
         this.backend = backend;
         this.features = features;
         this.limits = limits;
@@ -320,8 +406,7 @@ public sealed class GraphicsCapabilities
     /// <returns>
     /// <see langword="true"/> when the format can be sampled.
     /// </returns>
-    public bool SupportsSampled(RenderTextureFormat format)
-        => SupportsSampled(format, RenderTextureDimension.Texture2D);
+    public bool SupportsSampled(RenderTextureFormat format) => SupportsSampled(format, RenderTextureDimension.Texture2D);
 
     /// <summary>
     /// Tests whether a format is valid for sampled textures of one dimensional shape.
@@ -335,7 +420,10 @@ public sealed class GraphicsCapabilities
     /// <returns>
     /// <see langword="true"/> when the format and dimension can be sampled.
     /// </returns>
-    public bool SupportsSampled(RenderTextureFormat format, RenderTextureDimension dimension)
+    public bool SupportsSampled(
+        RenderTextureFormat format,
+        RenderTextureDimension dimension
+    )
         => dimension switch
         {
             RenderTextureDimension.Texture2D => m_sampledFormats.Contains(format),
@@ -364,8 +452,7 @@ public sealed class GraphicsCapabilities
     /// <returns>
     /// <see langword="true"/> when the format can be attached with multisampling.
     /// </returns>
-    public bool SupportsMultisampleRenderTarget(RenderTextureFormat format)
-        => m_multisampleRenderTargetFormats.Contains(format);
+    public bool SupportsMultisampleRenderTarget(RenderTextureFormat format) => m_multisampleRenderTargetFormats.Contains(format);
 
     /// <summary>
     /// Tests whether a format supports the requested unordered shader access.
@@ -379,7 +466,10 @@ public sealed class GraphicsCapabilities
     /// <returns>
     /// <see langword="true"/> when the format supports every requested access direction.
     /// </returns>
-    public bool SupportsStorage(RenderTextureFormat format, RenderStorageAccess access)
+    public bool SupportsStorage(
+        RenderTextureFormat format,
+        RenderStorageAccess access
+    )
         => access switch
         {
             RenderStorageAccess.Read => m_storageReadFormats.Contains(format),

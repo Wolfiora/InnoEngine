@@ -143,8 +143,10 @@ public sealed class GameLayerCatalog : ISerializable
     /// <returns>
     /// The qualified identity, or <see langword="null"/>.
     /// </returns>
-    public GameLayerId? GetId(ProjectId projectId, GameLayer layer)
-    {
+    public GameLayerId? GetId(
+        ProjectId projectId,
+        GameLayer layer
+    ) {
         ProjectLocalId? localId = GetLocalId(layer);
         return localId is ProjectLocalId value ? new GameLayerId(projectId, value) : null;
     }
@@ -161,8 +163,10 @@ public sealed class GameLayerCatalog : ISerializable
     /// <returns>
     /// <see langword="true"/> when the identity is defined.
     /// </returns>
-    public bool TryGetLayer(ProjectLocalId localId, out GameLayer layer)
-    {
+    public bool TryGetLayer(
+        ProjectLocalId localId,
+        out GameLayer layer
+    ) {
         if (string.IsNullOrEmpty(localId.value))
             throw new ArgumentException("A valid project-local layer ID is required.", nameof(localId));
         ValidateState();
@@ -192,8 +196,11 @@ public sealed class GameLayerCatalog : ISerializable
     /// <returns>
     /// <see langword="true"/> when the identity belongs to this project and is defined.
     /// </returns>
-    public bool TryGetLayer(ProjectId projectId, GameLayerId id, out GameLayer layer)
-    {
+    public bool TryGetLayer(
+        ProjectId projectId,
+        GameLayerId id,
+        out GameLayer layer
+    ) {
         if (!id.isValid)
             throw new ArgumentException("A valid GameLayer ID is required.", nameof(id));
         ValidateState();
@@ -223,8 +230,10 @@ public sealed class GameLayerCatalog : ISerializable
     /// <returns>
     /// <see langword="true"/> when a matching layer exists.
     /// </returns>
-    public bool TryGetLayer(string name, out GameLayer layer)
-    {
+    public bool TryGetLayer(
+        string name,
+        out GameLayer layer
+    ) {
         string normalized = NormalizeName(name);
         ValidateState();
         for (int index = 0; index < m_names.Length; index++)
@@ -281,15 +290,20 @@ public sealed class GameLayerCatalog : ISerializable
     /// <param name="name">
     /// The unique display name.
     /// </param>
-    public void Define(GameLayer layer, string name)
-    {
+    public void Define(
+        GameLayer layer,
+        string name
+    ) {
         ProjectLocalId localId = GetLocalId(layer)
             ?? new ProjectLocalId($"layer.{layer.index.ToString("00", CultureInfo.InvariantCulture)}");
         DefineLocal(layer, localId, name);
     }
 
-    internal void DefineLocal(GameLayer layer, ProjectLocalId localId, string name)
-    {
+    internal void DefineLocal(
+        GameLayer layer,
+        ProjectLocalId localId,
+        string name
+    ) {
         if (string.IsNullOrEmpty(localId.value))
             throw new ArgumentException("A valid project-local layer ID is required.", nameof(localId));
         string normalized = NormalizeName(name);
@@ -369,8 +383,10 @@ public sealed class GameLayerCatalog : ISerializable
     /// <returns>
     /// <see langword="true"/> when interaction is enabled.
     /// </returns>
-    public bool CanInteract(GameLayer first, GameLayer second)
-    {
+    public bool CanInteract(
+        GameLayer first,
+        GameLayer second
+    ) {
         ValidateState();
         return (m_interactionMasks[first.index] & (1u << second.index)) != 0u;
     }
@@ -387,8 +403,11 @@ public sealed class GameLayerCatalog : ISerializable
     /// <param name="canInteract">
     /// Whether interaction is enabled.
     /// </param>
-    public void SetInteraction(GameLayer first, GameLayer second, bool canInteract)
-    {
+    public void SetInteraction(
+        GameLayer first,
+        GameLayer second,
+        bool canInteract
+    ) {
         ValidateState();
         uint firstBit = 1u << first.index;
         uint secondBit = 1u << second.index;
@@ -451,8 +470,8 @@ public sealed class GameLayerCatalog : ISerializable
     internal static GameLayerCatalog Restore(
         string?[] localIds,
         string?[] names,
-        uint[] interactionMasks)
-    {
+        uint[] interactionMasks
+    ) {
         ArgumentNullException.ThrowIfNull(localIds);
         ArgumentNullException.ThrowIfNull(names);
         ArgumentNullException.ThrowIfNull(interactionMasks);

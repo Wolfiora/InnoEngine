@@ -6,7 +6,10 @@ using Inno.References;
 
 namespace Inno.Assets.Pipeline;
 
-internal sealed class AssetSourceMountRecovery(AssetPipeline owner, AssetSourceMountTransaction transaction)
+internal sealed class AssetSourceMountRecovery(
+    AssetPipeline owner,
+    AssetSourceMountTransaction transaction
+)
     : IReferenceRecoveryParticipant
 {
     /// <summary>
@@ -44,7 +47,11 @@ internal sealed class AssetSourceMountRecovery(AssetPipeline owner, AssetSourceM
     /// <summary>
     /// Commits the candidate catalog and retires the previous source owners.
     /// </summary>
-    public void Complete() => owner.CompletePreparedSourceMounts(transaction);
+    public void Complete()
+    {
+        transaction.candidateLoader.PreserveMissingRecoveryStates(transaction.recoveryChanges);
+        owner.CompletePreparedSourceMounts(transaction);
+    }
 
     /// <summary>
     /// Restores the untouched previous loader and identity registrations before converter rollback.

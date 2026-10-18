@@ -17,8 +17,10 @@ internal sealed class AssetCreationRegistry : TypeRegistry<AssetCreationRegistry
 
     internal IReadOnlyList<Registration> templates => current.registrations;
 
-    internal bool TryGet(string id, out Registration? registration)
-        => current.byId.TryGetValue(id, out registration);
+    internal bool TryGet(
+        string id,
+        out Registration? registration
+    ) => current.byId.TryGetValue(id, out registration);
 
     /// <summary>
     /// Builds a validated result from the current immutable input snapshot.
@@ -90,9 +92,11 @@ protected override void DisposeSnapshot(Snapshot snapshot)
     internal sealed record Registration(
         Type implementationType,
         AssetCreationTemplate template,
-        AssetCreationMenuAttribute declaration);
+        AssetCreationMenuAttribute declaration
+    );
 
     internal sealed record Snapshot(
         Registration[] registrations,
-        IReadOnlyDictionary<string, Registration> byId);
+        IReadOnlyDictionary<string, Registration> byId
+    );
 }

@@ -27,20 +27,37 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
     {
         var registrations = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute",
-            static (node, _) => node is MethodDeclarationSyntax,
-            static (entry, _) => new Registration((IMethodSymbol)entry.TargetSymbol,
+            static (
+                node,
+                _
+            ) => node is MethodDeclarationSyntax,
+            static (
+                entry,
+                _
+            ) => new Registration((IMethodSymbol)entry.TargetSymbol,
                 entry.Attributes[0].ConstructorArguments[0].Value as string ?? string.Empty)).Collect();
         var catalogs = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Inno.Runtime.Contracts.RuntimeSubsystemCatalogAttribute",
-            static (node, _) => node is MethodDeclarationSyntax,
-            static (entry, _) => (IMethodSymbol)entry.TargetSymbol).Collect();
+            static (
+                node,
+                _
+            ) => node is MethodDeclarationSyntax,
+            static (
+                entry,
+                _
+            ) => (IMethodSymbol)entry.TargetSymbol).Collect();
         context.RegisterSourceOutput(catalogs.Combine(registrations),
-            static (output, data) => Generate(output, data.Left, data.Right));
+            static (
+                output,
+                data
+            ) => Generate(output, data.Left, data.Right));
     }
 
-    private static void Generate(SourceProductionContext output, ImmutableArray<IMethodSymbol> catalogs,
-        ImmutableArray<Registration> registrations)
-    {
+    private static void Generate(
+        SourceProductionContext output,
+        ImmutableArray<IMethodSymbol> catalogs,
+        ImmutableArray<Registration> registrations
+    ) {
         foreach (Registration registration in registrations)
         {
             if (!IsFactory(registration.method) || string.IsNullOrWhiteSpace(registration.id))
@@ -108,11 +125,17 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
 
     private static string Escape(string name) => SyntaxFacts.GetKeywordKind(name) == SyntaxKind.None ? name : "@" + name;
 
-    private static void Report(SourceProductionContext context, IMethodSymbol method, string message)
+    private static void Report(
+        SourceProductionContext context,
+        IMethodSymbol method,
+        string message
+    )
         => context.ReportDiagnostic(Diagnostic.Create(S_INVALID, method.Locations.FirstOrDefault(), message));
 
-    private sealed class Registration(IMethodSymbol method, string id)
-    {
+    private sealed class Registration(
+        IMethodSymbol method,
+        string id
+    ) {
         internal IMethodSymbol method { get; } = method;
         internal string id { get; } = id;
     }

@@ -48,11 +48,6 @@ public interface IPlatformWindow : IDisposable
     bool isFocused { get; }
 
     /// <summary>
-    /// Gets the operating-system surface handles required by a graphics backend.
-    /// </summary>
-    PlatformNativeHandles nativeHandles { get; }
-
-    /// <summary>
     /// Marks the window as requesting closure without destroying it immediately.
     /// </summary>
     void RequestClose();

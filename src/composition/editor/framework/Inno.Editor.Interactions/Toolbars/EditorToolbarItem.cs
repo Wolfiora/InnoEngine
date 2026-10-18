@@ -10,8 +10,8 @@ public sealed class EditorToolbarItem
         EditorToolbarIcon icon,
         string tooltip,
         int order,
-        EditorActionState status)
-    {
+        EditorActionState status
+    ) {
         this.actionId = actionId;
         this.icon = icon;
         this.tooltip = tooltip;

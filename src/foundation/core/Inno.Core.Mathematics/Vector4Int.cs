@@ -42,8 +42,12 @@ public struct Vector4Int : IEquatable<Vector4Int>
     /// <param name="w">
     /// The homogeneous or fourth component.
     /// </param>
-    public Vector4Int(int x, int y, int z, int w)
-    {
+    public Vector4Int(
+        int x,
+        int y,
+        int z,
+        int w
+    ) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -90,7 +94,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
 
     // Dot product
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int Dot(Vector4Int a, Vector4Int b) =>
+    public static int Dot(
+        Vector4Int a,
+        Vector4Int b
+    ) =>
         a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
     /// <summary>
     /// Interpolates linearly between two values without clamping the interpolation factor.
@@ -110,8 +117,11 @@ public struct Vector4Int : IEquatable<Vector4Int>
 
     // Lerp (integer lerp)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int Lerp(Vector4Int a, Vector4Int b, float t)
-    {
+    public static Vector4Int Lerp(
+        Vector4Int a,
+        Vector4Int b,
+        float t
+    ) {
         t = Math.Clamp(t, 0f, 1f);
         return new Vector4Int(
             (int)(a.x + (b.x - a.x) * t),
@@ -135,8 +145,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
 
     // Reflect
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int Reflect(Vector4Int vec, Vector4Int normal)
-    {
+    public static Vector4Int Reflect(
+        Vector4Int vec,
+        Vector4Int normal
+    ) {
         int dot = Dot(vec, normal);
         return vec - 2 * dot * normal;
     }
@@ -155,8 +167,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
 
     // Transform by Matrix (column vector)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int Transform(Vector4Int v, Matrix m)
-    {
+    public static Vector4Int Transform(
+        Vector4Int v,
+        Matrix m
+    ) {
         int tx = (int)(m.m11 * v.x + m.m12 * v.y + m.m13 * v.z + m.m14 * v.w);
         int ty = (int)(m.m21 * v.x + m.m22 * v.y + m.m23 * v.z + m.m24 * v.w);
         int tz = (int)(m.m31 * v.x + m.m32 * v.y + m.m33 * v.z + m.m34 * v.w);
@@ -178,7 +192,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
 
     // Operators
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int operator +(Vector4Int a, Vector4Int b) =>
+    public static Vector4Int operator +(
+        Vector4Int a,
+        Vector4Int b
+    ) =>
         new(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 
     /// <summary>
@@ -194,7 +211,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
     /// The validated vector4int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int operator -(Vector4Int a, Vector4Int b) =>
+    public static Vector4Int operator -(
+        Vector4Int a,
+        Vector4Int b
+    ) =>
         new(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 
     /// <summary>
@@ -223,7 +243,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
     /// The validated vector4int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int operator *(Vector4Int v, int s) =>
+    public static Vector4Int operator *(
+        Vector4Int v,
+        int s
+    ) =>
         new(v.x * s, v.y * s, v.z * s, v.w * s);
 
     /// <summary>
@@ -239,7 +262,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
     /// The validated vector4int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int operator *(int s, Vector4Int v) => v * s;
+    public static Vector4Int operator *(
+        int s,
+        Vector4Int v
+    ) => v * s;
     
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
@@ -254,7 +280,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
     /// The validated vector4int that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4Int operator /(Vector4Int v, int s) =>
+    public static Vector4Int operator /(
+        Vector4Int v,
+        int s
+    ) =>
         new(v.x / s, v.y / s, v.z / s, v.w / s);
 
     /// <summary>
@@ -270,7 +299,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator ==(Vector4Int a, Vector4Int b) =>
+    public static bool operator ==(
+        Vector4Int a,
+        Vector4Int b
+    ) =>
         a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
 
     /// <summary>
@@ -286,7 +318,10 @@ public struct Vector4Int : IEquatable<Vector4Int>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool operator !=(Vector4Int a, Vector4Int b) => !(a == b);
+    public static bool operator !=(
+        Vector4Int a,
+        Vector4Int b
+    ) => !(a == b);
     /// <summary>
     /// Converts the supplied value to <see cref="Vector4"/>.
     /// </summary>

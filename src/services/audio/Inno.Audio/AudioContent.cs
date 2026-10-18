@@ -30,8 +30,8 @@ public readonly record struct AudioEmitterSnapshot
         AudioClipAsset clip,
         AudioPlayOptions options,
         bool shouldPlay,
-        ulong playbackRevision = 0)
-    {
+        ulong playbackRevision = 0
+    ) {
         if (id == Guid.Empty)
             throw new ArgumentException("An emitter identity cannot be empty.", nameof(id));
         this.id = id;
@@ -87,8 +87,12 @@ public readonly record struct AudioListenerSnapshot
     /// <param name="active">
     /// Whether the listener is eligible for selection.
     /// </param>
-    public AudioListenerSnapshot(Guid id, int priority, AudioListenerState state, bool active)
-    {
+    public AudioListenerSnapshot(
+        Guid id,
+        int priority,
+        AudioListenerState state,
+        bool active
+    ) {
         if (id == Guid.Empty)
             throw new ArgumentException("A listener identity cannot be empty.", nameof(id));
         this.id = id;

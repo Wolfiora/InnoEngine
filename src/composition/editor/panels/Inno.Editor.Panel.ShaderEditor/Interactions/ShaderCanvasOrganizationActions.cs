@@ -10,6 +10,7 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Panel.FileBrowser;
 using Inno.Rendering;
 using Inno.Rendering.Shaders;
+using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
@@ -99,7 +100,10 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
 internal sealed class GroupShaderNodes(ShaderEditorDocuments documents) : ShaderSelectionAction(documents)
 {
     internal const string C_GROUPS = "inno.editor.shader.groups";
-    internal static ShaderCanvasGroup[] Read(ShaderEditorDocuments documents, GraphDocument graph)
+    internal static ShaderCanvasGroup[] Read(
+        ShaderEditorDocuments documents,
+        GraphDocument graph
+    )
         => graph.metadata.TryGetValue(C_GROUPS, out GraphSerializedValue? value)
             ? ShaderGraphDocument.Decode<ShaderCanvasGroup[]>(value, documents.serialization, documents.context) : [];
     /// <summary>
@@ -146,7 +150,10 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
 }
 
 [EditorAction("shader/collapse-subgraph", ShaderEditorCanvas.C_AREA)]
-internal sealed class CollapseShaderSubgraph(ShaderEditorDocuments documents, AssetEditorModule browser)
+internal sealed class CollapseShaderSubgraph(
+    ShaderEditorDocuments documents,
+    AssetEditorModule browser
+)
     : ShaderSelectionAction(documents)
 {
     /// <summary>
@@ -160,7 +167,8 @@ internal sealed class CollapseShaderSubgraph(ShaderEditorDocuments documents, As
     /// </returns>
 protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context)
     {
-        if (!base.Query(context).isEnabled) return EditorActionState.disabled;
+        if (!base.Query(context).isEnabled)
+            return EditorActionState.disabled;
         ShaderEditorDocuments.Draft draft = documents.Open(context.target);
         GraphDocument graph = documents.Controller(draft).document;
         GraphNodeRecord[] selected = draft.canvas.selectedNodes.Select(graph.FindNode).OfType<GraphNodeRecord>().ToArray();
@@ -172,7 +180,8 @@ protected override EditorActionState Query(EditorActionContext<AssetFileEntry> c
         string[] stages = selected.Select(node => ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey,
                 "", documents.serialization, documents.context))
             .Distinct(StringComparer.Ordinal).ToArray();
-        if (stages.Length != 1 || stages[0].Length == 0) return EditorActionState.disabled;
+        if (stages.Length != 1 || stages[0].Length == 0)
+            return EditorActionState.disabled;
         HashSet<GraphNodeId> ids = selected.Select(static node => node.id).ToHashSet();
         return graph.edges.Any(edge => ids.Contains(edge.input.nodeId) != ids.Contains(edge.output.nodeId))
             ? EditorActionState.enabled
@@ -245,7 +254,8 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
                 position = new(source.position.x - minX + 280, source.position.y - minY + 80)
             };
             foreach ((string key, GraphSerializedValue value) in source.values)
-                if (key != ShaderGraphDocument.stageKey) copy.SetValue(key, value.Clone());
+                if (key != ShaderGraphDocument.stageKey)
+                    copy.SetValue(key, value.Clone());
             child.AddNode(copy);
             remap.Add(source.id, id);
         }
@@ -295,7 +305,8 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
         ShaderGraphNodeInterface nodeInterface = ShaderGraphNodes.ReadInterface(
             child, documents.serialization, documents.context);
         GraphDocument candidate = parent.Clone();
-        foreach (GraphNodeId id in selected) candidate.RemoveNode(id);
+        foreach (GraphNodeId id in selected)
+            candidate.RemoveNode(id);
         var call = new GraphNodeRecord(new(Guid.NewGuid().ToString("N")), ShaderGraphNodes.callDefinitionId)
         {
             position = new(nodes.Average(static node => node.position.x), nodes.Average(static node => node.position.y))
@@ -331,20 +342,30 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
         documents.Changed(draft);
     }
 
-    private static ShaderGraphNodePortDefinition Port(string id, ShaderSourceType type, bool required)
+    private static ShaderGraphNodePortDefinition Port(
+        string id,
+        ShaderSourceType type,
+        bool required
+    )
         => new() { id = id, type = ShaderGraphType.Capture(type), required = required };
 
-    private static string Unique(string candidate, string fallback, HashSet<string> used)
-    {
+    private static string Unique(
+        string candidate,
+        string fallback,
+        HashSet<string> used
+    ) {
         string root = string.IsNullOrWhiteSpace(candidate) ? fallback : candidate;
         string value = root;
-        for (int suffix = 2; !used.Add(value); suffix++) value = root + suffix;
+        for (int suffix = 2; !used.Add(value); suffix++)
+            value = root + suffix;
         return value;
     }
 
-    private static string SuggestedName(ShaderEditorDocuments documents, ShaderEditorDocuments.Draft draft,
-        HashSet<GraphNodeId> selected)
-    {
+    private static string SuggestedName(
+        ShaderEditorDocuments documents,
+        ShaderEditorDocuments.Draft draft,
+        HashSet<GraphNodeId> selected
+    ) {
         ShaderCanvasGroup? group = GroupShaderNodes.Read(documents, documents.Controller(draft).document)
             .FirstOrDefault(value => value.nodes.Length == selected.Count
                 && value.nodes.All(id => selected.Contains(new(id))));
@@ -353,12 +374,16 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
             : "Shader Node";
     }
 
-    private static AssetPath UniquePath(AssetPath source, string name, ShaderEditorDocuments documents)
-    {
+    private static AssetPath UniquePath(
+        AssetPath source,
+        string name,
+        ShaderEditorDocuments documents
+    ) {
         AssetSourceMount mount = documents.assets.sourceMounts.Single(value => value.id == source.source);
         string directory = Path.GetDirectoryName(source.localPath)?.Replace('\\', '/') ?? "";
         string safeName = string.Concat(name.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '_' : character)).Trim();
-        if (safeName.Length == 0) safeName = "Shader Node";
+        if (safeName.Length == 0)
+            safeName = "Shader Node";
         string prefix = directory.Length == 0 ? "" : directory + "/";
         AssetPath path = new(source.source, prefix + safeName + ".ishader");
         for (int suffix = 2; File.Exists(mount.Resolve(path.localPath)) || File.Exists(mount.Resolve(path.localPath) + ".imeta"); suffix++)
@@ -368,7 +393,10 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
 }
 
 [EditorAction("shader/reveal-source", ShaderEditorCanvas.C_AREA)]
-internal sealed class RevealShaderFunction(ShaderEditorDocuments documents, AssetEditorModule browser) : ShaderSelectionAction(documents)
+internal sealed class RevealShaderFunction(
+    ShaderEditorDocuments documents,
+    AssetEditorModule browser
+) : ShaderSelectionAction(documents)
 {
     /// <summary>
     /// Gets whether writes is active for the current instance.
@@ -385,7 +413,8 @@ protected override bool writes => false;
     /// </returns>
 protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context)
     {
-        if (!base.Query(context).isEnabled) return EditorActionState.disabled;
+        if (!base.Query(context).isEnabled)
+            return EditorActionState.disabled;
         var draft = documents.Open(context.target);
         string? definition = draft.canvas.selectedNodes.Count == 1
             ? documents.Controller(draft).document.FindNode(draft.canvas.selectedNodes.First())?.definitionId
@@ -406,9 +435,13 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
         GraphNodeRecord node = documents.Controller(draft).document.FindNode(draft.canvas.selectedNodes.First())!;
         Reveal(documents, browser, ShaderGraphDocument.Read(node, "sourceId", Guid.Empty, documents.serialization, documents.context));
     }
-    internal static void Reveal(ShaderEditorDocuments documents, AssetEditorModule browser, Guid sourceId)
-    {
-        if (!documents.assets.TryGetInfo(sourceId, out AssetInfo? info) || info is null) throw new IOException("Referenced Shader authoring asset is missing. Select a replacement in the node.");
+    internal static void Reveal(
+        ShaderEditorDocuments documents,
+        AssetEditorModule browser,
+        Guid sourceId
+    ) {
+        if (!documents.assets.TryGetInfo(sourceId, out AssetInfo? info) || info is null)
+            throw new IOException("Referenced Shader authoring asset is missing. Select a replacement in the node.");
         if (!documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry))
             throw new FileNotFoundException("Referenced Shader authoring asset is missing from the Asset Browser.", info.assetPath.ToString());
         string parent = Path.GetDirectoryName(info.assetPath.localPath)?.Replace('\\', '/') ?? string.Empty;
@@ -419,7 +452,10 @@ protected override void Execute(EditorActionContext<AssetFileEntry> context)
 }
 
 [EditorAction("shader/reveal-shader", ShaderEditorCanvas.C_AREA)]
-internal sealed class RevealShaderAsset(ShaderEditorDocuments documents, AssetEditorModule browser) : ShaderSelectionAction(documents)
+internal sealed class RevealShaderAsset(
+    ShaderEditorDocuments documents,
+    AssetEditorModule browser
+) : ShaderSelectionAction(documents)
 {
     /// <summary>
     /// Gets whether writes is active for the current instance.
@@ -464,12 +500,14 @@ protected override bool needsSelection => false;
     /// <param name="context">
     /// The operation scope that provides state, services, and ownership boundaries.
     /// </param>
-protected override void Execute(EditorActionContext<AssetFileEntry> context)
-        => documents.ShowCheck(documents.Open(context.target));
+protected override void Execute(EditorActionContext<AssetFileEntry> context) => documents.ShowCheck(documents.Open(context.target));
 }
 
 [EditorAction("shader/copy-to-project", ShaderEditorCanvas.C_AREA)]
-internal sealed class CopyShaderToProject(ShaderEditorDocuments documents, AssetEditorModule browser) : ShaderSelectionAction(documents)
+internal sealed class CopyShaderToProject(
+    ShaderEditorDocuments documents,
+    AssetEditorModule browser
+) : ShaderSelectionAction(documents)
 {
     /// <summary>
     /// Gets whether writes is active for the current instance.

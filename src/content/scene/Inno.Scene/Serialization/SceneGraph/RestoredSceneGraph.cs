@@ -10,4 +10,5 @@ internal sealed record RestoredSceneGraph(
     IReadOnlyDictionary<Guid, GameComponent> components,
     IReadOnlyList<(GameComponent component, byte[] state)> componentStates,
     IReadOnlyList<EngineObject> missingPlaceholders,
-    IReadOnlyList<KeyValuePair<Guid, Guid>> missingReferenceAliases);
+    IReadOnlyList<KeyValuePair<Guid, Guid>> missingReferenceAliases
+);

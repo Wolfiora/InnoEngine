@@ -11,8 +11,10 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     private string m_status;
     private int m_state;
 
-    internal ScriptCompilationTicket(long requestId, string status)
-    {
+    internal ScriptCompilationTicket(
+        long requestId,
+        string status
+    ) {
         this.requestId = requestId;
         m_status = status;
         m_state = (int)ScriptCompilationTicketState.Queued;
@@ -26,8 +28,7 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     /// <summary>
     /// Gets the current lifecycle state observed by callers.
     /// </summary>
-    public ScriptCompilationTicketState state
-        => (ScriptCompilationTicketState)Volatile.Read(ref m_state);
+    public ScriptCompilationTicketState state => (ScriptCompilationTicketState)Volatile.Read(ref m_state);
 
     /// <summary>
     /// Gets the current human-readable operation status.
@@ -48,17 +49,21 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
             or ScriptCompilationTicketState.Canceled
             or ScriptCompilationTicketState.Superseded;
 
-    internal void MarkCompiling(string status)
-        => Transition(ScriptCompilationTicketState.Compiling, status, result: null);
+    internal void MarkCompiling(string status) => Transition(ScriptCompilationTicketState.Compiling, status, result: null);
 
-    internal void MarkSucceeded(ScriptCompilationResult result, string status)
+    internal void MarkSucceeded(
+        ScriptCompilationResult result,
+        string status
+    )
         => Transition(ScriptCompilationTicketState.Succeeded, status, result);
 
-    internal void MarkFailed(ScriptCompilationResult? result, string status)
+    internal void MarkFailed(
+        ScriptCompilationResult? result,
+        string status
+    )
         => Transition(ScriptCompilationTicketState.Failed, status, result);
 
-    internal void MarkCanceled(string status)
-        => Transition(ScriptCompilationTicketState.Canceled, status, result: null);
+    internal void MarkCanceled(string status) => Transition(ScriptCompilationTicketState.Canceled, status, result: null);
 
     internal void MarkSuperseded()
         => Transition(
@@ -69,8 +74,8 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     private void Transition(
         ScriptCompilationTicketState state,
         string status,
-        ScriptCompilationResult? result)
-    {
+        ScriptCompilationResult? result
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(status);
         ScriptCompilationTicketState current = this.state;
         if (current is ScriptCompilationTicketState.Succeeded

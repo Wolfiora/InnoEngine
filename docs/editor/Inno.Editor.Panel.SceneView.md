@@ -1,5 +1,7 @@
 # Inno.Editor.Panel.SceneView
 
+Scene View 的单次绘制通过 `EditorPlayModeLoop.EnterPresentationScope()` 使用实际呈现世界的执行服务，Playing 时与 Play Session 的 UI/音频/Identity owner 一致。绘制结束恢复 Edit 作用域；该实现依赖不进入 Panel 的公开 API。
+
 [Editor 索引](README.md) · [Editor Rendering](Inno.Editor.Rendering.md) · [Game View](Inno.Editor.Panel.GameView.md)
 
 Scene View 是通用 viewport host。它使用开放 kind `inno.editor.viewport.scene` 收集所有活动 `[EditorViewportContributorExtension]`，并把尺寸、Editor context 和交互服务交给 Editor Rendering 的模型合成流程。
@@ -28,7 +30,32 @@ Host 导航状态不是 Scene Component，也不规定 2D、3D、投影矩阵或
 Local/World 只改变操作轴基准，不改变 Transform 数据模型：World 轴保持世界方向，Local 轴跟随
 选择对象的最终 world rotation，所以未旋转的 2D 对象看起来相同；父节点或对象有旋转时 Move/Rotate
 会明显不同。Scale 按 ImGuizmo 与 Transform 的约定始终在 Local 空间执行，toolbar 会禁用该切换并
-显示说明，避免制造无效状态。Transform 手柄保留 ImGuizmo 原生的红、绿、蓝轴向及交互颜色，操作轴长度约为 ImGuizmo 默认值的 2.1 倍，并加粗平移、缩放与旋转线条；相机、灯光与 Canvas 的插件图标和范围线则统一使用白色。图标仅绘制白色 glyph 和细微阴影，不加圆形背景或外框；普通 Gizmo 绘制层位于 ImGuizmo 手柄下方，工具栏在其上方。工具栏 hover 只接管交互，不使 Transform 手柄消失。图标保留原世界位置，不为避免重叠而平移；同一点击范围内存在多个对象时使用选择菜单。
-Contributor 在 `EditorViewportManipulationSpace.plane` 声明平面时，Scene View 将其转换为 ImGuizmo 的操作子集：Move 保留平面两条轴和中心自由拖拽，移除法线轴及重复的平面方块；Rotate 保留 XYZ 三轴，以便 2D 对象也能绕任意轴旋转；Scale 保留平面内两轴，并在读取操作矩阵时保持已有的负缩放符号。对原生轴 mask 和平面可见性阈值的调整局限在单次 ImGuizmo 调用范围内，退出时还原默认值；未声明平面的 3D（包括正交 3D）保持原有操作方式。具体 Plugin 不需要引用 ImGuizmo，核心也不识别 Rendering2D。
+显示说明，避免制造无效状态。Transform 手柄保留 ImGuizmo 原生的红、绿、蓝轴向及交互颜色，操作轴长度约为 ImGuizmo 默认值的 2.1 倍，并加粗平移、缩放与旋转线条；贡献者提供的语义图标和范围线则统一使用白色。图标仅绘制白色 glyph 和细微阴影，不加圆形背景或外框；普通 Gizmo 绘制层位于 ImGuizmo 手柄下方，工具栏在其上方。工具栏 hover 只接管交互，不使 Transform 手柄消失。图标保留原世界位置，不为避免重叠而平移；同一点击范围内存在多个对象时使用选择菜单。
+Contributor 在 `EditorViewportManipulationSpace.plane` 声明平面时，Scene View 将其转换为 ImGuizmo 的操作子集：Move 保留平面两条轴和中心自由拖拽，移除法线轴及重复的平面方块；Rotate 保留 XYZ 三轴，以便 2D 对象也能绕任意轴旋转；Scale 保留平面内两轴，并在读取操作矩阵时保持已有的负缩放符号。对原生轴 mask 和平面可见性阈值的调整局限在单次 ImGuizmo 调用范围内，退出时还原默认值；未声明平面的 3D（包括正交 3D）保持原有操作方式。贡献者通过中立操作空间协议声明所需行为，原生操作映射由视口宿主负责。
 
 导航状态通过 Panel 的 `Capture`/`Restore` 写入 `editor.ini`，但不会进入 Scene、Undo 或 Plugin 持久状态。
+
+## 当前源码公开 API 清单
+
+只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+
+本项目没有公开入口，通过组合或扩展发现使用内部实现。
+
+## 项目依赖
+
+- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Native.ImGuizmo](../backends/ImGui/Inno.Native.ImGuizmo.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Mathematics](../core/Inno.Core.Mathematics.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Scene](../scene/Inno.Scene.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.References](../references/Inno.References.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。

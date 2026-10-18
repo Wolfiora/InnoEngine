@@ -1,0 +1,888 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "BGCS.Runtime": {
+        "type": "Transitive",
+        "resolved": "2.1.0",
+        "contentHash": "+FKMO+FW6aH+taP/dclqyPSmHWMqTErJfjsw6aGzq4kyW+/7XJ0wzxiCiIQCt/tBxaShHRucOCRs8t8zfba5Sw=="
+      },
+      "Microsoft.CodeAnalysis.Analyzers": {
+        "type": "Transitive",
+        "resolved": "3.3.4",
+        "contentHash": "AxkxcPR+rheX0SmvpLVIGLhOUXAKG56a64kV9VQZ4y9gR9ZmPXnqZvHJnmwLSwzrEP6junUF11vuc+aqo5r68g=="
+      },
+      "Microsoft.CodeAnalysis.Common": {
+        "type": "Transitive",
+        "resolved": "4.8.0",
+        "contentHash": "/jR+e/9aT+BApoQJABlVCKnnggGQbvGh7BKq2/wI1LamxC+LbzhcLj4Vj7gXCofl1n4E521YfF9w0WcASGg/KA==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "3.3.4",
+          "System.Collections.Immutable": "7.0.0",
+          "System.Reflection.Metadata": "7.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
+      },
+      "Microsoft.CodeAnalysis.CSharp": {
+        "type": "Transitive",
+        "resolved": "4.8.0",
+        "contentHash": "+3+qfdb/aaGD8PZRCrsdobbzGs1m9u119SkkJt8e/mk3xLJz/udLtS2T6nY27OTXxBBw10HzAbC8Z9w08VyP/g==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Common": "[4.8.0]"
+        }
+      },
+      "System.Collections.Immutable": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "dQPcs0U1IKnBdRDBkrCTi1FoajSTBzLcVTpjO4MBCMC7f4pDOIPzgBoX8JjG7X6uZRJ8EBxsi8+DR1JuwjnzOQ=="
+      },
+      "System.Reflection.Metadata": {
+        "type": "Transitive",
+        "resolved": "7.0.0",
+        "contentHash": "MclTG61lsD9sYdpNz9xsKBzjsmsfCtcMZYXz/IUr2zlhaTaABonlr1ESeompTgM+Xk+IwtGYU7/voh3YWB/fWw==",
+        "dependencies": {
+          "System.Collections.Immutable": "7.0.0"
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
+      },
+      "inno.adapter": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Audio": "[1.0.0, )",
+          "Inno.Adapter.Input": "[1.0.0, )",
+          "Inno.Adapter.Platform": "[1.0.0, )",
+          "Inno.Adapter.Rendering": "[1.0.0, )",
+          "Inno.Adapter.Storage": "[1.0.0, )",
+          "Inno.Adapter.Text": "[1.0.0, )",
+          "Inno.Adapter.UI": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.audio": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Audio": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.input": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Input": "[1.0.0, )",
+          "Inno.Platform": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.platform": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Platform": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.platform.sdl3": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Platform": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Native.Sdl3": "[1.0.0, )",
+          "Inno.Platform": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.presentation": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter": "[1.0.0, )",
+          "Inno.Adapter.Rendering.Authoring": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Platform": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.presentation.imgui.sdl3": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "Inno.Adapter.Platform": "[1.0.0, )",
+          "Inno.Adapter.Platform.Sdl3": "[1.0.0, )",
+          "Inno.Adapter.Presentation": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Native.ImGui": "[1.0.0, )",
+          "Inno.Native.Sdl3": "[1.0.0, )",
+          "Inno.Platform": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.rendering": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Platform": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.rendering.authoring": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Rendering": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Rendering.Assets.Authoring": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.storage": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Storage": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.text": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Text": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.ui": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.UI": "[1.0.0, )"
+        }
+      },
+      "inno.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Content": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.assets.pipeline": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.audio": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.audio.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Audio": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.content": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Serialization": "[1.0.0, )"
+        }
+      },
+      "inno.core.collections": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.coroutines": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.diagnostics": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.events": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.execution": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.graphs": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.identity": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.input": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.io": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.jobs": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.logging": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.mathematics": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.serialization": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.serialization.generators": {
+        "type": "Project"
+      },
+      "inno.core.settings": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.annotations": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Native.ImGui": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.audio": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Audio": "[1.0.0, )",
+          "Inno.Audio.Runtime": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Runtime": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )"
+        }
+      },
+      "inno.editor.core": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )",
+          "Inno.Scripting.Reload": "[1.0.0, )"
+        }
+      },
+      "inno.editor.imgui": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Presentation.ImGui.Sdl3": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Native.ImGui": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.inspection": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Presentation.ImGui.Sdl3": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Editor.Annotations": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.ImGui": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Native.ImGui": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.interactions": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.playmode": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Editor.Audio": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Editor.Scene": "[1.0.0, )",
+          "Inno.Editor.Scripting": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Runtime": "[1.0.0, )",
+          "Inno.Scene": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )",
+          "Inno.Scripting.Compiler": "[1.0.0, )",
+          "Inno.UI.Runtime": "[1.0.0, )"
+        }
+      },
+      "inno.editor.rendering": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Presentation": "[1.0.0, )",
+          "Inno.Adapter.Presentation.ImGui.Sdl3": "[1.0.0, )",
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Graphs": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Editor.Assets": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.ImGui": "[1.0.0, )",
+          "Inno.Editor.Inspection": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Native.ImGui": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Rendering.Assets.Authoring": "[1.0.0, )",
+          "Inno.Rendering.Runtime": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.scene": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Coroutines": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Runtime": "[1.0.0, )",
+          "Inno.Scene": "[1.0.0, )",
+          "Inno.Scene.Assets": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.editor.scripting": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.ImGui": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Native.ImGui": "[1.0.0, )",
+          "Inno.Plugins.Authoring": "[1.0.0, )",
+          "Inno.Scripting.Compiler": "[1.0.0, )",
+          "Inno.Scripting.Reload": "[1.0.0, )"
+        }
+      },
+      "inno.editor.settings": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Editor.Core": "[1.0.0, )",
+          "Inno.Editor.Interactions": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.catalogs": {
+        "type": "Project"
+      },
+      "inno.extensibility.modules": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.reload": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.types": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.input": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.native.imgui": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "Inno.Native.LibraryLoading": "[1.0.0, )"
+        }
+      },
+      "inno.native.imguizmo": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "Inno.Native.ImGui": "[1.0.0, )",
+          "Inno.Native.LibraryLoading": "[1.0.0, )"
+        }
+      },
+      "inno.native.libraryloading": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.IO": "[1.0.0, )"
+        }
+      },
+      "inno.native.sdl3": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "Inno.Native.LibraryLoading": "[1.0.0, )"
+        }
+      },
+      "inno.platform": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.plugins": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.plugins.authoring": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Plugins": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.references": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering.assets.authoring": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Rendering.Shaders": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Content": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Input": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering.shaders": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Graphs": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Content": "[1.0.0, )",
+          "Inno.Core.Coroutines": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Jobs": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )",
+          "Inno.Scene": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.runtime.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )"
+        }
+      },
+      "inno.runtime.generators": {
+        "type": "Project"
+      },
+      "inno.scene": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.scene.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scene": "[1.0.0, )"
+        }
+      },
+      "inno.scripting.api": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.scripting.compiler": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Serialization.Generators": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Plugins.Authoring": "[1.0.0, )",
+          "Inno.Runtime.Generators": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.8.0, )"
+        }
+      },
+      "inno.scripting.reload": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Plugins.Authoring": "[1.0.0, )",
+          "Inno.Scripting.Compiler": "[1.0.0, )"
+        }
+      },
+      "inno.storage": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.text": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.ui": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Input": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )",
+          "Inno.Text": "[1.0.0, )"
+        }
+      },
+      "inno.ui.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Input": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )",
+          "Inno.Text": "[1.0.0, )",
+          "Inno.UI": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

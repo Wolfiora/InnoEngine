@@ -52,12 +52,34 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
     /// <exception cref="NotSupportedException">
     /// No provider is registered for this exact backend ID.
     /// </exception>
-    public IRenderDevice CreateDevice(RenderingBackendId backend, RenderingBackendOptions options)
-    {
+    public IRenderDevice CreateDevice(
+        RenderingBackendId backend,
+        RenderingBackendOptions options
+    ) {
         ArgumentNullException.ThrowIfNull(options);
         if (!m_providers.TryGetValue(backend, out RenderingBackendProvider? provider))
             throw new NotSupportedException($"Rendering backend '{backend}' is not registered.");
         return provider.CreateDevice(options)
             ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no device.");
+    }
+
+    /// <summary>
+    /// Resolves a backend-owned program provider for ordered render layer composition.
+    /// </summary>
+    /// <param name="backend">
+    /// Stable identity of the selected rendering backend.
+    /// </param>
+    /// <returns>
+    /// A provider compatible with devices created by the same backend registration.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// No provider is registered for this exact backend identity.
+    /// </exception>
+    public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
+    {
+        if (!m_providers.TryGetValue(backend, out RenderingBackendProvider? provider))
+            throw new NotSupportedException($"Rendering backend '{backend}' is not registered.");
+        return provider.CreateCompositionProgramProvider()
+            ?? throw new InvalidOperationException($"Rendering provider '{backend}' returned no composition program provider.");
     }
 }

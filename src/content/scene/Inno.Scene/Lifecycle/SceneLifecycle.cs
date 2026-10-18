@@ -2,8 +2,10 @@ namespace Inno.Scene;
 
 internal static class SceneLifecycle
 {
-    internal static bool Prepare(ISceneLifecycleObject target, GameScene scene)
-    {
+    internal static bool Prepare(
+        ISceneLifecycleObject target,
+        GameScene scene
+    ) {
         if (target.lifecycleIsDestroyed || target.lifecycleDestroyCalled)
             return false;
 
@@ -19,8 +21,10 @@ internal static class SceneLifecycle
         return PrepareActivation(target, scene);
     }
 
-    private static bool PrepareActivation(ISceneLifecycleObject target, GameScene scene)
-    {
+    private static bool PrepareActivation(
+        ISceneLifecycleObject target,
+        GameScene scene
+    ) {
         bool active = target.lifecycleIsActive;
         if (active && !target.lifecycleWasEnabled)
         {
@@ -40,8 +44,7 @@ internal static class SceneLifecycle
         return true;
     }
 
-    internal static void DisableForReload(ISceneLifecycleObject target)
-        => Disable(target);
+    internal static void DisableForReload(ISceneLifecycleObject target) => Disable(target);
 
     private static void Disable(ISceneLifecycleObject target)
     {

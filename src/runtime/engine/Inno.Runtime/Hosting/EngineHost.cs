@@ -27,19 +27,24 @@ public sealed class EngineHost : IDisposable
     private bool m_disposed;
     private bool m_stopping;
 
-    internal EngineHost(string metadataCacheDirectory, TimeSpan retirementTimeout)
-    {
+    internal EngineHost(
+        TimeSpan retirementTimeout,
+        LogDeliveryMode logDeliveryMode,
+        IAssemblyCatalogSource moduleSource,
+        ITypeCatalogSource typeSource,
+        ISerializationMetadataSource serializationMetadata
+    ) {
         this.retirementTimeout = retirementTimeout;
-        logs = new LogRouter();
+        logs = new LogRouter(deliveryMode: logDeliveryMode);
         diagnostics = new DiagnosticHub();
         try
         {
             modules = new ModuleHost(new ModuleHostOptions
             {
-                cacheDirectory = metadataCacheDirectory
+                catalogSource = moduleSource
             });
-            types = new TypeCatalog(modules);
-            serialization = new SerializationRegistry(types);
+            types = new TypeCatalog(modules, typeSource);
+            serialization = new SerializationRegistry(types, serializationMetadata);
         }
         catch
         {
@@ -52,7 +57,7 @@ public sealed class EngineHost : IDisposable
     }
 
     /// <summary>
-    /// Gets the isolated asynchronous logging router owned by this host.
+    /// Gets the isolated logging router using this host's configured delivery policy.
     /// </summary>
     public LogRouter logs { get; }
 
@@ -107,7 +112,10 @@ public sealed class EngineHost : IDisposable
             generations.EnsureReady("create a runtime session");
             var session = new RuntimeSession(this, options);
             m_sessions.Add(session);
-            try { session.Start(); }
+            try
+            {
+                session.Start();
+            }
             catch (Exception failure)
             {
                 RetireFailedStartup(session, failure);
@@ -132,9 +140,10 @@ public sealed class EngineHost : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// The engine host is disposed.
     /// </exception>
-    public RuntimeSubsystemPipeline CreateHostPipeline(IReadOnlyList<IRuntimeSubsystemFactory> factories,
-        IReadOnlyList<RuntimeCapabilityId>? capabilities = null)
-    {
+    public RuntimeSubsystemPipeline CreateHostPipeline(
+        IReadOnlyList<IRuntimeSubsystemFactory> factories,
+        IReadOnlyList<RuntimeCapabilityId>? capabilities = null
+    ) {
         ArgumentNullException.ThrowIfNull(factories);
         lock (m_sync)
         {
@@ -146,7 +155,10 @@ public sealed class EngineHost : IDisposable
                 new IdentityAllocator(), types, new LifetimeScope(), RuntimeSubsystemLifetime.Host, capabilities: capabilities);
             var pipeline = new RuntimeSubsystemPipeline(context, retirementTimeout, generations);
             m_hostPipelines.Add(pipeline);
-            try { pipeline.Start(factories); }
+            try
+            {
+                pipeline.Start(factories);
+            }
             catch (Exception failure)
             {
                 RetireFailedStartup(pipeline, failure);
@@ -180,7 +192,10 @@ public sealed class EngineHost : IDisposable
             generations.Fault(failure);
             throw;
         }
-        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+        catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+        {
+            throw;
+        }
         catch (Exception failure)
         {
             generations.Fault(failure);
@@ -204,7 +219,10 @@ public sealed class EngineHost : IDisposable
             {
                 sessions[index].DisposeFromHost();
             }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch (Exception exception)
             {
                 (m_retirementFailures ??= []).Add(exception);
@@ -212,9 +230,18 @@ public sealed class EngineHost : IDisposable
         }
         for (int index = m_hostPipelines.Count - 1; index >= 0; index--)
         {
-            try { m_hostPipelines[index].Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
-            catch (Exception exception) { (m_retirementFailures ??= []).Add(exception); }
+            try
+            {
+                m_hostPipelines[index].Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                (m_retirementFailures ??= []).Add(exception);
+            }
         }
         m_sessions.Clear();
         m_hostPipelines.Clear();
@@ -268,8 +295,10 @@ public sealed class EngineHost : IDisposable
             m_sessions.Remove(session);
     }
 
-    private void RetireFailedStartup(IDisposable owner, Exception startupFailure)
-    {
+    private void RetireFailedStartup(
+        IDisposable owner,
+        Exception startupFailure
+    ) {
         IDisposable? reservation = null;
         if (generations.state == GenerationState.Ready)
             _ = generations.TryAcquireChange("retire failed runtime startup", out reservation);

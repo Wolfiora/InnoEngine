@@ -38,8 +38,8 @@ internal sealed class ScriptAssemblyDefinitionImporter : AssetImporter<ScriptAss
     protected override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ScriptAssemblyDefinitionAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         ScriptAssemblyDefinitionAsset asset = NativeAssetSourceSerialization.Import<ScriptAssemblyDefinitionAsset>(
             context.sourceBytes.Span,
             context.services,
@@ -73,8 +73,8 @@ internal sealed class ScriptAssemblyDefinitionImporter : AssetImporter<ScriptAss
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         ScriptAssemblyDefinitionAsset asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(asset.assemblyName))
             throw new InvalidOperationException("Assembly definition name is required.");

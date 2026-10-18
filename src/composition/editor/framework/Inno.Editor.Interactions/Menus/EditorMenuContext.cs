@@ -34,8 +34,8 @@ public sealed class EditorMenuContext
         EditorContext editor,
         EditorInteractions interactions,
         string area,
-        object? target = null)
-    {
+        object? target = null
+    ) {
         this.editor = editor ?? throw new ArgumentNullException(nameof(editor));
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         ArgumentException.ThrowIfNullOrWhiteSpace(area);
@@ -63,6 +63,5 @@ public sealed class EditorMenuContext
     /// </summary>
     public object? target { get; }
 
-    internal EditorActionContext CreateActionContext(object? argument = null)
-        => new(editor, interactions, area, target, argument);
+    internal EditorActionContext CreateActionContext(object? argument = null) => new(editor, interactions, area, target, argument);
 }

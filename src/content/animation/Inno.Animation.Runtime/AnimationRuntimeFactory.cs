@@ -18,8 +18,7 @@ public sealed class AnimationRuntimeFactory : IRuntimeSubsystemFactory
     /// <param name="runtimeFactory">
     /// Callback that creates a distinct animation runtime for each session.
     /// </param>
-    public AnimationRuntimeFactory(
-        Func<RuntimeSubsystemContext, AnimationRuntime> runtimeFactory)
+    public AnimationRuntimeFactory(Func<RuntimeSubsystemContext, AnimationRuntime> runtimeFactory)
     {
         m_runtimeFactory = runtimeFactory ?? throw new ArgumentNullException(nameof(runtimeFactory));
     }

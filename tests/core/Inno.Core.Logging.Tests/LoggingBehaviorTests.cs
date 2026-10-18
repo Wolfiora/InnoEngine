@@ -2,7 +2,9 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Inno.Core.Logging;
 
@@ -26,15 +28,141 @@ public sealed class LoggingBehaviorTests : IDisposable
     }
 
     [Fact]
+    public void InlineDeliveryIsImmediateAndQuarantinesAFailingSink()
+    {
+        using var router = new LogRouter(deliveryMode: LogDeliveryMode.Inline);
+        using var scope = router.EnterScope();
+        using var healthy = new ProbeSink();
+        var failing = new FailingSink();
+        Exception? failure = null;
+        router.sinkFailed += (
+            _,
+            exception
+        ) => failure = exception;
+        router.RegisterSink(failing);
+        router.RegisterSink(healthy);
+        Log.Warn(typeof(LoggingBehaviorTests), "inline message");
+        Assert.NotNull(failure);
+        Assert.Single(healthy.entries);
+        router.Flush();
+        Assert.Single(healthy.entries);
+        router.UnregisterSink(healthy);
+    }
+
+    [Fact]
+    public void ExplicitOwnershipAcceptsStaticSourcesAndRejectsMissingTypes()
+    {
+        using var sink = new ProbeSink();
+        m_router.RegisterSink(sink);
+        Log.Info(typeof(StaticLogSource), "Explicit static source");
+        Assert.Throws<ArgumentNullException>(() => Log.Info(null!, "Missing source"));
+        m_router.Flush();
+        LogEntry entry = Assert.Single(sink.entries);
+        Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoInternal, entry.domain);
+        Assert.Equal("Explicit static source", entry.message);
+        m_router.UnregisterSink(sink);
+    }
+
+
+    [Fact]
+    public void UnknownDeliveryPoliciesFailAtConstruction()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LogRouter(deliveryMode: (LogDeliveryMode)99));
+    }
+
+    [Theory]
+    [InlineData("/build/Game/PlayerBehavior.cs")]
+    [InlineData("C:/build/Game/PlayerBehavior.cs")]
+    [InlineData("C:\\build\\Game\\PlayerBehavior.cs")]
+    public void CompilerSourceCategoriesAreIndependentOfRuntimePathSeparators(string sourcePath)
+    {
+        using var sink = new ProbeSink();
+        m_router.RegisterSink(sink);
+        Log.Info(typeof(LoggingBehaviorTests), "Portable source", filePath: sourcePath, lineNumber: 42);
+        m_router.Flush();
+
+        LogEntry entry = Assert.Single(sink.entries);
+        Assert.Equal("PlayerBehavior", entry.category);
+        Assert.Equal(sourcePath, entry.file);
+        Assert.Equal(42, entry.line);
+        m_router.UnregisterSink(sink);
+    }
+
+    [Theory]
+    [InlineData(LogDeliveryMode.Inline, false)]
+    [InlineData(LogDeliveryMode.Inline, true)]
+    [InlineData(LogDeliveryMode.Background, false)]
+    [InlineData(LogDeliveryMode.Background, true)]
+    public async Task BrokenFailureReportingCannotStopHealthySinkDelivery(
+        LogDeliveryMode mode,
+        bool failingObserver
+    ) {
+        using var router = new LogRouter(deliveryMode: mode);
+        using var scope = router.EnterScope();
+        using var healthy = new ProbeSink();
+        var failing = new FailingSink();
+        int reported = 0;
+        if (failingObserver)
+        {
+            router.sinkFailed += (_, _) => throw new InvalidOperationException("Expected observer failure.");
+            router.sinkFailed += (_, _) => reported++;
+        }
+        router.RegisterSink(failing);
+        router.RegisterSink(healthy);
+        TextWriter original = Console.Error;
+        using var broken = new BrokenErrorWriter();
+        try
+        {
+            Console.SetError(broken);
+            Log.Info(typeof(LoggingBehaviorTests), "first");
+            Log.Info(typeof(LoggingBehaviorTests), "second");
+            await Task.Run(router.Flush).WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Equal(1, failing.receiveCount);
+            Assert.Equal(failingObserver ? 1 : 0, reported);
+            Assert.Equal(["first", "second"], healthy.entries.Select(static entry => entry.message));
+        }
+        finally
+        {
+            Console.SetError(original);
+            router.UnregisterSink(healthy);
+        }
+    }
+
+    [Fact]
     public void LogRouter_DispatchesToRegisteredSink()
     {
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
 
-        Log.Info("message-{0}", 42);
+        Log.Info(typeof(LoggingBehaviorTests), "message-{0}", [42]);
 
         Assert.True(sink.WaitForCount(1, TimeSpan.FromSeconds(2)));
         Assert.Contains(sink.entries, e => e.message == "message-42" && e.level == LogLevel.Info);
+        m_router.UnregisterSink(sink);
+    }
+
+    [Fact]
+    public void CallSiteIsCapturedForPlainAndFormattedMessagesWithoutMethodReflection()
+    {
+        using var sink = new ProbeSink();
+        m_router.RegisterSink(sink);
+
+        Log.Info(typeof(LoggingBehaviorTests), "plain");
+        Log.Warn(typeof(LoggingBehaviorTests), "formatted-{0}", [73]);
+        m_router.Flush();
+
+        Assert.Equal(2, sink.entries.Length);
+        Assert.All(sink.entries, entry =>
+        {
+            Assert.Equal(nameof(LoggingBehaviorTests), entry.category);
+            Assert.Equal("LoggingBehaviorTests.cs", Path.GetFileName(entry.file));
+            Assert.True(entry.line > 0);
+            Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoInternal, entry.domain);
+        });
+        Assert.Equal("plain", sink.entries[0].message);
+        Assert.Equal("formatted-73", sink.entries[1].message);
+        Assert.Equal(sink.entries[0].line + 1, sink.entries[1].line);
         m_router.UnregisterSink(sink);
     }
 
@@ -45,8 +173,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(sink);
         m_router.SetMinimumLevel(LogLevel.Warn);
 
-        Log.Info("suppressed");
-        Log.Warn("visible");
+        Log.Info(typeof(LoggingBehaviorTests), "suppressed");
+        Log.Warn(typeof(LoggingBehaviorTests), "visible");
 
         Assert.True(sink.WaitForCount(1, TimeSpan.FromSeconds(2)));
         Assert.Single(sink.entries);
@@ -61,8 +189,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         using var sink = new ProbeSink();
         m_router.RegisterSink(sink);
 
-        Log.Info("before-flush-1");
-        Log.Info("before-flush-2");
+        Log.Info(typeof(LoggingBehaviorTests), "before-flush-1");
+        Log.Info(typeof(LoggingBehaviorTests), "before-flush-2");
         m_router.Flush();
 
         Assert.Contains(sink.entries, static entry => entry.message == "before-flush-1");
@@ -73,9 +201,39 @@ public sealed class LoggingBehaviorTests : IDisposable
     [Fact]
     public void LogRouterFlushCompletesWithoutRegisteredSinks()
     {
-        Log.Info("discarded-before-flush");
+        Log.Info(typeof(LoggingBehaviorTests), "discarded-before-flush");
 
         m_router.Flush();
+    }
+
+    [Fact]
+    public void ConsoleLogSinkDeliversMessagesWithoutQuarantiningTheSink()
+    {
+        TextWriter originalOutput = Console.Out;
+        using var output = new StringWriter();
+        var sink = new ConsoleLogSink();
+        Exception? failure = null;
+        m_router.sinkFailed += (
+            _,
+            exception
+        ) => failure = exception;
+        m_router.RegisterSink(sink);
+        try
+        {
+            Console.SetOut(output);
+            Log.Warn(typeof(LoggingBehaviorTests), "console-warning");
+            Log.Error(typeof(LoggingBehaviorTests), "console-error");
+            m_router.Flush();
+
+            Assert.Null(failure);
+            Assert.Contains("console-warning", output.ToString());
+            Assert.Contains("console-error", output.ToString());
+        }
+        finally
+        {
+            m_router.UnregisterSink(sink);
+            Console.SetOut(originalOutput);
+        }
     }
 
     [Fact]
@@ -93,8 +251,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(failing);
         m_router.RegisterSink(healthy);
 
-        Log.Info("first");
-        Log.Info("second");
+        Log.Info(typeof(LoggingBehaviorTests), "first");
+        Log.Info(typeof(LoggingBehaviorTests), "second");
         m_router.Flush();
 
         Assert.Same(failing, reportedSink);
@@ -114,7 +272,7 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.RegisterSink(sink);
 
         for (var i = 0; i < 80; i++)
-            Log.Warn("line-{0}", i);
+            Log.Warn(typeof(LoggingBehaviorTests), "line-{0}", [i]);
 
         m_router.Flush();
         m_router.UnregisterSink(sink);
@@ -167,6 +325,13 @@ public sealed class LoggingBehaviorTests : IDisposable
         }
     }
 
+    private sealed class BrokenErrorWriter : TextWriter
+    {
+        public override Encoding Encoding => Encoding.UTF8;
+
+        public override void WriteLine(string? value) => throw new IOException("The error channel is closed.");
+    }
+
     private sealed class FailingSink : ILogSink
     {
         internal int receiveCount { get; private set; }
@@ -178,4 +343,6 @@ public sealed class LoggingBehaviorTests : IDisposable
             throw new InvalidOperationException("Expected sink failure.");
         }
     }
+
+    private static class StaticLogSource;
 }

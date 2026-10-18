@@ -9,8 +9,10 @@ namespace Inno.Editor.Panel.ShaderEditor;
 
 internal sealed partial class ShaderEditorCanvas
 {
-    private void DrawInputDefault(GraphNodeRecord node, ShaderNodePort port)
-    {
+    private void DrawInputDefault(
+        GraphNodeRecord node,
+        ShaderNodePort port
+    ) {
         var endpoint = new GraphEndpoint(node.id, new(port.id));
         GraphEdgeRecord? edge = Controller.document.edges.FirstOrDefault(value => value.input == endpoint);
         ImGuiApi.PushID(port.id);
@@ -58,7 +60,8 @@ internal sealed partial class ShaderEditorCanvas
         string id,
         ShaderNodePort port,
         string? component,
-        string status)
+        string status
+    )
         => Widget.PropertyRow(
             "shader." + id,
             PortLabel(port, component),
@@ -67,9 +70,10 @@ internal sealed partial class ShaderEditorCanvas
                 status,
                 "Shader value type · " + port.type.id));
 
-    private static string PortLabel(ShaderNodePort port, string? component)
-        => component is null ? port.id : port.id + " " + component;
+    private static string PortLabel(
+        ShaderNodePort port,
+        string? component
+    ) => component is null ? port.id : port.id + " " + component;
 
-    private static string DisplayType(string typeId)
-        => Widget.NicifyName(typeId);
+    private static string DisplayType(string typeId) => Widget.NicifyName(typeId);
 }

@@ -11,7 +11,10 @@ using Inno.Rendering.Shaders;
 namespace Inno.Editor.Panel.ShaderEditor;
 
 [EditorAction("shader/create-asset", "panel/asset.file-browser")]
-internal sealed class CreateShaderAsset(ShaderEditorDocuments documents, AssetEditorModule browser) : EditorAction<string, string>
+internal sealed class CreateShaderAsset(
+    ShaderEditorDocuments documents,
+    AssetEditorModule browser
+) : EditorAction<string, string>
 {
     /// <summary>
     /// Evaluates the operation's current availability and presentation state.
@@ -39,10 +42,14 @@ internal sealed class CreateShaderAsset(ShaderEditorDocuments documents, AssetEd
         AssetPath parent = AssetPath.Parse(context.target);
         AssetSourceMount mount = documents.assets.sourceMounts.Single(mount => mount.id == parent.source);
         string prefix = parent.localPath.TrimEnd('/');
-        if (prefix.Length != 0) prefix += "/";
+        if (prefix.Length != 0)
+            prefix += "/";
         int index = 0;
         AssetPath path;
-        do { path = new(parent.source, prefix + (index++ == 0 ? "New Shader" : "New Shader " + index) + ".ishader"); }
+        do
+        {
+            path = new(parent.source, prefix + (index++ == 0 ? "New Shader" : "New Shader " + index) + ".ishader");
+        }
         while (File.Exists(mount.Resolve(path.localPath)) || File.Exists(mount.Resolve(path.localPath) + ".imeta"));
         GraphDocument graph = (documents.templates ?? throw new InvalidOperationException("Shader templates have not started."))
             .Create(context.argument, documents.serialization, documents.context);
@@ -64,9 +71,12 @@ internal sealed class ShaderTemplateMenu(ShaderEditorDocuments documents) : Edit
     /// <param name="builder">
     /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-public override void Build(EditorMenuContext context, EditorMenuBuilder builder)
-    {
-        if (documents.templates is null) return;
+public override void Build(
+    EditorMenuContext context,
+    EditorMenuBuilder builder
+) {
+        if (documents.templates is null)
+            return;
         builder.AddGroup("Create/Rendering", order: 200, separatorBefore: true);
         builder.AddGroup("Create/Rendering/Shaders", order: 0);
         foreach (ShaderGraphTemplateInfo template in documents.templates.templates)

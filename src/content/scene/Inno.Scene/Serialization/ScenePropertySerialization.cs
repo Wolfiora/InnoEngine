@@ -44,8 +44,8 @@ public static class ScenePropertySerialization
         EngineObject target,
         string propertyName,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
         ArgumentNullException.ThrowIfNull(serialization);
@@ -82,8 +82,8 @@ public static class ScenePropertySerialization
     public static byte[] CaptureProperties(
         EngineObject target,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -113,8 +113,8 @@ public static class ScenePropertySerialization
     public static IReadOnlyList<SerializationPropertySnapshot> CapturePropertySnapshots(
         EngineObject target,
         SerializationRegistry serialization,
-        IAssetReferenceResolver assets)
-    {
+        IAssetReferenceResolver assets
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -158,8 +158,8 @@ public static class ScenePropertySerialization
         ReadOnlySpan<byte> data,
         SerializationRegistry serialization,
         IAssetReferenceResolver assets,
-        SerializationPropertyRestoreMode mode = SerializationPropertyRestoreMode.Strict)
-    {
+        SerializationPropertyRestoreMode mode = SerializationPropertyRestoreMode.Strict
+    ) {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
@@ -171,8 +171,10 @@ public static class ScenePropertySerialization
             return serialization.RestorePropertiesData(serializable, data, mode, context);
     }
 
-    internal static SceneGraphReferenceMap CreateReferences(GameScene scene, IReadOnlyDictionary<Guid, Guid>? aliases = null)
-    {
+    internal static SceneGraphReferenceMap CreateReferences(
+        GameScene scene,
+        IReadOnlyDictionary<Guid, Guid>? aliases = null
+    ) {
         var objects = new List<EngineObject>();
         IReadOnlyList<GameObject> gameObjects = scene.GetObjects();
         for (int i = 0; i < gameObjects.Count; i++)

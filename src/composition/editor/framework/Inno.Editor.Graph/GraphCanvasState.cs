@@ -55,9 +55,12 @@ public sealed class GraphCanvasState
     /// <param name="zoom">
     /// Requested zoom in the inclusive range 0.1 to 4.
     /// </param>
-    public void SetViewport(GraphPosition pan, float zoom)
-    {
-        if (!float.IsFinite(pan.x) || !float.IsFinite(pan.y)) throw new ArgumentOutOfRangeException(nameof(pan));
+    public void SetViewport(
+        GraphPosition pan,
+        float zoom
+    ) {
+        if (!float.IsFinite(pan.x) || !float.IsFinite(pan.y))
+            throw new ArgumentOutOfRangeException(nameof(pan));
         if (!float.IsFinite(zoom))
         {
             throw new ArgumentOutOfRangeException(nameof(zoom));
@@ -76,8 +79,10 @@ public sealed class GraphCanvasState
     /// <param name="deltaY">
     /// Vertical screen-space delta.
     /// </param>
-    public void PanBy(float deltaX, float deltaY)
-        => SetViewport(new GraphPosition(pan.x + deltaX, pan.y + deltaY), zoom);
+    public void PanBy(
+        float deltaX,
+        float deltaY
+    ) => SetViewport(new GraphPosition(pan.x + deltaX, pan.y + deltaY), zoom);
 
     /// <summary>
     /// Changes zoom while preserving the graph point beneath a screen-space pivot.
@@ -91,8 +96,11 @@ public sealed class GraphCanvasState
     /// <param name="pivotY">
     /// Screen-space pivot Y.
     /// </param>
-    public void ZoomAt(float factor, float pivotX, float pivotY)
-    {
+    public void ZoomAt(
+        float factor,
+        float pivotX,
+        float pivotY
+    ) {
         if (!float.IsFinite(factor) || factor <= 0f)
         {
             throw new ArgumentOutOfRangeException(nameof(factor));
@@ -153,8 +161,10 @@ public sealed class GraphCanvasState
     /// <param name="direction">
     /// Direction of the endpoint within its node interface.
     /// </param>
-    public void BeginConnection(GraphEndpoint endpoint, GraphPortDirection direction)
-    {
+    public void BeginConnection(
+        GraphEndpoint endpoint,
+        GraphPortDirection direction
+    ) {
         pendingConnection = endpoint;
         pendingConnectionDirection = direction;
     }

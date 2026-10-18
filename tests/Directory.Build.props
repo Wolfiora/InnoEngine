@@ -1,7 +1,10 @@
 <Project>
+  <Import Project="../build/msbuild/Inno.Packages.props" />
+
   <PropertyGroup Condition="'$(InnoAssemblyDomain)' == ''">
     <InnoAssemblyDomain>InnoInternal</InnoAssemblyDomain>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(InnoAssemblyScope)' == ''">
     <InnoAssemblyScope>Runtime</InnoAssemblyScope>
   </PropertyGroup>

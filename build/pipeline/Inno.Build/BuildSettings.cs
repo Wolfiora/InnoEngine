@@ -1,4 +1,5 @@
 using System;
+using Inno.Build.Managed;
 using System.IO;
 
 using Inno.Core.Serialization;
@@ -37,6 +38,13 @@ public sealed class BuildSettings : ISerializable
     public string gameProductName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the default writable data folder below the operating system's local application data directory.
+    /// An empty value uses the project ID.
+    /// </summary>
+    [SerializableProperty]
+    public string gamePersistentDataPath { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the default mount-qualified startup Scene path.
     /// </summary>
     [SerializableProperty]
@@ -73,6 +81,18 @@ public sealed class BuildSettings : ISerializable
     internal string m_gameTargetId = string.Empty;
 
     /// <summary>
+    /// Gets or sets the default managed publisher; null follows the selected platform's default.
+    /// </summary>
+    public ManagedDeploymentId? gameManagedDeployment
+    {
+        get => m_gameManagedDeploymentId.Length == 0 ? null : new ManagedDeploymentId(m_gameManagedDeploymentId);
+        set => m_gameManagedDeploymentId = value?.value ?? string.Empty;
+    }
+
+    [SerializableProperty]
+    internal string m_gameManagedDeploymentId = string.Empty;
+
+    /// <summary>
     /// Creates canonical defaults for a new project.
     /// </summary>
     /// <param name="projectName">
@@ -93,8 +113,8 @@ public sealed class BuildSettings : ISerializable
     public static BuildSettings CreateDefault(
         string projectName,
         string startupScene,
-        BuildTargetId target)
-    {
+        BuildTargetId target
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectName);
         ArgumentNullException.ThrowIfNull(startupScene);
         if (string.IsNullOrWhiteSpace(target.value))
@@ -128,8 +148,10 @@ public sealed class BuildSettings : ISerializable
         {
             applicationId = projectId.value,
             productName = gameProductName,
+            persistentDataPath = gamePersistentDataPath,
             startupScene = gameStartupScene,
             target = gameTarget,
+            managedDeployment = gameManagedDeployment,
             windowWidth = gameWindowWidth,
             windowHeight = gameWindowHeight
         };
@@ -147,11 +169,13 @@ public sealed class BuildSettings : ISerializable
             pluginOutputPath = pluginOutputPath,
             includePluginDependencies = includePluginDependencies,
             gameProductName = gameProductName,
+            gamePersistentDataPath = gamePersistentDataPath,
             gameStartupScene = gameStartupScene,
             gameOutputDirectory = gameOutputDirectory,
             gameWindowWidth = gameWindowWidth,
             gameWindowHeight = gameWindowHeight,
-            m_gameTargetId = m_gameTargetId
+            m_gameTargetId = m_gameTargetId,
+            m_gameManagedDeploymentId = m_gameManagedDeploymentId
         };
 
     internal void ValidateDocument()
@@ -159,9 +183,11 @@ public sealed class BuildSettings : ISerializable
         if (pluginDisplayName is null
             || pluginOutputPath is null
             || gameProductName is null
+            || gamePersistentDataPath is null
             || gameStartupScene is null
             || gameOutputDirectory is null
-            || m_gameTargetId is null)
+            || m_gameTargetId is null
+            || m_gameManagedDeploymentId is null)
         {
             throw new InvalidDataException("Build Settings contains a null string.");
         }
@@ -170,6 +196,7 @@ public sealed class BuildSettings : ISerializable
         try
         {
             _ = gameTarget;
+            _ = gameManagedDeployment;
         }
         catch (ArgumentException exception)
         {

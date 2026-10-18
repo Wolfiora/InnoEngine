@@ -1,3 +1,4 @@
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,8 +25,8 @@ public sealed class TypeCacheTests : IDisposable
 
     public TypeCacheTests()
     {
-        m_modules = new ModuleHost(new ModuleHostOptions { cacheDirectory = m_cacheDirectory });
-        m_types = new TypeCatalog(m_modules);
+        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(TypeCacheTests).Assembly)});
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
     }
 
     public void Dispose()

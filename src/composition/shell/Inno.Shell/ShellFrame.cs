@@ -19,8 +19,11 @@ public readonly record struct ShellFrame
     /// <param name="deltaTime">
     /// Non-negative elapsed time since the previous frame in seconds.
     /// </param>
-    public ShellFrame(int frameIndex, double totalTime, float deltaTime)
-    {
+    public ShellFrame(
+        int frameIndex,
+        double totalTime,
+        float deltaTime
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegative(frameIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(totalTime);
         ArgumentOutOfRangeException.ThrowIfNegative(deltaTime);

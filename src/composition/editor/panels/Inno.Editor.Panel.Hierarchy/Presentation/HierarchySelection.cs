@@ -19,8 +19,8 @@ namespace Inno.Editor.Panel.Hierarchy;
 internal sealed class HierarchySelection(
     IEditorSceneWorkspace workspace,
     EditorInteractions interactions,
-    EditorSettings settings)
-{
+    EditorSettings settings
+) {
     internal void Prune(EditorContext context)
     {
         if (interactions.selection.TryGet(out GameScene? selectedScene) &&
@@ -34,8 +34,10 @@ internal sealed class HierarchySelection(
             _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
     }
 
-    internal bool DeleteObject(EditorContext context, Guid persistentId)
-    {
+    internal bool DeleteObject(
+        EditorContext context,
+        Guid persistentId
+    ) {
         GameObject? gameObject = IdentityAllocator.current.Get<GameObject>(persistentId);
         if (gameObject is null || !gameObject.isRuntimeValid || !ContainsScene(workspace.scenes, gameObject.scene))
             return false;
@@ -46,8 +48,10 @@ internal sealed class HierarchySelection(
         return true;
     }
 
-    private static bool ContainsScene(IReadOnlyList<GameScene> scenes, GameScene scene)
-    {
+    private static bool ContainsScene(
+        IReadOnlyList<GameScene> scenes,
+        GameScene scene
+    ) {
         for (int i = 0; i < scenes.Count; i++)
         {
             if (ReferenceEquals(scenes[i], scene))
@@ -65,12 +69,17 @@ internal sealed class HierarchySelection(
             if (objects[i].transform.parent is null)
                 roots.Add(objects[i]);
         }
-        roots.Sort(static (left, right) => left.transform.siblingIndex.CompareTo(right.transform.siblingIndex));
+        roots.Sort(static (
+            left,
+            right
+        ) => left.transform.siblingIndex.CompareTo(right.transform.siblingIndex));
         return roots;
     }
 
-    internal void DrawSceneRowContent(EditorContext context, GameScene scene)
-    {
+    internal void DrawSceneRowContent(
+        EditorContext context,
+        GameScene scene
+    ) {
         EditorWidget.IconText(
             settings
                 .Get("Editor/Appearance/Icons/Scene")

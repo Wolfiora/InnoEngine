@@ -19,8 +19,10 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <exception cref="ArgumentException">
     /// Thrown when either value is empty.
     /// </exception>
-    public DiagnosticSource(string id, string displayName)
-    {
+    public DiagnosticSource(
+        string id,
+        string displayName
+    ) {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("A diagnostic source identifier is required.", nameof(id));
         if (string.IsNullOrWhiteSpace(displayName))
@@ -48,8 +50,7 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <param name="other">
     /// The value to compare with this instance.
     /// </param>
-    public bool Equals(DiagnosticSource other)
-        => string.Equals(id, other.id, StringComparison.Ordinal);
+    public bool Equals(DiagnosticSource other) => string.Equals(id, other.id, StringComparison.Ordinal);
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
@@ -60,8 +61,7 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
-    public override bool Equals(object? obj)
-        => obj is DiagnosticSource other && Equals(other);
+    public override bool Equals(object? obj) => obj is DiagnosticSource other && Equals(other);
 
     /// <summary>
     /// Computes a hash code from the fields that participate in logical equality.
@@ -69,8 +69,7 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <returns>
     /// A hash code consistent with the implemented equality contract.
     /// </returns>
-    public override int GetHashCode()
-        => StringComparer.Ordinal.GetHashCode(id ?? string.Empty);
+    public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(id ?? string.Empty);
 
     /// <summary>
     /// Formats this value as a human-readable representation.
@@ -78,8 +77,7 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public override string ToString()
-        => string.IsNullOrWhiteSpace(displayName) ? id ?? string.Empty : displayName;
+    public override string ToString() => string.IsNullOrWhiteSpace(displayName) ? id ?? string.Empty : displayName;
 
     /// <summary>
     /// Determines whether two sources have the same stable identifier.
@@ -93,8 +91,10 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <returns>
     /// <see langword="true"/> when both source identifiers are equal.
     /// </returns>
-    public static bool operator ==(DiagnosticSource left, DiagnosticSource right)
-        => left.Equals(right);
+    public static bool operator ==(
+        DiagnosticSource left,
+        DiagnosticSource right
+    ) => left.Equals(right);
 
     /// <summary>
     /// Determines whether two sources have different stable identifiers.
@@ -108,6 +108,8 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
     /// <returns>
     /// <see langword="true"/> when the source identifiers differ.
     /// </returns>
-    public static bool operator !=(DiagnosticSource left, DiagnosticSource right)
-        => !left.Equals(right);
+    public static bool operator !=(
+        DiagnosticSource left,
+        DiagnosticSource right
+    ) => !left.Equals(right);
 }

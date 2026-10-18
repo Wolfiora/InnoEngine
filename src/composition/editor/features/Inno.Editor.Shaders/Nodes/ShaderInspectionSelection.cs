@@ -20,9 +20,12 @@ public sealed class ShaderInspectionSelection
     /// <param name="nodes">
     /// Selected stable node identities; empty selects document settings.
     /// </param>
-    public ShaderInspectionSelection(Guid assetId, IEnumerable<GraphNodeId> nodes)
-    {
-        if (assetId == Guid.Empty) throw new ArgumentException("A persistent shader identity is required.", nameof(assetId));
+    public ShaderInspectionSelection(
+        Guid assetId,
+        IEnumerable<GraphNodeId> nodes
+    ) {
+        if (assetId == Guid.Empty)
+            throw new ArgumentException("A persistent shader identity is required.", nameof(assetId));
         ArgumentNullException.ThrowIfNull(nodes);
         this.assetId = assetId;
         m_nodes = nodes.Distinct().OrderBy(static node => node.value, StringComparer.Ordinal).ToArray();

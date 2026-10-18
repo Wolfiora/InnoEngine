@@ -20,8 +20,7 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits)
     /// <returns>
     /// The validated editor drop status that represents the completed operation.
     /// </returns>
-    protected override EditorDropStatus Query(
-        EditorDropContext<GameObject, HierarchySceneDropTarget> context)
+    protected override EditorDropStatus Query(EditorDropContext<GameObject, HierarchySceneDropTarget> context)
     {
         GameObject source = context.source;
         GameScene target = context.target.scene;
@@ -40,8 +39,7 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits)
     /// <returns>
     /// The validated editor drop result that represents the completed operation.
     /// </returns>
-    protected override EditorDropResult Drop(
-        EditorDropContext<GameObject, HierarchySceneDropTarget> context)
+    protected override EditorDropResult Drop(EditorDropContext<GameObject, HierarchySceneDropTarget> context)
     {
         GameObject source = context.source;
         GameScene target = context.target.scene;

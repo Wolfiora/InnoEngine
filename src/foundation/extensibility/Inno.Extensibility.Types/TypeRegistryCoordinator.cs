@@ -117,14 +117,20 @@ internal sealed class TypeRegistryCoordinator
             List<Exception> failures = [preparationFailure];
             for (int i = transactions.Count - 1; i >= 0; i--)
             {
-                try { transactions[i].Rollback(); }
+                try
+                {
+                    transactions[i].Rollback();
+                }
                 catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
                 {
                     m_retirementFailure = new AggregateException("Registry preparation failed and rollback remains pending.", [.. failures, failure]);
                     m_retainedPreparation = (registries, transactions);
                     throw m_retirementFailure;
                 }
-                catch (Exception cleanupFailure) { failures.Add(cleanupFailure); }
+                catch (Exception cleanupFailure)
+                {
+                    failures.Add(cleanupFailure);
+                }
             }
             if (failures.Count > 1)
                 throw new AggregateException("Type registry preparation and rollback failed.", failures);
@@ -138,17 +144,18 @@ internal sealed class TypeRegistryCoordinator
             m_registries.RemoveAll(registration => registration.id == registrationId);
     }
 
-    private void RemoveCollectedRegistries()
-        => m_registries.RemoveAll(static registration => !registration.registry.TryGetTarget(out _));
+    private void RemoveCollectedRegistries() => m_registries.RemoveAll(static registration => !registration.registry.TryGetTarget(out _));
 
     private readonly record struct RegistryReference(
         Guid id,
-        WeakReference<ITypeRegistry> registry);
+        WeakReference<ITypeRegistry> registry
+    );
 }
 
 internal sealed class TypeRegistryRegistration(
     TypeRegistryCoordinator owner,
-    Guid id) : IDisposable
+    Guid id
+) : IDisposable
 {
     private bool m_disposed;
 
@@ -190,7 +197,10 @@ internal sealed class TypeRegistryRefreshSet(IReadOnlyList<ITypeRegistryTransact
         }
         catch (Exception activationFailure)
         {
-            try { Rollback(); }
+            try
+            {
+                Rollback();
+            }
             catch (Exception rollbackFailure)
             {
                 var combined = new AggregateException("Type registry activation and rollback failed.", activationFailure, rollbackFailure);
@@ -232,16 +242,25 @@ internal sealed class TypeRegistryRefreshSet(IReadOnlyList<ITypeRegistryTransact
             throw new AggregateException("Type registry rollback failed after all participants were attempted.", failures);
     }
 
-    private void TryCleanup(Action cleanup, List<Exception> failures)
-    {
-        try { cleanup(); }
+    private void TryCleanup(
+        Action cleanup,
+        List<Exception> failures
+    ) {
+        try
+        {
+            cleanup();
+        }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             m_failure = failures.Count == 0 ? failure : new AggregateException(
                 "Registry cleanup remains pending after earlier failures.", [.. failures, failure]);
-            if (ReferenceEquals(m_failure, failure)) throw;
+            if (ReferenceEquals(m_failure, failure))
+                throw;
             throw m_failure;
         }
-        catch (Exception exception) { failures.Add(exception); }
+        catch (Exception exception)
+        {
+            failures.Add(exception);
+        }
     }
 }

@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Inno.Core.Execution;
 using Inno.Extensibility.Types;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -50,8 +51,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     /// <param name="exception">
     /// The failure already recorded by the shared generation gate.
     /// </param>
-    protected override void OnCleanupFailed(string phase, Exception exception)
-    {
+    protected override void OnCleanupFailed(
+        string phase,
+        Exception exception
+    ) {
         m_retirementFailure ??= exception;
     }
 
@@ -90,7 +93,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         Dictionary<string, Type> renderModels = Discover<
             RenderModelExtensionAttribute, IRenderModel>(types,
             static attribute => attribute.id, "render model");
-        return new Snapshot(types.version, pipelines, features, requestProviders, contentSources, renderModels,
+        return new Snapshot(types, pipelines, features, requestProviders, contentSources, renderModels,
             CreateExtension<RenderRequestProvider>, CreateExtension<IViewContentSource>,
             CreateExtension<IRenderModel>, Retire);
     }
@@ -112,8 +115,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         return Convert.ToHexString(SHA256.HashData(stream.GetBuffer().AsSpan(0, checked((int)stream.Length))));
     }
 
-    private static void WriteState(System.IO.BinaryWriter writer, SerializedRenderExtensionState state)
-    {
+    private static void WriteState(
+        System.IO.BinaryWriter writer,
+        SerializedRenderExtensionState state
+    ) {
         writer.Write(state.stableTypeId.ToByteArray());
         byte[] data = state.propertyData ?? [];
         writer.Write(data.Length);
@@ -123,7 +128,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     private static Dictionary<string, Type> Discover<TAttribute, TContract>(
         TypeCacheSnapshot types,
         Func<TAttribute, string> getId,
-        string kind)
+        string kind
+    )
         where TAttribute : Attribute
     {
         var result = new Dictionary<string, Type>(StringComparer.Ordinal);
@@ -136,17 +142,13 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
                     $"Reloadable {kind} '{type.FullName}' must be a non-abstract {typeof(TContract).FullName}.");
             }
 
-            if (type.GetConstructor(
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                    binder: null,
-                    Type.EmptyTypes,
-                    modifiers: null) is null)
+            if (!types.CanCreateInstance(typeRef))
             {
                 throw new InvalidOperationException(
                     $"Reloadable {kind} '{type.FullName}' requires a parameterless constructor.");
             }
 
-            TAttribute attribute = type.GetCustomAttribute<TAttribute>(inherit: false)!;
+            TAttribute attribute = types.GetAttribute<TAttribute>(typeRef, inherit: false)!;
             string id = getId(attribute);
             if (!result.TryAdd(id, type))
             {
@@ -161,6 +163,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
 
     internal sealed class Snapshot : IDisposable
     {
+        private TypeCacheSnapshot? m_types;
         private readonly IReadOnlyDictionary<string, Type> m_pipelines;
         private readonly IReadOnlyDictionary<string, Type> m_features;
         private readonly IReadOnlyDictionary<string, Type> m_requestProviders;
@@ -169,7 +172,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         private readonly Action<IDisposable> m_retire;
 
         internal Snapshot(
-            long typeCacheVersion,
+            TypeCacheSnapshot types,
             IReadOnlyDictionary<string, Type> pipelines,
             IReadOnlyDictionary<string, Type> features,
             IReadOnlyDictionary<string, Type> requestProviders,
@@ -178,9 +181,10 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             Func<Type, RenderRequestProvider> createProvider,
             Func<Type, IViewContentSource> createSource,
             Func<Type, IRenderModel> createModel,
-            Action<IDisposable> retire)
-        {
-            this.typeCacheVersion = typeCacheVersion;
+            Action<IDisposable> retire
+        ) {
+            m_types = types;
+            typeCacheVersion = types.version;
             m_pipelines = pipelines;
             m_features = features;
             m_requestProviders = requestProviders;
@@ -207,6 +211,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             models.Dispose();
             sources.Dispose();
             providers.Dispose();
+            m_types = null;
         }
 
         private ContentSourceGeneration CreateContentSources(Func<Type, IViewContentSource> createSource)
@@ -231,10 +236,13 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             foreach ((string id, Type type) in m_requestProviders)
             {
                 RenderRequestProviderExtensionAttribute attribute =
-                    type.GetCustomAttribute<RenderRequestProviderExtensionAttribute>(inherit: false)!;
+                    m_types!.GetAttribute<RenderRequestProviderExtensionAttribute>(m_types.GetTypeRef(type), inherit: false)!;
                 providers.Add(new RequestProviderEntry(id, attribute.priority, createProvider(type)));
             }
-            providers.Sort(static (left, right) =>
+            providers.Sort(static (
+                left,
+                right
+            ) =>
             {
                 int priority = left.priority.CompareTo(right.priority);
                 return priority != 0 ? priority : string.CompareOrdinal(left.id, right.id);
@@ -244,8 +252,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
 
         internal bool TryCreateGeneration(
             RenderPipelineAsset asset,
-            out RenderPipelineGeneration? generation)
-        {
+            out RenderPipelineGeneration? generation
+        ) {
             ArgumentNullException.ThrowIfNull(asset);
             if (string.IsNullOrWhiteSpace(asset.pipelineTypeId))
                 throw new InvalidOperationException("A render pipeline asset requires a stable pipeline extension ID.");
@@ -294,8 +302,14 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             }
             catch (Exception failure)
             {
-                try { m_retire(candidate); }
-                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+                try
+                {
+                    m_retire(candidate);
+                }
+                catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+                {
+                    throw;
+                }
                 catch (Exception cleanup)
                 {
                     throw new AggregateException("Render generation preparation and retirement failed.", failure, cleanup);
@@ -304,12 +318,11 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             }
         }
 
-        private static TContract Create<TContract>(Type type) where TContract : class
+        private TContract Create<TContract>(Type type) where TContract : class
         {
             try
             {
-                return (TContract)(Activator.CreateInstance(type, nonPublic: true)
-                    ?? throw new InvalidOperationException("Activator returned null."));
+                return (TContract)(m_types ?? throw new ObjectDisposedException(nameof(Snapshot))).CreateInstance(type);
             }
             catch (Exception exception)
             {
@@ -327,8 +340,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
 
         internal RequestProviderGeneration(
             long typeCacheVersion,
-            IReadOnlyList<RequestProviderEntry> providers)
-        {
+            IReadOnlyList<RequestProviderEntry> providers
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_providers = Array.AsReadOnly(providers.ToArray());
             foreach (RequestProviderEntry entry in m_providers)
@@ -344,8 +357,14 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         /// </summary>
         public void Dispose()
         {
-            try { m_lifetime.Dispose(); }
-            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null) { throw; }
+            try
+            {
+                m_lifetime.Dispose();
+            }
+            catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
+            {
+                throw;
+            }
             catch
             {
                 m_providers = Array.Empty<RequestProviderEntry>();
@@ -358,15 +377,18 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     internal sealed record RequestProviderEntry(
         string id,
         int priority,
-        RenderRequestProvider provider);
+        RenderRequestProvider provider
+    );
 
     internal sealed class ContentSourceGeneration : IDisposable
     {
         private readonly LifetimeScope m_lifetime = new();
         private IReadOnlyList<ContentSourceEntry> m_sources;
 
-        internal ContentSourceGeneration(long typeCacheVersion, IReadOnlyList<ContentSourceEntry> sources)
-        {
+        internal ContentSourceGeneration(
+            long typeCacheVersion,
+            IReadOnlyList<ContentSourceEntry> sources
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_sources = Array.AsReadOnly(sources.ToArray());
             foreach (ContentSourceEntry entry in m_sources)
@@ -387,15 +409,20 @@ public void Dispose()
         }
     }
 
-    internal sealed record ContentSourceEntry(string id, IViewContentSource source);
+    internal sealed record ContentSourceEntry(
+        string id,
+        IViewContentSource source
+    );
 
     internal sealed class RenderModelGeneration : IDisposable
     {
         private readonly LifetimeScope m_lifetime = new();
         private IReadOnlyList<RenderModelEntry> m_models;
 
-        internal RenderModelGeneration(long typeCacheVersion, IReadOnlyList<RenderModelEntry> models)
-        {
+        internal RenderModelGeneration(
+            long typeCacheVersion,
+            IReadOnlyList<RenderModelEntry> models
+        ) {
             this.typeCacheVersion = typeCacheVersion;
             m_models = Array.AsReadOnly(models.ToArray());
             foreach (RenderModelEntry entry in m_models)
@@ -415,6 +442,9 @@ public void Dispose()
         }
     }
 
-    internal sealed record RenderModelEntry(string id, IRenderModel model);
+    internal sealed record RenderModelEntry(
+        string id,
+        IRenderModel model
+    );
 
 }

@@ -21,8 +21,7 @@ internal sealed class GamePresentationSetting : ProjectSettingEditor<GamePresent
     /// <summary>
     /// Gets the explanation shared by Game View and deployed Player presentation.
     /// </summary>
-    public override string description
-        => "Controls the reference frame and aspect fitting used by both Game View and exported Players.";
+    public override string description => "Controls the reference frame and aspect fitting used by both Game View and exported Players.";
 
     /// <summary>
     /// Draws project-wide game presentation controls.

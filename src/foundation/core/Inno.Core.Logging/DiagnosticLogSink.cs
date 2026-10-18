@@ -25,8 +25,10 @@ public sealed class DiagnosticLogSink : IDiagnosticSink, IDisposable
     /// <param name="logs">
     /// The borrowed destination router, which must outlive this sink.
     /// </param>
-    public DiagnosticLogSink(DiagnosticHub hub, LogRouter logs)
-    {
+    public DiagnosticLogSink(
+        DiagnosticHub hub,
+        LogRouter logs
+    ) {
         m_hub = hub ?? throw new ArgumentNullException(nameof(hub));
         m_logs = logs ?? throw new ArgumentNullException(nameof(logs));
         m_hub.RegisterSink(this);

@@ -13,8 +13,10 @@ internal static class AudioSubsystem
     internal static IRuntimeSubsystemFactory Create(EngineSessionComposition context)
         => context.audioOverride ?? new AudioRuntimeFactory(owner => CreateRuntime(context, owner));
 
-    private static AudioRuntime CreateRuntime(EngineSessionComposition composition, RuntimeSubsystemContext owner)
-    {
+    private static AudioRuntime CreateRuntime(
+        EngineSessionComposition composition,
+        RuntimeSubsystemContext owner
+    ) {
         DiagnosticReporter diagnostics = owner.resources.Own(owner.diagnostics.CreateReporter(
             new DiagnosticSource($"inno.audio.{composition.session.sessionId}", "Audio")));
         IAudioDevice device;
@@ -51,8 +53,17 @@ internal static class AudioSubsystem
         }
         catch (Exception failure)
         {
-            try { if (runtime is null) device.Dispose(); else runtime.Dispose(); }
-            catch (Exception cleanup) { throw new AggregateException("Audio composition and rollback failed.", failure, cleanup); }
+            try
+            {
+                if (runtime is null)
+                    device.Dispose();
+                else
+                    runtime.Dispose();
+            }
+            catch (Exception cleanup)
+            {
+                throw new AggregateException("Audio composition and rollback failed.", failure, cleanup);
+            }
             throw;
         }
     }

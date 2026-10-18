@@ -54,7 +54,8 @@ public abstract class AssetBuildProcessor
         AssetObject definition,
         IReadOnlyList<AssetInfo> inputs,
         AssetArtifactWriter output,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken
+    );
 
     internal void BindProcessorId(string id)
     {
@@ -100,14 +101,15 @@ public abstract class AssetBuildProcessor<TDefinition> : AssetBuildProcessor
     protected abstract ValueTask BuildAsync(
         AssetBuildContext<TDefinition> context,
         AssetArtifactWriter output,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken
+    );
 
     internal sealed override ValueTask BuildInternalAsync(
         AssetObject definition,
         IReadOnlyList<AssetInfo> inputs,
         AssetArtifactWriter output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         if (definition is not TDefinition typed)
         {
             throw new ArgumentException(

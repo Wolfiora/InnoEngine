@@ -32,12 +32,14 @@ public readonly record struct UiFontRegistration
         int faceIndex,
         string family,
         TextFontStyle style,
-        int weight)
-    {
-        if (data.IsEmpty) throw new ArgumentException("Font data cannot be empty.", nameof(data));
+        int weight
+    ) {
+        if (data.IsEmpty)
+            throw new ArgumentException("Font data cannot be empty.", nameof(data));
         ArgumentOutOfRangeException.ThrowIfNegative(faceIndex);
         ArgumentException.ThrowIfNullOrWhiteSpace(family);
-        if (weight is < 100 or > 1000) throw new ArgumentOutOfRangeException(nameof(weight));
+        if (weight is < 100 or > 1000)
+            throw new ArgumentOutOfRangeException(nameof(weight));
         this.data = data;
         this.faceIndex = faceIndex;
         this.family = family.Trim();

@@ -9,8 +9,10 @@ namespace Inno.Scene;
 /// </summary>
 internal sealed class ActivationService
 {
-    internal void SetActive(GameObject gameObject, bool active)
-    {
+    internal void SetActive(
+        GameObject gameObject,
+        bool active
+    ) {
         if (gameObject.activeSelf == active)
             return;
         gameObject.SetActiveSelfDirect(active);
@@ -23,8 +25,10 @@ internal sealed class ActivationService
         Recompute(gameObject, parentActive);
     }
 
-    private static void Recompute(GameObject gameObject, bool parentActive)
-    {
+    private static void Recompute(
+        GameObject gameObject,
+        bool parentActive
+    ) {
         bool active = parentActive && gameObject.activeSelf;
         gameObject.SetActiveInHierarchyDirect(active);
         IReadOnlyList<Transform> children = gameObject.transform.children;

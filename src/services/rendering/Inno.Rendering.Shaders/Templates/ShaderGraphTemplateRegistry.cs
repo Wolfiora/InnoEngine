@@ -17,7 +17,10 @@ namespace Inno.Rendering.Shaders;
 /// <param name="displayName">
 /// User-facing label.
 /// </param>
-public sealed record ShaderGraphTemplateInfo(string id, string displayName);
+public sealed record ShaderGraphTemplateInfo(
+    string id,
+    string displayName
+);
 
 /// <summary>
 /// Owns generation-safe template discovery and invocation for editor asset creation.
@@ -34,7 +37,10 @@ public sealed class ShaderGraphTemplateRegistry : IDisposable
     /// Catalog which must outlive this owner.
     /// </param>
     public ShaderGraphTemplateRegistry(TypeCatalog types)
-    { m_types = types ?? throw new ArgumentNullException(nameof(types)); m_registry = new(types); }
+    {
+        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        m_registry = new(types);
+    }
 
     /// <summary>
     /// Gets detached menu descriptions for the current generation.
@@ -67,8 +73,11 @@ public sealed class ShaderGraphTemplateRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// The selected template is unavailable.
     /// </exception>
-    public GraphDocument Create(string id, SerializationRegistry serialization, SerializationContext context)
-    {
+    public GraphDocument Create(
+        string id,
+        SerializationRegistry serialization,
+        SerializationContext context
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         using IDisposable operation = m_types.AcquireOperation("Create shader from template");
         if (!m_registry.snapshot.TryGetValue(id, out Entry? entry))
@@ -81,7 +90,10 @@ public sealed class ShaderGraphTemplateRegistry : IDisposable
     /// </summary>
     public void Dispose() => m_registry.Dispose();
 
-    private sealed record Entry(ShaderGraphTemplateInfo info, ShaderGraphTemplate template);
+    private sealed record Entry(
+        ShaderGraphTemplateInfo info,
+        ShaderGraphTemplate template
+    );
 
     private sealed class Registry(TypeCatalog types) : TypeRegistry<IReadOnlyDictionary<string, Entry>>(types)
     {

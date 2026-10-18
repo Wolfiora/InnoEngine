@@ -1,3 +1,7 @@
+using Inno.Content.Testing;
+using Inno.Content;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,6 +28,8 @@ namespace Inno.Assets.Pipeline.Tests;
 
 public sealed class AssetLoaderTests : IDisposable
 {
+    private readonly string m_moduleArtifacts = Path.Combine(Path.GetTempPath(),
+        "AssetImporterModules-" + Guid.NewGuid().ToString("N"));
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
@@ -44,11 +50,9 @@ public sealed class AssetLoaderTests : IDisposable
         m_identityScope = m_identities.EnterScope();
         m_diagnosticScope = m_diagnostics.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(Path.GetTempPath(), "InnoAssetLoaderTests", "Assemblies")
-        });
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly)        });
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         SlowAssetImporter.Reset();
         ImporterConflictProbe.duplicateExtension = false;
         MutableAssetImporter.attempts = 0;
@@ -62,6 +66,11 @@ public sealed class AssetLoaderTests : IDisposable
         m_logs.Dispose();
         m_diagnosticScope.Dispose();
         m_identityScope.Dispose();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        if (Directory.Exists(m_moduleArtifacts))
+            Directory.Delete(m_moduleArtifacts, recursive: true);
     }
 
     [Fact]
@@ -87,6 +96,53 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.True(loader.TryGetInfo(new AssetPath(source, "README.md"), out AssetInfo? failure));
         Assert.Equal(AssetImportStatus.Failed, failure!.status);
         Assert.Contains(failure.diagnostics, value => value.Contains("Read-only source metadata", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FailedRuntimeDependencyRecoversAfterPublicationOrLoaderRestart(bool reopen)
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("parent.depgraph", "child.deferredasset");
+        workspace.WriteText("child.deferredasset", "unchanged");
+        DeferredAssetImporter.isAvailable = false;
+        m_types.Rebuild();
+        AssetLoader? loader = null;
+        try
+        {
+            loader = new AssetLoader(m_types, m_serialization, m_identities, m_diagnostics,
+                m_logs, workspace.assetRoot, workspace.libraryRoot);
+            loader.Rescan();
+            AssetPath parent = AssetPath.Project("parent.depgraph");
+            Assert.True(loader.TryGetInfo(parent, out AssetInfo? failed));
+            Assert.Equal(AssetImportStatus.Failed, failed!.status);
+            Guid identity = failed.persistentId;
+            loader.Rescan();
+            Assert.True(loader.TryGetInfo(parent, out AssetInfo? unchanged));
+            Assert.Equal(AssetImportStatus.Failed, unchanged!.status);
+
+            if (reopen)
+            {
+                loader.Dispose();
+                loader = null;
+            }
+            DeferredAssetImporter.isAvailable = true;
+            m_types.Rebuild();
+            loader ??= new AssetLoader(m_types, m_serialization, m_identities, m_diagnostics,
+                m_logs, workspace.assetRoot, workspace.libraryRoot);
+            loader.Rescan();
+            Assert.True(loader.TryGetInfo(parent, out AssetInfo? recovered));
+            Assert.Equal(AssetImportStatus.Imported, recovered!.status);
+            Assert.Equal(identity, recovered.persistentId);
+            Assert.True(loader.TryGetInfo(AssetPath.Project("child.deferredasset"), out AssetInfo? child));
+            Assert.Equal(AssetImportStatus.Imported, child!.status);
+        }
+        finally
+        {
+            loader?.Dispose();
+            DeferredAssetImporter.isAvailable = true;
+        }
     }
 
     [Theory]
@@ -383,7 +439,8 @@ public sealed class AssetLoaderTests : IDisposable
         using AssetLoader candidateLoader = candidate.loader;
         candidateLoader.Rescan();
         Directory.CreateDirectory(workspace.SourcePath("z.txt.imeta"));
-        Assert.ThrowsAny<IOException>(candidate.Commit);
+        Exception failure = Assert.ThrowsAny<Exception>(candidate.Commit);
+        Assert.True(failure is IOException or UnauthorizedAccessException, failure.ToString());
         Assert.False(System.IO.File.Exists(workspace.SourcePath("a.txt.imeta")));
         Assert.True(Directory.Exists(workspace.SourcePath("z.txt.imeta")));
     }
@@ -583,6 +640,13 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Equal(id, missing.resolution.descriptor.targetPersistentId);
         Assert.Equal(ReferenceResolutionState.Missing, missing.resolution.state);
         removal.Complete();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        using AssetSourceMountTransaction stillMissing = pipeline.PrepareSourceMounts(pipeline.sourceMounts);
+        stillMissing.Activate();
+        Assert.Equal(ReferenceResolutionState.Missing, Assert.Single(stillMissing.recoveryChanges).resolution.state);
+        stillMissing.Complete();
         workspace.WriteText("value.txt", "preserved");
         System.IO.File.WriteAllBytes(workspace.SourcePath("value.txt.imeta"), metadata);
         using AssetSourceMountTransaction recovery = pipeline.PrepareSourceMounts(pipeline.sourceMounts);
@@ -730,9 +794,9 @@ public sealed class AssetLoaderTests : IDisposable
         using TestWorkspace workspace = new();
         workspace.WriteText("value.hookasset", "previous");
         var modules = new ModuleHost(new ModuleHostOptions
-        { cacheDirectory = Path.Combine(workspace.libraryRoot, "FaultedModules") });
-        var types = new TypeCatalog(modules);
-        var serialization = new SerializationRegistry(types);
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(AssetLoaderTests).Assembly)});
+        var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
         var pipeline = new AssetPipeline(modules, types, serialization, m_identities,
             m_diagnostics, m_logs, new AssetPipelineOptions
             { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot });
@@ -773,7 +837,8 @@ public sealed class AssetLoaderTests : IDisposable
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
         var identities = new IdentityAllocator();
-        var database = new AssetDatabase(contentRoot, serialization, m_types.current, identities);
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        var database = new AssetDatabase(contentStore, serialization, m_types.current, identities);
         HookAsset asset = database.Load<HookAsset>(AssetPath.Project("value.hookasset"));
         RuntimeIdentity identity = asset.identity.runtimeIdentity!.Value;
         asset.pendingUnloads = 1;
@@ -801,7 +866,8 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, new IdentityAllocator());
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, new IdentityAllocator());
         Assert.True(database.TryLoad(AssetPath.Project("shader.mixedscope"), out DependencyAsset? shader));
         Assert.NotNull(shader);
         Assert.False(database.TryLoad(AssetPath.Project("node.mixedscope"), out DependencyAsset? node));
@@ -819,7 +885,8 @@ public sealed class AssetLoaderTests : IDisposable
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
         var identities = new IdentityAllocator();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, identities,
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, identities,
             residencyBudgetBytes: 0);
         Task<AssetLease<HookAsset>> pending = database.AcquireAsync<HookAsset>(
             AssetPath.Project("value.hookasset")).AsTask();
@@ -898,7 +965,8 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.NotEqual(Guid.Empty, persistentId);
         Assert.True(loader.TryGetArtifact(persistentId, "runtime", out AssetArtifactInfo? artifact));
         Assert.NotNull(artifact);
-        Assert.True(System.IO.File.Exists(artifact.absolutePath));
+        using ArtifactLease imported = loader.AcquireArtifact(persistentId, "runtime");
+        Assert.NotEmpty(imported.ReadAllBytes());
         Assert.True(loader.TryGetAssetType(AssetPath.Project("Config/game.txt"), out Type? assetType));
         Assert.Equal(typeof(TextAsset), assetType);
         Assert.Empty(loader.GetLoadedPaths());
@@ -939,8 +1007,9 @@ public sealed class AssetLoaderTests : IDisposable
         using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.True(loader.Import(AssetPath.Project("Conflict/initialize.txt")));
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_modules.Load(new AssemblyLoadRequest
+            () => m_modules.Load(new DotNetModuleSource
             {
+                artifactRootDirectory = m_moduleArtifacts,
                 moduleName = "DuplicateAssetImporters",
                 mainAssemblyPath = Path.Combine(
                     AppContext.BaseDirectory,
@@ -1137,8 +1206,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Theory]
     [InlineData("failed", true)]
     [InlineData("changed", false)]
-    public void RuntimeExportRejectsTransitiveAuthoringInputsWithoutDiscardingLastGood(string change, bool importChange)
-    {
+    public void RuntimeExportRejectsTransitiveAuthoringInputsWithoutDiscardingLastGood(
+        string change,
+        bool importChange
+    ) {
         using TestWorkspace workspace = new();
         workspace.WriteText("leaf.buildinput", "original");
         using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
@@ -1155,7 +1226,7 @@ public sealed class AssetLoaderTests : IDisposable
         if (importChange)
             Assert.False(loader.Import(AssetPath.Project("leaf.buildinput")));
         using (ArtifactLease lastGood = loader.AcquireArtifact(leaf.identity.persistentId, "authoring"))
-            Assert.Equal("original", System.IO.File.ReadAllText(lastGood.info.absolutePath));
+            Assert.Equal("original", Encoding.UTF8.GetString(lastGood.ReadAllBytes()));
         string invalidDestination = Path.Combine(workspace.libraryRoot, "InvalidRuntime");
         InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => loader.ExportRuntimeArtifacts(invalidDestination));
         Assert.Contains("root.buildconsumer -> middle.buildinput -> leaf.buildinput", error.Message);
@@ -1187,7 +1258,8 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current,
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current,
             new IdentityAllocator(), residencyBudgetBytes: 0, preparationBudgetBytes: 100000);
         for (int cycle = 0; cycle < 32; cycle++)
         {
@@ -1234,7 +1306,8 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, new IdentityAllocator());
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, new IdentityAllocator());
         Task<AssetLease<TextAsset>>[] requests = Enumerable.Range(0, 32).Select(_ =>
             database.AcquireAsync<TextAsset>(AssetPath.Project("Shared.txt")).AsTask()).ToArray();
         Assert.Throws<InvalidOperationException>(() => database.AcquireAsync<TextAsset>(AssetPath.Project("Shared.txt")));
@@ -1263,13 +1336,17 @@ public sealed class AssetLoaderTests : IDisposable
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
         using SerializationGeneration serialization = m_serialization.CaptureGeneration();
-        using var database = new AssetDatabase(contentRoot, serialization, m_types.current, new IdentityAllocator());
+        using ContentTestStore contentStore = ContentTestStore.FromDirectory(contentRoot);
+        using var database = new AssetDatabase(contentStore, serialization, m_types.current, new IdentityAllocator());
         using (ArtifactLease artifact = database.AcquireArtifact(shared.identity.persistentId, "runtime"))
         {
-            string path = artifact.info.absolutePath;
-            byte[] bytes = System.IO.File.ReadAllBytes(path);
+            ContentKey key = Assert.Single(contentStore.index.entries.Where(entry =>
+                entry.key.value!.StartsWith("Artifacts/", StringComparison.Ordinal)
+                && entry.key.value.Contains("/outputs/", StringComparison.Ordinal)
+                && entry.contentHash == artifact.info.contentHash)).key;
+            byte[] bytes = artifact.ReadAllBytes();
             bytes[0] ^= 0xff;
-            System.IO.File.WriteAllBytes(path, bytes);
+            contentStore.CorruptPayload(key, bytes);
         }
         Task<AssetLease<DependencyAsset>> first = database.AcquireAsync<DependencyAsset>(AssetPath.Project("A.depgraph")).AsTask();
         Task<AssetLease<DependencyAsset>> second = database.AcquireAsync<DependencyAsset>(AssetPath.Project("B.depgraph")).AsTask();
@@ -1686,7 +1763,9 @@ public sealed class AssetLoaderTests : IDisposable
         byte[] metaBefore = System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta"));
         Assert.True(loader.TryGetArtifact(asset.identity.persistentId, "runtime", out AssetArtifactInfo? artifact));
         Assert.NotNull(artifact);
-        byte[] artifactBefore = System.IO.File.ReadAllBytes(artifact.absolutePath);
+        byte[] artifactBefore;
+        using (ArtifactLease before = loader.AcquireArtifact(asset.identity.persistentId, "runtime"))
+            artifactBefore = before.ReadAllBytes();
         long versionBefore = asset.contentVersion;
         asset.value = "!invalid!";
 
@@ -1694,7 +1773,8 @@ public sealed class AssetLoaderTests : IDisposable
 
         Assert.Equal(sourceBefore, System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset")));
         Assert.Equal(metaBefore, System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta")));
-        Assert.Equal(artifactBefore, System.IO.File.ReadAllBytes(artifact.absolutePath));
+        using (ArtifactLease after = loader.AcquireArtifact(asset.identity.persistentId, "runtime"))
+            Assert.Equal(artifactBefore, after.ReadAllBytes());
         Assert.Equal(versionBefore, asset.contentVersion);
     }
 
@@ -1936,16 +2016,41 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.True(loader.TryGetArtifact(first.persistentId, "runtime", out AssetArtifactInfo? currentArtifact));
         Assert.NotNull(currentArtifact);
         Assert.NotEqual(oldArtifact.key, currentArtifact.key);
-        Assert.True(System.IO.File.Exists(oldArtifact.absolutePath));
+        string oldPath = workspace.FindArtifactFile(oldArtifact);
+        Assert.True(System.IO.File.Exists(oldPath));
 
         Assert.Equal(0, loader.CollectArtifacts(TimeSpan.Zero, maximumSizeBytes: 0));
-        Assert.True(System.IO.File.Exists(oldArtifact.absolutePath));
+        Assert.True(System.IO.File.Exists(oldPath));
         workspace.DeleteSource("Text/second.txt");
         System.IO.File.Delete(workspace.SourcePath("Text/second.txt.imeta"));
         loader.Rescan();
         Assert.True(loader.CollectArtifacts(TimeSpan.Zero, maximumSizeBytes: 0) >= 1);
-        Assert.False(System.IO.File.Exists(oldArtifact.absolutePath));
-        Assert.True(System.IO.File.Exists(currentArtifact.absolutePath));
+        Assert.False(System.IO.File.Exists(oldPath));
+        Assert.True(System.IO.File.Exists(workspace.FindArtifactFile(currentArtifact)));
+    }
+
+    [Fact]
+    public void ArtifactLookupRejectsWrongLengthAndExportRejectsSameLengthCorruption()
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("Text/value.txt", "value");
+        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        loader.Rescan();
+        Assert.True(loader.TryGetInfo(AssetPath.Project("Text/value.txt"), out AssetInfo? info));
+        Assert.True(loader.TryGetArtifact(info!.persistentId, "runtime", out AssetArtifactInfo? artifact));
+        string path = workspace.FindArtifactFile(artifact!);
+        byte[] original = System.IO.File.ReadAllBytes(path);
+
+        System.IO.File.WriteAllBytes(path, [1]);
+        Assert.Throws<InvalidDataException>(() => loader.TryGetArtifact(info.persistentId, "runtime", out _));
+        byte[] changed = (byte[])original.Clone();
+        changed[0] ^= 0x01;
+        System.IO.File.WriteAllBytes(path, changed);
+        Assert.True(loader.TryGetArtifact(info.persistentId, "runtime", out _));
+        Assert.Throws<InvalidDataException>(() => loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "CorruptedRuntime")));
+        System.IO.File.WriteAllBytes(path, original);
+        Assert.True(loader.TryGetArtifact(info.persistentId, "runtime", out _));
+        loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "ValidRuntime"));
     }
 
     [Fact]
@@ -2007,12 +2112,26 @@ public sealed class AssetLoaderTests : IDisposable
             SerializationRegistry serialization,
             IdentityAllocator identities,
             DiagnosticHub diagnostics,
-            LogRouter logs)
+            LogRouter logs
+        )
             => new(types, serialization, identities, diagnostics, logs, assetRoot, libraryRoot);
         internal string SourcePath(string relativePath) => Path.Combine(assetRoot, relativePath);
 
-        internal void WriteText(string relativePath, string content)
+        internal string FindArtifactFile(AssetArtifactInfo artifact)
         {
+            string key = artifact.key.value;
+            string directory = Path.Combine(libraryRoot, "Artifacts", key[..2].ToLowerInvariant(),
+                key[2..4].ToLowerInvariant(), key, "outputs");
+            return Directory.EnumerateFiles(directory).Single(path =>
+                new FileInfo(path).Length == artifact.length
+                && Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                    System.IO.File.ReadAllBytes(path))) == artifact.contentHash);
+        }
+
+        internal void WriteText(
+            string relativePath,
+            string content
+        ) {
             string path = SourcePath(relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             System.IO.File.WriteAllText(path, content, new UTF8Encoding(false));
@@ -2020,8 +2139,10 @@ public sealed class AssetLoaderTests : IDisposable
 
         internal string ReadText(string relativePath) => System.IO.File.ReadAllText(SourcePath(relativePath));
 
-        internal void Move(string oldRelativePath, string newRelativePath)
-        {
+        internal void Move(
+            string oldRelativePath,
+            string newRelativePath
+        ) {
             string target = SourcePath(newRelativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             System.IO.File.Move(SourcePath(oldRelativePath), target);
@@ -2075,8 +2196,8 @@ internal sealed class PrivateConstructorAssetImporter : AssetImporter<PrivateCon
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<PrivateConstructorAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new PrivateConstructorAsset { value = context.ReadUtf8Text() });
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2095,9 +2216,11 @@ internal sealed class ExtensionDependentImporter : AssetImporter<ExtensionDepend
     internal static int attempts;
     public override IReadOnlyList<string> supportedExtensions { get; } = [".extensionasset"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context,
-        AssetImportWriter<ExtensionDependentAsset> output, CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ExtensionDependentAsset> output,
+        CancellationToken cancellationToken
+    ) {
         attempts++;
         if (!available)
             throw new AssetImportExtensionUnavailableException("tests.target", "tests.surface");
@@ -2111,9 +2234,11 @@ internal sealed class ExtensionConsumerImporter : AssetImporter<ExtensionDepende
 {
     public override IReadOnlyList<string> supportedExtensions { get; } = [".extensiondependent"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context,
-        AssetImportWriter<ExtensionDependentAsset> output, CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<ExtensionDependentAsset> output,
+        CancellationToken cancellationToken
+    ) {
         string source = context.ReadUtf8Text();
         if (Guid.TryParse(source, out Guid id))
             _ = context.references.Resolve(id, context.services.GetStableTypeId<ExtensionDependentAsset>(),
@@ -2138,8 +2263,8 @@ internal sealed class DeferredAssetImporter : AssetImporter<DeferredAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DeferredAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DeferredAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2156,8 +2281,8 @@ internal sealed class DependencyAssetImporter : AssetImporter<DependencyAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string dependency = context.ReadUtf8Text().Trim();
         if (!string.IsNullOrWhiteSpace(dependency))
             output.DependsOnAsset(AssetPath.Parse(dependency));
@@ -2174,8 +2299,8 @@ internal sealed class AlternateDependencyAssetImporter : AssetImporter<Dependenc
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DependencyAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2187,9 +2312,11 @@ internal sealed class BuildInputAssetImporter : AssetImporter<DependencyAsset>
     public override IReadOnlyList<string> supportedExtensions { get; } = [".buildinput"];
     public override AssetDeploymentScope deploymentScope => AssetDeploymentScope.AuthoringOnly;
 
-    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken
+    ) {
         string text = context.ReadUtf8Text();
         if (text == "failed")
             throw new InvalidDataException("Required authoring input failed.");
@@ -2205,9 +2332,11 @@ internal sealed class MixedScopeAssetImporter : AssetImporter<DependencyAsset>
 {
     public override IReadOnlyList<string> supportedExtensions { get; } = [".mixedscope"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DependencyAsset());
         if (context.ReadUtf8Text() == "authoring")
         {
@@ -2224,9 +2353,11 @@ internal sealed class BuildConsumerAssetImporter : AssetImporter<DependencyAsset
 {
     public override IReadOnlyList<string> supportedExtensions { get; } = [".buildconsumer"];
 
-    protected override ValueTask ImportAsync(AssetImportContext context, AssetImportWriter<DependencyAsset> output,
-        CancellationToken cancellationToken)
-    {
+    protected override ValueTask ImportAsync(
+        AssetImportContext context,
+        AssetImportWriter<DependencyAsset> output,
+        CancellationToken cancellationToken
+    ) {
         context.DependsOnArtifact(Guid.Parse(context.ReadUtf8Text()));
         output.SetAsset(new DependencyAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
@@ -2244,8 +2375,8 @@ internal sealed class ImportGraphAssetImporter : AssetImporter<ImportGraphAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ImportGraphAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string dependency = context.ReadUtf8Text().Trim();
         if (!string.IsNullOrWhiteSpace(dependency))
             output.DependsOnSource(AssetPath.Parse(dependency));
@@ -2280,8 +2411,8 @@ internal sealed class SlowAssetImporter : AssetImporter<SlowAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<SlowAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         Interlocked.Increment(ref importCount);
         importStarted.Set();
         if (!allowImport.Wait(TimeSpan.FromSeconds(5)))
@@ -2307,8 +2438,8 @@ internal sealed class MutableAssetImporter : AssetImporter<MutableAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<MutableAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         attempts++;
         string value = context.ReadUtf8Text();
         if (value == "!invalid!")
@@ -2320,7 +2451,8 @@ internal sealed class MutableAssetImporter : AssetImporter<MutableAsset>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         MutableAsset asset,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         => ValueTask.FromResult<ReadOnlyMemory<byte>?>(Encoding.UTF8.GetBytes(asset.value));
 }
 
@@ -2335,7 +2467,8 @@ internal sealed class HookAsset : AssetObject
 
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
-        ReadOnlyMemory<byte> currentPayload)
+        ReadOnlyMemory<byte> currentPayload
+    )
         => Interlocked.Increment(ref payloadChangeCount);
 
     protected override void OnUnloading()
@@ -2361,8 +2494,8 @@ internal sealed class HookAssetImporter : AssetImporter<HookAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<HookAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new HookAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2387,8 +2520,8 @@ internal sealed class ImporterConflictAssetImporterA : AssetImporter<ImporterCon
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ImporterConflictAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new ImporterConflictAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2405,8 +2538,8 @@ internal sealed class ImporterConflictAssetImporterB : AssetImporter<ImporterCon
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<ImporterConflictAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new ImporterConflictAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -2425,8 +2558,8 @@ internal sealed class TestBuildProcessor : AssetBuildProcessor<TestBuildDefiniti
     protected override ValueTask BuildAsync(
         AssetBuildContext<TestBuildDefinitionAsset> context,
         AssetArtifactWriter output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         string value = context.definition.label + ":" + context.inputs.Count;
         return output.WriteAsync("result", Encoding.UTF8.GetBytes(value), cancellationToken);
     }

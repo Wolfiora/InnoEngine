@@ -9,8 +9,8 @@ namespace Inno.Editor.Interactions;
 internal sealed class EditorDropRouter(
     EditorExtensionCatalog catalog,
     IReadOnlyDictionary<IdentityDomainId, IdentityAllocator> identityDomains,
-    Logger log)
-{
+    Logger log
+) {
     private readonly HashSet<string> m_queryFailures = new(StringComparer.Ordinal);
     private RuntimeIdentity? m_activeIdentity;
 
@@ -24,8 +24,10 @@ internal sealed class EditorDropRouter(
         return identity;
     }
 
-    internal bool TryGetSource(RuntimeIdentity identity, out IdentityObject? source)
-    {
+    internal bool TryGetSource(
+        RuntimeIdentity identity,
+        out IdentityObject? source
+    ) {
         source = m_activeIdentity == identity
             ? Resolve(identity)
             : null;
@@ -49,8 +51,10 @@ internal sealed class EditorDropRouter(
         return true;
     }
 
-    internal EditorDropStatus Query(RuntimeIdentity identity, EditorDropContext context)
-    {
+    internal EditorDropStatus Query(
+        RuntimeIdentity identity,
+        EditorDropContext context
+    ) {
         if (!TryResolve(identity, context, out EditorExtensionCatalog.DropRegistration? registration) ||
             registration is null)
             return EditorDropStatus.rejected;
@@ -70,8 +74,10 @@ internal sealed class EditorDropRouter(
         }
     }
 
-    internal EditorDropResult Drop(RuntimeIdentity identity, EditorDropContext context)
-    {
+    internal EditorDropResult Drop(
+        RuntimeIdentity identity,
+        EditorDropContext context
+    ) {
         if (!TryResolve(identity, context, out EditorExtensionCatalog.DropRegistration? registration) ||
             registration is null)
             return EditorDropResult.rejected;
@@ -100,8 +106,8 @@ internal sealed class EditorDropRouter(
     private bool TryResolve(
         RuntimeIdentity identity,
         EditorDropContext context,
-        out EditorExtensionCatalog.DropRegistration? best)
-    {
+        out EditorExtensionCatalog.DropRegistration? best
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         if (!TryGetSource(identity, out IdentityObject? source) || !ReferenceEquals(source, context.source))
         {

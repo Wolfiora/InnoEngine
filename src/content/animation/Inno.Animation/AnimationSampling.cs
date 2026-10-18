@@ -20,7 +20,11 @@ public static class AnimationSampling
     /// <returns>
     /// The interpolated value.
     /// </returns>
-    public static AnimationValue Interpolate(AnimationValue left, AnimationValue right, float amount)
+    public static AnimationValue Interpolate(
+        AnimationValue left,
+        AnimationValue right,
+        float amount
+    )
         => AnimationValue.Lerp(left, right, amount);
 
     /// <summary>
@@ -38,7 +42,11 @@ public static class AnimationSampling
     /// <returns>
     /// The updated sum.
     /// </returns>
-    public static AnimationValue AddWeighted(AnimationValue sum, AnimationValue value, float weight)
+    public static AnimationValue AddWeighted(
+        AnimationValue sum,
+        AnimationValue value,
+        float weight
+    )
         => AnimationValue.AddWeighted(sum, value, weight);
 
     /// <summary>
@@ -53,6 +61,9 @@ public static class AnimationSampling
     /// <returns>
     /// The final blended value.
     /// </returns>
-    public static AnimationValue CompleteWeighted(AnimationValue sum, float inverseWeight)
+    public static AnimationValue CompleteWeighted(
+        AnimationValue sum,
+        float inverseWeight
+    )
         => AnimationValue.WeightedAverage(sum, inverseWeight);
 }

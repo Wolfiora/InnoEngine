@@ -35,8 +35,7 @@ public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCond
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int GetCandidateCount(IndexedObjectStore<T> store)
-        => int.MaxValue;
+    public int GetCandidateCount(IndexedObjectStore<T> store) => int.MaxValue;
 
     /// <summary>
     /// Attempts to get single without changing state when the operation cannot complete.
@@ -51,8 +50,10 @@ public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCond
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetSingle(IndexedObjectStore<T> store, out T item)
-    {
+    public bool TryGetSingle(
+        IndexedObjectStore<T> store,
+        out T item
+    ) {
         item = null!;
         return false;
     }
@@ -67,8 +68,7 @@ public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCond
     /// The validated hash sett? that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public HashSet<T>? GetSet(IndexedObjectStore<T> store)
-        => null;
+    public HashSet<T>? GetSet(IndexedObjectStore<T> store) => null;
 
     /// <summary>
     /// Validates the supplied input and rejects state that cannot satisfy this contract.
@@ -83,8 +83,10 @@ public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCond
     /// The stored item associated with the validated handle.
     /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Validate(IndexedObjectStore<T> store, T item)
-        => m_predicate(item);
+    public bool Validate(
+        IndexedObjectStore<T> store,
+        T item
+    ) => m_predicate(item);
 
     /// <summary>
     /// Creates a query condition from a predicate delegate.
@@ -95,6 +97,5 @@ public sealed class IndexedObjectPredicateCondition<T> : IIndexedObjectQueryCond
     /// <returns>
     /// The validated indexed object predicate conditiont that represents the completed operation.
     /// </returns>
-    public static implicit operator IndexedObjectPredicateCondition<T>(Func<T, bool> predicate)
-        => new(predicate);
+    public static implicit operator IndexedObjectPredicateCondition<T>(Func<T, bool> predicate) => new(predicate);
 }

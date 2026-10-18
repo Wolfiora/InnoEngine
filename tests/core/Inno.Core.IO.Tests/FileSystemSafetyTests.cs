@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Xunit;
 
@@ -70,6 +72,40 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     [Fact]
+    public void OwnedTreeEnumerationIncludesNestedFilesAndRejectsMissingRoots()
+    {
+        string nested = Path.Combine(m_root, "nested");
+        Directory.CreateDirectory(nested);
+        string file = Path.Combine(nested, "value.txt");
+        File.WriteAllText(file, "owned");
+
+        Assert.Equal(file, Assert.Single(PathBoundary.EnumerateFiles(m_root)));
+        Assert.Throws<DirectoryNotFoundException>(() => PathBoundary.EnumerateFiles(Path.Combine(m_root, "missing")).ToArray());
+    }
+
+    [Fact]
+    public void OwnershipRejectsCaseAliasesIndependentlyOfVolumeSemantics()
+    {
+        string owned = Path.Combine(m_root, "Owned");
+        string sibling = Path.Combine(m_root, "owned", "value.bin");
+        Assert.Throws<IOException>(() => PathBoundary.RequireContained(owned, sibling));
+        Assert.Throws<IOException>(() => PathBoundary.RequireUnlinkedPath(owned, sibling));
+        Assert.Throws<IOException>(() => PathBoundary.Resolve(owned, "../owned/value.bin"));
+        Assert.Equal(Path.Combine(owned, "value.bin"), PathBoundary.RequireUnlinkedPath(owned, Path.Combine(owned, "value.bin")));
+    }
+
+    [Fact]
+    public void AtomicFileRejectsDifferentlySpelledParentBeforeRenaming()
+    {
+        string parent = Path.Combine(m_root, "Owned");
+        Directory.CreateDirectory(parent);
+        string candidate = Path.Combine(parent, "candidate.bin");
+        File.WriteAllText(candidate, "candidate");
+        Assert.Throws<ArgumentException>(() => AtomicFile.Install(candidate, Path.Combine(m_root, "owned", "target.bin")));
+        Assert.Equal("candidate", File.ReadAllText(candidate));
+    }
+
+    [Fact]
     public void DirectoryInstallReplacesACompleteTreeWithoutLeavingBackupDirectories()
     {
         string candidate = Path.Combine(m_root, "candidate");
@@ -85,6 +121,139 @@ public sealed class FileSystemSafetyTests : IDisposable
         Assert.False(File.Exists(Path.Combine(destination, "previous.txt")));
         Assert.Equal("current", File.ReadAllText(Path.Combine(destination, "current.txt"), Encoding.UTF8));
         Assert.Empty(Directory.EnumerateDirectories(m_root).Where(path => path.Contains(".backup-", StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public async Task DirectoryPublicationToleratesATemporaryWindowsReaderWithoutDeleteSharing()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "published");
+        Directory.CreateDirectory(candidate);
+        string file = Path.Combine(candidate, "value.txt");
+        File.WriteAllText(file, "complete");
+        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        Task publication = Task.Run(() => AtomicDirectory.Publish(candidate, destination));
+        await Task.Delay(150);
+        Assert.False(publication.IsCompleted);
+        reader.Dispose();
+        await publication;
+
+        Assert.Equal("complete", File.ReadAllText(Path.Combine(destination, "value.txt")));
+        Assert.False(Directory.Exists(candidate));
+    }
+
+    [Fact]
+    public async Task DirectoryPublicationCancellationPreservesTheCandidateAndDoesNotReplaceAnExistingOwner()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "published");
+        Directory.CreateDirectory(candidate);
+        string file = Path.Combine(candidate, "value.txt");
+        File.WriteAllText(file, "complete");
+        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var cancellation = new CancellationTokenSource();
+        Task publication = Task.Run(() => AtomicDirectory.Publish(candidate, destination, cancellation.Token));
+        await Task.Delay(100);
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => publication);
+
+        Assert.True(Directory.Exists(candidate));
+        Assert.False(Directory.Exists(destination));
+        reader.Dispose();
+        Directory.CreateDirectory(destination);
+        File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
+        Assert.Throws<IOException>(() => AtomicDirectory.Publish(candidate, destination));
+        Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        Assert.Equal("complete", File.ReadAllText(file));
+    }
+
+    [Fact]
+    public void DirectoryCleanupFailurePreservesTheCompleteCommittedCandidate()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "destination");
+        Directory.CreateDirectory(candidate);
+        Directory.CreateDirectory(destination);
+        File.WriteAllText(Path.Combine(candidate, "current.txt"), "current");
+        string lockedFile = Path.Combine(destination, "locked.txt");
+        File.WriteAllText(lockedFile, "previous");
+        File.SetAttributes(lockedFile, FileAttributes.ReadOnly);
+        try
+        {
+            DirectoryCleanupException failure = Assert.Throws<DirectoryCleanupException>(() => AtomicDirectory.Install(candidate, destination));
+
+            Assert.Contains("installed", failure.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Equal("current", File.ReadAllText(Path.Combine(destination, "current.txt")));
+            Assert.False(Directory.Exists(candidate));
+            string backup = Assert.Single(Directory.EnumerateDirectories(m_root, "destination.backup-*"));
+            Assert.Equal(destination, failure.installedDirectory);
+            Assert.Equal(backup, failure.backupDirectory);
+            Assert.Equal("previous", File.ReadAllText(Path.Combine(backup, "locked.txt")));
+        }
+        finally
+        {
+            foreach (string retained in Directory.EnumerateFiles(m_root, "locked.txt", SearchOption.AllDirectories))
+                File.SetAttributes(retained, FileAttributes.Normal);
+        }
+    }
+
+    [Fact]
+    public void DirectoryInstallRejectsOverlappingTreesBeforeChangingEitherOwner()
+    {
+        string destination = Path.Combine(m_root, "destination");
+        string candidate = Path.Combine(destination, "candidate");
+        Directory.CreateDirectory(candidate);
+        File.WriteAllText(Path.Combine(candidate, "current.txt"), "current");
+        File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
+
+        Assert.Throws<ArgumentException>(() => AtomicDirectory.Install(candidate, destination));
+        Assert.Throws<ArgumentException>(() => AtomicDirectory.Install(destination, candidate));
+        Assert.Throws<ArgumentException>(() => AtomicDirectory.Install(destination, destination));
+
+        Assert.Equal("current", File.ReadAllText(Path.Combine(candidate, "current.txt")));
+        Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        Assert.Empty(Directory.EnumerateDirectories(m_root, "*.backup-*", SearchOption.AllDirectories));
+    }
+
+    [Fact]
+    public void DirectoryInstallRestoresThePreviousTreeWhenTheCandidateCannotMove()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "destination");
+        Directory.CreateDirectory(candidate);
+        Directory.CreateDirectory(destination);
+        string candidateFile = Path.Combine(candidate, "current.txt");
+        File.WriteAllText(candidateFile, "current");
+        File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
+        using var held = new FileStream(candidateFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+        Exception? failure = Record.Exception(() => AtomicDirectory.Install(candidate, destination));
+
+        Assert.True(failure is IOException or UnauthorizedAccessException);
+        Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        Assert.Equal("current", File.ReadAllText(candidateFile));
+        Assert.Empty(Directory.EnumerateDirectories(m_root, "*.backup-*"));
+    }
+
+    [Fact]
+    public void PathBoundaryAcceptsChildrenOfAVolumeRoot()
+    {
+        string root = Path.GetPathRoot(m_root)!;
+        string relative = Path.Combine("InnoBoundaryProbe", "value.bin");
+        string child = Path.Combine(root, relative);
+
+        Assert.Equal(child, PathBoundary.Resolve(root, relative));
+        Assert.Equal(child, PathBoundary.RequireContained(root, child));
     }
 
     public void Dispose()

@@ -1,3 +1,5 @@
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,17 +39,15 @@ public sealed class EditorSettingsTests : IDisposable
     {
         Directory.CreateDirectory(m_projectRoot);
         m_modules = new ModuleHost(new ModuleHostOptions
-        {
-            cacheDirectory = Path.Combine(m_projectRoot, "Library", "Assemblies")
-        });
+        { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorSettingsTests).Assembly)        });
         _ = typeof(EditorSettings);
         _ = System.Reflection.Assembly.Load("Inno.Editor.Panel.Logging");
-        m_types = new TypeCatalog(m_modules);
-        m_serialization = new SerializationRegistry(m_types);
+        m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         SettingsCaptureModule.current = null;
         SettingsCaptureModule.console = null;
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_types, m_serialization, m_diagnostics, m_playMode]);
@@ -292,7 +292,8 @@ public sealed class EditorSettingsTests : IDisposable
     [EditorModule("tests.settings-capture", order: int.MaxValue)]
     private sealed class SettingsCaptureModule(
         EditorSettings settings,
-        IEditorConsole editorConsole) : EditorModule
+        IEditorConsole editorConsole
+    ) : EditorModule
     {
         internal static EditorSettings? current;
         internal static IEditorConsole? console;

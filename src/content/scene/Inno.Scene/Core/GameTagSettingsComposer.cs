@@ -28,8 +28,8 @@ internal sealed class GameTagSettingsComposer
     /// </returns>
     protected override GameTagSettingContribution CaptureContribution(
         GameTagCatalog baseline,
-        GameTagCatalog value)
-    {
+        GameTagCatalog value
+    ) {
         IReadOnlySet<string> baselineTags = baseline.GetTags().ToHashSet(StringComparer.Ordinal);
         IReadOnlySet<string> valueTags = value.GetTags().ToHashSet(StringComparer.Ordinal);
         return new GameTagSettingContribution
@@ -65,8 +65,8 @@ internal sealed class GameTagSettingsComposer
     /// </param>
     protected override void Compose(
         GameTagCatalog target,
-        IReadOnlyList<ProjectSettingContribution<GameTagSettingContribution>> contributions)
-    {
+        IReadOnlyList<ProjectSettingContribution<GameTagSettingContribution>> contributions
+    ) {
         var owners = target.GetTags().ToDictionary(static tag => tag, static _ => "host", StringComparer.Ordinal);
         foreach (ProjectSettingContribution<GameTagSettingContribution> contribution in contributions)
         {

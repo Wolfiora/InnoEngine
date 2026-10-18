@@ -12,7 +12,7 @@ Core 只提供不依赖 Assets、Scene、Rendering、Editor、Build 或具体 Na
 | [Inno.Core.Mathematics](Inno.Core.Mathematics.md) | 向量、矩阵、四元数、颜色与矩形 |
 | [Inno.Core.Identity](Inno.Core.Identity.md) | runtime/persistent identity |
 | [Inno.Core.Serialization](Inno.Core.Serialization.md) | 当前格式结构化序列化与 generation lease |
-| [Inno.Core.Serialization.Generators](Inno.Core.Serialization.Generators.md) | 普通 DTO converter source generation |
+| [Inno.Core.Serialization.Generators](Inno.Core.Serialization.Generators.md) | DTO Converter 和静态成员、恢复、闭合集合元数据生成 |
 | [Inno.Core.Collections](Inno.Core.Collections.md) | 索引对象存储与依赖图 |
 | [Inno.Core.Events](Inno.Core.Events.md) | 有序同步/排队事件分发 |
 | [Inno.Core.Layers](Inno.Core.Layers.md) | 通用 Layer 生命周期、顺序和事件作用域 |

@@ -10,14 +10,14 @@ namespace Inno.Editor.Panel.FileBrowser;
 
 internal sealed class FileBrowserContextMenu(
     AssetEditorModule assets,
-    FileBrowserRename rename)
-{
+    FileBrowserRename rename
+) {
     internal void DrawEntry(
         EditorContext context,
         string id,
         string relativePath,
-        FileBrowserPresentation presentation)
-    {
+        FileBrowserPresentation presentation
+    ) {
         if (NativeImGui.IsItemClicked(ImGuiMouseButton.Right))
             assets.browser.Select(context, relativePath);
         if (!assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry))
@@ -37,8 +37,8 @@ internal sealed class FileBrowserContextMenu(
         EditorContext context,
         string id,
         string relativePath,
-        FileBrowserPresentation presentation)
-    {
+        FileBrowserPresentation presentation
+    ) {
         if (IsReadOnlySource(assets.pipeline, relativePath))
             return;
         bool isOpen = EditorMenuRenderer.ContextMenu(
@@ -51,8 +51,8 @@ internal sealed class FileBrowserContextMenu(
     internal void DrawBackground(
         EditorContext context,
         string id,
-        FileBrowserPresentation presentation)
-    {
+        FileBrowserPresentation presentation
+    ) {
         if (IsReadOnlyLocation(assets.pipeline, assets.browser))
             return;
         bool isOpen = EditorMenuRenderer.WindowContextMenu(

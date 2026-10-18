@@ -10,8 +10,10 @@ internal sealed class RenderPipelineGeneration : IDisposable
     private readonly LifetimeScope m_lifetime = new();
     private readonly Dictionary<string, RenderPipelineFeature> m_features = new(StringComparer.Ordinal);
 
-    internal RenderPipelineGeneration(long typeCacheVersion, RenderPipeline pipeline)
-    {
+    internal RenderPipelineGeneration(
+        long typeCacheVersion,
+        RenderPipeline pipeline
+    ) {
         this.typeCacheVersion = typeCacheVersion;
         this.pipeline = m_lifetime.Own(pipeline);
         features = new ReadOnlyDictionary<string, RenderPipelineFeature>(m_features);
@@ -21,8 +23,10 @@ internal sealed class RenderPipelineGeneration : IDisposable
     internal RenderPipeline pipeline { get; }
     internal IReadOnlyDictionary<string, RenderPipelineFeature> features { get; }
 
-    internal void AddFeature(string id, RenderPipelineFeature feature)
-    {
+    internal void AddFeature(
+        string id,
+        RenderPipelineFeature feature
+    ) {
         if (feature is IDisposable resource)
             m_lifetime.Own(resource);
         m_features.Add(id, feature);

@@ -4,6 +4,7 @@ using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Rendering;
 using Xunit;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders.Tests;
 

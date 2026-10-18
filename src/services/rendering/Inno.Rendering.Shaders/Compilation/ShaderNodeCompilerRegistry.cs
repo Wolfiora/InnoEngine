@@ -53,9 +53,12 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// <returns>
     /// A detached region or neutral diagnostics, never compiler instances.
     /// </returns>
-    public ShaderGraphLoweringResult Lower(ShaderGraphLoweringRequest request, SerializationRegistry serialization,
-        SerializationContext context, CancellationToken cancellationToken = default)
-    {
+    public ShaderGraphLoweringResult Lower(
+        ShaderGraphLoweringRequest request,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        CancellationToken cancellationToken = default
+    ) {
         using IDisposable operation = m_types.AcquireOperation("Lower shader graph region");
         return current.Lower(request, serialization, context, cancellationToken);
     }
@@ -84,10 +87,14 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// <returns>
     /// An immutable provider-free port snapshot.
     /// </returns>
-    public IReadOnlyList<ShaderNodePort> DescribePorts(GraphNodeRecord node, SerializationRegistry serialization,
-        SerializationContext context, ShaderSourceModuleAnalysis? source = null, string implementationId = "",
-        ShaderIrStageInput? input = null)
-    {
+    public IReadOnlyList<ShaderNodePort> DescribePorts(
+        GraphNodeRecord node,
+        SerializationRegistry serialization,
+        SerializationContext context,
+        ShaderSourceModuleAnalysis? source = null,
+        string implementationId = "",
+        ShaderIrStageInput? input = null
+    ) {
         using IDisposable operation = m_types.AcquireOperation("Describe shader node ports");
         return current.DescribePorts(node, serialization, context, source, implementationId, input);
     }

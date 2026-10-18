@@ -19,7 +19,10 @@ public abstract class AnimationBindingProvider : IDisposable
     /// <returns>
     /// True when applied; false when the destination is currently missing or incompatible.
     /// </returns>
-    public abstract bool TryApply(AnimationTarget target, AnimationValue value);
+    public abstract bool TryApply(
+        AnimationTarget target,
+        AnimationValue value
+    );
 
     /// <summary>
     /// Releases subscriptions and resources owned by this extension generation.

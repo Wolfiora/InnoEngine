@@ -52,8 +52,8 @@ public sealed class EditorSettings : EditorModule
         EditorInteractions interactions,
         TypeCatalog types,
         LogRouter logs,
-        SerializationRegistry serialization)
-    {
+        SerializationRegistry serialization
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(interactions);
         ArgumentNullException.ThrowIfNull(types);
@@ -130,8 +130,8 @@ public sealed class EditorSettings : EditorModule
     /// </exception>
     public bool Apply(
         IReadOnlyDictionary<string, EditorSettingObject> values,
-        IReadOnlySet<string>? resets = null)
-    {
+        IReadOnlySet<string>? resets = null
+    ) {
         ArgumentNullException.ThrowIfNull(values);
         var normalizedValues = new Dictionary<string, EditorSettingObject>(
             values.Count,
@@ -206,8 +206,7 @@ public sealed class EditorSettings : EditorModule
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
-    protected override void OnDispose()
-        => m_catalog.Dispose();
+    protected override void OnDispose() => m_catalog.Dispose();
 
     internal void RestoreFromHistory(ReadOnlySpan<byte> document)
     {
