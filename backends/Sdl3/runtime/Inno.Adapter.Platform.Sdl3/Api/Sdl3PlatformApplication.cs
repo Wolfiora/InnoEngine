@@ -8,7 +8,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 /// <summary>
 /// Platform runtime entry point responsible for window creation and platform event polling.
 /// </summary>
-public sealed partial class Sdl3PlatformApplication : IPlatformApplication
+public sealed unsafe partial class Sdl3PlatformApplication : IPlatformApplication
 {
     /// <summary>
     /// Occurs after the observable redraw requested state changes.

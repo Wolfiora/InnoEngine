@@ -32,6 +32,31 @@ public sealed class TaskRuntimeBuildTests : IDisposable
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
+    /// <summary>
+    /// Restores the selected target before publishing a runtime whose existing assets omit that target.
+    /// </summary>
+    [Fact]
+    public void MissingSelectedTargetRequiresRestoreBeforePublication()
+    {
+        string assets = Path.Combine(m_root, "assets.json");
+        File.WriteAllText(m_project, """
+            <Project><PropertyGroup>
+              <TargetFramework>net10.0</TargetFramework>
+              <TargetFrameworkMoniker>.NETCoreApp,Version=v10.0</TargetFrameworkMoniker>
+              <ProjectAssetsFile>assets.json</ProjectAssetsFile>
+            </PropertyGroup></Project>
+            """);
+        File.WriteAllText(assets, """{"targets":{},"libraries":{},"packageFolders":{}}""");
+        var engine = new RecordingEngine(() => true, () => File.WriteAllText(assets,
+            """{"targets":{"net10.0":{}},"libraries":{},"packageFolders":{}}"""));
+        BuildTaskRuntimeTask task = CreateTask(engine);
+        task.Targets = ["PublishInnoBuildTaskHost"];
+        Assert.True(task.Execute(), string.Join("\n", engine.errors.Select(static error => error.Message)));
+        Assert.EndsWith(":Restore", engine.requests[0], StringComparison.Ordinal);
+        Assert.Equal(1, engine.builds);
+        Assert.Single(task.TargetOutputs);
+    }
+
     [Fact]
     public async Task SharedBuildsYieldWhileWaitingAndSerializeWrites()
     {
@@ -207,7 +232,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     {
         string packageRoot = Path.Combine(m_root, "packages");
         string packageDirectory = Path.Combine(packageRoot, "fixture", "1.0.0");
-        string relative = assetGroup == "analyzers" ? "analyzers/dotnet/cs/Fixture.dll" : "lib/net9.0/Fixture.dll";
+        string relative = assetGroup == "analyzers" ? "analyzers/dotnet/cs/Fixture.dll" : "lib/net10.0/Fixture.dll";
         string assembly = Path.Combine(packageDirectory, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(assembly)!);
         File.WriteAllText(assembly, "package-one");
@@ -222,7 +247,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         {
             targets = new Dictionary<string, object>
             {
-                ["net9.0"] = new Dictionary<string, object>
+                ["net10.0"] = new Dictionary<string, object>
                 {
                     ["Fixture/1.0.0"] = package
                 }
@@ -234,7 +259,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             packageFolders = new Dictionary<string, object> { [packageRoot] = new { } }
         }));
         File.WriteAllText(m_project,
-            "<Project><PropertyGroup><TargetFramework>net9.0</TargetFramework>"
+            "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
             + "<ProjectAssetsFile>" + assets + "</ProjectAssetsFile></PropertyGroup>"
             + "<ItemGroup><Compile Include=\"source.cs\" /></ItemGroup></Project>");
         var engine = new RecordingEngine(static () => true);
@@ -305,7 +330,15 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         internal string outputPath = string.Empty;
         private int m_builds;
         private volatile bool m_yielded;
-        internal RecordingEngine(Func<bool> build) => m_build = build;
+        private readonly Action? m_restore;
+
+        internal RecordingEngine(
+            Func<bool> build,
+            Action? restore = null
+        ) {
+            m_build = build;
+            m_restore = restore;
+        }
         internal int builds => m_builds;
         internal bool yielded => m_yielded;
         internal bool reacquired { get; private set; }
@@ -336,6 +369,8 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             requests.Add(projects[0] + ":" + string.Join(";", targets));
             if (returnTargetOutputs)
                 Interlocked.Increment(ref m_builds);
+            else if (targets.Contains("Restore", StringComparer.Ordinal))
+                m_restore?.Invoke();
             properties = globalProperties[0];
             removed = removeGlobalProperties[0];
             TaskItem output = new(outputPath);

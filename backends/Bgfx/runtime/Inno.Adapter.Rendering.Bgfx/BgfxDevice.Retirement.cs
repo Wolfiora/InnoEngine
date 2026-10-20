@@ -28,7 +28,7 @@ sealed unsafe partial class BgfxDevice
         }
 
         EnsureApiThread();
-        if (!m_activeEncoder.IsNull || m_activeGraph is not null)
+        if (m_activeEncoder != null || m_activeGraph is not null)
         {
             throw new InvalidOperationException("Cannot dispose BGFX while a render graph or encoder is active.");
         }
@@ -182,23 +182,22 @@ sealed unsafe partial class BgfxDevice
 
     private void DrainDeferredResourcesForShutdown()
     {
+        // Advance destruction queues without submitting a draw against an already reset view.
         while (m_deferredResources.Count != 0)
         {
-            bgfx.touch(0);
             m_backendFrame = SubmitNativeFrame(bgfx.FrameFlags.Flush);
             ProcessDeferredResources(force: false);
         }
 
         for (int frame = 0; frame < m_deferredDestroyFrames; frame++)
         {
-            bgfx.touch(0);
             m_backendFrame = SubmitNativeFrame(bgfx.FrameFlags.Flush);
         }
     }
 
     private string? GetManagedResourceClosureFailure()
     {
-        if (!m_activeEncoder.IsNull
+        if (m_activeEncoder != null
             || m_activeGraph is not null
             || m_graphFrameBuffers.Count != 0
             || m_graphTextures.Count != 0

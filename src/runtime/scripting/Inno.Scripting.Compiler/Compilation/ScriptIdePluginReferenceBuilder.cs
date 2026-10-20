@@ -59,7 +59,7 @@ internal static class ScriptIdePluginReferenceBuilder
         {
             assembly.name,
             assembly.definitionHash,
-            api.contractFingerprint,
+            api.artifactFingerprint,
             assembly.scope.ToString(),
             assembly.nullable.ToString(),
             assembly.allowUnsafe.ToString()
@@ -81,7 +81,7 @@ internal static class ScriptIdePluginReferenceBuilder
             .Distinct(StringComparer.Ordinal)
             .ToArray();
         var parseOptions = new CSharpParseOptions(
-            LanguageVersion.Latest,
+            LanguageVersion.CSharp14,
             DocumentationMode.Parse,
             SourceCodeKind.Regular,
             preprocessorSymbols: symbols);
@@ -90,8 +90,7 @@ internal static class ScriptIdePluginReferenceBuilder
                 SourceText.From(source.snapshotSource, Encoding.UTF8),
                 parseOptions,
                 source.sourcePath)).ToArray();
-        IEnumerable<MetadataReference> references = FrameworkReferenceResolver
-            .CreateReferencePackReferences()
+        IEnumerable<MetadataReference> references = api.environment.frameworkReferences
             .Concat(api.ideReferencePaths.Select(static path => MetadataReference.CreateFromFile(path)))
             .Concat(dependencies.Select(static path => MetadataReference.CreateFromFile(path)));
         CSharpCompilation compilation = CSharpCompilation.Create(

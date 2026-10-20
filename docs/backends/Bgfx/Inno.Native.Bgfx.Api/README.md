@@ -1,10 +1,10 @@
-# Inno.Native.Bgfx ABI 参考
+# Inno.Native.Bgfx ABI
 
-[权威项目页](../Inno.Native.Bgfx.md)
+[项目与生命周期](../Inno.Native.Bgfx.md)
 
-以下参考保留当前宿主 ABI 的全部语义签名和源码位置；它们不是服务层或脚本 API。原生调用的 owner、线程和关闭顺序从项目页进入。
+按当前正式生成结果分页列出精确 ABI 签名。Raw 指针不携带托管所有权；未声明完整安全语义的接口只提供 Raw 调用。
 
-- [bgfx → CapsGpu](ABI-01.md)
-- [CapsLimits → RenderFrame](ABI-02.md)
-- [ResetFlags → UniformHandle](ABI-03.md)
-- [UniformInfo → ViewStats](ABI-04.md)
+- [ABI 01](ABI-01.md)：450 个声明
+- [ABI 02](ABI-02.md)：451 个声明
+- [ABI 03](ABI-03.md)：450 个声明
+- [ABI 04](ABI-04.md)：451 个声明

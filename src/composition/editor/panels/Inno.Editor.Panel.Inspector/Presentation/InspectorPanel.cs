@@ -88,8 +88,8 @@ internal sealed class InspectorPanel : EditorPanel
         bool visible = NativeImGui.BeginChild(
             "##InspectorScrollRegion",
             Vector2.Zero,
-            ImGuiChildFlags.None,
-            ImGuiWindowFlags.NoSavedSettings);
+            (int)(ImGuiChildFlags.None),
+            (int)(ImGuiWindowFlags.NoSavedSettings));
         try
         {
             if (visible)

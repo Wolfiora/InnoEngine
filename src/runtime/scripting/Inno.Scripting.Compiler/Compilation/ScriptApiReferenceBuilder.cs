@@ -18,6 +18,8 @@ internal sealed record ScriptApiReferenceSet(
     IReadOnlyList<string> runtimeReferencePaths,
     IReadOnlyList<string> ideReferencePaths,
     string contractFingerprint,
+    string artifactFingerprint,
+    ScriptCompilationEnvironment environment,
     string cacheDirectory
 );
 
@@ -28,6 +30,7 @@ internal static class ScriptApiReferenceBuilder
     internal static ScriptApiReferenceSet Build(
         ScriptCompilerOptions options,
         ScriptApiProfile profile,
+        ScriptCompilationEnvironment environment,
         ScriptApiProfile? baseProfile = null,
         ScriptApiReferenceSet? baseReferences = null,
         CancellationToken cancellationToken = default
@@ -35,7 +38,7 @@ internal static class ScriptApiReferenceBuilder
         S_BUILD_GATE.Wait(cancellationToken);
         try
         {
-            return BuildLocked(options, profile, baseProfile, baseReferences, cancellationToken);
+            return BuildLocked(options, profile, environment, baseProfile, baseReferences, cancellationToken);
         }
         finally
         {
@@ -46,15 +49,18 @@ internal static class ScriptApiReferenceBuilder
     private static ScriptApiReferenceSet BuildLocked(
         ScriptCompilerOptions options,
         ScriptApiProfile profile,
+        ScriptCompilationEnvironment environment,
         ScriptApiProfile? baseProfile,
         ScriptApiReferenceSet? baseReferences,
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        string fingerprint = CreateFingerprint(profile);
+        string contractFingerprint = CreateFingerprint(profile);
+        string fingerprint = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(
+            string.Join('|', contractFingerprint, environment.fingerprint, baseReferences?.artifactFingerprint ?? string.Empty))));
         string directory = Path.Combine(options.scriptApiDirectory, profile.name, fingerprint);
         Directory.CreateDirectory(directory);
-        string[] implementationPaths = GetImplementationPaths(profile);
+        string[] implementationPaths = GetImplementationPaths(profile, environment);
         ScriptApiTypeExport[] allExports = profile.exports
             .SelectMany(static export => export.exports)
             .ToArray();
@@ -72,7 +78,7 @@ internal static class ScriptApiReferenceBuilder
             string referencePath = Path.Combine(runtimeDirectory, assemblyName + ".dll");
             if (!File.Exists(referencePath))
                 EmitImplementationReferenceAssembly(
-                    export, referencePath, implementationPaths, exportedTypes, cancellationToken);
+                    export, referencePath, implementationPaths, exportedTypes, environment, cancellationToken);
             runtimeReferencePaths.Add(referencePath);
         }
 
@@ -102,6 +108,7 @@ internal static class ScriptApiReferenceBuilder
                     exportedTypes,
                     profile.namespaceMappings,
                     baseReferences?.ideReferencePaths ?? [],
+                    environment,
                     cancellationToken);
             }
             string documentationPath = Path.ChangeExtension(referencePath, ".xml");
@@ -122,7 +129,9 @@ internal static class ScriptApiReferenceBuilder
         return new ScriptApiReferenceSet(
             runtimeReferencePaths,
             ideReferencePaths,
+            contractFingerprint,
             fingerprint,
+            environment,
             directory);
     }
 
@@ -131,17 +140,18 @@ internal static class ScriptApiReferenceBuilder
         string referencePath,
         IReadOnlyList<string> implementationPaths,
         IReadOnlySet<Type> exportedTypes,
+        ScriptCompilationEnvironment environment,
         CancellationToken cancellationToken
     ) {
         string assemblyName = export.assembly.GetName().Name!;
         string source = ScriptApiStubSourceBuilder.BuildImplementation(export, exportedTypes);
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
             SourceText.From(source, Encoding.UTF8),
-            new CSharpParseOptions(LanguageVersion.Latest),
+            new CSharpParseOptions(LanguageVersion.CSharp14),
             $"<{assemblyName}.ScriptApi.g.cs>",
             cancellationToken: cancellationToken);
         var references = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
-        foreach (MetadataReference reference in FrameworkReferenceResolver.CreateReferencePackReferences())
+        foreach (MetadataReference reference in environment.frameworkReferences)
         {
             if (!string.IsNullOrWhiteSpace(reference.Display))
                 references[reference.Display!] = reference;
@@ -182,6 +192,7 @@ internal static class ScriptApiReferenceBuilder
         IReadOnlySet<Type> exportedTypes,
         IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
         IReadOnlyList<string> baseReferencePaths,
+        ScriptCompilationEnvironment environment,
         CancellationToken cancellationToken
     ) {
         Dictionary<string, string> mappings = namespaceMappings
@@ -193,11 +204,11 @@ internal static class ScriptApiReferenceBuilder
         string source = ScriptApiStubSourceBuilder.BuildLogical(exports, exportedTypes, mappings);
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
             SourceText.From(source, Encoding.UTF8),
-            new CSharpParseOptions(LanguageVersion.Latest),
+            new CSharpParseOptions(LanguageVersion.CSharp14),
             $"<{assemblyName}.g.cs>",
             cancellationToken: cancellationToken);
         var references = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
-        foreach (MetadataReference reference in FrameworkReferenceResolver.CreateReferencePackReferences())
+        foreach (MetadataReference reference in environment.frameworkReferences)
         {
             if (!string.IsNullOrWhiteSpace(reference.Display))
                 references[reference.Display!] = reference;
@@ -355,12 +366,14 @@ internal static class ScriptApiReferenceBuilder
                 .Append(attachableType.kind);
         }
         byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
-        return Convert.ToHexString(hash).ToLowerInvariant();
+        return Convert.ToHexStringLower(hash);
     }
 
-    internal static string[] GetImplementationPaths(ScriptApiProfile profile)
-    {
-        IReadOnlySet<string> frameworkAssemblyNames = FrameworkReferenceResolver.GetFrameworkAssemblyNames();
+    internal static string[] GetImplementationPaths(
+        ScriptApiProfile profile,
+        ScriptCompilationEnvironment environment
+    ) {
+        IReadOnlySet<string> frameworkAssemblyNames = environment.frameworkAssemblyNames;
         return profile.implementationAssemblies
             .Where(assembly => !frameworkAssemblyNames.Contains(assembly.GetName().Name ?? string.Empty))
             .Select(static assembly => assembly.Location)

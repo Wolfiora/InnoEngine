@@ -56,7 +56,7 @@ public static class MiniAudioToolchain
         NativeBuildRecipe recipe = CreateRecipe(context);
         return await NativeArtifactPublisher.PublishAsync(context, recipe,
             async (
-                scoped,
+                @scoped,
                 output,
                 token
             ) => {

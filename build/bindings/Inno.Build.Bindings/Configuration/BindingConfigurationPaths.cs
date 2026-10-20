@@ -1,56 +1,46 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System.Text.RegularExpressions;
+using BGCS;
 using BGCS.Configuration;
-using BGCS.Cpp2C.Configuration;
+using BGCS.Contracts.Inputs;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Bindings;
 
 internal static class BindingConfigurationPaths
 {
-    private static readonly Regex Variables = new("%([A-Za-z_][A-Za-z0-9_]*)%", RegexOptions.CultureInvariant);
-
-    internal static void Apply(
-        CsCodeGeneratorConfig config,
-        IReadOnlyDictionary<string, string>? environment
+    internal static GenerationRequest Apply(
+        GenerationRequest request,
+        NativeToolchainSelection? toolchain
     ) {
-        config.entryFiles = config.entryFiles.Select(path => Expand(path, environment)!).ToList();
-        config.allowedHeaders = config.allowedHeaders.Select(path => Expand(path, environment)!).ToList();
-        config.includeFolders = config.includeFolders.Select(path => Expand(path, environment)!).ToList();
-        config.systemIncludeFolders = config.systemIncludeFolders.Select(path => Expand(path, environment)!).ToList();
-        config.outputPath = Expand(config.outputPath, environment)!;
-        config.targetSysRoot = Expand(config.targetSysRoot, environment);
-        config.compilerPath = Expand(config.compilerPath, environment);
-    }
-
-    internal static void Apply(
-        Cpp2CGeneratorConfig config,
-        IReadOnlyDictionary<string, string>? environment
-    ) {
-        config.entryFiles = config.entryFiles.Select(path => Expand(path, environment)!).ToList();
-        config.allowedHeaders = config.allowedHeaders.Select(path => Expand(path, environment)!).ToList();
-        config.includeFolders = config.includeFolders.Select(path => Expand(path, environment)!).ToList();
-        config.systemIncludeFolders = config.systemIncludeFolders.Select(path => Expand(path, environment)!).ToList();
-        config.outputPath = Expand(config.outputPath, environment)!;
-        config.targetSysRoot = Expand(config.targetSysRoot, environment);
-        config.compilerPath = Expand(config.compilerPath, environment);
-    }
-
-    internal static string? Expand(
-        string? path,
-        IReadOnlyDictionary<string, string>? environment
-    ) {
-        if (path is null)
-            return null;
-        return Variables.Replace(path, match =>
+        if (toolchain is null)
+            return request;
+        BindingConfiguration config = request.configuration;
+        string[] compilerNames = config.source.language == SourceLanguage.Cpp ? ["clang++", "c++", "cl"] : ["clang", "cc", "cl"];
+        string? compiler = null;
+        foreach (string name in compilerNames)
+            if (toolchain.TryResolveExecutable(name, out string? selected))
+            {
+                compiler = selected;
+                break;
+            }
+        ImmutableArray<string> includes = toolchain.environment.TryGetValue("INCLUDE", out string? include)
+            ? include.Split(';', StringSplitOptions.RemoveEmptyEntries).ToImmutableArray() : [];
+        string? sysRoot = toolchain.environment.TryGetValue("EM_CACHE", out string? cache)
+            ? System.IO.Path.Combine(cache, "sysroot")
+            : (toolchain.environment.TryGetValue("SDKROOT", out string? sdkRoot) ? sdkRoot : null);
+        return request.WithConfiguration(config with
         {
-            string name = match.Groups[1].Value;
-            if (environment is null || !environment.TryGetValue(name, out string? value) || string.IsNullOrWhiteSpace(value))
-                throw new InvalidOperationException($"Binding path requires '{name}' from the operation's frozen native toolchain.");
-            if (Variables.IsMatch(value))
-                throw new InvalidOperationException($"Frozen native toolchain value '{name}' contains an unresolved path variable.");
-            return value;
+            targets = config.targets.Select(target => target with
+            {
+                settings = target.settings with
+                {
+                    compilerPath = compiler ?? target.settings.compilerPath,
+                    sysRoot = sysRoot ?? target.settings.sysRoot,
+                    systemIncludeDirectories = includes.IsDefaultOrEmpty ? target.settings.systemIncludeDirectories : includes
+                }
+            }).ToImmutableArray()
         });
     }
 }

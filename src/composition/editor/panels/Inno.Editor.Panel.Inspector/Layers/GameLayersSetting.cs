@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +20,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Editor.Panel.Inspector;
 
 [ProjectSettingPath("Project/Scene/Layers")]
-internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
+internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
 {
     private const int C_LAYER_NAME_BUFFER_SIZE = 128;
 
@@ -67,8 +71,8 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
                                 ImGuiTableFlags.SizingStretchProp |
                                 ImGuiTableFlags.NoPadOuterX |
                                 ImGuiTableFlags.NoSavedSettings;
-        NativeImGui.PushStyleVar(ImGuiStyleVar.CellPadding, ImGuiWidget.style.cellPadding);
-        if (!NativeImGui.BeginTable("##game_layer_definitions", 3, flags))
+        NativeImGui.PushStyleVar((int)ImGuiStyleVar.CellPadding, ImGuiWidget.style.cellPadding);
+        if (!NativeImGui.BeginTable("##game_layer_definitions", 3, (int)flags, default(System.Numerics.Vector2), 0f))
         {
             NativeImGui.PopStyleVar();
             return;
@@ -77,14 +81,14 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         {
             NativeImGui.TableSetupColumn(
                 "Slot",
-                ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize,
+                (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
                 48f * ImGuiWidget.style.zoom);
             NativeImGui.TableSetupColumn(
                 "Name",
-                ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize);
+                (int)(ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize));
             NativeImGui.TableSetupColumn(
                 "Action",
-                ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize,
+                (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
                 72f * ImGuiWidget.style.zoom);
             DrawLayerTableHeader();
             for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
@@ -159,9 +163,9 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         ref string value
     ) {
         NativeImGui.SetNextItemWidth(-1f);
-        NativeImGui.PushStyleColor(ImGuiCol.FrameBg, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.FrameBgHovered, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.FrameBgActive, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.FrameBg, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.FrameBgHovered, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.FrameBgActive, EditorPalette.transparent);
         try
         {
             bool submitted = EditorImGui.InputTextWithHint(
@@ -183,7 +187,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         string?[] names,
         int definedCount
     ) {
-        float spacing = NativeImGui.GetStyle().ItemSpacing.X;
+        float spacing = NativeImGui.Raw.GetStyle()->ItemSpacing.X;
         ImGuiWidget.LabelChip("Defined", EditorPalette.collectionRowAlternate);
         NativeImGui.SameLine(0f, 0f);
         DrawReadOnlyCount($"{definedCount} / {GameLayer.C_MAX_COUNT}", 78f * ImGuiWidget.style.zoom);
@@ -195,29 +199,48 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         string value,
         float width
     ) {
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 size = new(MathF.Max(1f, width), NativeImGui.GetFrameHeight());
         NativeImGui.Dummy(size);
         Vector2 maximum = minimum + size;
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-        drawList.AddRectFilled(minimum, maximum, NativeImGui.GetColorU32(ImGuiCol.FrameBg), style.FrameRounding);
-        drawList.AddRect(
-            minimum,
-            maximum,
-            NativeImGui.GetColorU32(ImGuiCol.Border),
-            style.FrameRounding,
-            ImGuiWidget.style.borderSize);
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.AddRectFilled(
+            drawList,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(maximum),
+            NativeImGui.GetColorU32((int)ImGuiCol.FrameBg),
+            style->FrameRounding,
+            0
+        );
+        NativeImGui.Raw.AddRect(
+            drawList,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(maximum),
+            NativeImGui.GetColorU32((int)ImGuiCol.Border),
+            style->FrameRounding,
+            0,
+            ImGuiWidget.style.borderSize
+        );
         Vector2 textSize = NativeImGui.CalcTextSize(value);
-        drawList.AddText(minimum + (size - textSize) * 0.5f, NativeImGui.GetColorU32(ImGuiCol.Text), value);
+        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(value, allowsNull: false))
+        {
+            NativeImGui.Raw.AddText(
+                drawList,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum + (size - textSize) * 0.5f),
+                NativeImGui.GetColorU32((int)ImGuiCol.Text),
+                (sbyte*)nativeText.pointer,
+                null
+            );
+        }
     }
 
     private static void DrawLayerTableHeader()
     {
         uint background = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionHeader);
         NativeImGui.TableNextRow();
-        NativeImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
-        NativeImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
+        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg0, background);
+        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg1, background);
         DrawHeaderCell(0, "Slot");
         DrawHeaderCell(1, "Name");
         DrawHeaderCell(2, "Action");
@@ -234,7 +257,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
 
     private static void InsetPlainCell()
         => NativeImGui.SetCursorPosX(
-            NativeImGui.GetCursorPosX() + NativeImGui.GetStyle().FramePadding.X);
+            NativeImGui.GetCursorPosX() + NativeImGui.Raw.GetStyle()->FramePadding.X);
 
     private void DrawAddLayer(
         GameLayerCatalog setting,

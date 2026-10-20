@@ -16,7 +16,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Editor.Panel.Inspector;
 
 [ProjectSettingPath("Project/Scene/Tags")]
-internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
+internal sealed unsafe class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
 {
     private const int C_TAG_BUFFER_SIZE = 128;
 
@@ -53,7 +53,7 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
 
     private void DrawAddRow(GameTagCatalog setting)
     {
-        float spacing = NativeImGui.GetStyle().ItemSpacing.X;
+        float spacing = NativeImGui.Raw.GetStyle()->ItemSpacing.X;
         float actionWidth = EditorWidget.GetCompactIconSize().X;
         NativeImGui.SetNextItemWidth(MathF.Max(
             1f,
@@ -95,8 +95,8 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
                                 ImGuiTableFlags.SizingStretchProp |
                                 ImGuiTableFlags.NoPadOuterX |
                                 ImGuiTableFlags.NoSavedSettings;
-        NativeImGui.PushStyleVar(ImGuiStyleVar.CellPadding, ImGuiWidget.style.cellPadding);
-        if (!NativeImGui.BeginTable("##project_tag_definitions", 2, flags))
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.CellPadding), ImGuiWidget.style.cellPadding);
+        if (!NativeImGui.BeginTable("##project_tag_definitions", 2, (int)(flags), default(System.Numerics.Vector2), 0f))
         {
             NativeImGui.PopStyleVar();
             return;
@@ -105,10 +105,10 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
         {
             NativeImGui.TableSetupColumn(
                 "Tag",
-                ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize);
+                (int)(ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize));
             NativeImGui.TableSetupColumn(
                 "Action",
-                ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize,
+                (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
                 72f * ImGuiWidget.style.zoom);
             DrawTagTableHeader();
             for (int i = 0; i < tags.Count; i++)
@@ -150,8 +150,8 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
     {
         uint background = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionHeader);
         NativeImGui.TableNextRow();
-        NativeImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
-        NativeImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
+        NativeImGui.TableSetBgColor((int)(ImGuiTableBgTarget.RowBg0), background);
+        NativeImGui.TableSetBgColor((int)(ImGuiTableBgTarget.RowBg1), background);
         DrawHeaderCell(0, "Tag");
         DrawHeaderCell(1, "Action");
     }
@@ -167,5 +167,5 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
 
     private static void InsetPlainCell()
         => NativeImGui.SetCursorPosX(
-            NativeImGui.GetCursorPosX() + NativeImGui.GetStyle().FramePadding.X);
+            NativeImGui.GetCursorPosX() + NativeImGui.Raw.GetStyle()->FramePadding.X);
 }

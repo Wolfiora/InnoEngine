@@ -17,17 +17,17 @@ internal static class TaskRuntimePackageInputs
         "build", "buildMultiTargeting", "buildTransitive", "contentFiles"
     ];
 
-    internal static void Collect(
+    internal static bool Collect(
         ProjectInstance project,
         ISet<string> inputs,
         CancellationToken cancellation
     ) {
         string assets = project.GetPropertyValue("ProjectAssetsFile");
         if (assets.Length == 0)
-            return;
+            return true;
         assets = Path.GetFullPath(assets, Path.GetDirectoryName(project.FullPath)!);
         if (!File.Exists(assets))
-            return;
+            return false;
         inputs.Add(assets);
         using JsonDocument document = JsonDocument.Parse(File.ReadAllText(assets));
         JsonElement root = document.RootElement;
@@ -38,7 +38,7 @@ internal static class TaskRuntimePackageInputs
         string suffix = runtime.Length == 0 ? string.Empty : "/" + runtime;
         if (!targets.TryGetProperty(framework + suffix, out JsonElement target)
             && !targets.TryGetProperty(moniker + suffix, out target))
-            throw new InvalidDataException($"Task runtime restore does not contain the selected target '{framework}{suffix}' for '{project.FullPath}'.");
+            return false;
         JsonElement libraries = root.GetProperty("libraries");
         string[] folders = root.GetProperty("packageFolders").EnumerateObject()
             .Select(static folder => folder.Name).ToArray();
@@ -80,5 +80,6 @@ internal static class TaskRuntimePackageInputs
                 inputs.Add(input);
             }
         }
+        return true;
     }
 }

@@ -1,3 +1,4 @@
+using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using System;
 using System.Numerics;
 using Inno.Assets;
@@ -56,7 +57,7 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
         }
         catch (Exception failure) when ((failure is System.IO.IOException or InvalidOperationException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
-            NativeImGui.TextWrapped(failure.Message);
+            EditorWidget.WrappedText(failure.Message);
         }
     }
 }

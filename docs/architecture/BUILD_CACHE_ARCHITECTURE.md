@@ -26,7 +26,7 @@
 | `artifacts/native/<component>/<target>/<fingerprint>/` | 验证后的 Native 成品 |
 | Support Pack root 下的 `<target>/<fingerprint>/` | 完整发布输入；`current` 原子选择当前内容身份 |
 | `artifacts/products/editor/<target>/<configuration>/product.lock` | 正在运行的 Editor 与显式产品 clean 之间的读取/独占协调；不保存部署 receipt |
-| `entry/InnoEngine.Editor/bin/<Configuration>/net9.0/` | SDK 构建的可运行入口、所选产品程序集和传递的 native 部署 |
+| `entry/InnoEngine.Editor/bin/<Configuration>/net10.0/` | SDK 构建的可运行入口、所选产品程序集和传递的 native 部署 |
 | `artifacts/build-tools/tasks/` | Task 引导工作目录、不可变运行闭包和私有载入目录 |
 
 目标绑定统一由显式组件 ID 选择。MSBuild 与直接生成读取同一份 `Bindings/bindings.props`，不存在旧目录读取路径。

@@ -1,20 +1,20 @@
-# Inno.Native.Sdl3 ABI 参考
+# Inno.Native.Sdl3 ABI
 
-[权威项目页](../Inno.Native.Sdl3.md)
+[项目与生命周期](../Inno.Native.Sdl3.md)
 
-以下参考保留当前宿主 ABI 的全部语义签名和源码位置；它们不是服务层或脚本 API。原生调用的 owner、线程和关闭顺序从项目页进入。
+按当前正式生成结果分页列出精确 ABI 签名。Raw 指针不携带托管所有权；未声明完整安全语义的接口只提供 Raw 调用。
 
-- [Cleanup → SDL](ABI-01.md)
-- [SDL → SDL](ABI-02.md)
-- [SDL → SDL](ABI-03.md)
-- [SDL → SDL](ABI-04.md)
-- [SDL → SDL](ABI-05.md)
-- [SDL → SDLAtomicInt](ABI-06.md)
-- [SDLAtomicIntPtr → SDLEnvironment](ABI-07.md)
-- [SDLEvent → SDLGamepadType](ABI-08.md)
-- [SDLGLAttr → SDLGPUIndirectDispatchCommand](ABI-09.md)
-- [SDLGPUIndirectDrawCommand → SDLGPUTextureType](ABI-10.md)
-- [SDLGPUTransferBuffer → SDLJoyBatteryEvent](ABI-11.md)
-- [SDLJoyButtonEvent → SDLPixelFormatDetailsPtr](ABI-12.md)
-- [SDLPixelType → SDLTexturePtr](ABI-13.md)
-- [SDLThread → XEvent](ABI-14.md)
+- [ABI 01](ABI-01.md)：454 个声明
+- [ABI 02](ABI-02.md)：455 个声明
+- [ABI 03](ABI-03.md)：455 个声明
+- [ABI 04](ABI-04.md)：454 个声明
+- [ABI 05](ABI-05.md)：455 个声明
+- [ABI 06](ABI-06.md)：455 个声明
+- [ABI 07](ABI-07.md)：455 个声明
+- [ABI 08](ABI-08.md)：454 个声明
+- [ABI 09](ABI-09.md)：455 个声明
+- [ABI 10](ABI-10.md)：455 个声明
+- [ABI 11](ABI-11.md)：454 个声明
+- [ABI 12](ABI-12.md)：455 个声明
+- [ABI 13](ABI-13.md)：455 个声明
+- [ABI 14](ABI-14.md)：455 个声明

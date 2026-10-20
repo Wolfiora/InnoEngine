@@ -24,7 +24,7 @@ public sealed class WikiCoverageTests : IDisposable
         Directory.CreateDirectory(m_root);
         Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00");
         Write("src/foundation/core/Inno.Core.Probe/Inno.Core.Probe.csproj", """
-            <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>
+            <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>
             """);
         Write("src/foundation/core/Inno.Core.Probe/Probe.cs", """
             namespace Inno.Core.Probe;
@@ -51,7 +51,7 @@ public sealed class WikiCoverageTests : IDisposable
     [InlineData("entry/Rebuild/Program.cs", true)]
     [InlineData("Inno.Build.Cli engine", true)]
     [InlineData("InnoEngine.Build.dll rebuild", true)]
-    [InlineData("dotnet build/cli/Inno.Build.Cli/bin/Release/net9.0/Inno.Build.Cli.dll game", true)]
+    [InlineData("dotnet build/cli/Inno.Build.Cli/bin/Release/net10.0/Inno.Build.Cli.dll game", true)]
     [InlineData("Inno.Build.Cli.dll contains the public BuildApplication contract.", false)]
     [InlineData("Rebuild the registry after generation activation.", false)]
     public void ContentBoundariesDistinguishConsumersFromEngineConcepts(
@@ -294,7 +294,7 @@ public sealed class WikiCoverageTests : IDisposable
             """);
         Assert.Contains("cannot resolve the complete public signature", Run(), StringComparison.Ordinal);
         string packageRoot = Path.Combine(m_root, "packages");
-        string reference = Path.Combine(packageRoot, "contract/1.0/ref/net9.0/PackageContract.dll");
+        string reference = Path.Combine(packageRoot, "contract/1.0/ref/net10.0/PackageContract.dll");
         Directory.CreateDirectory(Path.GetDirectoryName(reference)!);
         var compilation = CSharpCompilation.Create("PackageContract",
             [CSharpSyntaxTree.ParseText("namespace PackageContract { public abstract class BaseContract {} }")],
@@ -304,10 +304,10 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.True(compilation.Emit(reference).Success);
         Write("src/foundation/core/Inno.Core.Probe/obj/project.assets.json", $$"""
             {
-              "targets": { "net9.0": { "Contract/1.0": {
+              "targets": { "net10.0": { "Contract/1.0": {
                 "type": "package",
-                "compile": { "ref/net9.0/PackageContract.dll": {} },
-                "runtime": { "lib/net9.0/_._": {} }
+                "compile": { "ref/net10.0/PackageContract.dll": {} },
+                "runtime": { "lib/net10.0/_._": {} }
               } } },
               "libraries": { "Contract/1.0": { "path": "contract/1.0" } },
               "packageFolders": { {{JsonSerializer.Serialize(packageRoot)}}: {} }
@@ -315,12 +315,12 @@ public sealed class WikiCoverageTests : IDisposable
             """);
         Assert.DoesNotContain("cannot resolve the complete public signature", Run(), StringComparison.Ordinal);
         string assets = Path.Combine(m_root, "src/foundation/core/Inno.Core.Probe/obj/project.assets.json");
-        string restored = File.ReadAllText(assets).Replace("\"targets\": { \"net9.0\"", "\"targets\": { \".NETCoreApp,Version=v9.0\"", StringComparison.Ordinal);
-        restored = restored.Insert(restored.LastIndexOf('}'), ", \"project\": { \"frameworks\": { \"net9.0\": {} } }");
+        string restored = File.ReadAllText(assets).Replace("\"targets\": { \"net10.0\"", "\"targets\": { \".NETCoreApp,Version=v10.0\"", StringComparison.Ordinal);
+        restored = restored.Insert(restored.LastIndexOf('}'), ", \"project\": { \"frameworks\": { \"net10.0\": {} } }");
         File.WriteAllText(assets, restored);
         Assert.DoesNotContain("cannot resolve the complete public signature", Run(), StringComparison.Ordinal);
-        File.WriteAllText(assets, restored.Replace(".NETCoreApp,Version=v9.0", "net9.0-browser1.0", StringComparison.Ordinal)
-            .Replace("\"frameworks\": { \"net9.0\": {} }", "\"frameworks\": { \"net9.0-browser1.0\": { \"targetAlias\": \"net9.0\" } }", StringComparison.Ordinal));
+        File.WriteAllText(assets, restored.Replace(".NETCoreApp,Version=v10.0", "net10.0-browser1.0", StringComparison.Ordinal)
+            .Replace("\"frameworks\": { \"net10.0\": {} }", "\"frameworks\": { \"net10.0-browser1.0\": { \"targetAlias\": \"net10.0\" } }", StringComparison.Ordinal));
         Assert.DoesNotContain("cannot resolve the complete public signature", Run(), StringComparison.Ordinal);
         File.Delete(reference);
         Assert.Throws<FileNotFoundException>(() => Run());
@@ -411,7 +411,7 @@ public sealed class WikiCoverageTests : IDisposable
         File.WriteAllText(project, """
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
-                <TargetFramework>net9.0</TargetFramework>
+                <TargetFramework>net10.0</TargetFramework>
                 <DefineConstants>SELECTED_CONTRACT</DefineConstants>
               </PropertyGroup>
               <ItemGroup><Compile Remove="Excluded.cs" /><Compile Include="obj/SelectedBindings.cs" /></ItemGroup>
@@ -437,7 +437,7 @@ public sealed class WikiCoverageTests : IDisposable
             }
             """);
         Write("src/foundation/core/Inno.Core.Probe/obj/UnselectedBindings.cs", "public sealed class UnselectedContract;");
-        string output = Path.Combine(projectDirectory, "bin/Debug/net9.0");
+        string output = Path.Combine(projectDirectory, "bin/Debug/net10.0");
         Directory.CreateDirectory(output);
         File.Copy(EmitScriptReference("Inno.Core.Probe",
             "namespace Inno.Core.Probe { public static class Probe { public static string Read() => string.Empty; } }"),
@@ -445,8 +445,8 @@ public sealed class WikiCoverageTests : IDisposable
         // Unused companion documentation must not prevent reference-only compilation.
         File.WriteAllText(Path.Combine(output, "Inno.Core.Probe.xml"), "<p></th>");
         Write("src/foundation/core/Inno.Core.Unrelated/Inno.Core.Unrelated.csproj",
-            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
-        string unrelated = Path.Combine(m_root, "src/foundation/core/Inno.Core.Unrelated/bin/Debug/net9.0");
+            "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        string unrelated = Path.Combine(m_root, "src/foundation/core/Inno.Core.Unrelated/bin/Debug/net10.0");
         Directory.CreateDirectory(unrelated);
         File.Copy(EmitScriptReference("Inno.Core.Unrelated", "public static class ForeignContract { public static int Read() => 7; }"),
             Path.Combine(unrelated, "Inno.Core.Unrelated.dll"));

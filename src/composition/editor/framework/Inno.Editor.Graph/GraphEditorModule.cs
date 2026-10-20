@@ -137,8 +137,7 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
         bool available
     ) {
         GraphDocumentSession? session = m_identities.Get<GraphDocumentSession>(documentId);
-        if (session is not null)
-            session.available = available;
+        session?.available = available;
     }
 
     /// <summary>

@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -14,22 +15,19 @@ public sealed class BuildOutputOwnershipTests
     [Fact]
     public async Task ConcurrentSdkRequestsKeepExplicitOutputOwnersForTheSameTarget()
     {
-        DirectoryInfo? engine = new(AppContext.BaseDirectory);
-        while (engine is not null && !File.Exists(Path.Combine(engine.FullName, "InnoEngine.sln")))
-            engine = engine.Parent;
-        Assert.NotNull(engine);
+        string engine = TestRepository.GetRoot(typeof(BuildOutputOwnershipTests).Assembly);
         string root = Path.Combine(Path.GetTempPath(), "InnoOutputOwnership", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
             new XDocument(new XElement("Project", new XElement("Import",
-                new XAttribute("Project", Path.Combine(engine.FullName, "Directory.Build.props")))))
+                new XAttribute("Project", Path.Combine(engine, "Directory.Build.props")))))
                 .Save(Path.Combine(root, "Directory.Build.props"));
             File.WriteAllText(Path.Combine(root, "Directory.Build.targets"), "<Project />");
             File.WriteAllText(Path.Combine(root, "Api.cs"), "public static class Api { public static int value => 42; }");
             string project = Path.Combine(root, "Fixture.csproj");
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                new XElement("PropertyGroup", new XElement("TargetFramework", "net9.0"),
+                new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"),
                     new XElement("ImplicitUsings", "disable"), new XElement("Nullable", "enable"),
                     new XElement("EnableDefaultCompileItems", "false")),
                 new XElement("ItemGroup", new XElement("Compile", new XAttribute("Include", "Api.cs")))))

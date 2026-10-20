@@ -11,7 +11,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Editor.Panel.Inspector;
 
 [InspectionDrawer(typeof(Transform))]
-internal sealed class TransformInspectionDrawer(SceneEdits edits) : InspectionDrawer<Transform>
+internal sealed unsafe class TransformInspectionDrawer(SceneEdits edits) : InspectionDrawer<Transform>
 {
     private bool m_world;
 
@@ -131,11 +131,11 @@ internal sealed class TransformInspectionDrawer(SceneEdits edits) : InspectionDr
     ) {
         EditorWidget.PropertyRow("transform." + label, label, () =>
         {
-            float width = MathF.Max(1f, (NativeImGui.GetContentRegionAvail().X - NativeImGui.GetStyle().ItemSpacing.X * 2f) / 3f);
+            float width = MathF.Max(1f, (NativeImGui.GetContentRegionAvail().X - NativeImGui.Raw.GetStyle()->ItemSpacing.X * 2f) / 3f);
             bool changed = EditorWidget.AxisDragFloat(label, "X", ref value.x, width);
-            NativeImGui.SameLine();
+            NativeImGui.SameLine(0f, -1f);
             changed |= EditorWidget.AxisDragFloat(label, "Y", ref value.y, width);
-            NativeImGui.SameLine();
+            NativeImGui.SameLine(0f, -1f);
             changed |= EditorWidget.AxisDragFloat(label, "Z", ref value.z, width);
             if (changed)
                 apply(value);

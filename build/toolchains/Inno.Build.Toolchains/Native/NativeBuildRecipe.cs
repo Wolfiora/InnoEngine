@@ -147,7 +147,8 @@ public sealed class NativeBuildRecipe
             "NativeBuildStatistics.cs", "NativeToolchainSelection.cs", "NativeBuildRecipe.cs", "ProductNativeBuildResult.cs",
             "NativeCMakeExecutor.cs", "NativeCMakeSource.cs", "NativeComponentBuildOptions.cs", "ProductNativeBuildStep.cs", "ProductNativeBuildPlan.cs", "NativeInputMaterializer.cs", "NativeBindingGenerationDescriptor.cs",
             "NativeBindingGenerationResult.cs", "NativeBindingPreparation.cs", "NativeComponentDescriptor.cs", "NativeStaticBuildDefinition.cs",
-            "NativeToolchainPreparation.cs", "BuildHostDescriptor.cs"
+            "NativeToolchainPreparation.cs", "BuildHostDescriptor.cs",
+            "NativeBindingCompilation.cs", "NativeBindingSourceRoot.cs", "NativeBindingSourceFile.cs", "NativeBindingIncludeDirectory.cs", "NativeBindingCMake.cs"
         }.Select(file => Path.Combine(commonRoot, "Native", file)));
         if (context.toolchain?.host.system == "Windows")
             paths.Add(Path.Combine(commonRoot, "Platforms", "WindowsToolchainDirectory.cs"));
@@ -201,11 +202,12 @@ public sealed class NativeBuildRecipe
         NativeBindingGenerationDescriptor generation
     ) {
         IEnumerable<NativeBuildInput> generated = [NativeBuildInput.FromPath(engineRoot, generation.bindingsPath)];
-        if (generation.bridgeDirectory.Length > 0)
-            generated = generated.Append(NativeBuildInput.FromPath(engineRoot, generation.bridgeDirectory));
+        if (generation.nativeDirectory.Length > 0)
+            generated = generated.Append(NativeBuildInput.FromPath(engineRoot, generation.nativeDirectory))
+                .Concat(NativeBindingCompilation.Load(generation.nativeDirectory).GetInputs(engineRoot, generation.nativeDirectory));
         return new NativeBuildRecipe(owner, component, targetId, inputs.Concat(generated),
             declarations.Append("bindings=" + generation.fingerprint)
-                .Append("bindingBridgeRoot=" + generation.bridgeDirectory)) { toolchain = this.toolchain };
+                .Append("bindingNativeRoot=" + generation.nativeDirectory)) { toolchain = this.toolchain };
     }
 
     private static void ValidateSegment(string value)

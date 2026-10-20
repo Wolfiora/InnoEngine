@@ -98,9 +98,9 @@ public sealed class NativeBindingGenerationDescriptor
     public required string bindingsPath { get; init; }
 
     /// <summary>
-    /// Gets the complete native bridge directory, or an empty string for a direct C binding.
+    /// Gets the complete native artifact and compilation-requirement directory, or empty when none is required.
     /// </summary>
-    public required string bridgeDirectory { get; init; }
+    public required string nativeDirectory { get; init; }
 
     /// <summary>
     /// Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources.
@@ -128,11 +128,11 @@ public sealed class NativeBindingGenerationDescriptor
             File.ReadAllText(path)) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
         if (string.IsNullOrWhiteSpace(descriptor.fingerprint)
             || string.IsNullOrWhiteSpace(descriptor.bindingsPath) || !Path.IsPathFullyQualified(descriptor.bindingsPath)
-            || !File.Exists(descriptor.bindingsPath) || descriptor.bridgeDirectory is null || descriptor.artifactDirectory is null
+            || !File.Exists(descriptor.bindingsPath) || descriptor.nativeDirectory is null || descriptor.artifactDirectory is null
             || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
                 || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
-            || descriptor.bridgeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.bridgeDirectory)
-                || !Directory.Exists(descriptor.bridgeDirectory)))
+            || descriptor.nativeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.nativeDirectory)
+                || !Directory.Exists(descriptor.nativeDirectory)))
             throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
         return descriptor;
     }

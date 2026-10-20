@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,7 @@ public sealed class EditorShaderProfileTests
     [Fact]
     public async Task SdkAddedReferencesRetainTheProductTargetAndShaderProfile()
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(EditorShaderProfileTests).Assembly);
         string platform = OperatingSystem.IsWindows() ? "WindowsX64" : "MacOSArm64";
         string target = OperatingSystem.IsWindows() ? "windows-x64" : "macos-arm64";
         string profile = Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, "EditorProduct.props");
@@ -56,7 +57,7 @@ public sealed class EditorShaderProfileTests
         string shaderPlatform,
         int apiCount
     ) {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(EditorShaderProfileTests).Assembly);
         string profile = Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, "ProductBuild.props");
         string backend = Path.Combine(root, "backends", "Bgfx", "runtime",
             "Inno.Adapter.Rendering.Bgfx", "Inno.Adapter.Rendering.Bgfx.csproj");
@@ -80,7 +81,7 @@ public sealed class EditorShaderProfileTests
         string nativeTarget,
         int apiCount
     ) {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(EditorShaderProfileTests).Assembly);
         string profile = Path.Combine(root, "platforms", platform, "build", "Inno.Build." + platform, "EditorProduct.props");
         string backend = Path.Combine(root, "backends", "ImGui", "runtime",
             "Inno.Adapter.Presentation.ImGui.Bgfx", "Inno.Adapter.Presentation.ImGui.Bgfx.csproj");
@@ -104,7 +105,7 @@ public sealed class EditorShaderProfileTests
     [Fact]
     public async Task FrozenProductSourcesKeepTheExplicitOfflineToolOwner()
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(EditorShaderProfileTests).Assembly);
         string backend = Path.Combine(root, "backends", "Bgfx", "runtime",
             "Inno.Adapter.Rendering.Bgfx", "Inno.Adapter.Rendering.Bgfx.csproj");
         string host = ToolchainEnvironment.ResolveExecutable("dotnet");

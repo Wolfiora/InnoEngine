@@ -76,9 +76,9 @@ internal sealed class HierarchyPanel : EditorPanel
         bool visible = NativeImGui.BeginChild(
             "##HierarchyContent",
             Vector2.Zero,
-            ImGuiChildFlags.None,
-            ImGuiWindowFlags.NoSavedSettings |
-            ImGuiWindowFlags.HorizontalScrollbar);
+            (int)(ImGuiChildFlags.None),
+            (int)(ImGuiWindowFlags.NoSavedSettings |
+            ImGuiWindowFlags.HorizontalScrollbar));
         try
         {
             if (visible)
@@ -90,15 +90,15 @@ internal sealed class HierarchyPanel : EditorPanel
         }
     }
 
-    private void DrawContent(EditorContext context)
+    private unsafe void DrawContent(EditorContext context)
     {
         m_drawnIds.Clear();
         m_visibleRowIndex = 0;
         m_selection.Prune(context);
         RevealSelection();
 
-        NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, EditorWidget.style.hierarchyItemSpacing);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.compactFramePadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ItemSpacing), EditorWidget.style.hierarchyItemSpacing);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.compactFramePadding);
         try
         {
             IReadOnlyList<GameScene> scenes = m_workspace.scenes;
@@ -107,7 +107,7 @@ internal sealed class HierarchyPanel : EditorPanel
                 Vector2 contentOrigin = NativeImGui.GetCursorScreenPos();
                 NativeImGui.SetCursorScreenPos(new Vector2(
                     contentOrigin.X,
-                    contentOrigin.Y - ImGuiP.GetCurrentWindow().WindowPadding.Y));
+                    contentOrigin.Y - NativeImGui.Raw.GetCurrentWindow()->WindowPadding.Y));
             }
             for (int i = 0; i < scenes.Count; i++)
             {
@@ -286,7 +286,7 @@ internal sealed class HierarchyPanel : EditorPanel
         bool dimmed = !gameObject.activeInHierarchy;
         if (dimmed)
         {
-            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.hierarchyInactiveText);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.hierarchyInactiveText);
         }
         try
         {
@@ -366,16 +366,16 @@ internal sealed class HierarchyPanel : EditorPanel
                 C_NAME_BUFFER_SIZE));
     }
 
-    private void DrawVisibilityButton(
+    private unsafe void DrawVisibilityButton(
         GameObject gameObject,
         string id
     ) {
         string icon = gameObject.activeSelf ? ImGuiIcon.Eye : ImGuiIcon.EyeSlash;
         float buttonWidth = GetVisibilityButtonWidth();
-        float right = ImGuiP.GetCurrentWindow().WorkRect.Max.X -
+        float right = NativeImGui.Raw.GetCurrentWindow()->WorkRect.Max.X -
                       EditorWidget.style.windowPadding.X -
                       buttonWidth;
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         Vector2 cursor = NativeImGui.GetCursorScreenPos();
         NativeImGui.SetCursorScreenPos(new Vector2(MathF.Max(cursor.X, right), cursor.Y));
         if (EditorWidget.ClickableIcon($"hierarchy_visibility_{id}", icon,
@@ -392,7 +392,7 @@ internal sealed class HierarchyPanel : EditorPanel
         GameScene scene,
         string id
     ) {
-        if (NativeImGui.IsItemClicked(ImGuiMouseButton.Right))
+        if (NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Right)))
             _ = m_interactions.For(HierarchyInteractionIds.C_AREA, scene).Select();
         _ = EditorMenuRenderer.ContextMenu(
             $"##scene_context_{id}",
@@ -404,7 +404,7 @@ internal sealed class HierarchyPanel : EditorPanel
         GameObject gameObject,
         string id
     ) {
-        if (NativeImGui.IsItemClicked(ImGuiMouseButton.Right))
+        if (NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Right)))
             _ = m_interactions.For(HierarchyInteractionIds.C_AREA, gameObject).Select();
         _ = EditorMenuRenderer.ContextMenu(
             $"##hierarchy_context_{id}",
@@ -418,7 +418,7 @@ internal sealed class HierarchyPanel : EditorPanel
             MathF.Max(1f, available.X),
             MathF.Max(EditorWidget.style.hierarchyBlankMinimumHeight, available.Y));
         _ = NativeImGui.InvisibleButton("##hierarchy_blank", size);
-        if (NativeImGui.IsItemClicked(ImGuiMouseButton.Left))
+        if (NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Left)))
         {
             _ = m_interactions.For(HierarchyInteractionIds.C_AREA).Select();
         }

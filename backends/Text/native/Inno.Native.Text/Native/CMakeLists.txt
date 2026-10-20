@@ -3,10 +3,6 @@ if(NOT IS_DIRECTORY "${INNO_ROOT}/extern")
     message(FATAL_ERROR "INNO_ROOT must identify the explicitly selected checkout")
 endif()
 project(inno_text LANGUAGES C CXX)
-file(TO_CMAKE_PATH "${INNO_TEXT_BRIDGE_ROOT}" INNO_TEXT_BRIDGE_ROOT)
-if(NOT INNO_TEXT_BRIDGE_ROOT OR NOT EXISTS "${INNO_TEXT_BRIDGE_ROOT}/src/Classes.cpp")
-    message(FATAL_ERROR "An explicit complete Text binding generation is required")
-endif()
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
@@ -33,11 +29,9 @@ if(NOT INNO_LIBRARY_KIND MATCHES "^(STATIC|SHARED)$")
     message(FATAL_ERROR "INNO_LIBRARY_KIND must explicitly select STATIC or SHARED")
 endif()
 
-add_library(inno-text ${INNO_LIBRARY_KIND}
-    "${INNO_TEXT_BRIDGE_ROOT}/src/Classes.cpp" src/TextRuntime.cpp)
+add_library(inno-text ${INNO_LIBRARY_KIND} src/TextRuntime.cpp)
 target_compile_features(inno-text PRIVATE cxx_std_17)
-target_include_directories(inno-text PRIVATE
-    "${INNO_TEXT_BRIDGE_ROOT}/include" "${CMAKE_CURRENT_LIST_DIR}/include")
+target_include_directories(inno-text PRIVATE "${CMAKE_CURRENT_LIST_DIR}/include")
 target_link_libraries(inno-text PRIVATE freetype harfbuzz)
 set_target_properties(inno-text PROPERTIES
     CXX_VISIBILITY_PRESET hidden

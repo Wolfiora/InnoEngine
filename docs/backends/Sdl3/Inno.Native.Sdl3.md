@@ -20,15 +20,13 @@
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
-
-### `Inno.Native.Sdl3.SDL`
+以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
 
 <!-- api: T:Inno.Native.Sdl3.SDL 75f9ea5744d371e26cd438217c5f4020f8be05b1e992b1a0a022671c99672036 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-e67f3d5045477c09"></a>[`public static class Inno.Native.Sdl3.SDL`](../../../backends/Sdl3/native/Inno.Native.Sdl3/SDL.cs#L10) | Initializes generated imports against the component's dynamic native library. | — | — |
+| 声明 | 语义与限制 |
+| --- | --- |
+| <a id="api-e67f3d5045477c09"></a>[`public static class Inno.Native.Sdl3.SDL`](../../../backends/Sdl3/native/Inno.Native.Sdl3/SDL.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
 
 ## 项目依赖
 

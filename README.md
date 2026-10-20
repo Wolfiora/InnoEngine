@@ -12,14 +12,14 @@ Build your game's rendering models, gameplay systems, and Editor tools on a shar
 
 ## Get started
 
-**Requirements:** Git, a native x64/ARM64 .NET 9 SDK, and your host's C++ toolchain. Windows x64 requires Visual Studio 2022 C++ desktop tools, Windows SDK, and C++ CMake tools. macOS ARM64 requires Xcode command line tools and CMake on PATH. [Host setup and first launch](docs/platform/PRODUCT_STARTUP.md#from-zero).
+**Requirements:** Git, the native x64/ARM64 .NET SDK 10.0.402 (C# 14), and your host's C++ toolchain. Windows x64 requires MSVC C++ desktop tools, Windows SDK, and C++ CMake tools. macOS ARM64 requires Xcode command line tools and CMake on PATH. [Host setup and first launch](docs/platform/PRODUCT_STARTUP.md#from-zero).
 
 ```sh
 git clone --branch kernel --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
 cd InnoEngine
 ```
 
-Open **InnoEngine.sln** in Rider or Visual Studio. Choose one of two startup projects:
+Open **InnoEngine.sln** in a .NET 10-capable Rider or Visual Studio 2026. Choose one of two startup projects:
 
 | Start | What it does |
 |---|---|
@@ -46,7 +46,7 @@ Have a project already? Pass its directory after `--`. To try FlappyBird, clone 
 | macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
 | Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
 
-The current build/cache refactor still requires the Windows and Web product matrix to be rerun. macOS needs validation on a macOS host. GUI, DPI, and audio device checks are tracked separately.
+Windows x64 has current Editor, Support Pack, CoreCLR, and NativeAOT acceptance evidence. Browser publication is blocked by the pinned BGCS package's aggregate ABI capability; macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
 
 ## Built to compose
 

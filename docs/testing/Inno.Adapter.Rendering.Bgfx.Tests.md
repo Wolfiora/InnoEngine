@@ -30,7 +30,7 @@
 ```powershell
 $productProps = Join-Path $PWD 'platforms/WindowsX64/build/Inno.Build.WindowsX64/EditorProduct.props'
 dotnet test backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.Rendering.Bgfx.Tests.csproj --configuration Debug "-p:InnoProductBuildProperties=$productProps" -p:InnoNativeTarget=windows-x64 -p:InnoToolTarget=windows-x64 -p:InnoTestNativeProduct=editor -p:InnoTestNativeTarget=windows-x64 --filter 'ProcessIsolation!=Required' --disable-build-servers -m:1 -nodeReuse:false
-$tests = 'backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/bin/Debug/net9.0/Inno.Adapter.Rendering.Bgfx.Tests.dll'
+$tests = 'backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/bin/Debug/net10.0/Inno.Adapter.Rendering.Bgfx.Tests.dll'
 dotnet test $tests --filter 'FullyQualifiedName~BgfxDeviceTests'
 dotnet test $tests --filter 'FullyQualifiedName~MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission'
 dotnet test $tests --filter 'FullyQualifiedName~InlineSurfaceUsesTheSameConservativeAcknowledgment'
@@ -51,6 +51,7 @@ dotnet test $tests --filter 'FullyQualifiedName~InvalidIntegrationFailsBeforeTak
 | [BgfxDeviceTests.cs](../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxDeviceTests.cs) | `NoopDevice_ExecutesOneGraphAndSubmitsOneFrame`、`NoopDevice_ResetsPublicCommandCountersPerFrame`、`CreateWindowSurface_RejectsUnsupportedPlatformHandlesBeforeNativeCreation`、`NoopDevice_CreatesAndDefersPersistentTextureDestruction` |
 | [BgfxImGuiColorContractTests.cs](../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxImGuiColorContractTests.cs) | `DefaultBackbufferAndImGuiShaderApplyExactlyOneSrgbEncoding`、`DistributedImGuiGraphLoadsTextureAndOutputTransferBindings` |
 | [BgfxShaderProfileTests.cs](../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxShaderProfileTests.cs) | `NewTargetAndRendererUseThePublicConfigurationBoundary`、`DialectDefinesAndCapabilitiesAllParticipateInIdentity`、`InvalidAndDuplicateProfilesFailBeforeCreatingACompiler` |
+| [BgfxShutdownTests.cs](../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxShutdownTests.cs) | `ShutdownAfterAnOffscreenGraphReleasesTheProcessOwner`；`INNO_TEST_GRAPHICS_API` 显式选择实际设备的稳定 API ID，默认 D3D11 / Metal |
 | [BgfxSurfaceIntegrationTests.cs](../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxSurfaceIntegrationTests.cs) | `EachIntegrationValidatesItsOwnAbiAndRole`、`ProvidersRequireAnExplicitBorrowedIntegration` |
 | [BgfxSurfaceRetirementTests.cs](../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxSurfaceRetirementTests.cs) | `MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission`、`InlineSurfaceUsesTheSameConservativeAcknowledgment`、`InvalidIntegrationFailsBeforeTakingTheProcessOwner` |
 | [BgfxToolchainTests.cs](../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxToolchainTests.cs) | `MetalProfileIsOwnedByMacBgfxToolchain`、`Direct3DAndMetalTargetsSelectProfilesWithoutForkingShaderSource`、`BrowserProfileRequiresWebGlWithoutCompute`、`BrowserProfileCompilesTheCommonGraphOnWindows` |

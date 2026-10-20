@@ -85,7 +85,7 @@ public sealed class EditorApplicationTests
             AppContext.BaseDirectory,
             new BuildHostDescriptor("Windows", "x64"),
             BuildTargetId.windowsX64,
-            new NativeBindingGenerator("dotnet"));
+            new NativeBindingGenerator());
         StandardBuildDistribution standard = StandardBuildDistribution.Create(build);
         var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
         {

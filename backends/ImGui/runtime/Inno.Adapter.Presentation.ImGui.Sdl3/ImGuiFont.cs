@@ -9,10 +9,10 @@ namespace Inno.Adapter.Presentation.ImGui;
 /// <summary>
 /// Provides scoped access to font faces registered for the current ImGui context.
 /// </summary>
-public static class ImGuiFont
+public static unsafe class ImGuiFont
 {
     private static readonly object s_sync = new();
-    private static readonly Dictionary<nuint, Dictionary<ImGuiFontStyle, ImFontPtr>> s_fontsByContext = [];
+    private static readonly Dictionary<nuint, Dictionary<ImGuiFontStyle, nint>> s_fontsByContext = [];
 
     /// <summary>
     /// Gets whether an exact font style is available in the current ImGui context.
@@ -26,13 +26,13 @@ public static class ImGuiFont
     public static bool IsAvailable(ImGuiFontStyle style)
     {
         ValidateStyle(style);
-        ImGuiContextPtr context = NativeImGui.GetCurrentContext();
-        if (context.IsNull)
+        ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
+        if (context == null)
             return false;
 
         lock (s_sync)
         {
-            return s_fontsByContext.TryGetValue(GetContextKey(context), out Dictionary<ImGuiFontStyle, ImFontPtr>? fonts) &&
+            return s_fontsByContext.TryGetValue(GetContextKey(context), out Dictionary<ImGuiFontStyle, nint>? fonts) &&
                    fonts.ContainsKey(style);
         }
     }
@@ -49,38 +49,38 @@ public static class ImGuiFont
     public static ImGuiFontScope PushStyle(ImGuiFontStyle style)
     {
         ValidateStyle(style);
-        ImGuiContextPtr context = NativeImGui.GetCurrentContext();
-        if (context.IsNull)
+        ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
+        if (context == null)
             return default;
 
         nuint contextKey = GetContextKey(context);
-        ImFontPtr font;
+        nint font;
         lock (s_sync)
         {
-            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, ImFontPtr>? fonts) ||
+            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts) ||
                 !TryResolve(fonts, style, out font))
             {
                 return default;
             }
         }
 
-        NativeImGui.PushFont(font, 0f);
+        NativeImGui.Raw.PushFont((ImFont*)font, 0f);
         return new ImGuiFontScope(contextKey, true);
     }
 
     internal static void RegisterContext(
-        ImGuiContextPtr context,
-        IReadOnlyDictionary<ImGuiFontStyle, ImFontPtr> fonts
+        ImGuiNativeContext* context,
+        IReadOnlyDictionary<ImGuiFontStyle, nint> fonts
     ) {
-        if (context.IsNull)
+        if (context == null)
             throw new ArgumentException("An ImGui context is required.", nameof(context));
         ArgumentNullException.ThrowIfNull(fonts);
 
-        var registered = new Dictionary<ImGuiFontStyle, ImFontPtr>();
-        foreach ((ImGuiFontStyle style, ImFontPtr font) in fonts)
+        var registered = new Dictionary<ImGuiFontStyle, nint>();
+        foreach ((ImGuiFontStyle style, nint font) in fonts)
         {
             ValidateStyle(style);
-            if (!font.IsNull)
+            if (font != 0)
                 registered[style] = font;
         }
 
@@ -89,20 +89,20 @@ public static class ImGuiFont
     }
 
     internal static void RegisterStyle(
-        ImGuiContextPtr context,
+        ImGuiNativeContext* context,
         ImGuiFontStyle style,
-        ImFontPtr font
+        nint font
     ) {
-        if (context.IsNull)
+        if (context == null)
             throw new ArgumentException("An ImGui context is required.", nameof(context));
         ValidateStyle(style);
-        if (font.IsNull)
+        if (font == 0)
             throw new ArgumentException("A loaded font is required.", nameof(font));
 
         lock (s_sync)
         {
             nuint contextKey = GetContextKey(context);
-            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, ImFontPtr>? fonts))
+            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts))
             {
                 fonts = [];
                 s_fontsByContext.Add(contextKey, fonts);
@@ -111,9 +111,9 @@ public static class ImGuiFont
         }
     }
 
-    internal static void UnregisterContext(ImGuiContextPtr context)
+    internal static void UnregisterContext(ImGuiNativeContext* context)
     {
-        if (context.IsNull)
+        if (context == null)
             return;
         lock (s_sync)
             s_fontsByContext.Remove(GetContextKey(context));
@@ -128,18 +128,18 @@ public static class ImGuiFont
 
     internal static void PopStyle(nuint contextKey)
     {
-        ImGuiContextPtr context = NativeImGui.GetCurrentContext();
-        if (context.IsNull || GetContextKey(context) != contextKey)
+        ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
+        if (context == null || GetContextKey(context) != contextKey)
             throw new InvalidOperationException("The font style scope must be disposed in the context where it was created.");
         NativeImGui.PopFont();
     }
 
-    private static unsafe nuint GetContextKey(ImGuiContextPtr context) => (nuint)context.Handle;
+    private static unsafe nuint GetContextKey(ImGuiNativeContext* context) => (nuint)context;
 
     private static bool TryResolve(
-        IReadOnlyDictionary<ImGuiFontStyle, ImFontPtr> fonts,
+        IReadOnlyDictionary<ImGuiFontStyle, nint> fonts,
         ImGuiFontStyle style,
-        out ImFontPtr font
+        out nint font
     ) {
         if (fonts.TryGetValue(style, out font))
             return true;

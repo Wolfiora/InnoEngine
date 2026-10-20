@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using Inno.Native.Bgfx;
 using Inno.Platform;
@@ -42,7 +41,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private bool m_resetPending;
 
     private CompiledRenderGraph? m_activeGraph;
-    private bgfx.Encoder m_activeEncoder;
+    private bgfx.Encoder* m_activeEncoder;
     private ulong m_nextPersistentId = 1;
     private ulong m_nextReadbackId = 1;
     private uint m_backendFrame;
@@ -110,7 +109,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             }
 
             bgfx.Init init;
-            bgfx.init_ctor(&init);
+            bgfx.Raw.init_ctor(&init);
             if (preferredRenderer.HasValue)
                 init.type = preferredRenderer.Value;
 
@@ -119,7 +118,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             init.resolution.width = checked((uint)m_backbufferWidth);
             init.resolution.height = checked((uint)m_backbufferHeight);
             init.resolution.reset = m_resetFlags;
-            if (!bgfx.init(&init))
+            if (bgfx.Raw.init(&init) == 0)
             {
                 throw new InvalidOperationException("BGFX device initialization failed.");
             }
@@ -131,7 +130,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
                 generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
             }
 
-            capabilities = BgfxCapabilityMapper.FromNative(bgfx.get_caps());
+            capabilities = BgfxCapabilityMapper.FromNative(bgfx.Raw.get_caps());
         }
         catch
         {
@@ -223,7 +222,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     {
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (!m_frameOpen || m_activeGraph is not null || !m_activeEncoder.IsNull)
+        if (!m_frameOpen || m_activeGraph is not null || m_activeEncoder != null)
         {
             throw new InvalidOperationException("Operation requires an open frame before graph execution.");
         }
@@ -246,5 +245,4 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         return ((uint)r << 24) | ((uint)g << 16) | ((uint)b << 8) | a;
     }
 
-    private static int Utf8Length(string value) => Encoding.UTF8.GetByteCount(value);
 }

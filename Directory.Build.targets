@@ -58,7 +58,7 @@
     </ItemGroup>
   </Target>
 
-  <ItemGroup Condition="'$(IsRoslynComponent)' != 'true' and '$(IsTestProject)' != 'true' and '$(MSBuildProjectName)' != 'Inno.Scripting.Compiler' and $([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.')) and !$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.Native.')) and '$(TargetFramework)' != 'netstandard2.0'">
+  <ItemGroup Condition="'$(IsRoslynComponent)' != 'true' and '$(IsTestProject)' != 'true' and '$(IsTestSupportProject)' != 'true' and '$(MSBuildProjectName)' != 'Inno.Scripting.Compiler' and $([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.')) and !$([System.String]::Copy('$(MSBuildProjectName)').StartsWith('Inno.Native.')) and '$(TargetFramework)' != 'netstandard2.0'">
     <ProjectReference
       Include="$(MSBuildThisFileDirectory)src/runtime/generators/Inno.Runtime.Generators/Inno.Runtime.Generators.csproj"
       OutputItemType="Analyzer"
@@ -142,7 +142,7 @@
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenGenerationFingerprint" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenExpectedFingerprint" />
       <Output TaskParameter="ArtifactDirectory" PropertyName="BindGenArtifactDirectory" />
-      <Output TaskParameter="NativeBridgeDirectory" PropertyName="BindGenNativeBridgeDirectory" />
+      <Output TaskParameter="NativeDirectory" PropertyName="BindGenNativeDirectory" />
     </Inno.Build.Tasks.GenerateBindingsTask>
     <PropertyGroup>
       <BindGenOutputDirectory>$([System.IO.Path]::GetDirectoryName('$(BindGenGeneratedSource)'))</BindGenOutputDirectory>
@@ -246,6 +246,25 @@
       <_MSBuildProjectReferenceExistent Condition="'%(_MSBuildProjectReferenceExistent.OutputItemType)' != 'Analyzer'">
         <AdditionalProperties>%(_MSBuildProjectReferenceExistent.AdditionalProperties);InnoNativeBindingSelection=$(InnoNativeBindingSelection)</AdditionalProperties>
       </_MSBuildProjectReferenceExistent>
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="ExposeInnoHostRuntimeClosure"
+    BeforeTargets="GetCopyToOutputDirectoryItems;GetCopyToPublishDirectoryItems"
+    DependsOnTargets="GenerateBuildDependencyFile"
+    Condition="'$(InnoExposeRuntimeClosure)' == 'true' and '$(DesignTimeBuild)' != 'true'">
+    <ItemGroup>
+      <ContentWithTargetPath
+        Include="$(ProjectDepsFilePath)"
+        TargetPath="$(ProjectDepsFileName)"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="PreserveNewest" />
+      <ContentWithTargetPath
+        Include="@(ReferenceCopyLocalPaths)"
+        TargetPath="%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)"
+        CopyToOutputDirectory="PreserveNewest"
+        CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
 

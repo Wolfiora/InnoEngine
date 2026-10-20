@@ -1,9 +1,13 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using Inno.References;
 using Inno.Core.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using BGCS.Runtime;
 
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
@@ -16,7 +20,8 @@ using Inno.Editor.Settings;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Native.ImGui;
-using Inno.Native.ImGuizmo;
+using ImGuizmoMode = Inno.Native.ImGuizmo.ImGuizmoMode;
+using ImGuizmoOperation = Inno.Native.ImGuizmo.ImGuizmoOperation;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Rendering;
 using NativeImGui = Inno.Native.ImGui.ImGui;
@@ -32,7 +37,7 @@ namespace Inno.Editor.Panel.SceneView;
 /// Presents the active Plugin provider and host-owned transform manipulation for the Scene viewport.
 /// </summary>
 [EditorPanel("rendering.scene-view", "Scene", order: 210, menuPath: "Viewports")]
-internal sealed class SceneViewPanel : EditorPanel
+internal sealed unsafe class SceneViewPanel : EditorPanel
 {
     private const string C_VIEWPORT_ID = "scene-view";
     private const string C_GIZMO_CLUSTER_POPUP = "##scene-gizmo-cluster";
@@ -93,7 +98,7 @@ internal sealed class SceneViewPanel : EditorPanel
     {
         using IDisposable presentationScope = m_playModeLoop.EnterPresentationScope();
         _ = context;
-        if (m_gestureTarget is not null && !NativeImGui.IsMouseDown(ImGuiMouseButton.Left))
+        if (m_gestureTarget is not null && !NativeImGui.IsMouseDown((int)ImGuiMouseButton.Left))
             CommitGesture();
 
         Vector2 available = NativeImGui.GetContentRegionAvail();
@@ -108,7 +113,7 @@ internal sealed class SceneViewPanel : EditorPanel
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 maximum = minimum + new Vector2(width, height);
         ManipulationToolbarLayout toolbar = CreateManipulationToolbarLayout(minimum, maximum);
-        bool hovered = NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
+        bool hovered = NativeImGui.IsWindowHovered((int)ImGuiHoveredFlags.RootAndChildWindows)
             && NativeImGui.IsMouseHoveringRect(minimum, maximum);
         bool toolbarHovered = IsManipulationToolbarHovered(toolbar);
         _ = m_rendering.TryConfigureNavigation(
@@ -140,27 +145,27 @@ internal sealed class SceneViewPanel : EditorPanel
         m_rendering.Draw(output, new Vector2(width, height));
         minimum = NativeImGui.GetItemRectMin();
         maximum = NativeImGui.GetItemRectMax();
-        bool viewportClicked = NativeImGui.IsItemClicked(ImGuiMouseButton.Left);
+        bool viewportClicked = NativeImGui.IsItemClicked((int)ImGuiMouseButton.Left);
         toolbar = CreateManipulationToolbarLayout(minimum, maximum);
         toolbarHovered = IsManipulationToolbarHovered(toolbar);
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> icons;
         bool toolbarOwnsPointer;
         bool gizmoOwnsPointer;
-        drawList.ChannelsSplit(3);
+        NativeImGui.Raw.ChannelsSplit(drawList, 3);
         try
         {
-            drawList.ChannelsSetCurrent(0);
+            NativeImGui.Raw.ChannelsSetCurrent(drawList, 0);
             icons = DrawGizmos(minimum, maximum);
-            drawList.ChannelsSetCurrent(2);
+            NativeImGui.Raw.ChannelsSetCurrent(drawList, 2);
             toolbarOwnsPointer = DrawManipulationToolbar(toolbar);
-            drawList.ChannelsSetCurrent(1);
+            NativeImGui.Raw.ChannelsSetCurrent(drawList, 1);
             gizmoOwnsPointer = !navigationOwnsPointer
                 && DrawTransformGizmo(minimum, maximum, hovered && !toolbarHovered);
         }
         finally
         {
-            drawList.ChannelsMerge();
+            NativeImGui.Raw.ChannelsMerge(drawList);
         }
         bool iconOwnsPointer = SelectGizmoIcons(icons,
             viewportClicked && !toolbarOwnsPointer && !gizmoOwnsPointer && !navigationOwnsPointer);
@@ -169,7 +174,7 @@ internal sealed class SceneViewPanel : EditorPanel
             || gizmoOwnsPointer
             || iconOwnsPointer
             || navigationOwnsPointer
-            || NativeImGui.GetIO().KeyAlt)
+            || NativeImGui.Raw.GetIO()->KeyAlt != 0)
             return;
         Vector2 mouse = NativeImGui.GetMousePos();
         float x = (mouse.X - minimum.X) / Math.Max(1f, maximum.X - minimum.X);
@@ -311,28 +316,63 @@ internal sealed class SceneViewPanel : EditorPanel
         int height = Math.Max(1, (int)(maximum.Y - minimum.Y));
         EditorGizmoFrame frame = m_rendering.CollectGizmos(C_VIEWPORT_ID, width, height);
         EngineMatrix worldToClip = space.projectionMatrix * space.viewMatrix;
-        var draw = NativeImGui.GetWindowDrawList();
+        var draw = NativeImGui.Raw.GetWindowDrawList();
         uint white = NativeImGui.ColorConvertFloat4ToU32(Vector4.One);
         uint outline = NativeImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, 0.75f));
         foreach (EditorGizmoLine line in frame.lines)
         {
             if (!TryProject(line.start, out Vector2 start) || !TryProject(line.end, out Vector2 end))
                 continue;
-            draw.AddLine(start + Vector2.One, end + Vector2.One, outline, 3.5f);
-            draw.AddLine(start, end, white, 2.5f);
+            NativeImGui.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(start + Vector2.One),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(end + Vector2.One),
+                outline,
+                3.5f
+            );
+            NativeImGui.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(start),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(end),
+                white,
+                2.5f
+            );
         }
         float iconSize = 24f * EditorWidget.style.zoom;
         var displayIcons = new List<(Vector2 center, EditorGizmoIcon icon)>();
-        ImFontPtr font = NativeImGui.GetFont();
+        ImFont* font = NativeImGui.Raw.GetFont();
         foreach (EditorGizmoIcon icon in frame.icons)
         {
             if (!TryProject(icon.position, out Vector2 center))
                 continue;
             displayIcons.Add((center, icon));
             string glyph = GizmoIconGlyph(icon.iconId);
-            Vector2 size = font.CalcTextSizeA(iconSize, float.MaxValue, 0f, glyph);
-            draw.AddText(font, iconSize, center - size * 0.5f + Vector2.One, outline, glyph);
-            draw.AddText(font, iconSize, center - size * 0.5f, white, glyph);
+            using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(glyph, allowsNull: false);
+            ImVec2C measured = NativeImGui.Raw.CalcTextSizeA(font, iconSize, float.MaxValue, 0f, (sbyte*)nativeText.pointer, null, null);
+            Vector2 size = new(measured.X, measured.Y);
+            Vector2 origin = center - size * 0.5f;
+            NativeImGui.Raw.AddText(
+                draw,
+                font,
+                iconSize,
+                new ImVec2C { X = origin.X + 1f, Y = origin.Y + 1f },
+                outline,
+                (sbyte*)nativeText.pointer,
+                null,
+                0f,
+                null
+            );
+            NativeImGui.Raw.AddText(
+                draw,
+                font,
+                iconSize,
+                new ImVec2C { X = origin.X, Y = origin.Y },
+                white,
+                (sbyte*)nativeText.pointer,
+                null,
+                0f,
+                null
+            );
         }
         return displayIcons;
 
@@ -429,20 +469,20 @@ internal sealed class SceneViewPanel : EditorPanel
 
         if (!SupportsMode(profile, navigation.mode))
             navigation.mode = profile.defaultMode;
-        ImGuiIOPtr io = NativeImGui.GetIO();
+        Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
         if (m_navigationDrag != NavigationDrag.None
-            && !NativeImGui.IsMouseDown(m_navigationDragButton))
+            && !NativeImGui.IsMouseDown((int)m_navigationDragButton))
         {
             m_navigationDrag = NavigationDrag.None;
         }
         bool panning = m_planarNavigation.Update(hovered && m_navigationDrag == NavigationDrag.None
             && profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Pan),
-            NativeImGui.IsMouseClicked(ImGuiMouseButton.Left), NativeImGui.IsMouseClicked(ImGuiMouseButton.Middle),
-            NativeImGui.IsMouseDown(ImGuiMouseButton.Left), NativeImGui.IsMouseDown(ImGuiMouseButton.Middle), io.KeyAlt,
+            NativeImGui.IsMouseClicked((int)ImGuiMouseButton.Left), NativeImGui.IsMouseClicked((int)ImGuiMouseButton.Middle),
+            NativeImGui.IsMouseDown((int)ImGuiMouseButton.Left), NativeImGui.IsMouseDown((int)ImGuiMouseButton.Middle), io->KeyAlt != 0,
             allowAltPrimary: !profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Orbit));
         if (hovered && !panning && m_navigationDrag == NavigationDrag.None)
         {
-            if (io.KeyAlt && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left))
+            if (io->KeyAlt != 0 && NativeImGui.IsMouseClicked((int)ImGuiMouseButton.Left))
             {
                 if (profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Orbit))
                 {
@@ -450,7 +490,7 @@ internal sealed class SceneViewPanel : EditorPanel
                     m_navigationDragButton = ImGuiMouseButton.Left;
                 }
             }
-            else if (NativeImGui.IsMouseClicked(ImGuiMouseButton.Right)
+            else if (NativeImGui.IsMouseClicked((int)ImGuiMouseButton.Right)
                      && profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Fly))
             {
                 m_navigationDrag = NavigationDrag.Fly;
@@ -458,7 +498,7 @@ internal sealed class SceneViewPanel : EditorPanel
             }
         }
 
-        if (!io.WantTextInput && NativeImGui.IsKeyPressed(ImGuiKey.Escape, repeat: false))
+        if (io->WantTextInput == 0 && NativeImGui.IsKeyPressed(ImGuiKey.Escape, repeat: false))
         {
             m_planarNavigation.Cancel();
             m_navigationDrag = NavigationDrag.None;
@@ -472,13 +512,13 @@ internal sealed class SceneViewPanel : EditorPanel
         float aspect = width / height;
         if (panning)
         {
-            Pan(navigation, io.MouseDelta, height);
-            NativeImGui.SetMouseCursor(ImGuiMouseCursor.ResizeAll);
+            Pan(navigation, new Vector2(io->MouseDelta.X, io->MouseDelta.Y), height);
+            NativeImGui.SetMouseCursor((int)ImGuiMouseCursor.ResizeAll);
         }
         switch (m_navigationDrag)
         {
             case NavigationDrag.Orbit:
-                Orbit(navigation, profile, io.MouseDelta);
+                Orbit(navigation, profile, new Vector2(io->MouseDelta.X, io->MouseDelta.Y));
                 break;
             case NavigationDrag.Fly:
                 Fly(navigation, profile, io);
@@ -487,8 +527,8 @@ internal sealed class SceneViewPanel : EditorPanel
 
         if (hovered
             && profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.Zoom)
-            && io.MouseWheel != 0f)
-            Zoom(navigation, profile, io.MouseWheel, minimum, width, height, aspect);
+            && io->MouseWheel != 0f)
+            Zoom(navigation, profile, io->MouseWheel, minimum, width, height, aspect);
         if (hovered
             && profile.capabilities.HasFlag(EditorViewportNavigationCapabilities.FrameSelection)
             && NativeImGui.IsKeyPressed(ImGuiKey.F, repeat: false))
@@ -545,20 +585,20 @@ internal sealed class SceneViewPanel : EditorPanel
     private static void Fly(
         EditorViewportNavigationState navigation,
         EditorViewportNavigationProfile profile,
-        ImGuiIOPtr io
+        Inno.Native.ImGui.ImGuiIO* io
     ) {
         float sensitivity = GetPositive(profile.rotationSensitivity, 0.005f);
         EngineVector3 worldUp = GetWorldUp(profile);
         EngineQuaternion yaw = EngineQuaternion.CreateFromAxisAngle(
             worldUp,
-            -io.MouseDelta.X * sensitivity);
+            -io->MouseDelta.X * sensitivity);
         EngineQuaternion yawed = (yaw * navigation.rotation).normalized;
         EngineVector3 right = EngineVector3.Transform(EngineVector3.RIGHT, yawed).normalized;
         navigation.rotation = ApplyConstrainedPitch(
             yawed,
             right,
             worldUp,
-            -io.MouseDelta.Y * sensitivity);
+            -io->MouseDelta.Y * sensitivity);
         navigation.mode = EditorViewportNavigationMode.Fly;
 
         EngineVector3 movement = EngineVector3.ZERO;
@@ -578,13 +618,13 @@ internal sealed class SceneViewPanel : EditorPanel
             movement -= worldUp;
         if (movement.LengthSquared() > 0.000001f)
         {
-            float multiplier = io.KeyShift
+            float multiplier = io->KeyShift != 0
                 ? GetPositive(profile.fastMovementMultiplier, 4f)
                 : 1f;
             navigation.position += movement.normalized
                 * navigation.movementSpeed
                 * multiplier
-                * MathF.Max(0f, io.DeltaTime);
+                * MathF.Max(0f, io->DeltaTime);
             navigation.pivot = navigation.position + forward * navigation.focusDistance;
         }
     }
@@ -731,12 +771,16 @@ internal sealed class SceneViewPanel : EditorPanel
     ) {
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 maximum = minimum + size;
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-        drawList.AddRectFilled(
-            minimum,
-            maximum,
-            NativeImGui.ColorConvertFloat4ToU32(m_backgroundColor));
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.AddRectFilled(
+            drawList,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(maximum),
+            NativeImGui.ColorConvertFloat4ToU32(m_backgroundColor),
+            0,
+            0
+        );
+        NativeImGui.PushStyleColor((int)ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {
             EditorWidget.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);
@@ -751,14 +795,17 @@ internal sealed class SceneViewPanel : EditorPanel
 
     private bool DrawManipulationToolbar(ManipulationToolbarLayout layout)
     {
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         Vector4 background = EditorPalette.inspectorTargetHeader;
         background.W = EditorPalette.opacityMedium;
-        drawList.AddRectFilled(
-            layout.minimum,
-            layout.maximum,
+        NativeImGui.Raw.AddRectFilled(
+            drawList,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.minimum),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.maximum),
             NativeImGui.ColorConvertFloat4ToU32(background),
-            EditorWidget.style.frameRounding);
+            EditorWidget.style.frameRounding,
+            0
+        );
 
         float itemX = layout.minimum.X + layout.padding;
         float itemY = layout.minimum.Y + layout.padding;
@@ -801,11 +848,13 @@ internal sealed class SceneViewPanel : EditorPanel
             itemY += layout.itemSize.Y + layout.sectionSpacing;
 
             float separatorY = itemY - layout.sectionSpacing * 0.5f;
-            drawList.AddLine(
-                new Vector2(layout.minimum.X + layout.padding, separatorY),
-                new Vector2(layout.maximum.X - layout.padding, separatorY),
+            NativeImGui.Raw.AddLine(
+                drawList,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(layout.minimum.X + layout.padding, separatorY)),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(layout.maximum.X - layout.padding, separatorY)),
                 NativeImGui.ColorConvertFloat4ToU32(Vector4.One),
-                EditorWidget.style.borderSize);
+                EditorWidget.style.borderSize
+            );
 
             bool supportsCoordinateSpace = m_operation != ImGuizmoOperation.Scale;
             string modeIcon = supportsCoordinateSpace && m_mode == ImGuizmoMode.World
@@ -835,7 +884,7 @@ internal sealed class SceneViewPanel : EditorPanel
                     NativeImGui.EndDisabled();
             }
             if (!supportsCoordinateSpace &&
-                NativeImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) &&
+                NativeImGui.IsItemHovered((int)ImGuiHoveredFlags.AllowWhenDisabled) &&
                 EditorWidget.BeginMenuTooltip())
             {
                 NativeImGui.TextUnformatted(modeTooltip);
@@ -866,7 +915,7 @@ internal sealed class SceneViewPanel : EditorPanel
     ) {
         NativeImGui.SetCursorScreenPos(position);
         if (selected)
-            NativeImGui.PushStyleColor(ImGuiCol.Text, Vector4.One);
+            NativeImGui.PushStyleColor((int)ImGuiCol.Text, Vector4.One);
         bool pressed;
         try
         {
@@ -887,10 +936,14 @@ internal sealed class SceneViewPanel : EditorPanel
             Vector2 minimum = NativeImGui.GetItemRectMin();
             Vector2 maximum = NativeImGui.GetItemRectMax();
             float thickness = EditorWidget.style.interactionOverlayThickness;
-            NativeImGui.GetWindowDrawList().AddRectFilled(
-                minimum,
-                new Vector2(minimum.X + thickness, maximum.Y),
-                NativeImGui.ColorConvertFloat4ToU32(Vector4.One));
+            NativeImGui.Raw.AddRectFilled(
+                NativeImGui.Raw.GetWindowDrawList(),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(minimum.X + thickness, maximum.Y)),
+                NativeImGui.ColorConvertFloat4ToU32(Vector4.One),
+                0,
+                0
+            );
         }
         return pressed;
     }
@@ -936,7 +989,7 @@ internal sealed class SceneViewPanel : EditorPanel
     }
 
     private static bool IsManipulationToolbarHovered(ManipulationToolbarLayout layout)
-        => NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
+        => NativeImGui.IsWindowHovered((int)ImGuiHoveredFlags.RootAndChildWindows)
             && NativeImGui.IsMouseHoveringRect(layout.minimum, layout.maximum);
 
     private unsafe bool DrawTransformGizmo(
@@ -962,8 +1015,8 @@ internal sealed class SceneViewPanel : EditorPanel
         WriteColumnMajor(world, model);
 
         NativeImGuizmo.BeginFrame();
-        NativeImGuizmo.SetDrawlist(
-            (Inno.Native.ImGuizmo.ImDrawList*)(nint)NativeImGui.GetWindowDrawList().Handle);
+        NativeImGuizmo.Raw.SetDrawlist(
+            (Inno.Native.ImGuizmo.ImDrawList*)(nint)NativeImGui.Raw.GetWindowDrawList());
         NativeImGuizmo.SetRect(
             minimum.X,
             minimum.Y,
@@ -971,14 +1024,14 @@ internal sealed class SceneViewPanel : EditorPanel
             MathF.Max(1f, maximum.Y - minimum.Y));
         NativeImGuizmo.SetOrthographic(manipulationSpace.isOrthographic);
         NativeImGuizmo.SetGizmoSizeClipSpace(0.21f);
-        var gizmoStyle = new Inno.Native.ImGuizmo.StylePtr(NativeImGuizmo.GetStyle());
-        gizmoStyle.TranslationLineThickness = 3.5f;
-        gizmoStyle.TranslationLineArrowSize = 9f;
-        gizmoStyle.RotationLineThickness = 3f;
-        gizmoStyle.RotationOuterLineThickness = 4f;
-        gizmoStyle.ScaleLineThickness = 3.5f;
-        gizmoStyle.ScaleLineCircleSize = 9f;
-        gizmoStyle.CenterCircleSize = 8f;
+        var gizmoStyle = NativeImGuizmo.Raw.GetStyle();
+        gizmoStyle->TranslationLineThickness = 3.5f;
+        gizmoStyle->TranslationLineArrowSize = 9f;
+        gizmoStyle->RotationLineThickness = 3f;
+        gizmoStyle->RotationOuterLineThickness = 4f;
+        gizmoStyle->ScaleLineThickness = 3.5f;
+        gizmoStyle->ScaleLineCircleSize = 9f;
+        gizmoStyle->CenterCircleSize = 8f;
         ImGuizmoMode effectiveMode = m_operation == ImGuizmoOperation.Scale
             ? ImGuizmoMode.Local
             : m_mode;
@@ -999,7 +1052,7 @@ internal sealed class SceneViewPanel : EditorPanel
                     manipulationSpace.plane == EditorViewportManipulationPlane.XY);
                 NativeImGuizmo.SetAxisLimit(float.PositiveInfinity);
             }
-            changed = NativeImGuizmo.Manipulate(view, projection, operation, effectiveMode, model,
+            changed = NativeImGuizmo.Raw.Manipulate(view, projection, operation, effectiveMode, model,
                 null, null, null, null) != 0;
             isUsing = NativeImGuizmo.IsUsing();
             isOver = NativeImGuizmo.IsOver(operation);

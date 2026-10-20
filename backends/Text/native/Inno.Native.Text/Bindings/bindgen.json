@@ -1,19 +1,11 @@
 {
-  "baseConfig": {
-    "url": "file://common.json"
-  },
-  "preset": "host-c,c-library,function-table",
-  "libName": "inno-text",
-  "entryFiles": [
-    "../Native/Generated/include/Classes.h"
+  "schemaVersion": 1,
+  "extends": [
+    "common.json"
   ],
-  "allowedHeaders": [
-    "../Native/Generated/include/Classes.h",
-    "../Native/Generated/include/common.h",
-    "../Native/Generated/include/enums.h"
-  ],
-  "includeFolders": [
-    "../Native/Generated/include"
-  ],
-  "outputPath": "../Generated"
+  "targets": [
+    {
+      "id": "host"
+    }
+  ]
 }

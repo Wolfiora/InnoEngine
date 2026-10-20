@@ -29,7 +29,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(groupCountX);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(groupCountY);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(groupCountZ);
-        bgfx.encoder_dispatch(
+        bgfx.Raw.encoder_dispatch(
             m_encoder,
             m_viewId,
             pipeline.program,
@@ -85,7 +85,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     ) {
         BgfxPipelineResource pipeline = RequireComputePipeline();
         ValidateIndirect(buffer, firstCommand, commandCount);
-        bgfx.encoder_dispatch_indirect(
+        bgfx.Raw.encoder_dispatch_indirect(
             m_encoder,
             m_viewId,
             pipeline.program,

@@ -1,14 +1,11 @@
 {
-  "baseConfig": {
-    "url": "file://common.json"
-  },
-  "preset": "host-c,c-library,function-table",
-  "libName": "miniaudio",
-  "includeFolders": [
-    "../../../../../extern/miniaudio/extras/miniaudio_split"
+  "schemaVersion": 1,
+  "extends": [
+    "common.json"
   ],
-  "outputPath": "../Generated",
-  "ignoredFunctions": [
-    "ma_log_postf"
+  "targets": [
+    {
+      "id": "host"
+    }
   ]
 }

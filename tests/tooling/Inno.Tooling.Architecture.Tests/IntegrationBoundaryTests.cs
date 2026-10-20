@@ -42,7 +42,7 @@ public sealed class IntegrationBoundaryTests
                 string directory = Path.Combine(root, relative);
                 Directory.CreateDirectory(directory);
                 string path = Path.Combine(directory, Path.GetFileName(directory) + ".csproj");
-                File.WriteAllText(path, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup>" + references + "</Project>");
+                File.WriteAllText(path, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>" + references + "</Project>");
                 return path;
             }
         }

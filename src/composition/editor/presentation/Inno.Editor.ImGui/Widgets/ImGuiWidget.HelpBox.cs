@@ -8,7 +8,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides standard help box presentation in the Editor UI.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     [ThreadStatic]
     private static SectionLayoutState? s_sectionLayout;
@@ -40,15 +40,37 @@ public static partial class ImGuiWidget
         float textWidth = MathF.Max(1f, width - padding.X * 2f - iconWidth - gap);
         Vector2 textSize = NativeImGui.CalcTextSize(text, false, textWidth);
         float height = MathF.Max(NativeImGui.GetTextLineHeight(), textSize.Y) + padding.Y * 2f;
-        ImDrawListPtr draw = NativeImGui.GetWindowDrawList();
+        ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
         Vector4 background = Vector4.Lerp(EditorPalette.windowBackground, color, 0.075f);
         background.W = EditorPalette.opacityOpaque;
         Vector4 outline = color;
         outline.W = EditorPalette.opacityMuted;
-        draw.AddRectFilled(origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(background), 4f * style.zoom);
-        draw.AddRect(origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(outline), 4f * style.zoom);
-        draw.AddRectFilled(origin, origin + new Vector2(2f * style.zoom, height), NativeImGui.ColorConvertFloat4ToU32(color));
-        draw.AddText(origin + padding, NativeImGui.ColorConvertFloat4ToU32(color), icon);
+        NativeImGui.Raw.AddRectFilled(
+            draw,
+            ImGui.ToNative(origin),
+            ImGui.ToNative(origin + new Vector2(width, height)),
+            NativeImGui.ColorConvertFloat4ToU32(background),
+            4f * style.zoom,
+            0
+        );
+        NativeImGui.Raw.AddRect(
+            draw,
+            ImGui.ToNative(origin),
+            ImGui.ToNative(origin + new Vector2(width, height)),
+            NativeImGui.ColorConvertFloat4ToU32(outline),
+            4f * style.zoom,
+            0,
+            1f
+        );
+        NativeImGui.Raw.AddRectFilled(
+            draw,
+            ImGui.ToNative(origin),
+            ImGui.ToNative(origin + new Vector2(2f * style.zoom, height)),
+            NativeImGui.ColorConvertFloat4ToU32(color),
+            0,
+            0
+        );
+        ImGui.DrawNativeText(draw, origin + padding, NativeImGui.ColorConvertFloat4ToU32(color), icon);
         NativeImGui.SetCursorScreenPos(origin + padding + new Vector2(iconWidth + gap, 0f));
         NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + textWidth);
         try
@@ -79,11 +101,15 @@ public static partial class ImGuiWidget
         Vector2 origin = NativeImGui.GetCursorScreenPos();
         float width = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
         float height = NativeImGui.GetTextLineHeight() + style.sectionHeaderPadding.Y * 2f;
-        NativeImGui.GetWindowDrawList().AddRectFilled(
-            origin,
-            origin + new Vector2(width, height),
-            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.hierarchySceneRow));
-        NativeImGui.PushStyleColor(ImGuiCol.Separator, EditorPalette.inspectorSectionBorder);
+        NativeImGui.Raw.AddRectFilled(
+            NativeImGui.Raw.GetWindowDrawList(),
+            ImGui.ToNative(origin),
+            ImGui.ToNative(origin + new Vector2(width, height)),
+            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.hierarchySceneRow),
+            0,
+            0
+        );
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Separator), EditorPalette.inspectorSectionBorder);
         try
         {
             NativeImGui.SeparatorText(title);
@@ -199,8 +225,8 @@ public static partial class ImGuiWidget
         float legendInset = style.sectionHeaderPadding.X;
         int sectionIndex = layout.sectionIndex++;
         uint stateId = NativeImGui.GetID($"##inspector_section_{sectionIndex}");
-        ImGuiStoragePtr storage = NativeImGui.GetStateStorage();
-        bool open = NativeImGui.GetBool(storage, stateId, true);
+        ImGuiStorage* storage = NativeImGui.Raw.GetStateStorage();
+        bool open = NativeImGui.Raw.GetBool(storage, stateId, 1) != 0;
 
         NativeImGui.SetCursorScreenPos(new Vector2(origin.X + legendInset, origin.Y));
         bool titlePressed = false;
@@ -228,7 +254,7 @@ public static partial class ImGuiWidget
         if (titlePressed)
         {
             open = !open;
-            NativeImGui.SetBool(storage, stateId, open);
+            NativeImGui.Raw.SetBool(storage, stateId, open ? (byte)1 : (byte)0);
         }
 
         Vector2 legendMin = NativeImGui.GetItemRectMin();
@@ -244,7 +270,7 @@ public static partial class ImGuiWidget
         if (!open)
         {
             DrawCollapsedSectionBorder(
-                NativeImGui.GetWindowDrawList(),
+                NativeImGui.Raw.GetWindowDrawList(),
                 origin.X,
                 origin.X + width,
                 top,
@@ -266,7 +292,7 @@ public static partial class ImGuiWidget
     }
 
     private static void DrawCollapsedSectionBorder(
-        ImDrawListPtr draw,
+        ImDrawList* draw,
         float left,
         float right,
         float top,
@@ -291,7 +317,7 @@ public static partial class ImGuiWidget
     }
 
     private static void DrawCappedSectionSegment(
-        ImDrawListPtr draw,
+        ImDrawList* draw,
         float from,
         float to,
         float centerY,
@@ -305,16 +331,20 @@ public static partial class ImGuiWidget
         float innerX = capAtStart
             ? MathF.Min(to, capX + halfThickness)
             : MathF.Max(from, capX - halfThickness);
-        draw.AddLine(
-            new Vector2(capX, centerY - halfCap),
-            new Vector2(capX, centerY + halfCap),
+        NativeImGui.Raw.AddLine(
+            draw,
+            ImGui.ToNative(new Vector2(capX, centerY - halfCap)),
+            ImGui.ToNative(new Vector2(capX, centerY + halfCap)),
             color,
-            thickness);
-        draw.AddLine(
-            new Vector2(innerX, centerY),
-            new Vector2(capAtStart ? to : from, centerY),
+            thickness
+        );
+        NativeImGui.Raw.AddLine(
+            draw,
+            ImGui.ToNative(new Vector2(innerX, centerY)),
+            ImGui.ToNative(new Vector2(capAtStart ? to : from, centerY)),
             color,
-            thickness);
+            thickness
+        );
     }
 
     private static void CompleteSection(SectionLayoutState layout)
@@ -328,31 +358,43 @@ public static partial class ImGuiWidget
             NativeImGui.GetCursorScreenPos().Y,
             layout.top + NativeImGui.GetFrameHeight());
         uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorSectionBorder);
-        ImDrawListPtr draw = NativeImGui.GetWindowDrawList();
+        ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
         float radius = MathF.Min(
             style.inspectorSectionRounding,
             MathF.Max(0f, MathF.Min(layout.right - layout.left, bottom - layout.top) * 0.5f));
         float leftLegend = MathF.Max(layout.left + radius, layout.legendLeft);
         float rightLegend = MathF.Min(layout.right - radius, layout.legendRight);
-        draw.PathLineTo(new Vector2(leftLegend, layout.top));
-        draw.PathLineTo(new Vector2(layout.left + radius, layout.top));
-        draw.PathBezierQuadraticCurveTo(
-            new Vector2(layout.left, layout.top),
-            new Vector2(layout.left, layout.top + radius));
-        draw.PathLineTo(new Vector2(layout.left, bottom - radius));
-        draw.PathBezierQuadraticCurveTo(
-            new Vector2(layout.left, bottom),
-            new Vector2(layout.left + radius, bottom));
-        draw.PathLineTo(new Vector2(layout.right - radius, bottom));
-        draw.PathBezierQuadraticCurveTo(
-            new Vector2(layout.right, bottom),
-            new Vector2(layout.right, bottom - radius));
-        draw.PathLineTo(new Vector2(layout.right, layout.top + radius));
-        draw.PathBezierQuadraticCurveTo(
-            new Vector2(layout.right, layout.top),
-            new Vector2(layout.right - radius, layout.top));
-        draw.PathLineTo(new Vector2(rightLegend, layout.top));
-        draw.PathStroke(color, ImDrawFlags.None, style.borderSize);
+        NativeImGui.Raw.PathLineTo(draw, ImGui.ToNative(new Vector2(leftLegend, layout.top)));
+        NativeImGui.Raw.PathLineTo(draw, ImGui.ToNative(new Vector2(layout.left + radius, layout.top)));
+        NativeImGui.Raw.PathBezierQuadraticCurveTo(
+            draw,
+            ImGui.ToNative(new Vector2(layout.left, layout.top)),
+            ImGui.ToNative(new Vector2(layout.left, layout.top + radius)),
+            0
+        );
+        NativeImGui.Raw.PathLineTo(draw, ImGui.ToNative(new Vector2(layout.left, bottom - radius)));
+        NativeImGui.Raw.PathBezierQuadraticCurveTo(
+            draw,
+            ImGui.ToNative(new Vector2(layout.left, bottom)),
+            ImGui.ToNative(new Vector2(layout.left + radius, bottom)),
+            0
+        );
+        NativeImGui.Raw.PathLineTo(draw, ImGui.ToNative(new Vector2(layout.right - radius, bottom)));
+        NativeImGui.Raw.PathBezierQuadraticCurveTo(
+            draw,
+            ImGui.ToNative(new Vector2(layout.right, bottom)),
+            ImGui.ToNative(new Vector2(layout.right, bottom - radius)),
+            0
+        );
+        NativeImGui.Raw.PathLineTo(draw, ImGui.ToNative(new Vector2(layout.right, layout.top + radius)));
+        NativeImGui.Raw.PathBezierQuadraticCurveTo(
+            draw,
+            ImGui.ToNative(new Vector2(layout.right, layout.top)),
+            ImGui.ToNative(new Vector2(layout.right - radius, layout.top)),
+            0
+        );
+        NativeImGui.Raw.PathLineTo(draw, ImGui.ToNative(new Vector2(rightLegend, layout.top)));
+        NativeImGui.Raw.PathStroke(draw, color, (int)(ImDrawFlags.None), style.borderSize);
         NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionSpacing));
         layout.active = false;
         layout.contentVisible = true;

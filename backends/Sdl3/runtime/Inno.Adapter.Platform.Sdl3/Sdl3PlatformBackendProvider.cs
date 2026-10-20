@@ -31,4 +31,3 @@ public sealed class Sdl3PlatformBackendProvider : PlatformBackendProvider
         return new Sdl3PlatformApplication(m_hostIntegration);
     }
 }
-

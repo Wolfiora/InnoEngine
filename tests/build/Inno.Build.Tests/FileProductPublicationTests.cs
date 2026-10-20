@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -23,7 +24,7 @@ public sealed class FileProductPublicationTests : IDisposable
         string platform,
         string nativeFileName
     ) {
-        string engine = ToolchainEnvironment.FindRepoRoot();
+        string engine = TestRepository.GetRoot(typeof(FileProductPublicationTests).Assembly);
         string projectRoot = Path.Combine(m_root, new string('p', 70), new string('p', 70), "PlayerLink");
         Directory.CreateDirectory(projectRoot);
         string project = Path.Combine(projectRoot, "Player.csproj");

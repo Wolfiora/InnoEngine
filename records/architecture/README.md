@@ -15,3 +15,5 @@
 - [当前真实问题与待确认项](acceptance/CURRENT_ENGINE_OPEN_ITEMS_2026_10_15.md)：确认问题、条件性风险、BGCS/平台/GUI延期矩阵及新增并行录制测量。
 
 - [普通工程构建与 entry 启动简化验收（2026-10-17）](acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md)：项目配置、直接启动、既有支持条件下的编译及独立的未验收项目。
+
+- [.NET 10 / C# 14 与 BGCS 接入阶段记录（2026-10-20）](acceptance/NET10_BGCS3_PROGRESS_2026_10_20.md)：调用方、分类并发、命令录制、测试证据与正式 SDK 接入边界。

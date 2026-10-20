@@ -55,13 +55,12 @@ public static class UiToolchain
         NativeBuildRecipe recipe = CreateRecipe(context);
         return await NativeArtifactPublisher.PublishAsync(context, recipe,
             async (
-                scoped,
+                @scoped,
                 output,
                 token
             ) => {
-                string[] arguments = ["-DINNO_UI_BRIDGE_ROOT=" + scoped.RequireBindings(componentDescriptor).bridgeDirectory];
                 string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    source, "inno-ui", arguments, token).ConfigureAwait(false);
+                    source, "inno-ui", [], token).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*inno-ui" + selection.sharedLibraryExtension);
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
@@ -98,6 +97,6 @@ public static class UiToolchain
             throw new NotSupportedException("This standalone producer requires shared linkage; static products use the declared aggregate recipe.");
         return NativeBuildRecipe.CreateForComponent(context, componentDescriptor, "ui", selection.targetId,
             componentDescriptor.staticBuild!.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)),
-            ["-DINNO_UI_BRIDGE_ROOT"], [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "UiToolchain.cs")]);
+            [], [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "UiToolchain.cs")]);
     }
 }

@@ -205,7 +205,7 @@ internal static class PublicApiBoundaryValidator
         ) {
             XDocument document = XDocument.Load(path);
             string name = document.Descendants("AssemblyName").FirstOrDefault()?.Value ?? Path.GetFileNameWithoutExtension(path);
-            string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net9.0";
+            string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net10.0";
             string? target = document.Descendants("InnoProductTarget").FirstOrDefault()?.Value;
             return new Project(path, name, Path.Combine(Path.GetDirectoryName(path)!,
                 target is null ? "bin" : Path.Combine("bin", target), configuration, framework, name + ".dll"),

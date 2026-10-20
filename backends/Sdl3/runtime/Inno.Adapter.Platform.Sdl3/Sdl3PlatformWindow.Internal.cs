@@ -8,11 +8,11 @@ namespace Inno.Adapter.Platform.Sdl3;
 /// <summary>
 /// Represents a native platform window.
 /// </summary>
-public sealed partial class Sdl3PlatformWindow
+public sealed unsafe partial class Sdl3PlatformWindow
 {
     private readonly Action<Sdl3PlatformWindow> m_onDisposed;
     private readonly int m_ownerThreadId;
-    private SDLWindow m_window;
+    private SDLWindow* m_window;
     private readonly uint m_windowId;
     private readonly string m_title;
     private readonly bool m_ownsNativeWindow;
@@ -27,12 +27,12 @@ public sealed partial class Sdl3PlatformWindow
     private readonly PlatformNativeHandles m_nativeHandles;
     private readonly nint m_sdlWindowHandle;
     private bool m_disposed;
-    internal SDLWindow sdlWindow => m_window;
+    internal SDLWindow* sdlWindow => m_window;
     internal bool ownsNativeWindow => m_ownsNativeWindow;
     internal bool isVisible => !m_hidden && !m_minimized;
 
     internal Sdl3PlatformWindow(
-        SDLWindow window,
+        SDLWindow* window,
         string title,
         bool ownsNativeWindow,
         ISdl3HostIntegration hostIntegration,
@@ -42,19 +42,19 @@ public sealed partial class Sdl3PlatformWindow
         m_onDisposed = onDisposed;
         m_ownerThreadId = ownerThreadId;
         m_window = window;
-        m_sdlWindowHandle = (nint)window.Handle;
+        m_sdlWindowHandle = (nint)window;
         m_title = title;
         m_ownsNativeWindow = ownsNativeWindow;
-        m_windowId = SDL.GetWindowID(m_window);
+        m_windowId = SDL.Raw.GetWindowId(m_window);
 
         var currentWidth = 0;
         var currentHeight = 0;
-        if (!SDL.GetWindowSize(m_window, ref currentWidth, ref currentHeight))
-            throw new InvalidOperationException(SDL.GetError() ?? "SDL_GetWindowSize failed.");
+        if (SDL.Raw.GetWindowSize(m_window, &currentWidth, &currentHeight) == 0)
+            throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSize failed.");
         m_width = currentWidth;
         m_height = currentHeight;
         RefreshPixelSize();
-        var flags = (SDLWindowFlags)SDL.GetWindowFlags(m_window);
+        var flags = (SDLWindowFlags)SDL.Raw.GetWindowFlags(m_window);
         m_isFocused = hostIntegration.GetInitialFocus(m_sdlWindowHandle);
         m_hidden = (flags & SDLWindowFlags.Hidden) != 0;
         m_minimized = (flags & SDLWindowFlags.Minimized) != 0;
@@ -113,11 +113,11 @@ public sealed partial class Sdl3PlatformWindow
     {
         var pixelWidth = 0;
         var pixelHeight = 0;
-        if (!SDL.GetWindowSizeInPixels(m_window, ref pixelWidth, ref pixelHeight))
-            throw new InvalidOperationException(SDL.GetError() ?? "SDL_GetWindowSizeInPixels failed.");
+        if (SDL.Raw.GetWindowSizeInPixels(m_window, &pixelWidth, &pixelHeight) == 0)
+            throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSizeInPixels failed.");
         UpdatePixelSize(pixelWidth, pixelHeight);
     }
-    
+
     /// <summary>
     /// Queues a close request for processing at the next platform safety point.
     /// </summary>
@@ -138,12 +138,12 @@ public sealed partial class Sdl3PlatformWindow
             return;
         }
 
-        if (!m_window.IsNull && m_ownsNativeWindow)
+        if (m_window != null && m_ownsNativeWindow)
         {
-            SDL.DestroyWindow(m_window);
+            SDL.Raw.DestroyWindow(m_window);
         }
 
-        m_window = SDLWindow.Null;
+        m_window = null;
         m_isClosed = true;
         m_isFocused = false;
         m_disposed = true;

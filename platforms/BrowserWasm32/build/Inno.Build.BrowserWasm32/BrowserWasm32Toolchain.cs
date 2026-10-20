@@ -73,8 +73,11 @@ public static class BrowserWasm32Toolchain
                     .Select(path => Path.GetFullPath(path, context.engineRoot))
                     .Concat(step.options.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot))))
                 .Concat(generations.Values.Select(static generation => generation.bindingsPath))
-                .Concat(generations.Values.Where(static generation => generation.bridgeDirectory.Length != 0)
-                    .Select(static generation => generation.bridgeDirectory))
+                .Concat(generations.Values.Where(static generation => generation.nativeDirectory.Length != 0)
+                    .Select(static generation => generation.nativeDirectory))
+                .Concat(generations.Values.Where(static generation => generation.nativeDirectory.Length != 0)
+                    .SelectMany(generation => NativeBindingCompilation.Load(generation.nativeDirectory)
+                        .GetInputs(context.engineRoot, generation.nativeDirectory).Select(static input => input.physicalPath)))
                 .Append(Path.Combine(owner, "Native", "CMakeLists.txt"))
                 .Distinct(StringComparer.Ordinal).ToArray();
             string[] declarations = plan.steps.Select(step => step.id + "=" + step.component.staticBuild!.cmakeFile)
@@ -91,7 +94,7 @@ public static class BrowserWasm32Toolchain
                 [Path.Combine(owner, "BrowserWasm32Toolchain.cs"), Path.Combine(owner, "BrowserWasm32NativeArtifacts.cs")]);
             NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context, recipe,
                 async (
-                    scoped,
+                    @scoped,
                     output,
                     token
                 ) => {
@@ -99,7 +102,7 @@ public static class BrowserWasm32Toolchain
                     Directory.CreateDirectory(intermediate);
                     string selection = Path.Combine(intermediate, "Components.cmake");
                     NativeCMakeSource sources = await NativeCMakeExecutor.PrepareSourceAsync(
-                        scoped, componentDescriptor, token).ConfigureAwait(false);
+                        @scoped, componentDescriptor, token).ConfigureAwait(false);
                     WriteComponentSelection(selection, scoped.engineRoot, sources, plan, generations);
                     string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
                         Path.Combine(owner, "Native"), null,
@@ -146,8 +149,6 @@ public static class BrowserWasm32Toolchain
             text.AppendLine("set(INNO_COMPONENT_ID " + CMakeLiteral(step.id) + ")");
             if (step.component.staticBuild!.nativeSourceDirectory is string nativeSource)
                 text.AppendLine("set(INNO_COMPONENT_NATIVE " + CMakeLiteral(sources.ResolvePath(Path.GetFullPath(nativeSource, engineRoot))) + ")");
-            string bridge = generations[step.component.nativeProject].bridgeDirectory;
-            text.AppendLine("set(INNO_COMPONENT_BRIDGE " + CMakeLiteral(bridge.Length == 0 ? string.Empty : sources.ResolvePath(bridge)) + ")");
             text.AppendLine("include(" + CMakeLiteral(sources.ResolvePath(Path.GetFullPath(step.component.staticBuild!.cmakeFile, engineRoot))) + ")");
             text.AppendLine("endfunction()");
             text.AppendLine(scope + "()");

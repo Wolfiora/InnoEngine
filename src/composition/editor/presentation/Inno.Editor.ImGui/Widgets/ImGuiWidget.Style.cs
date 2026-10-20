@@ -9,7 +9,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     private static float s_appliedZoom = float.NaN;
     private static bool? s_appliedCompactMode;
@@ -24,7 +24,7 @@ public static partial class ImGuiWidget
     /// </summary>
     public static void SetupStyle()
     {
-        ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
+        ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
         ApplyLayoutStyle(nativeStyle);
         EditorPalette.Apply(nativeStyle);
         s_appliedZoom = style.zoom;
@@ -39,41 +39,41 @@ public static partial class ImGuiWidget
             SetupStyle();
     }
 
-    private static void ApplyLayoutStyle(ImGuiStylePtr nativeStyle)
+    private static void ApplyLayoutStyle(ImGuiStyle* nativeStyle)
     {
-        nativeStyle.Alpha = EditorPalette.opacityOpaque;
-        nativeStyle.DisabledAlpha = style.disabledAlpha;
-        nativeStyle.FontScaleMain = style.fontScale;
-        nativeStyle.WindowPadding = style.windowPadding;
-        nativeStyle.WindowRounding = style.windowRounding;
-        nativeStyle.WindowBorderSize = style.borderSize;
-        nativeStyle.WindowMinSize = style.windowMinimumSize;
-        nativeStyle.WindowTitleAlign = new Vector2(0.5f, 0.5f);
-        nativeStyle.WindowMenuButtonPosition = ImGuiDir.None;
-        nativeStyle.ChildRounding = style.windowRounding;
-        nativeStyle.ChildBorderSize = style.borderSize;
-        nativeStyle.PopupRounding = style.menuRounding;
-        nativeStyle.PopupBorderSize = 0f;
-        nativeStyle.FramePadding = style.framePadding;
-        nativeStyle.FrameRounding = style.frameRounding;
-        nativeStyle.FrameBorderSize = 0f;
-        nativeStyle.ItemSpacing = style.itemSpacing;
-        nativeStyle.ItemInnerSpacing = style.itemInnerSpacing;
-        nativeStyle.CellPadding = style.cellPadding;
-        nativeStyle.IndentSpacing = style.indentSpacing;
-        nativeStyle.SeparatorTextPadding = style.sectionHeaderPadding;
-        nativeStyle.SeparatorTextBorderSize = style.borderSize;
-        nativeStyle.ColumnsMinSpacing = style.columnMinimumSpacing;
-        nativeStyle.ScrollbarSize = style.scrollbarSize;
-        nativeStyle.ScrollbarPadding = style.scrollbarPadding;
-        nativeStyle.ScrollbarRounding = style.frameRounding;
-        nativeStyle.GrabMinSize = style.grabMinimumSize;
-        nativeStyle.GrabRounding = style.frameRounding;
-        nativeStyle.TabRounding = style.windowRounding;
-        nativeStyle.TabBorderSize = 0f;
-        nativeStyle.TabBarOverlineSize = 0f;
-        nativeStyle.ColorButtonPosition = ImGuiDir.Right;
-        nativeStyle.ButtonTextAlign = new Vector2(0.5f, 0.5f);
-        nativeStyle.SelectableTextAlign = Vector2.Zero;
+        nativeStyle->Alpha = EditorPalette.opacityOpaque;
+        nativeStyle->DisabledAlpha = style.disabledAlpha;
+        nativeStyle->FontScaleMain = style.fontScale;
+        nativeStyle->WindowPadding = ImGui.ToNative(style.windowPadding);
+        nativeStyle->WindowRounding = style.windowRounding;
+        nativeStyle->WindowBorderSize = style.borderSize;
+        nativeStyle->WindowMinSize = ImGui.ToNative(style.windowMinimumSize);
+        nativeStyle->WindowTitleAlign = ImGui.ToNative(new Vector2(0.5f, 0.5f));
+        nativeStyle->WindowMenuButtonPosition = ImGuiDir.None;
+        nativeStyle->ChildRounding = style.windowRounding;
+        nativeStyle->ChildBorderSize = style.borderSize;
+        nativeStyle->PopupRounding = style.menuRounding;
+        nativeStyle->PopupBorderSize = 0f;
+        nativeStyle->FramePadding = ImGui.ToNative(style.framePadding);
+        nativeStyle->FrameRounding = style.frameRounding;
+        nativeStyle->FrameBorderSize = 0f;
+        nativeStyle->ItemSpacing = ImGui.ToNative(style.itemSpacing);
+        nativeStyle->ItemInnerSpacing = ImGui.ToNative(style.itemInnerSpacing);
+        nativeStyle->CellPadding = ImGui.ToNative(style.cellPadding);
+        nativeStyle->IndentSpacing = style.indentSpacing;
+        nativeStyle->SeparatorTextPadding = ImGui.ToNative(style.sectionHeaderPadding);
+        nativeStyle->SeparatorTextBorderSize = style.borderSize;
+        nativeStyle->ColumnsMinSpacing = style.columnMinimumSpacing;
+        nativeStyle->ScrollbarSize = style.scrollbarSize;
+        nativeStyle->ScrollbarPadding = style.scrollbarPadding;
+        nativeStyle->ScrollbarRounding = style.frameRounding;
+        nativeStyle->GrabMinSize = style.grabMinimumSize;
+        nativeStyle->GrabRounding = style.frameRounding;
+        nativeStyle->TabRounding = style.windowRounding;
+        nativeStyle->TabBorderSize = 0f;
+        nativeStyle->TabBarOverlineSize = 0f;
+        nativeStyle->ColorButtonPosition = ImGuiDir.Right;
+        nativeStyle->ButtonTextAlign = ImGui.ToNative(new Vector2(0.5f, 0.5f));
+        nativeStyle->SelectableTextAlign = ImGui.ToNative(Vector2.Zero);
     }
 }

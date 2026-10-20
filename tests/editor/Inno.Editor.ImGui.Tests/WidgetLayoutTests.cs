@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using System;
 using System.Numerics;
 
@@ -182,10 +185,10 @@ public sealed unsafe class WidgetLayoutTests
                 availableWidth = NativeImGui.GetContentRegionAvail().X;
                 Widget.SearchInput("commands", "Search commands...", ref query);
                 searchWidth = NativeImGui.GetItemRectSize().X;
-                NativeImGui.MenuItem("Set Active Scene");
-                NativeImGui.MenuItem("Create");
-                NativeImGui.MenuItem("Rename", "F2");
-                NativeImGui.MenuItem("Unload", "Delete");
+                NativeImGui.MenuItem("Set Active Scene", string.Empty, false, true);
+                NativeImGui.MenuItem("Create", string.Empty, false, true);
+                NativeImGui.MenuItem("Rename", "F2", false, true);
+                NativeImGui.MenuItem("Unload", "Delete", false, true);
                 scroll = new Vector2(NativeImGui.GetScrollMaxX(), NativeImGui.GetScrollMaxY());
                 Widget.EndContextMenu();
             }
@@ -390,27 +393,26 @@ public sealed unsafe class WidgetLayoutTests
         string name,
         Vector2 size
     ) {
-        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), ImGuiCond.Always);
-        NativeImGui.SetNextWindowSize(size, ImGuiCond.Always);
-        NativeImGui.Begin(
-            name,
-            ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove
-                | ImGuiWindowFlags.NoSavedSettings);
+        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
+        NativeImGui.SetNextWindowSize(size, (int)(ImGuiCond.Always));
+        using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated(name, allowsNull: false);
+        NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove
+                | ImGuiWindowFlags.NoSavedSettings));
     }
 
     private sealed class NativeContext : IDisposable
     {
-        private readonly ImGuiContextPtr m_context;
+        private readonly ImGuiNativeContext* m_context;
 
         public NativeContext(float zoom)
         {
-            m_context = new ImGuiContextPtr(NativeImGui.CreateContext());
-            ImGuiIOPtr io = NativeImGui.GetIO();
-            io.DisplaySize = new Vector2(1024f, 768f);
-            io.DeltaTime = 1f / 60f;
-            io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
-            io.Fonts.RendererHasTextures = true;
-            io.IniFilename = null;
+            m_context = NativeImGui.Raw.CreateContext(null);
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1024f, 768f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            io->IniFilename = null;
             Widget.style.SetZoom(zoom);
             Widget.SetupStyle();
         }
@@ -428,19 +430,19 @@ public sealed unsafe class WidgetLayoutTests
             Action draw,
             bool settleHover = true
         ) {
-            ImGuiIOPtr io = NativeImGui.GetIO();
-            io.AddMousePosEvent(position.X, position.Y);
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            NativeImGui.Raw.AddMousePosEvent(io, position.X, position.Y);
             if (settleHover)
                 Frame(draw);
-            io.AddMouseButtonEvent(button, true);
+            NativeImGui.Raw.AddMouseButtonEvent(io, button, (true ? (byte)1 : (byte)0));
             Frame(draw);
-            io.AddMouseButtonEvent(button, false);
+            NativeImGui.Raw.AddMouseButtonEvent(io, button, (false ? (byte)1 : (byte)0));
             Frame(draw);
         }
 
         public void Dispose()
         {
-            NativeImGui.DestroyContext(m_context);
+            NativeImGui.Raw.DestroyContext(m_context);
             Widget.style.SetZoom(1f);
         }
     }

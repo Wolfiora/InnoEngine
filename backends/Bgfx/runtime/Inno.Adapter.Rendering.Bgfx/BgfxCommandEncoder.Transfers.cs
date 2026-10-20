@@ -34,7 +34,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             int layerCount = sourceDescriptor.GetSubresourceLayerCount(mipLevel);
             for (int layer = 0; layer < layerCount; layer++)
             {
-                bgfx.encoder_blit(
+                bgfx.Raw.encoder_blit(
                     m_encoder,
                     m_viewId,
                     destinationTexture,
@@ -87,7 +87,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         {
             throw new ArgumentException("BGFX blit source and destination extents must match.");
         }
-        bgfx.encoder_blit(
+        bgfx.Raw.encoder_blit(
             m_encoder,
             m_viewId,
             m_device.ResolveTexture(destination),

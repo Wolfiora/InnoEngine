@@ -33,10 +33,12 @@ internal static class ScriptProjectGenerator
             .ToArray();
         ScriptApiProfile runtimeApi = ScriptApiCatalog.Build(includeEditor: false);
         ScriptApiProfile editorApi = ScriptApiCatalog.Build(includeEditor: true);
-        ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(options, runtimeApi);
+        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve();
+        ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(options, runtimeApi, environment);
         ScriptApiReferenceSet editorApiReferences = ScriptApiReferenceBuilder.Build(
             options,
             editorApi,
+            environment,
             runtimeApi,
             runtimeApiReferences);
         IReadOnlyDictionary<string, string> pluginReferences = ScriptIdePluginReferenceBuilder.Build(
@@ -161,12 +163,14 @@ internal static class ScriptProjectGenerator
         string sourcePathMap
     ) {
         var earlyPropertyGroup = new XElement("PropertyGroup",
+            new XElement("ImportDirectoryBuildProps", "false"),
+            new XElement("ImportDirectoryBuildTargets", "false"),
             new XElement("BaseOutputPath", "Library/IDE/bin/" + assemblyName + "/"),
             new XElement("BaseIntermediateOutputPath", "Library/IDE/obj/" + assemblyName + "/"),
             new XElement("MSBuildProjectExtensionsPath", "Library/IDE/obj/" + assemblyName + "/"),
             new XElement("RestoreOutputPath", "Library/IDE/obj/" + assemblyName + "/"));
         var propertyGroup = new XElement("PropertyGroup",
-            new XElement("TargetFramework", "net9.0"),
+            new XElement("TargetFramework", ScriptCompilationEnvironment.C_TARGET_FRAMEWORK),
             new XElement("AssemblyName", assemblyName),
             new XElement("DefaultItemExcludes", "$(DefaultItemExcludes);Library/**"),
             new XElement("EnableDefaultItems", "false"),
@@ -176,7 +180,7 @@ internal static class ScriptProjectGenerator
             new XElement("AllowUnsafeBlocks", allowUnsafe ? "true" : "false"),
             new XElement("DefineConstants", string.Join(";", defines)),
             new XElement("PathMap", sourcePathMap),
-            new XElement("LangVersion", "latest"));
+            new XElement("LangVersion", ScriptCompilationEnvironment.C_LANGUAGE_VERSION));
         var compileGroup = new XElement(
             "ItemGroup",
             sourcePaths.Select(static path =>

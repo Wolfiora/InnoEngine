@@ -18,7 +18,7 @@ internal sealed class FileBrowserContextMenu(
         string relativePath,
         FileBrowserPresentation presentation
     ) {
-        if (NativeImGui.IsItemClicked(ImGuiMouseButton.Right))
+        if (NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Right)))
             assets.browser.Select(context, relativePath);
         if (!assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry))
             return;

@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +18,7 @@ public sealed class StaticGraphRestoreTests
     [InlineData(true)]
     public async Task ProductRestoreAcceptsLargeInheritedProperties(bool inheritSolution)
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(StaticGraphRestoreTests).Assembly);
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
             ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         IReadOnlyDictionary<string, string?> environment = DotNetSdkEnvironment.Create(host);

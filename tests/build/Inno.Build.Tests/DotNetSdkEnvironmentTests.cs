@@ -33,11 +33,11 @@ public sealed class DotNetSdkEnvironmentTests
         {
             string project = Path.Combine(root, "Sdk.csproj");
             await File.WriteAllTextAsync(project,
-                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
             string output = await ToolchainEnvironment.CaptureOutputAsync(host,
                 ["msbuild", project, "-nologo", "-nodeReuse:false", "-getProperty:TargetFramework"],
                 root, CancellationToken.None, selected);
-            Assert.Equal("net9.0", output.Trim());
+            Assert.Equal("net10.0", output.Trim());
             string resolvedHost = ToolchainEnvironment.ResolveExecutable(host);
             string relativeHost = Path.GetRelativePath(Environment.CurrentDirectory, resolvedHost);
             DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(relativeHost, project);

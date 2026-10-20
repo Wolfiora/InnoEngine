@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -13,6 +14,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Managed/ManagedBuildInputs.targets" />
+    <EmbeddedResource Include="Managed/ManagedCompilerInputs.targets" />
     <EmbeddedResource Include="Managed/ManagedInputGraphTask.cs.txt" LogicalName="Inno.Build.Toolchains.Managed.ManagedInputGraphTask.cs.txt" WithCulture="false" />
   </ItemGroup>
 

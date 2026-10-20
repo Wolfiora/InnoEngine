@@ -1,12 +1,17 @@
 {
-  "baseConfig": {
-    "url": "file://common.json"
+  "schemaVersion": 1,
+  "extends": [
+    "common.json"
+  ],
+  "targets": [
+    {
+      "id": "emscripten-wasm32-emscripten"
+    }
+  ],
+  "library": {
+    "nativeName": "libSDL3"
   },
-  "preset": "emscripten-c,c-library",
-  "libName": "libSDL3",
-  "outputPath": "../obj/browser-wasm/Generated",
-  "targetSysRoot": "%EM_CACHE%/sysroot",
-  "systemIncludeFolders": [
-    "%EM_CACHE%/sysroot/include"
-  ]
+  "api": {
+    "runtime": "browserWasm"
+  }
 }

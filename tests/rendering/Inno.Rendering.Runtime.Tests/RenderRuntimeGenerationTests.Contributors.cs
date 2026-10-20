@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -130,11 +131,7 @@ public sealed partial class RenderRuntimeGenerationTests
         Assert.All(contributors, contributor => Assert.Equal(frames + 16, contributor.builds));
         Assert.Equal(frames + 16, proxy.endFrameCount);
         Assert.Equal(contributorCount != 0 && !fail ? frames + 16 : 0, proxy.executeCount);
-        DirectoryInfo? root = new(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(Path.Combine(root.FullName, "InnoEngine.sln")))
-            root = root.Parent;
-        Assert.NotNull(root);
-        string directory = Path.Combine(root!.FullName, "artifacts/acceptance/architecture-cleanup/results");
+        string directory = Path.Combine(TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly), "artifacts/acceptance/architecture-cleanup/results");
         Directory.CreateDirectory(directory);
         File.WriteAllText(Path.Combine(directory, $"frames-{contributorCount}-{fail}.json"), JsonSerializer.Serialize(new
         {
@@ -173,11 +170,7 @@ public sealed partial class RenderRuntimeGenerationTests
         Assert.Equal(2 * (cycles + 16), proxy.endFrameCount);
         Assert.Equal(contributorCount == 0 ? 0 : cycles + 16, proxy.executeCount);
 
-        DirectoryInfo? root = new(AppContext.BaseDirectory);
-        while (root is not null && !File.Exists(Path.Combine(root.FullName, "InnoEngine.sln")))
-            root = root.Parent;
-        Assert.NotNull(root);
-        string directory = Path.Combine(root!.FullName, "artifacts/acceptance/architecture-cleanup/results");
+        string directory = Path.Combine(TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly), "artifacts/acceptance/architecture-cleanup/results");
         Directory.CreateDirectory(directory);
         File.WriteAllText(Path.Combine(directory, $"retirement-{contributorCount}.json"), JsonSerializer.Serialize(new
         {

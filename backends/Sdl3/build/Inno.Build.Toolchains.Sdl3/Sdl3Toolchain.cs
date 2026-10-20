@@ -55,7 +55,7 @@ public static class Sdl3Toolchain
         NativeBuildRecipe recipe = CreateRecipe(context);
         return await NativeArtifactPublisher.PublishAsync(context, recipe,
             async (
-                scoped,
+                @scoped,
                 output,
                 token
             ) => {

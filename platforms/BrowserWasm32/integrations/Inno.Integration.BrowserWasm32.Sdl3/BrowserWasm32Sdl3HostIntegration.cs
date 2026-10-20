@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Native.Sdl3;
@@ -31,11 +30,11 @@ public sealed class BrowserWasm32Sdl3HostIntegration : ISdl3HostIntegration
     {
         if (windowHandle == 0)
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
-        uint properties = SDL.GetWindowProperties(new SDLWindow(windowHandle));
-        byte[] propertyName = Encoding.UTF8.GetBytes(SDL.SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING + '\0');
+        uint properties = SDL.Raw.GetWindowProperties((SDLWindow*)windowHandle);
+        ReadOnlySpan<byte> propertyName = "SDL.window.emscripten.canvas_id\0"u8;
         fixed (byte* name = propertyName)
         {
-            nint selector = (nint)SDL.GetStringProperty(properties, name, null);
+            nint selector = (nint)SDL.Raw.GetStringProperty(properties, (sbyte*)name, null);
             if (selector == 0)
                 throw new InvalidOperationException("SDL did not provide a browser canvas selector.");
             return new PlatformNativeHandles(selector, handleKind: PlatformNativeHandleId.browserCanvas);

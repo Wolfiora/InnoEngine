@@ -92,7 +92,7 @@ sealed unsafe partial class BgfxDevice
                     order[index] = checked((ushort)(m_activeGraphViewBase + graph.passes[index].viewIndex));
                 }
 
-                bgfx.set_view_order(
+                bgfx.Raw.set_view_order(
                     checked((ushort)m_activeGraphViewBase),
                     checked((ushort)graph.passes.Count),
                     order);
@@ -120,23 +120,31 @@ sealed unsafe partial class BgfxDevice
     public RenderCommandEncoder BeginPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeGraph is null || !m_activeEncoder.IsNull)
+        if (m_activeGraph is null || m_activeEncoder != null)
         {
             throw new InvalidOperationException("Pass execution is outside a valid BGFX graph scope.");
         }
 
         ushort viewId = checked((ushort)(m_activeGraphViewBase + pass.viewIndex));
-        bgfx.set_view_name(viewId, pass.name, Utf8Length(pass.name));
+        int viewNameLength = Encoding.UTF8.GetByteCount(pass.name);
+        Span<byte> viewNameBytes = viewNameLength < 256
+            ? stackalloc byte[256] : new byte[checked(viewNameLength + 1)];
+        Encoding.UTF8.GetBytes(pass.name, viewNameBytes);
+        viewNameBytes[viewNameLength] = 0;
+        fixed (byte* viewNamePointer = viewNameBytes)
+        {
+            bgfx.Raw.set_view_name(viewId, (sbyte*)viewNamePointer, viewNameLength);
+        }
         bgfx.set_view_mode(viewId, bgfx.ViewMode.Sequential);
         ApplyViewTransform(viewId, pass.viewTransform);
         ConfigureViewTarget(viewId, pass);
-        m_activeEncoder = bgfx.encoder_begin(false);
-        if (m_activeEncoder.IsNull)
+        m_activeEncoder = bgfx.Raw.encoder_begin(0);
+        if (m_activeEncoder == null)
         {
             throw new InvalidOperationException($"BGFX could not acquire an encoder for pass '{pass.name}'.");
         }
 
-        bgfx.encoder_touch(m_activeEncoder, viewId);
+        bgfx.Raw.encoder_touch(m_activeEncoder, viewId);
         return new BgfxCommandEncoder(this, m_activeEncoder, viewId);
     }
 
@@ -149,13 +157,13 @@ sealed unsafe partial class BgfxDevice
     public void EndPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeEncoder.IsNull)
+        if (m_activeEncoder == null)
         {
             throw new InvalidOperationException("No BGFX encoder is active.");
         }
 
-        bgfx.encoder_end(m_activeEncoder);
-        m_activeEncoder = bgfx.Encoder.Null;
+        bgfx.Raw.encoder_end(m_activeEncoder);
+        m_activeEncoder = null;
     }
 
     /// <summary>
@@ -167,7 +175,7 @@ sealed unsafe partial class BgfxDevice
     public void EndGraph(CompiledRenderGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
-        if (!ReferenceEquals(m_activeGraph, graph) || !m_activeEncoder.IsNull)
+        if (!ReferenceEquals(m_activeGraph, graph) || m_activeEncoder != null)
         {
             throw new InvalidOperationException("BGFX graph cleanup does not match the active graph state.");
         }
@@ -186,7 +194,7 @@ sealed unsafe partial class BgfxDevice
     ) {
         if (transform is null)
         {
-            bgfx.set_view_transform(viewId, null, null);
+            bgfx.Raw.set_view_transform(viewId, null, null);
             return;
         }
 
@@ -195,7 +203,7 @@ sealed unsafe partial class BgfxDevice
         fixed (float* viewPointer = view)
         fixed (float* projectionPointer = projection)
         {
-            bgfx.set_view_transform(viewId, viewPointer, projectionPointer);
+            bgfx.Raw.set_view_transform(viewId, viewPointer, projectionPointer);
         }
     }
 

@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -14,20 +15,17 @@ public sealed class NativeBindingSelectionBuildTests
     [Fact]
     public async Task ANewSelectionDocumentDoesNotRecompileANeutralProject()
     {
-        DirectoryInfo? repository = new(AppContext.BaseDirectory);
-        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "InnoEngine.sln")))
-            repository = repository.Parent;
-        Assert.NotNull(repository);
+        string repository = TestRepository.GetRoot(typeof(NativeBindingSelectionBuildTests).Assembly);
         string root = Path.Combine(Path.GetTempPath(), "InnoSelectionTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
             foreach (string name in new[] { "Directory.Build.props", "Directory.Build.targets" })
                 File.WriteAllText(Path.Combine(root, name), "<Project><Import Project=\""
-                    + SecurityElement.Escape(Path.Combine(repository.FullName, name)) + "\" /></Project>");
+                    + SecurityElement.Escape(Path.Combine(repository, name)) + "\" /></Project>");
             File.WriteAllText(Path.Combine(root, "Probe.csproj"), """
                 <Project Sdk="Microsoft.NET.Sdk">
-                  <PropertyGroup><TargetFramework>net9.0</TargetFramework><ImplicitUsings>disable</ImplicitUsings></PropertyGroup>
+                  <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>disable</ImplicitUsings></PropertyGroup>
                 </Project>
                 """);
             File.WriteAllText(Path.Combine(root, "Probe.cs"), "public static class Probe { public static int Value => 7; }");
@@ -35,7 +33,7 @@ public sealed class NativeBindingSelectionBuildTests
             string second = Path.Combine(root, "second-selection.props");
             File.WriteAllText(first, "<Project />");
             await Build(root, first);
-            string assembly = Path.Combine(root, "bin", "Debug", "net9.0", "Probe.dll");
+            string assembly = Path.Combine(root, "bin", "Debug", "net10.0", "Probe.dll");
             DateTime written = File.GetLastWriteTimeUtc(assembly);
             File.WriteAllText(second, "<Project />");
             await Build(root, second);

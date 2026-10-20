@@ -23,7 +23,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
 
         fixed (float* matrix = columnMajorMatrix)
         {
-            bgfx.encoder_set_transform(m_encoder, matrix, 1);
+            bgfx.Raw.encoder_set_transform(m_encoder, matrix, 1);
         }
     }
 
@@ -122,7 +122,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ArgumentOutOfRangeException.ThrowIfNegative(y);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
-        bgfx.encoder_set_scissor(
+        bgfx.Raw.encoder_set_scissor(
             m_encoder,
             checked((ushort)x),
             checked((ushort)y),

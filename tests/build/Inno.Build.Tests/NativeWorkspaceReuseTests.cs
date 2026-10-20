@@ -122,11 +122,16 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             string header = Path.Combine(bridge, "fixture.h");
             File.WriteAllText(header, generation);
             File.WriteAllText(managed, generation);
+            File.WriteAllText(Path.Combine(bridge, "compilation.json"), System.Text.Json.JsonSerializer.Serialize(new NativeBindingCompilation
+            {
+                roots = [new("generated", "", true, true)], files = [], includeDirectories = [], defines = [], compilerDefines = [],
+                cxxStandard = 0, cStandard = 0, requiredExports = [], staticExportSymbols = [], staticExportAbi = "", staticExportNames = []
+            }));
             var descriptor = new NativeBindingGenerationDescriptor
             {
                 fingerprint = generation,
                 bindingsPath = managed,
-                bridgeDirectory = bridge,
+                nativeDirectory = bridge,
                 artifactDirectory = artifact
             };
             using var bindings = new NativeBindingGenerationResult(
@@ -138,7 +143,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
                     (aggregate ? "componentArgument=" : string.Empty) + "-DINNO_FIXTURE_BRIDGE_ROOT=" + bridge]);
             using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context, recipe,
                 async (
-                    scoped,
+                    @scoped,
                     output,
                     cancellation
                 ) => {

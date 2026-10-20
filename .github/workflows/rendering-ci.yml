@@ -2,6 +2,11 @@ name: Engine CI
 
 on:
   workflow_dispatch:
+    inputs:
+      native_product_acceptance:
+        description: Run native products with the selected BGCS toolchain
+        type: boolean
+        default: true
   pull_request:
     paths:
       - ".github/workflows/rendering-ci.yml"
@@ -16,6 +21,7 @@ on:
       - "tests/**"
       - ".gitmodules"
       - "Directory.Build.props"
+      - "global.json"
       - "Directory.Build.targets"
       - "Directory.Solution.props"
       - "Directory.Solution.targets"
@@ -38,6 +44,7 @@ on:
       - "tests/**"
       - ".gitmodules"
       - "Directory.Build.props"
+      - "global.json"
       - "Directory.Build.targets"
       - "Directory.Solution.props"
       - "Directory.Solution.targets"
@@ -51,7 +58,34 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
 
 jobs:
+  managed:
+    name: Managed / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Build and test the independent managed graph
+        shell: pwsh
+        run: ./tests/Invoke-ManagedChecks.ps1
+      - name: Upload managed results and deferred dependencies
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: managed-${{ matrix.os }}
+          path: artifacts/acceptance/managed/**
+          if-no-files-found: error
+
   rendering:
+    if: github.event_name != 'workflow_dispatch' || inputs.native_product_acceptance
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
@@ -83,7 +117,7 @@ jobs:
         env:
           DOTNET_INSTALL_DIR: ${{ runner.temp }}/inno-dotnet
         with:
-          dotnet-version: 9.0.x
+          global-json-file: global.json
 
       - name: Install MSBuild
         if: runner.os == 'Windows'
@@ -97,19 +131,42 @@ jobs:
             throw "Runner architecture '$actual' does not match required '${{ matrix.architecture }}'."
           }
 
+      - name: Record selected SDK and compiler
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force 'artifacts/acceptance/ci-build' | Out-Null
+          dotnet --info | Set-Content 'artifacts/acceptance/ci-build/dotnet-info.txt'
+          $selection = @(dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
+            -nologo -m:1 -nr:false -p:DesignTimeBuild=true `
+            -getProperty:RoslynTargetsPath,NETCoreSdkVersion,LangVersion,MSBuildVersion)
+          if ($LASTEXITCODE -ne 0) { throw 'SDK and compiler inspection failed.' }
+          $selection | Set-Content 'artifacts/acceptance/ci-build/compiler-selection.json'
+          $compiler = (($selection -join [Environment]::NewLine) | ConvertFrom-Json).Properties.RoslynTargetsPath
+          dotnet (Join-Path $compiler 'bincore/csc.dll') -version |
+            Set-Content 'artifacts/acceptance/ci-build/compiler-version.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'The selected compiler could not report its version.' }
+
       - name: Build host Editor in Debug and Release
         shell: pwsh
         run: |
-          dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false
+          dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false `
+            -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/entry.binlog' 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-build/entry.log'
           if ($LASTEXITCODE -ne 0) { throw "Build entry preparation failed." }
-          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Debug
+          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Debug 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-debug.log'
           if ($LASTEXITCODE -ne 0) { throw "Debug host Editor build failed." }
-          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release
+          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-release.log'
           if ($LASTEXITCODE -ne 0) { throw "Release host Editor build failed." }
 
       - name: Build managed solution
         shell: pwsh
-        run: dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false
+        run: |
+          dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
+            -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/source-debug.binlog' 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-build/source-debug.log'
+          if ($LASTEXITCODE -ne 0) { throw 'SourceDebug build failed.' }
 
       - name: Enforce source and compiled public API architecture boundaries
         shell: pwsh
@@ -121,7 +178,7 @@ jobs:
           $properties = Join-Path $PWD '${{ matrix.product_properties }}'
           New-Item -ItemType Directory -Force 'artifacts/acceptance/ci-tests' | Out-Null
           dotnet --info | Set-Content 'artifacts/acceptance/ci-tests/dotnet-info.txt'
-          dotnet msbuild 'backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj' `
+          dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
             -nologo -m:1 -nr:false -p:DesignTimeBuild=true -p:UseSharedCompilation=false `
             -p:InnoNativeTarget='${{ matrix.build_target }}' `
             -getProperty:MSBuildRuntimeType,MSBuildRuntimeVersion,NETCoreSdkVersion,CscToolPath,CscToolExe,UseSharedCompilation,NETCoreSdkRuntimeIdentifier `
@@ -130,7 +187,9 @@ jobs:
           dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
             -p:UseSharedCompilation=false `
             -p:InnoNativeTarget='${{ matrix.build_target }}' -p:InnoToolTarget='${{ matrix.build_target }}' `
-            -p:InnoProductBuildProperties=$properties -p:InnoTestNativeProduct=editor -p:InnoTestNativeTarget='${{ matrix.build_target }}'
+            -p:InnoProductBuildProperties=$properties -p:InnoTestNativeProduct=editor -p:InnoTestNativeTarget='${{ matrix.build_target }}' `
+            '-bl:artifacts/acceptance/ci-tests/target-build.binlog' 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-tests/target-build.log'
           if ($LASTEXITCODE -ne 0) { throw "Target test closure compilation failed." }
           ./tests/Invoke-IsolatedTests.ps1 -Configuration SourceDebug -Target '${{ matrix.build_target }}' -ProductProperties $properties
 
@@ -167,7 +226,12 @@ jobs:
           New-Item -ItemType Directory -Force (Join-Path $smokeProject "Assets") | Out-Null
           $nativeLog = Join-Path $smokeProject "Logs/NativeRendering.log"
           New-Item -ItemType Directory -Force (Split-Path $nativeLog) | Out-Null
-          dotnet "entry/InnoEngine.Editor/bin/Debug/net9.0/InnoEngine.Editor.dll" `
+          $editor = @(dotnet msbuild 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj' `
+            -nologo -m:1 -nr:false -p:Configuration=Debug -getProperty:TargetPath)
+          if ($LASTEXITCODE -ne 0 -or $editor.Count -ne 1 -or -not (Test-Path -LiteralPath $editor[0])) {
+            throw 'The built Editor entry is unavailable at its evaluated TargetPath.'
+          }
+          dotnet $editor[0] `
             $smokeProject --smoke-frames 3 2>&1 | Tee-Object -FilePath $nativeLog
           if ($LASTEXITCODE -ne 0) {
             throw "Renderer smoke exited with code $LASTEXITCODE."
@@ -214,6 +278,7 @@ jobs:
           name: contract-evidence-${{ matrix.build_target }}
           path: |
             artifacts/acceptance/ci-tests/**
+            artifacts/acceptance/ci-build/**
             artifacts/acceptance/wiki-gate/**
           if-no-files-found: warn
 

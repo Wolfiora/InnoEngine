@@ -1,18 +1,17 @@
 {
-  "baseConfig": {
-    "url": "file://common.json"
+  "schemaVersion": 1,
+  "extends": [
+    "common.json"
+  ],
+  "targets": [
+    {
+      "id": "emscripten-wasm32-emscripten"
+    }
+  ],
+  "library": {
+    "nativeName": "libminiaudio"
   },
-  "preset": "emscripten-c,c-library",
-  "libName": "libminiaudio",
-  "includeFolders": [
-    "../../../../../extern/miniaudio/extras/miniaudio_split",
-    "%EM_CACHE%/sysroot/include"
-  ],
-  "outputPath": "../obj/browser-wasm/Generated",
-  "ignoredFunctions": [
-    "ma_log_postf",
-    "ma_job_init"
-  ],
-  "targetSysRoot": "%EM_CACHE%/sysroot",
-  "wrapPointersAsHandle": true
+  "api": {
+    "runtime": "browserWasm"
+  }
 }

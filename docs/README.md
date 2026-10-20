@@ -52,3 +52,7 @@
 每个项目只有一个权威项目页。项目页说明 API 行为、借用与转移、线程、失败和退出步骤；架构页解释跨项目规则。内部实现必须显式标注，不作为稳定扩展入口。
 
 全量项目、API 和示例审查正在进行；有同名页面不代表其内容已经完整验收。历史执行记录保存在仓库的 records 目录，不作为当前 API 使用说明。当前格式随源码共同演进，不提供旧格式读取或旧接口转发。
+
+独立的 [Inno.Scripting.Compiler.Tests](testing/Inno.Scripting.Compiler.Tests.md) 覆盖当前语言契约、跨插件 IDE 引用和框架内容缓存失效，纳入托管验证图。[Inno.Build.Toolchains.Tests](testing/Inno.Build.Toolchains.Tests.md) 独立验证中立原生编译清单、冻结根映射与完整性契约。
+
+[Inno.Testing.Source](testing/Inno.Testing.Source.md) 为需要 checkout 的测试读取显式 SDK 输入，源码只属于该测试支持程序集。

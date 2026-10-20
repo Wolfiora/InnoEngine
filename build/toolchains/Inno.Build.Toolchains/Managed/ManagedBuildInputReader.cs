@@ -66,7 +66,14 @@ internal static class ManagedBuildInputReader
                 "Inno.Build.Toolchains.Managed.ManagedBuildInputs.targets")
                 ?? throw new InvalidOperationException("The managed graph evaluator resource is absent.");
             XElement document = XElement.Load(template);
+            using Stream compilerInputs = typeof(ManagedBuildInputReader).Assembly.GetManifestResourceStream(
+                "Inno.Build.Toolchains.Managed.ManagedCompilerInputs.targets")
+                ?? throw new InvalidOperationException("The compiler input target resource is absent.");
+            string compilerInputsPath = Path.Combine(request, "CompilerInputs.targets");
+            using (FileStream destination = File.Create(compilerInputsPath))
+                await compilerInputs.CopyToAsync(destination, cancellation).ConfigureAwait(false);
             document.AddFirst(new XElement("PropertyGroup",
+                new XElement("InnoCompilerInputsTargets", compilerInputsPath),
                 new XElement("InnoInputProject", project), new XElement("InnoRestoreContributions", restoreContributions), new XElement("InnoInputOutput", manifest),
                 new XElement("InnoInputEvaluator", Path.Combine(evaluator.directory, "Outputs", "ManagedInputGraphTask.dll"))));
             document.Add(new XElement("ItemGroup", properties.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)

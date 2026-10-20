@@ -184,7 +184,7 @@ internal sealed class BuildSettingsField
         Action<int> apply
     ) {
         NativeImGui.SetNextItemWidth(-1f);
-        if (!NativeImGui.InputInt("##value", ref value))
+        if (!NativeImGui.InputInt("##value", ref value, 1, 100, 0))
             return false;
 
         apply(Math.Max(1, value));

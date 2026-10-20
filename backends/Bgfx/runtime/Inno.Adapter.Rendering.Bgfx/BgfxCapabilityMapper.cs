@@ -204,9 +204,9 @@ internal static class BgfxCapabilityMapper
         if (backend == GraphicsApi.Noop)
             return bgfx.RendererType.Noop;
         if (backend == GraphicsApi.Direct3D11)
-            return bgfx.RendererType.Direct3D11;
+            return bgfx.RendererType.Direct3d11;
         if (backend == GraphicsApi.Direct3D12)
-            return bgfx.RendererType.Direct3D12;
+            return bgfx.RendererType.Direct3d12;
         if (backend == GraphicsApi.Metal)
             return bgfx.RendererType.Metal;
         if (backend == GraphicsApi.Vulkan)
@@ -233,8 +233,8 @@ internal static class BgfxCapabilityMapper
         => backend switch
         {
             bgfx.RendererType.Noop => GraphicsApi.Noop,
-            bgfx.RendererType.Direct3D11 => GraphicsApi.Direct3D11,
-            bgfx.RendererType.Direct3D12 => GraphicsApi.Direct3D12,
+            bgfx.RendererType.Direct3d11 => GraphicsApi.Direct3D11,
+            bgfx.RendererType.Direct3d12 => GraphicsApi.Direct3D12,
             bgfx.RendererType.Metal => GraphicsApi.Metal,
             bgfx.RendererType.Vulkan => GraphicsApi.Vulkan,
             bgfx.RendererType.OpenGL => GraphicsApi.OpenGL,
@@ -262,9 +262,9 @@ internal static class BgfxCapabilityMapper
             RenderTextureFormat.RGB10A2 => bgfx.TextureFormat.RGB10A2,
             RenderTextureFormat.RG11B10Float => bgfx.TextureFormat.RG11B10F,
             RenderTextureFormat.RGBA16Float => bgfx.TextureFormat.RGBA16F,
-            RenderTextureFormat.R32Float => bgfx.TextureFormat.R32F,
-            RenderTextureFormat.Depth24Stencil8 => bgfx.TextureFormat.D24S8,
-            RenderTextureFormat.Depth32Float => bgfx.TextureFormat.D32F,
+            RenderTextureFormat.R32Float => bgfx.TextureFormat.R32f,
+            RenderTextureFormat.Depth24Stencil8 => bgfx.TextureFormat.D24s8,
+            RenderTextureFormat.Depth32Float => bgfx.TextureFormat.D32f,
             _ => throw new ArgumentOutOfRangeException(nameof(format))
         };
 }

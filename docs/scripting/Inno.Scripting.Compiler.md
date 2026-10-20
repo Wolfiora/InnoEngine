@@ -8,7 +8,13 @@
 
 ## 职责与边界
 
+引擎与项目脚本使用 .NET 10、C# 14。运行时编译、源导入和 IDE 工程明确选择相同语言版本；IDE 工程由支持 .NET 10 的 Rider 或 Visual Studio 2026 使用所选 SDK 编译。内置 logical namespace analyzer 也运行于该 .NET 10 编译器宿主。
+
+生成的 IDE 工程独立声明编译输入，并在 SDK 导入前禁用父目录的 `Directory.Build.props/targets`，保持与引擎编译一致的语言、引用和 Analyzer 契约。引擎仓库的 Solution 还原与 Task owner 规则只作用于根 `InnoEngine.sln`，不接管子目录中的 Project Solution。
+
 Compiler 拥有 Roslyn、裁剪 reference assemblies、logical namespace analyzer、source fingerprint、runtime/editor artifact 和编译进度。它不拥有 active assembly generation，也不进入 Player。
+
+内部实现：每次编译或 IDE 投影固定本次 framework metadata、编译器身份和语言选项。公开契约指纹描述 API 形状；产物指纹同时包含实际 framework reference 内容、Roslyn 与 emitter 身份及选项。相同契约在编译输入变化时仍选择独立产物，失败或取消不能发布不完整 reference。该缓存身份不是公开持久化协议。
 
 用户源码先对与 IDE 相同的裁剪契约完成编译检查。只有通过后，生成注册代码的 emission 阶段才读取所属运行时程序集的完整元数据；这些实现引用不扩展用户 API，也不加入 IDE project。该顺序允许生成序列化访问和模块目录，同时继续拒绝标有 `ScriptingApiIgnore` 的成员。发行代码绑定所选 Support Pack，Editor 代码绑定当前 authoring Host。
 框架参考程序集优先从宿主输出目录的 `packs/Microsoft.NETCore.App.Ref` 读取；源码开发环境继续从 `DOTNET_ROOT` 或当前 .NET 安装目录读取。Editor Publish 会随发行目录复制与目标框架匹配的 Ref Pack，因此脱离引擎源码和本机 SDK 安装后仍可编译脚本、生成 IDE 工程。

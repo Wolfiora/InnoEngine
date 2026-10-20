@@ -17,5 +17,5 @@ public sealed partial class NativeBindingGenerator
         NativeBuildContext context,
         NativeBindingGenerationRequest request,
         CancellationToken cancellationToken
-    ) => BindingInputPlanning.ComputeAsync(context, request, m_dotnetHost, cancellationToken);
+    ) => BindingInputPlanning.ComputeAsync(context, request, cancellationToken);
 }

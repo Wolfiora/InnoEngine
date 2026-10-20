@@ -95,7 +95,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     public void CollidingManagedSelectionDoesNotReplaceAnExistingCompleteSelection()
     {
         string output = Path.Combine(m_root, "BindingSelection.props");
-        Directory.CreateDirectory(m_root);
+        Directory.CreateDirectory(Path.Combine(m_root, "Source"));
         File.WriteAllText(output, "previous complete selection");
 
         Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(output,
@@ -124,6 +124,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     [Fact]
+    [Trait("ExternalDependency", "BGCS")]
     public async Task SourceChangesSelectIndependentGenerationsAndTamperingIsRepaired()
     {
         CreateConfig("int sample(int value);");
@@ -141,7 +142,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Assert.Equal(first.fingerprint, repaired.fingerprint);
         Assert.Equal(original, File.ReadAllText(repaired.bindingsPath));
 
-        File.WriteAllText(Path.Combine(m_root, "api.h"), "long sample(long value);");
+        File.WriteAllText(Path.Combine(m_root, "Source", "api.h"), "long long sample(long long value);");
         await Assert.ThrowsAsync<InvalidOperationException>(() => GenerateAsync(expected: first.fingerprint));
         NativeBindingGenerationDescriptor changed = await GenerateAsync();
         Assert.NotEqual(first.fingerprint, changed.fingerprint);
@@ -150,6 +151,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     [Fact]
+    [Trait("ExternalDependency", "BGCS")]
     public async Task UnselectedTargetMappingDoesNotInvalidateTheSelectedGeneration()
     {
         string config = CreateConfig("int sample(int value);");
@@ -163,7 +165,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         definition.Save(definitionPath);
 
         var unchangedContext = new NativeBuildContext(m_root, "release");
-        using (NativeBindingGenerationResult unchanged = await new NativeBindingGenerator("dotnet")
+        using (NativeBindingGenerationResult unchanged = await new NativeBindingGenerator()
             .GenerateAsync(unchangedContext, request, CancellationToken.None))
         {
             Assert.Equal(first.fingerprint, unchanged[owner.nativeProject].fingerprint);
@@ -183,67 +185,47 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     [Fact]
+    [Trait("ExternalDependency", "BGCS")]
     public async Task CppBridgeAndManagedBindingsShareOneCompletedGeneration()
     {
         string config = CreateConfig("int sample(int value);");
-        string facade = Path.Combine(m_root, "facade.hpp");
+        string facade = Path.Combine(m_root, "Source", "facade.hpp");
         File.WriteAllText(facade, "class Counter { public: explicit Counter(int value) : value_(value) {} int Add(int value) { return value_ + value; } private: int value_; };");
-        string bridge = Path.Combine(m_root, "bridge.json");
-        File.WriteAllText(bridge, JsonSerializer.Serialize(new {
-            EntryFiles = new[] { "facade.hpp" }, AllowedHeaders = new[] { "facade.hpp" },
-            IncludeFolders = new[] { m_root }, OutputPath = "declared", NamePrefix = "fixture_",
-            LanguageStandard = "c++20", GenerateBuildManifest = false, GenerateCSharpBindings = false,
-            ParseSystemIncludes = false
-        }));
-        File.WriteAllText(config, JsonSerializer.Serialize(new {
-            Preset = "c-library", Namespace = "Fixture.Native", ApiName = "Api", LibName = "fixture",
-            EntryFiles = new[] { "declared/include/Classes.h" }, AllowedHeaders = new[] { "declared/include/Classes.h" },
-            IncludeFolders = new[] { "declared/include" }, GenerateRuntimeSource = false,
-            MergeGeneratedFilesToSingleFile = true, SingleFileOutputName = "Bindings.cs"
-        }));
-        WriteDefinition(bridge);
+        WriteCppConfig(config);
         NativeBindingGenerationDescriptor first = await GenerateAsync();
-        Assert.True(File.Exists(Path.Combine(first.bridgeDirectory, "include", "Classes.h")));
-        Assert.True(File.Exists(Path.Combine(first.bridgeDirectory, "src", "Classes.cpp")));
-        Assert.Equal(Path.GetDirectoryName(first.bridgeDirectory),
+        NativeBindingCompilation compilation = NativeBindingCompilation.Load(first.nativeDirectory);
+        Assert.Contains(compilation.files, file => file.compile && file.rootId == "generated");
+        Assert.Contains(compilation.files, file => !file.compile && file.rootId == "generated" && file.relativePath.EndsWith(".h", StringComparison.Ordinal));
+        Assert.Equal(Path.GetDirectoryName(first.nativeDirectory),
             Path.GetDirectoryName(Path.GetDirectoryName(first.bindingsPath)));
         Assert.False(Directory.Exists(Path.Combine(m_root, "declared")));
         string original = File.ReadAllText(first.bindingsPath);
         File.WriteAllText(facade, "class Counter { invalid C++; };");
-        WriteDefinition(bridge);
         await Assert.ThrowsAnyAsync<Exception>(() => GenerateAsync());
         Assert.Equal(original, File.ReadAllText(first.bindingsPath));
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "fixture", "fixture-target")));
     }
 
     [Fact]
+    [Trait("ExternalDependency", "BGCS")]
     public async Task HostBindingFailurePreservesBothPublishedOutputTrees()
     {
         string config = CreateConfig("int sample(int value);");
-        string facade = Path.Combine(m_root, "facade.hpp");
+        string facade = Path.Combine(m_root, "Source", "facade.hpp");
         File.WriteAllText(facade, "class Counter { public: int Value() { return 7; } };");
-        string bridge = Path.Combine(m_root, "bridge.json");
-        File.WriteAllText(bridge, """
-            {"entryFiles":["facade.hpp"],"allowedHeaders":["facade.hpp"],"outputPath":"Native/Generated",
-             "languageStandard":"c++20","generateBuildManifest":false,"generateCSharpBindings":false}
-            """);
-        File.WriteAllText(config, """
-            {"preset":"c-library","namespace":"Fixture.Native","apiName":"Api","libName":"fixture","outputPath":"Generated",
-             "entryFiles":["Native/Generated/include/Classes.h"],"allowedHeaders":["Native/Generated/include/Classes.h"],
-             "includeFolders":["Native/Generated/include"],"generateRuntimeSource":false,
-             "mergeGeneratedFilesToSingleFile":true,"singleFileOutputName":"Bindings.cs"}
-            """);
-        WriteDefinition(bridge);
+        WriteCppConfig(config);
         NativeBindingGenerationDescriptor initial = await GenerateAsync(mode: NativeBindingOutputMode.HostSource);
         string source = File.ReadAllText(initial.bindingsPath);
-        string nativeHeader = Path.Combine(initial.bridgeDirectory, "include", "Classes.h");
+        NativeBindingCompilation compilation = NativeBindingCompilation.Load(initial.nativeDirectory);
+        string nativeHeader = Path.Combine(initial.nativeDirectory, compilation.files.First(file =>
+            file.rootId == "generated" && file.relativePath.EndsWith(".h", StringComparison.Ordinal)).relativePath);
         string header = File.ReadAllText(nativeHeader);
-        string nativeSource = Path.Combine(initial.bridgeDirectory, "src", "Classes.cpp");
+        string nativeSource = Path.Combine(initial.nativeDirectory, compilation.files.First(file =>
+            file.rootId == "generated" && file.compile).relativePath);
         string implementation = File.ReadAllText(nativeSource);
         File.WriteAllText(facade, "class Counter { public: int Changed() { return 9; } };");
-        File.WriteAllText(config, File.ReadAllText(config).Replace("Classes.h", "missing.h", StringComparison.Ordinal));
+        File.WriteAllText(config, File.ReadAllText(config).Replace("facade.hpp", "missing.hpp", StringComparison.Ordinal));
 
-        WriteDefinition(bridge);
         await Assert.ThrowsAnyAsync<Exception>(() => GenerateAsync(mode: NativeBindingOutputMode.HostSource));
 
         Assert.Equal(source, File.ReadAllText(initial.bindingsPath));
@@ -253,12 +235,13 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     [Fact]
+    [Trait("ExternalDependency", "BGCS")]
     public async Task FailedOrCanceledGenerationKeepsTheLastCompleteBundle()
     {
         CreateConfig("int sample(int value);");
         NativeBindingGenerationDescriptor first = await GenerateAsync();
         string original = File.ReadAllText(first.bindingsPath);
-        File.WriteAllText(Path.Combine(m_root, "api.h"), "this is not valid C;");
+        File.WriteAllText(Path.Combine(m_root, "Source", "api.h"), "this is not valid C;");
         await Assert.ThrowsAnyAsync<Exception>(() => GenerateAsync());
         Assert.Equal(original, File.ReadAllText(first.bindingsPath));
         using var cancellation = new CancellationTokenSource();
@@ -269,6 +252,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     [Fact]
+    [Trait("ExternalDependency", "BGCS")]
     public async Task CheckOnlyDetectsModifiedOutputsWithoutPublishing()
     {
         CreateConfig("int sample(int value);");
@@ -291,21 +275,23 @@ public sealed class NativeBindingGenerationTests : IDisposable
             fingerprint = fingerprint,
             artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
             bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
-            bridgeDirectory = string.Empty
+            nativeDirectory = string.Empty
         };
 
     private string CreateConfig(string header)
     {
-        Directory.CreateDirectory(m_root);
-        File.WriteAllText(Path.Combine(m_root, "api.h"), header);
+        Directory.CreateDirectory(Path.Combine(m_root, "Source"));
+        File.WriteAllText(Path.Combine(m_root, "Source", "api.h"), header);
         File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
         File.WriteAllText(Path.Combine(m_root, "Fixture.csproj"), "<Project />");
         WriteDefinition();
         string config = Path.Combine(m_root, "bindgen.json");
         File.WriteAllText(config, JsonSerializer.Serialize(new {
-            Preset = "c-library", Namespace = "Fixture.Native", ApiName = "Api", LibName = "fixture",
-            TargetId = "linux-x64-gnu", EntryFiles = new[] { "api.h" }, AllowedHeaders = new[] { "api.h" },
-            GenerateRuntimeSource = false, MergeGeneratedFilesToSingleFile = true, SingleFileOutputName = "Bindings.cs"
+            schemaVersion = 1,
+            library = new { id = "fixture", nativeName = "fixture" },
+            source = new { language = "c", headers = new[] { "Source/api.h" } },
+            api = new { @namespace = "Fixture.Native", name = "Api" },
+            output = new { root = "Generated", layout = "singleFile" }
         }));
         return config;
     }
@@ -319,20 +305,30 @@ public sealed class NativeBindingGenerationTests : IDisposable
         var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var fingerprints = expected is null ? null : new Dictionary<string, string> { [owner.nativeProject] = expected };
         var request = new NativeBindingGenerationRequest([owner], "fixture-target", mode, checkOnly, fingerprints);
-        using var result = await new NativeBindingGenerator("dotnet").GenerateAsync(
+        using var result = await new NativeBindingGenerator().GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, cancellation);
         return result[owner.nativeProject];
     }
 
-    private void WriteDefinition(string? bridge = null)
+    private void WriteDefinition()
     {
         new XDocument(new XElement("Project",
-            new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingHostConfig", "bindgen.json"),
-                bridge is null ? null : new XElement("InnoBindingHostBridge", Path.GetFileName(bridge))),
+            new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingHostConfig", "bindgen.json")),
             new XElement("ItemGroup", new XElement("InnoBindingTarget", new XAttribute("Include", "fixture-target"),
-                new XElement("Config", "bindgen.json"),
-                bridge is null ? null : new XElement("Bridge", Path.GetFileName(bridge))))))
+                new XElement("Config", "bindgen.json")))))
             .Save(Path.Combine(m_root, "bindings.props"));
+    }
+
+    private static void WriteCppConfig(string path)
+    {
+        File.WriteAllText(path, JsonSerializer.Serialize(new
+        {
+            schemaVersion = 1,
+            library = new { id = "fixture", nativeName = "fixture" },
+            source = new { language = "cpp", languageStandard = "c++20", headers = new[] { "Source/facade.hpp" } },
+            api = new { @namespace = "Fixture.Native", name = "Api" },
+            output = new { root = "Generated", layout = "singleFile" }
+        }));
     }
 
 }

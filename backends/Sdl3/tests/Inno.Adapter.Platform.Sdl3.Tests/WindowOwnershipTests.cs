@@ -23,7 +23,7 @@ public sealed unsafe class WindowOwnershipTests
         Assert.Empty(second.GetWindows());
         window.Dispose();
         Assert.Empty(first.GetWindows());
-        Assert.True(SDL.GetWindowFromID(window.windowId).IsNull);
+        Assert.True(SDL.Raw.GetWindowFromId(window.windowId) == null);
     }
 
     [Fact]
@@ -33,28 +33,31 @@ public sealed unsafe class WindowOwnershipTests
             return;
 
         using var app = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        SDLWindow native = SDL.CreateWindow("Borrowed surface", 40, 40, SDLWindowFlags.Hidden);
-        Assert.False(native.IsNull);
-        uint id = SDL.GetWindowID(native);
+        ReadOnlySpan<byte> title = "Borrowed surface\0"u8;
+        SDLWindow* native;
+        fixed (byte* bytes = title)
+            native = SDL.Raw.CreateWindow((sbyte*)bytes, 40, 40, (ulong)SDLWindowFlags.Hidden);
+        Assert.True(native != null);
+        uint id = SDL.Raw.GetWindowId(native);
         try
         {
-            var borrowed = app.AdoptWindow((nint)native.Handle);
+            var borrowed = app.AdoptWindow((nint)native);
             Assert.Single(app.GetWindows());
-            Assert.Throws<ArgumentException>(() => app.AdoptWindow((nint)native.Handle));
+            Assert.Throws<ArgumentException>(() => app.AdoptWindow((nint)native));
             app.ReleaseWindow(borrowed);
             Assert.Empty(app.GetWindows());
             Assert.True(borrowed.isClosed);
             Assert.Equal(0, borrowed.sdlWindowHandle);
             Assert.Throws<ObjectDisposedException>(() => borrowed.nativeHandles);
-            Assert.False(SDL.GetWindowFromID(id).IsNull);
+            Assert.True(SDL.Raw.GetWindowFromId(id) != null);
             borrowed.Dispose();
-            Assert.False(SDL.GetWindowFromID(id).IsNull);
+            Assert.True(SDL.Raw.GetWindowFromId(id) != null);
         }
         finally
         {
-            SDL.DestroyWindow(native);
+            SDL.Raw.DestroyWindow(native);
         }
-        Assert.True(SDL.GetWindowFromID(id).IsNull);
+        Assert.True(SDL.Raw.GetWindowFromId(id) == null);
     }
 
     [Fact]

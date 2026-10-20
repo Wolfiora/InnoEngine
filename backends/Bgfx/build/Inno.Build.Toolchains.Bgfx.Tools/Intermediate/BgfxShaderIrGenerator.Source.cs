@@ -185,7 +185,7 @@ internal sealed partial class BgfxShaderIrGenerator
         => type.elementType is not null ? $"{type.id.Length}:{type.id}[{type.elementCount}]{TypeKey(type.elementType)}"
             : $"{type.id.Length}:{type.id}" + string.Concat(type.fields.Select(field => $"{field.name.Length}:{field.name}{TypeKey(field.type)}"));
 
-    private static string Hash(string text) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text))).ToLowerInvariant();
+    private static string Hash(string text) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
 
     private static string BindingName(
         string prefix,

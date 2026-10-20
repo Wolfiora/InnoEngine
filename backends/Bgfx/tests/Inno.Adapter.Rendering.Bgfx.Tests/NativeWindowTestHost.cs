@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using Xunit;
+using Inno.Testing.Processes;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
@@ -10,6 +8,7 @@ internal static class NativeWindowTestHost
 {
     private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
     {
+        ["BgfxShutdownTests.ShutdownAfterAnOffscreenGraphReleasesTheProcessOwner"] = () => new BgfxShutdownTests().ShutdownAfterAnOffscreenGraphReleasesTheProcessOwner(),
         ["BgfxSurfaceRetirementTests.MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission"] = () => new BgfxSurfaceRetirementTests().MultiThreadedSurfaceAcknowledgesDestructionAfterTheFollowingSubmission(),
         ["BgfxSurfaceRetirementTests.InlineSurfaceUsesTheSameConservativeAcknowledgment"] = () => new BgfxSurfaceRetirementTests().InlineSurfaceUsesTheSameConservativeAcknowledgment(),
         ["BgfxSurfaceRetirementTests.InvalidIntegrationFailsBeforeTakingTheProcessOwner"] = () => new BgfxSurfaceRetirementTests().InvalidIntegrationFailsBeforeTakingTheProcessOwner(),
@@ -21,24 +20,7 @@ internal static class NativeWindowTestHost
         if (m_executingContract || !OperatingSystem.IsMacOS()
             && Environment.GetEnvironmentVariable("INNO_TEST_MAIN_THREAD_HOST") != "1")
             return false;
-        var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet")
-        {
-            UseShellExecute = false, CreateNoWindow = true,
-            RedirectStandardOutput = true, RedirectStandardError = true
-        };
-        start.ArgumentList.Add(typeof(NativeWindowTestHost).Assembly.Location);
-        start.ArgumentList.Add(contract);
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("The native contract host did not start.");
-        Task<string> output = process.StandardOutput.ReadToEndAsync();
-        Task<string> error = process.StandardError.ReadToEndAsync();
-        if (!process.WaitForExit(90_000))
-        {
-            process.Kill(entireProcessTree: true);
-            process.WaitForExit();
-            throw new TimeoutException("The main-thread native contract exceeded its process budget: " + contract);
-        }
-        Assert.True(process.ExitCode == 0,
-            $"Main-thread contract '{contract}' failed.\n{output.GetAwaiter().GetResult()}\n{error.GetAwaiter().GetResult()}");
+        NativeProcessTestHost.Run(typeof(NativeWindowTestHost).Assembly.Location, contract);
         return true;
     }
 
@@ -50,7 +32,9 @@ internal static class NativeWindowTestHost
                 throw new ArgumentException("The native test host requires one declared contract.");
             // Cocoa must create real windows on the process main thread, including isolated renderer tests.
             m_executingContract = true;
+            Console.Error.WriteLine($"Native contract started: {arguments[0]}; thread={Environment.CurrentManagedThreadId}.");
             contract();
+            Console.Error.WriteLine($"Native contract completed: {arguments[0]}.");
             return 0;
         }
         catch (Exception failure)

@@ -7,7 +7,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 /// <summary>
 /// Owns the application window directory and its native lifetime transfers.
 /// </summary>
-public sealed partial class Sdl3PlatformApplication
+public sealed unsafe partial class Sdl3PlatformApplication
 {
     /// <summary>
     /// Creates and registers a window through the borrowed host integration.
@@ -30,14 +30,14 @@ public sealed partial class Sdl3PlatformApplication
         nint handle = m_hostIntegration.CreateWindow(options);
         if (handle == 0)
             throw new InvalidOperationException("The SDL host integration returned no window.");
-        SDLWindow nativeWindow = new(handle);
+        SDLWindow* nativeWindow = (SDLWindow*)handle;
         try
         {
             return RegisterWindow(nativeWindow, options.title, ownsNativeWindow: true);
         }
         catch
         {
-            SDL.DestroyWindow(nativeWindow);
+            SDL.Raw.DestroyWindow(nativeWindow);
             throw;
         }
     }
@@ -65,8 +65,8 @@ public sealed partial class Sdl3PlatformApplication
         ValidateWindowRegistration();
         if (windowHandle == 0)
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
-        SDLWindow window = new(windowHandle);
-        return RegisterWindow(window, SDL.GetWindowTitle(window) ?? string.Empty, ownsNativeWindow: false);
+        SDLWindow* window = (SDLWindow*)windowHandle;
+        return RegisterWindow(window, Sdl3NativeText.ReadWindowTitle(window) ?? string.Empty, ownsNativeWindow: false);
     }
 
     /// <summary>
@@ -93,11 +93,11 @@ public sealed partial class Sdl3PlatformApplication
     }
 
     private Sdl3PlatformWindow RegisterWindow(
-        SDLWindow nativeWindow,
+        SDLWindow* nativeWindow,
         string title,
         bool ownsNativeWindow
     ) {
-        uint id = SDL.GetWindowID(nativeWindow);
+        uint id = SDL.Raw.GetWindowId(nativeWindow);
         if (id == 0 || m_windows.ContainsKey(id))
             throw new ArgumentException("The SDL window is invalid or already registered.", nameof(nativeWindow));
         var window = new Sdl3PlatformWindow(nativeWindow, title, ownsNativeWindow, m_hostIntegration, RemoveWindow, m_ownerThreadId);

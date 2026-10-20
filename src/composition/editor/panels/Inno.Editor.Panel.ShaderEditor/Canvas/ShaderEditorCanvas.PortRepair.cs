@@ -20,7 +20,7 @@ internal sealed partial class ShaderEditorCanvas
             return;
         try
         {
-            ImGuiApi.TextWrapped("Removed ports retain their connections. Choose a replacement explicitly; occupied inputs are not overwritten.");
+            Widget.WrappedText("Removed ports retain their connections. Choose a replacement explicitly; occupied inputs are not overwritten.");
             foreach (GraphEndpoint endpoint in missing)
             {
                 ShaderNodePort old = Port(endpoint);

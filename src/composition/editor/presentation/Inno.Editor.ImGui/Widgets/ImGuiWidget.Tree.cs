@@ -10,7 +10,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     private static readonly Dictionary<int, TreeWidgetWindowState> s_treeStatesByWindow = [];
     private static bool s_hasNextTreeNodeOpen;
@@ -54,16 +54,16 @@ public static partial class ImGuiWidget
 
         bool isLeaf = options.isLeaf;
         BeginTreeFrameIfNeeded();
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-        drawList.ChannelsSplit(2);
-        drawList.ChannelsSetCurrent(1);
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.ChannelsSplit(drawList, 2);
+        NativeImGui.Raw.ChannelsSetCurrent(drawList, 1);
         try
         {
             return DrawTreeNode(id, onDraw, options, isLeaf, drawList);
         }
         finally
         {
-            drawList.ChannelsMerge();
+            NativeImGui.Raw.ChannelsMerge(drawList);
         }
     }
 
@@ -72,7 +72,7 @@ public static partial class ImGuiWidget
         Action<TreeNodeDrawContext> onDraw,
         in TreeNodeOptions options,
         bool isLeaf,
-        ImDrawListPtr drawList
+        ImDrawList* drawList
     ) {
         bool open = !isLeaf && s_openStatesById.TryGetValue(id, out bool storedOpen) && storedOpen;
         if (!isLeaf && s_hasNextTreeNodeOpen)
@@ -82,7 +82,7 @@ public static partial class ImGuiWidget
         }
 
         s_hasNextTreeNodeOpen = false;
-        NativeImGui.SetNextItemOpen(open, ImGuiCond.Always);
+        NativeImGui.SetNextItemOpen(open, (int)(ImGuiCond.Always));
 
         Vector2 nodeCursor = NativeImGui.GetCursorScreenPos();
         // Each disclosure, content row and overlay owns its own hit region.
@@ -92,7 +92,7 @@ public static partial class ImGuiWidget
         else
             flags |= ImGuiTreeNodeFlags.OpenOnArrow;
 
-        int depth = Math.Max(0, ImGuiP.GetCurrentWindow().DC.TreeDepth);
+        int depth = Math.Max(0, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
         PruneTreeNodeStack(depth);
         bool hasNextSibling = TrackSiblingState(id, depth);
         if (!options.hideGuideLines)
@@ -101,7 +101,7 @@ public static partial class ImGuiWidget
         bool isOpen;
         try
         {
-            isOpen = NativeImGui.TreeNodeEx($"##{id}", flags);
+            isOpen = NativeImGui.TreeNodeEx($"##{id}", (int)(flags));
         }
         finally
         {
@@ -120,19 +120,19 @@ public static partial class ImGuiWidget
                 onDraw,
                 options.drawViewportOverlay,
                 out Vector2 interactionMin);
-            bool hovered = NativeImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenOverlappedByItem);
-            bool clicked = hovered && NativeImGui.IsItemClicked(ImGuiMouseButton.Left);
-            bool doubleClicked = hovered && NativeImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
+            bool hovered = NativeImGui.IsItemHovered((int)(ImGuiHoveredFlags.AllowWhenOverlappedByItem));
+            bool clicked = hovered && NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Left));
+            bool doubleClicked = hovered && NativeImGui.IsMouseDoubleClicked((int)(ImGuiMouseButton.Left));
             if (!isLeaf && doubleClicked)
                 s_openStatesById[id] = !isOpen;
             bool showHoverHighlight = hovered &&
                                       !options.suppressHoverHighlight &&
-                                      !ImGuiP.IsDragDropActive();
+                                      NativeImGui.Raw.IsDragDropActive() == 0;
             if (options.selected || showHoverHighlight)
                 DrawTreeRowBackground(
                     drawList,
                     contentRect,
-                    NativeImGui.GetColorU32(options.selected ? ImGuiCol.Header : ImGuiCol.HeaderHovered));
+                    NativeImGui.GetColorU32((int)(options.selected ? ImGuiCol.Header : ImGuiCol.HeaderHovered)));
             else if (options.showBackground)
                 DrawTreeRowBackground(
                     drawList,
@@ -181,7 +181,7 @@ public static partial class ImGuiWidget
 
     private static TreeWidgetWindowState GetTreeWindowState()
     {
-        int windowKey = NativeImGui.GetWindowDrawList().GetHashCode();
+        int windowKey = ((nint)NativeImGui.Raw.GetWindowDrawList()).GetHashCode();
         if (!s_treeStatesByWindow.TryGetValue(windowKey, out TreeWidgetWindowState? state))
         {
             state = new TreeWidgetWindowState();
@@ -199,14 +199,14 @@ public static partial class ImGuiWidget
         Action? drawViewportOverlay,
         out Vector2 interactionMin
     ) {
-        ImGuiWindowPtr window = ImGuiP.GetCurrentWindow();
+        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
         Vector2 windowPos = NativeImGui.GetWindowPos();
         float contentX = nodeCursor.X + NativeImGui.GetTreeNodeToLabelSpacing();
-        float contentRightX = window.WorkRect.Max.X;
-        float contentBottomY = window.InnerRect.Max.Y;
-        float contentOffsetX = contentX - windowPos.X + window.Scroll.X -
-                               window.DC.GroupOffset.X -
-                               window.DC.ColumnsOffset.X;
+        float contentRightX = window->WorkRect.Max.X;
+        float contentBottomY = window->InnerRect.Max.Y;
+        float contentOffsetX = contentX - windowPos.X + window->Scroll.X -
+                               window->DC.GroupOffset.X -
+                               window->DC.ColumnsOffset.X;
 
         NativeImGui.SameLine(contentOffsetX, 0f);
         NativeImGui.BeginGroup();
@@ -233,40 +233,40 @@ public static partial class ImGuiWidget
         Vector2 hitMax = rect.max;
         interactionMin = hitMin;
         DrawTreeNodeViewportOverlay(window, drawViewportOverlay);
-        float contentBoundaryX = window.DC.CursorMaxPos.X;
-        float idealBoundaryX = window.DC.IdealMaxPos.X;
+        float contentBoundaryX = window->DC.CursorMaxPos.X;
+        float idealBoundaryX = window->DC.IdealMaxPos.X;
         NativeImGui.SetCursorScreenPos(hitMin);
         _ = NativeImGui.InvisibleButton($"##tree_content_hit_{id}", hitMax - hitMin);
-        window.DC.CursorMaxPos.X = contentBoundaryX;
-        window.DC.IdealMaxPos.X = idealBoundaryX;
+        window->DC.CursorMaxPos.X = contentBoundaryX;
+        window->DC.IdealMaxPos.X = idealBoundaryX;
         return rect;
     }
 
     private static void DrawTreeNodeViewportOverlay(
-        ImGuiWindowPtr window,
+        ImGuiWindow* window,
         Action? drawViewportOverlay
     ) {
         if (drawViewportOverlay is null)
             return;
 
-        float contentBoundaryX = window.DC.CursorMaxPos.X;
-        float idealBoundaryX = window.DC.IdealMaxPos.X;
+        float contentBoundaryX = window->DC.CursorMaxPos.X;
+        float idealBoundaryX = window->DC.IdealMaxPos.X;
         try
         {
             drawViewportOverlay();
         }
         finally
         {
-            window.DC.CursorMaxPos.X = contentBoundaryX;
-            window.DC.IdealMaxPos.X = idealBoundaryX;
+            window->DC.CursorMaxPos.X = contentBoundaryX;
+            window->DC.IdealMaxPos.X = idealBoundaryX;
         }
     }
 
     private static void PushTransparentTreeNodeHeaderColors()
     {
-        NativeImGui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.transparent);
     }
 
     private static void BeginTreeFrameIfNeeded()
@@ -318,15 +318,15 @@ public static partial class ImGuiWidget
         if (s_treeNodeStack.Count == 0)
             return;
 
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         float textLineHeight = NativeImGui.GetTextLineHeight();
         float lineOverlap = ImGuiWidget.style.treeGuideLineOverlap;
-        float rowMaxY = nodeCursor.Y + textLineHeight + style.ItemSpacing.Y + lineOverlap;
+        float rowMaxY = nodeCursor.Y + textLineHeight + style->ItemSpacing.Y + lineOverlap;
         float rowCenterY = nodeCursor.Y + textLineHeight * 0.5f;
         float nodeToLabel = NativeImGui.GetTreeNodeToLabelSpacing();
         float guideOffset = nodeToLabel * 0.5f - ImGuiWidget.style.treeGuideLeftOffset;
         float labelStartX = nodeCursor.X + nodeToLabel;
-        float fileConnectorPadding = MathF.Max(1f, style.ItemInnerSpacing.X);
+        float fileConnectorPadding = MathF.Max(1f, style->ItemInnerSpacing.X);
         float folderConnectorPadding = fileConnectorPadding * 2f +
                                        ImGuiWidget.style.treeFolderConnectorPadding;
         float targetX = hasDisclosureArrow
@@ -363,11 +363,13 @@ public static partial class ImGuiWidget
             to = SnapTreeLinePoint(to)
         };
         s_lineSegments.Add(line);
-        NativeImGui.GetWindowDrawList().AddLine(
-            line.from,
-            line.to,
+        NativeImGui.Raw.AddLine(
+            NativeImGui.Raw.GetWindowDrawList(),
+            ImGui.ToNative(line.from),
+            ImGui.ToNative(line.to),
             NativeImGui.ColorConvertFloat4ToU32(EditorPalette.treeGuide),
-            style.borderSize);
+            style.borderSize
+        );
     }
 
     private static Vector2 SnapTreeLinePoint(Vector2 point)
@@ -376,13 +378,13 @@ public static partial class ImGuiWidget
     }
 
     private static void DrawTreeRowBackground(
-        ImDrawListPtr drawList,
+        ImDrawList* drawList,
         TreeWidgetHighlightRect rect,
         uint color
     ) {
-        drawList.ChannelsSetCurrent(0);
-        drawList.AddRectFilled(rect.min, rect.max, color);
-        drawList.ChannelsSetCurrent(1);
+        NativeImGui.Raw.ChannelsSetCurrent(drawList, 0);
+        NativeImGui.Raw.AddRectFilled(drawList, ImGui.ToNative(rect.min), ImGui.ToNative(rect.max), color, 0, 0);
+        NativeImGui.Raw.ChannelsSetCurrent(drawList, 1);
     }
 
 }

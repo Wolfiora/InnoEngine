@@ -3,115 +3,85 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
+using BGCS;
+using BGCS.Contracts.Inputs;
+using BGCS.Contracts.Targets;
 using Inno.Build.Toolchains;
-using BGCS.Configuration;
-using BGCS.Core.Caching;
-using BGCS.Core.Extensibility;
-using BGCS.Core.IO;
-using BGCS.Cpp2C.Configuration;
-using BGCS.Cpp2C.Facade;
-using BGCS.CppAst.Parsing;
-using BGCS.CppAst.Targeting;
-using BGCS.Facade;
-using Newtonsoft.Json;
 
 namespace Inno.Build.Bindings;
 
 internal static class NativeBindingGenerationIdentity
 {
+    private static readonly JsonSerializerOptions S_OPTIONS = new()
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+    };
+
     internal static string Compute(
-        CsCodeGeneratorConfig managed,
-        Cpp2CGeneratorConfig? bridge,
+        GenerationRequest request,
         BindingGenerationConfiguration definition,
-        string outputRoot,
         NativeBuildContext context,
-        string? hostBridgeRoot,
-        CancellationToken cancellationToken,
-        IReadOnlyList<string>? excludedDirectories = null
+        CancellationToken cancellation
     ) {
-        string configPath = definition.configPath;
-        string bridgeConfigPath = definition.bridgePath ?? string.Empty;
-        string managedBase = Path.GetDirectoryName(Path.GetFullPath(configPath))!;
-        string bridgeBase = bridge is null ? managedBase : Path.GetDirectoryName(Path.GetFullPath(bridgeConfigPath))!;
-        string? bridgeOutput = bridge is null ? null : Resolve(bridge.outputPath, bridgeBase!);
-        IEnumerable<string> entries = managed.entryFiles.Select(path => Resolve(path, managedBase))
-            .Where(path => (bridgeOutput is null || !IsWithin(path, bridgeOutput))
-                && (hostBridgeRoot is null || !IsWithin(path, hostBridgeRoot)));
-        IEnumerable<string> includes = managed.includeFolders.Concat(managed.systemIncludeFolders)
-            .Select(path => Resolve(path, managedBase))
-            .Concat(managed.resolvedTarget.toolchain.systemIncludeFolders)
-            .Concat(managed.resolvedTarget.toolchain.cxxSystemIncludeFolders);
-        string lowering = string.Empty;
-        if (bridge is not null)
+        var builder = BindingHostFactory.CreateBuilder(cancellation);
+        foreach (string plugin in request.configuration.extensions.plugins)
+            builder.AddPluginManifest(plugin);
+        BindingHost host = builder.Build();
+        try
         {
-            entries = entries.Concat(bridge.entryFiles.Select(path => Resolve(path, bridgeBase!)));
-            includes = includes.Concat(bridge.includeFolders.Concat(bridge.systemIncludeFolders)
-                .Select(path => Resolve(path, bridgeBase!)))
-                .Concat(bridge.resolvedTarget.toolchain.systemIncludeFolders)
-                .Concat(bridge.resolvedTarget.toolchain.cxxSystemIncludeFolders);
-            object[] lowerings = [..bridge.lowerings.typeLowerings, ..bridge.lowerings.callableLowerings,
-                ..bridge.lowerings.artifactContributors];
-            if (lowerings.Any(static service => service is not ICacheFingerprintProvider))
-                throw new InvalidOperationException("Target binding generation requires fingerprinted lowering services.");
-            lowering = string.Join("\n", lowerings.Cast<ICacheFingerprintProvider>()
-                .Select(static service => service.GetCacheFingerprint()).Order(StringComparer.Ordinal));
+            var config = request.configuration;
+            var target = config.targets.Single();
+            var settings = target.settings;
+            var source = config.source;
+            AnalysisResult analysis = host.AnalyzeAsync(new AnalysisRequest(source.headers, source.language, request.baseDirectory)
+            {
+                targetId = target.id,
+                triple = target.triple,
+                toolchain = new NativeToolchainDescriptor(compilerPath: settings.compilerPath, sysRoot: settings.sysRoot,
+                    systemIncludeFolders: settings.systemIncludeDirectories, cxxSystemIncludeFolders: settings.cxxSystemIncludeDirectories,
+                    defines: settings.defines, arguments: settings.arguments),
+                languageStandard = source.languageStandard!,
+                includeDirectories = source.includeDirectories,
+                systemIncludeDirectories = source.systemIncludeDirectories,
+                defines = source.defines,
+                arguments = source.arguments,
+                preamble = source.preamble,
+                postamble = source.postamble,
+                parseMacros = source.parseMacros,
+                parseComments = source.parseComments,
+                parseSystemIncludes = source.includeSystemDeclarations
+            }, cancellation).GetAwaiter().GetResult();
+            if (!analysis.success || analysis.snapshot is null)
+                throw new InvalidDataException("BGCS input analysis failed: " + analysis.GetDiagnosticSummary());
+            var declarations = new List<string>
+            {
+                JsonSerializer.Serialize(config, S_OPTIONS),
+                JsonSerializer.Serialize(analysis.target, S_OPTIONS),
+                JsonSerializer.Serialize(analysis.snapshot, S_OPTIONS),
+                JsonSerializer.Serialize(analysis.argumentInputs, S_OPTIONS),
+                definition.component.nativeProject,
+                definition.request.targetId,
+                definition.request.outputMode.ToString()
+            };
+            var inputs = request.configurationInputs.Concat(request.pluginInputs).Concat(analysis.snapshot.files)
+                .Concat(analysis.argumentInputs?.files ?? []).Select(input => NativeBuildInput.FromPath(context.engineRoot, input.path)).ToList();
+            Assembly implementation = typeof(NativeBindingGenerator).Assembly;
+            foreach (Assembly assembly in new[] { implementation, typeof(NativeBindingCompilation).Assembly,
+                         typeof(BindingHost).Assembly, typeof(BGCS.Contracts.BindingDiagnostic).Assembly,
+                         typeof(BGCS.Runtime.NativeModuleSession).Assembly }.Distinct())
+                inputs.Add(new NativeBuildInput("binding-implementation/" + Path.GetFileName(assembly.Location), assembly.Location));
+            string resources = Path.Combine(Path.GetDirectoryName(typeof(BindingHost).Assembly.Location)!, "bgcs", "worker-assets");
+            if (!Directory.Exists(resources))
+                throw new DirectoryNotFoundException("The restored BGCS SDK worker content is missing: " + resources);
+            inputs.Add(new NativeBuildInput("binding-worker-assets", resources));
+            return NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         }
-        string[] excluded = (bridgeOutput is null ? new[] { outputRoot } : [outputRoot, bridgeOutput])
-            .Concat(hostBridgeRoot is null ? [] : new[] { hostBridgeRoot }).Concat(excludedDirectories ?? []).ToArray();
-        cancellationToken.ThrowIfCancellationRequested();
-        IReadOnlyList<string> inputs = IncrementalGenerationCache.DiscoverInputs(entries, includes, excluded);
-        string? managedCompiler = CppToolchainDiscovery.FindCompiler(managed.parserKind,
-            ConfigurationPath.Resolve(managed.compilerPath ?? managed.resolvedTarget.toolchain.compilerPath,
-                managedBase, allowCommandName: true));
-        string? bridgeCompiler = bridge is null ? null : CppToolchainDiscovery.FindCompiler(CppParserKind.Cpp,
-            ConfigurationPath.Resolve(bridge.compilerPath ?? bridge.resolvedTarget.toolchain.compilerPath,
-                bridgeBase, allowCommandName: true));
-        string implementation = typeof(NativeBindingGenerationIdentity).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(static metadata => metadata.Key == "Inno.BindingImplementation").Value
-            ?? throw new InvalidOperationException("The binding task has no compiled implementation identity.");
-        string fingerprint = string.Join("\n",
-            implementation,
-            typeof(CsCodeGenerator).Assembly.ManifestModule.ModuleVersionId,
-            typeof(Cpp2CCodeGenerator).Assembly.ManifestModule.ModuleVersionId,
-            typeof(CppParserOptions).Assembly.ManifestModule.ModuleVersionId,
-            typeof(IncrementalGenerationCache).Assembly.ManifestModule.ModuleVersionId,
-            typeof(BGCS.Intermediate.BindingModule).Assembly.ManifestModule.ModuleVersionId,
-            typeof(BGCS.Language.Lexing.Lexer).Assembly.ManifestModule.ModuleVersionId,
-            managed.Serialize(),
-            JsonConvert.SerializeObject(managed.resolvedTarget),
-            CppToolchainDiscovery.GetCompilerFingerprint(managed.parserKind,
-                ConfigurationPath.Resolve(managed.compilerPath ?? managed.resolvedTarget.toolchain.compilerPath,
-                    managedBase, allowCommandName: true)),
-            managed.plugins.GetCacheFingerprint(),
-            bridge is null ? "" : bridge.Serialize(),
-            bridge is null ? "" : JsonConvert.SerializeObject(bridge.resolvedTarget),
-            bridge is null ? "" : CppToolchainDiscovery.GetCompilerFingerprint(CppParserKind.Cpp,
-                ConfigurationPath.Resolve(bridge.compilerPath ?? bridge.resolvedTarget.toolchain.compilerPath,
-                    bridgeBase!, allowCommandName: true)),
-            bridge?.plugins.GetCacheFingerprint() ?? "",
-            lowering);
-        return NativeBuildFingerprint.Create(
-            context,
-            [fingerprint, definition.component.nativeProject, definition.request.targetId,
-                definition.request.outputMode.ToString(), Path.GetRelativePath(context.engineRoot, definition.definition),
-                definition.extensionProject ?? string.Empty, hostBridgeRoot ?? string.Empty],
-            inputs.Concat(new[] { configPath, bridgeConfigPath, managedCompiler, bridgeCompiler }
-                .OfType<string>().Where(static path => path.Length != 0))
-                .Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
-            cancellationToken);
+        finally
+        {
+            host.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        }
     }
-
-    internal static string Resolve(
-        string path,
-        string baseDirectory
-    ) => ConfigurationPath.Resolve(path, baseDirectory, allowCommandName: false)!;
-
-    internal static bool IsWithin(
-        string path,
-        string directory
-    ) => Path.GetFullPath(path).StartsWith(
-        Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory)) + Path.DirectorySeparatorChar,
-        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 }

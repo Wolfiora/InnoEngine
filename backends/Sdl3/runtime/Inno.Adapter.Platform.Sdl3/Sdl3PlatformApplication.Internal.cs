@@ -14,7 +14,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 /// <summary>
 /// Platform runtime entry point responsible for window creation and platform event polling.
 /// </summary>
-public sealed partial class Sdl3PlatformApplication
+public sealed unsafe partial class Sdl3PlatformApplication
 {
     private readonly ISdl3HostIntegration m_hostIntegration;
     private readonly int m_ownerThreadId = Environment.CurrentManagedThreadId;
@@ -37,14 +37,14 @@ public sealed partial class Sdl3PlatformApplication
     {
         // Deliver the activating mouse press to the application as well as focusing the window.
         // This is required for first-click widgets, double-clicks, and drags across editor viewports.
-        _ = SDL.SetHint(SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-        _ = SDL.SetHint(SDL.SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
+        _ = SDL.SetHint(SDL.Constants.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
+        _ = SDL.SetHint(SDL.Constants.SDL_HINT_MOUSE_AUTO_CAPTURE, "0");
 
         m_hostIntegration.ConfigureInitialization();
 
         if (!SDL.Init(SDLInitFlags.Video | SDLInitFlags.Events))
         {
-            throw new InvalidOperationException(SDL.GetError() ?? "SDL_Init failed.");
+            throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_Init failed.");
         }
 
         // Browser frames are already driven by requestAnimationFrame; SDL's native
@@ -60,9 +60,9 @@ public sealed partial class Sdl3PlatformApplication
             Marshal.GetFunctionPointerForDelegate(m_liveResizeMainThreadCallback);
         m_liveResizeEventWatchHandle = GCHandle.Alloc(this, GCHandleType.Normal);
         var userData = (nint)GCHandle.ToIntPtr(m_liveResizeEventWatchHandle);
-        if (SDL.AddEventWatch(m_liveResizeEventWatchPointer, (void*)userData) == 0)
+        if (SDL.Raw.AddEventWatch(m_liveResizeEventWatchPointer, (void*)userData) == 0)
         {
-            Exception failure = new InvalidOperationException(SDL.GetError() ?? "SDL_AddEventWatch failed.");
+            Exception failure = new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_AddEventWatch failed.");
             m_liveResizeEventWatchHandle.Free();
             m_liveResizeEventWatch = null;
             m_liveResizeMainThreadCallback = null;
@@ -165,7 +165,7 @@ public sealed partial class Sdl3PlatformApplication
 
         Dictionary<PendingEventCoalesceKey, int> latestEventIndicesByKey = new();
         SDLEvent sdlEvent = default;
-        while (SDL.PollEvent(ref sdlEvent))
+        while (SDL.Raw.PollEvent(&sdlEvent) != 0)
         {
             m_redrawFailure?.Throw();
             DispatchNativeEvent(ref sdlEvent);
@@ -207,7 +207,7 @@ public sealed partial class Sdl3PlatformApplication
             var userData = (nint)GCHandle.ToIntPtr(m_liveResizeEventWatchHandle);
             unsafe
             {
-                SDL.RemoveEventWatch(m_liveResizeEventWatchPointer, (void*)userData);
+                SDL.Raw.RemoveEventWatch(m_liveResizeEventWatchPointer, (void*)userData);
             }
             m_liveResizeEventWatchHandle.Free();
             m_liveResizeEventWatch = null;
@@ -258,7 +258,7 @@ public sealed partial class Sdl3PlatformApplication
         if (Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 1) == 0)
         {
             var userDataPtr = (nint)GCHandle.ToIntPtr(application.m_liveResizeEventWatchHandle);
-            if (SDL.RunOnMainThread(application.m_liveResizeMainThreadCallbackPointer, (void*)userDataPtr, 0) == 0)
+            if (SDL.Raw.RunOnMainThread(application.m_liveResizeMainThreadCallbackPointer, (void*)userDataPtr, 0) == 0)
             {
                 Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 0);
             }
@@ -315,8 +315,8 @@ public sealed partial class Sdl3PlatformApplication
             if (m_windows.TryGetValue(windowId, out Sdl3PlatformWindow? window))
             {
                 int width = 0, height = 0;
-                if (!SDL.GetWindowSize(window.sdlWindow, ref width, ref height))
-                    throw new InvalidOperationException(SDL.GetError() ?? "SDL_GetWindowSize failed during live resize.");
+                if (SDL.Raw.GetWindowSize(window.sdlWindow, &width, &height) == 0)
+                    throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSize failed during live resize.");
                 window.UpdateLogicalSize(width, height);
             }
             foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
@@ -428,7 +428,7 @@ public sealed partial class Sdl3PlatformApplication
             case SDLEventType.KeyDown:
             {
                 var key = TranslateKey(sdlEvent.Key.Key);
-                var modifiers = TranslateModifiers(sdlEvent.Key.Mod);
+                var modifiers = TranslateModifiers((SDLKeymod)sdlEvent.Key.Mod);
                 evnt = new KeyPressedEvent(sdlEvent.Key.WindowID, key, modifiers, sdlEvent.Key.Repeat != 0);
                 return true;
             }
@@ -436,7 +436,7 @@ public sealed partial class Sdl3PlatformApplication
             case SDLEventType.KeyUp:
             {
                 var key = TranslateKey(sdlEvent.Key.Key);
-                var modifiers = TranslateModifiers(sdlEvent.Key.Mod);
+                var modifiers = TranslateModifiers((SDLKeymod)sdlEvent.Key.Mod);
                 evnt = new KeyReleasedEvent(sdlEvent.Key.WindowID, key, modifiers);
                 return true;
             }
@@ -500,22 +500,22 @@ public sealed partial class Sdl3PlatformApplication
         var sdlModifiers = (uint)modifiers;
         var result = KeyModifier.None;
 
-        if ((sdlModifiers & (SDL.SDL_KMOD_LSHIFT | SDL.SDL_KMOD_RSHIFT)) != 0)
+        if ((sdlModifiers & (SDL.Constants.SDL_KMOD_LSHIFT | SDL.Constants.SDL_KMOD_RSHIFT)) != 0)
         {
             result |= KeyModifier.Shift;
         }
 
-        if ((sdlModifiers & (SDL.SDL_KMOD_LCTRL | SDL.SDL_KMOD_RCTRL)) != 0)
+        if ((sdlModifiers & (SDL.Constants.SDL_KMOD_LCTRL | SDL.Constants.SDL_KMOD_RCTRL)) != 0)
         {
             result |= KeyModifier.Control;
         }
 
-        if ((sdlModifiers & (SDL.SDL_KMOD_LALT | SDL.SDL_KMOD_RALT)) != 0)
+        if ((sdlModifiers & (SDL.Constants.SDL_KMOD_LALT | SDL.Constants.SDL_KMOD_RALT)) != 0)
         {
             result |= KeyModifier.Alt;
         }
 
-        if ((sdlModifiers & (SDL.SDL_KMOD_LGUI | SDL.SDL_KMOD_RGUI)) != 0)
+        if ((sdlModifiers & (SDL.Constants.SDL_KMOD_LGUI | SDL.Constants.SDL_KMOD_RGUI)) != 0)
         {
             result |= KeyModifier.Super;
         }
@@ -529,19 +529,19 @@ public sealed partial class Sdl3PlatformApplication
     ) {
         switch (sdlButton)
         {
-            case SDL.SDL_BUTTON_LEFT:
+            case SDL.Constants.SDL_BUTTON_LEFT:
                 button = MouseButton.Left;
                 return true;
-            case SDL.SDL_BUTTON_RIGHT:
+            case SDL.Constants.SDL_BUTTON_RIGHT:
                 button = MouseButton.Right;
                 return true;
-            case SDL.SDL_BUTTON_MIDDLE:
+            case SDL.Constants.SDL_BUTTON_MIDDLE:
                 button = MouseButton.Middle;
                 return true;
-            case SDL.SDL_BUTTON_X1:
+            case SDL.Constants.SDL_BUTTON_X1:
                 button = MouseButton.XButton1;
                 return true;
-            case SDL.SDL_BUTTON_X2:
+            case SDL.Constants.SDL_BUTTON_X2:
                 button = MouseButton.XButton2;
                 return true;
             default:
@@ -554,111 +554,111 @@ public sealed partial class Sdl3PlatformApplication
     {
         return sdlKey switch
         {
-            SDL.SDLK_A => KeyCode.A,
-            SDL.SDLK_B => KeyCode.B,
-            SDL.SDLK_C => KeyCode.C,
-            SDL.SDLK_D => KeyCode.D,
-            SDL.SDLK_E => KeyCode.E,
-            SDL.SDLK_F => KeyCode.F,
-            SDL.SDLK_G => KeyCode.G,
-            SDL.SDLK_H => KeyCode.H,
-            SDL.SDLK_I => KeyCode.I,
-            SDL.SDLK_J => KeyCode.J,
-            SDL.SDLK_K => KeyCode.K,
-            SDL.SDLK_L => KeyCode.L,
-            SDL.SDLK_M => KeyCode.M,
-            SDL.SDLK_N => KeyCode.N,
-            SDL.SDLK_O => KeyCode.O,
-            SDL.SDLK_P => KeyCode.P,
-            SDL.SDLK_Q => KeyCode.Q,
-            SDL.SDLK_R => KeyCode.R,
-            SDL.SDLK_S => KeyCode.S,
-            SDL.SDLK_T => KeyCode.T,
-            SDL.SDLK_U => KeyCode.U,
-            SDL.SDLK_V => KeyCode.V,
-            SDL.SDLK_W => KeyCode.W,
-            SDL.SDLK_X => KeyCode.X,
-            SDL.SDLK_Y => KeyCode.Y,
-            SDL.SDLK_Z => KeyCode.Z,
+            SDL.Constants.SDLK_A => KeyCode.A,
+            SDL.Constants.SDLK_B => KeyCode.B,
+            SDL.Constants.SDLK_C => KeyCode.C,
+            SDL.Constants.SDLK_D => KeyCode.D,
+            SDL.Constants.SDLK_E => KeyCode.E,
+            SDL.Constants.SDLK_F => KeyCode.F,
+            SDL.Constants.SDLK_G => KeyCode.G,
+            SDL.Constants.SDLK_H => KeyCode.H,
+            SDL.Constants.SDLK_I => KeyCode.I,
+            SDL.Constants.SDLK_J => KeyCode.J,
+            SDL.Constants.SDLK_K => KeyCode.K,
+            SDL.Constants.SDLK_L => KeyCode.L,
+            SDL.Constants.SDLK_M => KeyCode.M,
+            SDL.Constants.SDLK_N => KeyCode.N,
+            SDL.Constants.SDLK_O => KeyCode.O,
+            SDL.Constants.SDLK_P => KeyCode.P,
+            SDL.Constants.SDLK_Q => KeyCode.Q,
+            SDL.Constants.SDLK_R => KeyCode.R,
+            SDL.Constants.SDLK_S => KeyCode.S,
+            SDL.Constants.SDLK_T => KeyCode.T,
+            SDL.Constants.SDLK_U => KeyCode.U,
+            SDL.Constants.SDLK_V => KeyCode.V,
+            SDL.Constants.SDLK_W => KeyCode.W,
+            SDL.Constants.SDLK_X => KeyCode.X,
+            SDL.Constants.SDLK_Y => KeyCode.Y,
+            SDL.Constants.SDLK_Z => KeyCode.Z,
 
-            SDL.SDLK_0 => KeyCode.D0,
-            SDL.SDLK_1 => KeyCode.D1,
-            SDL.SDLK_2 => KeyCode.D2,
-            SDL.SDLK_3 => KeyCode.D3,
-            SDL.SDLK_4 => KeyCode.D4,
-            SDL.SDLK_5 => KeyCode.D5,
-            SDL.SDLK_6 => KeyCode.D6,
-            SDL.SDLK_7 => KeyCode.D7,
-            SDL.SDLK_8 => KeyCode.D8,
-            SDL.SDLK_9 => KeyCode.D9,
+            SDL.Constants.SDLK_0 => KeyCode.D0,
+            SDL.Constants.SDLK_1 => KeyCode.D1,
+            SDL.Constants.SDLK_2 => KeyCode.D2,
+            SDL.Constants.SDLK_3 => KeyCode.D3,
+            SDL.Constants.SDLK_4 => KeyCode.D4,
+            SDL.Constants.SDLK_5 => KeyCode.D5,
+            SDL.Constants.SDLK_6 => KeyCode.D6,
+            SDL.Constants.SDLK_7 => KeyCode.D7,
+            SDL.Constants.SDLK_8 => KeyCode.D8,
+            SDL.Constants.SDLK_9 => KeyCode.D9,
 
-            SDL.SDLK_ESCAPE => KeyCode.Escape,
-            SDL.SDLK_SPACE => KeyCode.Space,
-            SDL.SDLK_RETURN => KeyCode.Enter,
-            SDL.SDLK_TAB => KeyCode.Tab,
-            SDL.SDLK_BACKSPACE => KeyCode.Backspace,
+            SDL.Constants.SDLK_ESCAPE => KeyCode.Escape,
+            SDL.Constants.SDLK_SPACE => KeyCode.Space,
+            SDL.Constants.SDLK_RETURN => KeyCode.Enter,
+            SDL.Constants.SDLK_TAB => KeyCode.Tab,
+            SDL.Constants.SDLK_BACKSPACE => KeyCode.Backspace,
 
-            SDL.SDLK_LEFT => KeyCode.LeftArrow,
-            SDL.SDLK_UP => KeyCode.UpArrow,
-            SDL.SDLK_RIGHT => KeyCode.RightArrow,
-            SDL.SDLK_DOWN => KeyCode.DownArrow,
+            SDL.Constants.SDLK_LEFT => KeyCode.LeftArrow,
+            SDL.Constants.SDLK_UP => KeyCode.UpArrow,
+            SDL.Constants.SDLK_RIGHT => KeyCode.RightArrow,
+            SDL.Constants.SDLK_DOWN => KeyCode.DownArrow,
 
-            SDL.SDLK_LGUI => KeyCode.LeftSuper,
-            SDL.SDLK_RGUI => KeyCode.RightSuper,
-            SDL.SDLK_LSHIFT => KeyCode.LeftShift,
-            SDL.SDLK_RSHIFT => KeyCode.RightShift,
-            SDL.SDLK_LCTRL => KeyCode.LeftCtrl,
-            SDL.SDLK_RCTRL => KeyCode.RightCtrl,
-            SDL.SDLK_LALT => KeyCode.LeftAlt,
-            SDL.SDLK_RALT => KeyCode.RightAlt,
+            SDL.Constants.SDLK_LGUI => KeyCode.LeftSuper,
+            SDL.Constants.SDLK_RGUI => KeyCode.RightSuper,
+            SDL.Constants.SDLK_LSHIFT => KeyCode.LeftShift,
+            SDL.Constants.SDLK_RSHIFT => KeyCode.RightShift,
+            SDL.Constants.SDLK_LCTRL => KeyCode.LeftCtrl,
+            SDL.Constants.SDLK_RCTRL => KeyCode.RightCtrl,
+            SDL.Constants.SDLK_LALT => KeyCode.LeftAlt,
+            SDL.Constants.SDLK_RALT => KeyCode.RightAlt,
 
-            SDL.SDLK_CAPSLOCK => KeyCode.CapsLock,
-            SDL.SDLK_INSERT => KeyCode.Insert,
-            SDL.SDLK_DELETE => KeyCode.Delete,
-            SDL.SDLK_HOME => KeyCode.Home,
-            SDL.SDLK_END => KeyCode.End,
-            SDL.SDLK_PAGEUP => KeyCode.PageUp,
-            SDL.SDLK_PAGEDOWN => KeyCode.PageDown,
+            SDL.Constants.SDLK_CAPSLOCK => KeyCode.CapsLock,
+            SDL.Constants.SDLK_INSERT => KeyCode.Insert,
+            SDL.Constants.SDLK_DELETE => KeyCode.Delete,
+            SDL.Constants.SDLK_HOME => KeyCode.Home,
+            SDL.Constants.SDLK_END => KeyCode.End,
+            SDL.Constants.SDLK_PAGEUP => KeyCode.PageUp,
+            SDL.Constants.SDLK_PAGEDOWN => KeyCode.PageDown,
 
-            SDL.SDLK_KP_0 => KeyCode.NumPad0,
-            SDL.SDLK_KP_1 => KeyCode.NumPad1,
-            SDL.SDLK_KP_2 => KeyCode.NumPad2,
-            SDL.SDLK_KP_3 => KeyCode.NumPad3,
-            SDL.SDLK_KP_4 => KeyCode.NumPad4,
-            SDL.SDLK_KP_5 => KeyCode.NumPad5,
-            SDL.SDLK_KP_6 => KeyCode.NumPad6,
-            SDL.SDLK_KP_7 => KeyCode.NumPad7,
-            SDL.SDLK_KP_8 => KeyCode.NumPad8,
-            SDL.SDLK_KP_9 => KeyCode.NumPad9,
+            SDL.Constants.SDLK_KP_0 => KeyCode.NumPad0,
+            SDL.Constants.SDLK_KP_1 => KeyCode.NumPad1,
+            SDL.Constants.SDLK_KP_2 => KeyCode.NumPad2,
+            SDL.Constants.SDLK_KP_3 => KeyCode.NumPad3,
+            SDL.Constants.SDLK_KP_4 => KeyCode.NumPad4,
+            SDL.Constants.SDLK_KP_5 => KeyCode.NumPad5,
+            SDL.Constants.SDLK_KP_6 => KeyCode.NumPad6,
+            SDL.Constants.SDLK_KP_7 => KeyCode.NumPad7,
+            SDL.Constants.SDLK_KP_8 => KeyCode.NumPad8,
+            SDL.Constants.SDLK_KP_9 => KeyCode.NumPad9,
 
-            SDL.SDLK_NUMLOCKCLEAR => KeyCode.NumLock,
-            SDL.SDLK_SCROLLLOCK => KeyCode.ScrollLock,
+            SDL.Constants.SDLK_NUMLOCKCLEAR => KeyCode.NumLock,
+            SDL.Constants.SDLK_SCROLLLOCK => KeyCode.ScrollLock,
 
-            SDL.SDLK_F1 => KeyCode.F1,
-            SDL.SDLK_F2 => KeyCode.F2,
-            SDL.SDLK_F3 => KeyCode.F3,
-            SDL.SDLK_F4 => KeyCode.F4,
-            SDL.SDLK_F5 => KeyCode.F5,
-            SDL.SDLK_F6 => KeyCode.F6,
-            SDL.SDLK_F7 => KeyCode.F7,
-            SDL.SDLK_F8 => KeyCode.F8,
-            SDL.SDLK_F9 => KeyCode.F9,
-            SDL.SDLK_F10 => KeyCode.F10,
-            SDL.SDLK_F11 => KeyCode.F11,
-            SDL.SDLK_F12 => KeyCode.F12,
+            SDL.Constants.SDLK_F1 => KeyCode.F1,
+            SDL.Constants.SDLK_F2 => KeyCode.F2,
+            SDL.Constants.SDLK_F3 => KeyCode.F3,
+            SDL.Constants.SDLK_F4 => KeyCode.F4,
+            SDL.Constants.SDLK_F5 => KeyCode.F5,
+            SDL.Constants.SDLK_F6 => KeyCode.F6,
+            SDL.Constants.SDLK_F7 => KeyCode.F7,
+            SDL.Constants.SDLK_F8 => KeyCode.F8,
+            SDL.Constants.SDLK_F9 => KeyCode.F9,
+            SDL.Constants.SDLK_F10 => KeyCode.F10,
+            SDL.Constants.SDLK_F11 => KeyCode.F11,
+            SDL.Constants.SDLK_F12 => KeyCode.F12,
 
-            SDL.SDLK_PLUS => KeyCode.Plus,
-            SDL.SDLK_EQUALS => KeyCode.Plus,
-            SDL.SDLK_COMMA => KeyCode.Comma,
-            SDL.SDLK_MINUS => KeyCode.Minus,
-            SDL.SDLK_PERIOD => KeyCode.Period,
-            SDL.SDLK_SLASH => KeyCode.Slash,
-            SDL.SDLK_GRAVE => KeyCode.Tilde,
-            SDL.SDLK_BACKSLASH => KeyCode.Backslash,
-            SDL.SDLK_SEMICOLON => KeyCode.Semicolon,
-            SDL.SDLK_APOSTROPHE => KeyCode.Quote,
-            SDL.SDLK_LEFTBRACKET => KeyCode.LeftBracket,
-            SDL.SDLK_RIGHTBRACKET => KeyCode.RightBracket,
+            SDL.Constants.SDLK_PLUS => KeyCode.Plus,
+            SDL.Constants.SDLK_EQUALS => KeyCode.Plus,
+            SDL.Constants.SDLK_COMMA => KeyCode.Comma,
+            SDL.Constants.SDLK_MINUS => KeyCode.Minus,
+            SDL.Constants.SDLK_PERIOD => KeyCode.Period,
+            SDL.Constants.SDLK_SLASH => KeyCode.Slash,
+            SDL.Constants.SDLK_GRAVE => KeyCode.Tilde,
+            SDL.Constants.SDLK_BACKSLASH => KeyCode.Backslash,
+            SDL.Constants.SDLK_SEMICOLON => KeyCode.Semicolon,
+            SDL.Constants.SDLK_APOSTROPHE => KeyCode.Quote,
+            SDL.Constants.SDLK_LEFTBRACKET => KeyCode.LeftBracket,
+            SDL.Constants.SDLK_RIGHTBRACKET => KeyCode.RightBracket,
             _ => KeyCode.Unknown
         };
     }

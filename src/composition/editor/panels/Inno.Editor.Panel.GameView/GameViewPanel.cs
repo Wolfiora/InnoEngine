@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using Inno.References;
 using System;
 using System.Collections.Generic;
@@ -24,7 +27,7 @@ namespace Inno.Editor.Panel.GameView;
 /// Presents the active Plugin provider for the open Game viewport purpose.
 /// </summary>
 [EditorPanel("rendering.game-view", "Game", order: 220, menuPath: "Viewports")]
-internal sealed class GameViewPanel : EditorPanel
+internal sealed unsafe class GameViewPanel : EditorPanel
 {
     private const string C_VIEWPORT_ID = "game-view";
     private static readonly EditorViewportKindId S_KIND = new("inno.editor.viewport.game");
@@ -84,7 +87,7 @@ internal sealed class GameViewPanel : EditorPanel
         if (available.X <= 0f || available.Y <= 0f)
             return;
         RefreshPresentationSettings();
-        float framebufferScale = NativeImGui.GetIO().DisplayFramebufferScale.X;
+        float framebufferScale = NativeImGui.Raw.GetIO()->DisplayFramebufferScale.X;
         if (!float.IsFinite(framebufferScale) || framebufferScale <= 0f)
             framebufferScale = 1f;
         GameViewportLayout layout = CalculateLayout(available, m_presentation, framebufferScale);
@@ -101,43 +104,43 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 local = mouse - outputOrigin;
         bool inside = local.X >= 0f && local.Y >= 0f
             && local.X < layout.size.X && local.Y < layout.size.Y;
-        ImGuiViewportPtr viewport = NativeImGui.GetWindowViewport();
+        ImGuiViewport* viewport = NativeImGui.Raw.GetWindowViewport();
         bool gameViewFocused = m_playMode.isPlaying
-            && NativeImGui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+            && NativeImGui.IsWindowFocused((int)ImGuiFocusedFlags.RootAndChildWindows);
         bool imageHovered = inside
-            && NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
+            && NativeImGui.IsWindowHovered((int)ImGuiHoveredFlags.RootAndChildWindows);
         bool focused = m_inputCapture.Report(
-            viewport.ID,
-            outputOrigin - viewport.Pos,
+            viewport->ID,
+            outputOrigin - new Vector2(viewport->Pos.X, viewport->Pos.Y),
             layout.size,
             gameViewFocused,
             imageHovered);
         bool acceptsPointer = focused && imageHovered;
-        if (!NativeImGui.IsMouseDown(ImGuiMouseButton.Left)
-            && !NativeImGui.IsMouseReleased(ImGuiMouseButton.Left))
+        if (!NativeImGui.IsMouseDown((int)ImGuiMouseButton.Left)
+            && !NativeImGui.IsMouseReleased((int)ImGuiMouseButton.Left))
         {
             m_leftPointerActive = false;
         }
-        bool leftPressed = acceptsPointer && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left);
+        bool leftPressed = acceptsPointer && NativeImGui.IsMouseClicked((int)ImGuiMouseButton.Left);
         if (leftPressed)
             m_leftPointerActive = true;
-        bool leftReleased = m_leftPointerActive && NativeImGui.IsMouseReleased(ImGuiMouseButton.Left);
+        bool leftReleased = m_leftPointerActive && NativeImGui.IsMouseReleased((int)ImGuiMouseButton.Left);
         if (leftReleased || !focused)
             m_leftPointerActive = false;
-        var io = NativeImGui.GetIO();
+        var io = NativeImGui.Raw.GetIO();
         KeyModifier modifiers = KeyModifier.None;
-        if (io.KeyAlt)
+        if (io->KeyAlt != 0)
             modifiers |= KeyModifier.Alt;
-        if (io.KeyCtrl)
+        if (io->KeyCtrl != 0)
             modifiers |= KeyModifier.Control;
-        if (io.KeyShift)
+        if (io->KeyShift != 0)
             modifiers |= KeyModifier.Shift;
-        if (io.KeySuper)
+        if (io->KeySuper != 0)
             modifiers |= KeyModifier.Super;
         m_rendering.SetOutputInput(C_VIEWPORT_ID, focused ? new RenderOutputInput(
             new Inno.Core.Mathematics.Vector2(local.X * layout.pixelWidth / layout.size.X, local.Y * layout.pixelHeight / layout.size.Y),
             acceptsPointer,
-            acceptsPointer ? new Inno.Core.Mathematics.Vector2(0f, io.MouseWheel) : default,
+            acceptsPointer ? new Inno.Core.Mathematics.Vector2(0f, io->MouseWheel) : default,
             modifiers,
             [], [],
             leftPressed ? [MouseButton.Left] : [],
@@ -164,10 +167,14 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 origin = NativeImGui.GetCursorScreenPos();
         if (m_presentation.preserveAspectRatio)
         {
-            NativeImGui.GetWindowDrawList().AddRectFilled(
-                origin,
-                origin + available,
-                NativeImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)));
+            NativeImGui.Raw.AddRectFilled(
+                NativeImGui.Raw.GetWindowDrawList(),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(origin),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(origin + available),
+                NativeImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)),
+                0,
+                0
+            );
         }
         NativeImGui.SetCursorScreenPos(origin + layout.offset);
         m_rendering.Draw(output, layout.size);
@@ -238,11 +245,15 @@ internal sealed class GameViewPanel : EditorPanel
         string message
     ) {
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
-        NativeImGui.GetWindowDrawList().AddRectFilled(
-            minimum,
-            minimum + size,
-            NativeImGui.ColorConvertFloat4ToU32(m_backgroundColor));
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        NativeImGui.Raw.AddRectFilled(
+            NativeImGui.Raw.GetWindowDrawList(),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum + size),
+            NativeImGui.ColorConvertFloat4ToU32(m_backgroundColor),
+            0,
+            0
+        );
+        NativeImGui.PushStyleColor((int)ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {
             EditorWidget.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);

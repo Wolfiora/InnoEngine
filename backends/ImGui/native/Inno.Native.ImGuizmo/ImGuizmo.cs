@@ -18,24 +18,17 @@ public static unsafe partial class ImGuizmo
 
     static ImGuizmo()
     {
-        NativeLibraryContext dependency = new(NativeDllLoader.LoadNativeDll(C_DEPENDENCY_NAME, typeof(ImGuizmo).Assembly));
-        NativeLibraryContext? api = null;
+        var dependency = new DynamicModuleProvider(NativeDllLoader.FindNativeLibrary(C_DEPENDENCY_NAME));
+        DynamicModuleProvider api;
         try
         {
-            api = new NativeLibraryContext(NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(ImGuizmo).Assembly));
-            InitApi(new ImGuizmoNativeContext(api, dependency));
+            api = new DynamicModuleProvider(NativeDllLoader.FindNativeLibrary(C_LIBRARY_NAME));
         }
         catch
         {
-            try
-            {
-                api?.Dispose();
-            }
-            finally
-            {
-                dependency.Dispose();
-            }
+            dependency.Dispose();
             throw;
         }
+        FromProvider(new ImGuizmoModuleProvider(api, dependency));
     }
 }

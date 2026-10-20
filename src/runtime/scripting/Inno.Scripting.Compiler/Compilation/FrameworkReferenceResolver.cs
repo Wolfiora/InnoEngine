@@ -3,33 +3,54 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Inno.Scripting.Compiler;
 
 internal static class FrameworkReferenceResolver
 {
-    internal static IReadOnlyList<MetadataReference> CreateReferencePackReferences()
+    internal static ScriptCompilationEnvironment Resolve(CancellationToken cancellationToken = default)
     {
         string referenceDirectory = FindReferenceDirectory();
-        return Directory
-            .EnumerateFiles(referenceDirectory, "*.dll", SearchOption.TopDirectoryOnly)
-            .OrderBy(static path => path, StringComparer.Ordinal)
-            .Select(static path => MetadataReference.CreateFromFile(path))
-            .ToArray();
+        var references = new List<MetadataReference>();
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "System.Private.CoreLib" };
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        foreach (string identity in new[]
+                 {
+                     ScriptCompilationEnvironment.C_TARGET_FRAMEWORK,
+                     ScriptCompilationEnvironment.C_LANGUAGE_VERSION,
+                     typeof(CSharpCompilation).Module.ModuleVersionId.ToString("N"),
+                     typeof(FrameworkReferenceResolver).Module.ModuleVersionId.ToString("N"),
+                     RuntimeInformation.FrameworkDescription
+                 })
+        {
+            hash.AppendData(Encoding.UTF8.GetBytes(identity));
+            hash.AppendData([0]);
+        }
+        foreach (string path in Directory.EnumerateFiles(referenceDirectory, "*.dll")
+                     .OrderBy(static path => Path.GetFileName(path), StringComparer.Ordinal))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            hash.AppendData(Encoding.UTF8.GetBytes(Path.GetFileName(path)));
+            hash.AppendData([0]);
+            byte[] image = File.ReadAllBytes(path);
+            hash.AppendData(SHA256.HashData(image));
+            references.Add(MetadataReference.CreateFromImage(
+                ImmutableCollectionsMarshal.AsImmutableArray(image), filePath: path));
+            names.Add(Path.GetFileNameWithoutExtension(path));
+        }
+        return new ScriptCompilationEnvironment(
+            references.AsReadOnly(), names, Convert.ToHexStringLower(hash.GetHashAndReset()));
     }
-
-    internal static IReadOnlySet<string> GetFrameworkAssemblyNames()
-        => Directory.EnumerateFiles(FindReferenceDirectory(), "*.dll", SearchOption.TopDirectoryOnly)
-            .Select(static path => Path.GetFileNameWithoutExtension(path))
-            .Append("System.Private.CoreLib")
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     private static string FindReferenceDirectory()
     {
-        Version runtimeVersion = Environment.Version;
-        string targetFramework = $"net{runtimeVersion.Major}.{runtimeVersion.Minor}";
+        const string targetFramework = ScriptCompilationEnvironment.C_TARGET_FRAMEWORK;
         foreach (string dotnetRoot in GetDotnetRoots())
         {
             string packRoot = Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref");
@@ -43,8 +64,8 @@ internal static class FrameworkReferenceResolver
                     version = ParseVersion(Path.GetFileName(path))
                 })
                 .Where(candidate => candidate.version is not null &&
-                                    candidate.version.Major == runtimeVersion.Major &&
-                                    candidate.version.Minor == runtimeVersion.Minor)
+                                    candidate.version.Major == 10 && candidate.version.Minor == 0 &&
+                                    !Path.GetFileName(candidate.path).Contains('-', StringComparison.Ordinal))
                 .OrderByDescending(static candidate => candidate.version)
                 .Select(candidate => Path.Combine(candidate.path, "ref", targetFramework))
                 .FirstOrDefault(Directory.Exists);
@@ -63,6 +84,7 @@ internal static class FrameworkReferenceResolver
         Add(AppContext.BaseDirectory);
         Add(Environment.GetEnvironmentVariable("DOTNET_ROOT"));
         Add(Environment.GetEnvironmentVariable("DOTNET_ROOT_X64"));
+        Add(Environment.GetEnvironmentVariable("DOTNET_ROOT_ARM64"));
         string runtimeDirectory = Path.GetFullPath(RuntimeEnvironment.GetRuntimeDirectory());
         Add(Path.GetFullPath(Path.Combine(runtimeDirectory, "..", "..", "..")));
         return roots;
@@ -79,9 +101,5 @@ internal static class FrameworkReferenceResolver
     }
 
     private static Version? ParseVersion(string value)
-    {
-        int suffixIndex = value.IndexOf('-', StringComparison.Ordinal);
-        string version = suffixIndex >= 0 ? value[..suffixIndex] : value;
-        return Version.TryParse(version, out Version? result) ? result : null;
-    }
+        => Version.TryParse(value, out Version? result) ? result : null;
 }

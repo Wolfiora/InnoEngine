@@ -25,10 +25,6 @@ namespace Inno::UI::RmlUiAdapter
 namespace
 {
 
-static_assert(sizeof(Byte) == sizeof(std::uint8_t));
-static_assert(sizeof(Utf8CodeUnit) == sizeof(char));
-static_assert(sizeof(Index) == sizeof(std::uint32_t));
-static_assert(sizeof(Handle) == sizeof(std::uint64_t));
 
 constexpr const char* C_CONTEXT_EVENTS[] = {"click", "change", "submit", "focus", "blur", "mouseover", "mouseout"};
 
@@ -238,8 +234,13 @@ Runtime::~Runtime() noexcept
     Inno::UI::RmlUiAdapter::ReleaseProcessHost();
 }
 
-Result Runtime::CreateContext(const char* name, int width, int height, float density, std::uint64_t& context)
-{
+Result Runtime::CreateContext(
+    const char* name,
+    int width,
+    int height,
+    float density,
+    std::uint64_t& context
+) {
     context = 0;
     auto* implementation = static_cast<RmlUiRuntimeState*>(m_state);
     if (!implementation || !name || name[0] == '\0' || width <= 0 || height <= 0 || !std::isfinite(density) || density <= 0.f)
@@ -289,8 +290,12 @@ Result Runtime::DestroyContext(std::uint64_t context)
     return Result::Success;
 }
 
-Result Runtime::SetViewport(std::uint64_t context, int width, int height, float density)
-{
+Result Runtime::SetViewport(
+    std::uint64_t context,
+    int width,
+    int height,
+    float density
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
@@ -301,8 +306,12 @@ Result Runtime::SetViewport(std::uint64_t context, int width, int height, float 
     return Result::Success;
 }
 
-Result Runtime::LoadDocument(std::uint64_t context, const char* markup, const char* source_url, std::uint64_t& document)
-{
+Result Runtime::LoadDocument(
+    std::uint64_t context,
+    const char* markup,
+    const char* source_url,
+    std::uint64_t& document
+) {
     document = 0;
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
@@ -331,8 +340,10 @@ Result Runtime::LoadDocument(std::uint64_t context, const char* markup, const ch
     return Result::Success;
 }
 
-Result Runtime::ShowDocument(std::uint64_t context, std::uint64_t document)
-{
+Result Runtime::ShowDocument(
+    std::uint64_t context,
+    std::uint64_t document
+) {
     Rml::ElementDocument* value =
         GetRuntimeState(m_state) ? RmlUiRuntimeState::FindDocument(GetRuntimeState(m_state)->Find(context), document) : nullptr;
     if (!value)
@@ -341,8 +352,10 @@ Result Runtime::ShowDocument(std::uint64_t context, std::uint64_t document)
     return Result::Success;
 }
 
-Result Runtime::HideDocument(std::uint64_t context, std::uint64_t document)
-{
+Result Runtime::HideDocument(
+    std::uint64_t context,
+    std::uint64_t document
+) {
     Rml::ElementDocument* value =
         GetRuntimeState(m_state) ? RmlUiRuntimeState::FindDocument(GetRuntimeState(m_state)->Find(context), document) : nullptr;
     if (!value)
@@ -351,8 +364,10 @@ Result Runtime::HideDocument(std::uint64_t context, std::uint64_t document)
     return Result::Success;
 }
 
-Result Runtime::CloseDocument(std::uint64_t context, std::uint64_t document)
-{
+Result Runtime::CloseDocument(
+    std::uint64_t context,
+    std::uint64_t document
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     Rml::ElementDocument* value = RmlUiRuntimeState::FindDocument(state, document);
     if (!value)
@@ -411,24 +426,40 @@ Result Runtime::SetClass(std::uint64_t context, std::uint64_t document, const ch
     return Result::Success;
 }
 
-Result Runtime::LoadFont(std::span<Byte> data, const char* family, int style, int weight, std::uint8_t fallback)
-{
+Result Runtime::LoadFont(
+    const std::uint8_t* data,
+    std::uint64_t data_length,
+    const char* family,
+    int style,
+    int weight,
+    std::uint8_t fallback
+) {
     if (!m_state)
         return Result::InvalidHandle;
-    return Inno::UI::RmlUiAdapter::LoadFont(reinterpret_cast<const std::uint8_t*>(data.data()), static_cast<std::uint64_t>(data.size()),
+    return Inno::UI::RmlUiAdapter::LoadFont(data, data_length,
                                             family, style, weight, fallback != 0);
 }
 
-Result Runtime::RegisterTexture(std::uint64_t context, const char* source, int width, int height, std::span<Byte> pixels)
-{
+Result Runtime::RegisterTexture(
+    std::uint64_t context,
+    const char* source,
+    int width,
+    int height,
+    std::uint8_t* pixels,
+    std::uint64_t pixel_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
-    return state ? state->renderer->RegisterTexture(source, width, height, reinterpret_cast<const std::uint8_t*>(pixels.data()),
-                                                    static_cast<std::uint64_t>(pixels.size()))
+    return state ? state->renderer->RegisterTexture(source, width, height, pixels,
+                                                    pixel_capacity)
                  : Result::InvalidHandle;
 }
 
-Result Runtime::ProcessMouseMove(std::uint64_t context, int x, int y, int modifiers)
-{
+Result Runtime::ProcessMouseMove(
+    std::uint64_t context,
+    int x,
+    int y,
+    int modifiers
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
@@ -436,8 +467,12 @@ Result Runtime::ProcessMouseMove(std::uint64_t context, int x, int y, int modifi
     return Result::Success;
 }
 
-Result Runtime::HasElementAtPoint(std::uint64_t context, int x, int y, std::uint8_t& hit)
-{
+Result Runtime::HasElementAtPoint(
+    std::uint64_t context,
+    int x,
+    int y,
+    std::uint8_t& hit
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
@@ -449,8 +484,12 @@ Result Runtime::HasElementAtPoint(std::uint64_t context, int x, int y, std::uint
     return Result::Success;
 }
 
-Result Runtime::ProcessMouseButton(std::uint64_t context, int button, std::uint8_t down, int modifiers)
-{
+Result Runtime::ProcessMouseButton(
+    std::uint64_t context,
+    int button,
+    std::uint8_t down,
+    int modifiers
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
@@ -463,8 +502,12 @@ Result Runtime::ProcessMouseButton(std::uint64_t context, int button, std::uint8
     return Result::Success;
 }
 
-Result Runtime::ProcessMouseWheel(std::uint64_t context, float x, float y, int modifiers)
-{
+Result Runtime::ProcessMouseWheel(
+    std::uint64_t context,
+    float x,
+    float y,
+    int modifiers
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
@@ -472,8 +515,12 @@ Result Runtime::ProcessMouseWheel(std::uint64_t context, float x, float y, int m
     return Result::Success;
 }
 
-Result Runtime::ProcessKey(std::uint64_t context, int key, std::uint8_t down, int modifiers)
-{
+Result Runtime::ProcessKey(
+    std::uint64_t context,
+    int key,
+    std::uint8_t down,
+    int modifiers
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
@@ -485,8 +532,10 @@ Result Runtime::ProcessKey(std::uint64_t context, int key, std::uint8_t down, in
     return Result::Success;
 }
 
-Result Runtime::ProcessText(std::uint64_t context, const char* text)
-{
+Result Runtime::ProcessText(
+    std::uint64_t context,
+    const char* text
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
@@ -504,8 +553,10 @@ Result Runtime::Update(std::uint64_t context)
     return state->context->Update() ? Result::Success : Result::BackendError;
 }
 
-Result Runtime::Render(std::uint64_t context, FrameInfo& frame)
-{
+Result Runtime::Render(
+    std::uint64_t context,
+    FrameInfo& frame
+) {
     frame = {};
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
@@ -520,60 +571,87 @@ Result Runtime::Render(std::uint64_t context, FrameInfo& frame)
     return Result::Success;
 }
 
-Result Runtime::GetMeshInfo(std::uint64_t context, std::uint64_t index, MeshInfo& mesh)
-{
+Result Runtime::GetMeshInfo(
+    std::uint64_t context,
+    std::uint64_t index,
+    MeshInfo& mesh
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     return state ? state->renderer->GetMeshInfo(index, mesh) : Result::InvalidHandle;
 }
 
-Result Runtime::CopyMeshVertices(std::uint64_t context, std::uint64_t mesh, std::span<Vertex> vertices)
-{
+Result Runtime::CopyMeshVertices(
+    std::uint64_t context,
+    std::uint64_t mesh,
+    Vertex* vertices,
+    std::uint64_t vertex_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
-    return state ? state->renderer->CopyMeshVertices(mesh, vertices.data(), static_cast<std::uint64_t>(vertices.size()))
+    return state ? state->renderer->CopyMeshVertices(mesh, vertices, vertex_capacity)
                  : Result::InvalidHandle;
 }
 
-Result Runtime::CopyMeshIndices(std::uint64_t context, std::uint64_t mesh, std::span<Index> indices)
-{
+Result Runtime::CopyMeshIndices(
+    std::uint64_t context,
+    std::uint64_t mesh,
+    std::uint32_t* indices,
+    std::uint64_t index_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
-    return state ? state->renderer->CopyMeshIndices(mesh, reinterpret_cast<std::uint32_t*>(indices.data()),
-                                                    static_cast<std::uint64_t>(indices.size()))
+    return state ? state->renderer->CopyMeshIndices(mesh, indices,
+                                                    index_capacity)
                  : Result::InvalidHandle;
 }
 
-Result Runtime::CopyCommands(std::uint64_t context, std::span<DrawCommand> commands)
-{
+Result Runtime::CopyCommands(
+    std::uint64_t context,
+    DrawCommand* commands,
+    std::uint64_t command_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
-    return state ? state->renderer->CopyCommands(commands.data(), static_cast<std::uint64_t>(commands.size())) : Result::InvalidHandle;
+    return state ? state->renderer->CopyCommands(commands, command_capacity) : Result::InvalidHandle;
 }
 
-Result Runtime::GetTextureInfo(std::uint64_t context, std::uint64_t index, TextureInfo& texture)
-{
+Result Runtime::GetTextureInfo(
+    std::uint64_t context,
+    std::uint64_t index,
+    TextureInfo& texture
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     return state ? state->renderer->GetTextureInfo(index, texture) : Result::InvalidHandle;
 }
 
-Result Runtime::CopyTexturePixels(std::uint64_t context, std::uint64_t texture, std::span<Byte> pixels)
-{
+Result Runtime::CopyTexturePixels(
+    std::uint64_t context,
+    std::uint64_t texture,
+    std::uint8_t* pixels,
+    std::uint64_t pixel_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
-    return state ? state->renderer->CopyTexturePixels(texture, reinterpret_cast<std::uint8_t*>(pixels.data()),
-                                                      static_cast<std::uint64_t>(pixels.size()))
+    return state ? state->renderer->CopyTexturePixels(texture, pixels,
+                                                      pixel_capacity)
                  : Result::InvalidHandle;
 }
 
-Result Runtime::CopyReleasedTextures(std::uint64_t context, std::span<Handle> textures)
-{
+Result Runtime::CopyReleasedTextures(
+    std::uint64_t context,
+    std::uint64_t* textures,
+    std::uint64_t texture_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
-    return state ? state->renderer->CopyReleasedTextures(reinterpret_cast<std::uint64_t*>(textures.data()),
-                                                         static_cast<std::uint64_t>(textures.size()))
+    return state ? state->renderer->CopyReleasedTextures(textures,
+                                                         texture_capacity)
                  : Result::InvalidHandle;
 }
 
-Result Runtime::CopyReleasedMeshes(std::uint64_t context, std::span<Handle> meshes)
-{
+Result Runtime::CopyReleasedMeshes(
+    std::uint64_t context,
+    std::uint64_t* meshes,
+    std::uint64_t mesh_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
-    return state ? state->renderer->CopyReleasedMeshes(reinterpret_cast<std::uint64_t*>(meshes.data()),
-                                                       static_cast<std::uint64_t>(meshes.size()))
+    return state ? state->renderer->CopyReleasedMeshes(meshes,
+                                                       mesh_capacity)
                  : Result::InvalidHandle;
 }
 
@@ -586,8 +664,10 @@ Result Runtime::FinishFrame(std::uint64_t context)
     return Result::Success;
 }
 
-Result Runtime::GetEventCount(std::uint64_t context, std::uint64_t& count)
-{
+Result Runtime::GetEventCount(
+    std::uint64_t context,
+    std::uint64_t& count
+) {
     count = 0;
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
@@ -596,8 +676,11 @@ Result Runtime::GetEventCount(std::uint64_t context, std::uint64_t& count)
     return Result::Success;
 }
 
-Result Runtime::GetEventInfo(std::uint64_t context, std::uint64_t index, EventInfo& event_info)
-{
+Result Runtime::GetEventInfo(
+    std::uint64_t context,
+    std::uint64_t index,
+    EventInfo& event_info
+) {
     event_info = {};
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
@@ -609,18 +692,24 @@ Result Runtime::GetEventInfo(std::uint64_t context, std::uint64_t index, EventIn
     return Result::Success;
 }
 
-Result Runtime::CopyEventTargetId(std::uint64_t context, std::uint64_t index, std::span<Utf8CodeUnit> target_id)
-{
+Result Runtime::CopyEventTargetId(
+    std::uint64_t context,
+    std::uint64_t index,
+    char* target_id,
+    std::uint64_t target_capacity
+) {
     RmlUiRuntimeState::ContextState* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
     if (!state)
         return Result::InvalidHandle;
     if (index >= static_cast<std::uint64_t>(state->events.size()))
         return Result::NotFound;
     const std::string& value = state->events[static_cast<std::size_t>(index)].target_id;
-    if (target_id.size() < value.size() + 1)
+    if (target_capacity < value.size() + 1)
         return Result::BufferTooSmall;
-    std::memcpy(target_id.data(), value.data(), value.size());
-    target_id[value.size()].value = '\0';
+    if (target_id == nullptr)
+        return Result::InvalidArgument;
+    std::memcpy(target_id, value.data(), value.size());
+    target_id[value.size()] = '\0';
     return Result::Success;
 }
 

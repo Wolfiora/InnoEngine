@@ -10,7 +10,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
 
-internal sealed class HierarchyDropVisual
+internal sealed unsafe class HierarchyDropVisual
 {
     internal EditorDropPlacement GetScenePlacement(
         in TreeNodeResult result,
@@ -48,7 +48,7 @@ internal sealed class HierarchyDropVisual
                 Vector2 highlightMin = result.contentMin;
                 highlightMin.X = MathF.Max(
                     result.min.X,
-                    highlightMin.X - NativeImGui.GetStyle().ItemInnerSpacing.X);
+                    highlightMin.X - NativeImGui.Raw.GetStyle()->ItemInnerSpacing.X);
                 EditorWidget.DropTargetHighlight(highlightMin, result.max);
                 break;
             }

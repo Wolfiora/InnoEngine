@@ -20,7 +20,7 @@ namespace Inno.Editor.Panel.Logging;
 /// Displays append-only logs and current diagnostics in the unified editor Console.
 /// </summary>
 [EditorPanel("diagnostics.console", "Console", order: 400, menuPath: "Diagnostics")]
-internal sealed class ConsolePanel : EditorPanel
+internal sealed unsafe class ConsolePanel : EditorPanel
 {
     #region State
     private readonly ConsolePanelContent m_content = new();
@@ -94,8 +94,8 @@ internal sealed class ConsolePanel : EditorPanel
         NativeImGui.BeginChild(
             "ConsoleChild",
             Vector2.Zero,
-            ImGuiChildFlags.None,
-            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+            (int)(ImGuiChildFlags.None),
+            (int)(ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
         DrawToolbar();
         NativeImGui.Separator();
         DrawConsoleRegion();
@@ -112,14 +112,14 @@ internal sealed class ConsolePanel : EditorPanel
             m_requestScrollToBottom = true;
         }
 
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         bool filterChanged = DrawFilterCombo();
         if (filterChanged)
         {
             m_requestScrollToBottom = true;
         }
 
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         if (NativeImGui.Button("Clear"))
         {
             m_console.Clear();
@@ -169,7 +169,7 @@ internal sealed class ConsolePanel : EditorPanel
     #region Console Region
     private void DrawConsoleRegion()
     {
-        NativeImGui.BeginChild("ConsoleRegion", Vector2.Zero);
+        NativeImGui.BeginChild("ConsoleRegion", Vector2.Zero, 0, 0);
 
         EditorConsoleSnapshot snapshot = m_console.Capture();
         RemoveStaleOpenEntries(snapshot);
@@ -252,16 +252,16 @@ internal sealed class ConsolePanel : EditorPanel
         {
             Vector4 collapsedCardBg = m_content.GetCollapsedBgColor();
             Vector4 collapsedCardBorder = m_content.GetCollapsedBorderColor();
-            NativeImGui.PushStyleColor(ImGuiCol.FrameBg, collapsedCardBg);
-            NativeImGui.PushStyleColor(ImGuiCol.Border, collapsedCardBorder);
-            NativeImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, NativeImGui.GetStyle().FrameRounding);
-            NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, EditorWidget.style.borderSize);
-            NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.framePadding);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), collapsedCardBg);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.Border), collapsedCardBorder);
+            NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), NativeImGui.Raw.GetStyle()->FrameRounding);
+            NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), EditorWidget.style.borderSize);
+            NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.framePadding);
 
             ImGuiChildFlags collapsedChildFlags = ImGuiChildFlags.FrameStyle;
             ImGuiWindowFlags collapsedChildWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
-            float collapsedHeight = NativeImGui.GetFrameHeight() + NativeImGui.GetStyle().FramePadding.Y * 2f;
-            if (NativeImGui.BeginChild("##ConsoleEntryCard", new Vector2(0f, collapsedHeight), collapsedChildFlags, collapsedChildWindowFlags))
+            float collapsedHeight = NativeImGui.GetFrameHeight() + NativeImGui.Raw.GetStyle()->FramePadding.Y * 2f;
+            if (NativeImGui.BeginChild("##ConsoleEntryCard", new Vector2(0f, collapsedHeight), (int)(collapsedChildFlags), (int)(collapsedChildWindowFlags)))
             {
                 DrawHeader(entry, repeatCount, levelColor, levelIcon, false, collapsedCardBg, out bool toggled);
                 if (toggled)
@@ -278,22 +278,22 @@ internal sealed class ConsolePanel : EditorPanel
 
         Vector4 cardBg = m_content.GetExpandedBgColor(levelColor);
         Vector4 cardBorder = EditorPalette.GetLogExpandedBorder(levelColor);
-        NativeImGui.PushStyleColor(ImGuiCol.FrameBg, cardBg);
-        NativeImGui.PushStyleColor(ImGuiCol.Border, cardBorder);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, NativeImGui.GetStyle().FrameRounding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, EditorWidget.style.borderSize);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.framePadding);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), cardBg);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), cardBorder);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), NativeImGui.Raw.GetStyle()->FrameRounding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), EditorWidget.style.borderSize);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.framePadding);
 
         ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY;
         ImGuiWindowFlags childWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
-        if (NativeImGui.BeginChild("##ConsoleEntryCard", new Vector2(0f, 0f), childFlags, childWindowFlags))
+        if (NativeImGui.BeginChild("##ConsoleEntryCard", new Vector2(0f, 0f), (int)(childFlags), (int)(childWindowFlags)))
         {
             DrawHeader(entry, repeatCount, levelColor, levelIcon, true, cardBg, out bool toggled);
             if (toggled)
                 m_openEntries.Remove(identity);
 
             NativeImGui.PushStyleColor(
-                ImGuiCol.Separator,
+                (int)(ImGuiCol.Separator),
                 EditorPalette.GetLogSeparator(cardBg));
             try
             {
@@ -332,7 +332,7 @@ internal sealed class ConsolePanel : EditorPanel
         out bool toggled
     ) {
         toggled = false;
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
 
         string content = isOpen ? entry.displayMessage : m_content.GetFirstLine(entry.displayMessage);
         string repeatText = repeatCount > 1 ? $" (x{repeatCount})" : string.Empty;
@@ -340,7 +340,7 @@ internal sealed class ConsolePanel : EditorPanel
         string toggleText = isOpen ? "▼" : "▶";
 
         float toggleW = NativeImGui.CalcTextSize(toggleText).X + EditorWidget.style.logDisclosurePadding.X * 2f;
-        float prefixW = NativeImGui.CalcTextSize(prefix).X + toggleW + style.ItemInnerSpacing.X;
+        float prefixW = NativeImGui.CalcTextSize(prefix).X + toggleW + style->ItemInnerSpacing.X;
         float suffixW = NativeImGui.CalcTextSize(repeatText).X;
         float suffixColW = MathF.Max(1f, suffixW);
         float tableOuterW = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
@@ -359,33 +359,33 @@ internal sealed class ConsolePanel : EditorPanel
             ImGuiTableFlags.NoPadInnerX |
             ImGuiTableFlags.NoSavedSettings;
 
-        if (NativeImGui.BeginTable("##HeaderTable", 3, flags, tableOuterSize))
+        if (NativeImGui.BeginTable("##HeaderTable", 3, (int)(flags), tableOuterSize))
         {
-            NativeImGui.TableSetupColumn("##prefix", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, prefixW);
-            NativeImGui.TableSetupColumn("##content", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, contentW);
-            NativeImGui.TableSetupColumn("##suffix", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, suffixColW);
+            NativeImGui.TableSetupColumn("##prefix", (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), prefixW);
+            NativeImGui.TableSetupColumn("##content", (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), contentW);
+            NativeImGui.TableSetupColumn("##suffix", (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), suffixColW);
 
             NativeImGui.TableNextRow();
             if (isOpen)
             {
                 uint headerBgU32 = NativeImGui.ColorConvertFloat4ToU32(headerBgColor);
-                NativeImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, headerBgU32);
+                NativeImGui.TableSetBgColor((int)(ImGuiTableBgTarget.RowBg0), headerBgU32);
             }
 
             _ = NativeImGui.TableSetColumnIndex(0);
-            NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.logDisclosurePadding);
-            NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
-            NativeImGui.PushStyleColor(ImGuiCol.Button, EditorPalette.logToggle);
-            NativeImGui.PushStyleColor(ImGuiCol.ButtonHovered, EditorPalette.logToggleHovered);
-            NativeImGui.PushStyleColor(ImGuiCol.ButtonActive, EditorPalette.logToggleActive);
+            NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.logDisclosurePadding);
+            NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), 0f);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.Button), EditorPalette.logToggle);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.ButtonHovered), EditorPalette.logToggleHovered);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.ButtonActive), EditorPalette.logToggleActive);
             if (NativeImGui.SmallButton($"{toggleText}##HeaderToggle"))
             {
                 toggled = true;
             }
             NativeImGui.PopStyleColor(3);
             NativeImGui.PopStyleVar(2);
-            NativeImGui.SameLine();
-            NativeImGui.PushStyleColor(ImGuiCol.Text, levelColor);
+            NativeImGui.SameLine(0f, -1f);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.Text), levelColor);
             NativeImGui.TextUnformatted(prefix);
             NativeImGui.PopStyleColor();
 
@@ -433,7 +433,7 @@ internal sealed class ConsolePanel : EditorPanel
         // These cards may be culled between frames; do not rely on a previous frame's auto-fit width.
         float labelWidth = NativeImGui.CalcTextSize("Session:").X;
         float availableWidth = NativeImGui.GetContentRegionAvail().X;
-        if (availableWidth < labelWidth + NativeImGui.CalcTextSize("Diagnostic").X + NativeImGui.GetStyle().CellPadding.X * 4)
+        if (availableWidth < labelWidth + NativeImGui.CalcTextSize("Diagnostic").X + NativeImGui.Raw.GetStyle()->CellPadding.X * 4)
         {
             DrawStackedField("Kind:", entry.kind.ToString());
             DrawStackedField("File:", fileWithLineText);
@@ -442,11 +442,11 @@ internal sealed class ConsolePanel : EditorPanel
                 DrawStackedField("Session:", entry.sessionId.ToString());
             DrawStackedField("Time:", timeText);
         }
-        else if (NativeImGui.BeginTable("##ConsoleEntryDetails", 2, ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings,
+        else if (NativeImGui.BeginTable("##ConsoleEntryDetails", 2, (int)(ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings),
             new Vector2(availableWidth, 0)))
         {
-            NativeImGui.TableSetupColumn("##label", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, labelWidth);
-            NativeImGui.TableSetupColumn("##value", ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize, 1f);
+            NativeImGui.TableSetupColumn("##label", (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
+            NativeImGui.TableSetupColumn("##value", (int)(ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f);
             DrawDetailFieldRow("Kind:", entry.kind.ToString());
             DrawDetailFieldRow("File:", fileWithLineText);
             DrawDetailFieldRow("Source:", sourceText);
@@ -494,7 +494,7 @@ internal sealed class ConsolePanel : EditorPanel
     ) {
         NativeImGui.TableNextRow();
         _ = NativeImGui.TableSetColumnIndex(0);
-        NativeImGui.TextDisabled(label);
+        EditorWidget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
         _ = NativeImGui.TableSetColumnIndex(1);
         NativeImGui.PushTextWrapPos(0f);
         NativeImGui.TextUnformatted(value);
@@ -505,7 +505,7 @@ internal sealed class ConsolePanel : EditorPanel
         string label,
         string value
     ) {
-        NativeImGui.TextDisabled(label);
+        EditorWidget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
         NativeImGui.PushTextWrapPos(0f);
         NativeImGui.TextUnformatted(value);
         NativeImGui.PopTextWrapPos();

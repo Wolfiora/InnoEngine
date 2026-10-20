@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
@@ -15,21 +16,16 @@
 
   <ItemGroup>
     <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
-    <PackageReference Include="BGCS.Cpp2C" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
-    <PackageReference Include="BGCS.Core" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
-    <PackageReference Include="BGCS.CppAst" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
-    <PackageReference Include="BGCS.Intermediate" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
-    <PackageReference Include="BGCS.Language" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
   </ItemGroup>
 
   <Target Name="ComputeBindingImplementationIdentity" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/**/*.cs" Exclude="$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/NativeBindingGenerator.Inputs.cs;$(MSBuildProjectDirectory)/Identity/BindingInputPlanning.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/**/*.cs" Exclude="$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**" />
       <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/Inno.Build.Bindings.csproj" />
       <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildFingerprint.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInput.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputSnapshot.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputReadCache.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInputState.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputVerificationScope.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs" />
       <_BindingImplementationInput Include="@(ReferencePath)" Condition="'%(ReferencePath.NuGetPackageId)' == 'BGCS' or $([System.String]::Copy('%(ReferencePath.NuGetPackageId)').StartsWith('BGCS.'))" />
       <_BindingImplementationInput Include="@(NativeCopyLocalItems)" />
-      <_BindingImplementationInput Include="$(NuGetPackageRoot)bgcs/$(InnoBgcsPackageVersion)/bgcs.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.core/$(InnoBgcsPackageVersion)/bgcs.core.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.cpp2c/$(InnoBgcsPackageVersion)/bgcs.cpp2c.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.cppast/$(InnoBgcsPackageVersion)/bgcs.cppast.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.intermediate/$(InnoBgcsPackageVersion)/bgcs.intermediate.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.language/$(InnoBgcsPackageVersion)/bgcs.language.$(InnoBgcsPackageVersion).nupkg.sha512" />
+      <_BindingImplementationInput Include="$(NuGetPackageRoot)bgcs/$(InnoBgcsPackageVersion)/bgcs.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.contracts/$(InnoBgcsPackageVersion)/bgcs.contracts.$(InnoBgcsPackageVersion).nupkg.sha512" />
     </ItemGroup>
     <GetFileHash Files="@(_BindingImplementationInput)">
       <Output TaskParameter="Items" ItemName="_BindingImplementationHash" />

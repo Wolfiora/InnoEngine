@@ -1,57 +1,52 @@
 # Native binding generation
 
-[Native 索引](README.md) · [构建验收](../build/Inno.Build.Cli.md) · [Wiki 首页](../README.md)
+[Native 索引](README.md) · [构建入口](../build/Inno.Build.Cli.md) · [Wiki 首页](../README.md)
 
-每个 `Inno.Native.XXX` 项目独立拥有 BGCS 配置与两个 MSBuild 入口。宿主生成结果为同一项目的 `Generated/Bindings.cs`，明确目标 profile 使用 `artifacts/bindings/<component>/<target>/<generationFingerprint>/Generated/Bindings.cs`。
-目标构建先解析实际输入身份，再检查对应生成物的精确文件集合及 SHA-256；文件损坏或输入变化时重新生成。
-普通宿主 `dotnet build` 只在 checked-in 文件缺失时生成。文件头的 `ABI reference target` 记录解析目标，不代表其他目标已通过 ABI 验收。
+每个 Native 组件通过自己的 `Bindings/bindings.props` 声明唯一生成入口、Host 配置和目标配置。ABI、命名、类型及生命周期语义属于 BGCS JSON 配置。包族由 `build/msbuild/Inno.Packages.props` 精确固定为 3.0.1。
 
-所有声明 `BindGenGeneratedBindings=true` 的组件由共同 MSBuild 规则启用 `DisableRuntimeMarshalling`。
-BGCS 已生成明确宽度、所有权和转换的 ABI carrier；运行时不得再次按默认封送规则解释枚举、句柄或 bool。
-此规则对宿主与静态目标一致，不在组件源码中重复 assembly attribute。实际调用验收必须覆盖返回值及参数，`sizeof` 正确并不能证明 P/Invoke 的调用签名正确。
+## 生成与检查
 
-以 SDL3 为例，在仓库根目录运行：
+在仓库根目录执行：
 
 ```shell
 dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:GenerateBindings -c Release
 dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:CheckBindings -c Release
-dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -c Release
 ```
 
-其他项目只需替换 `.csproj` 路径。`GenerateBindings` 运行该项目的 BGCS 配置；`CheckBindings` 在临时目录重新生成并比较当前文件，不改写 `Generated/`。生成器与 Runtime 均使用 `Inno.Packages.props` 固定的 NuGet 包版本；包内容与实际程序集参与生成身份。直接使用所选 SDK 的 dotnet 可执行文件，不通过另一套生成器 Program 或固定 SDK 路径。
+`GenerateBindings` 调用正式 SDK 流程；`CheckBindings` 在独立候选中重新生成并比较完整 managed/native 输出，不发布候选。普通宿主编译在所选 binding 缺失时准备生成物；目标产品使用本次 Native 构建选定的身份。
 
-| 项目 | 项目内配置 | 项目内特殊扩展 |
-| --- | --- | --- |
-| `Inno.Native.Bgfx` | `Bindings/bindgen.json` | `Bindings/bgfx-api-shape.json`、`bgfx-macro-enums.json` |
-| `Inno.Native.ImGui` | `Bindings/bindgen.json` | `Bindings/cimgui-api-shape.json`、`Bindings/Extension/` |
-| `Inno.Native.ImGuizmo` | `Bindings/bindgen.json` | 无 |
-| `Inno.Native.MiniAudio` | `Bindings/bindgen.json` | 无 |
-| `Inno.Native.Sdl3` | `Bindings/bindgen.json` | 无 |
-| `Inno.Native.Text` | `Bindings/bindgen.json` | 无 |
-| `Inno.Native.UI` | `Bindings/bindgen.json` | `Bindings/rmlui.bridge.json` |
+Bgfx、ImGui、ImGuizmo、MiniAudio、Sdl3、Text、UI 均使用组件自己的 `Bindings/common.json` 与 `bindgen*.json`。Text 与 UI 的手写语义 facade 分别为 `Native/include/TextRuntime.hpp` 和 `Native/include/RmlUiRuntime.hpp`，实现属于同一 Native owner。SDK 从 facade 生成 C ABI 和 managed binding。
 
-ImGui 的 `Bindings/Extension` 是仅在生成/检查时构建的 BGCS 插件项目；`ImVector<T>` 与 `ImTextureID` 的 ABI 实现作为模板合入同一份生成文件，不进入正常 Native 项目的源码列表。Text 的原生实现归属 `Inno.Native.Text/Native/`。UI 项目的 `GenerateBindings` 先用本项目的 bridge 配置从 `Inno.Native.UI/Native/include/RmlUiRuntime.hpp` 生成 C ABI，再生成本项目的 C# 文件；原生桥产物归属 `Inno.Native.UI/Native/Generated/`，不属于 managed binding。
+源码、配置和第三方依赖分别归组件与 extern 所有。所有生成物通过正式流程获得，不手改 `Generated/Bindings.cs`、生成原生代码或第三方源码，不另写平行 import。
 
-`Native/` 只放原生源代码与必要的生成桥，不放 CMake 构建目录。Text/UI 的原生中间产物分别写入对应 `Inno.Build.Toolchains.XXX/obj/native/<target>/<fingerprint>/`；最终动态库由工具链返回确切产物路径，再由 HostNativeDeployment 或平台包部署。`NativeDllLoader` 只读取当前应用部署树，不查询源码仓库或构建缓存。
+## 输出与读取保护
 
-所有 API 命名、枚举、marshalling 与 ownership 约束应写在所属项目的配置或扩展中。不要修改 `Generated/Bindings.cs`，也不要在项目里另写 native import。完整原生依赖、solution、ABI 和运行时测试使用 [统一 CLI 的 verify-native](../build/Inno.Build.Cli.md)；一个主机的通过结果不能替代其他平台的实机报告。
+HostSource 输出为组件的 `Generated/Bindings.cs` 和 `Native/Generated`。TargetArtifacts 输出为 `artifacts/bindings/<component>/<target>/<fingerprint>/Generated` 和 `Native`。
 
-Cpp2C 的主机编译器与 BGCS 的 libclang 必须使用兼容的标准库和 builtin headers。需要指定编译器时使用既有 `BGCS_CPP2C_CXX`，不把开发者的 LLVM 或 SDK 绝对路径写入引擎配置。Web profile 从自己的 Emscripten workload 获取 sysroot。
+Native 目录只复制 SDK 清单声明的原生源码、头文件和 generated root 输入，保持它们的相对布局，并包含引擎中立的 `compilation.json`。SDK 会话报告用于诊断，不进入原生编译输出或 CheckBindings 比较。managed 与 native 候选一起验证、发布；失败和取消不返回部分闭包。配置、实际头文件、工具、包内容及生成实现参与身份。
 
-## 目标 profile 与输出隔离
+调用方持有 `NativeBindingGenerationResult`，直到编译、链接或复制结束。目标结果持有 artifact 读取 lease；宿主可变输出持有 generation owner。修复和回收必须等待 reader 释放，不能通过保留路径字符串延长产物生命周期。
 
-Bgfx、Sdl3、MiniAudio、Text、UI 各只有一个 Native 项目。Bindings/common.json 保存共同声明与映射，bindgen.json 为宿主 profile，bindgen.browser-wasm.json 为 wasm32/static profile；后者的实际输出由 Task 的输入指纹确定，为`artifacts/bindings/<component>/browser-wasm/<generationFingerprint>/Generated/Bindings.cs`，不覆盖宿主 `Generated/Bindings.cs`。所有文件来自 BGCS，不手写 DllImport 或修改生成代码。
+MSBuild 在读取保护期间将唯一选中 `Bindings.cs` 复制到本次 SDK 中间目录，实际 Compile item 消费该副本。相同内容保持时间戳，构建期间仍保留完整性与身份校验。
 
-InnoNativeTarget 通过 ProjectReference 传播，bin/obj 按目标隔离。UI Cpp2C 的 rmlui.bridge.browser-wasm.json 继承相同 facade 定义并使用实际 Emscripten sysroot；不会在 Web profile 中混用主机 C++ 头文件。Cpp2C 的 include/sysroot/compiler 配置支持环境变量展开，与生成器配置的路径语义一致。
+## 原生编译要求
 
-UI 的目标 C++ 桥输出为`artifacts/bindings/ui/browser-wasm/<generationFingerprint>/Native`，宿主桥仍为 `Native/Generated`。
-目标桥和 managed binding 在共同 staging 内完成后一起提交；失败和取消不改变已完成的 generation。
-MSBuild 使用 `GeneratedBindings` 输出参数选择 Compile item，避免沿用调用前求值的固定路径。
-目标生成完成后按 Compile item 身份移除原绑定，再加入选中的源；编译前要求恰好一份 `Bindings.cs`。
-生成器 Task 与组件扩展使用独立的 `artifacts/build-tools/bindings` 宿主输出，移除 Player 的
-目标、发布、调试与自定义输出参数。完整托管发布请求通过 SDK 的 `ArtifactsPath` 隔离，
-不对单个 BGCS.Runtime 引用注入 restore 无法复现的输出属性；BGCS.Runtime 本身是目标中立 IL。
-BGCS 不需要引用或识别 InnoEngine 属性。
-工具链传入请求独占的 `BindGenDescriptorOutput` 文件，读取成功后的身份与路径，再以 `INNO_UI_BRIDGE_ROOT` 参数交给 CMake。
-指纹包括 BGCS 各生成程序集、配置、plugin/lowering、编译器、实际 sysroot 和输入 header；扩展必须声明可靠的缓存身份。
-目标缓存命中仍验证 bytes，`CheckBindings` 在独立 staging 检查 C 桥和 managed source。
+`Inno.Build.Bindings` 是 SDK 消费边界。它读取经过 SDK 发布锁和哈希验证的 `NativeSourceManifest`，结合本次会话的物理 root bindings，转换为 `NativeBindingCompilation`。Toolchains 和平台不引用 BGCS 类型。
+
+中立描述保存根身份、文件长度与 SHA-256、翻译单元标记、有序 include、宏、语言要求及导出要求。逻辑根按每个组件独立解释。SDK 的生成源码和 ShimSource 输入进入编译列表；入口头和依赖不作为翻译单元。
+
+冷 CMake producer 将用户源码与所选生成物复制到同一冻结树，保持重叠根和相对布局；外部 SDK 保持所选工具链的位置。使用前核对映射输入的长度和 SHA-256。生成 include 不绑定原工作区绝对路径。
+
+共同 executor 从中立描述生成本次 producer 专属的 CMake 输入，组件不猜测固定生成文件名。独立组件在目标创建后应用要求；Browser 聚合按组件应用同一机制。编译器 builtin/SDK 搜索顺序由所属工具链负责，不能把解析器目录机械重复加入 -isystem。
+
+清单宏只应用到清单中的翻译单元，上游源码继续使用组件自己的 CMake 配置。解析器的目标宏事实单独记录，不能覆盖实际消费编译器的 builtin。读取当前中立描述时，缺少根语义或出现未知字段均明确失败。
+
+初始、批次锁后、生成后、Native 锁后及编译后继续执行各自 fresh 校验。冻结输入使用复制，不能以指向可变源码的链接代替，也不能后处理生成文本来修补路径。
+
+## 工具与运行边界
+
+Compiler、sysroot、系统 include、Emscripten、Node 与 Python 由相应平台 provider 明确选择，并从 operation 冻结的 Native SDK 输入传给 SDK 的类型化字段；不修改父进程，也不实现独立的配置变量替换语法。BGCS 生成源码；编译、链接、导出验证、打包和部署由引擎完成。
+
+生成工具通过实际宿主 NuGet Restore 图取得 worker 资产。Player 只引用 BGCS.Runtime，不携带生成器。绑定组件统一禁用默认 runtime marshalling，原生 ABI 宽度、参数、返回值和 callback 都需要实际验收。
+
+Native CMake 中间产物归所属 toolchain 的 obj/native，运行时只读取明确部署的文件。完整验证使用 [Build CLI](../build/Inno.Build.Cli.md)，结果见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)；单个目标通过不代表其他平台已通过。

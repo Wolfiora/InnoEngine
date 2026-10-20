@@ -82,8 +82,8 @@ internal static class MSBuildProjectGraphValidator
         }
         foreach (string argument in new[]
         {
-            "msbuild", project, "-nologo", "-getItem:ProjectReference,Compile",
-            "-getProperty:AssemblyName,OutputType,InnoProductId,InnoProductTarget,InnoNativeTarget",
+            "msbuild", project, "-nologo", "-getItem:ProjectReference,Compile,Using",
+            "-getProperty:AssemblyName,OutputType,InnoProductId,InnoProductTarget,InnoNativeTarget,ImplicitUsings",
             "-p:DesignTimeBuild=true", "-p:BuildProjectReferences=false", "-p:InnoProductRestore=false",
             "-p:Configuration=" + configuration
         })
@@ -124,7 +124,8 @@ internal static class MSBuildProjectGraphValidator
                 Value(item, "Link"))).ToArray();
         return new(Relative(root, project), Value(properties, "AssemblyName"), Value(properties, "OutputType"),
             Value(properties, "InnoProductId"), Value(properties, "InnoProductTarget"),
-            Value(properties, "InnoNativeTarget"), references, sources);
+            Value(properties, "InnoNativeTarget"), Value(properties, "ImplicitUsings"),
+            items.GetProperty("Using").GetArrayLength(), references, sources);
     }
 
     private static void ValidateProject(
@@ -134,6 +135,10 @@ internal static class MSBuildProjectGraphValidator
     ) {
         bool test = project.path.StartsWith("tests/", StringComparison.Ordinal)
             || project.path.Contains("/tests/", StringComparison.Ordinal);
+        if (project.implicitUsings.Equals("enable", StringComparison.OrdinalIgnoreCase)
+            || project.implicitUsings.Equals("true", StringComparison.OrdinalIgnoreCase)
+            || project.usingItems != 0)
+            failures.Add($"{project.path}: effective compilation-wide using imports are forbidden.");
         if (!test && project.outputType == "Exe" && !ExecutableProducts.Contains(project.assemblyName))
             failures.Add($"{project.path}: effective production executable is not an approved product.");
         if (project.path.StartsWith("platforms/", StringComparison.Ordinal) && project.outputType == "Exe"
@@ -229,6 +234,8 @@ internal static class MSBuildProjectGraphValidator
         string productId,
         string target,
         string nativeTarget,
+        string implicitUsings,
+        int usingItems,
         IReadOnlyList<EvaluatedReference> references,
         IReadOnlyList<EvaluatedSource> sources
     );

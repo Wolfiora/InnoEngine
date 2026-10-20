@@ -83,13 +83,15 @@ internal static class ScriptCompilerEngine
             : null;
         progress.Complete("Script API profile built.");
         progress.Begin("Resolving script references...");
+        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve(cancellationToken);
         ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(
-            options, runtimeApi, cancellationToken: cancellationToken);
+            options, runtimeApi, environment, cancellationToken: cancellationToken);
         ScriptApiReferenceSet? editorApiReferences = editorApi is null
             ? null
             : ScriptApiReferenceBuilder.Build(
                 options,
                 editorApi,
+                environment,
                 runtimeApi,
                 runtimeApiReferences,
                 cancellationToken);
@@ -136,7 +138,7 @@ internal static class ScriptCompilerEngine
                 stageTimings: progress.Snapshot());
         }
 
-        IReadOnlyList<MetadataReference> platformReferences = FrameworkReferenceResolver.CreateReferencePackReferences();
+        IReadOnlyList<MetadataReference> platformReferences = environment.frameworkReferences;
 
         string stagingRoot = Path.Combine(options.outputDirectory, ".staging");
         using var generationStaging = new TemporaryDirectory(stagingRoot);
@@ -272,7 +274,7 @@ internal static class ScriptCompilerEngine
         CancellationToken cancellationToken
     ) {
         var parseOptions = new CSharpParseOptions(
-            LanguageVersion.Latest,
+            LanguageVersion.CSharp14,
             DocumentationMode.Parse,
             SourceCodeKind.Regular,
             preprocessorSymbols: defines
@@ -385,7 +387,7 @@ internal static class ScriptCompilerEngine
             // Generated registration alone needs the owning assemblies' implementation metadata.
             var implementationReferences = platformReferences.ToDictionary(
                 static reference => reference.Display!, StringComparer.OrdinalIgnoreCase);
-            foreach (string path in ScriptApiReferenceBuilder.GetImplementationPaths(api))
+            foreach (string path in ScriptApiReferenceBuilder.GetImplementationPaths(api, apiReferences.environment))
                 implementationReferences[path] = MetadataReference.CreateFromFile(path);
             runtimeReferences = implementationReferences.Values;
         }
@@ -572,6 +574,7 @@ internal static class ScriptCompilerEngine
             AppendHash(hash, dependencyKeys[reference]);
         }
         AppendHash(hash, api.contractFingerprint);
+        AppendHash(hash, api.artifactFingerprint);
         AppendHash(hash, deploymentReferenceFingerprint ?? "Authoring");
         return Convert.ToHexString(hash.GetHashAndReset());
     }

@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +21,7 @@ using ImGuiApi = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
-internal sealed partial class ShaderEditorCanvas(
+internal sealed unsafe partial class ShaderEditorCanvas(
     ShaderEditorDocuments owner,
     ShaderEditorDocuments.Draft draft
 ) {
@@ -53,11 +57,11 @@ internal sealed partial class ShaderEditorCanvas(
         }
         Dictionary<PortHandle, Vector2> points = PortPositions();
         ImGuiApi.SetNextItemAllowOverlap();
-        _ = ImGuiApi.InvisibleButton("##shader-canvas", m_size, ImGuiButtonFlags.MouseButtonLeft | ImGuiButtonFlags.MouseButtonMiddle | ImGuiButtonFlags.MouseButtonRight);
-        bool hovered = ImGuiApi.IsItemHovered(ImGuiHoveredFlags.AllowWhenBlockedByActiveItem);
+        _ = ImGuiApi.InvisibleButton("##shader-canvas", m_size, (int)(ImGuiButtonFlags.MouseButtonLeft | ImGuiButtonFlags.MouseButtonMiddle | ImGuiButtonFlags.MouseButtonRight));
+        bool hovered = ImGuiApi.IsItemHovered((int)ImGuiHoveredFlags.AllowWhenBlockedByActiveItem);
         Vector2 mouse = ImGuiApi.GetMousePos();
         bool miniMapHovered = MiniMapContains(mouse);
-        if (hovered && !miniMapHovered && ImGuiApi.IsMouseClicked(ImGuiMouseButton.Right))
+        if (hovered && !miniMapHovered && ImGuiApi.IsMouseClicked((int)ImGuiMouseButton.Right))
         {
             draft.menuPosition = ToGraph(mouse);
             draft.createFromPort = null;
@@ -78,16 +82,28 @@ internal sealed partial class ShaderEditorCanvas(
         if (owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry entry))
         {
             EditorInteraction interaction = owner.interactions.For(C_AREA, entry);
-            if (ImGuiApi.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows))
+            if (ImGuiApi.IsWindowFocused((int)ImGuiFocusedFlags.RootAndChildWindows))
                 interaction.Focus();
             _ = EditorMenuRenderer.ContextMenu("##shader-menu", interaction);
         }
         Navigate(hovered && !miniMapHovered);
-        ImDrawListPtr draw = ImGuiApi.GetWindowDrawList();
-        draw.PushClipRect(m_origin, m_origin + m_size, true);
+        ImDrawList* draw = ImGuiApi.Raw.GetWindowDrawList();
+        ImGuiApi.Raw.PushClipRect(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + m_size),
+            (true ? (byte)1 : (byte)0)
+        );
         try
         {
-            draw.AddRectFilled(m_origin, m_origin + m_size, Color(0.065f, 0.071f, 0.083f));
+            ImGuiApi.Raw.AddRectFilled(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + m_size),
+                Color(0.065f, 0.071f, 0.083f),
+                0,
+                0
+            );
             Grid(draw);
             Groups(draw);
             Edges(draw, points);
@@ -97,20 +113,53 @@ internal sealed partial class ShaderEditorCanvas(
             if (draft.boxSelecting)
             {
                 Vector2 min = Vector2.Min(draft.pointerStart, mouse), max = Vector2.Max(draft.pointerStart, mouse);
-                draw.AddRectFilled(min, max, Color(0.52f, 0.37f, 0.78f, EditorPalette.opacitySubtle));
-                draw.AddRect(min, max, Color(0.65f, 0.47f, 0.88f));
+                ImGuiApi.Raw.AddRectFilled(
+                    draw,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
+                    Color(0.52f, 0.37f, 0.78f, EditorPalette.opacitySubtle),
+                    0,
+                    0
+                );
+                ImGuiApi.Raw.AddRect(
+                    draw,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
+                    Color(0.65f, 0.47f, 0.88f),
+                    0,
+                    0,
+                    1f
+                );
             }
             string status = draft.readOnly ? "Read-only · copy to project to edit" : Controller.isDirty ? "Unsaved changes · Save to apply" : draft.status;
             status += " · Saved asset: " + draft.compilationStatus;
-            draw.AddText(m_origin + new Vector2(12, 10), ImGuiApi.GetColorU32(ImGuiCol.TextDisabled), status);
+            using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(status, allowsNull: false))
+            {
+                ImGuiApi.Raw.AddText(
+                    draw,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(12, 10)),
+                    ImGuiApi.GetColorU32((int)ImGuiCol.TextDisabled),
+                    (sbyte*)nativeText.pointer,
+                    null
+                );
+            }
             if (draft.compilationDiagnostics.Length != 0 && mouse.Y < m_origin.Y + 32 && hovered)
                 Widget.DrawTooltip(draft.compilationDiagnostics);
             if (draft.error.Length != 0)
-                draw.AddText(m_origin + new Vector2(12, 34), Color(1f, 0.47f, 0.44f), draft.error);
+                using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(draft.error, allowsNull: false))
+                {
+                    ImGuiApi.Raw.AddText(
+                        draw,
+                        Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(12, 34)),
+                        Color(1f, 0.47f, 0.44f),
+                        (sbyte*)nativeText.pointer,
+                        null
+                    );
+                }
         }
         finally
         {
-            draw.PopClipRect();
+            ImGuiApi.Raw.PopClipRect(draw);
         }
         DrawMiniMap();
         // Re-submit the canvas footprint after absolutely positioned node controls. A cursor
@@ -291,17 +340,17 @@ internal sealed partial class ShaderEditorCanvas(
             if (ImGuiApi.Button("Save") && draft is not null && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry entry))
                 _ = owner.interactions.For(C_AREA, entry).Execute("shader/save");
             Widget.DrawItemTooltip("Save this shader and apply its changes (Command/Ctrl + S). Invalid graphs can be saved; rendering retains the last successful programs.");
-            ImGuiApi.SameLine();
+            ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Revert") && draft is not null)
                 _ = owner.interactions.documents.Revert(draft.documentId);
             Widget.DrawItemTooltip("Restore the saved shader. This draft change can be undone.");
             ImGuiApi.EndDisabled();
-            ImGuiApi.SameLine();
+            ImGuiApi.SameLine(0f, -1f);
             ImGuiApi.BeginDisabled(noDocument);
             if (ImGuiApi.Button("Format") && draft is not null && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry formatEntry))
                 _ = owner.interactions.For(C_AREA, formatEntry).Execute("shader/format");
             Widget.DrawItemTooltip("Arrange the graph from inputs on the left to outputs on the right. This changes only authoring positions and is undoable.");
-            ImGuiApi.SameLine();
+            ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Check") && draft is not null && owner.assets.TryGetFileSystemEntry(draft.path, out AssetFileEntry checkEntry))
                 _ = owner.interactions.For(C_AREA, checkEntry).Execute("shader/check");
             Widget.DrawItemTooltip("Compile-check the current draft without saving or publishing it, and show diagnostics with source locations.");
@@ -372,22 +421,22 @@ internal sealed partial class ShaderEditorCanvas(
 
     private void Navigate(bool hovered)
     {
-        ImGuiIOPtr io = ImGuiApi.GetIO();
-        draft.navigation.Update(hovered, ImGuiApi.IsMouseClicked(ImGuiMouseButton.Left), ImGuiApi.IsMouseClicked(ImGuiMouseButton.Middle),
-            ImGuiApi.IsMouseDown(ImGuiMouseButton.Left), ImGuiApi.IsMouseDown(ImGuiMouseButton.Middle), io.KeyAlt);
+        ImGuiIO* io = ImGuiApi.Raw.GetIO();
+        draft.navigation.Update(hovered, ImGuiApi.IsMouseClicked((int)ImGuiMouseButton.Left), ImGuiApi.IsMouseClicked((int)ImGuiMouseButton.Middle),
+            ImGuiApi.IsMouseDown((int)ImGuiMouseButton.Left), ImGuiApi.IsMouseDown((int)ImGuiMouseButton.Middle), io->KeyAlt != 0);
         if (draft.navigation.isPanning)
         {
-            Canvas.PanBy(io.MouseDelta.X, io.MouseDelta.Y);
-            ImGuiApi.SetMouseCursor(ImGuiMouseCursor.ResizeAll);
+            Canvas.PanBy(io->MouseDelta.X, io->MouseDelta.Y);
+            ImGuiApi.SetMouseCursor((int)ImGuiMouseCursor.ResizeAll);
         }
-        if (hovered && io.MouseWheel != 0)
+        if (hovered && io->MouseWheel != 0)
         {
             Vector2 pivot = ImGuiApi.GetMousePos() - m_origin;
-            Canvas.ZoomAt(EditorPlanarNavigation.WheelFactor(io.MouseWheel), pivot.X, pivot.Y);
+            Canvas.ZoomAt(EditorPlanarNavigation.WheelFactor(io->MouseWheel), pivot.X, pivot.Y);
         }
-        if (hovered && !io.WantTextInput && ImGuiApi.IsKeyPressed(ImGuiKey.F, false))
+        if (hovered && io->WantTextInput == 0 && ImGuiApi.IsKeyPressed(ImGuiKey.F, false))
             Frame();
-        if (!io.WantTextInput && ImGuiApi.IsKeyPressed(ImGuiKey.Escape, false))
+        if (io->WantTextInput == 0 && ImGuiApi.IsKeyPressed(ImGuiKey.Escape, false))
         {
             draft.dragging = draft.boxSelecting = false;
             draft.resizingNode = null;
@@ -402,13 +451,13 @@ internal sealed partial class ShaderEditorCanvas(
         bool hovered,
         Dictionary<PortHandle, Vector2> points
     ) {
-        if (draft.navigation.isPanning || ImGuiApi.GetIO().KeyAlt)
+        if (draft.navigation.isPanning || ImGuiApi.Raw.GetIO()->KeyAlt != 0)
             return;
         Vector2 mouse = ImGuiApi.GetMousePos();
         if (draft.resizingNode is GraphNodeId resizing)
         {
-            ImGuiApi.SetMouseCursor(ImGuiMouseCursor.ResizeNwse);
-            if (ImGuiApi.IsMouseDown(ImGuiMouseButton.Left))
+            ImGuiApi.SetMouseCursor((int)ImGuiMouseCursor.ResizeNwse);
+            if (ImGuiApi.IsMouseDown((int)ImGuiMouseButton.Left))
             {
                 draft.resizePreviewWidth = Math.Clamp(
                     draft.resizeStartWidth + (mouse.X - draft.pointerStart.X) / Canvas.zoom,
@@ -433,8 +482,8 @@ internal sealed partial class ShaderEditorCanvas(
         }
         GraphNodeRecord? resizeTarget = !draft.readOnly && hovered ? HitResizeHandle(mouse) : null;
         if (resizeTarget is not null)
-            ImGuiApi.SetMouseCursor(ImGuiMouseCursor.ResizeNwse);
-        if (hovered && ImGuiApi.IsMouseClicked(ImGuiMouseButton.Left))
+            ImGuiApi.SetMouseCursor((int)ImGuiMouseCursor.ResizeNwse);
+        if (hovered && ImGuiApi.IsMouseClicked((int)ImGuiMouseButton.Left))
         {
             if (resizeTarget is not null)
             {
@@ -475,7 +524,7 @@ internal sealed partial class ShaderEditorCanvas(
             {
                 draft.selectedGroupId = "";
                 draft.selectedEdge = null;
-                if (ImGuiApi.GetIO().KeyShift)
+                if (ImGuiApi.Raw.GetIO()->KeyShift != 0)
                     Canvas.ToggleNode(node.id);
                 else if (!Canvas.selectedNodes.Contains(node.id))
                     Canvas.SelectNodes([node.id]);
@@ -491,7 +540,7 @@ internal sealed partial class ShaderEditorCanvas(
             else if (node is null)
             {
                 draft.selectedGroupId = "";
-                if (!ImGuiApi.GetIO().KeyShift)
+                if (ImGuiApi.Raw.GetIO()->KeyShift == 0)
                     Canvas.ClearSelection();
                 draft.selectedEdge = HitEdge(mouse, points);
                 if (draft.selectedEdge is not null)
@@ -500,13 +549,13 @@ internal sealed partial class ShaderEditorCanvas(
                 draft.pointerStart = mouse;
             }
         }
-        if (draft.dragging && ImGuiApi.IsMouseDown(ImGuiMouseButton.Left))
+        if (draft.dragging && ImGuiApi.IsMouseDown((int)ImGuiMouseButton.Left))
         {
             Vector2 delta = (mouse - draft.pointerStart) / Canvas.zoom;
             foreach ((GraphNodeId id, GraphPosition position) in draft.dragStart)
                 draft.dragPreview[id] = new(position.x + delta.X, position.y + delta.Y);
         }
-        if (!ImGuiApi.IsMouseDown(ImGuiMouseButton.Left))
+        if (!ImGuiApi.IsMouseDown((int)ImGuiMouseButton.Left))
         {
             if (draft.dragging && draft.dragPreview.Count != 0)
             {
@@ -556,7 +605,7 @@ internal sealed partial class ShaderEditorCanvas(
     }
 
     private unsafe void Node(
-        ImDrawListPtr draw,
+        ImDrawList* draw,
         GraphNodeRecord node,
         Dictionary<PortHandle, Vector2> points
     ) {
@@ -565,14 +614,54 @@ internal sealed partial class ShaderEditorCanvas(
             return;
         float zoom = Canvas.zoom;
         bool selected = Canvas.selectedNodes.Contains(node.id);
-        draw.AddRectFilled(rect.min + new Vector2(3, 5), rect.max + new Vector2(3, 5),
-            Color(0, 0, 0, EditorPalette.opacityMuted), 6 * zoom);
-        draw.AddRectFilled(rect.min, rect.max, Color(0.115f, 0.12f, 0.14f), 6 * zoom);
+        ImGuiApi.Raw.AddRectFilled(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min + new Vector2(3, 5)),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max + new Vector2(3, 5)),
+            Color(0, 0, 0, EditorPalette.opacityMuted),
+            6 * zoom,
+            0
+        );
+        ImGuiApi.Raw.AddRectFilled(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max),
+            Color(0.115f, 0.12f, 0.14f),
+            6 * zoom,
+            0
+        );
         Vector4 headerColor = NodeHeaderColor(node);
-        draw.AddRectFilled(rect.min, new(rect.max.X, rect.min.Y + C_HEADER * zoom),
-            ImGuiApi.ColorConvertFloat4ToU32(headerColor), 6 * zoom, ImDrawFlags.RoundCornersTop);
-        draw.AddRect(rect.min, rect.max, selected ? Color(0.65f, 0.47f, 0.88f) : Color(0.26f, 0.27f, 0.31f), 6 * zoom, ImDrawFlags.None, selected ? 2 : 1);
-        draw.AddText(ImGuiApi.GetFont(), ImGuiApi.GetFontSize() * zoom, rect.min + new Vector2(10, 7) * zoom, ImGuiApi.GetColorU32(ImGuiCol.Text), Title(node));
+        ImGuiApi.Raw.AddRectFilled(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(new(rect.max.X, rect.min.Y + C_HEADER * zoom)),
+            ImGuiApi.ColorConvertFloat4ToU32(headerColor),
+            6 * zoom,
+            (int)ImDrawFlags.RoundCornersTop
+        );
+        ImGuiApi.Raw.AddRect(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max),
+            selected ? Color(0.65f, 0.47f, 0.88f) : Color(0.26f, 0.27f, 0.31f),
+            6 * zoom,
+            (int)ImDrawFlags.None,
+            selected ? 2 : 1
+        );
+        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(Title(node), allowsNull: false))
+        {
+            ImGuiApi.Raw.AddText(
+                draw,
+                ImGuiApi.Raw.GetFont(),
+                ImGuiApi.GetFontSize() * zoom,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min + new Vector2(10, 7) * zoom),
+                ImGuiApi.GetColorU32((int)ImGuiCol.Text),
+                (sbyte*)nativeText.pointer,
+                null,
+                0f,
+                null
+            );
+        }
         ShaderNodePort[] nodePorts = draft.ports[node.id];
         bool splitPorts = UsesSplitPortLayout(nodePorts);
         float divider = (rect.min.X + rect.max.X) * 0.5f;
@@ -580,10 +669,13 @@ internal sealed partial class ShaderEditorCanvas(
         if (splitPorts)
         {
             float bodyPadding = 7f * zoom;
-            draw.AddLine(
-                new Vector2(divider, bodyTop + bodyPadding),
-                new Vector2(divider, rect.max.Y - bodyPadding),
-                Color(0.62f, 0.63f, 0.69f, EditorPalette.opacityFaint));
+            ImGuiApi.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(divider, bodyTop + bodyPadding)),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(divider, rect.max.Y - bodyPadding)),
+                Color(0.62f, 0.63f, 0.69f, EditorPalette.opacityFaint),
+                1f
+            );
         }
         foreach (ShaderNodePort port in nodePorts)
         {
@@ -593,11 +685,17 @@ internal sealed partial class ShaderEditorCanvas(
             bool optional = port.direction == GraphPortDirection.Input && !port.required;
             uint portColor = missing ? Color(0.95f, 0.35f, 0.3f) : Color(0.60f, 0.48f, 0.84f);
             if (missing || !optional)
-                draw.AddCircleFilled(point, 5 * zoom, portColor);
+                ImGuiApi.Raw.AddCircleFilled(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(point), 5 * zoom, portColor, 0);
             else
             {
-                draw.AddCircleFilled(point, 5 * zoom, portColor);
-                draw.AddCircleFilled(point, 2.75f * zoom, Color(0.115f, 0.12f, 0.14f));
+                ImGuiApi.Raw.AddCircleFilled(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(point), 5 * zoom, portColor, 0);
+                ImGuiApi.Raw.AddCircleFilled(
+                    draw,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(point),
+                    2.75f * zoom,
+                    Color(0.115f, 0.12f, 0.14f),
+                    0
+                );
             }
             float halfPadding = 12f * zoom;
             float portAreaWidth = splitPorts
@@ -612,10 +710,27 @@ internal sealed partial class ShaderEditorCanvas(
             float clipRight = splitPorts && input ? divider - 1f : rect.max.X - 1f;
             Vector2 clipMin = new(clipLeft, bodyTop);
             Vector2 clipMax = new(clipRight, rect.max.Y);
-            draw.PushClipRect(clipMin, clipMax, true);
-            draw.AddText(ImGuiApi.GetFont(), ImGuiApi.GetFontSize() * zoom, new(x, point.Y - 8 * zoom),
-                ImGuiApi.ColorConvertFloat4ToU32(optional ? EditorPalette.textDisabled : EditorPalette.text), label);
-            draw.PopClipRect();
+            ImGuiApi.Raw.PushClipRect(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(clipMin),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(clipMax),
+                (true ? (byte)1 : (byte)0)
+            );
+            using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(label, allowsNull: false))
+            {
+                ImGuiApi.Raw.AddText(
+                    draw,
+                    ImGuiApi.Raw.GetFont(),
+                    ImGuiApi.GetFontSize() * zoom,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new(x, point.Y - 8 * zoom)),
+                    ImGuiApi.ColorConvertFloat4ToU32(optional ? EditorPalette.textDisabled : EditorPalette.text),
+                    (sbyte*)nativeText.pointer,
+                    null,
+                    0f,
+                    null
+                );
+            }
+            ImGuiApi.Raw.PopClipRect(draw);
             if (Vector2.DistanceSquared(point, ImGuiApi.GetMousePos()) <= 64)
                 Widget.DrawTooltip(port.type.id + (missing
                     ? " · missing port; reconnect explicitly"
@@ -632,33 +747,71 @@ internal sealed partial class ShaderEditorCanvas(
                     ? EditorPalette.opacityEmphasized
                     : EditorPalette.opacityMedium);
             const float inset = 4f;
-            draw.AddLine(rect.max - new Vector2(C_RESIZE_HANDLE, inset) * zoom, rect.max - new Vector2(inset, C_RESIZE_HANDLE) * zoom, gripColor);
-            draw.AddLine(rect.max - new Vector2(C_RESIZE_HANDLE * 0.62f, inset) * zoom, rect.max - new Vector2(inset, C_RESIZE_HANDLE * 0.62f) * zoom, gripColor);
+            ImGuiApi.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(C_RESIZE_HANDLE, inset) * zoom),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(inset, C_RESIZE_HANDLE) * zoom),
+                gripColor,
+                1f
+            );
+            ImGuiApi.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(C_RESIZE_HANDLE * 0.62f, inset) * zoom),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(inset, C_RESIZE_HANDLE * 0.62f) * zoom),
+                gripColor,
+                1f
+            );
         }
         if (draft.ports[node.id].Length == 0 && node.definitionId == ShaderGraphNodes.inputDefinitionId)
-            draw.AddText(
-                ImGuiApi.GetFont(),
-                ImGuiApi.GetFontSize() * zoom,
-                rect.min + new Vector2(12, C_HEADER + 8) * zoom,
-                ImGuiApi.GetColorU32(ImGuiCol.TextDisabled),
-                "No caller inputs");
+            using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated("No caller inputs", allowsNull: false))
+            {
+                ImGuiApi.Raw.AddText(
+                    draw,
+                    ImGuiApi.Raw.GetFont(),
+                    ImGuiApi.GetFontSize() * zoom,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min + new Vector2(12, C_HEADER + 8) * zoom),
+                    ImGuiApi.GetColorU32((int)ImGuiCol.TextDisabled),
+                    (sbyte*)nativeText.pointer,
+                    null,
+                    0f,
+                    null
+                );
+            }
         if (draft.nodeErrors.TryGetValue(node.id, out string? error))
         {
-            draw.AddCircleFilled(new(rect.max.X - 14 * zoom, rect.min.Y + 16 * zoom), 4 * zoom, Color(1, 0.4f, 0.35f));
+            ImGuiApi.Raw.AddCircleFilled(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new(rect.max.X - 14 * zoom, rect.min.Y + 16 * zoom)),
+                4 * zoom,
+                Color(1, 0.4f, 0.35f),
+                0
+            );
             if (Contains(rect, ImGuiApi.GetMousePos()))
                 Widget.DrawTooltip(error);
         }
     }
 
-    private void Grid(ImDrawListPtr draw)
+    private void Grid(ImDrawList* draw)
     {
         float spacing = 32 * Canvas.zoom;
         for (float x = ((Canvas.pan.x % spacing) + spacing) % spacing; x < m_size.X; x += spacing)
-            draw.AddLine(m_origin + new Vector2(x, 0), m_origin + new Vector2(x, m_size.Y), Color(0.105f, 0.115f, 0.135f));
+            ImGuiApi.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(x, 0)),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(x, m_size.Y)),
+                Color(0.105f, 0.115f, 0.135f),
+                1f
+            );
         for (float y = ((Canvas.pan.y % spacing) + spacing) % spacing; y < m_size.Y; y += spacing)
-            draw.AddLine(m_origin + new Vector2(0, y), m_origin + new Vector2(m_size.X, y), Color(0.105f, 0.115f, 0.135f));
+            ImGuiApi.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(0, y)),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(m_size.X, y)),
+                Color(0.105f, 0.115f, 0.135f),
+                1f
+            );
     }
-    private unsafe void Groups(ImDrawListPtr draw)
+    private unsafe void Groups(ImDrawList* draw)
     {
         foreach (ShaderCanvasGroup group in draft.groups)
         {
@@ -676,15 +829,52 @@ internal sealed partial class ShaderEditorCanvas(
                     MathF.Min(1f, headerColor.Z * 1.22f),
                     EditorPalette.opacityEmphasized);
             float headerHeight = C_HEADER * Canvas.zoom;
-            draw.AddRectFilled(min, max, ImGuiApi.ColorConvertFloat4ToU32(bodyColor), 8 * Canvas.zoom);
-            draw.AddRectFilled(min, new(max.X, min.Y + headerHeight), ImGuiApi.ColorConvertFloat4ToU32(headerColor),
-                8 * Canvas.zoom, ImDrawFlags.RoundCornersTop);
-            draw.AddLine(new(min.X, min.Y + headerHeight), new(max.X, min.Y + headerHeight),
-                ImGuiApi.ColorConvertFloat4ToU32(borderColor));
-            draw.AddRect(min, max, ImGuiApi.ColorConvertFloat4ToU32(borderColor), 8 * Canvas.zoom,
-                ImDrawFlags.None, selected ? 2f : 1f);
-            draw.AddText(ImGuiApi.GetFont(), ImGuiApi.GetFontSize() * Canvas.zoom, min + new Vector2(12, 7) * Canvas.zoom,
-                ImGuiApi.GetColorU32(ImGuiCol.Text), group.title);
+            ImGuiApi.Raw.AddRectFilled(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
+                ImGuiApi.ColorConvertFloat4ToU32(bodyColor),
+                8 * Canvas.zoom,
+                0
+            );
+            ImGuiApi.Raw.AddRectFilled(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new(max.X, min.Y + headerHeight)),
+                ImGuiApi.ColorConvertFloat4ToU32(headerColor),
+                8 * Canvas.zoom,
+                (int)ImDrawFlags.RoundCornersTop
+            );
+            ImGuiApi.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new(min.X, min.Y + headerHeight)),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new(max.X, min.Y + headerHeight)),
+                ImGuiApi.ColorConvertFloat4ToU32(borderColor),
+                1f
+            );
+            ImGuiApi.Raw.AddRect(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
+                ImGuiApi.ColorConvertFloat4ToU32(borderColor),
+                8 * Canvas.zoom,
+                (int)ImDrawFlags.None,
+                selected ? 2f : 1f
+            );
+            using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(group.title, allowsNull: false))
+            {
+                ImGuiApi.Raw.AddText(
+                    draw,
+                    ImGuiApi.Raw.GetFont(),
+                    ImGuiApi.GetFontSize() * Canvas.zoom,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(min + new Vector2(12, 7) * Canvas.zoom),
+                    ImGuiApi.GetColorU32((int)ImGuiCol.Text),
+                    (sbyte*)nativeText.pointer,
+                    null,
+                    0f,
+                    null
+                );
+            }
         }
     }
     private ShaderCanvasGroup? HitGroupHeader(Vector2 point)
@@ -727,7 +917,7 @@ internal sealed partial class ShaderEditorCanvas(
         return points;
     }
     private void Edges(
-        ImDrawListPtr draw,
+        ImDrawList* draw,
         Dictionary<PortHandle, Vector2> points
     ) {
         foreach (GraphEdgeRecord edge in Controller.document.edges)
@@ -749,8 +939,15 @@ internal sealed partial class ShaderEditorCanvas(
             bool selected = false
         ) {
             float tangent = MathF.Max(36, MathF.Abs(b.X - a.X) * 0.45f);
-            draw.AddBezierCubic(a, a + new Vector2(tangent, 0), b - new Vector2(tangent, 0), b,
-                selected ? Color(0.87f, 0.72f, 1f) : Color(0.59f, 0.46f, 0.82f), selected ? 3 : 2);
+            ImGuiApi.Raw.AddBezierCubic(
+                draw,
+                new ImVec2C { X = a.X, Y = a.Y },
+                new ImVec2C { X = a.X + tangent, Y = a.Y },
+                new ImVec2C { X = b.X - tangent, Y = b.Y },
+                new ImVec2C { X = b.X, Y = b.Y },
+                selected ? Color(0.87f, 0.72f, 1f) : Color(0.59f, 0.46f, 0.82f),
+                selected ? 3f : 2f,
+                0);
         }
     }
     private GraphEdgeId? HitEdge(

@@ -15,7 +15,6 @@ namespace Inno.Rendering.Assets;
 [StableTypeId("b17d289e-62de-4299-9e85-497143911798")]
 public sealed class RenderPipelineAsset : AssetObject
 {
-    private RenderFeatureConfiguration[] m_features = [];
 
     /// <summary>
     /// Gets or sets the globally stable pipeline extension identifier.
@@ -35,13 +34,13 @@ public sealed class RenderPipelineAsset : AssetObject
     [SerializableProperty]
     public RenderFeatureConfiguration[] features
     {
-        get => m_features;
+        get;
         set
         {
             ArgumentNullException.ThrowIfNull(value);
-            m_features = value.ToArray();
+            field = value.ToArray();
         }
-    }
+    } = [];
 
     /// <summary>
     /// Replaces ordered feature configurations.

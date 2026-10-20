@@ -20,7 +20,7 @@ internal static class BgfxBuildSession
             request.context,
             request.recipe,
             async (
-                scoped,
+                @scoped,
                 output,
                 token
             ) => {

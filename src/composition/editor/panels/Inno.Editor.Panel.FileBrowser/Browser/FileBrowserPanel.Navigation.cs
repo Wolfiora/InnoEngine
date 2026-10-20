@@ -17,7 +17,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-internal sealed partial class FileBrowserPanel
+internal sealed unsafe partial class FileBrowserPanel
 
 {
 
@@ -31,7 +31,7 @@ internal sealed partial class FileBrowserPanel
     {
         string current = m_assets.browser.currentDirectory;
 
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.breadcrumbFramePadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.breadcrumbFramePadding);
         bool canGoBack = m_navigation.canGoBack;
         PushButtonColors(canGoBack ? EditorPalette.assetAccent : EditorPalette.assetBorderSoft);
 
@@ -54,7 +54,7 @@ internal sealed partial class FileBrowserPanel
 
         NativeImGui.SameLine(0f, EditorWidget.style.assetToolbarSectionSpacing);
 
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.assetText);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.assetText);
         NativeImGui.TextUnformatted(GetDirectoryLabel(m_assets.browser.root, current));
         NativeImGui.PopStyleColor();
 
@@ -63,7 +63,7 @@ internal sealed partial class FileBrowserPanel
 
     private void DrawViewAndSearchBar()
     {
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.toolbarFramePadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.toolbarFramePadding);
 
         PushButtonColors(EditorPalette.assetAccent);
         if (NativeImGui.SmallButton($"{m_viewMode}##ViewMode"))
@@ -92,7 +92,8 @@ internal sealed partial class FileBrowserPanel
             return;
         }
 
-        if (NativeImGui.GetIO().KeyCtrl || NativeImGui.GetIO().KeySuper)
+        ImGuiIO* io = NativeImGui.Raw.GetIO();
+        if (io->KeyCtrl != 0 || io->KeySuper != 0)
             m_assets.browser.ToggleSelection(context, entry);
         else
             m_assets.browser.Select(context, entry.assetPath.ToString());
@@ -112,16 +113,16 @@ internal sealed partial class FileBrowserPanel
         NativeImGui.SetNextWindowContentSize(new Vector2(
             hasHorizontalOverflow ? contentWidth : 0f,
             0f));
-        NativeImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        if (NativeImGui.BeginChild("##BreadcrumbBar", new Vector2(0f, height), ImGuiChildFlags.None, ImGuiWindowFlags.HorizontalScrollbar))
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.WindowPadding), Vector2.Zero);
+        if (NativeImGui.BeginChild("##BreadcrumbBar", new Vector2(0f, height), (int)(ImGuiChildFlags.None), (int)(ImGuiWindowFlags.HorizontalScrollbar)))
         {
             DrawBreadcrumbTopSeparator();
             float contentHeight = hasHorizontalOverflow
-                ? height - NativeImGui.GetStyle().ScrollbarSize
+                ? height - NativeImGui.Raw.GetStyle()->ScrollbarSize
                 : height;
             float itemHeight = EditorWidget.GetClickableTextSize("A", framePadding).Y;
             NativeImGui.SetCursorPosY(MathF.Max(0f, (contentHeight - itemHeight) * 0.5f));
-            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.assetBreadcrumbText);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.assetBreadcrumbText);
 
             for (int i = 0; i < parts.Count; i++)
             {
@@ -160,18 +161,18 @@ internal sealed partial class FileBrowserPanel
         string currentDirectory
     ) {
         IReadOnlyList<BreadcrumbPart> parts = BuildBreadcrumbParts(root, currentDirectory);
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         float itemHeight = EditorWidget.GetClickableTextSize(
             "A",
             EditorWidget.style.breadcrumbFramePadding).Y;
         float contentHeight = MathF.Max(
             EditorWidget.style.assetBreadcrumbHeight,
-            MathF.Ceiling(itemHeight + style.ItemSpacing.Y * 2f + EditorWidget.style.borderSize));
+            MathF.Ceiling(itemHeight + style->ItemSpacing.Y * 2f + EditorWidget.style.borderSize));
         float contentWidth = CalculateBreadcrumbContentWidth(
             parts,
             EditorWidget.style.breadcrumbFramePadding);
         return contentWidth > NativeImGui.GetContentRegionAvail().X
-            ? contentHeight + style.ScrollbarSize
+            ? contentHeight + style->ScrollbarSize
             : contentHeight;
     }
 

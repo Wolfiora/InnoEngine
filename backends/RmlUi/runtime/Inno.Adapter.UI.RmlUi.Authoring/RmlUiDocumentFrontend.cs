@@ -137,7 +137,7 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         string logical
     ) {
         byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes(source + "\n" + logical.ToLowerInvariant()));
-        return "__inno_ui_" + Convert.ToHexString(digest.AsSpan(0, 12)).ToLowerInvariant();
+        return "__inno_ui_" + Convert.ToHexStringLower(digest.AsSpan(0, 12));
     }
 
     private static string ExpandStyles(

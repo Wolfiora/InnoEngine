@@ -40,6 +40,8 @@ internal sealed class BuildCommand
 
     internal string supportPackRoot { get; }
 
+    internal string? engineRoot => m_values.ContainsKey("engine-root") ? Require(m_values, "engine-root") : null;
+
     internal BuildTargetId toolsTarget => new(Require(m_values, "tools-target"));
 
     internal string? dotnetHost => m_values.GetValueOrDefault("dotnet");
@@ -51,6 +53,8 @@ internal sealed class BuildCommand
     internal AssetPath sampleSource => AssetPath.Parse(Require(m_values, "source"));
 
     internal string outputDirectory => Require(m_values, "output");
+
+    internal bool generateIdeProjects => m_values.ContainsKey("ide");
 
     internal static BuildCommand Parse(IReadOnlyList<string> args)
     {
@@ -71,7 +75,7 @@ internal sealed class BuildCommand
             if (!argument.StartsWith("--", StringComparison.Ordinal))
                 throw new ArgumentException($"Unexpected argument '{argument}'.");
             string key = argument[2..];
-            if (key == "include-dependencies")
+            if (key is "include-dependencies" or "ide")
             {
                 values.Add(key, bool.TrueString);
                 continue;
@@ -85,9 +89,10 @@ internal sealed class BuildCommand
             BuildCommandKind.Game => ["target", "profile", "deployment", "startup-scene"],
             BuildCommandKind.Plugin => ["display-name", "dependencies", "include-dependencies"],
             BuildCommandKind.ImportSample => ["source"],
+            BuildCommandKind.Scripts => ["ide"],
             _ => []
         };
-        var allowed = new HashSet<string>(["tools-target", "dotnet", "project", "support-packs", "output", ..specific], StringComparer.Ordinal);
+        var allowed = new HashSet<string>(["engine-root", "tools-target", "dotnet", "project", "support-packs", "output", ..specific], StringComparer.Ordinal);
         foreach (string key in values.Keys)
             if (!allowed.Contains(key))
                 throw new ArgumentException($"Unknown argument '--{key}' for '{args[0]}'.");
@@ -132,8 +137,9 @@ internal sealed class BuildCommand
 
     private static string Usage()
         => "Usage:\n"
+           + "  Project commands accept [--engine-root <checkout>] for an executable outside the source checkout.\n"
            + "  InnoEngine.Build game --tools-target <native-target> --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] --target <target> [--deployment <provider-id>] [--startup-scene <scene>]\n"
            + "  InnoEngine.Build plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
            + "  InnoEngine.Build import-sample --tools-target <native-target> --project <dir> --source <plugin-id::~Sample>\n"
-           + "  InnoEngine.Build scripts --tools-target <native-target> --project <dir> --output <dir>";
+           + "  InnoEngine.Build scripts --tools-target <native-target> --project <dir> --output <dir> [--ide]";
 }

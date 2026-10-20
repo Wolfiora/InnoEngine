@@ -1,28 +1,28 @@
-# Inno.Native.MiniAudio ABI 参考
+# Inno.Native.MiniAudio ABI
 
-[权威项目页](../Inno.Native.MiniAudio.md)
+[项目与生命周期](../Inno.Native.MiniAudio.md)
 
-以下参考保留当前宿主 ABI 的全部语义签名和源码位置；它们不是服务层或脚本 API。原生调用的 owner、线程和关闭顺序从项目页进入。
+按当前正式生成结果分页列出精确 ABI 签名。Raw 指针不携带托管所有权；未声明完整安全语义的接口只提供 Raw 调用。
 
-- [DataCallback → MaBpfNodePtr](ABI-01.md)
-- [MaBpfPtr → MaDataSourceNodeConfig](ABI-02.md)
-- [MaDataSourceNodeConfigPtr → CaptureAnonymous](ABI-03.md)
-- [CaptureAnonymous → CaptureAnonymous](ABI-04.md)
-- [CaptureAnonymous → PlaybackAnonymous](ABI-05.md)
-- [PlaybackAnonymous → MaDeviceDataProc](ABI-06.md)
-- [MaDeviceDescriptor → MaDeviceId](ABI-07.md)
-- [MaDeviceId → MaDeviceId](ABI-08.md)
-- [MaDeviceId → MaDeviceId](ABI-09.md)
-- [CustomAnonymous → NativeDataFormat](ABI-10.md)
-- [MaDeviceInfoPtr → MaFaderConfig](ABI-11.md)
-- [MaFaderConfigPtr → MaJobProc](ABI-12.md)
-- [MaJobPtr → MaNodeGraphConfig](ABI-13.md)
-- [MaNodeGraphConfigPtr → MaPeakNodeConfig](ABI-14.md)
-- [MaPeakNodeConfigPtr → MaResourceManagerDataSourcePtr](ABI-15.md)
-- [MaResourceManagerDataStream → MaSpatializerListenerConfigPtr](ABI-16.md)
-- [MaSpatializerListenerPtr → MiniAudio](ABI-17.md)
-- [MiniAudio → MiniAudio](ABI-18.md)
-- [MiniAudio → MiniAudio](ABI-19.md)
-- [MiniAudio → MiniAudio](ABI-20.md)
-- [MiniAudio → MiniAudio](ABI-21.md)
-- [MiniAudio → StopCallback](ABI-22.md)
+- [ABI 01](ABI-01.md)：147 个声明
+- [ABI 02](ABI-02.md)：147 个声明
+- [ABI 03](ABI-03.md)：148 个声明
+- [ABI 04](ABI-04.md)：147 个声明
+- [ABI 05](ABI-05.md)：148 个声明
+- [ABI 06](ABI-06.md)：147 个声明
+- [ABI 07](ABI-07.md)：147 个声明
+- [ABI 08](ABI-08.md)：148 个声明
+- [ABI 09](ABI-09.md)：147 个声明
+- [ABI 10](ABI-10.md)：148 个声明
+- [ABI 11](ABI-11.md)：147 个声明
+- [ABI 12](ABI-12.md)：147 个声明
+- [ABI 13](ABI-13.md)：148 个声明
+- [ABI 14](ABI-14.md)：147 个声明
+- [ABI 15](ABI-15.md)：148 个声明
+- [ABI 16](ABI-16.md)：147 个声明
+- [ABI 17](ABI-17.md)：147 个声明
+- [ABI 18](ABI-18.md)：148 个声明
+- [ABI 19](ABI-19.md)：147 个声明
+- [ABI 20](ABI-20.md)：148 个声明
+- [ABI 21](ABI-21.md)：147 个声明
+- [ABI 22](ABI-22.md)：148 个声明

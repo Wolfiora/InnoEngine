@@ -1,5 +1,4 @@
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -7,12 +6,6 @@ namespace Inno.Native.Sdl3.Tests;
 
 public sealed class Sdl3InitTests
 {
-    [Fact]
-    public void GeneratedImportsOwnTheirAbiWithoutRuntimeMarshalling()
-    {
-        Assert.NotNull(typeof(SDL).Assembly.GetCustomAttribute<DisableRuntimeMarshallingAttribute>());
-    }
-
     [Fact]
     public unsafe void GeneratedFlagWidthsMatchSdlHeaders()
     {
@@ -29,16 +22,16 @@ public sealed class Sdl3InitTests
     }
 
     [Fact]
-    public void InitAndQuit_ShouldSucceed()
+    public unsafe void InitAndQuit_ShouldSucceed()
     {
         var initResult = SDL.Init(SDLInitFlags.Events);
         if (!initResult)
         {
-            var message = SDL.GetError() ?? "SDL.Init returned false.";
+            string message = Marshal.PtrToStringUTF8((nint)SDL.Raw.GetError()) ?? "SDL.Init returned false.";
             Assert.True(initResult, message);
         }
 
-        var platform = SDL.GetPlatform();
+        string? platform = Marshal.PtrToStringUTF8((nint)SDL.Raw.GetPlatform());
         output.WriteLine($"SDL.GetPlatform: {platform}");
         Assert.False(string.IsNullOrWhiteSpace(platform));
 

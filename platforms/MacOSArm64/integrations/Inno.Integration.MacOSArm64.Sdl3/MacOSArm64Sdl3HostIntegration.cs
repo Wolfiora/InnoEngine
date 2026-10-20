@@ -17,7 +17,7 @@ public sealed class MacOSArm64Sdl3HostIntegration : ISdl3HostIntegration
     /// <inheritdoc />
     public void ConfigureInitialization()
     {
-        _ = SDL.SetHint(SDL.SDL_HINT_MAC_PRESS_AND_HOLD, "0");
+        _ = SDL.SetHint("SDL_MAC_PRESS_AND_HOLD", "0");
     }
 
     /// <inheritdoc />
@@ -31,9 +31,11 @@ public sealed class MacOSArm64Sdl3HostIntegration : ISdl3HostIntegration
     {
         if (windowHandle == 0)
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
-        SDLWindow window = new(windowHandle);
-        uint properties = SDL.GetWindowProperties(window);
-        nint surface = (nint)SDL.GetPointerProperty(properties, SDL.SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, null);
+        uint properties = SDL.Raw.GetWindowProperties((SDLWindow*)windowHandle);
+        ReadOnlySpan<byte> propertyName = "SDL.window.cocoa.window\0"u8;
+        nint surface;
+        fixed (byte* name = propertyName)
+            surface = (nint)SDL.Raw.GetPointerProperty(properties, (sbyte*)name, null);
         if (surface == 0)
             throw new InvalidOperationException("SDL did not provide the required MacOS surface.");
         return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.cocoa);

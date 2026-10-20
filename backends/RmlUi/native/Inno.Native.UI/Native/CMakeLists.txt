@@ -4,10 +4,6 @@ if(NOT IS_DIRECTORY "${INNO_ROOT}/extern")
     message(FATAL_ERROR "INNO_ROOT must identify the explicitly selected checkout")
 endif()
 project(inno_ui LANGUAGES C CXX)
-file(TO_CMAKE_PATH "${INNO_UI_BRIDGE_ROOT}" INNO_UI_BRIDGE_ROOT)
-if(NOT INNO_UI_BRIDGE_ROOT OR NOT EXISTS "${INNO_UI_BRIDGE_ROOT}/src/Classes.cpp")
-    message(FATAL_ERROR "An explicit complete UI binding generation is required")
-endif()
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
@@ -63,7 +59,6 @@ if(NOT INNO_LIBRARY_KIND MATCHES "^(STATIC|SHARED)$")
 endif()
 
 add_library(inno-ui ${INNO_LIBRARY_KIND}
-    "${INNO_UI_BRIDGE_ROOT}/src/Classes.cpp"
     src/RmlUiEventListener.cpp
     src/RmlUiProcessHost.cpp
     src/RmlUiRenderInterface.cpp
@@ -71,7 +66,6 @@ add_library(inno-ui ${INNO_LIBRARY_KIND}
     ${RMLUI_HARFBUZZ_SOURCES})
 target_compile_features(inno-ui PRIVATE cxx_std_20)
 target_include_directories(inno-ui PRIVATE
-    "${INNO_UI_BRIDGE_ROOT}/include"
     "${CMAKE_CURRENT_LIST_DIR}/include"
     "${CMAKE_CURRENT_LIST_DIR}/src"
     "${RMLUI_HARFBUZZ_DIR}"

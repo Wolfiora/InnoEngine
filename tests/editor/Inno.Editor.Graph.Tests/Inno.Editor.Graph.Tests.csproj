@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,8 +25,8 @@
 
   <Target Name="CopyGraphReloadFixture" AfterTargets="Build">
     <ItemGroup>
-      <GraphReloadFixture Include="../../extensibility/fixtures/Inno.Extensibility.Modules.TestModule.V1/bin/$(Configuration)/net9.0/Inno.Extensibility.Modules.TestModule.dll" />
-      <GraphReloadFixture Include="../../extensibility/fixtures/Inno.Extensibility.Modules.TestDependency/bin/$(Configuration)/net9.0/Reloadable.PrivateDependency.dll" />
+      <GraphReloadFixture Include="../../extensibility/fixtures/Inno.Extensibility.Modules.TestModule.V1/bin/$(Configuration)/net10.0/Inno.Extensibility.Modules.TestModule.dll" />
+      <GraphReloadFixture Include="../../extensibility/fixtures/Inno.Extensibility.Modules.TestDependency/bin/$(Configuration)/net10.0/Reloadable.PrivateDependency.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(GraphReloadFixture)" DestinationFolder="$(OutDir)Modules" />
   </Target>

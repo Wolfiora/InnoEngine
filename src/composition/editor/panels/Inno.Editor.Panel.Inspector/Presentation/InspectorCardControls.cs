@@ -1,5 +1,9 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using System;
 using System.Numerics;
+using BGCS.Runtime;
 
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Core.Identity;
@@ -16,7 +20,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
-internal sealed class InspectorCardControls
+internal sealed unsafe class InspectorCardControls
 {
     private const string C_COMPONENT_PAYLOAD = "INNO_INSPECTOR_COMPONENT";
     private const string C_SYSTEM_PAYLOAD = "INNO_INSPECTOR_SYSTEM";
@@ -205,9 +209,10 @@ internal sealed class InspectorCardControls
         Action<IdentityObject, bool> move,
         string operation
     ) {
-        ImGuiPayloadPtr activePayload = NativeImGui.GetDragDropPayload();
-        if (activePayload.IsNull ||
-            !activePayload.IsDataType(payloadType) ||
+        ImGuiPayload* activePayload = NativeImGui.Raw.GetDragDropPayload();
+        using NativeStringLease nativeType = Utf8Codec.EncodeNullTerminated(payloadType, allowsNull: false);
+        if ((activePayload == null) ||
+            NativeImGui.Raw.IsDataType(activePayload, (sbyte*)nativeType.pointer) == 0 ||
             cardMaximum.X <= cardMinimum.X ||
             cardMaximum.Y <= cardMinimum.Y)
         {
@@ -251,20 +256,32 @@ internal sealed class InspectorCardControls
         Vector2 size = new(
             padding.X * 2f + gripSize.X + EditorWidget.style.inspectorHeaderControlSpacing + titleSize.X,
             MathF.Max(gripSize.Y, titleSize.Y) + padding.Y * 2f);
-        ImDrawListPtr draw = NativeImGui.GetWindowDrawList();
-        draw.AddRectFilled(
-            origin,
-            origin + size,
+        ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.AddRectFilled(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(origin),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(origin + size),
             NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader),
-            EditorWidget.style.frameRounding);
+            EditorWidget.style.frameRounding,
+            0
+        );
         uint color = NativeImGui.ColorConvertFloat4ToU32(
             dimmed ? EditorPalette.inspectorCardDisabledText : EditorPalette.text);
         Vector2 textOrigin = origin + padding;
-        draw.AddText(textOrigin, color, ImGuiIcon.GripVertical);
-        draw.AddText(
-            new Vector2(textOrigin.X + gripSize.X + EditorWidget.style.inspectorHeaderControlSpacing, textOrigin.Y),
-            color,
-            title);
+        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(ImGuiIcon.GripVertical, allowsNull: false))
+        {
+            NativeImGui.Raw.AddText(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin), color, (sbyte*)nativeText.pointer, null);
+        }
+        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(title, allowsNull: false))
+        {
+            NativeImGui.Raw.AddText(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(textOrigin.X + gripSize.X + EditorWidget.style.inspectorHeaderControlSpacing, textOrigin.Y)),
+                color,
+                (sbyte*)nativeText.pointer,
+                null
+            );
+        }
         NativeImGui.Dummy(size);
     }
 

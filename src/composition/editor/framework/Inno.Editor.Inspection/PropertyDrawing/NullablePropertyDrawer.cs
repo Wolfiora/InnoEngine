@@ -33,12 +33,12 @@ internal sealed class NullablePropertyDrawer : IPropertyDrawer
 
         if (!hasValue)
         {
-            NativeImGui.SameLine();
+            NativeImGui.SameLine(0f, -1f);
             NativeImGui.TextUnformatted("Null");
             return;
         }
 
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         context.DrawInlineChild(
             "Value",
             underlyingType,

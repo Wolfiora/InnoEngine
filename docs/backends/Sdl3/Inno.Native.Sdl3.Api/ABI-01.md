@@ -1,1057 +1,915 @@
-# Inno.Native.Sdl3 ABI · Cleanup → SDL
+# Inno.Native.Sdl3 ABI · 01
 
 [项目与生命周期](../Inno.Native.Sdl3.md) · [ABI 索引](README.md)
 
-<details>
-<summary><code>Inno.Native.Sdl3.Cleanup</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Cleanup 03fc185c861e44aaaa790d584f6503c7b3590b1e5751e4bb0febc1700d960e7f -->
-<!-- api: M:Inno.Native.Sdl3.Cleanup.#ctor(System.Object,System.IntPtr) bca76f721c220616c79be34171f34e7cb58cc2e8f30aa0b9f06083b1fd8521f2 -->
-<!-- api: M:Inno.Native.Sdl3.Cleanup.Invoke(System.Void*) 1a8c0b379072c659c23dadb81d8103c989326f8b09de4bb9202b1e095eb1780c -->
-<!-- api: M:Inno.Native.Sdl3.Cleanup.BeginInvoke(System.Void*,System.AsyncCallback,System.Object) 6de01e3149541e2ee071f7974b89fc7507acd14887168029ae872c1899f2ac02 -->
-<!-- api: M:Inno.Native.Sdl3.Cleanup.EndInvoke(System.IAsyncResult) eb056a46856b12d8071ec44360db51b814415c5a2c1a1c9b3de9edf6e63fa23e -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-5fb108b7c42675ee"></a>[`public Inno.Native.Sdl3.Cleanup.Cleanup(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6700) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-eccbc2265c3b7229"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Cleanup.BeginInvoke(void* userdata, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6700) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8de62f944bcd322e"></a>[`public virtual void Inno.Native.Sdl3.Cleanup.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6700) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9ed339d0c02b36e8"></a>[`public virtual void Inno.Native.Sdl3.Cleanup.Invoke(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6700) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e580b5190c94c9b5"></a>[`public delegate void Inno.Native.Sdl3.Cleanup(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6700) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Close</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Close baa4583f094789e53f842a9d8500075464ba21b5f494af12742d85d2fb67ca28 -->
-<!-- api: M:Inno.Native.Sdl3.Close.#ctor(System.Object,System.IntPtr) 09a82b08252fce78d5a5ae30f6134333816d6fc8f588ac658681a5dab714745f -->
-<!-- api: M:Inno.Native.Sdl3.Close.Invoke(System.Void*) c020195728a03042bde9795c8f4fcbeddb35c222b5c8db80335c17bb549efa02 -->
-<!-- api: M:Inno.Native.Sdl3.Close.BeginInvoke(System.Void*,System.AsyncCallback,System.Object) 410b4a064468a1b463b64fafb44cb670d1be253b56f1910b437e2e2233ac413b -->
-<!-- api: M:Inno.Native.Sdl3.Close.EndInvoke(System.IAsyncResult) af87950fc1f3469a160da857536280c84847606d8df10df201e3db4d5061d1a6 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-f3bd246c1f87fb5a"></a>[`public Inno.Native.Sdl3.Close.Close(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6660) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-eb49d4c175981eda"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Close.BeginInvoke(void* userdata, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6660) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6c240f14482c6165"></a>[`public virtual byte Inno.Native.Sdl3.Close.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6660) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-34674f705f39de5a"></a>[`public virtual byte Inno.Native.Sdl3.Close.Invoke(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6660) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-cd9b4069ecbd1f46"></a>[`public delegate byte Inno.Native.Sdl3.Close(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6660) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Close1</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Close1 42bd00fda4120e4133297e851ab1fd6fd785a06c77f6c357f80881d9e0456cc5 -->
-<!-- api: M:Inno.Native.Sdl3.Close1.#ctor(System.Object,System.IntPtr) 5c623ebcaf13c55f20fac927d43b3de8edee7696a6bfa76a4a43a888209b7f5a -->
-<!-- api: M:Inno.Native.Sdl3.Close1.Invoke(System.Void*) 73daaec1f678a30c716efce5e223d40f3b46110685e0ffb5571fb8e5e2edc0fc -->
-<!-- api: M:Inno.Native.Sdl3.Close1.BeginInvoke(System.Void*,System.AsyncCallback,System.Object) 618d13231a5ac892ede7539fd3bc7d3d4738ec98a1593b656984f9db11ebfdc3 -->
-<!-- api: M:Inno.Native.Sdl3.Close1.EndInvoke(System.IAsyncResult) 06b2b71119eddd86295a8aa8759a28846a76a5190793b31f452ec626d1f28291 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-5b5f9f4c2bf802dc"></a>[`public Inno.Native.Sdl3.Close1.Close1(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6710) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-cf788043835b964f"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Close1.BeginInvoke(void* userdata, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6710) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2cccb309dd39f296"></a>[`public virtual byte Inno.Native.Sdl3.Close1.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6710) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4b98771eb993914d"></a>[`public virtual byte Inno.Native.Sdl3.Close1.Invoke(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6710) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c73154acf6717a52"></a>[`public delegate byte Inno.Native.Sdl3.Close1(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6710) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Copy</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Copy 45ebfab1e3ca3cf48c640a6e29c590f31c47d448d3797455808504d29ddc8057 -->
-<!-- api: M:Inno.Native.Sdl3.Copy.#ctor(System.Object,System.IntPtr) 21075ab33dc66106ba3a6152354cd0616311d2698fd21a1e7a62ee942e9a929a -->
-<!-- api: M:Inno.Native.Sdl3.Copy.Invoke(System.Void*,System.Byte*,System.Byte*) 2dc170e2386997d1ac291cbeed31a051d0778b561ed877089cff98d976a1aa76 -->
-<!-- api: M:Inno.Native.Sdl3.Copy.BeginInvoke(System.Void*,System.Byte*,System.Byte*,System.AsyncCallback,System.Object) 722f11edb0d125db79856578b9c4e7d1eedf9ec963698f65a31f11cdf9b5d40b -->
-<!-- api: M:Inno.Native.Sdl3.Copy.EndInvoke(System.IAsyncResult) 2a5134faca86db43e298eab5e4fb9045c3981b59c615b5edb51462d52288e4a2 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-b814eaa0f57caa79"></a>[`public Inno.Native.Sdl3.Copy.Copy(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6755) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-0f7a5b71b6081313"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Copy.BeginInvoke(void* userdata, byte* oldpath, byte* newpath, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6755) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c96a51d3054cc7de"></a>[`public virtual byte Inno.Native.Sdl3.Copy.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6755) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0737cd19cb623045"></a>[`public virtual byte Inno.Native.Sdl3.Copy.Invoke(void* userdata, byte* oldpath, byte* newpath)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6755) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-74e513d9d69d842f"></a>[`public delegate byte Inno.Native.Sdl3.Copy(void* userdata, byte* oldpath, byte* newpath)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6755) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Enumerate</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Enumerate cc7e53b3af4db3d8d1d74abd1aede38993a966cf5a2e9aa8b2d8a042de1d60f2 -->
-<!-- api: M:Inno.Native.Sdl3.Enumerate.#ctor(System.Object,System.IntPtr) e776696491219d39fd162f01a1c73479210a81d0ca60db9e5834b0ae0146511c -->
-<!-- api: M:Inno.Native.Sdl3.Enumerate.Invoke(System.Void*,System.Byte*,,System.Void*) 5e5af5ad0f9242024c39156f54cc389e24a55ce4a2c38afc12464d0c6b0a238e -->
-<!-- api: M:Inno.Native.Sdl3.Enumerate.BeginInvoke(System.Void*,System.Byte*,,System.Void*,System.AsyncCallback,System.Object) ffe32f691c2fb1a9520211693a1a68d0f40651ed586ae966d82d4115b991df06 -->
-<!-- api: M:Inno.Native.Sdl3.Enumerate.EndInvoke(System.IAsyncResult) b537b3dd5bed53e0817acee269843febbc1527d1f1d6272e57560b15b83ec1ea -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-ec058eb4c0b23be5"></a>[`public Inno.Native.Sdl3.Enumerate.Enumerate(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6720) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-7b15c43206457717"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Enumerate.BeginInvoke(void* userdata, byte* path, delegate* unmanaged[Cdecl]<void*, byte*, byte*, Inno.Native.Sdl3.SDLEnumerationResult> callback, void* callbackUserdata, System.AsyncCallback __callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6720) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-96fbb2f0ddf57dcb"></a>[`public virtual byte Inno.Native.Sdl3.Enumerate.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6720) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0031b3b6c4c23ed9"></a>[`public virtual byte Inno.Native.Sdl3.Enumerate.Invoke(void* userdata, byte* path, delegate* unmanaged[Cdecl]<void*, byte*, byte*, Inno.Native.Sdl3.SDLEnumerationResult> callback, void* callbackUserdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6720) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5efe5b83a180c8f2"></a>[`public delegate byte Inno.Native.Sdl3.Enumerate(void* userdata, byte* path, delegate* unmanaged[Cdecl]<void*, byte*, byte*, Inno.Native.Sdl3.SDLEnumerationResult> callback, void* callbackUserdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6720) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Flush</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Flush 05202893a1e269263ec510a9931859560742f7ecca76d03f0b64eb83c18f6212 -->
-<!-- api: M:Inno.Native.Sdl3.Flush.#ctor(System.Object,System.IntPtr) 0efe09cda2cf5d1061b0c7d9514e716e48d90fb8cc4621c9be159c6afabd7129 -->
-<!-- api: M:Inno.Native.Sdl3.Flush.Invoke(System.Void*,Inno.Native.Sdl3.SDLIOStatus*) 89de20a44fb0f83d96d60ca7a0ebd6147a487237e4bb06688d9df05c001d0441 -->
-<!-- api: M:Inno.Native.Sdl3.Flush.BeginInvoke(System.Void*,Inno.Native.Sdl3.SDLIOStatus*,System.AsyncCallback,System.Object) 603ea5dc042d35bd8fcf64b315cccd345bd4d95e4ba5d8338d49ad761cf487d5 -->
-<!-- api: M:Inno.Native.Sdl3.Flush.EndInvoke(System.IAsyncResult) e420d95e7eee8a0e80f259f4b3b781f11bbb74ac276c8eef50d7910db30ec09b -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-e4af77e49ecb3033"></a>[`public Inno.Native.Sdl3.Flush.Flush(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6655) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-90bb6d8656972e1d"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Flush.BeginInvoke(void* userdata, Inno.Native.Sdl3.SDLIOStatus* status, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6655) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-04fb3fe279d598a2"></a>[`public virtual byte Inno.Native.Sdl3.Flush.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6655) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b12d571254363b07"></a>[`public virtual byte Inno.Native.Sdl3.Flush.Invoke(void* userdata, Inno.Native.Sdl3.SDLIOStatus* status)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6655) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2b3bb6ffe3d0b990"></a>[`public delegate byte Inno.Native.Sdl3.Flush(void* userdata, Inno.Native.Sdl3.SDLIOStatus* status)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6655) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Info</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Info 19e042ca86b764f7722cefdbebb683b022f8d38ce840cc72d942f6b2be58be5e -->
-<!-- api: M:Inno.Native.Sdl3.Info.#ctor(System.Object,System.IntPtr) 26bb893053e5242647fda8cd9b078f7c36c0d8d680868f918ad480e287575c89 -->
-<!-- api: M:Inno.Native.Sdl3.Info.Invoke(System.Void*,System.Byte*,Inno.Native.Sdl3.SDLPathInfo*) 805c1507cdd03d4488dafe00b8e900a0081d60e50e49ac24cfd43260dd343630 -->
-<!-- api: M:Inno.Native.Sdl3.Info.BeginInvoke(System.Void*,System.Byte*,Inno.Native.Sdl3.SDLPathInfo*,System.AsyncCallback,System.Object) 951aa6a36975e92c6df67ff5c6a8c6e996aee8f16c182b5bfb577806a1421faa -->
-<!-- api: M:Inno.Native.Sdl3.Info.EndInvoke(System.IAsyncResult) 2d114f6197aeb87bcf2ddf0ce34a26b36116ca501e39be4a19c746f860609fe7 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-14bd3de9055cf217"></a>[`public Inno.Native.Sdl3.Info.Info(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6725) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-2203ccb54d2772d7"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Info.BeginInvoke(void* userdata, byte* path, Inno.Native.Sdl3.SDLPathInfo* info, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6725) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9d72364850393691"></a>[`public virtual byte Inno.Native.Sdl3.Info.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6725) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-25ee701f69d5d91a"></a>[`public virtual byte Inno.Native.Sdl3.Info.Invoke(void* userdata, byte* path, Inno.Native.Sdl3.SDLPathInfo* info)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6725) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9d3862495acbd413"></a>[`public delegate byte Inno.Native.Sdl3.Info(void* userdata, byte* path, Inno.Native.Sdl3.SDLPathInfo* info)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6725) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Mkdir</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Mkdir 267fac2c05f369b5be089648a7a27afd243dec423f345d63b4c372efbde96de0 -->
-<!-- api: M:Inno.Native.Sdl3.Mkdir.#ctor(System.Object,System.IntPtr) 57dae8f2326fb29d663354fb5d49a321e55574af5711c5061c3182e28d4adc87 -->
-<!-- api: M:Inno.Native.Sdl3.Mkdir.Invoke(System.Void*,System.Byte*) 49eac14e2075410866cc8f95655cc054c989e42fb5309d617030e1fc8c4f4415 -->
-<!-- api: M:Inno.Native.Sdl3.Mkdir.BeginInvoke(System.Void*,System.Byte*,System.AsyncCallback,System.Object) 7917a043fadd13086aa6378967d5f9484f8d8b5d2c11c1cd24325f9af820b1a8 -->
-<!-- api: M:Inno.Native.Sdl3.Mkdir.EndInvoke(System.IAsyncResult) 408fbc7ab0b49af3bb5cfe77ea6410c7b48e9c8751f28a1d2b57648ff335aa7e -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-8094b366f85955a4"></a>[`public Inno.Native.Sdl3.Mkdir.Mkdir(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6740) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-cc99b1b1e93c6b30"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Mkdir.BeginInvoke(void* userdata, byte* path, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6740) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0d5a4ddf4619c924"></a>[`public virtual byte Inno.Native.Sdl3.Mkdir.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6740) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f975431b56341e00"></a>[`public virtual byte Inno.Native.Sdl3.Mkdir.Invoke(void* userdata, byte* path)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6740) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b4c370b045937578"></a>[`public delegate byte Inno.Native.Sdl3.Mkdir(void* userdata, byte* path)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6740) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Msg</code> · 11 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Msg 6dcbd0377d3857d02bf807c6462143439df959c77ec6cf41335ed9c2a0f3204f -->
-<!-- api: M:Inno.Native.Sdl3.Msg.#ctor(System.IntPtr) d53ba9283c45a51b3ad2bd073a135c10e43532c600613b3d8ad40610623d084d -->
-<!-- api: P:Inno.Native.Sdl3.Msg.Handle 011fcfa2e813d1ffc3a4147b83d4367aecc167d1fca8a9c6db761ce3b7a7f3af -->
-<!-- api: P:Inno.Native.Sdl3.Msg.IsNull 1b252b2c445545a487ebc78919dd277b270f09672b97da9addf96ee335c82047 -->
-<!-- api: P:Inno.Native.Sdl3.Msg.Null 701dafebd372ac01b695d3949a18c2a8edd721ef2518c5244f6276d0e165d270 -->
-<!-- api: M:Inno.Native.Sdl3.Msg.op_Implicit(System.IntPtr)~Inno.Native.Sdl3.Msg ee0f13ee11003825971f0a2f1e225baaffb0e85cdf194a8f2dc7becd6aaa3a40 -->
-<!-- api: M:Inno.Native.Sdl3.Msg.op_Equality(Inno.Native.Sdl3.Msg,Inno.Native.Sdl3.Msg) b0f60b982b4a35231bedacb1b0ac713ccefcac2d1e4aaeff2b995ee26956694a -->
-<!-- api: M:Inno.Native.Sdl3.Msg.op_Inequality(Inno.Native.Sdl3.Msg,Inno.Native.Sdl3.Msg) 2d3f4492fa12da6ca2338d20254086a9bd7b4cfd3d2bdac7cb84eb137003d1d6 -->
-<!-- api: M:Inno.Native.Sdl3.Msg.Equals(Inno.Native.Sdl3.Msg) 97eb35b81bbd131592e8c2583e533781e98ea98aad25fcf2fc79f85a4b8de7b9 -->
-<!-- api: M:Inno.Native.Sdl3.Msg.Equals(System.Object) e2b94f1a10eda2ce27f7de99d97a9679cb8808dcce405e878ad6b875de599bda -->
-<!-- api: M:Inno.Native.Sdl3.Msg.GetHashCode 57f133db99f7ba7b8c6b07def65d6ba61ffc891fd43cdcab5a7b42fb0145430e -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-9b7b720e694a90a1"></a>[`public Inno.Native.Sdl3.Msg.Msg(nint handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6327) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-3e74981537c04f75"></a>[`public bool Inno.Native.Sdl3.Msg.Equals(Inno.Native.Sdl3.Msg other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6339) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-af293f42b2d4933c"></a>[`public override bool Inno.Native.Sdl3.Msg.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6340) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-c8d2aa0457a3ea75"></a>[`public override int Inno.Native.Sdl3.Msg.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6341) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-d21c42a03a90896c"></a>[`public static bool Inno.Native.Sdl3.Msg.operator ==(Inno.Native.Sdl3.Msg left, Inno.Native.Sdl3.Msg right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6337) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4877aa5c1af959f8"></a>[`public static Inno.Native.Sdl3.Msg.implicit operator Inno.Native.Sdl3.Msg(nint handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6336) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4f3c67cf80435ff9"></a>[`public static bool Inno.Native.Sdl3.Msg.operator !=(Inno.Native.Sdl3.Msg left, Inno.Native.Sdl3.Msg right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6338) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7f60f8156fcd5426"></a>[`public nint Inno.Native.Sdl3.Msg.Handle { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6332) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-3686b62a770344ec"></a>[`public bool Inno.Native.Sdl3.Msg.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6333) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-b4f3a79ba23ce7fa"></a>[`public static Inno.Native.Sdl3.Msg Inno.Native.Sdl3.Msg.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6334) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-a956f187b3b733ce"></a>[`public readonly struct Inno.Native.Sdl3.Msg : System.IEquatable<Inno.Native.Sdl3.Msg>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6325) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Read</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Read f4784a99054cc1b039c56470e7bbb4c50094adfab8921767b70da45285c6a337 -->
-<!-- api: M:Inno.Native.Sdl3.Read.#ctor(System.Object,System.IntPtr) 2ad78264b132a4b32bcb6c9cdad6fb333c793067d26f21d54e04415ff524390a -->
-<!-- api: M:Inno.Native.Sdl3.Read.Invoke(System.Void*,System.Void*,System.UInt64,Inno.Native.Sdl3.SDLIOStatus*) 2515409218564176ab4ea4cb86887c3a6958840a85db123af13dd5405d2fd600 -->
-<!-- api: M:Inno.Native.Sdl3.Read.BeginInvoke(System.Void*,System.Void*,System.UInt64,Inno.Native.Sdl3.SDLIOStatus*,System.AsyncCallback,System.Object) dad1839daa1d1f8c7c8e583d6c49ce4be798200b0deee84035a138411c49984a -->
-<!-- api: M:Inno.Native.Sdl3.Read.EndInvoke(System.IAsyncResult) f3a206bf642e3f9a0efe42f64a1c82c8c87a69c9e8803b3169d87b64f2ba5601 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-4f05fc1efbad83a6"></a>[`public Inno.Native.Sdl3.Read.Read(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6645) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-6a0e34fab437b65d"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Read.BeginInvoke(void* userdata, void* ptr, ulong size, Inno.Native.Sdl3.SDLIOStatus* status, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6645) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4a507eb02294659e"></a>[`public virtual ulong Inno.Native.Sdl3.Read.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6645) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-260d4cbdd56feb15"></a>[`public virtual ulong Inno.Native.Sdl3.Read.Invoke(void* userdata, void* ptr, ulong size, Inno.Native.Sdl3.SDLIOStatus* status)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6645) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d8b68822c093eb2a"></a>[`public delegate ulong Inno.Native.Sdl3.Read(void* userdata, void* ptr, ulong size, Inno.Native.Sdl3.SDLIOStatus* status)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6645) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.ReadFile</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.ReadFile 0a927be269c571b528874bdfbcc81d0ef838083956297b21c0cc48752f063cfa -->
-<!-- api: M:Inno.Native.Sdl3.ReadFile.#ctor(System.Object,System.IntPtr) df982bb56f3955b7e41dc7b1baa6142cdd3b3da93fa7f5810b5394a9bb1b72ac -->
-<!-- api: M:Inno.Native.Sdl3.ReadFile.Invoke(System.Void*,System.Byte*,System.Void*,System.UInt64) f871c3bd4f32a4444cfafc6acfd2fcbb82971f7751ea80758f1634dd564eaf56 -->
-<!-- api: M:Inno.Native.Sdl3.ReadFile.BeginInvoke(System.Void*,System.Byte*,System.Void*,System.UInt64,System.AsyncCallback,System.Object) 2c1424e2935c47bf4f0dfbc74450fe18be1911f76460936eaa6246b29451c00a -->
-<!-- api: M:Inno.Native.Sdl3.ReadFile.EndInvoke(System.IAsyncResult) 3d0b0c5160e03e3ec748cbcb0d2ba0e67eb0695f14153bc7a24b6496eaeb5bac -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-a74a7dee902db27a"></a>[`public Inno.Native.Sdl3.ReadFile.ReadFile(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6730) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-a2992d2a3ae2aed8"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.ReadFile.BeginInvoke(void* userdata, byte* path, void* destination, ulong length, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6730) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-40150439cc8cf6e0"></a>[`public virtual byte Inno.Native.Sdl3.ReadFile.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6730) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-52e40df5a85f0cb8"></a>[`public virtual byte Inno.Native.Sdl3.ReadFile.Invoke(void* userdata, byte* path, void* destination, ulong length)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6730) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9505dc9f0cf41e95"></a>[`public delegate byte Inno.Native.Sdl3.ReadFile(void* userdata, byte* path, void* destination, ulong length)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6730) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Ready</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Ready 22aaa9c82c46eb5eaf705328ffc944e4f8b131b11e6a88a6301fed1456433578 -->
-<!-- api: M:Inno.Native.Sdl3.Ready.#ctor(System.Object,System.IntPtr) 89403e9f5b5053a597e69036b542f7631b9fbc50dc2a3b13568e31ef7d4b13df -->
-<!-- api: M:Inno.Native.Sdl3.Ready.Invoke(System.Void*) 8a6a064539c2b4bf43afbdefa279ade125419908a1eba07e952ca3377fbcdeee -->
-<!-- api: M:Inno.Native.Sdl3.Ready.BeginInvoke(System.Void*,System.AsyncCallback,System.Object) e7d1a0e32cda713194524aece777572f0204df21968302d6106cd1b96c058162 -->
-<!-- api: M:Inno.Native.Sdl3.Ready.EndInvoke(System.IAsyncResult) db6bcd1fb4bc9c2953385022f28ea6269fcb86801816ee68310ac9ec1b1f021d -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-27d02d370bb91d02"></a>[`public Inno.Native.Sdl3.Ready.Ready(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6715) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-10c27f5ff8ac236f"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Ready.BeginInvoke(void* userdata, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6715) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-09d6af9e7460d1ca"></a>[`public virtual byte Inno.Native.Sdl3.Ready.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6715) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-704535c21dac1bbb"></a>[`public virtual byte Inno.Native.Sdl3.Ready.Invoke(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6715) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e9e7eee803e4d654"></a>[`public delegate byte Inno.Native.Sdl3.Ready(void* userdata)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6715) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Remove</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Remove 8e70d3e6737e2f9244577c892dc8d44afe6863b7f30aab0a7edfa43f90ee7d68 -->
-<!-- api: M:Inno.Native.Sdl3.Remove.#ctor(System.Object,System.IntPtr) 88eb85e5f9802c370ba3fe6fcb14c178774190aebc5de87b3df8cfe09484d95b -->
-<!-- api: M:Inno.Native.Sdl3.Remove.Invoke(System.Void*,System.Byte*) 81f4abad2aecf379df659a771bb0a236db971c7633094f7c93195f1acd7f58d1 -->
-<!-- api: M:Inno.Native.Sdl3.Remove.BeginInvoke(System.Void*,System.Byte*,System.AsyncCallback,System.Object) 65ef18365463a1dacb4b006cfa50155c6bf7b6f82a8b73a92bed370cad314c2a -->
-<!-- api: M:Inno.Native.Sdl3.Remove.EndInvoke(System.IAsyncResult) f098f647951d70b8549e8b4f8f9111b5140de778f9bb8648abbd3beaadd0ce4e -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-3c03ccc0e6fe0a2c"></a>[`public Inno.Native.Sdl3.Remove.Remove(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6745) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-d652b006c105d0d3"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Remove.BeginInvoke(void* userdata, byte* path, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6745) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-406f3cb51927219b"></a>[`public virtual byte Inno.Native.Sdl3.Remove.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6745) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ea7ac1552c716834"></a>[`public virtual byte Inno.Native.Sdl3.Remove.Invoke(void* userdata, byte* path)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6745) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1bf83a61ff94008d"></a>[`public delegate byte Inno.Native.Sdl3.Remove(void* userdata, byte* path)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6745) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Rename</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Rename caabe8255d40a147431e91f2f2f24d3e2cffe0da1a6c54f2c7f6539d76702d1b -->
-<!-- api: M:Inno.Native.Sdl3.Rename.#ctor(System.Object,System.IntPtr) deb092de5a0b40839454703e3c3fc09a8cc6eaddae72c15a71a2b54732af5305 -->
-<!-- api: M:Inno.Native.Sdl3.Rename.Invoke(System.Void*,System.Byte*,System.Byte*) 6d1c7048b60ba2ab14988f8d55726388492eb3d0c7ee5ea8762f8e75877809e5 -->
-<!-- api: M:Inno.Native.Sdl3.Rename.BeginInvoke(System.Void*,System.Byte*,System.Byte*,System.AsyncCallback,System.Object) 88e89e45a48164c249cdcc87f77746757dd5ed0f9872010b61ddb1edd31cdab1 -->
-<!-- api: M:Inno.Native.Sdl3.Rename.EndInvoke(System.IAsyncResult) 124d6680838027b72399262a311ce5a16eeea8781a1ed13443aba41045c27475 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-99d1064fffaf1bf0"></a>[`public Inno.Native.Sdl3.Rename.Rename(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6750) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-14ecfbf8e6d6e93a"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Rename.BeginInvoke(void* userdata, byte* oldpath, byte* newpath, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6750) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d48afb174e927caa"></a>[`public virtual byte Inno.Native.Sdl3.Rename.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6750) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5f2898bee661a42b"></a>[`public virtual byte Inno.Native.Sdl3.Rename.Invoke(void* userdata, byte* oldpath, byte* newpath)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6750) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d02ad1095470b61b"></a>[`public delegate byte Inno.Native.Sdl3.Rename(void* userdata, byte* oldpath, byte* newpath)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6750) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.Rumble</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.Rumble 08a74b3a805ce4f5496bf3faa7e151d40ab0b46166c8f887baea9da8c44fd1f5 -->
-<!-- api: M:Inno.Native.Sdl3.Rumble.#ctor(System.Object,System.IntPtr) 4ed5bb7207b6e10c5590095eb7794071eb70ee6bac6c144a86ec9a803a098f1b -->
-<!-- api: M:Inno.Native.Sdl3.Rumble.Invoke(System.Void*,System.UInt16,System.UInt16) 3f91f4e8101798e792e92ce6db219b0437ef451e3bbd3f21fed18ad98cf5650e -->
-<!-- api: M:Inno.Native.Sdl3.Rumble.BeginInvoke(System.Void*,System.UInt16,System.UInt16,System.AsyncCallback,System.Object) 785a0591430bc68640dc099206e6745e5b3d3e337dcb67ab25247ba930c845d6 -->
-<!-- api: M:Inno.Native.Sdl3.Rumble.EndInvoke(System.IAsyncResult) 26cb67e09a617c9e8ad3447a5489497864b7fa2b1838b731c3b325171f851a63 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-a589ebd49b4f7749"></a>[`public Inno.Native.Sdl3.Rumble.Rumble(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6675) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-a6c5b2d18a99dbc5"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.Rumble.BeginInvoke(void* userdata, ushort lowFrequencyRumble, ushort highFrequencyRumble, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6675) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7629936a4d632e74"></a>[`public virtual byte Inno.Native.Sdl3.Rumble.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6675) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ca9a0bb1fc8ebf8a"></a>[`public virtual byte Inno.Native.Sdl3.Rumble.Invoke(void* userdata, ushort lowFrequencyRumble, ushort highFrequencyRumble)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6675) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5219a0d40b30838d"></a>[`public delegate byte Inno.Native.Sdl3.Rumble(void* userdata, ushort lowFrequencyRumble, ushort highFrequencyRumble)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6675) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.RumbleTriggers</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.RumbleTriggers b949fa83f99ab37e70412d51526ea9d0e9c6e9ed443643a9762aea4a1a2a89e3 -->
-<!-- api: M:Inno.Native.Sdl3.RumbleTriggers.#ctor(System.Object,System.IntPtr) 6c7c6ed74a58f0548f41b182163e902c15622f7c8688642a9f404b4d7e442484 -->
-<!-- api: M:Inno.Native.Sdl3.RumbleTriggers.Invoke(System.Void*,System.UInt16,System.UInt16) 32d84a51005616ed90a78279bd0f293368bc82ceb9dacaf4f1bccea532304a24 -->
-<!-- api: M:Inno.Native.Sdl3.RumbleTriggers.BeginInvoke(System.Void*,System.UInt16,System.UInt16,System.AsyncCallback,System.Object) ddf5707c0b4fd83f0a015d5d1af2e8524f0fc36c78100fab6612e3085ebd95fe -->
-<!-- api: M:Inno.Native.Sdl3.RumbleTriggers.EndInvoke(System.IAsyncResult) 3becb364ec17250d77bf48ea400557e6e6a2ce907636a515ecbf1b7a74658ca1 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-bfb89422c20af2da"></a>[`public Inno.Native.Sdl3.RumbleTriggers.RumbleTriggers(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6680) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-d8618f08ad065438"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.RumbleTriggers.BeginInvoke(void* userdata, ushort leftRumble, ushort rightRumble, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6680) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-513f99fe8efbb22a"></a>[`public virtual byte Inno.Native.Sdl3.RumbleTriggers.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6680) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6f19c5a8d68d2d7d"></a>[`public virtual byte Inno.Native.Sdl3.RumbleTriggers.Invoke(void* userdata, ushort leftRumble, ushort rightRumble)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6680) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-889ddb43efb1e96a"></a>[`public delegate byte Inno.Native.Sdl3.RumbleTriggers(void* userdata, ushort leftRumble, ushort rightRumble)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6680) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDL</code> · 1–180</summary>
-
-<!-- api: F:Inno.Native.Sdl3.SDL.HAVE_WINAPIFAMILY_H 6c72ba0aaaf5743b1f80f36ae2353765891700d4e6a16df45c9ca026124d4df5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ALPHA_OPAQUE e584c843dcc65bb9dd9e0b1c6c878d0f4c44d7620ffc640fa52ca2d778537ce5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ALPHA_OPAQUE_FLOAT d4031f98d8cc02c4d9615e22cdc90f803f0f726e0fc7e599c2a0884896bfc149 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ALPHA_TRANSPARENT f58a52c30cbd022e4adda40d8b565ce31bd893b9fec1b63addaec422c912ba35 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ALPHA_TRANSPARENT_FLOAT 52de072209e07c22c67e41da48857d5bf6f22baa3db5d9549f0f68b5adbf39cb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ASSERT_LEVEL 8dc951bb630a5ff778d3096ce81994e2958144a29d6a6ea1c4c818381d703557 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_AUDIO_MASK_BITSIZE 54acb62fcadb9a223eb26d8a5fc77801f69e924ddc1939073ae1d83ea756135f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BIG_ENDIAN 1b06649ceb0bc4b0e1a8a7f8df2f6490a5e497887810cd83c96696ac5f55ec89 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_ADD d8c57f67c981d8cb41f6567c8b3b9e88744b59fd1236b5d389559a8a7441366e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_ADD_PREMULTIPLIED 7db68a711ebfa4217eee4c894e1ab5bdac96f071ecbc77f36966a68f2f2fdfef -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_BLEND 151f3ba25aae83a0d3bb66a81e7421a0d06efba81d8892005e1eb595ea294385 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_BLEND_PREMULTIPLIED 98f58f4ef15b020dc56550aedb0ba44ae166b4fa210953e3dcdf3063dace53d1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_INVALID bdb0c1d3bc77c617b2113aff2375af2715aa4862c4e97309773c86efa4ef7966 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_MOD 3e6a4873ba0d47070797635a8d086e6278f5d8311e769c6312ad9c9a1f12364d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_MUL ff3c34dfedad0c97044a09653d49d9d40d28393fe889332ec1dc7accbffa4a4f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BLENDMODE_NONE 58736e5375d7f8a812821225d310e3e1b68ea59b04f8e1044edd375bf513a9f3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BUTTON_LEFT 6bc26487abe3ef33bb60542c5a7700564daae719e986f61f8b17e1a879a27cd2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BUTTON_MIDDLE a03fd71a36c38224895a7d5b406cc8bb2cd49712441ba3bb133f8e0ccdd362f2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BUTTON_RIGHT ee72767c0de967b836ae87c43d0ece008d1468818b3f48b97068f262e2e9b60b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BUTTON_X1 2f9374c80de52838e00e948d72249783bd4b854e97c5b2528e22847f9996380c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BUTTON_X2 4dd5fa9d126cf4db83feedf1fb20573c9ea13b69aca379efb0615f23217e3a08 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_BYTEORDER 0f7577f14fb39be0a2d0b70cfb098e8226d5549da31dd2f2c98dbe81b2548b7d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_CACHELINE_SIZE 371ce3d1fd026214f5fc8690fbe844906636a6ed5f24a25d324af87acc935247 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE c9d9314ca9490c9723c1026ac242e9a59aa448ad0f400c741f033f6934c74611 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED 756e12133c27865ff3a40b2b4e8263d5afa0f608e5af2d88bf99e3d9540e665d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED ab596fba53991a6e71255437c9d8fd2c4d6ef8f6cd091e901ade03325436e2f0 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED a31fd728ede40435fe86c6f6c873b17363b46bff87507103d2039dc2520bd9c5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_FLOATWORDORDER 4a0592a40c5c382d958bd5ba720939cbeb6ba7a3b29a5aa1ac0c0ddc240d6cc0 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_FLT_EPSILON c62789724f4a5da2fd234d0ae1b62995228cbe303d1b05fe46cb2243143eb4b5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_DEBUG_FLAG d325bb62574ffeb6c9d3acd6bc1b82c0a0afa039f000ce839727cc56b0d5639a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG 170670b02194e14abf38ad082173b747674efe6e52ea1cd93b6665771e947844 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY a6f0b829edfc36c19c264d06fa02fd27111667a8783009024aa13dcd4671767a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_PROFILE_CORE a846342f10dd3aedba43dd349e8e59a8dbea6eee38fdbe4f396c3e812622890d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_PROFILE_ES 863b69ef11c8a04aef5db0ed54f73298a804cfd124daad76fccfcae386f20799 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH 5f53a7f3350f433153c5697cbc6acc5898d07924691f2c29b4cca8831e4df03a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE 1655a536280805499e763b871d9a05d562cf34cf08bbbfbb63e9ea80ba5841f6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RESET_ISOLATION_FLAG 5cdba7c3de1154baded1f535922a3d0f404401e3e8acf958223db184744ed92e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RESET_LOSE_CONTEXT b6da1e93b2a676b981dc5a3dc989c7e4d98de2cae656d4680c8d1cf53640369b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RESET_NO_NOTIFICATION e9d30d801640ed9bd25b95f042b2c81f435c5a26fec17297fa2524fecbc6546a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG c1f18f3f7a806e5563d164b32f1b4020d5d9b19768ac34114d113c4b8e26bd8e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GPU_RENDERER 3917831260f94a3f500ebf62a99afd834bdbb1c3aca0ef4152c9a47dc57eab40 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_GPU_SHADERFORMAT_INVALID d48c88d351fc004b44a2d1058565ee89c510e15fb7d5efc676698100cc3b50e1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAPTIC_CARTESIAN fffa4bace8d130762cb32dffb54510cf598334ae0f9a8b41f68db410fac16c29 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAPTIC_INFINITY bc028122977d818cb4997b6e1bbabf53d81f5e6dd12a776495ca959cd589a59f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAPTIC_POLAR 35c19492fe541311acabf592a2d2956f910d41ebf711e1b0d7a5accb205c4835 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAPTIC_SPHERICAL ee350c28208880408577fdf589917c641a3726765c6796a68694e5e3729ead7c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAPTIC_STEERING_AXIS dacf2edf18d7edfb0b57194f86d0599928d0c7334b5255035df78c388347c3b5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAT_CENTERED 631a9702f0a6f07707e1e7dca78396ad8fdde550146aa94287de4720769d222d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAT_DOWN dfe94d3bb157692dbfd1c001edc324eb143461cd5a8d1821cf9117807bca06e8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAT_LEFT c35d8476ddab58383539ebd121537ac625fde51ca45d7a6d28dc44a8a70ee64e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAT_RIGHT 4822b3ee45a3cce044480c1eadccef3768defb097256ce41f786f743370a468a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HAT_UP 14333bfd935ce05e77a2a6db38f4b4a417c3e6ce1e7a44f6ebc83e1d55308df8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED 687351d8c627245426f04d7150ca65270ed10aa2d3bdf83656d6fd6eca03c3a3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY afd0f554e829113aa5e5062223542455e1a86766bf8f6db40913b2d73f55320d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_BLOCK_ON_PAUSE b8d0ae91dbe5cd5ffe5861cbf598d7b16d31ebf171fefbe91471ba8a4d98dc15 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_LOW_LATENCY_AUDIO 3369d73ace7087214a6c833e1d820840cf161d1ae544e87231d2bee21b1341dc -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_TRAP_BACK_BUTTON 435d37f2481ace7c925b8fe574b76b9b7b2dc2849bdffbb2c663d069419d195c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_APP_ID 2a7177f34b8e7f6a892ca63c7a8b0862f702dc3865457bae9319e34a5a3ad7c0 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_APP_NAME 6a53b731f451adf3339044d21f38968f017a6745f04b2661c33dd1ce774eb505 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS 9045fe3d8483cccb3177a74a5290aa1eb0bab3c07f83bee2b36c6129de5b90a8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION 61803d645b18d6d4cdeba5435fbaad4fd183768627b49c42008811f4b4b9fb72 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ASSERT 281be7fe67b1d47b8c1578929f23da68193ec9c576add3e1dbaf1d89c66b359c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE 676ce0a59754a152034dd68d66f5b39aa5017e84abe5a0d53dd4ef65afa0df4e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE 10dabd1b51fe493685f8ea1ddaf804c5d116a830c19c6089e8d599f26fc64726 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE 5df06affc86ced0d4c78dfdfd656b9e1f8170083fa9ccfc673fcfff6181d8ea7 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_CATEGORY 4b76a6516180e9b2a254204583a5c4a5f5038af2a42837bd5ef884725e728640 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_CHANNELS 9ad99000aaebaa340e3bac5d06903453467b4930ddf047e478700e165a7ef1bc -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME d127181f4827f275e747fd71fc37b06f14035e143dafb7b47500e4a091dec090 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_RAW_STREAM 8e3fe755c5eefdb50995eaf0bce7090604e398803cb46f39becd1bedcf5fb04c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES 25c63d5806d84b189e87320a6767a7b424eb177d23ffc7b04f576f5801e07e4a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_STREAM_NAME 4682ba28d44198f8e39b9ee6250bcae9173691902ae5f998e9cfde5755092c43 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_STREAM_ROLE f65de759eef7150303b68b4c0483049e583bfef138dd1cf959a821080762ee39 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DISK_INPUT_FILE 8610339c43aa79a33e9f5ecde832c36b2bf99d501d14e395fa87581d401bf475 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DISK_OUTPUT_FILE 0079c52f5ef1ac7982a6fcea8444adcb3bc6407c4b135d449b0add11ddf3a3df -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DISK_TIMESCALE b75c3852c12921d64f299c183bbabe596e135adeb35ff95ca522babcd7529137 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DRIVER 110abb7e1a55d9f274d8fd55047700b54832042df750da7756f3b5d4a0beb4a3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DUMMY_TIMESCALE 96eba64a6cc422f33a53b8b3ee0cc0a8805013eaf29241a6a9ae271f79c89484 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_FORMAT 88cdb1ddb07858ceb2159630c74708568fd8b4533c46d0484e487a577f4d00f3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_FREQUENCY 5c29291ed5fd56191d0d629fb2845cd71b5df66ffc6866950382a5b9271b5998 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_INCLUDE_MONITORS 3f8fa77f5a2ea70ffefc255ae103d0744e0f8dfdb808389a72870a3867ffec8c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUTO_UPDATE_JOYSTICKS 4fcd7244f2f9fc244333f2f902a6af2698acd31a0ee78f0f2d670ce1ced28694 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_AUTO_UPDATE_SENSORS 0cff6a37dfa8ae4461e67d6534aa28aa902aac06b1b33da7ebcc30ae9ad4083d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_BMP_SAVE_LEGACY_FORMAT 7e7e39499a20fd9bc730349e604f6200ae090e5cce518cd6bd1cff49013642d5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_CAMERA_DRIVER 8b3379cd930be4cbfeaa1e8f94b73399b1c9b199781a113f63dea6d16cdc11e5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_CPU_FEATURE_MASK 76d490db9959d42f024ab214ff3f43a173c6428fbde208da32c4997af7aeb41f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_DISPLAY_USABLE_BOUNDS 565e3e6c33da319d5a7423585d2b86ee7288f266cc2ed4da33e0842a86b445d5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_EGL_LIBRARY ffdf6930ae9c91f75cb6afc76027d102e94a8403f9d956b79a1ebefd2ce197d3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_EMSCRIPTEN_ASYNCIFY 19bf3dcab54d33e1846d99f06d9e51b01b1c5e105172fe3158b31ed8f597ccbe -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR 51ccab1d13d9f41aaf9821196355ce9930b881577487adb9ccb67be86eebc113 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT 8b5621ce43cc29fc4494e62d5b92b088d03406b19806186060307ee8b40badc8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ENABLE_SCREEN_KEYBOARD cd639dd27d26738e20b371eaed6685481bf507d19573425f7131eb296710ba77 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_EVDEV_DEVICES d35945ce246feae4046947d423c76b488d561dd81d119dca7528aead0fd4abfe -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_EVENT_LOGGING 277957e972a061ff5f26bd77620e06a2277b9a2bff69e7523e76e21e9091b62e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_FILE_DIALOG_DRIVER 6f1d75440f6f2bd31fa9c07c7562d371cf945c3d7cf40c7b3171d7f2922694b1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_FORCE_RAISEWINDOW 4b6f6720f550377d37d071e2079500a8b6b3960018ed6c7fef342a9a369b56a4 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_FRAMEBUFFER_ACCELERATION 905821b979c7d76aaca76da2396d56347b6c1e1c1f3b7b3c7c648c5f7fe9f012 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES d07bf3e3382b7204388a693bf06c1e8d6981b24840e61ff3326a21fdbc038828 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT 34101000cf11961e21f2cae515d18095f22a3a8d785da78040e9a5310ff10dda -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLER_SENSOR_FUSION 0afdfe53a813afe4e403398ee8f882d37c87629b63dc0be8a67d88b9be39019a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLERCONFIG 5aafbba8cb949e9f255e95e022645b68ee479c1a90e5325a13b5d5bfdb7b9410 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLERCONFIG_FILE 501982cdbff61dba4f5a9b8e6736cc39a002695b145ba713aac893c8959a9484 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLERTYPE 071fd74068198b11609eee590133a0e76068ff4afe69c8da05021edd718eb3d2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT f94384a7f14f7cb6517b1f741f74ce644e4073fa9e933cb12396b0682de94a46 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_DESCRIPTION dc676bcdc4418c2f28d3f48c097f9a55d88529d4535ccd70b66d8d6a869826fb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH def0349dd4c926382520f7978bfc60c0fc5f281ac396b505eefd50b184aad4d4 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_SCOPE e6b93c54e66f20e051103fbde1f2dda61fbdc9824cf5454ba6d7b40eafee630c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_TITLE 6cf76b46e0bbfc0f68cd04721ebb8ace9a6cd4549aa6ada29c4e28f49e5959e9 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_GPU_DRIVER d20c567d2dbdf441eac7a4a1e51340b7375779305f240d68cd9c05b6c4eac233 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS 3b2e164b54637351fe19b1980f73ef8d5818b6239252c3f56b2c34af26e96674 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_IGNORE_DEVICES 8e9fd3b709bf64586083c25342187cd5c0cf79307f36a9368fcef7d61c928d91 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_LIBUSB 1b1df5db89fcaafdf3fb6dc80621b9f49b7163fa81bfa8248b728e908b76b017 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_LIBUSB_GAMECUBE 510073492fa35286d72c78d30991f4767c71328c86d000070e601bf423bea0a6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_LIBUSB_WHITELIST e2f4b9f924db254cce2a03c89befacacea7484eb23a73d2e7aae207a69e822eb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_UDEV 3604f71a466efc37ad4b0c94ad51c8a930c1e0a50fd7eb722895b15b0f1d6093 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_IME_IMPLEMENTED_UI 611c9d1353e5f3289d9fa7d090eb9db4e30e86b6b1a851fa2964d87a427d7887 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_INVALID_PARAM_CHECKS 682930ffebdf60611ee206a4f2cc335192b2de7a2920b39ab41ab1c8ee3ce446 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_IOS_HIDE_HOME_INDICATOR 51631d81176854a2887dd143d7f7e5050d597afe483cd7a57338a213282cc7d4 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS e5176b3ce85073395e7974ffd2702f4819f1e848936b25505a0209cf335cc7fb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES ae4c409893fd65c374f1786c0c654a16d2d937b4ba5f5ebe294085656f8deb37 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED 4e99e118b56c083e8fb6f5f20d1b2eee82440366e780018ee80c38de19df7d00 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES 5cc03bca9d24f1ec84269d22c3861ce4dfe4c7da776255112711d4c7e3f79531 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED ab838b50e3e53532ae52f4b1fcc892ea9abe23ce5503890f90e275b42258f698 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_DEVICE 788621cffc200dd8165099b7fd8844640c5fc4a4b33a560a848aacba6117be37 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_DIRECTINPUT 0a074fa7d7452c9f3946c37d6e1facfcc385d77cf9f95791ea1bb35e0dfd567d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ENHANCED_REPORTS ca89a8f9542b9df85a2cb5bc33d4934d5238bb152f55a6bf932a001aacb5ec77 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES e196c189ea294293ddc20ddd22a9b26fe311fef96c71cdc8ec5c6e2ca45bfd91 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED 9d017847f4c1aa46537362e152f17caa02451fb30ef41693c3134abf9339696e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES 28c95cee1257b5d157eba6f6db1ba774ca5f0a4c4e756e6d3bd56efb9705e1d4 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED d01fa8393565a5d565c2902a3c5584b1622d2f3d860f7377cafc616d1978a020 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_GAMEINPUT 0276e6a5948b2993cb2ee160bc1ae172324b5175c02225702785121fe4c93307 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HAPTIC_AXES 481c48b6ce06bdb6d1f592c7c801154e5352e0c1aad9b82b07ed657646550e5b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI d8aeb3380aa8e3802b661704558ff83f08c9f6fcce9f750cbe3f2415f38c9d5c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_8BITDO c5791c88af400178e5f192162ea57c62e61196aa66bd419a68b25a5e3de8a7a4 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS 5966d84526fd5b26d2fcec853d1a4a350fdcf6a45f482d3a9f15190fc61a17e2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI f8cf5b5a9b9c5c1ccbd5f655573617af3933e9de8d53c3d12a61738aeccc90a5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE 6b3f5ff3860bc99f7d66eecc784245e1921f7824477514b82d5539a1532681a5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE 8b6285a3a3f0ca543b1d313833c5e11aa2fa18c23780c66565412d558e4b472a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GAMESIR ef53596d23eb73f36a6e3032911cdafa77cfe13aac55e9b91955ef2ae070a102 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GIP 2133818cbe3179a93cd42223b545141074e7899c3b3f7f7229858706e6834046 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA e84a5767c8cddbb32e458f62d76e1847829ba36ee95903dd3cae6300452b8cfc -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS b8a5d29e79dfe385cee9e51a31d1dac3208742fe04aaedfb28125e8d4a9ce951 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED 9b3652e03308c534ff472290c360c35c43dcf05148a4115f76e1aaf448c92c28 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_LG4FF 1dcc4b954d061b72149688e7389d53ce4058c5c92d6db6d5380f6b19021b8e95 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_LUNA 0ae4d330631b169c9817b016ce1154e036d59c3a85df308e9a09e70bc0be4594 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC 852408b8b8d5a84767bf039db1a72a80b152efcf9612a80fd334f9f058130ed8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS3 ad7ca9632aac9f75d3b6a359d75e7f5e2c1267cc228a655a2184976161c6dbef -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER 670414e64196fd6cf81e6fd43db381aa97608c8429f6f76d9b996dae20aeb076 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS4 6aab2b848659f959d5c1e1b9adb97082868ba2ec2181dc7230f6d31c5e2e3c4d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL 8eaec5f46bba60464d1be21a5d8e134b57af06256861dfb2d5f328b0dd088282 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS5 a48ec1e30ceb9dff6cbdd65b6ec52b324ed9fdd3bc35d14d71f866a72eec40e0 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED 354a62fa08421c5e0634f433ae213847a2931eaec1dba1521aaaba050af7b65a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SHIELD c3551b886c7f0e2b383ee68ceedcf6cf86d2cb44e124d50c347e2d145a31bfef -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SINPUT 27d1ad8e0bc55038c608150d62b6683e7a194b6505573dbc04223f8dc092bb4f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STADIA 33861bc0570ab6946140c1b40cb81bd09fab162ca7dd754fe03d4c2fc51c5a27 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAM f4641b840aa42a1dae371b68dcf95f58bd3b000ec737ba3c1f16f9c92f0a614d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAM_HOME_LED 2c0ec44685d5d1d14c9478f33832e48ef179639f09f9ea56f36f096c84ce89e3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAM_HORI e20f58aeb9c725901e2c4aa14dce8cc7c81e6a062a219b4e9c1b9e42a75dcf59 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK 029cefdab6a3a3c4bfa15d34fa76d0e001929b8a4e905d1ebd7eef331e0f7533 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH 77f71d9d8e30603f11d5717d616795597288562b86eb24ffe5e43fc1f882fd54 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED 678d686f06ea8b418b33350e8705b142ad5de83aa6db2d1c8c657f0bea19d16c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED 1225b606d971e83cb7cf4790dc70f251c355225313b3b570c88f25e50a879549 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH2 cd27dec14be171c3767d3f3c1efcf810e47c0f6decd76ec32dd6e1568621924c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS 343526a744805b5d7c61de8f5347f236654a80fce6b8995c247972932a8cb02c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_WII 66d9b7e4efe8ff1d09c810688c071940ac66d30670ca94b821e900ca836e514c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED fc77f594c8306b2973e1ad5771b11e5d3b58ec8ec385923ec38b6eb319cd87e1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX 2db4f16e8789801dc9e434695c9a45e14e10af92ce018588fa0de2f2a8f15b99 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_360 481e5d63443548226727aeae64577aaf10f5425997b3024f76ff39f520f5ed78 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED 60105f049fd1a7ba217a691d30e68e72cc5f9998166d2773bbe61cc482064da2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS d1d9022487e8e882aa998a215ada7f1eff0023128f5bd53e4eb40aedd717d9d1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE a8c764df4c8e773edbe5e6288204c12292a0d04900e2ad3a36db950496463015 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED 16cb2be091d0e9c9b98ab4fa19e5702d30a1545b8ec70a60c3dbc36a6c29bc25 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_ZUIKI f6d9b195fc670b07aefdd1ee6932a4c186e8de25267e17d0942b2c18fc12f3fd -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_IOKIT 493efcee70dc08fb088e4d8e393092567fd5573bb07372db9c9bd82f44980138 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_CLASSIC 3fbbc8338ce3221dfac95cf252a4005cfac9c599b8dcf454332bec0bcd0ffba2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_DEADZONES e72ac51122da6f513f43f16cf34333c93ff6cc611de2c0670ed919e152afd87c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS 4433de0260450c45d0d960086e22baa07dd333cbd20576176858bfc4ebff7e6c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES 98b29f0fdb3e3ca9fc557c8f484f7c0891996e73bfd8bd2a18fc0f9f3b75af84 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_MFI 2621b54020fede651f2505d06d0f31250de03229662faf53a1a02a18a18dd494 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_RAWINPUT 6513bc538215712f3f29213b2aade3e68c296863ea0aa6da0620625f63eb4c49 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT 0d55f1c2b904e8b5387be58cde1a4b27924560b0710ca0d760aee7a9aaecbf76 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-20020144c0bfdd63"></a>[`public const int Inno.Native.Sdl3.SDL.HAVE_WINAPIFAMILY_H = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6944) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-1c51b3a28596bb23"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_ALPHA_OPAQUE = 255`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6984) | 当前常量或枚举值：`255`。 | — |
-| <a id="api-848f3c8ddb7ee241"></a>[`public const float Inno.Native.Sdl3.SDL.SDL_ALPHA_OPAQUE_FLOAT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6985) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-cbac0cbdf8f68650"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_ALPHA_TRANSPARENT = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6986) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-765b3db1200aebd0"></a>[`public const float Inno.Native.Sdl3.SDL.SDL_ALPHA_TRANSPARENT_FLOAT = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6987) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-53169a89622605ae"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_ASSERT_LEVEL = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6955) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-fdb186f7934884e3"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_AUDIO_MASK_BITSIZE = 255`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6974) | 当前常量或枚举值：`255`。 | — |
-| <a id="api-87dfbae1a68b99da"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_BIG_ENDIAN = 4321`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6957) | 当前常量或枚举值：`4321`。 | — |
-| <a id="api-f0d735e6c1d46fe9"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_ADD = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6979) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-65344af5d7572734"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_ADD_PREMULTIPLIED = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6980) | 当前常量或枚举值：`32`。 | — |
-| <a id="api-aea3710075f44ee5"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_BLEND = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6977) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-6814a65632e43ae7"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_BLEND_PREMULTIPLIED = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6978) | 当前常量或枚举值：`16`。 | — |
-| <a id="api-5a6cd61e2a4e92e9"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_INVALID = 2147483647`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6983) | 当前常量或枚举值：`2147483647`。 | — |
-| <a id="api-6046b29392f2109a"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_MOD = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6981) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-23ad4083777b861f"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_MUL = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6982) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-80c4bbafc2042ddc"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_BLENDMODE_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6976) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-36f60f76f3ba9cc5"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_BUTTON_LEFT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7400) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-3efe9596fde4f1c1"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_BUTTON_MIDDLE = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7401) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-aeacd93fc9bbb1b8"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_BUTTON_RIGHT = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7402) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-dc1a29ec344e7491"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_BUTTON_X1 = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7403) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-3bcb5a0ffb2ee122"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_BUTTON_X2 = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7404) | 当前常量或枚举值：`5`。 | — |
-| <a id="api-cae744e951c3f0f4"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_BYTEORDER = 1234`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6958) | 当前常量或枚举值：`1234`。 | — |
-| <a id="api-ed4856e1f87febc6"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_CACHELINE_SIZE = 128`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6998) | 当前常量或枚举值：`128`。 | — |
-| <a id="api-82780504aa6e7c6b"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7869) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-88505a58648a3fc6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED = "recommended"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7105) | 当前常量或枚举值：`"recommended"`。 | — |
-| <a id="api-b02228331ea7b7e4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED = "required"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7106) | 当前常量或枚举值：`"required"`。 | — |
-| <a id="api-84bf56022943fbd6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED = "suggested"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7104) | 当前常量或枚举值：`"suggested"`。 | — |
-| <a id="api-c4f7b486c3fa7905"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_FLOATWORDORDER = 1234`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6959) | 当前常量或枚举值：`1234`。 | — |
-| <a id="api-bfa80525f46b8c64"></a>[`public const float Inno.Native.Sdl3.SDL.SDL_FLT_EPSILON = 1.1920929E-07`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6946) | 当前常量或枚举值：`1.1920929E-07`。 | — |
-| <a id="api-593123a7cc69bdf3"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_DEBUG_FLAG = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7005) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-475b2fdfb738e629"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7006) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-0a8f26880ddc85ab"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7003) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-60769cbe20dca582"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_PROFILE_CORE = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7002) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-3142efc1d7309b05"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_PROFILE_ES = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7004) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-1839d788ede04664"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7010) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-bc69add7548683ac"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7009) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-50d8783e35be94b2"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RESET_ISOLATION_FLAG = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7008) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-f16f447a0ba96017"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RESET_LOSE_CONTEXT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7012) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-028d904ec1270e6e"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7011) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-97e760851a62c653"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7007) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-3e54d2bf372e4525"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_GPU_RENDERER = "gpu"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7767) | 当前常量或枚举值：`"gpu"`。 | — |
-| <a id="api-ba0e83a66522149f"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_GPU_SHADERFORMAT_INVALID = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7405) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-3620c11865b313c7"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_HAPTIC_CARTESIAN = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7459) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-4686a8cc51118807"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_HAPTIC_INFINITY = 4294967295`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7457) | 当前常量或枚举值：`4294967295`。 | — |
-| <a id="api-1aa8ce47c265515c"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_HAPTIC_POLAR = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7458) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-1cfcec9a813c076b"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_HAPTIC_SPHERICAL = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7460) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-492073cc983eb4fa"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_HAPTIC_STEERING_AXIS = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7461) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-5b7e04cd3ec93f10"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_HAT_CENTERED = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7115) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-f384d00f3d1a9ffe"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_HAT_DOWN = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7118) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-ade2b40bf5e89ba1"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_HAT_LEFT = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7119) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-7c944d2841f91160"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_HAT_RIGHT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7117) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-bc55e5e5091091d4"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_HAT_UP = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7116) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-f8c19612cd280c76"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED = "SDL_ALLOW_ALT_TAB_WHILE_GRABBED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7463) | 当前常量或枚举值：`"SDL_ALLOW_ALT_TAB_WHILE_GRABBED"`。 | — |
-| <a id="api-5e8ad760cb8b6261"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY = "SDL_ANDROID_ALLOW_RECREATE_ACTIVITY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7464) | 当前常量或枚举值：`"SDL_ANDROID_ALLOW_RECREATE_ACTIVITY"`。 | — |
-| <a id="api-70b45e534a50f8e8"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_BLOCK_ON_PAUSE = "SDL_ANDROID_BLOCK_ON_PAUSE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7465) | 当前常量或枚举值：`"SDL_ANDROID_BLOCK_ON_PAUSE"`。 | — |
-| <a id="api-c4c1093f39d86f4e"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_LOW_LATENCY_AUDIO = "SDL_ANDROID_LOW_LATENCY_AUDIO"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7466) | 当前常量或枚举值：`"SDL_ANDROID_LOW_LATENCY_AUDIO"`。 | — |
-| <a id="api-be715a736736c5b3"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ANDROID_TRAP_BACK_BUTTON = "SDL_ANDROID_TRAP_BACK_BUTTON"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7467) | 当前常量或枚举值：`"SDL_ANDROID_TRAP_BACK_BUTTON"`。 | — |
-| <a id="api-028cf0013befeab5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_APP_ID = "SDL_APP_ID"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7468) | 当前常量或枚举值：`"SDL_APP_ID"`。 | — |
-| <a id="api-7abcc457d861c666"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_APP_NAME = "SDL_APP_NAME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7469) | 当前常量或枚举值：`"SDL_APP_NAME"`。 | — |
-| <a id="api-88b35dc406777d82"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS = "SDL_APPLE_TV_CONTROLLER_UI_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7470) | 当前常量或枚举值：`"SDL_APPLE_TV_CONTROLLER_UI_EVENTS"`。 | — |
-| <a id="api-7d3751e02bc28f67"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION = "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7471) | 当前常量或枚举值：`"SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"`。 | — |
-| <a id="api-2d177746f55a2004"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ASSERT = "SDL_ASSERT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7724) | 当前常量或枚举值：`"SDL_ASSERT"`。 | — |
-| <a id="api-6a7d85a2f3e8ba36"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE = "SDL_AUDIO_ALSA_DEFAULT_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7472) | 当前常量或枚举值：`"SDL_AUDIO_ALSA_DEFAULT_DEVICE"`。 | — |
-| <a id="api-97ec4a932a14a553"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE = "SDL_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7473) | 当前常量或枚举值：`"SDL_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE"`。 | — |
-| <a id="api-f8fb1c3c8e3f8135"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE = "SDL_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7474) | 当前常量或枚举值：`"SDL_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE"`。 | — |
-| <a id="api-8305dc173ff53b10"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_CATEGORY = "SDL_AUDIO_CATEGORY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7475) | 当前常量或枚举值：`"SDL_AUDIO_CATEGORY"`。 | — |
-| <a id="api-12fe475d09a6ee49"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_CHANNELS = "SDL_AUDIO_CHANNELS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7476) | 当前常量或枚举值：`"SDL_AUDIO_CHANNELS"`。 | — |
-| <a id="api-eac8723f0627a541"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME = "SDL_AUDIO_DEVICE_APP_ICON_NAME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7477) | 当前常量或枚举值：`"SDL_AUDIO_DEVICE_APP_ICON_NAME"`。 | — |
-| <a id="api-a37379f9a21487d9"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_RAW_STREAM = "SDL_AUDIO_DEVICE_RAW_STREAM"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7481) | 当前常量或枚举值：`"SDL_AUDIO_DEVICE_RAW_STREAM"`。 | — |
-| <a id="api-1dd6841e5a8918e1"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES = "SDL_AUDIO_DEVICE_SAMPLE_FRAMES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7478) | 当前常量或枚举值：`"SDL_AUDIO_DEVICE_SAMPLE_FRAMES"`。 | — |
-| <a id="api-26cafc06a747b047"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_STREAM_NAME = "SDL_AUDIO_DEVICE_STREAM_NAME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7479) | 当前常量或枚举值：`"SDL_AUDIO_DEVICE_STREAM_NAME"`。 | — |
-| <a id="api-1c2e07b690aa502a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DEVICE_STREAM_ROLE = "SDL_AUDIO_DEVICE_STREAM_ROLE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7480) | 当前常量或枚举值：`"SDL_AUDIO_DEVICE_STREAM_ROLE"`。 | — |
-| <a id="api-34827c048aa7b691"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DISK_INPUT_FILE = "SDL_AUDIO_DISK_INPUT_FILE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7482) | 当前常量或枚举值：`"SDL_AUDIO_DISK_INPUT_FILE"`。 | — |
-| <a id="api-10bdbc2e3f31b9a5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DISK_OUTPUT_FILE = "SDL_AUDIO_DISK_OUTPUT_FILE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7483) | 当前常量或枚举值：`"SDL_AUDIO_DISK_OUTPUT_FILE"`。 | — |
-| <a id="api-1cb8811ef63b1c86"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DISK_TIMESCALE = "SDL_AUDIO_DISK_TIMESCALE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7484) | 当前常量或枚举值：`"SDL_AUDIO_DISK_TIMESCALE"`。 | — |
-| <a id="api-bea2a33b3ce38134"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DRIVER = "SDL_AUDIO_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7485) | 当前常量或枚举值：`"SDL_AUDIO_DRIVER"`。 | — |
-| <a id="api-a68b13b4a7adab1d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_DUMMY_TIMESCALE = "SDL_AUDIO_DUMMY_TIMESCALE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7486) | 当前常量或枚举值：`"SDL_AUDIO_DUMMY_TIMESCALE"`。 | — |
-| <a id="api-81bf3e9f312e2420"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_FORMAT = "SDL_AUDIO_FORMAT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7487) | 当前常量或枚举值：`"SDL_AUDIO_FORMAT"`。 | — |
-| <a id="api-fb653dd68af3e9a9"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_FREQUENCY = "SDL_AUDIO_FREQUENCY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7488) | 当前常量或枚举值：`"SDL_AUDIO_FREQUENCY"`。 | — |
-| <a id="api-fcf280aa2cc5ef77"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUDIO_INCLUDE_MONITORS = "SDL_AUDIO_INCLUDE_MONITORS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7489) | 当前常量或枚举值：`"SDL_AUDIO_INCLUDE_MONITORS"`。 | — |
-| <a id="api-b9eecea048b309e2"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUTO_UPDATE_JOYSTICKS = "SDL_AUTO_UPDATE_JOYSTICKS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7490) | 当前常量或枚举值：`"SDL_AUTO_UPDATE_JOYSTICKS"`。 | — |
-| <a id="api-5687210d7966fcc8"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_AUTO_UPDATE_SENSORS = "SDL_AUTO_UPDATE_SENSORS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7491) | 当前常量或枚举值：`"SDL_AUTO_UPDATE_SENSORS"`。 | — |
-| <a id="api-9f28987829476825"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_BMP_SAVE_LEGACY_FORMAT = "SDL_BMP_SAVE_LEGACY_FORMAT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7492) | 当前常量或枚举值：`"SDL_BMP_SAVE_LEGACY_FORMAT"`。 | — |
-| <a id="api-1e2d6c030292954b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_CAMERA_DRIVER = "SDL_CAMERA_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7493) | 当前常量或枚举值：`"SDL_CAMERA_DRIVER"`。 | — |
-| <a id="api-2d840c7deda03f38"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_CPU_FEATURE_MASK = "SDL_CPU_FEATURE_MASK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7494) | 当前常量或枚举值：`"SDL_CPU_FEATURE_MASK"`。 | — |
-| <a id="api-930d3f13df3e27ea"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_DISPLAY_USABLE_BOUNDS = "SDL_DISPLAY_USABLE_BOUNDS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7497) | 当前常量或枚举值：`"SDL_DISPLAY_USABLE_BOUNDS"`。 | — |
-| <a id="api-79f06332482b5366"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_EGL_LIBRARY = "SDL_EGL_LIBRARY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7627) | 当前常量或枚举值：`"SDL_EGL_LIBRARY"`。 | — |
-| <a id="api-2bfd2eb9012c09a2"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_EMSCRIPTEN_ASYNCIFY = "SDL_EMSCRIPTEN_ASYNCIFY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7499) | 当前常量或枚举值：`"SDL_EMSCRIPTEN_ASYNCIFY"`。 | — |
-| <a id="api-8b2a78871f415965"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR = "SDL_EMSCRIPTEN_CANVAS_SELECTOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7500) | 当前常量或枚举值：`"SDL_EMSCRIPTEN_CANVAS_SELECTOR"`。 | — |
-| <a id="api-37a9acf9ec2db121"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT = "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7501) | 当前常量或枚举值：`"SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"`。 | — |
-| <a id="api-cde463a1b942a734"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ENABLE_SCREEN_KEYBOARD = "SDL_ENABLE_SCREEN_KEYBOARD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7502) | 当前常量或枚举值：`"SDL_ENABLE_SCREEN_KEYBOARD"`。 | — |
-| <a id="api-0422bc5d22a39da4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_EVDEV_DEVICES = "SDL_EVDEV_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7503) | 当前常量或枚举值：`"SDL_EVDEV_DEVICES"`。 | — |
-| <a id="api-fe7feb59a59c4835"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_EVENT_LOGGING = "SDL_EVENT_LOGGING"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7504) | 当前常量或枚举值：`"SDL_EVENT_LOGGING"`。 | — |
-| <a id="api-d1dfe1c653ef2d0a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_FILE_DIALOG_DRIVER = "SDL_FILE_DIALOG_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7496) | 当前常量或枚举值：`"SDL_FILE_DIALOG_DRIVER"`。 | — |
-| <a id="api-9c8e10993205860c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_FORCE_RAISEWINDOW = "SDL_FORCE_RAISEWINDOW"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7505) | 当前常量或枚举值：`"SDL_FORCE_RAISEWINDOW"`。 | — |
-| <a id="api-3c3d0f7e24813e92"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_FRAMEBUFFER_ACCELERATION = "SDL_FRAMEBUFFER_ACCELERATION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7506) | 当前常量或枚举值：`"SDL_FRAMEBUFFER_ACCELERATION"`。 | — |
-| <a id="api-57ac97b8fb896b3d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES = "SDL_GAMECONTROLLER_IGNORE_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7510) | 当前常量或枚举值：`"SDL_GAMECONTROLLER_IGNORE_DEVICES"`。 | — |
-| <a id="api-cbdbfe61437f8341"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT = "SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7511) | 当前常量或枚举值：`"SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"`。 | — |
-| <a id="api-66ef70e6a887bdbc"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLER_SENSOR_FUSION = "SDL_GAMECONTROLLER_SENSOR_FUSION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7512) | 当前常量或枚举值：`"SDL_GAMECONTROLLER_SENSOR_FUSION"`。 | — |
-| <a id="api-d0883821b8c58084"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLERCONFIG = "SDL_GAMECONTROLLERCONFIG"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7507) | 当前常量或枚举值：`"SDL_GAMECONTROLLERCONFIG"`。 | — |
-| <a id="api-263fe64703ce5714"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLERCONFIG_FILE = "SDL_GAMECONTROLLERCONFIG_FILE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7508) | 当前常量或枚举值：`"SDL_GAMECONTROLLERCONFIG_FILE"`。 | — |
-| <a id="api-6922534208878a3b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GAMECONTROLLERTYPE = "SDL_GAMECONTROLLERTYPE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7509) | 当前常量或枚举值：`"SDL_GAMECONTROLLERTYPE"`。 | — |
-| <a id="api-c6d13031a5c36998"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT = "SDL_GDK_TEXTINPUT_DEFAULT_TEXT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7513) | 当前常量或枚举值：`"SDL_GDK_TEXTINPUT_DEFAULT_TEXT"`。 | — |
-| <a id="api-7f2c3e66119558c8"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_DESCRIPTION = "SDL_GDK_TEXTINPUT_DESCRIPTION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7514) | 当前常量或枚举值：`"SDL_GDK_TEXTINPUT_DESCRIPTION"`。 | — |
-| <a id="api-bd2d788ac254a323"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH = "SDL_GDK_TEXTINPUT_MAX_LENGTH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7515) | 当前常量或枚举值：`"SDL_GDK_TEXTINPUT_MAX_LENGTH"`。 | — |
-| <a id="api-40d2e80a55a34302"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_SCOPE = "SDL_GDK_TEXTINPUT_SCOPE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7516) | 当前常量或枚举值：`"SDL_GDK_TEXTINPUT_SCOPE"`。 | — |
-| <a id="api-17c4e81fe43ff3f7"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GDK_TEXTINPUT_TITLE = "SDL_GDK_TEXTINPUT_TITLE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7517) | 当前常量或枚举值：`"SDL_GDK_TEXTINPUT_TITLE"`。 | — |
-| <a id="api-0ae85e4ecd10c3fb"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_GPU_DRIVER = "SDL_GPU_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7522) | 当前常量或枚举值：`"SDL_GPU_DRIVER"`。 | — |
-| <a id="api-cb1f11790fa8e26c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS = "SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7524) | 当前常量或枚举值：`"SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS"`。 | — |
-| <a id="api-e0f6ceb315d53568"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_IGNORE_DEVICES = "SDL_HIDAPI_IGNORE_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7525) | 当前常量或枚举值：`"SDL_HIDAPI_IGNORE_DEVICES"`。 | — |
-| <a id="api-16dee58b6b52cc7f"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_LIBUSB = "SDL_HIDAPI_LIBUSB"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7518) | 当前常量或枚举值：`"SDL_HIDAPI_LIBUSB"`。 | — |
-| <a id="api-661a4c6daf7aeef7"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_LIBUSB_GAMECUBE = "SDL_HIDAPI_LIBUSB_GAMECUBE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7519) | 当前常量或枚举值：`"SDL_HIDAPI_LIBUSB_GAMECUBE"`。 | — |
-| <a id="api-e2c7b379862319ac"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_LIBUSB_WHITELIST = "SDL_HIDAPI_LIBUSB_WHITELIST"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7520) | 当前常量或枚举值：`"SDL_HIDAPI_LIBUSB_WHITELIST"`。 | — |
-| <a id="api-51b44438b753e749"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_HIDAPI_UDEV = "SDL_HIDAPI_UDEV"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7521) | 当前常量或枚举值：`"SDL_HIDAPI_UDEV"`。 | — |
-| <a id="api-e86de5cc4705fd9c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_IME_IMPLEMENTED_UI = "SDL_IME_IMPLEMENTED_UI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7526) | 当前常量或枚举值：`"SDL_IME_IMPLEMENTED_UI"`。 | — |
-| <a id="api-923594903ae591b5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_INVALID_PARAM_CHECKS = "SDL_INVALID_PARAM_CHECKS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7498) | 当前常量或枚举值：`"SDL_INVALID_PARAM_CHECKS"`。 | — |
-| <a id="api-c92404894cf68453"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_IOS_HIDE_HOME_INDICATOR = "SDL_IOS_HIDE_HOME_INDICATOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7527) | 当前常量或枚举值：`"SDL_IOS_HIDE_HOME_INDICATOR"`。 | — |
-| <a id="api-81b7cc8b7a3ff6e0"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS = "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7528) | 当前常量或枚举值：`"SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"`。 | — |
-| <a id="api-0318947ef6495aa6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES = "SDL_JOYSTICK_ARCADESTICK_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7529) | 当前常量或枚举值：`"SDL_JOYSTICK_ARCADESTICK_DEVICES"`。 | — |
-| <a id="api-f40ffc4bd7f48026"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED = "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7530) | 当前常量或枚举值：`"SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"`。 | — |
-| <a id="api-2fa7b5830678e749"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES = "SDL_JOYSTICK_BLACKLIST_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7531) | 当前常量或枚举值：`"SDL_JOYSTICK_BLACKLIST_DEVICES"`。 | — |
-| <a id="api-6c0aa7d55b924823"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED = "SDL_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7532) | 当前常量或枚举值：`"SDL_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED"`。 | — |
-| <a id="api-bee1f718f635eb41"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_DEVICE = "SDL_JOYSTICK_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7533) | 当前常量或枚举值：`"SDL_JOYSTICK_DEVICE"`。 | — |
-| <a id="api-3530ccb585e94140"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_DIRECTINPUT = "SDL_JOYSTICK_DIRECTINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7495) | 当前常量或枚举值：`"SDL_JOYSTICK_DIRECTINPUT"`。 | — |
-| <a id="api-a7ada999aa9596ef"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ENHANCED_REPORTS = "SDL_JOYSTICK_ENHANCED_REPORTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7534) | 当前常量或枚举值：`"SDL_JOYSTICK_ENHANCED_REPORTS"`。 | — |
-| <a id="api-28e9899c51227f16"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES = "SDL_JOYSTICK_FLIGHTSTICK_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7535) | 当前常量或枚举值：`"SDL_JOYSTICK_FLIGHTSTICK_DEVICES"`。 | — |
-| <a id="api-586f311abcaf950a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED = "SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7536) | 当前常量或枚举值：`"SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"`。 | — |
-| <a id="api-f40a193e04cc1f81"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES = "SDL_JOYSTICK_GAMECUBE_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7538) | 当前常量或枚举值：`"SDL_JOYSTICK_GAMECUBE_DEVICES"`。 | — |
-| <a id="api-799f36b2c2b64012"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED = "SDL_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7539) | 当前常量或枚举值：`"SDL_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED"`。 | — |
-| <a id="api-006ca8be1156a400"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_GAMEINPUT = "SDL_JOYSTICK_GAMEINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7537) | 当前常量或枚举值：`"SDL_JOYSTICK_GAMEINPUT"`。 | — |
-| <a id="api-e3a4f468e14ba437"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HAPTIC_AXES = "SDL_JOYSTICK_HAPTIC_AXES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7597) | 当前常量或枚举值：`"SDL_JOYSTICK_HAPTIC_AXES"`。 | — |
-| <a id="api-519257c00c52c362"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI = "SDL_JOYSTICK_HIDAPI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7540) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI"`。 | — |
-| <a id="api-076a5292f90e62d2"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_8BITDO = "SDL_JOYSTICK_HIDAPI_8BITDO"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7561) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_8BITDO"`。 | — |
-| <a id="api-eaaa542188358bcc"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS = "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7541) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"`。 | — |
-| <a id="api-fe13e9fc27f754c0"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI = "SDL_JOYSTICK_HIDAPI_FLYDIGI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7564) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_FLYDIGI"`。 | — |
-| <a id="api-f134e7c5fceae57e"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE = "SDL_JOYSTICK_HIDAPI_GAMECUBE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7542) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_GAMECUBE"`。 | — |
-| <a id="api-aee0880599867916"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE = "SDL_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7543) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE"`。 | — |
-| <a id="api-2658bfafcaf0cb0a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GAMESIR = "SDL_JOYSTICK_HIDAPI_GAMESIR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7565) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_GAMESIR"`。 | — |
-| <a id="api-70fcbfe610577bf1"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GIP = "SDL_JOYSTICK_HIDAPI_GIP"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7579) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_GIP"`。 | — |
-| <a id="api-288f05891f6fa48b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA = "SDL_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7580) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA"`。 | — |
-| <a id="api-8c78a75a536ccc1a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS = "SDL_JOYSTICK_HIDAPI_JOY_CONS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7544) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_JOY_CONS"`。 | — |
-| <a id="api-743fdf1a246510ca"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED = "SDL_JOYSTICK_HIDAPI_JOYCON_HOME_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7545) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_JOYCON_HOME_LED"`。 | — |
-| <a id="api-e0ae89367073fbf0"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_LG4FF = "SDL_JOYSTICK_HIDAPI_LG4FF"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7560) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_LG4FF"`。 | — |
-| <a id="api-0e4bb634d6cbbdfc"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_LUNA = "SDL_JOYSTICK_HIDAPI_LUNA"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7546) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_LUNA"`。 | — |
-| <a id="api-68b60c01183d7a13"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC = "SDL_JOYSTICK_HIDAPI_NINTENDO_CLASSIC"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7547) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_NINTENDO_CLASSIC"`。 | — |
-| <a id="api-2008a257faf2d1d4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS3 = "SDL_JOYSTICK_HIDAPI_PS3"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7548) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_PS3"`。 | — |
-| <a id="api-3099bae4efcc7e72"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER = "SDL_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7549) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER"`。 | — |
-| <a id="api-4024f1eb608e2891"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS4 = "SDL_JOYSTICK_HIDAPI_PS4"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7550) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_PS4"`。 | — |
-| <a id="api-46636f8d59c8ab19"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL = "SDL_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7551) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL"`。 | — |
-| <a id="api-e6481319fd166022"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS5 = "SDL_JOYSTICK_HIDAPI_PS5"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7552) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_PS5"`。 | — |
-| <a id="api-cc723cff695618af"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED = "SDL_JOYSTICK_HIDAPI_PS5_PLAYER_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7553) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_PS5_PLAYER_LED"`。 | — |
-| <a id="api-c986f9868df90a39"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SHIELD = "SDL_JOYSTICK_HIDAPI_SHIELD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7554) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_SHIELD"`。 | — |
-| <a id="api-b49b011e1310ecf6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SINPUT = "SDL_JOYSTICK_HIDAPI_SINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7562) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_SINPUT"`。 | — |
-| <a id="api-ba814637799ef08c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STADIA = "SDL_JOYSTICK_HIDAPI_STADIA"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7555) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_STADIA"`。 | — |
-| <a id="api-fc3a094b7ec4e802"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAM = "SDL_JOYSTICK_HIDAPI_STEAM"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7556) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_STEAM"`。 | — |
-| <a id="api-03564b554474f1a6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAM_HOME_LED = "SDL_JOYSTICK_HIDAPI_STEAM_HOME_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7557) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_STEAM_HOME_LED"`。 | — |
-| <a id="api-522cbf098a5682a9"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAM_HORI = "SDL_JOYSTICK_HIDAPI_STEAM_HORI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7559) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_STEAM_HORI"`。 | — |
-| <a id="api-cf7b21b13d8a2494"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK = "SDL_JOYSTICK_HIDAPI_STEAMDECK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7558) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_STEAMDECK"`。 | — |
-| <a id="api-60840de9db544f6c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH = "SDL_JOYSTICK_HIDAPI_SWITCH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7566) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_SWITCH"`。 | — |
-| <a id="api-4f6784a272956ec7"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED = "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7567) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"`。 | — |
-| <a id="api-38cb4f8d281d6b08"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED = "SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7568) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"`。 | — |
-| <a id="api-ba99ed3fc000016c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_SWITCH2 = "SDL_JOYSTICK_HIDAPI_SWITCH2"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7569) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_SWITCH2"`。 | — |
-| <a id="api-7a7f40433a3d0212"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS = "SDL_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7570) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS"`。 | — |
-| <a id="api-62607efdbca515dd"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_WII = "SDL_JOYSTICK_HIDAPI_WII"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7571) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_WII"`。 | — |
-| <a id="api-11bfeabcbf94790d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED = "SDL_JOYSTICK_HIDAPI_WII_PLAYER_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7572) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_WII_PLAYER_LED"`。 | — |
-| <a id="api-683ed9eb585c0d05"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX = "SDL_JOYSTICK_HIDAPI_XBOX"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7573) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_XBOX"`。 | — |
-| <a id="api-9619470d9941ad96"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_360 = "SDL_JOYSTICK_HIDAPI_XBOX_360"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7574) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_XBOX_360"`。 | — |
-| <a id="api-235be056ad1e8cec"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED = "SDL_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7575) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED"`。 | — |
-| <a id="api-7a620c739bb29c76"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS = "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7576) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"`。 | — |
-| <a id="api-0a1e8531942db871"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE = "SDL_JOYSTICK_HIDAPI_XBOX_ONE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7577) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_XBOX_ONE"`。 | — |
-| <a id="api-cba91756e8eb2707"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED = "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7578) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"`。 | — |
-| <a id="api-2fd167d678fb078e"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_HIDAPI_ZUIKI = "SDL_JOYSTICK_HIDAPI_ZUIKI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7563) | 当前常量或枚举值：`"SDL_JOYSTICK_HIDAPI_ZUIKI"`。 | — |
-| <a id="api-762b9f52d2ccd35d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_IOKIT = "SDL_JOYSTICK_IOKIT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7581) | 当前常量或枚举值：`"SDL_JOYSTICK_IOKIT"`。 | — |
-| <a id="api-b7a0502d5bd53373"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_CLASSIC = "SDL_JOYSTICK_LINUX_CLASSIC"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7582) | 当前常量或枚举值：`"SDL_JOYSTICK_LINUX_CLASSIC"`。 | — |
-| <a id="api-b87b16f132425a70"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_DEADZONES = "SDL_JOYSTICK_LINUX_DEADZONES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7583) | 当前常量或枚举值：`"SDL_JOYSTICK_LINUX_DEADZONES"`。 | — |
-| <a id="api-513705e428d8fcd5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_DIGITAL_HATS = "SDL_JOYSTICK_LINUX_DIGITAL_HATS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7584) | 当前常量或枚举值：`"SDL_JOYSTICK_LINUX_DIGITAL_HATS"`。 | — |
-| <a id="api-9c4f0ddf22712fc6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES = "SDL_JOYSTICK_LINUX_HAT_DEADZONES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7585) | 当前常量或枚举值：`"SDL_JOYSTICK_LINUX_HAT_DEADZONES"`。 | — |
-| <a id="api-e83945785a4d92db"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_MFI = "SDL_JOYSTICK_MFI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7586) | 当前常量或枚举值：`"SDL_JOYSTICK_MFI"`。 | — |
-| <a id="api-c786e0ea12d80d04"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_RAWINPUT = "SDL_JOYSTICK_RAWINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7587) | 当前常量或枚举值：`"SDL_JOYSTICK_RAWINPUT"`。 | — |
-| <a id="api-a6639639e0948cfa"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT = "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7588) | 当前常量或枚举值：`"SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"`。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDL</code> · 181–360</summary>
-
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ROG_CHAKRAM 9523d8faccde2b3a4db4a775e9e225baff2581700a3a2693f0ff70326e87f8cf -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_THREAD cd54e49c323dcdc7af61db5d730fd24cf8d7d7d686be329d38c934ba7cf51360 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_THROTTLE_DEVICES c9fe36bdd7d28af7d27f7f435954f75f6de3c55273f561a3ad3e4b077431d6fa -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED 6f4bbc67fbbf3ba64b920859be56b251842910481a790c344e9b94e4162efca6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_WGI 41d5a185fa2ea8a9fe31e1d815adcb27395effdcae8476ab57b01475585a5f72 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_WHEEL_DEVICES 672611f618dfef1a60e944a579dd37355aa0f1749bab192482fe8e86ad8e8af0 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_WHEEL_DEVICES_EXCLUDED 3a95562885901b47f719fdd4d0fdb733c77ba0ae68c846bb783d88120f0cd07f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES 438ca19aa449018192ad327584151040be4325e226ebe06b49cee6c1fc22de47 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_KEYCODE_OPTIONS 6642c444f1452dd6383253fd5987d0f3c93ea2ae42b98755c361ebff10010318 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_KMSDRM_ATOMIC fa63faa4daa23b049fab46a88abb7ae0db72a7e5c67d48d8229312e62d6d7f59 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_KMSDRM_DEVICE_INDEX 533c3e410b84d432b64640ee360cba1dace903728372faed6c60d605c574805b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER 9e18c748c354c189b3b4779495e6e607dba1c69e1b27a06bf2ed26197382fbc9 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_LOGGING 370a0b645c11d8923a7d11006de1cb4defa7e91f863d8bf723081ba393f7e028 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MAC_BACKGROUND_APP 1b24004ee5ac73e97435bb9f14186d9a53c1a4987cd0d16a7c4969eacf5d3ddb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK 5f5e2f1112607f7979eea7fccc2affc4969fa141810a1967580b837e9ce9e986 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH 76512644c3aa3cb47b223c95d9545a430655d67f5bd52cdf5345cb54cb8b452b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MAC_OPTION_AS_ALT a064fbb7fbc3bd4760c0a38b73e1d81237848039f2c3f887c28503ef115832a9 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MAC_PRESS_AND_HOLD 94a9821535fe3ff341cbd7d093a62e9cd859d7372b412e939ad1c9336884d192 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MAC_SCROLL_MOMENTUM 65be4aabc55e6ac08acd97ffbb0af7e224e6ad1476cc67238c37f2c58d8d5a43 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MAIN_CALLBACK_RATE 2c8c5db15bed023eb9c5add3ff83fba11047696494af44bb920da45002f3523e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_AUTO_CAPTURE eed5153708ecafef38e2346a15b1661a8bea2c24cc6abf9a5bf97ce9750943e0 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR 3d9b98ae14ab2bdb728eab91b81b77984abe8001b60d7e5ea04e6ec7f8085f9f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS 66580ab10105d99edb5a01c42cbcd62e3a01e0dd07ab27c9816a755c05b60b43 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DOUBLE_CLICK_TIME ba76dd67679b7aab7cce357c7ac1d46da17846fe7be420c195ca72e0632bc350 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DPI_SCALE_CURSORS bd14431802648f8db5962d2b98d40fa74969c6dc9acf4beee6860069fc7ec802 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE f105b305fbc26dbc822e55dccf239cdac9bf696fc8a527496d9f0f0aafa51253 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH 69beca912d89a6340585980336b601e69ba597a9b07141ddbc38f90080d68410 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_NORMAL_SPEED_SCALE e3f8973a6011b987cfb9d2fbddb08db8f76dbba46dbe2f4f89914cb6e7489014 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE b2843f27f5d7d592e4f44590aba5ad62220fa1249218b53d1cea4c67eb91d91e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_MODE_CENTER 55d64204d2dfc72aee731d00724db4d166cd5845423e554b9c7479235aa4f046 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE 9d39782d936becd62df9e46e8fd12247e984861db892fe91ee68afed82cdf516 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE 6e48701398aae8e81bd7a42ee0b1520f83735c08561414fd99d9b98f3511aa38 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_WARP_MOTION 6d463b6b8392e21db9aac2a60160d330d0886ca486a9be738f9f1ab070bcbab6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_TOUCH_EVENTS 97961e428a621568eb32bfcd19900d4506c2998bbc9b463c34b5e1a5827d6d9f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_MUTE_CONSOLE_KEYBOARD 4373e5dee534282c7100e8d35c838a04e69b804e09607e0df1db943e43a1cc2b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_NO_SIGNAL_HANDLERS da05e1fce8f168ebbcc9157ed8af4e845c61ebaf7159f99679877084c40ef4aa -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_OPENGL_ES_DRIVER 5a7cb95082dfe3ef09903ea2013c3eacb7faaba5d9a246f35e267ea6492f80ce -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER 3237a86463448f64673350b31ad09b2c51daa5231eb7221c0fb1ef8022c3285f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_OPENGL_LIBRARY 7d214f2cbc4e11901a218c085367d19ec4264a926d7de9331845ced7f9394999 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_OPENVR_LIBRARY 406e8677122129e6bffe93e370eb619541d728000cfb3f3350b5058c85e54bc1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_OPENXR_LIBRARY 20a05f133d98ee63a512cfa7d4f0362e82d3b49ffe38bafb6e1d910ee1f6b120 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ORIENTATIONS 016c3ee56d96678ccec28da614f7c7a6053334dcdf69393a02161c9481ea4860 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_PEN_MOUSE_EVENTS 79ad5df3ab2cd566e37c8a332b17d16aa04cf2d95bcd206243f7c5f9afb1ed17 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_PEN_TOUCH_EVENTS 1cd8754cffa9bdf13e1d43519ec147d51b8151576ac176429d31203ac19949fd -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_POLL_SENTINEL 4a140e83dd73ac2aaa8123e02b5e169c3a62906c64dccb8c6213cd8628e0156a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_PREFERRED_LOCALES 40f338f6683a4c799605d7f923e4b4cc49356ef665f9cfe2db1130db393de0ee -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_HEIGHT 70c3d354a8dd9b27a1bae3d96497887ceec3de529000768fbcb97c00dce8399b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_MODE a68873002d92b5060dc5091b31fdc3917811cd80bd324006f548c22f7dc65b75 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_PROGRESSIVE b1204c83fe409a45afb8648003937658a904ad0b9acdcd5cfe88caf6a7c171fc -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_WIDTH b9eb4ed2b099f3eab9765b5c2377aa3ba25e231565f839750ac78be77a287f72 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE 20ea55fd001f25dd08b19469dbae03a8be29aecec867bdc804718034bfbf6a19 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DIRECT3D_THREADSAFE 40e5233ee5087a19fce840029c3a412ca3f649416c9d98dfc3cb126132810362 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DIRECT3D11_DEBUG 3383d1d13fc0e83eb621e19edb672bbb58d27ddd910e774e80004283f881cb23 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DIRECT3D11_WARP eb7b3f603f22081993b5247c740c2020a196156380df47fe05e0e7df80915132 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DRIVER 553a880ed8cf53d0e87722827a67c9d6b14b6933e7559f5bf12fea12aee84364 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_GPU_DEBUG 6e6935f4100a541bed6899e6dc98c7a35130988a90b997d2b8d862d8bbcc1661 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_GPU_LOW_POWER 974d1857123b2bb18d0f324a102b7bdf32a7720ff4565f87b36eab923be4f0e9 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_LINE_METHOD 45304c8023189d39dd53722efc30c8917e51ab626dd295862a041eff474ef5a8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE 2f0d01e5794622872f25019bcfe7e5d3cc2a6803bb8588e0acb9f1fb65f88ee6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_VSYNC 42d41ba8778c22a6d7ef7ef9d552298d55c939ee0075447758f77bcf93296baf -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_VULKAN_DEBUG 0c18a3bfce4283d7b1f5b40083b75f30ed9a575851b1d8dd12d1d84ea399df94 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RETURN_KEY_HIDES_IME b0360f07aa5cc50bf874683291bce9360f60f4886a2231072b4764fb08357e09 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ROG_GAMEPAD_MICE 5d75db1eed7e4f8333ee863a35022827cf8bb2d995eb6caab07e03dba9cb1140 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED f77f42921110a22086fef5afe824a04e6269fb9729ffd73b5133f0f555d54566 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_RPI_VIDEO_LAYER 587113c7fad360c79651aa721d0dd7756dc030a1ad9102287aea647aec7c2800 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME ee722033c9ca16552a94e2a8ada43a2630a7902f114a07e2d51a56100506f7df -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_SHUTDOWN_DBUS_ON_QUIT 934672ea3e6e3d64092407295611d8ce4c47eb645c9e7449bb2f269ea0224633 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_STORAGE_TITLE_DRIVER 16499e0fd39a2425391178cf3647ccb6c2f727b442481c74f4941e7970a18f12 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_STORAGE_USER_DRIVER 4db36888d48acbc6bbcf53ea43ba653e581145f2145dab935b688b1ef5cc0321 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL 462789f998427c37f7326d714e4135625d005ade39d1deb5eecc807697474437 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_THREAD_PRIORITY_POLICY 55c50479e33005d7b72ddf31ac5d613db9302b448030de41ff7098ae2630e7e5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_TIMER_RESOLUTION ae243d09e14ac441e4765907fad1ea6e990aea1fc41050f6f012be8cdc9fd377 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_TOUCH_MOUSE_EVENTS 28f02ad16c206158ab4d09a25179bd50f045828a766e40e97b42f4e873611dc6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_TRACKPAD_IS_TOUCH_ONLY 19e9e64516e8674640559378103b562bb7ec07bc34617177fabedc60c1cf79d2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_TV_REMOTE_AS_JOYSTICK 70f6c403f1dec7e931de2d74806e2404999e08988b88a502500c469fe5649e6d -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_ALLOW_SCREENSAVER e0653e557cb6062de144dad29805deca62fb1fd14c89e854731d6501ec4efdb2 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DISPLAY_PRIORITY 9e3cd1da39f1569d9b597584d261633fb262d162b865bfd0f52f0abb8ef89d3f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DOUBLE_BUFFER d83d532839bd1ece6edb955c3e759bf2651d4d9ce3c129f97bc43b54f1094c6c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DRIVER 5aaf5604a089d04cc2aad1cb465b999782ee8020c67184d7f3007cd8faee64e8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DUMMY_SAVE_FRAMES 35f51a7032a5b558dbd52be25f43436fc2f7b8260850b71360541da80bc9f9ac -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK 54e8f7cc3e953c7be1686796e3e223699ec1dd9ecf9f6b912a7675975eb485f3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_FORCE_EGL 1a685a006469030b93900c11f8c0e6e7c46cea06ae65fd8877d0599a99303fbe -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY 73a180a4bdf19bfa19a82b9231c240df03e684c41a65d1e3639fa2a1ea40705c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES 6dcbdca3d78f7145ddfd14ee3f015df70e227baf4c84d5c0e83725b11cec9ded -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE 47e5db643cfb09d5ee425d85100dd63618cafdd6430c4129c2afead8afb38064 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE 0bed0646cf9c46459f43be36e0a18278eeec37ba88e2e6611522d8668b6d1a2c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS dd117f878a5ab8575fecea7d94ab706082bd9055b6125b4f535d79ea0f36439e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_OFFSCREEN_SAVE_FRAMES e09797a10f5192a6cfa27c865ea64438be6b5ac938ba88e2418e2bad8107f9da -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS 6a9fbcb3dbd781d6949aebfbcaef295e74d8f611dc49a8b4ca8d33a495692216 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR cfcb729afe333e2e37c7271a1cfdf7586ace89b5db6c9579aa745ac961e74c16 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION 81c59eb23b5220eb6163dac9390c77847f0370b6a3969467af0717ca59ab8fab -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_MODE_SCALING ee37b64b41766d6402780b6f7a086388ae7424e7c80d0fe8ce16122a6ffcd186 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR 028ff69056f0c12a35639b0846de7b809fc8e80b6b9f7dbcbad095b0e69319d7 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY 138ef59305a1693f8830479f0096b9c312258aba5006fd4f52f5cc0585bec821 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WIN_D3DCOMPILER 3930d3381b1269a891bd6b5c9d263858885d4212c51510f8962f2c50c0bbb172 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT 666af5c6eeca49395641dae7be98bfae19af12ec98bbb5913a4331da9a62bad3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR e795d4cc74bb37fba4e223bd51a9cc43440ca6f56f2d2053257aa41cea47532a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_NET_WM_PING 0dddcbd83b99de31019e12a753eb04e02c4c39dc79c1b3454c0d6a9f62d79938 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_NODIRECTCOLOR 842a891c3d73ccb167a8b685a48358462d4951da0333f6852c8356e15e823ac0 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_SCALING_FACTOR b38bf141e540951b1247a39e2574536d418cec3dd200ce04efa8e6b2eb5b83d5 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_VISUALID db5e3544e713d53d22db19e624c5fc2d057882c75ce780ffb61f6aa8233999e6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_WINDOW_VISUALID f7a34e8df104c8c4e90322f501b55863da6a8bba333028932134626757c4204c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_XRANDR d89f9f1f04811a3729e56d6ab1dbaec121460bda8dac20a85b9da6b93063b69f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VITA_ENABLE_BACK_TOUCH 05b436164910a363bc6b0637b86a8346508da069c2523a62d222ca9cb785b428 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VITA_ENABLE_FRONT_TOUCH fb4c2561dbf2222fecc4ab44e4732ad05ca304b6ed254fc9cfd56888c7bd68a6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VITA_MODULE_PATH 29c9252d36b8e13a87f94479971030a45ad2b50314a33aa136a012ac03fb8341 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VITA_PVR_INIT ec7bb8df39e4ab1b1551b01d7fdf574753b5bbe4ef16a62b37c9783182223d96 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VITA_PVR_OPENGL 24fce33e6e3342064b21740a1e32ae1a746fbcb7b4394d6e7a7f2c5018935be8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VITA_RESOLUTION 1cef17bbc69379d6b5b71721766e83d8a2a0add3c189fc500d3e885487897f17 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VITA_TOUCH_MOUSE_DEVICE 3202ed9d5326693c3f69f36976289b40a36400f8d02458c9628b9050a775ce2c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VULKAN_DISPLAY a8754154f17c2a0e88976b6ec25b1bb1c06fa024b99e7cef1e3aebbbd2f64ecf -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_VULKAN_LIBRARY 5ee85ae7e3683daaae633cec83f4bb41f6a43f4ff350caa28e3b3fac712f9802 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_CHUNK_LIMIT bc57b2eaf99187adb0c39d4d156efc40c920ed9d53fdda76194b2412a05f5c87 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_FACT_CHUNK 1e1cff4cc728c20ce52493803b22c38ec15bd9594fce96fdfd6187b99e85fcf1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_RIFF_CHUNK_SIZE 68b055c16a6e6190902326a650ef40310a6d67b2b4c21a4630bfca9e81b8f942 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_TRUNCATION 103e0e93c1442d2fbf8c9f29fa7cf5b03c29cdf42abb87c887e825f1d3282d6b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED 840d0ef25a5912856b10dc2e3f5bd76e642dc8bf31354edcb8254c750471b98c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN 143d4d324957139bc3f9cb345654cb85bf8ad5659404b67e0f8ee41f430c3dfb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_ALLOW_TOPMOST 1dd079744269a525085fee3f6cdcd41eac3f024fd4149b5ffc8627c88eb52f76 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN cf42f8448c69d73effba71379a14309b2332b53eb8ecaaa6d38dca5591840f62 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4 e55441a8a122bcd74c12b7c24cf10b60156ba4c019bd87c4830971435368cc30 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS 38b8227eea2210087352d2a981c5324ee0bb67b08789be58bdbd126080834b55 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP 1c6b6855e215962d2b7b51e922d286e07b3c76311458f32e27b21aa9f5ae88ab -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE 46e5f5afa94244925d2a6e264862500e675c3c7468b7a72fe3c2f35e92e61848 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL 18ce4bb1e0e2e756db08b1e55ee6fb9d30ec8b28c2ea0b67a877275e334cf3c8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_GAMEINPUT 77022403fe5df71a246a1d7021366793d801bc1bf95f45d15cd54304be7f33d6 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_INTRESOURCE_ICON db46b1f6497edabbfb0b0e1415f88841593c6a6598fa1ddb7d0863caf9f4a7ba -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL ff104cc694707801c1b4fbbc40082806cff31d9600ea539eb4db8314c93ae575 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_RAW_KEYBOARD 1c0a7b8b938a194f8561f9ecee7a4286c0417497ffe82a5f8a460ac62779571a -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS 48d04c4d6c7daa52be31bd225b27918e4317b8eee0f7908b55b357dba108b767 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK cd420b6d2c09e59de848ca1c5390c42b95a384d0b6473e9a3fa82ac8a50003b7 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_USE_D3D9EX 2c01428709bf6dd3c5b25a8ac078724cd60df4e9d2792155d31e477491db5917 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT 9d8abf6ac66b15e746568666ec973fdb0f2a6d9fa99573c709ade808bc4ed497 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_X11_WINDOW_TYPE db6e8dcc4589671aea6ab61aa66e5ea1af084633d8a10e864c25568c3319b0fd -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_X11_XCB_LIBRARY b1085982788979c8ba02ea66d0e4206c394174fead6ef54dad984dc3df9cc421 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_HINT_XINPUT_ENABLED f962b1e0326ce7167e9cd44b41bdff1619582b9492488b0e961beb962e81b304 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_AUDIO 85251909b83edec171293dcee9ec772ac3a8dadf143e3186c93e3b719d4c8251 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_CAMERA 3c96b00e12e4eee8833a8ea3637a8792cb527b9fca14e4edde25b9dfc5c59cbc -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_EVENTS 84be62e8762fdba6c2b8a75ce63536bb102636f64890b6c99979319252dd0f17 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_GAMEPAD a4033443ad0d09b595bd2ae9146808112f5dd187cd7080b2f473ba1e221c9c74 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_HAPTIC 094827e37b6820ff223cae1d8088e2e25d5aba7f757f678c16e1d543b4cc01eb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_JOYSTICK 9eb1c0ff55a183011312a53edacd1283736b0a77b66cdf602d1b0982d52e40da -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_SENSOR 56edae64ba732acbf3e9d6f0f1a5a31acf4ff80d7183fcc784e17e626e29bbd1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INIT_VIDEO 708b3779cea6d9c555b57fde801cdecd91c77c19e7e23ac9e4f2fc288560a6f8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_INVALID_UNICODE_CODEPOINT 4242fdb6b9bc8117c78255df50c9f00a909eed691c3f6d53a8d26d5ce45c43cf -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_JOYSTICK_AXIS_MAX 7ecf3b68fa550e98093f38be214f1f53aa9f354187498e3133c0dd1281c65ed9 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_JOYSTICK_AXIS_MIN 3853835ac2432a2056db8be4406b4dd5724fc06ec143c4db61d5ec8793239347 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_CAPS 6b71963a70415e9107a84528ce1a8fd625d4b90a89bb2353f962f342b66aed9b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_LALT 271e8630e4a33bdb07711e47cf52590d62c4b6d8838bb603ba4ce77e3bb06904 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_LCTRL bf04fd168e0a8f48ef4142abca68575763935fdff66a85c7189a8828d0480cb3 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_LEVEL5 6f9f9633804455a9b4af68eba0eef182ceea2a2ee537159fd76f26795c1a885e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_LGUI 00f14ce805e145b79d2cb9d31e43898981657630d270951765305377fee5f0ca -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_LSHIFT a4996e9558f18f42a84f5003a3acf744c13e8973d4f501492850364f16fbd8d4 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_MODE dee006fb5715591314bb5482f66f7a3194fee8d5dc3ff210f9fe88785e46f3eb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_NONE a3eeeff3535ad589792f96457db7622d24d10c40275ba2149e7534f34821c027 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_NUM 7a220128cbeedeb0a20f8759ca90ee82b12ad2f83ef58f343541de82cf662a70 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_RALT a0020a79e5f6c343b79248bc3aae6fe6a86d7d71dd1cdfc6440a5bea75433a9f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_RCTRL 2231807ca72b4ea21177e8d40d83b3aaba6045ce3af29aeb57cc07cd0f6cf7bf -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_RGUI 64968cf1d886ca62f92328783cec02c42b0befdcd669dc2b6eabced6f8df8e39 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_RSHIFT 4f6aea1de13b50e500b3fbc289ce426054a3d90d16b204f7b79c7e5464752825 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_KMOD_SCROLL 9252c8ab166f36bd93d558e33230bea1c55b55f7460ea0c924eff962af059db8 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_LIL_ENDIAN 96367f7947e450a5acd475fab32991a985a2f3067d2fc83cbe9b31581c223931 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MAJOR_VERSION ee6cbb65710566242ef26eee119863d0f0da4b02129a1a56e9994c9af8a3d29c -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT a34202794c71c9a5c884568639ba90022fcca3f2af45201728190bf4be693a2f -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT d2122cbe13481257a47c6a2fabc1746bf8cdb10a4b6de7bc36f5a0f0e3f3d9ec -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT ef1a5c16d9f568ca01a15db601cb7f8c8219b7ee8a035398a2b58253daed1dc1 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT a1937f1dc5554ef702308301c43b3d40746c690e85a24176629ec942f29700f7 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_ERROR f2a98752a385d91bcad68a5c27ad72e5555375c3ed8c03d4304b4394f8e0d16e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_INFORMATION 4634286a9cba51e917c64237339e348c605f4aee2749cb0753ce495e37b50e12 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_WARNING c200f582de52dbfdbec055f5105703c4f07abfa897add340cfc108d94d068aec -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MICRO_VERSION 3f5026f7335e306aa8a9774358fca9adbda229262ba4430c451defa4ab9c576b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MINOR_VERSION 135c85588eb0f7c47b6c8e58b1ee513111629178b9249350b13beb34d87b06e7 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_MS_PER_SECOND 797d3b11b47ad7743bf91f0867e86a7c0a13923bbc03a0d7d11afc27855f043e -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_NS_PER_MS 18a00bc0f61f85c5a0f0d1f7ba1ff783fe6064084117e13521ee0cd87f74ba17 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_NS_PER_US 3ef689ada03be9ac7023c8cb2fc04bf5ec49f690a215ceaa72e2a6a3ebe61568 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_PI_D c96ab4aa36f51602db6298b6850e7f8e8ec6c3d32927f030090bc6ae63af7d0b -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_PI_F 8d4d18ed6ea11f275bd62a0bce13bb28a3b6347fc8be76fed43bac8543313152 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_PLATFORM_WIN32 87aa33c21d11b14bf1a9db117080571fde0046b1ec108af64d2f31a013bf6957 -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_PLATFORM_WINDOWS e189c543d2ab03fc6e1ba3aed0e6d33488cf9413acff92a208ebc67cd72482bb -->
-<!-- api: F:Inno.Native.Sdl3.SDL.SDL_PRILL_PREFIX f4552d196b629ef90491158d25fc08ebf5342bf23c03d2f6fdff0aacb3fe0682 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-1567f9e92a374a04"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ROG_CHAKRAM = "SDL_JOYSTICK_ROG_CHAKRAM"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7589) | 当前常量或枚举值：`"SDL_JOYSTICK_ROG_CHAKRAM"`。 | — |
-| <a id="api-de0f8114da122676"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_THREAD = "SDL_JOYSTICK_THREAD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7590) | 当前常量或枚举值：`"SDL_JOYSTICK_THREAD"`。 | — |
-| <a id="api-404576d641d29ba0"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_THROTTLE_DEVICES = "SDL_JOYSTICK_THROTTLE_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7591) | 当前常量或枚举值：`"SDL_JOYSTICK_THROTTLE_DEVICES"`。 | — |
-| <a id="api-26396b0616d986db"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED = "SDL_JOYSTICK_THROTTLE_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7592) | 当前常量或枚举值：`"SDL_JOYSTICK_THROTTLE_DEVICES_EXCLUDED"`。 | — |
-| <a id="api-f99f1696907db68a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_WGI = "SDL_JOYSTICK_WGI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7593) | 当前常量或枚举值：`"SDL_JOYSTICK_WGI"`。 | — |
-| <a id="api-026fb8eb637c2cf6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_WHEEL_DEVICES = "SDL_JOYSTICK_WHEEL_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7594) | 当前常量或枚举值：`"SDL_JOYSTICK_WHEEL_DEVICES"`。 | — |
-| <a id="api-cf8d8d2820e93c58"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_WHEEL_DEVICES_EXCLUDED = "SDL_JOYSTICK_WHEEL_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7595) | 当前常量或枚举值：`"SDL_JOYSTICK_WHEEL_DEVICES_EXCLUDED"`。 | — |
-| <a id="api-c0253339eed0fb59"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES = "SDL_JOYSTICK_ZERO_CENTERED_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7596) | 当前常量或枚举值：`"SDL_JOYSTICK_ZERO_CENTERED_DEVICES"`。 | — |
-| <a id="api-a624e070adc75502"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_KEYCODE_OPTIONS = "SDL_KEYCODE_OPTIONS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7598) | 当前常量或枚举值：`"SDL_KEYCODE_OPTIONS"`。 | — |
-| <a id="api-40a5953436919366"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_KMSDRM_ATOMIC = "SDL_KMSDRM_ATOMIC"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7601) | 当前常量或枚举值：`"SDL_KMSDRM_ATOMIC"`。 | — |
-| <a id="api-17fc561ad608f89c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_KMSDRM_DEVICE_INDEX = "SDL_KMSDRM_DEVICE_INDEX"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7599) | 当前常量或枚举值：`"SDL_KMSDRM_DEVICE_INDEX"`。 | — |
-| <a id="api-0c51519500ff9698"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_KMSDRM_REQUIRE_DRM_MASTER = "SDL_KMSDRM_REQUIRE_DRM_MASTER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7600) | 当前常量或枚举值：`"SDL_KMSDRM_REQUIRE_DRM_MASTER"`。 | — |
-| <a id="api-31398eaf829619f1"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_LOGGING = "SDL_LOGGING"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7602) | 当前常量或枚举值：`"SDL_LOGGING"`。 | — |
-| <a id="api-3b31d4212ca7002d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MAC_BACKGROUND_APP = "SDL_MAC_BACKGROUND_APP"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7603) | 当前常量或枚举值：`"SDL_MAC_BACKGROUND_APP"`。 | — |
-| <a id="api-ec4fc56edeb06690"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK = "SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7604) | 当前常量或枚举值：`"SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"`。 | — |
-| <a id="api-b8bec80b51f632fa"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH = "SDL_MAC_OPENGL_ASYNC_DISPATCH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7605) | 当前常量或枚举值：`"SDL_MAC_OPENGL_ASYNC_DISPATCH"`。 | — |
-| <a id="api-315ac611361204f2"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MAC_OPTION_AS_ALT = "SDL_MAC_OPTION_AS_ALT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7606) | 当前常量或枚举值：`"SDL_MAC_OPTION_AS_ALT"`。 | — |
-| <a id="api-f1dc2999c3f1b4c7"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MAC_PRESS_AND_HOLD = "SDL_MAC_PRESS_AND_HOLD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7608) | 当前常量或枚举值：`"SDL_MAC_PRESS_AND_HOLD"`。 | — |
-| <a id="api-4739cfce514cdc89"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MAC_SCROLL_MOMENTUM = "SDL_MAC_SCROLL_MOMENTUM"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7607) | 当前常量或枚举值：`"SDL_MAC_SCROLL_MOMENTUM"`。 | — |
-| <a id="api-21a08b1b98ae315e"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MAIN_CALLBACK_RATE = "SDL_MAIN_CALLBACK_RATE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7609) | 当前常量或枚举值：`"SDL_MAIN_CALLBACK_RATE"`。 | — |
-| <a id="api-9bbafd2ceccc462e"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_AUTO_CAPTURE = "SDL_MOUSE_AUTO_CAPTURE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7610) | 当前常量或枚举值：`"SDL_MOUSE_AUTO_CAPTURE"`。 | — |
-| <a id="api-3f37eef8211bfc7d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR = "SDL_MOUSE_DEFAULT_SYSTEM_CURSOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7613) | 当前常量或枚举值：`"SDL_MOUSE_DEFAULT_SYSTEM_CURSOR"`。 | — |
-| <a id="api-060b5b1dc9203b07"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS = "SDL_MOUSE_DOUBLE_CLICK_RADIUS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7611) | 当前常量或枚举值：`"SDL_MOUSE_DOUBLE_CLICK_RADIUS"`。 | — |
-| <a id="api-6a2c3fbf956936a6"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DOUBLE_CLICK_TIME = "SDL_MOUSE_DOUBLE_CLICK_TIME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7612) | 当前常量或枚举值：`"SDL_MOUSE_DOUBLE_CLICK_TIME"`。 | — |
-| <a id="api-2c8280b8718b2af5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_DPI_SCALE_CURSORS = "SDL_MOUSE_DPI_SCALE_CURSORS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7614) | 当前常量或枚举值：`"SDL_MOUSE_DPI_SCALE_CURSORS"`。 | — |
-| <a id="api-e4e190ef93c6b9ad"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE = "SDL_MOUSE_EMULATE_WARP_WITH_RELATIVE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7615) | 当前常量或枚举值：`"SDL_MOUSE_EMULATE_WARP_WITH_RELATIVE"`。 | — |
-| <a id="api-b1653e886f6723ae"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH = "SDL_MOUSE_FOCUS_CLICKTHROUGH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7616) | 当前常量或枚举值：`"SDL_MOUSE_FOCUS_CLICKTHROUGH"`。 | — |
-| <a id="api-e9c9054717ebd2f1"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_NORMAL_SPEED_SCALE = "SDL_MOUSE_NORMAL_SPEED_SCALE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7617) | 当前常量或枚举值：`"SDL_MOUSE_NORMAL_SPEED_SCALE"`。 | — |
-| <a id="api-e3a9910e997941a5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE = "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7622) | 当前常量或枚举值：`"SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"`。 | — |
-| <a id="api-68df9cd305f1b595"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_MODE_CENTER = "SDL_MOUSE_RELATIVE_MODE_CENTER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7618) | 当前常量或枚举值：`"SDL_MOUSE_RELATIVE_MODE_CENTER"`。 | — |
-| <a id="api-0d69dcfba9cf8830"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE = "SDL_MOUSE_RELATIVE_SPEED_SCALE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7619) | 当前常量或枚举值：`"SDL_MOUSE_RELATIVE_SPEED_SCALE"`。 | — |
-| <a id="api-e0789b48f67256db"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE = "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7620) | 当前常量或枚举值：`"SDL_MOUSE_RELATIVE_SYSTEM_SCALE"`。 | — |
-| <a id="api-a3f15fd00b688aa5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_RELATIVE_WARP_MOTION = "SDL_MOUSE_RELATIVE_WARP_MOTION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7621) | 当前常量或枚举值：`"SDL_MOUSE_RELATIVE_WARP_MOTION"`。 | — |
-| <a id="api-874b4c2e76eed444"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MOUSE_TOUCH_EVENTS = "SDL_MOUSE_TOUCH_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7623) | 当前常量或枚举值：`"SDL_MOUSE_TOUCH_EVENTS"`。 | — |
-| <a id="api-428ecb9939690fb2"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_MUTE_CONSOLE_KEYBOARD = "SDL_MUTE_CONSOLE_KEYBOARD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7624) | 当前常量或枚举值：`"SDL_MUTE_CONSOLE_KEYBOARD"`。 | — |
-| <a id="api-6d53c8536c81ebd0"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_NO_SIGNAL_HANDLERS = "SDL_NO_SIGNAL_HANDLERS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7625) | 当前常量或枚举值：`"SDL_NO_SIGNAL_HANDLERS"`。 | — |
-| <a id="api-54287004f62c2211"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_OPENGL_ES_DRIVER = "SDL_OPENGL_ES_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7628) | 当前常量或枚举值：`"SDL_OPENGL_ES_DRIVER"`。 | — |
-| <a id="api-dcb03f228019b0b4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER = "SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7629) | 当前常量或枚举值：`"SDL_OPENGL_FORCE_SRGB_FRAMEBUFFER"`。 | — |
-| <a id="api-31ab665f335d8915"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_OPENGL_LIBRARY = "SDL_OPENGL_LIBRARY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7626) | 当前常量或枚举值：`"SDL_OPENGL_LIBRARY"`。 | — |
-| <a id="api-6bf0dcfa63c9235d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_OPENVR_LIBRARY = "SDL_OPENVR_LIBRARY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7630) | 当前常量或枚举值：`"SDL_OPENVR_LIBRARY"`。 | — |
-| <a id="api-4c8571dd41b3b635"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_OPENXR_LIBRARY = "SDL_OPENXR_LIBRARY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7523) | 当前常量或枚举值：`"SDL_OPENXR_LIBRARY"`。 | — |
-| <a id="api-2b28a5f25cd66eac"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ORIENTATIONS = "SDL_ORIENTATIONS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7631) | 当前常量或枚举值：`"SDL_ORIENTATIONS"`。 | — |
-| <a id="api-d44f86b12cb5c1b8"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_PEN_MOUSE_EVENTS = "SDL_PEN_MOUSE_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7725) | 当前常量或枚举值：`"SDL_PEN_MOUSE_EVENTS"`。 | — |
-| <a id="api-7a60a16b345f62e7"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_PEN_TOUCH_EVENTS = "SDL_PEN_TOUCH_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7726) | 当前常量或枚举值：`"SDL_PEN_TOUCH_EVENTS"`。 | — |
-| <a id="api-29b9d6dafe195d8d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_POLL_SENTINEL = "SDL_POLL_SENTINEL"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7632) | 当前常量或枚举值：`"SDL_POLL_SENTINEL"`。 | — |
-| <a id="api-a1806c6ec2ff8e92"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_PREFERRED_LOCALES = "SDL_PREFERRED_LOCALES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7633) | 当前常量或枚举值：`"SDL_PREFERRED_LOCALES"`。 | — |
-| <a id="api-36ad46fa186f835f"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_HEIGHT = "SDL_PS2_GS_HEIGHT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7649) | 当前常量或枚举值：`"SDL_PS2_GS_HEIGHT"`。 | — |
-| <a id="api-ae9edbbb65035530"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_MODE = "SDL_PS2_GS_MODE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7651) | 当前常量或枚举值：`"SDL_PS2_GS_MODE"`。 | — |
-| <a id="api-eb1ed8d6d20c3af4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_PROGRESSIVE = "SDL_PS2_GS_PROGRESSIVE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7650) | 当前常量或枚举值：`"SDL_PS2_GS_PROGRESSIVE"`。 | — |
-| <a id="api-1222d6eb5db92bc3"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_PS2_GS_WIDTH = "SDL_PS2_GS_WIDTH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7648) | 当前常量或枚举值：`"SDL_PS2_GS_WIDTH"`。 | — |
-| <a id="api-100ed5f039c60017"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE = "SDL_QUIT_ON_LAST_WINDOW_CLOSE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7634) | 当前常量或枚举值：`"SDL_QUIT_ON_LAST_WINDOW_CLOSE"`。 | — |
-| <a id="api-639d729c28ad36b4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DIRECT3D_THREADSAFE = "SDL_RENDER_DIRECT3D_THREADSAFE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7635) | 当前常量或枚举值：`"SDL_RENDER_DIRECT3D_THREADSAFE"`。 | — |
-| <a id="api-4eade7d3b199a7fd"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DIRECT3D11_DEBUG = "SDL_RENDER_DIRECT3D11_DEBUG"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7636) | 当前常量或枚举值：`"SDL_RENDER_DIRECT3D11_DEBUG"`。 | — |
-| <a id="api-f4c7a13ca5ff0549"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DIRECT3D11_WARP = "SDL_RENDER_DIRECT3D11_WARP"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7637) | 当前常量或枚举值：`"SDL_RENDER_DIRECT3D11_WARP"`。 | — |
-| <a id="api-80e90813f01dc7d3"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_DRIVER = "SDL_RENDER_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7641) | 当前常量或枚举值：`"SDL_RENDER_DRIVER"`。 | — |
-| <a id="api-df4fbb1376c3499e"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_GPU_DEBUG = "SDL_RENDER_GPU_DEBUG"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7639) | 当前常量或枚举值：`"SDL_RENDER_GPU_DEBUG"`。 | — |
-| <a id="api-4a9a76d402dd46c5"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_GPU_LOW_POWER = "SDL_RENDER_GPU_LOW_POWER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7640) | 当前常量或枚举值：`"SDL_RENDER_GPU_LOW_POWER"`。 | — |
-| <a id="api-5cf161ade49a5daa"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_LINE_METHOD = "SDL_RENDER_LINE_METHOD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7642) | 当前常量或枚举值：`"SDL_RENDER_LINE_METHOD"`。 | — |
-| <a id="api-e15ccf8efd94c5e1"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE = "SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7643) | 当前常量或枚举值：`"SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"`。 | — |
-| <a id="api-91d8ed573de5d1de"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_VSYNC = "SDL_RENDER_VSYNC"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7644) | 当前常量或枚举值：`"SDL_RENDER_VSYNC"`。 | — |
-| <a id="api-989bb26705136240"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RENDER_VULKAN_DEBUG = "SDL_RENDER_VULKAN_DEBUG"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7638) | 当前常量或枚举值：`"SDL_RENDER_VULKAN_DEBUG"`。 | — |
-| <a id="api-c057aec00fd1c3ff"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RETURN_KEY_HIDES_IME = "SDL_RETURN_KEY_HIDES_IME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7645) | 当前常量或枚举值：`"SDL_RETURN_KEY_HIDES_IME"`。 | — |
-| <a id="api-460d6de79ac09c7b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ROG_GAMEPAD_MICE = "SDL_ROG_GAMEPAD_MICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7646) | 当前常量或枚举值：`"SDL_ROG_GAMEPAD_MICE"`。 | — |
-| <a id="api-efe533fe79ea154b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED = "SDL_ROG_GAMEPAD_MICE_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7647) | 当前常量或枚举值：`"SDL_ROG_GAMEPAD_MICE_EXCLUDED"`。 | — |
-| <a id="api-d7922165cea4559b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_RPI_VIDEO_LAYER = "SDL_RPI_VIDEO_LAYER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7652) | 当前常量或枚举值：`"SDL_RPI_VIDEO_LAYER"`。 | — |
-| <a id="api-72d0d942a081a4fe"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME = "SDL_SCREENSAVER_INHIBIT_ACTIVITY_NAME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7653) | 当前常量或枚举值：`"SDL_SCREENSAVER_INHIBIT_ACTIVITY_NAME"`。 | — |
-| <a id="api-e1f65ae3d6c90326"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_SHUTDOWN_DBUS_ON_QUIT = "SDL_SHUTDOWN_DBUS_ON_QUIT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7654) | 当前常量或枚举值：`"SDL_SHUTDOWN_DBUS_ON_QUIT"`。 | — |
-| <a id="api-d487573d3147c957"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_STORAGE_TITLE_DRIVER = "SDL_STORAGE_TITLE_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7655) | 当前常量或枚举值：`"SDL_STORAGE_TITLE_DRIVER"`。 | — |
-| <a id="api-f252f1a92000a7be"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_STORAGE_USER_DRIVER = "SDL_STORAGE_USER_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7656) | 当前常量或枚举值：`"SDL_STORAGE_USER_DRIVER"`。 | — |
-| <a id="api-d2fbd2d2ca3ba764"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL = "SDL_THREAD_FORCE_REALTIME_TIME_CRITICAL"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7657) | 当前常量或枚举值：`"SDL_THREAD_FORCE_REALTIME_TIME_CRITICAL"`。 | — |
-| <a id="api-2bf39cb7eb6e9a6b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_THREAD_PRIORITY_POLICY = "SDL_THREAD_PRIORITY_POLICY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7658) | 当前常量或枚举值：`"SDL_THREAD_PRIORITY_POLICY"`。 | — |
-| <a id="api-54e63f74bbec73c4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_TIMER_RESOLUTION = "SDL_TIMER_RESOLUTION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7659) | 当前常量或枚举值：`"SDL_TIMER_RESOLUTION"`。 | — |
-| <a id="api-f812d1c7e3735690"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_TOUCH_MOUSE_EVENTS = "SDL_TOUCH_MOUSE_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7660) | 当前常量或枚举值：`"SDL_TOUCH_MOUSE_EVENTS"`。 | — |
-| <a id="api-4953320deaf56d62"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_TRACKPAD_IS_TOUCH_ONLY = "SDL_TRACKPAD_IS_TOUCH_ONLY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7661) | 当前常量或枚举值：`"SDL_TRACKPAD_IS_TOUCH_ONLY"`。 | — |
-| <a id="api-7d52e87e8860edd9"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_TV_REMOTE_AS_JOYSTICK = "SDL_TV_REMOTE_AS_JOYSTICK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7662) | 当前常量或枚举值：`"SDL_TV_REMOTE_AS_JOYSTICK"`。 | — |
-| <a id="api-47aa3505801c7825"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_ALLOW_SCREENSAVER = "SDL_VIDEO_ALLOW_SCREENSAVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7663) | 当前常量或枚举值：`"SDL_VIDEO_ALLOW_SCREENSAVER"`。 | — |
-| <a id="api-003d143c6e7cffbf"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DISPLAY_PRIORITY = "SDL_VIDEO_DISPLAY_PRIORITY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7664) | 当前常量或枚举值：`"SDL_VIDEO_DISPLAY_PRIORITY"`。 | — |
-| <a id="api-ceffb2f2d6baabeb"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DOUBLE_BUFFER = "SDL_VIDEO_DOUBLE_BUFFER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7665) | 当前常量或枚举值：`"SDL_VIDEO_DOUBLE_BUFFER"`。 | — |
-| <a id="api-509147b13fd3b2ca"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DRIVER = "SDL_VIDEO_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7666) | 当前常量或枚举值：`"SDL_VIDEO_DRIVER"`。 | — |
-| <a id="api-29c265246af4b281"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_DUMMY_SAVE_FRAMES = "SDL_VIDEO_DUMMY_SAVE_FRAMES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7667) | 当前常量或枚举值：`"SDL_VIDEO_DUMMY_SAVE_FRAMES"`。 | — |
-| <a id="api-64629ae7fb7d8f30"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK = "SDL_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7668) | 当前常量或枚举值：`"SDL_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK"`。 | — |
-| <a id="api-dedf960524a9b695"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_FORCE_EGL = "SDL_VIDEO_FORCE_EGL"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7669) | 当前常量或枚举值：`"SDL_VIDEO_FORCE_EGL"`。 | — |
-| <a id="api-d30a034b9e181b69"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY = "SDL_VIDEO_MAC_FULSCREEN_MENU_VISIBILITY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7671) | 当前常量或枚举值：`"SDL_VIDEO_MAC_FULSCREEN_MENU_VISIBILITY"`。 | — |
-| <a id="api-674fce5d615ea2d9"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES = "SDL_VIDEO_MAC_FULSCREEN_SPACES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7670) | 当前常量或枚举值：`"SDL_VIDEO_MAC_FULSCREEN_SPACES"`。 | — |
-| <a id="api-8dc5248e01d4f7f1"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE = "SDL_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7673) | 当前常量或枚举值：`"SDL_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE"`。 | — |
-| <a id="api-c5886136797ffeb3"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE = "SDL_VIDEO_METAL_AUTO_RESIZE_DRAWABLE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7672) | 当前常量或枚举值：`"SDL_VIDEO_METAL_AUTO_RESIZE_DRAWABLE"`。 | — |
-| <a id="api-ecb6030bd83263da"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS = "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7674) | 当前常量或枚举值：`"SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"`。 | — |
-| <a id="api-d5cfaf998b73f032"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_OFFSCREEN_SAVE_FRAMES = "SDL_VIDEO_OFFSCREEN_SAVE_FRAMES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7675) | 当前常量或枚举值：`"SDL_VIDEO_OFFSCREEN_SAVE_FRAMES"`。 | — |
-| <a id="api-509a1b806325442f"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS = "SDL_VIDEO_SYNC_WINDOW_OPERATIONS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7676) | 当前常量或枚举值：`"SDL_VIDEO_SYNC_WINDOW_OPERATIONS"`。 | — |
-| <a id="api-656739164440b6fb"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR = "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7677) | 当前常量或枚举值：`"SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"`。 | — |
-| <a id="api-2c3083c1fb607718"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION = "SDL_VIDEO_WAYLAND_MODE_EMULATION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7678) | 当前常量或枚举值：`"SDL_VIDEO_WAYLAND_MODE_EMULATION"`。 | — |
-| <a id="api-cdff1ce24a293859"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_MODE_SCALING = "SDL_VIDEO_WAYLAND_MODE_SCALING"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7679) | 当前常量或枚举值：`"SDL_VIDEO_WAYLAND_MODE_SCALING"`。 | — |
-| <a id="api-0c5672049e9ad103"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR = "SDL_VIDEO_WAYLAND_PREFER_LIBDECOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7680) | 当前常量或枚举值：`"SDL_VIDEO_WAYLAND_PREFER_LIBDECOR"`。 | — |
-| <a id="api-ae82b3b8d1dcbafc"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY = "SDL_VIDEO_WAYLAND_SCALE_TO_DISPLAY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7681) | 当前常量或枚举值：`"SDL_VIDEO_WAYLAND_SCALE_TO_DISPLAY"`。 | — |
-| <a id="api-e3423794c694973b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_WIN_D3DCOMPILER = "SDL_VIDEO_WIN_D3DCOMPILER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7682) | 当前常量或枚举值：`"SDL_VIDEO_WIN_D3DCOMPILER"`。 | — |
-| <a id="api-35fd659ed4ff7f0a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT = "SDL_VIDEO_X11_EXTERNAL_WINDOW_INPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7683) | 当前常量或枚举值：`"SDL_VIDEO_X11_EXTERNAL_WINDOW_INPUT"`。 | — |
-| <a id="api-81b7bdb65a60ceac"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR = "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7684) | 当前常量或枚举值：`"SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"`。 | — |
-| <a id="api-920d7fb7ba1e8595"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_NET_WM_PING = "SDL_VIDEO_X11_NET_WM_PING"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7685) | 当前常量或枚举值：`"SDL_VIDEO_X11_NET_WM_PING"`。 | — |
-| <a id="api-8f78f95cdb20eccd"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_NODIRECTCOLOR = "SDL_VIDEO_X11_NODIRECTCOLOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7686) | 当前常量或枚举值：`"SDL_VIDEO_X11_NODIRECTCOLOR"`。 | — |
-| <a id="api-5ac3c03b00c4b80d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_SCALING_FACTOR = "SDL_VIDEO_X11_SCALING_FACTOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7687) | 当前常量或枚举值：`"SDL_VIDEO_X11_SCALING_FACTOR"`。 | — |
-| <a id="api-d139164802815e53"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_VISUALID = "SDL_VIDEO_X11_VISUALID"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7688) | 当前常量或枚举值：`"SDL_VIDEO_X11_VISUALID"`。 | — |
-| <a id="api-83b99bb319bdcd86"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_WINDOW_VISUALID = "SDL_VIDEO_X11_WINDOW_VISUALID"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7689) | 当前常量或枚举值：`"SDL_VIDEO_X11_WINDOW_VISUALID"`。 | — |
-| <a id="api-531de582c3336118"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VIDEO_X11_XRANDR = "SDL_VIDEO_X11_XRANDR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7690) | 当前常量或枚举值：`"SDL_VIDEO_X11_XRANDR"`。 | — |
-| <a id="api-8c76cdb88f0e3950"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VITA_ENABLE_BACK_TOUCH = "SDL_VITA_ENABLE_BACK_TOUCH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7691) | 当前常量或枚举值：`"SDL_VITA_ENABLE_BACK_TOUCH"`。 | — |
-| <a id="api-03a19b966faf1a72"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VITA_ENABLE_FRONT_TOUCH = "SDL_VITA_ENABLE_FRONT_TOUCH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7692) | 当前常量或枚举值：`"SDL_VITA_ENABLE_FRONT_TOUCH"`。 | — |
-| <a id="api-273cdccdaea358f2"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VITA_MODULE_PATH = "SDL_VITA_MODULE_PATH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7693) | 当前常量或枚举值：`"SDL_VITA_MODULE_PATH"`。 | — |
-| <a id="api-e187a2bff1dbb9b9"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VITA_PVR_INIT = "SDL_VITA_PVR_INIT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7694) | 当前常量或枚举值：`"SDL_VITA_PVR_INIT"`。 | — |
-| <a id="api-65ebd5c26b96e771"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VITA_PVR_OPENGL = "SDL_VITA_PVR_OPENGL"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7696) | 当前常量或枚举值：`"SDL_VITA_PVR_OPENGL"`。 | — |
-| <a id="api-7aa627166ee7f578"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VITA_RESOLUTION = "SDL_VITA_RESOLUTION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7695) | 当前常量或枚举值：`"SDL_VITA_RESOLUTION"`。 | — |
-| <a id="api-d834197d7d1d4d49"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VITA_TOUCH_MOUSE_DEVICE = "SDL_VITA_TOUCH_MOUSE_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7697) | 当前常量或枚举值：`"SDL_VITA_TOUCH_MOUSE_DEVICE"`。 | — |
-| <a id="api-5f5264ccd0fb88a2"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VULKAN_DISPLAY = "SDL_VULKAN_DISPLAY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7698) | 当前常量或枚举值：`"SDL_VULKAN_DISPLAY"`。 | — |
-| <a id="api-781e0373d34bbf2d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_VULKAN_LIBRARY = "SDL_VULKAN_LIBRARY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7699) | 当前常量或枚举值：`"SDL_VULKAN_LIBRARY"`。 | — |
-| <a id="api-2897882ca4b0bee0"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_CHUNK_LIMIT = "SDL_WAVE_CHUNK_LIMIT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7701) | 当前常量或枚举值：`"SDL_WAVE_CHUNK_LIMIT"`。 | — |
-| <a id="api-c9a63f13932a9476"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_FACT_CHUNK = "SDL_WAVE_FACT_CHUNK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7700) | 当前常量或枚举值：`"SDL_WAVE_FACT_CHUNK"`。 | — |
-| <a id="api-616cd54643c69d79"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_RIFF_CHUNK_SIZE = "SDL_WAVE_RIFF_CHUNK_SIZE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7702) | 当前常量或枚举值：`"SDL_WAVE_RIFF_CHUNK_SIZE"`。 | — |
-| <a id="api-dafee8ff43d552c0"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WAVE_TRUNCATION = "SDL_WAVE_TRUNCATION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7703) | 当前常量或枚举值：`"SDL_WAVE_TRUNCATION"`。 | — |
-| <a id="api-387a64039307d713"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED = "SDL_WINDOW_ACTIVATE_WHEN_RAISED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7704) | 当前常量或枚举值：`"SDL_WINDOW_ACTIVATE_WHEN_RAISED"`。 | — |
-| <a id="api-66a2fb8a30e1ede9"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN = "SDL_WINDOW_ACTIVATE_WHEN_SHOWN"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7705) | 当前常量或枚举值：`"SDL_WINDOW_ACTIVATE_WHEN_SHOWN"`。 | — |
-| <a id="api-b2bed86241f8b9c3"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_ALLOW_TOPMOST = "SDL_WINDOW_ALLOW_TOPMOST"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7706) | 当前常量或枚举值：`"SDL_WINDOW_ALLOW_TOPMOST"`。 | — |
-| <a id="api-3bfd38c138e2f008"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN = "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7707) | 当前常量或枚举值：`"SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"`。 | — |
-| <a id="api-1abb7e6f8dfe7d6f"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_CLOSE_ON_ALT_F4 = "SDL_WINDOWS_CLOSE_ON_ALT_F4"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7708) | 当前常量或枚举值：`"SDL_WINDOWS_CLOSE_ON_ALT_F4"`。 | — |
-| <a id="api-1b1bfed44baf62be"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_ENABLE_MENU_MNEMONICS = "SDL_WINDOWS_ENABLE_MENU_MNEMONICS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7709) | 当前常量或枚举值：`"SDL_WINDOWS_ENABLE_MENU_MNEMONICS"`。 | — |
-| <a id="api-73f45b36e5170e1a"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP = "SDL_WINDOWS_ENABLE_MESSAGELOOP"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7710) | 当前常量或枚举值：`"SDL_WINDOWS_ENABLE_MESSAGELOOP"`。 | — |
-| <a id="api-590e4f86ad66919b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_ERASE_BACKGROUND_MODE = "SDL_WINDOWS_ERASE_BACKGROUND_MODE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7719) | 当前常量或枚举值：`"SDL_WINDOWS_ERASE_BACKGROUND_MODE"`。 | — |
-| <a id="api-c539464df1df3a6c"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL = "SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7715) | 当前常量或枚举值：`"SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"`。 | — |
-| <a id="api-d402e43e95c9438b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_GAMEINPUT = "SDL_WINDOWS_GAMEINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7711) | 当前常量或枚举值：`"SDL_WINDOWS_GAMEINPUT"`。 | — |
-| <a id="api-b5ff4041ce09d140"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_INTRESOURCE_ICON = "SDL_WINDOWS_INTRESOURCE_ICON"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7716) | 当前常量或枚举值：`"SDL_WINDOWS_INTRESOURCE_ICON"`。 | — |
-| <a id="api-6cd610bb1074f5fb"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL = "SDL_WINDOWS_INTRESOURCE_ICON_SMALL"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7717) | 当前常量或枚举值：`"SDL_WINDOWS_INTRESOURCE_ICON_SMALL"`。 | — |
-| <a id="api-71df7008f4f22a5b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_RAW_KEYBOARD = "SDL_WINDOWS_RAW_KEYBOARD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7712) | 当前常量或枚举值：`"SDL_WINDOWS_RAW_KEYBOARD"`。 | — |
-| <a id="api-ec821aace771c667"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS = "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7713) | 当前常量或枚举值：`"SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"`。 | — |
-| <a id="api-e3b3b842cb6e1f0d"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_RAW_KEYBOARD_INPUTSINK = "SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7714) | 当前常量或枚举值：`"SDL_WINDOWS_RAW_KEYBOARD_INPUTSINK"`。 | — |
-| <a id="api-7cd7f55d984aa7ff"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_WINDOWS_USE_D3D9EX = "SDL_WINDOWS_USE_D3D9EX"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7718) | 当前常量或枚举值：`"SDL_WINDOWS_USE_D3D9EX"`。 | — |
-| <a id="api-79c896a9396fc309"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT = "SDL_X11_FORCE_OVERRIDE_REDIRECT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7720) | 当前常量或枚举值：`"SDL_X11_FORCE_OVERRIDE_REDIRECT"`。 | — |
-| <a id="api-841e7e651f50b72f"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_X11_WINDOW_TYPE = "SDL_X11_WINDOW_TYPE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7721) | 当前常量或枚举值：`"SDL_X11_WINDOW_TYPE"`。 | — |
-| <a id="api-ce8b95f2b1621d24"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_X11_XCB_LIBRARY = "SDL_X11_XCB_LIBRARY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7722) | 当前常量或枚举值：`"SDL_X11_XCB_LIBRARY"`。 | — |
-| <a id="api-d0857982a1d7dd3b"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_HINT_XINPUT_ENABLED = "SDL_XINPUT_ENABLED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7723) | 当前常量或枚举值：`"SDL_XINPUT_ENABLED"`。 | — |
-| <a id="api-f18555936f43fda4"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_AUDIO = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7727) | 当前常量或枚举值：`16`。 | — |
-| <a id="api-bdaa7fcd990de6e9"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_CAMERA = 65536`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7734) | 当前常量或枚举值：`65536`。 | — |
-| <a id="api-1ae6b6f0313524de"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_EVENTS = 16384`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7732) | 当前常量或枚举值：`16384`。 | — |
-| <a id="api-eba91605acd2da8f"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_GAMEPAD = 8192`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7731) | 当前常量或枚举值：`8192`。 | — |
-| <a id="api-3d8527c340af160e"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_HAPTIC = 4096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7730) | 当前常量或枚举值：`4096`。 | — |
-| <a id="api-f76c6f8240668e51"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_JOYSTICK = 512`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7729) | 当前常量或枚举值：`512`。 | — |
-| <a id="api-dfa01a95a6b195ee"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_SENSOR = 32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7733) | 当前常量或枚举值：`32768`。 | — |
-| <a id="api-bc21f0680ebeeb9d"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_INIT_VIDEO = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7728) | 当前常量或枚举值：`32`。 | — |
-| <a id="api-f908a8cdd6b2ad60"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_INVALID_UNICODE_CODEPOINT = 65533`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6952) | 当前常量或枚举值：`65533`。 | — |
-| <a id="api-7995f4bffaeef07f"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_JOYSTICK_AXIS_MAX = 32767`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7108) | 当前常量或枚举值：`32767`。 | — |
-| <a id="api-463f7b3b8c57ade7"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_JOYSTICK_AXIS_MIN = -32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7109) | 当前常量或枚举值：`-32768`。 | — |
-| <a id="api-7dbcf129163c2a78"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_CAPS = 8192`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7392) | 当前常量或枚举值：`8192`。 | — |
-| <a id="api-82607c115078fc21"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_LALT = 256`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7387) | 当前常量或枚举值：`256`。 | — |
-| <a id="api-b93461c5791d0811"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_LCTRL = 64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7385) | 当前常量或枚举值：`64`。 | — |
-| <a id="api-445e727bb8313f07"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_LEVEL5 = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7384) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-fae5e18f43e2993b"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_LGUI = 1024`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7389) | 当前常量或枚举值：`1024`。 | — |
-| <a id="api-c1bdb9daddc046ca"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_LSHIFT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7382) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-dc1fac61f022e112"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_MODE = 16384`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7393) | 当前常量或枚举值：`16384`。 | — |
-| <a id="api-93002a0c69768b86"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7381) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-2166407380dfc359"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_NUM = 4096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7391) | 当前常量或枚举值：`4096`。 | — |
-| <a id="api-86af2fc571e24e02"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_RALT = 512`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7388) | 当前常量或枚举值：`512`。 | — |
-| <a id="api-d7daac8734ab4ecf"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_RCTRL = 128`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7386) | 当前常量或枚举值：`128`。 | — |
-| <a id="api-3862690bd8378b53"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_RGUI = 2048`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7390) | 当前常量或枚举值：`2048`。 | — |
-| <a id="api-34b835c25be77499"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_RSHIFT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7383) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-d41ad22cca8f4b90"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_KMOD_SCROLL = 32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7394) | 当前常量或枚举值：`32768`。 | — |
-| <a id="api-9a555f6bed5c5ef3"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_LIL_ENDIAN = 1234`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6956) | 当前常量或枚举值：`1234`。 | — |
-| <a id="api-0e720ee728737acd"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_MAJOR_VERSION = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7885) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-1a941c8538cc0d5f"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7748) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-cd16a53d8fc19e3f"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7747) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-720f86f795c8f063"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT = 128`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7745) | 当前常量或枚举值：`128`。 | — |
-| <a id="api-c542c202c9e30555"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT = 256`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7746) | 当前常量或枚举值：`256`。 | — |
-| <a id="api-2abe4b9ecb1a8b9c"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_ERROR = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7742) | 当前常量或枚举值：`16`。 | — |
-| <a id="api-ab7039e3d7b0fe47"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_INFORMATION = 64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7744) | 当前常量或枚举值：`64`。 | — |
-| <a id="api-37f2f757810ceb73"></a>[`public const uint Inno.Native.Sdl3.SDL.SDL_MESSAGEBOX_WARNING = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7743) | 当前常量或枚举值：`32`。 | — |
-| <a id="api-343a96e32c140cd2"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_MICRO_VERSION = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7887) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-01dec60f8f1580d2"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_MINOR_VERSION = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7886) | 当前常量或枚举值：`5`。 | — |
-| <a id="api-813075f0c18773b1"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_MS_PER_SECOND = 1000`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7870) | 当前常量或枚举值：`1000`。 | — |
-| <a id="api-2d35bd5663a373d5"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_NS_PER_MS = 1000000`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7872) | 当前常量或枚举值：`1000000`。 | — |
-| <a id="api-2e3ff8bdbe54a149"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_NS_PER_US = 1000`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L7873) | 当前常量或枚举值：`1000`。 | — |
-| <a id="api-56a957f9830ae275"></a>[`public const double Inno.Native.Sdl3.SDL.SDL_PI_D = 3.141592653589793`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6953) | 当前常量或枚举值：`3.141592653589793`。 | — |
-| <a id="api-31b6deea5827b00b"></a>[`public const float Inno.Native.Sdl3.SDL.SDL_PI_F = 3.1415927`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6954) | 当前常量或枚举值：`3.1415927`。 | — |
-| <a id="api-5707ebe61ed4b1e6"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_PLATFORM_WIN32 = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6945) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-344ff924645d6647"></a>[`public const int Inno.Native.Sdl3.SDL.SDL_PLATFORM_WINDOWS = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6943) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-c6f8a7b8ab56c1c4"></a>[`public const string Inno.Native.Sdl3.SDL.SDL_PRILL_PREFIX = "I64"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6951) | 当前常量或枚举值：`"I64"`。 | — |
-
-</details>
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.HAVE_WINAPIFAMILY_H f6e9b4a35f5946b30429845ef2ade8d18e58c53e765c04439492f09a1470d420 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_0 ea8659f342ee599668b34c04ff5438eedc1af28e39690719ba01a823f4fa9534 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_1 aa6303383e0a87992d95dc0f213ef9523f9039ab071cb7078d0628a4ed4c83c2 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_2 0416e632b0a1fb8b6b29602fb2d69c40e785630e5e2f31537b3c50a72565927e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_3 ad567255b5452efe4b84b244b64b11acd8b7ceb54048b4aa3ee0e790314b3997 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_4 19ee6a6dbfba9fcde8440110e32484defa4cdb78ba1cf471ee807e416928caf1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_5 edf373a1fc470bfaf5e230f947ec7b0a1a5c6b7ccdf9ae62e2c4f70dfdf62e1a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_6 fa0f13edd5a8eb67a47a9ebdf347f7e6ea631f7ff22c7d04f89a2a83796d68d3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_7 358c53479dc645ac569e9304796b95cdc9a6b65b45e7e70c71337861656d3039 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_8 b4fcc25c78d49aea492813bc5a15a46d61c070dbdcb48055e84db869246340b7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_9 b76df6cab9e61f21b96b872d4ca19e15aef54a56c84d214f2c90682258dff6c8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_A 36e6ff19a97fc97d5ad09a74b28aecf0b37d492ce1f7a66f3c08c337d495ad9c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_BACK cd5b9f6917e25a07e01dfce772ac5d8de1efdf4be57d987282587613f1f2dd3f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_BOOKMARKS 5706ae27edc5eb731393fbb7f7109c380747191cc5a45bdb32088fa9e6aea766 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_CLOSE 0f8296a38549423def96f786c6cc8d040c1f9aa50a6184b3e05945f8f160a91e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_EXIT 40465a2c6960b5f7189813fba41e77979e3cb45d4261607558d48dd698409ae1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_FORWARD 8f4f891ad07c412f2f3fd0cc01ab7cc0541c8029a45a9bf55b77f3d1c3963000 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_HOME 83e04363e93ae714dfed85c5bbdf0349549b5d0bf45aaaf8f35ad4162c1b9495 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_NEW c2d0bb53f7fbc16d47e380716f3aaf95174ad4cb2de735676179f4df485253db -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_OPEN bec6498f6988ae6841cd65c4a74f3e5d0c2ea2e0a00e75686b583c0bd744ebbd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_PRINT 346bb9ea77b87855265750ac8d1922eb3a70a3f2e2619bf94890e593197f3220 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_PROPERTIES 062d9cdb64db7aa9d55275f971510ebf9f6f9079f76adc376e3cbbe124e394f0 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_REFRESH e9688580595fb3b4140b04c736108b0bab6b835eeb1b6a7a7fd261be3215782b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_SAVE 325e71e00d944f9c0a1380edfbb9edafbf10094e2b7bc1d3f91a0af3b6084fe3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_SEARCH 342c5a0dff847d1b077c220346fb3ed41c6ce1b3cb4e91834d44efb2db25aa56 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AC_STOP 30a8b4b09996c1a9e52e0cfd5628bfcab66c3dfbafa5e95ed3535bff232574ef -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AGAIN 3ae58981dbaf26e3806e1d6ced9da2970eda082c912156acb484ed38138bb4dd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_ALTERASE ed38e03b2acb781e61b717810f1ff5200bab5209a1f32b5d194b31490b6d8ed8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AMPERSAND b8539a2148398c5b3f629c5564ebf657f72fb17ce48cd2be4beadc38b03feafe -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_APOSTROPHE 20f7d6b4354aa1453b64b4f8f002ed6047c40b354005ed7975ad1b5c67c43199 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_APPLICATION 313e8899c5e8533ef6e07fe05144bd72181cd83dc70cc6748e418906dda7fc63 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_ASTERISK 4b6c9a742b48f7188b09de3b421ccf2d7d2d82ace088927f0b56672af91bff7f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_AT 3bc142e97f9e9ca888edb9b394209e5bbfd5878e8ec5e5b4ec01b37a8883f67d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_B 72873f7ce0445e2e8ccb967abe1c59c0f34774113e3556540c1aa076e13a1c7a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_BACKSLASH 97a185212aada8c3c959312515a0abf844fd8ac8e12b40498a7c2144afb81c78 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_BACKSPACE 665f22850aa7a72c273f64acaaa1a5dcd4ba07a0a24b61034ea57ad39a4ea6fd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_C a68fde57f804c0aa04e6e14def3e33e9ed088600eebb768db8719560644cb45b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CALL 83aa60d71a9a9facfa3b32e91cd3b4e4b6666c085008e98e90d07093c12dafae -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CANCEL 13cba5588fb37e7299cef854285bcc9463d62fc1054c95e73da7c6f057747bdb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CAPSLOCK 0def9ed821c01e93be46822005dab56a7feb382599b39851e104da9c290297e1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CARET 934138b97ecb253a77e50b6f52f3ba2b583b47d871b3a5c5c24ffb2e765e53f9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CHANNEL_DECREMENT 16ab5e6e25f8d93222a66b876fdb212531c1b88bc7d30348c2103f969efe50a4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CHANNEL_INCREMENT 1230c63f7886955d57025e4502cd9b83573ec1421aaa803e447e72604f49f8e7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CLEAR 0939ac27563cd83797b1ceb885e330cb1e61163e22d1f9e6a67616d8c703555c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CLEARAGAIN c17252dd89cb70fc2b27cdd902f9e771a02bbcf9179c405f60f7439c7340b29b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_COLON cb9a0e77f68aa456d00cf8f3d86cb612d285c1ab87378fc000491048628fa0a9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_COMMA ef7bd0b227ec26c7bcb6081cdcdccfb21002563e160404c9e0b6b255b7946394 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_COPY 962dca254fd4d0868205b5bb3ce7fcdf91b3d6304224816db20e66c0f910ca32 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CRSEL 6de26997ad927e66ed1f86560d94336aeba195fdb58dfe16c0979fddbfa2e880 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CURRENCYSUBUNIT 86ae7ec56f2672130b0f5e43dc29312d12d36174a7bc3b2c03a8e61828d819f6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CURRENCYUNIT 08761fe3e0aacee3c08a8b9c097493692e358b8585a6f8c12d9c852c1c1abf08 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_CUT 97b469c4f78cf80751e3bb4723a242820e40aa2e5b4ba2daa2553dd03cf00a37 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_D 16f57aa3f96392683e9b4360ae0e61b60d93183eb9bc56565e6faf1721386deb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_DBLAPOSTROPHE 3653aa7a39bb0e8a9754437b1c2258233947206bdb66c71db03f55cca478d0d8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_DECIMALSEPARATOR 880cc2fb7a45f221b9f7eab968608f3bd7fca610aec0867d9eb9364ae440eee4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_DELETE d2bdc03394f34e0ece55e08a20a99936ac259e51e7b510fc3fbe32d7509a277c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_DOLLAR 0e7d37d29cdb747f4ca9fd14566a8e781bc4453e0d9f9e683b8bf4d38552d32b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_DOWN 191cf05a7b5929f12f52a238becb8ea17a6fda28c5820acb4212d6acec255506 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_E afe56010fa9131d3efca71542b549722cb208e89c4449d978ba481392abb746b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_END b1afc3902afe0e5b2b33c0dd8e0e4dcc9f3f4ca338b7a648fec4a47bdcd9ca2f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_ENDCALL 5e65fba089bdf75e6a25bfa8bb6fe83754e60e6e8dd0e08956e82bffac090608 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_EQUALS 2a55474882fc61dff07a8d034220d286b80175225d371af7539e0f655eb3f017 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_ESCAPE 0e78abce3e02e3b8e467b0f13a589de90fe4740357553703433eb0b36a91c87f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_EXCLAIM 526dfc0270a9202c3474404f7600e65dfa859526a925735efbc45778e91ef6da -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_EXECUTE 0848382464c01ac5dd8938b32b3c1b459a78a149a329af2b7cec86de457958c9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_EXSEL eeeb29e528181a6843cc10660063607984c02732ac300718b45be06b17aa92cf -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_EXTENDED_MASK f6fea116b889e708f71b15a23b67337628b7afca5ad19aacddb08e4a216e3864 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F 748c8665acdbde37fec58e0f52b248b90920927361c301b75fad345eb247dd4e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F1 cede1df9c3a3410c321e7dd922239ee53fec8c860a483252fd0b23a4d71089c9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F10 1e02469e13b0aa55df04f5faeec53cbd1118014f56c8f3580371dfd4dd941d36 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F11 83c86b97dfda1c180e8dcfda4b2b41a2cb9826b6d8c626b7c29e9465451e906e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F12 acb3bd38537222b1922c7e6fd26a678f72c9cbb5503924bdaf319d125216661d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F13 67079781c01e8003e46730d6d9df64663ea3268bab0846455cb0fe7ed734a1a8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F14 7352f0edff3d3e42db7be0bc807e6b912eb0c1a2a3141f442e10c8da053e0b91 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F15 e04e289591c6628be0c6b8100f60083bb29f97a755d9265819252439f2365215 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F16 eaf656224b803211f550583cbc97b7b8a1e66de956f54ebcb8f49d383e80eec2 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F17 a78457002a6426509bb46494bb9e49687553e4fbc36aedc6bc2597f7869c581e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F18 0c67ae8b1ff726aa2f22c5c02cc7905b956ed8d1d11ef0fc9a3459dea19487aa -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F19 cb0474738d3c4c593edabd4e1ef1cbbe74216434ac2312153e3727b07ea857d6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F2 c34df15307eca15b21849bab86ed3290c59f6a2b13dec71173ec99c247f8f3e9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F20 016e98b73c23c689e0ace62012e867b73530021e5403b4a0b073fcffd7b6437e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F21 5b8877b40f0f3195a602f79ae7e5120a57f5ad6697c4171a6289c1dcd95e1911 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F22 141d0711e10f014cc3f94b1b519efa62d9ca60659ff57d8f436b3cb2b226b90e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F23 56e32ed99808b5f0d11869ebca9788b06b58b71a5d447823326d2710defc689a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F24 5fc16a767e449b1318c24c1b735cc76f1c5d26091eec143aa75335fa5b4af8fc -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F3 4e9a1c8242145acb21022c408c7769a1b3993c0f7e66767010719d34a409917e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F4 d403eb0203a0f855fc03f86fc81976c4978bbd323b6071d5a60fadcdac2c4657 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F5 74c3125482be815434decc7ce41a71ddb89ad13a30079d8e7e8b19589bd04b07 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F6 9bedff0d52c4d3a153521e51b0f0c2828c61622be1e2f2fad39a3e35d7daa048 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F7 fc6ed0bd6473b8d7e12e4a5be0d131f25a40c61ede06c8e71144fd99cae1caff -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F8 95d5255ddd3db61fe84c10847193ac97b83c9e247cab6c81400cac9a11366a19 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_F9 86c91b4df2cca3ec824b81829d504e912a6b469698bf88bbbb666a3d6b1c7787 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_FIND 68827134836e70562b65fdffb5dc6c434498d1b025060d7a57d13dacc499b861 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_G 801e70e148aa602c6e60133a2a85b7c9a072712d8533751a0255266955702dba -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_GRAVE 1875488c8b31a3ee38e23c70c74f952c153b5e5f0e24f78e1499f65c3baf16d6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_GREATER 085cc7a743dae10828e462199ccc45ff805a694355bf85f45fe1cd6c767d5068 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_H d6795d06daa80f75b6a44735f3792840bcb471110cea90f37b36dc1413da23df -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_HASH 1f364d8738aba9d389acf8e349e64c426377ce0ff45e7cf81039bb29911dabb1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_HELP b09d009a069fa87b8596c813c5100c08b9515cb632cae8a5f2962c40cf6fde82 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_HOME 49151e45805ab7766ff37d7ed7688ac59d675dfeb0a6bc01acfcf4b3a352c7dd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_I c5e1526c26a5b8d78634c57ee996025a17b093dc0a8b7725706025100c1182c1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_INSERT f59817c8105ff3186e3a1c717cf557b78d531d4742e1698412fab1169acbad9a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_J 8a8db642aa236489dee1bd9c42aa3dbdab7c0eeeeb6ca3489dc465bef030bcdf -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_K ef702206aff1e968c469593e9a8a8de74deb65e4cc67aaf6366bb5a23267a2b5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_0 9738c50de60bc4c2d8db2c1e244bcba9a53e303a6052a9c179f0a6f9fc55e114 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_00 f3b3fcee472dc2cf82dbad3f8905489050a31192e4672cfe8a2fa04bc0192b2c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_000 c9f71ad135fa85e76607f7300f221f2fadaab72bb64fb2a77d82154222aabf08 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_1 6f6943e1a653db73dca9df9bde4716fc86db08f5ed566cd065fa47252af5ab78 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_2 4c9eca55b3eb7c2a169e66f631e80d888c3a7e6014ee34f562e48732e00c9060 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_3 3b05437852cf00d1927829a58b80e97009bf290375213f6d224bb66fab9b787b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_4 85f50b79e1f0b369b3f90fde11b097eb914d88004a966f07421cf68fd1570cc7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_5 7fe360d3f6b5b60a39ee8c432962df91e68d7b578e8a749ca26f376ed1ca4bef -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_6 6d3bfcba0af5320ac2dbcb1171242181ead40ca03582237d7e17f985a439478f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_7 b51d5679f81a17fe6e2af56a1d970e5c625eadc31125587458f1cd0552e26a0b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_8 42cc7c025362602a1e1087f654c43dfb32b759ba9f2e3708797b78f31568b9c3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_9 e43f9b5ce198bf524b434b6e05b177c00deab72bec76b90fc311ec9b242e1e6f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_A 8a3601bc137e034150861bf181f74041830db5f0dc0b78b7fedb348e226e0c13 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_AMPERSAND cc0acebc2be7b1ee0569c01b55165809c1ba91b7c73765737baa6c4aa6381fb9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_AT effefaef8e6699cf5f9c55703c4828bd4dab32e4d1e984e6d5c6ad621081324c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_B 5599176ff24063901224897f559c79a2b02622d53c934fb2aa04a4c46303a2c5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_BACKSPACE 01467c2db6ec7a72ccdca94abd01e4f3791bd35e2a691bf10127c1d1f34ddcdb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_BINARY 19e9d1b53092e716a4fd6441f98c7cbca8a43fae73e5f4c4681f0c7e34967d21 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_C 0fececb085605cda96bd5e1652fd721f2a8eaaaab7f3a1072dd8cf80f481cf50 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_CLEAR 5709a3bec9e09136d28ce439bb1360da8703a73fdce678be52370bb7d8417797 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_CLEARENTRY a3725f9878f2f419c181ea41154abef8142ca458474da9a1e3855326b2bb3436 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_COLON 45104323ff1bc4cb6218a7d74c5a3d405ae3408177ed1d57dd613a26a79369d4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_COMMA 8534b301a5ce3426d53560b30a076ecd06f9678d9edece18ca8ef80a4bc8cdc9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_D d8d27b6b16be02ef74e656801cfceb84ba1e668650f8e0b6ea34881791d2200f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DBLAMPERSAND a1a1c9667744b895ab478cf4b26fdbd1a4c5b3126108acdcf0e8493c537951fe -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DBLVERTICALBAR ff88dd1e24a732a61b1b274194d644f2ce48b13150dea48ed68bf904e62e6b36 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DECIMAL 03b2ce348936d421a79acddd0be47f07365c01edc34500af81d8d62fd8634c5b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DIVIDE 04ee805aa12a9ab4ad67327b2e918f59c3c162aca82c4c91d3008120c50ff6c9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_E 12243b7763bd707b68664de64b15df1c3c8ec4c7b6ec03ecf6953687b2d7a757 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_ENTER 4fdbdb78a5fe0738233ffd8e200eb2ef9465b5b4d587d6d4b08341234a6df1b1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_EQUALS 7aef3985346b87ea0c13fca3feec775c73cd730546664c32df8b189b44335b97 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_EQUALSAS400 c89dc4d36146dd2d8764887086c583849f616b8d749ec1960ba02d1f71f99d2e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_EXCLAM 204ac0db0546524d278419e834e7fa8ced84781208f4f16498ffcd1aeee5d33d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_F d609868e4e4f22585ee58c185c67b88f9cb07fce67a33f791c84ef260e16076e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_GREATER a51df777fd1e895b3f1a30703af1ef33306a63e925bc46ca58927b5dff259a3a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_HASH 5f40805a3e49fc5418d893b7bee4661381d06ae2f505cbccfcdc29c38b571a57 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_HEXADECIMAL 662437fefd0a2a3dd605bb39844c4ce3ca5d14d4abf65794d7538a255577cce1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_LEFTBRACE 705965e663946bfa525a987b530cf967e92cf7cb02d9526e83de3dade5cb4e81 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_LEFTPAREN a7f390688fcac9bea53e5e65c2992c2bda0996ec325a76e41f5f197b4046542c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_LESS bdfe783df7d666d0754d63c04df5c9b63ec2b0344db7ede868f4dc89623c81e1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMADD 70968d4d843e100ded5fdf59c4417a9fd711f67482bb36dc94ca02c053be653f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMCLEAR 3022fbf94333fe7aef20d71d73a5bb39c13444929c1cc458ca101683e8251484 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMDIVIDE 20a2a9dcd0c6ed87cd67b8017b6887363522e3b4a24becdc2561b71c61d798aa -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMMULTIPLY 75fd53efeb3643cb23b99340dcd0e28ac943f3dfdfd4547f670f3b013174aefd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMRECALL 0a5bedc485cb795ef08bcabc669e339dd8ab384c33c88bfc0cb1cc5cb905b78b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMSTORE 15595024c457d9a2e730bf61172b5f5a2791b969b975a625412c9fbff64576e9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMSUBTRACT b68d067df4554179325e75d7fb1759fc5a996e4b59a3f85bd65c6cbf00dd42dd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MINUS f409e0e3b347338514bbea77b8f20f5f84b40a75c0e8e044eea13b2ec5aea762 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MULTIPLY 3284fb27daa1bd6001bd8fd9b0b898ba152ec9f962eed62b6066a18aae53618e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_OCTAL de7f682924a8acbf33a30aeafce415bef23fcd215f0efdf862c0e57eb6c009d6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PERCENT bbbf7fe85ac75f00c8bf486e43f6dc0953be919dc614b121c1132dc14cff9eed -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PERIOD bef0c0686841d6fd76dc6067ff0ed4a302fbb4ba50a12975cdfbe17bfa646752 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PLUS 5653fdc164845627655a487d7b4cbf1f70f09189882fc26b2eb3e351d85c7317 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PLUSMINUS 339c45148eb986fba0aa9136ddccb406bd07f7d30d612b198eb80a092a937e3c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_POWER 10fde728966900c9a611539c70ab88f77b474ac06d96ee62c1318c54678d4c9c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_RIGHTBRACE c4ae85ff5b186feb0a963b2ad5f09cf648021b388c6d38e82a2ca06b03e873ee -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_RIGHTPAREN 33e7c609afacad31ac7efd664347839012be062eb23e1aa8349acf31f91eb003 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_SPACE b68db02117e8240eb802307cb17563b0fbfaf2b88ec5398c428d08ef1c16685f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_TAB 9b698b2026f8085dc0a8f46f011d7a8da867e89885c7e3918f63acc95401c337 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_VERTICALBAR 37fbaa66d61dfaefdbfdd681fa929e8ed0dffad5fa65dbc3932511183f8172ca -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_KP_XOR cb5686d5e26a01818735391212b38c10695e83d28b4aba85d329ae7cf7170bcd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_L adac74709ff3638c97629067975e4c67b451fac52caf71c60ce02818af926a97 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LALT 698df392437c0ca424c05481396da62042df40118ad830aa69e6376010c10d87 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LCTRL bf8371f7e57feb1a8654f58fe910e08b3f682a86c3b4361ceb536af2ff235234 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LEFT 5391cbc6c97a689aec62f0e7a65d50d7d717ac46d653b32af7ac81c739b52c5c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LEFTBRACE 1d0dc9a5e046119087eecbaae5d22aa34d3adb85bb8b6763c4ca327853c06f24 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LEFTBRACKET 0290c3aa2c1c143331ad96b6709a3f5affba4927b0d82d6d8903ddb56421e017 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LEFTPAREN 8e0191b9d9addd0e513e7aca607baecdfe0424537d93e505389344ed657e903b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LEFT_TAB 1b9328a081e5068b2ad317f9ef1443f804dcc7dd2b7685ef8f68b8dd08a2843e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LESS b52b9ab88376347cb8f598fdabf4b8dddf33d9099ffef1eabe4ba37eaa1b0541 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LEVEL5_SHIFT 5ceb15c99ca502d36c0a0daa541a3debb3e8f86cb9cf49ee9e807b418001000e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LGUI 4885e7d27f604f465e701aa2e9ad0cefebd77b39d266c0ab5bfd4a6b85e449a6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LHYPER e3881d032b5f5e3c290ba1a0d0ac97d16c749a9cce1823eca32e87491cf44d37 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LMETA 851ba845f55ce180636c74a66689b5fa4116e616683866301d7f1b33e589b24e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_LSHIFT e9a89aab6e73a3b8845e1027d5fa96444e34f01f5bfefa0a4936512dac424e81 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_M eaec593820017eb3bd265afafd4daf5effdd7823fbdc2737dca749d38163d29a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_EJECT 07a209590b85ade740df83360671f81170bd6cd780f54d5f8d7d460d62176b57 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_FAST_FORWARD 4bd7df7a3ae8b66f59e6ff8f23196358503f130ee9207bfd2828f256be4775bc -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_NEXT_TRACK edc42779fe4e4d0cb0a7eb0d971802481f4d3075266f9f5860a7cdd0144fd65a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PAUSE fed765903af884d01f05a0973ff3f1349bdeda8a6fa2bb7a9c3cf1e51c8158d6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PLAY 89a3bc6c3ff1d9f07c2780c11988846df9e4167a6bfabb6438956b5fb70e7a69 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PLAY_PAUSE 460044a80f54ec96447d9096877c6fd66a94ff1d92aeb01aafb392ec3a2d3bad -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PREVIOUS_TRACK af740fddd2eea92cd4969517879ad8720e5abc8465d25c1c3a5fe34da371daea -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_RECORD 55534c4008791d1a2c90186cfb0228d623aa383a606b70fe72f5400233d4f4d6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_REWIND b64566ecf2eab175966078e9871e5513d1dad9810d8349e4ccb1ec2b3140ce87 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_SELECT f058625db19dacde91904fea38ec2a55ce1d59f7af1d9e53af925019b46dab07 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_STOP 914727130b4f8ae923c6a91718450d0b1d266903e0c8be7ed05ef5a4c4e69a07 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MENU 8e1c67392f115ba9c10c085b180821f5209f8d81887dacf1623b5512014ac7b1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MINUS 1a97a806887591064c9abe79dc08a2e881ebf5c12b7afb62467efa6db3047130 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MODE b70474c686792f6f6292546433b13e7e1d483f69d899350ab190f42400e54f08 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MULTI_KEY_COMPOSE 27072602e35d43792f0fc56ec7bb6e37b49e5dd93eff216c11bdb6e2aa3c35fc -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_MUTE 53142784b5ad249c60ae72752add4f2068cb475ab727163a2d2c9df89dd73181 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_N c86bb9e67ca4a322555dd0ffdbc5a59fcd06306a32838f7615beead6ceb79d7b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_NUMLOCKCLEAR 2c11e27cbe12c0fce1d990823b304cdfa6d3f1e30114c1c7b456a253363e7ddc -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_O 51a2aeec41253f6e0bfb4bfc10d51b0195a07adecf54a3666086296787f894c8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_OPER 500ccbedccbe811564dfc67cbf7d057e0e37465d15ce91fcd1b0ef120e78d597 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_OUT af82911eba83d39d5f0653293e2c5d6ae6b19d3912b2382dd1bf7ecf9e99494e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_P 1df130f2ee3e83dfaed34952078638a4d7c8405bce395048f7a417587d15f5e7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PAGEDOWN 515bd3a051767f5fd4f41353dfba7e2b76288b8385c616709d17478488edc21f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PAGEUP 22e31aeccd71fa290c7364609f0e2c973c17903643dca212886a70026fe64deb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PASTE 9e639d623cb17b3552f30e8eafe67e5546e12a3571978eb8a82137a7c9ea30f5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PAUSE 5d848396ec3e8b801cb5e0f192b5ce6a2a57430da925c92583f4141347f9172e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PERCENT 500764b530e384d4712c4e03b02480d02c4f1b28ef8d505d164c56e744012b67 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PERIOD 8989c3011b1f47164b4ad2779d63a5c232b754efa3fc0d4e667ccddf3f01383b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PIPE 4aeab9dd54dbfcdc6fb0cedfa14a2dd41c45e71b1e9d6dc751a0c6e75870f67e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PLUS a8c733fd431800f18a582ff52345ce408391ad791d8ecf8c9012844230649feb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PLUSMINUS eb3dd151939dba3a51512214908029c470a52c2e0e7e19bd6c621f9a73c7d4e5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_POWER 7d4a87ab1fb100c57a81f9ba30e1d5e869c2f63d08f50d6c122d28475de45bec -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PRINTSCREEN d75b3c8c7a7a7e5514f207decd90d88a034bd10662b637c6aaa34cbc989fa427 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_PRIOR f792e2eda19ebf4dccd24a88857fe855312fa3beedc6651cb92eaddc344088ef -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_Q dabcbe755788828e1340d222806e919e2d3746df1f5921ae101cfc00bfb435ed -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_QUESTION b261abaf4b716fd55da7f8e47c8734449a0d0997514b10467d63e27858bfe3be -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_R e85bc5c53150bbcbe96544b74c2c4d443e7c8baec888a726d5fd8e71e0fac0ca -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RALT 17f508f276514dba604e00a41ab9db027c058e4918d92bade703684d69e1cd4c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RCTRL db077e33d408f8d0843d55d355f31546fe2138fbf7f3b9cd6c7d515a5e43289b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RETURN b249bf4337d155cb884fbee3cd69ccc64113132c131ec2af079e535aa6fc1f41 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RETURN2 1ce00b18d181c11abd0eaa2a8ced9aa0f5cbd30e4349a65ad068de589619cadf -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RGUI c3630dc8a42662b70b6ebd522d520cf4ee168a420f5176b952a84edf79b8e435 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RHYPER 154ea597efbf13f964881e049ecfaa553d2666771ccfdf8ed2e71a9bf9c38471 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHT 2f746b159f2e93f3cb07076a39a61ce7a0a95d3d4ead3370876e4ba5fbbfdb0f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHTBRACE 529b4c891eb485363662789fc3e3d331e62cc4d3c03507bac8d546e96639aca6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHTBRACKET 11c679c4e272a1eb1eaa476a7342bfb08bf6d53e5bbc03ecbe2a47719d864f9d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHTPAREN 1a9485a51dcd5ff293edb45237e8355916124de14d43aca86837d9a494291e6c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RMETA d0b42018c5d35906dda0be6eac48d6aa5bc12e2048bef95935a11acac329b321 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_RSHIFT 1e10d67386e4ec879de9a970d09bb17b8d8311010b666da37f257e965215e0ae -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_S 57a11f48c13e04a39896928b8f25ef44a86aac89023004666b646c6f26561cdb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SCANCODE_MASK 6126e541db59e41afb26f71a3f3daf396387c6548d7cd6508fbd401e0b4aa91c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SCROLLLOCK 116f4c4416d843e5da3cfff0adc8823864e486e2eef733a86e96fb075dca402c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SELECT 8de25617d743181b6bb8101e9b586131c5d63bf7bf8dbfd466767a58705194be -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SEMICOLON 29c1a58808d1adc85bed3b55a5f38999d6e3096542805a4da6b76083e6915422 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SEPARATOR 80d8ebe9c2fd386f339dcb20df1ef1f2c01e77ff3d76fa469264f433796a2de7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SLASH af14190c11b71c40437a8565157cec88cd738289c9a4f0c1cded642737e77254 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SLEEP 6d1dca108ed33e41574cd19ab06f58c738cb77e1512475c5a47175ed0f41ef07 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SOFTLEFT 8773066d6da92bc7e0ce8a6e2f64a5460e0b43e742309d3f9ebc248db9d71974 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SOFTRIGHT 51550657acb848f6e72d350df9a9c53d04a47853dbb6e1157631e32b4a730847 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SPACE b0f54674738a0915a0528c7ff9a38161b74c01c01594ee65f042cf005298f326 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_STOP 92dd9e0895dd58ee8c79da1ba450236567741a11dbb881584b0df443bc5dcc1f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_SYSREQ bd1a9c608cc68fa33418b58d5e5b0fb5cc411dfa708f78fdd4e60e2db5b07ee8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_T c2215e543bea62f00018f2ed9854e5082b8a372ea5eac1439666ef66fc7616b1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_TAB f951fb893aaedfdec408f6778db9eaf8943a83c499de88400f1de6a9323973c6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_THOUSANDSSEPARATOR 078f94c76c0164a37750b0df99794d718aff7df98aafdbe1f1738901cf5d3695 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_TILDE 28fdab9b6804b310578dafc6e3c0edb5f9854a4db76e6b2124320df25424e10f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_U 42c8b25ab373494084f0f477e534dde28beda5d4a2f559bbd79f72e5ef74460f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_UNDERSCORE 351cb76b9f15234312ec0191db04e60c5a320ef326b682c1cbce42e9ac749411 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_UNDO cbec34642a1c95570d53684f0baf4bfb24e28b7906040ad74620a53ca370a0ce -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_UNKNOWN 1f1dde00949ac626d06aabd81f0f0172737032e61e161b5add3b14653cdb5301 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_UP 352bd71233c76a96a83e743c08f80ea62743d1d27f2473a231c5b02bc253c4cb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_V 4993eb506251e4a1393614d8134dc3941f56ecc3ad7f9d6dc61bc5e6649f78a9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_VOLUMEDOWN 9dcea6f174dc0e5658af35c9af764c575ff7c45acca53f080494226f629d3ca8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_VOLUMEUP 37e7a979d214d430998f4c1f436e1dff66390038b51f5caf451d329622de4e48 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_W 7ce5e80da68674e1f76ddf1200f189e41d169e92aca7c8e72901f493bfd9a855 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_WAKE 0481250986fe666bc22663ba3385bc4ef71437ff370d3de90021d05fcb88ad4b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_X b678d3e85ca421aca37df71b47ceb55e7d1a40a0ee8c0dc16c708d1e485523c5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_Y b887f2ea0d5426133cb639348298b2387cc41ab6f2d353b02a91934e0beed6e6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDLK_Z c0eddfe766033b5ca9a8ca37f10713eaab8c65a6054829de6b4c4cb6cebadf5b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_OPAQUE b31d86ffe93418b6de9a44d7eb7247b6d845d3cca08c3135d12a350e582a0aec -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_OPAQUE_FLOAT b4e0ab2af9c8e54f6478b6f122d51dc6cede75ec6a306c114ad86e28b9954225 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_TRANSPARENT 3c41c9f8a646ea660497ce78f1d8bccbd7708abc748710db4f457e339999fe8f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_TRANSPARENT_FLOAT 6816a647a69e33bb586e12664e22cf40879f5f30dfa92c7d99114298204024d3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ASSERT_LEVEL f82c2d56c8dfaa88907db9bd905bf3942445d19cc5705d514058d64c14dd5edc -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK 7c9a4e173298e970dcd872799220a71b9f025cfb7e851e720d163cfbc59ce72b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_DEVICE_DEFAULT_RECORDING 6a7c704f482179f269a5aa5d8070151fe921d8a8428b8a00abefcf13ed875b2c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_BIG_ENDIAN 23cc3bd4af05855eab560826382693fec50596868d3774f508464d783d106c35 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_BITSIZE 4529ff56865bb9933e44f403d39c1b7be2fcd1841ec0b340f4111c2d9daa7286 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_FLOAT 20bd072972ed7f17592d1a00db0798be4f2f5d9187a8e39902813dc73e94378f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_SIGNED cecdbfac24df8916b911497ebb8e6b579295488f08a8a60486eba6cf658965c2 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BIG_ENDIAN 32706014da375327cfc94663a3c0dc1bb53950de846579d2254d695c13a777fb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_ADD a019a38897224111e1122c9a7a3ec1260256b144637c3c6969c1062e17abb464 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_ADD_PREMULTIPLIED 3ceb0bacb88c88c164e83a806cd30575746af5e81d688d7c0c0d2f1e0f23661a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_BLEND 0a178df4edbe178dc371a25dfc07f2ce42dc311d14c9957f35655a6c5fc53107 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_BLEND_PREMULTIPLIED a2e138bb1dc6f92c5bdaffa496459b440c4f137b65ced090e25b053f03b9c171 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_INVALID 26b392d0e479dca442938e40377bbd9dbb98f2a35eb3b6d34bc77559b851d262 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_MOD eeb4cab9708c66a4c4398a8e830a7e88a2fd72a3746a540ca18ed9d9cacdae6e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_MUL 4aef5b236771410d65b4be2aa2deacc95a0fec93c0d194e7e00d06b943ffe498 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_NONE b9a6424aaef9c31ef54ae80f52ff9f438cd660a2179e9b23b109d92ffd5c7217 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_LEFT b114666ef7c30d1c30755efe5ffcb6a1bc18061413cd3fc69d4533375ffa946b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_LMASK e8d3a0c10d484d03b12ea42d551f10c0b3b98b2147ffaf1ea03b6585b033e481 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_MIDDLE 4555fb67a4deff38b09709eede150441661db66a8caf460d632a270a3a64154d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_MMASK 7f101dc639c03c74e910d0e95ed4d46ab6a374ab8eac185b7f152d80abd7ef2d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_RIGHT b33dbaa427a3997fd1a00994e665ad62035d605a9cd5bddbc8e1abefec5daff2 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_RMASK fc3497d88127d048cda647f21d1ef0341a5a691e7c2edbe8e2dd0b8603b851c9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X1 0228bd2e5b35a479b72fcb8dbf0f327d4d43041d42aff536668f8dbe0cf8fdc1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X1MASK 80a78cd17c532b15633049052193ec22b039fce15064378874c1f7ffd1cde992 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X2 72504c5118d14f0b00350eeb8450150bbe65fb8a9aecf99ed06d04a03320e478 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X2MASK 8c5515b80904534a506bd0307259b01ca4923d210c0c6ad06ba584513a09aef8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_BYTEORDER f02c5ea8e37a058f746eb88b0346f2ff8ae073efa3b45b5b92faba81dff7f7d2 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_CACHELINE_SIZE 80d213594206f571a9c73ea21c9eca5e57d30a3be215448c6fd1f0db9e7601b1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE 119af0fae6adb6599ee9360e830a90addfe6fdd1c7f32c5acaed64d3e1ae0175 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED b1bca02be107096241e602c069ba2ecaf97f4b5a36b7231df4dfa07462b5a09b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED 865f5e082d2d19df049f1907bc940b64060dc268a49734fa96b5d0d23a9fb014 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED 284d381e7b404b07b03f243667796cf74ec39fe0977139a11d7e93af1ed902e9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_FLOATWORDORDER 8316f58f6ad885a84f8d97b4019c53cd9f7f3d8614c4f674078fa8dc6560ba3f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_FLT_EPSILON f7314b81ebb6e77943bf63e6ef825ffc4259f5432b988b3adbaa46b9c8976847 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GLOB_CASEINSENSITIVE 6fb7a8a3f24a3c9d42537b170176f3281e0d1f406582cfc45fb1096353cb1582 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_DEBUG_FLAG 103ed1d050e998580d6595dd9e311318b1f6ea818b6e151791a8375d5956728d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG 0715ff73e3b640320acfeef1f8a0bd4a2ec5ef7d30150283c1781b3489b90e15 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY dc16056da2ea53f2bb4680c6a89cc60f30a0e632bec442f7c91e1fa0f910f90e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_PROFILE_CORE 893c7014de035faa3f723f70d81d4a5ab0ecdb2de1e955a1891d5c2ee45eef60 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_PROFILE_ES 7dd7ba5b3fc435be5724809e3a02f0c41ef5342476424cd1a61edafe14dd1c1e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH c4d90e46237fc7dd80afe8e30d6a104d02f7afb616cd0d328e5082a4b8df4ade -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE 1a0567d78ab7c52a9aa5da7f5208a2fd11008c231d448df40910c9cf86c911c3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RESET_ISOLATION_FLAG 3df3843efe9ee9fd5ee9e5c27700b05729eac2802262afb11bfabaff240153f0 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RESET_LOSE_CONTEXT b3e7c325bc110787b63483da394d9f2b17269b2e4a89c122887377f499b90abe -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RESET_NO_NOTIFICATION 3ae440396a2c49940c51f367cdd6a8951ce65a4393ce4ae17aa20d58ca4025ce -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG 5ba8d50ddb61b13dac39fb342b4e2542bacdb82f1822561b1e21d985461d84c9 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ da2c41569f7d3187cc6b1b0cca4dbfdf122f30c7973753502397db85920defa5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE 4f4d0849fa28b56df3ce3e36ed0e0cbc164b0d73eb663ababa6eed125843957a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ 1e0832b673670cceee59768ce437f18b64a240e6daa90711169a43cb85f1f57c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_INDEX ad4b4b46027ded0c7abe160ddc00c9df47c51f8e4a195d4012b29a0018e5bffe -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_INDIRECT 876e1daa14319d00330054107b29c74d90d265ac6fbbc9e66e4c732dccc0445f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_VERTEX bc055a2dd15752611a66876792063567966ada482f8cc1206a86b2a83d98a565 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_A b82ab8e910e309efa772dfe02a9888d49ba24a5f3965a5524e1a2857ad3cafe7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_B 38edc229e8f335fceb88beb2988525d0884cc32e3ec749034fa37de5f52190dd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_G b099b6d041702a4f191927f60e10a30fa57507748908956977254b0bc8e393ab -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_R f5166179df377253aa1f291720f0e3bd3e192a7dfa6608190dd5a6b4d3601507 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_RENDERER 1136a9a886b60fe72368bf06e81ea4391c6face14d4db7738511c2a19d8930bf -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_DXBC 486a7d56cf9cdba83db8847e8cbeb78fe91f154fbddd3a1d2980ef351244736e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_DXIL 43de0a1b5c57175c4651a031a3ccdbc4f890916fdfece14ad8662aba08259b98 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_INVALID 184593e71a5c0b7d039805d7e2800a63554059245cd041e41bf23cf7921de373 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_METALLIB 354d0f6bef9fcabbb578770c3b9ef3abd37d4dce42f6a15d0f293c6e5b6f3fc4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_MSL 083cc71d85e277edafa6817480e41c7c1833f49913b6c96574d8082704fcc868 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_PRIVATE 9fa27abff5e4870ccdcb1bdcd4a2dd2b569db85829cae63b15b009bcbc7b0683 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_SPIRV caf3cd1010cccc1a55631efbcff34b062f86c3527d60d2e4099dd6652fd40af5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COLOR_TARGET 424a38a857b0f11bbe4fa40d11e68500d7c2be40fee9940a3684003f3fe18a46 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ 0a15d137a46f01f96c854f3df0c65329b4c61c2c0f9264425976ca31a756fa32 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE 4d668334cc981a1b66d9c28bb85d4fa8da799c848f2fa484f0b44de38c8cbf41 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE 0e16dfbdbedcb2601373e6705f37cc6436fd13ecc6503eb65900905865309ac4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET a5702e20eeb5a9e9720311d80c59f617cfdd44ea7d5e3aa3941b6626c401e691 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ 5faacfc64ba1ca8aac0463ca5b526a48bbd11f7f102d6fd6097bd4b940bc35a0 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_SAMPLER 597a09cb9e48e928f17c748f33c541a5602d63f4a5a2b23997a32c3e7e54b6f7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_AUTOCENTER ac2c4bb71f25cb547d1f492f8ba561d9b88a106979a5a9027c75477bfed19b3b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_CARTESIAN 2cf5077d04d641c3e49a437609f2924fadb6ec9bedea693de108bbe428f085d7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_CONSTANT cf4ba1938c1e0dee4de07dd41dcd39e43635b0a937b2b0a43b157d999165cf07 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_CUSTOM 93ca74d69cdcd970741831f1fd6af266efef4d835d99635d49b33e19f862f7df -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_DAMPER 8918d2d60b29ea17adb81b30e1270b2aefaeff251a7ad3963105ddec42b4dde6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_FRICTION 0be5f0ae1eb0e8e8ea18e0dd99baae0b90eb51e0ad14fc6cfcb0771627cf92b4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_GAIN c82729c2ec0e7afc4b5e051a291da716bb248ed4ae2aaa366f1f1562fb6dfaa0 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_INERTIA abde8ca89b25f57070cf6d379b2ded7a51feb8ecc21489389ca7f10b5957fdab -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_INFINITY 4f1e3c946247332ca113489d643676f6ae983c2f2f5947c8e3bf4343ef670351 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_LEFTRIGHT 7195d27ba48f0137bcc344c7d1871d4841fbe305802e49237a1f941719019330 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_PAUSE 1007721c858e3bb35e33a2614adf5e79eeb0171e9d79f66622bfe965592ca032 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_POLAR e0c337b0126bfc84c2bbc2f2b3d15e6890121542bcd17634f0a44255662f54d3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RAMP 85cf89e7312a162b195f48c978bbdb9f27bbc5ee24dceeda24237cc25e139ee5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RESERVED1 4a02ea55c0256e65ad7cd63d52b597ed0185b210683aa29def004e6a80152f99 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RESERVED2 c0815741def09c7b0218c12e0cf455952283e6279198a62bf1f2bf900a350744 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RESERVED3 314d08cde5167fb7b0c0fa99dc5060736a5abf3fd3776ede440e49cb6a0ea081 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SAWTOOTHDOWN 9321428b7678ef3d563b0cffe3a2bc6be9e27e080dc927f0824595acbe3abfef -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SAWTOOTHUP 15f13f54512328a52258165214d0e5b4d98f1b1df4dad4ab6c69b02c7b240d41 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SINE 68cd60a0bb4a49865b5886dc20e7e3cb3b1b670a7c1cb8c62412e6fc6ca9ab51 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SPHERICAL 8f9c482bbfc2f449401b2300982b90c68f179c1979faf9162bf4c139e3f76a20 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SPRING 571a81bb45bee998a0a03530473814ef93e6fb81e5cca1801c0082f54290a617 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SQUARE c80baa1b31adf7f0813359107a26095c7da155231bd202922682fa514e1b9284 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_STATUS 1f90e1d5cad3aaacd9dd06c949c3752f1d1dab1ff98a2f8634b9bb2ab32d9426 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_STEERING_AXIS 274498e9ab22803b2553750e95cef67c3e0706f9cde1b7d9b7ccd0d75fcd2415 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_TRIANGLE 9c6b916dd5c82b460004d0c5f7766b1b15ccd2be07b3959f42dda4ce67f1b883 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_CENTERED 5a86afd11e61e4a5e71e38025566995184bb1eb9df09baf2f7654ad51092ed6a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_DOWN 551228c256885917206a8261cff087260299c6a1ebbbc85ba3283926095e0ea3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_LEFT 915469631544bdd6f6121519b61c2a6ffcca86feb6f741695443027dde97fe19 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_LEFTDOWN 5f84a38687d7482103a077cd4c9ac3f25c139ba0d8d3d427e10254ed0d411180 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_LEFTUP 35feec08f2514519f32007198870aba72d0970101740e693f4169aabf8f300c4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_RIGHT fe1668a6b5dd1409bab2a6aa878589cadfdda638dc1d99ac0e80325cc076edca -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_RIGHTDOWN edcbdfb799f6e063bbc0d36f015b6d269a04bdf4830a2bf11fc638954cb3fd7f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_RIGHTUP 018b85b76b9b4e609ef8e54ee64bb86bd6ae8ed1937f1a6a7b7d4db98b63e2eb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HAT_UP fb2082fd6058cddf5c3a5acf6d29a847cbc210a6df6f44cbdd86f6e50fa30954 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED 03fa6525e7135e2c43907c9572d7fb10f5aa2cf8f403cab992181d0b74a019ca -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY 10629d0e2ac431ac0711c3de9508ecbbc6ab2f7a4ba3ed1484eab973407c43e1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_BLOCK_ON_PAUSE 8875c47e4886bb569932437ddfb2391df19a94ab179dc8b4e586c9b5f77072fa -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_LOW_LATENCY_AUDIO f44e7a3c8554e672d2219a3df3b734fae04a723028dbe88c4cb6a6f3c1ff7db1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_TRAP_BACK_BUTTON 18c0655005c75c6a7139244f1a5843f08f9fd381f7a25ce34cbcabc55dc014c5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS 465d19700b8114dda4ad4a6207029455ccaa72d2fd678686e2b298fdc5c51fb8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION ed0aee597018e7b0bac515d15faab3b176e1e07f1dbbab3e729bd4dac2989cfb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APP_ID 8a01d2568c4c60dca70668080693828eb8c00306c0f68b61fa167f59cd10c4bd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APP_NAME 4d905036c097f598d3ba5940bcbbbcfa68779eef53638a15606aa4cdb3068a7e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ASSERT d4f20cd4201230fdf1bb5dc45ece30e967b1059463b4ed12329f9045c400d9d4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE 13a6ebf7cacd7bccbf51db101d5fa1e3baa69fea78607c99a9e63fb041f4008a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE 20acd3227fdadf37b675f0cfb17d21161f1f5e23ad1579085ad7d6e5b39f27b0 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE f9ce1423af4d05f766afb0957982c19860d5bf902fc011d06fcebc05d21018b3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_CATEGORY fabbc0a795c366e68d8a8f8df5b0f30ff6dbe22bd895d3850470b206018be9c8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_CHANNELS 94ed24c716b45dfee137ade4e993ec7bf9f00ca147e77979fefda3cf385055e5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME 6956186500345e7b9eea40468c3ba309a0ebb4e24d7dca549451e56c97564f50 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_RAW_STREAM a5558248afc7b356ea86026e7fdf10dc5b0aa736e58a93bbc52f564a1ee6ed4c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES ce7d137e6678fdb7d7738ce65111b7850a37e9ff4d7f88d93d3551b24cb756b8 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_STREAM_NAME bf228aa0d413737494e462263a2fe88148a3f57ea833145e02171b0c313fd3e0 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_STREAM_ROLE c37b87c35695e3b6337bd0922e074f52ee07fc83f86c08fbd53eb65035467893 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DISK_INPUT_FILE 4e028c6d41354f6727d8ebd4e3501c192eeff93818ced0e6e8bba58e3c223004 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DISK_OUTPUT_FILE fb06f3e7e0f2334cd8250db4282147423de34d9594b65568e09ee85cbe683385 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DISK_TIMESCALE 97c9336bb0ebe31919e5009c69bdd5e56ef602c01ceb8e75dd410cf668eb4f78 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DRIVER 342d987b205d38c13559cd45530df4a63dfaea3d91e03786aaa998c50b4cd02f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DUMMY_TIMESCALE 9fac5e6f5b84b3120d9eea24ea5a850a3b40fc73c006891da24d5a70562074e5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_FORMAT bba79cb495aa1653ba25f45175a9bd46e12a16391b24c750e623e7760e6da760 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_FREQUENCY bba4748692f1dc98aa86fe2b5f037cebb686b2c76403f572d03e35bc886cac51 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_INCLUDE_MONITORS 47815574040d4d17883925ade7a410e5734a5387490561b35c22f5a2d33de076 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUTO_UPDATE_JOYSTICKS a80b98c0e5efa5aa69d15cdc412e834f34e48dc3798f3fea1d95c928c4f2a3e6 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUTO_UPDATE_SENSORS ae43291dc6e450f58aead726358b10abfb41d8c27cf76634ed807eaddeeb69a7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_BMP_SAVE_LEGACY_FORMAT 761165a6f831ad8ac6164e23882660ff967b97cad1c93cbfd0d0d0472e8257cd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_CAMERA_DRIVER d64092b6c14562f03e491f9072b1754185eebf7e269612efbc4b9058dffb0b62 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_CPU_FEATURE_MASK c22f373d305b3703b4f49f14e8ffcc416bb03661be073c1c0fe83cbfe9d1d037 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_DISPLAY_USABLE_BOUNDS 6a1de1191c5987ff4b584c5659451226107e0458b009ac7691e1d8f9043534ff -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EGL_LIBRARY 9aa1d29f6d35dd4cabb084b395b3dcb64404a415bf7bd275bd8798a947dcc934 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EMSCRIPTEN_ASYNCIFY 52894622e7298d8f57b000a1d575cdf8d8db88f30d16378a8e40df29ef835f27 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR 6032ed7fa12b2895e151d50548f6f44024df365d9f284396ad14c7d50f31c36d -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT a7432d0dbfeeb6c7ac3dfdecf5a9db1fb4b74e9dbd10380932fbd59aa2a246aa -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ENABLE_SCREEN_KEYBOARD 7d63eb19e19add33926066ab44b1644c1a5d5553aba1c98c7f710bb10da4e759 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EVDEV_DEVICES b9b2e2131facd89c376ca9f4fe7000e1644dc1cb0afb32a754c50ddfcbffaefa -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EVENT_LOGGING 27b1855170d474818fdd94d21793b548c66cb49172c6818c34cd8bfbeda7251f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_FILE_DIALOG_DRIVER cf19012a58b2c7c7c253a63800eb1c49955cda51d2e9cefa5f9a52b5ac39336f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_FORCE_RAISEWINDOW 871435a237c7f36dbcec8085f2e42756e117b79107368790810756ddffc23252 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_FRAMEBUFFER_ACCELERATION 4aba604248c69190832403c33110b4514f53006b2ed7376456daa31ec98ab011 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLERCONFIG 6df89b2759830330da40d363e08b190b72864f0aea08f6753d885119cfff6565 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLERCONFIG_FILE 1f9d1e28055c534616db078a9283421f57718415ee3c0bf2a3c633a6fb27494e -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLERTYPE 57e8aa45598284ac9dc05518ce974ddfe7973f05706dd1704b7dbfbe6646ad93 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES 2641ceb65258ba12877806ec1ecde7e01ffc65cf0840d530a77b798dd9da2631 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT d0d6fe1b5655f1ce2a602fe14588cbee696f15d964ca27833651157bcdedad68 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLER_SENSOR_FUSION b850643329b47216b8d44d60d2ea27a89e817d13beb2d06ae081cc8ba2d5829f -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT 661fad0039f7f587c581235231b97f5ddc9609992c754e7d1f12b9167a9de822 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_DESCRIPTION e2ea1f0de31a33c1c13ddac76de88d527042c1cc85f1989b33d310d0fc409392 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH 46f2f9dcfe9cb791b57aa03a89fe1de6a291bbe324c38de2074ea8a3f7040236 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_SCOPE 5d3a6bfcf7bec0c592fc3fe133f3123e26dada59c96390e64dda8616f56eeaa3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_TITLE fb61788e3e9d7f40088748e4620a2af9f8322a57ce1890e07fb3d00d90fdf300 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GPU_DRIVER d3bbfc78d248831f578194a1cf1390288f073d108aeb62bc937161114ca0472c -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS 687eb35e0d27099f065bf8e01459b1e8deb2ec5421ad1cd3fc5eaac411cccd04 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_IGNORE_DEVICES 223e8796775a98362c1ba0a0e10be4d73b2f7f9426bbc02eb6118160132292b3 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_LIBUSB 69d81ff53b0d786cf1d3526ee4af467392690c26cee1b08ecccba93557104c0a -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_LIBUSB_GAMECUBE a1a16a55bb4a451ec74a3c4356449926cd9b6d892cba3a16a5ec89af1724d1ef -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_LIBUSB_WHITELIST 8901c55b71f95dc8c75a20d12616156371d91f91997186e5f78b900a414e4171 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_UDEV 4f33f8accc738235568f603ce1ccb0c5a6b0e439af9265e1a2a16f190ed9524b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_IME_IMPLEMENTED_UI 34e97715176b2b5c704cc4c130a8dfd4aafcdf319b8c80ab599632373f757a44 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_INVALID_PARAM_CHECKS d60c0664f2a2bd64383ba281d5f66faf61b87f9f0e3d3fedadb4b667f97f2fd4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_IOS_HIDE_HOME_INDICATOR 5b83485834adfed9ea5c391ce9a3e9ba9d75982f4b62f007fc5b573afd0d51da -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS ed861e6780a2c891d96b2c559b6e10a82da051c74f9c3c702fa074386cdab0a7 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES b448b0141c61b69b4096f604c30677f2a8274a7b1516ab97ab234d1dd472935b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED fa6cb2197e0133ca4ef80c1ba057dfb5b42d9c53c25d590334333d92c625ea7b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES e197946e73c54c0140dea1943b6f6a43e354dca7eacb81dbab8311b8b74343c5 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED 028c6b39881d777c0517e6832b8e45f1ad06bd075f9efd98edeb3cc7e0d15620 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_DEVICE d7cee55c104de2eeb2380db975237f2c89921a4621f0c1c489c843af63f98a21 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_DIRECTINPUT e91d8d05da923a701f2abf55fe761f25d5e4e60335f3002b6149f57577cddc11 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ENHANCED_REPORTS 36b0fb20549581786a823b9003f6fedd031b4e5129e9075a22e1d7e58f1d0ffd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES ff681a7debdb8f166ae1024d17d79d99493a684bb81401f9b6b456e3c2747dc4 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED 0c2e0df7944c94a13bb725295c58ac0ba8152153fe469cb244ba6df972123c7b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES 1b2a3b1959f7abdb8151da6801d0cb7b499066b8c8e90e48c821ee7c68d8ad1b -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED 58f51aed31809a52506abd020cd7a3bbdb2962c2851c2ad595db3e5483f1a374 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_GAMEINPUT c3f78cb68afae82c77fce9611f6600910b0b20400ef866f8699b576b42fe76b2 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HAPTIC_AXES 9a56a33ed620226d649f94e9ae069e5799bc6ee766aa3fb406e8ba56570df1fd -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI 8fe318d1e56adb8b36d45c2d933d836a9dfad5f80b184de65ee3083e0fece2fb -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_8BITDO 9278a833a3eae2df69d70ee863faf89df3bda5a9834dd1bd557746462a028812 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS 64560cdbcbec4db5302caf70097df498429ad279e8971f440b73d38955c315a1 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI 830263601c337c313af8047a04e67e1a49c0aadaaa92ceaf6c1f65579d953a15 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE 54df9264320fc3fe1bfd894d682db595f1125f58150487b373c6c9a27b69a2fc -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE 038a8226cc17c3e4f19d60fcfcf576a7a12035d62695711ebae2cc932e39ec72 -->
+<!-- api: F:Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_GAMESIR 792378696c84724a7227638a4a4c0ed2ebd25ce65a08683fcb0f361640e530c6 -->
+
+| 声明 | 语义与限制 |
+| --- | --- |
+| <a id="api-26d35c7d25384e9f"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.HAVE_WINAPIFAMILY_H = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4555) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-4babe5054f703970"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_0 = 48`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4413) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`48` |
+| <a id="api-2b1aecd64f1208fc"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_1 = 49`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4459) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`49` |
+| <a id="api-42617758536f239c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_2 = 50`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4520) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`50` |
+| <a id="api-2bb5bacbedef98ef"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_3 = 51`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4662) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`51` |
+| <a id="api-1f8c59f5eb9e0500"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_4 = 52`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4612) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`52` |
+| <a id="api-3471072f56f7e376"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_5 = 53`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4577) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`53` |
+| <a id="api-10addbef641e4188"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_6 = 54`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4697) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`54` |
+| <a id="api-bc6897bde74cef8a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_7 = 55`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4454) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`55` |
+| <a id="api-680153dafd3d2b69"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_8 = 56`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4593) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`56` |
+| <a id="api-68e85aa4dd5c105c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_9 = 57`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4404) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`57` |
+| <a id="api-cb34f6818fb4b8d9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_A = 97`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4368) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`97` |
+| <a id="api-889380bf763438e8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_BACK = 1073742106`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4714) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742106` |
+| <a id="api-0bb11e627b9a94c0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_BOOKMARKS = 1073742110`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4766) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742110` |
+| <a id="api-42a2ccf6a917ab32"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_CLOSE = 1073742099`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4468) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742099` |
+| <a id="api-6cdef0158438ade8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_EXIT = 1073742100`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4772) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742100` |
+| <a id="api-dba1a7cfdbaecfb2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_FORWARD = 1073742107`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4549) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742107` |
+| <a id="api-c9089a1b2ff25963"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_HOME = 1073742105`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4764) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742105` |
+| <a id="api-4819080b4a2a8517"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_NEW = 1073742097`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4486) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742097` |
+| <a id="api-8e8eca1a3f5bc11e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_OPEN = 1073742098`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4608) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742098` |
+| <a id="api-13c81f657fb2cd1e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_PRINT = 1073742102`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4634) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742102` |
+| <a id="api-3b3da117aa4e9c02"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_PROPERTIES = 1073742103`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4532) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742103` |
+| <a id="api-e0d2a8d1ae866bff"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_REFRESH = 1073742109`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4438) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742109` |
+| <a id="api-e123901bfc550fcc"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_SAVE = 1073742101`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4717) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742101` |
+| <a id="api-84c1527bee0306d2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_SEARCH = 1073742104`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4643) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742104` |
+| <a id="api-9484682d7a405b29"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AC_STOP = 1073742108`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4367) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742108` |
+| <a id="api-39962635219e83d3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AGAIN = 1073741945`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4565) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741945` |
+| <a id="api-0041a7558b103ca2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_ALTERASE = 1073741977`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4720) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741977` |
+| <a id="api-d1f100eef01f29c9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AMPERSAND = 38`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4724) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`38` |
+| <a id="api-489297c13bb54c49"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_APOSTROPHE = 39`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4738) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`39` |
+| <a id="api-ebea97b1a81ef87e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_APPLICATION = 1073741925`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4415) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741925` |
+| <a id="api-981c615679594fe7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_ASTERISK = 42`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4668) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`42` |
+| <a id="api-7d23c9c3b1aaed08"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_AT = 64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4453) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`64` |
+| <a id="api-918fbd34923379ef"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_B = 98`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4788) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`98` |
+| <a id="api-f5d9d81e671a6528"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_BACKSLASH = 92`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4436) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`92` |
+| <a id="api-6d17030b37a9af04"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_BACKSPACE = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4828) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-b7f0b71f26b760b6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_C = 99`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4545) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`99` |
+| <a id="api-f288b5747c78388b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CALL = 1073742113`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4562) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742113` |
+| <a id="api-09b1246cb94d58c2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CANCEL = 1073741979`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4638) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741979` |
+| <a id="api-1b26be7994c8d017"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CAPSLOCK = 1073741881`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4647) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741881` |
+| <a id="api-00afc4724eb5f237"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CARET = 94`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4787) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`94` |
+| <a id="api-276cfdf1591f45da"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CHANNEL_DECREMENT = 1073742085`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4687) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742085` |
+| <a id="api-a04d54228ba8417f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CHANNEL_INCREMENT = 1073742084`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4601) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742084` |
+| <a id="api-4e82b5214b6b73e2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CLEAR = 1073741980`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4561) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741980` |
+| <a id="api-9ff0d2fef61ae48b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CLEARAGAIN = 1073741986`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4815) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741986` |
+| <a id="api-b43ee5b6bb6ae779"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_COLON = 58`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4729) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`58` |
+| <a id="api-c4b026adbaed2e50"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_COMMA = 44`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4625) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`44` |
+| <a id="api-0369efbe7ef1aab8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_COPY = 1073741948`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4504) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741948` |
+| <a id="api-91668caa883ee0d2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CRSEL = 1073741987`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4784) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741987` |
+| <a id="api-afa3dc1097e2bc0f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CURRENCYSUBUNIT = 1073742005`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4495) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742005` |
+| <a id="api-0ba563b9bff72dbd"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CURRENCYUNIT = 1073742004`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4480) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742004` |
+| <a id="api-371e463d6eba7efe"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_CUT = 1073741947`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4584) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741947` |
+| <a id="api-018bce11502f5473"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_D = 100`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4744) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`100` |
+| <a id="api-a96e7a3896005c05"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_DBLAPOSTROPHE = 34`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4594) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`34` |
+| <a id="api-fb646aa7f1a9a2b8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_DECIMALSEPARATOR = 1073742003`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4795) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742003` |
+| <a id="api-7ce1b6d9c7e9c222"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_DELETE = 127`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4676) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`127` |
+| <a id="api-5230468cef8a7a6f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_DOLLAR = 36`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4820) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`36` |
+| <a id="api-4650c116858442bc"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_DOWN = 1073741905`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4780) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741905` |
+| <a id="api-ebfcc2aa74a1347b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_E = 101`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4527) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`101` |
+| <a id="api-44c4df147dafbe7e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_END = 1073741901`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4394) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741901` |
+| <a id="api-560db9df6179bc89"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_ENDCALL = 1073742114`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4417) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742114` |
+| <a id="api-7ea1e01a4bc4e9d1"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_EQUALS = 61`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4646) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`61` |
+| <a id="api-0aa0b1c8f3e5f15a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_ESCAPE = 27`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4752) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`27` |
+| <a id="api-86feb56ee97b0f3f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_EXCLAIM = 33`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4692) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`33` |
+| <a id="api-af814e53576adcf8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_EXECUTE = 1073741940`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4711) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741940` |
+| <a id="api-b4e8658855387f48"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_EXSEL = 1073741988`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4810) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741988` |
+| <a id="api-bc3d78ccad7fa237"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_EXTENDED_MASK = 536870912`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4366) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870912` |
+| <a id="api-a69304694ea4bf41"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F = 102`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4425) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`102` |
+| <a id="api-1a7ba1eac06c2a9e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F1 = 1073741882`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4447) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741882` |
+| <a id="api-a7282841823895d8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F10 = 1073741891`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4502) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741891` |
+| <a id="api-a2f38baf2b754390"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F11 = 1073741892`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4653) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741892` |
+| <a id="api-95c3294d0f62ce4a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F12 = 1073741893`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4702) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741893` |
+| <a id="api-0d8c60dafce8dbb7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F13 = 1073741928`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4775) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741928` |
+| <a id="api-280da4fc62c7c8b0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F14 = 1073741929`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4649) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741929` |
+| <a id="api-d99a7765652b9cb9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F15 = 1073741930`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4746) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741930` |
+| <a id="api-2cb446c6c0fa741e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F16 = 1073741931`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4528) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741931` |
+| <a id="api-44ebc5f75ca6467d"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F17 = 1073741932`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4369) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741932` |
+| <a id="api-6cc30ceea381ba9b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F18 = 1073741933`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4728) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741933` |
+| <a id="api-fa841e697f5c51ec"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F19 = 1073741934`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4427) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741934` |
+| <a id="api-43a9a46134b66acf"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F2 = 1073741883`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4675) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741883` |
+| <a id="api-c46fa9732b5c6e0b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F20 = 1073741935`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4798) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741935` |
+| <a id="api-6a4c0e37d18d6461"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F21 = 1073741936`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4582) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741936` |
+| <a id="api-70286040b73b3c7a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F22 = 1073741937`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4418) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741937` |
+| <a id="api-2cad02dbfb150e5e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F23 = 1073741938`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4657) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741938` |
+| <a id="api-2da83c5b4311bad0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F24 = 1073741939`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4416) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741939` |
+| <a id="api-747f86c70ff1dc64"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F3 = 1073741884`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4757) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741884` |
+| <a id="api-536deca6eac3cefc"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F4 = 1073741885`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4677) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741885` |
+| <a id="api-c4262341d3aa3ee0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F5 = 1073741886`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4478) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741886` |
+| <a id="api-a10889a2620a2117"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F6 = 1073741887`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4463) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741887` |
+| <a id="api-aa8cdf60d905a8f7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F7 = 1073741888`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4674) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741888` |
+| <a id="api-2064ae12079fa446"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F8 = 1073741889`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4432) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741889` |
+| <a id="api-8ee061538ebbd8d7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_F9 = 1073741890`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4611) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741890` |
+| <a id="api-077e16105dcdd5f1"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_FIND = 1073741950`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4715) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741950` |
+| <a id="api-ad46f9e30474a1ff"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_G = 103`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4661) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`103` |
+| <a id="api-486e5885576f3ca3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_GRAVE = 96`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4620) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`96` |
+| <a id="api-de62edff34f004cf"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_GREATER = 62`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4635) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`62` |
+| <a id="api-a7ea23c8cfba431b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_H = 104`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4469) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`104` |
+| <a id="api-20c1d067e01c9926"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_HASH = 35`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4678) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`35` |
+| <a id="api-3d45a2f4cdf269a3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_HELP = 1073741941`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4637) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741941` |
+| <a id="api-5ad0886087b7ee34"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_HOME = 1073741898`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4563) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741898` |
+| <a id="api-037ef9d8a29e7538"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_I = 105`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4652) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`105` |
+| <a id="api-7f7c61fcd57ae5c6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_INSERT = 1073741897`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4484) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741897` |
+| <a id="api-85dc8fc61fb2293e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_J = 106`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4723) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`106` |
+| <a id="api-0a746239f0395f61"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_K = 107`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4576) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`107` |
+| <a id="api-3b0f7dd227bb9b5b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_0 = 1073741922`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4591) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741922` |
+| <a id="api-dbcd300a5f1445ad"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_00 = 1073742000`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4658) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742000` |
+| <a id="api-2268e04f67411d31"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_000 = 1073742001`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4742) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742001` |
+| <a id="api-295a99b088c38e03"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_1 = 1073741913`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4503) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741913` |
+| <a id="api-d1a5132f8b6dd79f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_2 = 1073741914`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4750) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741914` |
+| <a id="api-9189fb2e10a895c3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_3 = 1073741915`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4384) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741915` |
+| <a id="api-e059048609ba72d3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_4 = 1073741916`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4751) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741916` |
+| <a id="api-709006fa13e6b2ca"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_5 = 1073741917`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4736) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741917` |
+| <a id="api-d2de68e2f5f73b81"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_6 = 1073741918`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4782) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741918` |
+| <a id="api-f47434d98a67b11e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_7 = 1073741919`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4722) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741919` |
+| <a id="api-ba61f0454fc78137"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_8 = 1073741920`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4721) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741920` |
+| <a id="api-a79f2aad72c0502b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_9 = 1073741921`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4526) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741921` |
+| <a id="api-80246995eb558acc"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_A = 1073742012`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4737) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742012` |
+| <a id="api-67fccbb8fb9fa9f4"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_AMPERSAND = 1073742023`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4492) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742023` |
+| <a id="api-f907e93ca41b5f98"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_AT = 1073742030`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4686) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742030` |
+| <a id="api-375eda9bf130f7d4"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_B = 1073742013`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4471) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742013` |
+| <a id="api-946ccefab05b2a38"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_BACKSPACE = 1073742011`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4461) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742011` |
+| <a id="api-d9b9e9b9842ccbeb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_BINARY = 1073742042`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4402) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742042` |
+| <a id="api-3a95641bd1d237f2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_C = 1073742014`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4821) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742014` |
+| <a id="api-497a154fa34dec3f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_CLEAR = 1073742040`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4393) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742040` |
+| <a id="api-b3280cc817ae8e97"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_CLEARENTRY = 1073742041`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4567) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742041` |
+| <a id="api-10ed9e79c73840a6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_COLON = 1073742027`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4671) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742027` |
+| <a id="api-34b5dca9ce67f7f6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_COMMA = 1073741957`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4477) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741957` |
+| <a id="api-d33208fcc70bdccd"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_D = 1073742015`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4655) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742015` |
+| <a id="api-45d02290213afeeb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DBLAMPERSAND = 1073742024`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4727) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742024` |
+| <a id="api-136e08818bbf4ff2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DBLVERTICALBAR = 1073742026`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4409) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742026` |
+| <a id="api-c2a8e442ca418994"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DECIMAL = 1073742044`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4446) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742044` |
+| <a id="api-54e929b19d04c3db"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_DIVIDE = 1073741908`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4706) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741908` |
+| <a id="api-7888a67f951fb6f8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_E = 1073742016`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4642) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742016` |
+| <a id="api-d718d5c85e3f1f0c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_ENTER = 1073741912`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4623) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741912` |
+| <a id="api-0dfe7572ad6d8df0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_EQUALS = 1073741927`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4801) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741927` |
+| <a id="api-c04b95f8e0729287"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_EQUALSAS400 = 1073741958`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4451) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741958` |
+| <a id="api-c0848d2af980dbf6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_EXCLAM = 1073742031`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4712) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742031` |
+| <a id="api-71e3e370dafed439"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_F = 1073742017`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4616) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742017` |
+| <a id="api-21e6058e9f51131b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_GREATER = 1073742022`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4581) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742022` |
+| <a id="api-fadcbb6015ec2c2f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_HASH = 1073742028`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4377) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742028` |
+| <a id="api-e761090b35385ca0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_HEXADECIMAL = 1073742045`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4508) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742045` |
+| <a id="api-301d16328d468e98"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_LEFTBRACE = 1073742008`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4534) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742008` |
+| <a id="api-9471baedb2783fba"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_LEFTPAREN = 1073742006`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4524) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742006` |
+| <a id="api-3d2cd807e0b8525c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_LESS = 1073742021`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4596) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742021` |
+| <a id="api-08bfe8d303fff573"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMADD = 1073742035`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4631) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742035` |
+| <a id="api-b0f881ffb8a77324"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMCLEAR = 1073742034`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4716) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742034` |
+| <a id="api-a759063a0d02a0b9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMDIVIDE = 1073742038`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4754) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742038` |
+| <a id="api-7c7b78b3e89e63d4"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMMULTIPLY = 1073742037`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4511) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742037` |
+| <a id="api-7f3264defeb73666"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMRECALL = 1073742033`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4630) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742033` |
+| <a id="api-7dea0e00d8902ae9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMSTORE = 1073742032`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4566) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742032` |
+| <a id="api-587fce3a1f687f19"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MEMSUBTRACT = 1073742036`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4579) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742036` |
+| <a id="api-967f4f175ad903e2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MINUS = 1073741910`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4455) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741910` |
+| <a id="api-95aa8ccb4a9ab322"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_MULTIPLY = 1073741909`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4774) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741909` |
+| <a id="api-6f4ad01d30008bfa"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_OCTAL = 1073742043`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4749) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742043` |
+| <a id="api-0bcb0e71697d248f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PERCENT = 1073742020`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4580) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742020` |
+| <a id="api-1445bea34a43230c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PERIOD = 1073741923`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4613) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741923` |
+| <a id="api-bef8c7db28aa16e7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PLUS = 1073741911`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4794) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741911` |
+| <a id="api-4774ea1825d98f9e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_PLUSMINUS = 1073742039`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4632) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742039` |
+| <a id="api-6722a08a0fb1e152"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_POWER = 1073742019`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4431) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742019` |
+| <a id="api-fca0e9115625cf72"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_RIGHTBRACE = 1073742009`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4442) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742009` |
+| <a id="api-140bd9bd6030ecac"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_RIGHTPAREN = 1073742007`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4479) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742007` |
+| <a id="api-4db235d91a4c832a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_SPACE = 1073742029`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4789) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742029` |
+| <a id="api-b5c786b75b3e8090"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_TAB = 1073742010`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4370) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742010` |
+| <a id="api-9a60b51f31a6677c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_VERTICALBAR = 1073742025`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4648) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742025` |
+| <a id="api-47535ee13360f607"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_KP_XOR = 1073742018`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4621) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742018` |
+| <a id="api-676914537613b060"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_L = 108`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4578) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`108` |
+| <a id="api-0e0d250e77e42198"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LALT = 1073742050`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4664) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742050` |
+| <a id="api-bd4c6d0516480bed"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LCTRL = 1073742048`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4824) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742048` |
+| <a id="api-05b7bcb99913c23b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LEFT = 1073741904`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4553) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741904` |
+| <a id="api-fd2a48d074aa900a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LEFTBRACE = 123`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4610) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`123` |
+| <a id="api-747622b67d0cbafc"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LEFTBRACKET = 91`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4571) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`91` |
+| <a id="api-dcc147047b51168f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LEFTPAREN = 40`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4761) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`40` |
+| <a id="api-a2cf9600c9f39e96"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LEFT_TAB = 536870913`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4650) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870913` |
+| <a id="api-800e14abc5cbadac"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LESS = 60`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4433) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`60` |
+| <a id="api-2f5e810b810908ed"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LEVEL5_SHIFT = 536870914`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4429) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870914` |
+| <a id="api-09763f42f81e111f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LGUI = 1073742051`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4690) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742051` |
+| <a id="api-5b26f70c8ec33669"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LHYPER = 536870918`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4388) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870918` |
+| <a id="api-3e66b2d0272ecc26"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LMETA = 536870916`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4568) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870916` |
+| <a id="api-31f95465eea6353b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_LSHIFT = 1073742049`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4517) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742049` |
+| <a id="api-091e1b487898ea38"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_M = 109`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4633) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`109` |
+| <a id="api-3c23d631c029f2b6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_EJECT = 1073742094`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4597) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742094` |
+| <a id="api-70d8074f67d2202e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_FAST_FORWARD = 1073742089`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4391) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742089` |
+| <a id="api-9e190cd5d5fa8d5c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_NEXT_TRACK = 1073742091`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4809) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742091` |
+| <a id="api-3e4eff927c198d99"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PAUSE = 1073742087`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4654) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742087` |
+| <a id="api-6e88fbc11d1feff4"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PLAY = 1073742086`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4770) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742086` |
+| <a id="api-8000c3b2b38d1697"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PLAY_PAUSE = 1073742095`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4689) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742095` |
+| <a id="api-5a5506ad1f20a7e3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_PREVIOUS_TRACK = 1073742092`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4783) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742092` |
+| <a id="api-fafb5eb7fe1d0314"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_RECORD = 1073742088`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4399) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742088` |
+| <a id="api-69206bc15e6ad2ab"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_REWIND = 1073742090`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4510) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742090` |
+| <a id="api-7afba066815e4f67"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_SELECT = 1073742096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4383) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742096` |
+| <a id="api-a267106437b9e70b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MEDIA_STOP = 1073742093`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4695) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742093` |
+| <a id="api-1544ce1461090bd7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MENU = 1073741942`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4604) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741942` |
+| <a id="api-7c80d64efb0d5f5b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MINUS = 45`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4817) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`45` |
+| <a id="api-ce1420260d51088a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MODE = 1073742081`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4472) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742081` |
+| <a id="api-956975f679145e6e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MULTI_KEY_COMPOSE = 536870915`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4694) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870915` |
+| <a id="api-aa110c2e221394a0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_MUTE = 1073741951`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4730) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741951` |
+| <a id="api-483eb89a057c499a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_N = 110`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4609) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`110` |
+| <a id="api-dec1da213feb6cdd"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_NUMLOCKCLEAR = 1073741907`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4667) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741907` |
+| <a id="api-71ef4d0768cd8a7a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_O = 111`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4627) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`111` |
+| <a id="api-4327d18a6e738b79"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_OPER = 1073741985`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4482) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741985` |
+| <a id="api-2388504730b72e58"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_OUT = 1073741984`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4389) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741984` |
+| <a id="api-278c21268c65e71c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_P = 112`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4435) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`112` |
+| <a id="api-ae26c850e288d3cb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PAGEDOWN = 1073741902`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4587) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741902` |
+| <a id="api-04945c15c66f5540"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PAGEUP = 1073741899`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4708) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741899` |
+| <a id="api-37671ce443114ba9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PASTE = 1073741949`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4535) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741949` |
+| <a id="api-d8401dfa26517f9c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PAUSE = 1073741896`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4763) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741896` |
+| <a id="api-b5255da61766d2da"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PERCENT = 37`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4542) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`37` |
+| <a id="api-cb9740565ad3c7d5"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PERIOD = 46`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4699) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`46` |
+| <a id="api-d5f5e9f499b42510"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PIPE = 124`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4410) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`124` |
+| <a id="api-3d3761974ccb78d4"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PLUS = 43`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4777) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`43` |
+| <a id="api-a9ac80da66c98559"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PLUSMINUS = 177`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4599) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`177` |
+| <a id="api-e655df0e1925191c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_POWER = 1073741926`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4645) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741926` |
+| <a id="api-649fdb8d8a39b7bb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PRINTSCREEN = 1073741894`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4401) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741894` |
+| <a id="api-63491cfa337c3821"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_PRIOR = 1073741981`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4636) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741981` |
+| <a id="api-3061abd2436b420e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_Q = 113`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4491) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`113` |
+| <a id="api-33430e9ec601e74c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_QUESTION = 63`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4665) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`63` |
+| <a id="api-a25d22376260ae64"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_R = 114`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4444) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`114` |
+| <a id="api-3e6af7a8c2b8011e"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RALT = 1073742054`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4373) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742054` |
+| <a id="api-16b494e669bee34a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RCTRL = 1073742052`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4825) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742052` |
+| <a id="api-3913e30e95c51837"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RETURN = 13`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4707) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`13` |
+| <a id="api-81d087131e315ae8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RETURN2 = 1073741982`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4681) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741982` |
+| <a id="api-e491ef35e88d4f0b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RGUI = 1073742055`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4747) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742055` |
+| <a id="api-362e89abfb3781c7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RHYPER = 536870919`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4734) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870919` |
+| <a id="api-435eab5a236644b6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHT = 1073741903`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4802) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741903` |
+| <a id="api-30fec808b442f7d5"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHTBRACE = 125`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4700) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`125` |
+| <a id="api-13643310df7a03f8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHTBRACKET = 93`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4673) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`93` |
+| <a id="api-58dbd9cd41d7b752"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RIGHTPAREN = 41`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4485) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`41` |
+| <a id="api-d9301f8c9d4ebd2f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RMETA = 536870917`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4680) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536870917` |
+| <a id="api-aa980949b1d3ef3c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_RSHIFT = 1073742053`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4412) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742053` |
+| <a id="api-7f5b45dfc9de4fa0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_S = 115`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4513) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`115` |
+| <a id="api-5b9152361d3f8bde"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SCANCODE_MASK = 1073741824`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4407) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741824` |
+| <a id="api-a5d67fbbcc3904ce"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SCROLLLOCK = 1073741895`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4703) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741895` |
+| <a id="api-8650a15932c2a774"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SELECT = 1073741943`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4506) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741943` |
+| <a id="api-fead685b6a8303fb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SEMICOLON = 59`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4558) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`59` |
+| <a id="api-96c859069770e776"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SEPARATOR = 1073741983`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4790) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741983` |
+| <a id="api-277d1b046a751a28"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SLASH = 47`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4546) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`47` |
+| <a id="api-b7e8228b471b90ed"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SLEEP = 1073742082`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4521) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742082` |
+| <a id="api-6735d2d02d216318"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SOFTLEFT = 1073742111`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4426) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742111` |
+| <a id="api-987a60b7f79f9cb6"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SOFTRIGHT = 1073742112`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4564) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742112` |
+| <a id="api-78eb35945f9e0a65"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SPACE = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4614) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-6087ebe4e7ba4fc1"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_STOP = 1073741944`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4666) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741944` |
+| <a id="api-82c0ac1ff73f7a85"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_SYSREQ = 1073741978`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4397) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741978` |
+| <a id="api-8a54fec31c8bf7bd"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_T = 116`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4629) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`116` |
+| <a id="api-fdaf79ae6cbf00e9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_TAB = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4423) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`9` |
+| <a id="api-99a132c0322d3006"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_THOUSANDSSEPARATOR = 1073742002`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4420) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742002` |
+| <a id="api-b4714c9018fe6534"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_TILDE = 126`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4705) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`126` |
+| <a id="api-e4db0de318ac9485"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_U = 117`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4615) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`117` |
+| <a id="api-4d49a7ae942c8c28"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_UNDERSCORE = 95`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4493) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`95` |
+| <a id="api-1ab3c982ef7fdc40"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_UNDO = 1073741946`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4760) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741946` |
+| <a id="api-119dda852322b0e8"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_UNKNOWN = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4811) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-2e242c6364faeb66"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_UP = 1073741906`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4679) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741906` |
+| <a id="api-e879ae895f123458"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_V = 118`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4494) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`118` |
+| <a id="api-3c2ae950870de9bb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_VOLUMEDOWN = 1073741953`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4376) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741953` |
+| <a id="api-b666e49d8c7b9766"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_VOLUMEUP = 1073741952`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4670) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073741952` |
+| <a id="api-1719961aeec73954"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_W = 119`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4826) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`119` |
+| <a id="api-c3c85da1701a0db5"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_WAKE = 1073742083`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4602) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1073742083` |
+| <a id="api-c1219c5774a6b6de"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_X = 120`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4400) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`120` |
+| <a id="api-0ead3b8a0e0138d2"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_Y = 121`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4473) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`121` |
+| <a id="api-5a7a7e58456388da"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDLK_Z = 122`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4381) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`122` |
+| <a id="api-1dad4426cc6a310f"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_OPAQUE = 255`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4656) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`255` |
+| <a id="api-91268d493b73015b"></a>[`public static readonly float Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_OPAQUE_FLOAT`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4776) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-dc88469aaad33f08"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_TRANSPARENT = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4592) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-f2f0cd933dc04b4b"></a>[`public static readonly float Inno.Native.Sdl3.SDL.Constants.SDL_ALPHA_TRANSPARENT_FLOAT`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4735) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-a294895c33d38377"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_ASSERT_LEVEL = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4434) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-d12622e65b9844ba"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK = 4294967295`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4771) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4294967295` |
+| <a id="api-10e6bd9bfdcee705"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_DEVICE_DEFAULT_RECORDING = 4294967294`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4644) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4294967294` |
+| <a id="api-89367fcdd18d2ad1"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_BIG_ENDIAN = 4096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4698) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4096` |
+| <a id="api-a3bb25e41de56e38"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_BITSIZE = 255`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4424) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`255` |
+| <a id="api-3d1c2dd8dbbd5516"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_FLOAT = 256`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4375) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`256` |
+| <a id="api-35a3e541fa88b375"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_AUDIO_MASK_SIGNED = 32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4822) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32768` |
+| <a id="api-3259c49f4d93f767"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_BIG_ENDIAN = 4321`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4741) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4321` |
+| <a id="api-688a8b6a098ccb53"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_ADD = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4651) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-f84f3da69a8f7dc0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_ADD_PREMULTIPLIED = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4547) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-11e083a5b2be70f0"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_BLEND = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4806) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-8e38ee3d0b3803b9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_BLEND_PREMULTIPLIED = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4569) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-8f1bf519b2462f1c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_INVALID = 2147483647`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4422) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2147483647` |
+| <a id="api-f0b57c1736b568e4"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_MOD = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4540) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-11d5b0034e699042"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_MUL = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4585) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-3d52639b56ce9702"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BLENDMODE_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4684) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-72f2363c978aca4f"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_LEFT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4588) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-546aede7c6a41b59"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_LMASK = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4395) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-f83e0196e4873b90"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_MIDDLE = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4490) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-0718fa2723820af9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_MMASK = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4639) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-0d6dfd1db49a989e"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_RIGHT = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4437) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-08296c7e48d9c226"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_RMASK = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4814) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-7117191959d18c65"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X1 = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4731) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-37b37dbfac79df02"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X1MASK = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4756) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-8cf2868a8776af05"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X2 = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4683) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`5` |
+| <a id="api-e896871823f1dd77"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_BUTTON_X2MASK = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4560) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-013a989a32e790a8"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_BYTEORDER = 1234`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4660) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1234` |
+| <a id="api-a2d2109d9db89026"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_CACHELINE_SIZE = 128`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4465) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`128` |
+| <a id="api-cb303d58fdb3975d"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4533) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-2dc3d51ac30d0567"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED = "recommended"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5173) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`recommended` |
+| <a id="api-1b6f11c3820508eb"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED = "required"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5171) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`required` |
+| <a id="api-57ef6050178d8a36"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED = "suggested"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4837) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`suggested` |
+| <a id="api-3aab1da08f7efd67"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_FLOATWORDORDER = 1234`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4755) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1234` |
+| <a id="api-8642656e8a967996"></a>[`public static readonly float Inno.Native.Sdl3.SDL.Constants.SDL_FLT_EPSILON`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4767) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-4dbbc70ff07a2f30"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GLOB_CASEINSENSITIVE = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4586) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-a6c8503933d6386f"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_DEBUG_FLAG = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4448) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-a7dc932b5e2e7883"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4476) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-60426a3aaf896fcf"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_PROFILE_COMPATIBILITY = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4488) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-b43d547a44db0fc8"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_PROFILE_CORE = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4765) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-1066448e146e4819"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_PROFILE_ES = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4572) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-b8fe19c1b8c74aa0"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4773) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-18e4f2378e5cabef"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4818) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-ce9a0b7012020950"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RESET_ISOLATION_FLAG = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4605) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-8b78eb12f949eca5"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RESET_LOSE_CONTEXT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4525) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-088005c610d217dc"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_RESET_NO_NOTIFICATION = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4778) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-f206fa5b52ddc1b5"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4452) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-38ff253c9d95615b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4458) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-a30b9b701ae77443"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4793) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-35a8ed4812258387"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4439) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-96b763fe2dc2d5ef"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_INDEX = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4456) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-4131661eb6ed4bd4"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_INDIRECT = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4419) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-6d79a00abcd9cb0d"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_BUFFERUSAGE_VERTEX = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4626) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-6833d738404bb654"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_A = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4719) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-b8fc664f346c3062"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_B = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4441) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-c97e97743266173c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_G = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4618) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-d053836d271ea25a"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_COLORCOMPONENT_R = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4443) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-c20c59babadbf215"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_GPU_RENDERER = "gpu"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4893) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`gpu` |
+| <a id="api-7cae6676416e7d76"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_DXBC = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4421) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-0c20515b0551e600"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_DXIL = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4792) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-6104a3261e6c1462"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_INVALID = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4489) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-0344a3c4fca7fb16"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_METALLIB = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4403) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-d240f21c34b2310c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_MSL = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4497) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-6b3471e617467005"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_PRIVATE = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4387) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-4801650046b4617f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_SHADERFORMAT_SPIRV = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4544) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-73a15e63a29936fb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COLOR_TARGET = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4474) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-837256cb7f9a1121"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4507) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-d21937abb6fd8f49"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE = 64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4514) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`64` |
+| <a id="api-db6ae177fec81e80"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4405) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-a077bbc578ddeb6d"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4718) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-50a7f32889d7f163"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4428) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-e0ef77c01585bdb3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_GPU_TEXTUREUSAGE_SAMPLER = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4531) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-ea737d063a40c1a3"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_AUTOCENTER = 131072`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4392) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`131072` |
+| <a id="api-e276aac89134c96b"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_CARTESIAN = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4785) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-407e47636b82bf65"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_CONSTANT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4414) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-3bbb4c92e051b24d"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_CUSTOM = 32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4641) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32768` |
+| <a id="api-3248d4ac58110794"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_DAMPER = 256`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4779) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`256` |
+| <a id="api-d03ac389fcfe5e04"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_FRICTION = 1024`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4467) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1024` |
+| <a id="api-b91b339bee704f9b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_GAIN = 65536`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4445) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`65536` |
+| <a id="api-9aedc97c7cfe3a02"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_INERTIA = 512`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4557) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`512` |
+| <a id="api-c890b884ff37683c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_INFINITY = 4294967295`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4603) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4294967295` |
+| <a id="api-534fd4a2fccbcd45"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_LEFTRIGHT = 2048`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4589) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2048` |
+| <a id="api-db2e17086b702eee"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_PAUSE = 524288`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4628) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`524288` |
+| <a id="api-2662d8da9c155b7b"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_POLAR = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4807) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-ab9938fcfa8d38f7"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RAMP = 64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4541) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`64` |
+| <a id="api-ab397c08febdef56"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RESERVED1 = 4096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4483) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4096` |
+| <a id="api-8f6b7899a7b24a47"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RESERVED2 = 8192`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4406) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8192` |
+| <a id="api-388c91debce0301c"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_RESERVED3 = 16384`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4529) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16384` |
+| <a id="api-fc83b7e9ea6f2a90"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SAWTOOTHDOWN = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4487) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-4ed02c1ea96c7a97"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SAWTOOTHUP = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4556) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-df4b8ebff54c9aec"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SINE = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4685) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-56cfe13703ede0af"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SPHERICAL = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4726) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-a6b24fe3e832a4a1"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SPRING = 128`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4496) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`128` |
+| <a id="api-a5c350fd817940c5"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_SQUARE = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4515) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-f52514c7fa655647"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_STATUS = 262144`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4748) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`262144` |
+| <a id="api-51b00b5ebd287d95"></a>[`public const int Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_STEERING_AXIS = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4371) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-952f4d6c19425293"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAPTIC_TRIANGLE = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4796) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-939d39c428e68d2f"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_CENTERED = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4769) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-85044f8d71a27365"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_DOWN = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4663) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-d6ceb6c90766906b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_LEFT = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4559) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-8f7794a46a1fb49b"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_LEFTDOWN = 12`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4548) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`12` |
+| <a id="api-8aac80856d725bcb"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_LEFTUP = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4466) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`9` |
+| <a id="api-f0324553102ee733"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_RIGHT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4607) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-a50e5d3a08f79fd9"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_RIGHTDOWN = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4573) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`6` |
+| <a id="api-6c68b4ea07a466d5"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_RIGHTUP = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4379) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-4dc8a38271c98a4d"></a>[`public const uint Inno.Native.Sdl3.SDL.Constants.SDL_HAT_UP = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4385) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-cd90c143b8cbd0dd"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ALLOW_ALT_TAB_WHILE_GRABBED = "SDL_ALLOW_ALT_TAB_WHILE_GRABBED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5060) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_ALLOW_ALT_TAB_WHILE_GRABBED` |
+| <a id="api-6ddaf19354f91783"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY = "SDL_ANDROID_ALLOW_RECREATE_ACTIVITY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5162) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_ANDROID_ALLOW_RECREATE_ACTIVITY` |
+| <a id="api-209d988f05c996fd"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_BLOCK_ON_PAUSE = "SDL_ANDROID_BLOCK_ON_PAUSE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5322) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_ANDROID_BLOCK_ON_PAUSE` |
+| <a id="api-692a1f2cc569cccb"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_LOW_LATENCY_AUDIO = "SDL_ANDROID_LOW_LATENCY_AUDIO"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5043) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_ANDROID_LOW_LATENCY_AUDIO` |
+| <a id="api-2798f460e7311502"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ANDROID_TRAP_BACK_BUTTON = "SDL_ANDROID_TRAP_BACK_BUTTON"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5147) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_ANDROID_TRAP_BACK_BUTTON` |
+| <a id="api-907d176f77ae61d4"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS = "SDL_APPLE_TV_CONTROLLER_UI_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5124) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_APPLE_TV_CONTROLLER_UI_EVENTS` |
+| <a id="api-d0ac3254d53ab61c"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION = "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5032) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_APPLE_TV_REMOTE_ALLOW_ROTATION` |
+| <a id="api-27ea5407a3c74134"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APP_ID = "SDL_APP_ID"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5403) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_APP_ID` |
+| <a id="api-b28cb56122bb588a"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_APP_NAME = "SDL_APP_NAME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5355) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_APP_NAME` |
+| <a id="api-b46933d0f91451ff"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ASSERT = "SDL_ASSERT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5267) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_ASSERT` |
+| <a id="api-7c859c6d7f0da25a"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_ALSA_DEFAULT_DEVICE = "SDL_AUDIO_ALSA_DEFAULT_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5155) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_ALSA_DEFAULT_DEVICE` |
+| <a id="api-787f356ed7827948"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE = "SDL_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4929) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE` |
+| <a id="api-22798cc0306dd6d8"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE = "SDL_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5030) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE` |
+| <a id="api-502d1358f9802f78"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_CATEGORY = "SDL_AUDIO_CATEGORY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5382) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_CATEGORY` |
+| <a id="api-c37c2f7aff8302d3"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_CHANNELS = "SDL_AUDIO_CHANNELS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4933) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_CHANNELS` |
+| <a id="api-f3f38f9a272c3292"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_APP_ICON_NAME = "SDL_AUDIO_DEVICE_APP_ICON_NAME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5362) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DEVICE_APP_ICON_NAME` |
+| <a id="api-4f28d7911b740a57"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_RAW_STREAM = "SDL_AUDIO_DEVICE_RAW_STREAM"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4865) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DEVICE_RAW_STREAM` |
+| <a id="api-7780842c75180a17"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES = "SDL_AUDIO_DEVICE_SAMPLE_FRAMES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5072) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DEVICE_SAMPLE_FRAMES` |
+| <a id="api-6edfd5ec6944de7b"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_STREAM_NAME = "SDL_AUDIO_DEVICE_STREAM_NAME"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5007) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DEVICE_STREAM_NAME` |
+| <a id="api-366eef7354a5536d"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DEVICE_STREAM_ROLE = "SDL_AUDIO_DEVICE_STREAM_ROLE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5216) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DEVICE_STREAM_ROLE` |
+| <a id="api-fcb9105d5d8628a8"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DISK_INPUT_FILE = "SDL_AUDIO_DISK_INPUT_FILE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5346) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DISK_INPUT_FILE` |
+| <a id="api-8945a321117aa356"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DISK_OUTPUT_FILE = "SDL_AUDIO_DISK_OUTPUT_FILE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5209) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DISK_OUTPUT_FILE` |
+| <a id="api-78c879b0bde01edc"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DISK_TIMESCALE = "SDL_AUDIO_DISK_TIMESCALE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5325) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DISK_TIMESCALE` |
+| <a id="api-413c79d71d179e0a"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DRIVER = "SDL_AUDIO_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5314) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DRIVER` |
+| <a id="api-443c591fec71fa07"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_DUMMY_TIMESCALE = "SDL_AUDIO_DUMMY_TIMESCALE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4831) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_DUMMY_TIMESCALE` |
+| <a id="api-da480c6acb6c23b3"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_FORMAT = "SDL_AUDIO_FORMAT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4843) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_FORMAT` |
+| <a id="api-84adee2d9671e84d"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_FREQUENCY = "SDL_AUDIO_FREQUENCY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5376) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_FREQUENCY` |
+| <a id="api-6ab2793edf5dc93d"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUDIO_INCLUDE_MONITORS = "SDL_AUDIO_INCLUDE_MONITORS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5264) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUDIO_INCLUDE_MONITORS` |
+| <a id="api-ec3ebb5c2d156fe3"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUTO_UPDATE_JOYSTICKS = "SDL_AUTO_UPDATE_JOYSTICKS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5104) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUTO_UPDATE_JOYSTICKS` |
+| <a id="api-f27d2f88e28b89f5"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_AUTO_UPDATE_SENSORS = "SDL_AUTO_UPDATE_SENSORS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5246) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_AUTO_UPDATE_SENSORS` |
+| <a id="api-04773fd1b4ddce13"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_BMP_SAVE_LEGACY_FORMAT = "SDL_BMP_SAVE_LEGACY_FORMAT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5272) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_BMP_SAVE_LEGACY_FORMAT` |
+| <a id="api-06264becbedf8516"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_CAMERA_DRIVER = "SDL_CAMERA_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5233) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_CAMERA_DRIVER` |
+| <a id="api-a5e820717a6ac351"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_CPU_FEATURE_MASK = "SDL_CPU_FEATURE_MASK"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4990) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_CPU_FEATURE_MASK` |
+| <a id="api-8ec277a211b3cf86"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_DISPLAY_USABLE_BOUNDS = "SDL_DISPLAY_USABLE_BOUNDS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4940) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_DISPLAY_USABLE_BOUNDS` |
+| <a id="api-6a38e112fda5ec90"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EGL_LIBRARY = "SDL_EGL_LIBRARY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4947) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_EGL_LIBRARY` |
+| <a id="api-018bf6ccfb384691"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EMSCRIPTEN_ASYNCIFY = "SDL_EMSCRIPTEN_ASYNCIFY"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5254) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_EMSCRIPTEN_ASYNCIFY` |
+| <a id="api-cd5d2217ad6c073a"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR = "SDL_EMSCRIPTEN_CANVAS_SELECTOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5221) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_EMSCRIPTEN_CANVAS_SELECTOR` |
+| <a id="api-146bd2e1e440474b"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT = "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4897) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_EMSCRIPTEN_KEYBOARD_ELEMENT` |
+| <a id="api-d4ffcac2e248c8a3"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_ENABLE_SCREEN_KEYBOARD = "SDL_ENABLE_SCREEN_KEYBOARD"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5296) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_ENABLE_SCREEN_KEYBOARD` |
+| <a id="api-62f5343d6a7d4e01"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EVDEV_DEVICES = "SDL_EVDEV_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5201) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_EVDEV_DEVICES` |
+| <a id="api-822ff0cecd963243"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_EVENT_LOGGING = "SDL_EVENT_LOGGING"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5333) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_EVENT_LOGGING` |
+| <a id="api-504cd9262748a7fd"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_FILE_DIALOG_DRIVER = "SDL_FILE_DIALOG_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5172) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_FILE_DIALOG_DRIVER` |
+| <a id="api-cbff93b8b5c4c436"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_FORCE_RAISEWINDOW = "SDL_FORCE_RAISEWINDOW"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5218) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_FORCE_RAISEWINDOW` |
+| <a id="api-b99df943334aebab"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_FRAMEBUFFER_ACCELERATION = "SDL_FRAMEBUFFER_ACCELERATION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4973) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_FRAMEBUFFER_ACCELERATION` |
+| <a id="api-38ce550291945bcd"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLERCONFIG = "SDL_GAMECONTROLLERCONFIG"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4900) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GAMECONTROLLERCONFIG` |
+| <a id="api-c782ccd235260112"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLERCONFIG_FILE = "SDL_GAMECONTROLLERCONFIG_FILE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5132) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GAMECONTROLLERCONFIG_FILE` |
+| <a id="api-52bb8202a9e17742"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLERTYPE = "SDL_GAMECONTROLLERTYPE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4892) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GAMECONTROLLERTYPE` |
+| <a id="api-61030fa48a984937"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES = "SDL_GAMECONTROLLER_IGNORE_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5241) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GAMECONTROLLER_IGNORE_DEVICES` |
+| <a id="api-fcf8a4e6a04d85da"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT = "SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5380) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT` |
+| <a id="api-5c5d378c55ee4d79"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GAMECONTROLLER_SENSOR_FUSION = "SDL_GAMECONTROLLER_SENSOR_FUSION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5121) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GAMECONTROLLER_SENSOR_FUSION` |
+| <a id="api-5a174c37f9fdeadb"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT = "SDL_GDK_TEXTINPUT_DEFAULT_TEXT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4931) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GDK_TEXTINPUT_DEFAULT_TEXT` |
+| <a id="api-56da2aa93548ebca"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_DESCRIPTION = "SDL_GDK_TEXTINPUT_DESCRIPTION"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4847) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GDK_TEXTINPUT_DESCRIPTION` |
+| <a id="api-0df80748ac7fe6c5"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_MAX_LENGTH = "SDL_GDK_TEXTINPUT_MAX_LENGTH"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4979) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GDK_TEXTINPUT_MAX_LENGTH` |
+| <a id="api-0e892e0461158a2c"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_SCOPE = "SDL_GDK_TEXTINPUT_SCOPE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5378) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GDK_TEXTINPUT_SCOPE` |
+| <a id="api-78c7d5b00b38bd08"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GDK_TEXTINPUT_TITLE = "SDL_GDK_TEXTINPUT_TITLE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4922) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GDK_TEXTINPUT_TITLE` |
+| <a id="api-b913d06a3a2269dc"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_GPU_DRIVER = "SDL_GPU_DRIVER"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5028) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_GPU_DRIVER` |
+| <a id="api-6b46565ea3f93803"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS = "SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5039) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS` |
+| <a id="api-59d97abc630475fd"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_IGNORE_DEVICES = "SDL_HIDAPI_IGNORE_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5366) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_HIDAPI_IGNORE_DEVICES` |
+| <a id="api-198c90860fb4d12b"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_LIBUSB = "SDL_HIDAPI_LIBUSB"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4879) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_HIDAPI_LIBUSB` |
+| <a id="api-aff0f76b99e708e4"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_LIBUSB_GAMECUBE = "SDL_HIDAPI_LIBUSB_GAMECUBE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5390) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_HIDAPI_LIBUSB_GAMECUBE` |
+| <a id="api-d6f548cd1d9a5778"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_LIBUSB_WHITELIST = "SDL_HIDAPI_LIBUSB_WHITELIST"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4919) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_HIDAPI_LIBUSB_WHITELIST` |
+| <a id="api-fef1661d16b80d93"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_HIDAPI_UDEV = "SDL_HIDAPI_UDEV"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5374) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_HIDAPI_UDEV` |
+| <a id="api-22c4aadfb5fa6977"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_IME_IMPLEMENTED_UI = "SDL_IME_IMPLEMENTED_UI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4910) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_IME_IMPLEMENTED_UI` |
+| <a id="api-d7669b9eaa072647"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_INVALID_PARAM_CHECKS = "SDL_INVALID_PARAM_CHECKS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5100) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_INVALID_PARAM_CHECKS` |
+| <a id="api-a506dd923aab1532"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_IOS_HIDE_HOME_INDICATOR = "SDL_IOS_HIDE_HOME_INDICATOR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4957) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_IOS_HIDE_HOME_INDICATOR` |
+| <a id="api-3708356bae6d9fd8"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS = "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5022) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS` |
+| <a id="api-4787a81fa70928c2"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES = "SDL_JOYSTICK_ARCADESTICK_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4934) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_ARCADESTICK_DEVICES` |
+| <a id="api-35ac61ca2ffe41ba"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED = "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5118) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED` |
+| <a id="api-85bf006e2d8c4f33"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES = "SDL_JOYSTICK_BLACKLIST_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5122) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_BLACKLIST_DEVICES` |
+| <a id="api-3e3ef12cbb58b253"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED = "SDL_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5232) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED` |
+| <a id="api-033fd7cdec27db58"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_DEVICE = "SDL_JOYSTICK_DEVICE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5192) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_DEVICE` |
+| <a id="api-382bdae5360cec95"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_DIRECTINPUT = "SDL_JOYSTICK_DIRECTINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5402) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_DIRECTINPUT` |
+| <a id="api-51765bbd370de6be"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_ENHANCED_REPORTS = "SDL_JOYSTICK_ENHANCED_REPORTS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4984) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_ENHANCED_REPORTS` |
+| <a id="api-ec6db77976c81294"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES = "SDL_JOYSTICK_FLIGHTSTICK_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5228) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_FLIGHTSTICK_DEVICES` |
+| <a id="api-29f92a53ec408649"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED = "SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5280) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED` |
+| <a id="api-177b45a41ba784cc"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES = "SDL_JOYSTICK_GAMECUBE_DEVICES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5251) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_GAMECUBE_DEVICES` |
+| <a id="api-8b5449e039fb59ac"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED = "SDL_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5369) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED` |
+| <a id="api-cafb1549bf58a352"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_GAMEINPUT = "SDL_JOYSTICK_GAMEINPUT"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5224) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_GAMEINPUT` |
+| <a id="api-aea7de1af0be52e7"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HAPTIC_AXES = "SDL_JOYSTICK_HAPTIC_AXES"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5081) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HAPTIC_AXES` |
+| <a id="api-f7fb3627f12402cb"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI = "SDL_JOYSTICK_HIDAPI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4986) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HIDAPI` |
+| <a id="api-447442e8b35a1b92"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_8BITDO = "SDL_JOYSTICK_HIDAPI_8BITDO"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4903) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HIDAPI_8BITDO` |
+| <a id="api-197e874ba1530ae1"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS = "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4999) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS` |
+| <a id="api-897fb5b3216b2bc5"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI = "SDL_JOYSTICK_HIDAPI_FLYDIGI"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5229) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HIDAPI_FLYDIGI` |
+| <a id="api-6303513e7bf1ad82"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE = "SDL_JOYSTICK_HIDAPI_GAMECUBE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5320) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HIDAPI_GAMECUBE` |
+| <a id="api-0b46e7a59b855b0c"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE = "SDL_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5215) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE` |
+| <a id="api-3aa61ef96d2ae52f"></a>[`public const string Inno.Native.Sdl3.SDL.Constants.SDL_HINT_JOYSTICK_HIDAPI_GAMESIR = "SDL_JOYSTICK_HIDAPI_GAMESIR"`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L5005) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`SDL_JOYSTICK_HIDAPI_GAMESIR` |

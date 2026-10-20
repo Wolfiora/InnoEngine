@@ -1,3 +1,4 @@
+using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using System;
 using System.IO;
 using System.Linq;
@@ -22,14 +23,14 @@ internal sealed partial class ShaderEditorCanvas
             if (ImGuiApi.SmallButton("Show in File Browser")
                 && owner.interactions.TryGetModule<Inno.Editor.Panel.FileBrowser.AssetEditorModule>(out var browser) && browser is not null)
                 RevealShaderFunction.Reveal(owner, browser, sourceId);
-            ImGuiApi.SameLine();
+            ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.SmallButton("Import Settings…"))
             {
                 LoadSourceSettings(info.assetPath, sourceId);
                 ImGuiApi.OpenPopup("##source-settings");
             }
         });
-        ImGuiApi.SetNextWindowSize(new(580, 470), ImGuiCond.Appearing);
+        ImGuiApi.SetNextWindowSize(new(580, 470), (int)(ImGuiCond.Appearing));
         if (!ImGuiApi.BeginPopup("##source-settings"))
             return;
         try
@@ -80,13 +81,13 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 int catalogOrder = settings.catalogOrder;
                 bool orderChanged = false;
-                InspectorRow("source.catalog-order", "Catalog Order", () => orderChanged = ImGuiApi.InputInt("##catalog-order", ref catalogOrder));
+                InspectorRow("source.catalog-order", "Catalog Order", () => orderChanged = ImGuiApi.InputInt("##catalog-order", ref catalogOrder, 1, 100, 0));
                 if (orderChanged)
                 {
                     settings.catalogOrder = catalogOrder;
                     changed = true;
                 }
-                ImGuiApi.TextWrapped("Catalog paths are declared by the source library and group its exported functions in Shader creation tools. They do not affect compilation or runtime assets.");
+                EditorWidget.WrappedText("Catalog paths are declared by the source library and group its exported functions in Shader creation tools. They do not affect compilation or runtime assets.");
                 ImGuiApi.SeparatorText("Exported Functions");
                 for (int i = 0; i < settings.exports.Length; i++)
                 {
@@ -96,7 +97,7 @@ internal sealed partial class ShaderEditorCanvas
                     InspectorRow("source.export", "Function " + (i + 1), () =>
                     {
                         functionChanged = EditorImGui.InputText("##name", ref function, 256);
-                        ImGuiApi.SameLine();
+                        ImGuiApi.SameLine(0f, -1f);
                         remove = ImGuiApi.SmallButton("Remove");
                     });
                     if (functionChanged)
@@ -121,7 +122,7 @@ internal sealed partial class ShaderEditorCanvas
                     settings.exports = [.. settings.exports, "Function"];
                     changed = true;
                 }
-                ImGuiApi.TextWrapped("Every listed name is exported as an independent graph function. All other functions remain private helpers. Ports are parsed from each exported declaration; alternative implementations must expose matching interfaces.");
+                EditorWidget.WrappedText("Every listed name is exported as an independent graph function. All other functions remain private helpers. Ports are parsed from each exported declaration; alternative implementations must expose matching interfaces.");
                 ImGuiApi.SeparatorText("Alternative Implementations");
                 for (int i = 0; i < settings.implementations.Length; i++)
                 {
@@ -148,7 +149,7 @@ internal sealed partial class ShaderEditorCanvas
                                 Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget.EndBoundedCombo();
                             }
                         }
-                        ImGuiApi.SameLine();
+                        ImGuiApi.SameLine(0f, -1f);
                         remove = ImGuiApi.SmallButton("Remove");
                     });
                     if (remove)
@@ -183,18 +184,18 @@ internal sealed partial class ShaderEditorCanvas
             {
                 ImGuiApi.EndDisabled();
             }
-            ImGuiApi.SameLine();
+            ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Reload"))
                 LoadSourceSettings(info.assetPath, sourceId);
             if (readOnly)
-                ImGuiApi.TextDisabled("Installed source settings are read-only.");
+                EditorWidget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Installed source settings are read-only.");
             if (draft.sourceSettingsStatus.Length != 0)
-                ImGuiApi.TextWrapped(draft.sourceSettingsStatus);
+                EditorWidget.WrappedText(draft.sourceSettingsStatus);
         }
         catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             draft.sourceSettingsStatus = failure.Message;
-            ImGuiApi.TextWrapped(draft.sourceSettingsStatus);
+            EditorWidget.WrappedText(draft.sourceSettingsStatus);
         }
         finally
         {

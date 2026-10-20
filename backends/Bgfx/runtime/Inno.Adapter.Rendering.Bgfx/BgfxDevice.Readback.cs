@@ -52,7 +52,7 @@ sealed unsafe partial class BgfxDevice
         uint readyFrame;
         try
         {
-            readyFrame = bgfx.read_texture(nativeTexture, data, checked((byte)mipLevel));
+            readyFrame = bgfx.Raw.read_texture(nativeTexture, data, checked((byte)mipLevel));
         }
         catch
         {

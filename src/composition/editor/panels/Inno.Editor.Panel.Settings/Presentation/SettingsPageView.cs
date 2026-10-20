@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using NumericsVector4 = System.Numerics.Vector4;
+using NativeVector4 = Inno.Native.ImGui.ImVec4C;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +15,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
 
-internal sealed class SettingsPageView(SettingsEditSession session)
+internal sealed unsafe class SettingsPageView(SettingsEditSession session)
 {
     internal void Draw(
         SettingsPage page,
@@ -57,17 +62,17 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp |
                                 ImGuiTableFlags.NoSavedSettings |
                                 ImGuiTableFlags.NoPadOuterX;
-        if (!NativeImGui.BeginTable("##settings_page_header", 2, flags))
+        if (!NativeImGui.BeginTable("##settings_page_header", 2, (int)flags, default(System.Numerics.Vector2), 0f))
             return;
         try
         {
             NativeImGui.TableSetupColumn(
                 "##settings_page_title",
-                ImGuiTableColumnFlags.WidthStretch,
+                (int)ImGuiTableColumnFlags.WidthStretch,
                 1f);
             NativeImGui.TableSetupColumn(
                 "##settings_page_reset",
-                ImGuiTableColumnFlags.WidthFixed,
+                (int)ImGuiTableColumnFlags.WidthFixed,
                 GetResetColumnWidth());
             NativeImGui.TableNextRow();
             _ = NativeImGui.TableSetColumnIndex(0);
@@ -126,7 +131,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
                                 ImGuiTableFlags.NoPadOuterX;
         float tableWidth = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
         NativeImGui.PushStyleVar(
-            ImGuiStyleVar.CellPadding,
+            (int)ImGuiStyleVar.CellPadding,
             EditorWidget.style.settingsFieldPadding);
         bool tableStarted = false;
         try
@@ -134,7 +139,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             tableStarted = NativeImGui.BeginTable(
                 "##settings_section",
                 3,
-                flags,
+                (int)flags,
                 new System.Numerics.Vector2(tableWidth, 0f));
             if (!tableStarted)
                 return;
@@ -142,7 +147,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             EditorWidget.SetupPropertyColumns();
             NativeImGui.TableSetupColumn(
                 "##settings_reset",
-                ImGuiTableColumnFlags.WidthFixed,
+                (int)ImGuiTableColumnFlags.WidthFixed,
                 GetResetColumnWidth());
             foreach (SettingsField setting in settings)
                 DrawFieldRow(setting, fieldIndex++);
@@ -164,15 +169,15 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             fieldIndex % 2 == 0
                 ? EditorPalette.settingsField
                 : EditorPalette.settingsFieldAlternate);
-        NativeImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
-        NativeImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
+        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg0, background);
+        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg1, background);
 
         NativeImGui.PushID(setting.path);
         try
         {
             _ = NativeImGui.TableSetColumnIndex(0);
             NativeImGui.SetCursorPosX(
-                NativeImGui.GetCursorPosX() + NativeImGui.GetStyle().WindowPadding.X);
+                NativeImGui.GetCursorPosX() + NativeImGui.Raw.GetStyle()->WindowPadding.X);
             EditorWidget.PropertyLabel(setting.label, setting.description);
 
             _ = NativeImGui.TableSetColumnIndex(1);
@@ -205,58 +210,68 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 
     private static void DrawFieldBackgroundGutters(uint background)
     {
-        ImGuiTablePtr table = ImGuiP.GetCurrentTable();
-        ImGuiWindowPtr window = ImGuiP.GetCurrentWindow();
-        float tableMinimumX = table.OuterRect.Min.X;
-        float tableMaximumX = table.OuterRect.Max.X;
-        float rowMinimumY = table.RowPosY1;
-        float rowMaximumY = table.RowPosY2;
-        float windowMinimumX = window.InnerRect.Min.X;
-        float windowMaximumX = window.InnerRect.Max.X;
+        ImGuiTable* table = NativeImGui.Raw.GetCurrentTable();
+        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+        float tableMinimumX = table->OuterRect.Min.X;
+        float tableMaximumX = table->OuterRect.Max.X;
+        float rowMinimumY = table->RowPosY1;
+        float rowMaximumY = table->RowPosY2;
+        float windowMinimumX = window->InnerRect.Min.X;
+        float windowMaximumX = window->InnerRect.Max.X;
         if (rowMaximumY <= rowMinimumY)
             return;
 
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-        drawList.PushClipRect(
-            new System.Numerics.Vector2(windowMinimumX, rowMinimumY),
-            new System.Numerics.Vector2(windowMaximumX, rowMaximumY),
-            false);
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.PushClipRect(
+            drawList,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMinimumX, rowMinimumY)),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMaximumX, rowMaximumY)),
+            (false ? (byte)1 : (byte)0)
+        );
         try
         {
             if (tableMinimumX > windowMinimumX)
             {
-                drawList.AddRectFilled(
-                    new System.Numerics.Vector2(windowMinimumX, rowMinimumY),
-                    new System.Numerics.Vector2(tableMinimumX, rowMaximumY),
-                    background);
+                NativeImGui.Raw.AddRectFilled(
+                    drawList,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMinimumX, rowMinimumY)),
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(tableMinimumX, rowMaximumY)),
+                    background,
+                    0,
+                    0
+                );
             }
             if (tableMaximumX < windowMaximumX)
             {
-                drawList.AddRectFilled(
-                    new System.Numerics.Vector2(tableMaximumX, rowMinimumY),
-                    new System.Numerics.Vector2(windowMaximumX, rowMaximumY),
-                    background);
+                NativeImGui.Raw.AddRectFilled(
+                    drawList,
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(tableMaximumX, rowMinimumY)),
+                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMaximumX, rowMaximumY)),
+                    background,
+                    0,
+                    0
+                );
             }
         }
         finally
         {
-            drawList.PopClipRect();
+            NativeImGui.Raw.PopClipRect(drawList);
         }
     }
 
     private static float GetResetColumnWidth()
     {
-        ImGuiStylePtr style = NativeImGui.GetStyle();
-        return style.ItemSpacing.X +
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
+        return style->ItemSpacing.X +
                NativeImGui.CalcTextSize("Reset").X +
-               style.FramePadding.X * 2f +
-               style.WindowPadding.X;
+               style->FramePadding.X * 2f +
+               style->WindowPadding.X;
     }
 
     private static bool DrawResetButton(bool enabled)
     {
-        ImGuiStylePtr style = NativeImGui.GetStyle();
-        NativeImGui.SetCursorPosX(NativeImGui.GetCursorPosX() + style.ItemSpacing.X);
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
+        NativeImGui.SetCursorPosX(NativeImGui.GetCursorPosX() + style->ItemSpacing.X);
         NativeImGui.BeginDisabled(!enabled);
         try
         {
@@ -270,7 +285,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 
     private static void PushDisabledText()
         => NativeImGui.PushStyleColor(
-            ImGuiCol.Text,
-            NativeImGui.GetStyle().Colors[(int)ImGuiCol.TextDisabled]);
+            (int)ImGuiCol.Text,
+            Unsafe.BitCast<NativeVector4, NumericsVector4>(NativeImGui.Raw.GetStyle()->Colors[(int)ImGuiCol.TextDisabled]));
 
 }

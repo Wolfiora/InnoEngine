@@ -29,7 +29,7 @@ public sealed unsafe class HostIntegrationTests
         Assert.Throws<InvalidOperationException>(() => app.CreateWindow(new PlatformWindowOptions
         { title = "Failed surface", width = 40, height = 40, visible = false }));
         Assert.Empty(app.GetWindows());
-        Assert.True(SDL.GetWindowFromID(host.lastId).IsNull);
+        Assert.True(SDL.Raw.GetWindowFromId(host.lastId) == null);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public sealed unsafe class HostIntegrationTests
         {
             calls++;
             nint handle = m_inner.CreateWindow(options);
-            lastId = SDL.GetWindowID(new SDLWindow(handle));
+            lastId = SDL.Raw.GetWindowId((SDLWindow*)handle);
             return handle;
         }
         public PlatformNativeHandles ResolveNativeSurface(nint windowHandle) => failSurface

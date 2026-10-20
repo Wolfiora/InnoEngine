@@ -46,7 +46,7 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         List<object?> values = EditorCollectionUtility.EnumerateSequence(context.GetValue());
         if (!NativeImGui.TreeNodeEx(
                 $"Count: {values.Count}##{context.path}_sequence",
-                ImGuiTreeNodeFlags.SpanAvailWidth))
+                (int)(ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }
@@ -95,7 +95,7 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
             changed = true;
         }
 
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         if (NativeImGui.SmallButton($"Down##{context.path}_{index}_down") && index < count - 1)
         {
             List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
@@ -104,7 +104,7 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
             changed = true;
         }
 
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         if (NativeImGui.SmallButton($"Remove##{context.path}_{index}_remove"))
         {
             List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
@@ -124,7 +124,7 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
         List<KeyValuePair<object?, object?>> entries = EnumerateMap(context);
         if (!NativeImGui.TreeNodeEx(
                 $"Count: {entries.Count}##{context.path}_map",
-                ImGuiTreeNodeFlags.SpanAvailWidth))
+                (int)(ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }

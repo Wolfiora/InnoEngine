@@ -263,12 +263,12 @@ public sealed unsafe partial class BgfxDevice
         int width,
         int height
     )
-        => bgfx.create_frame_buffer_from_nwh(
+        => bgfx.Raw.create_frame_buffer_from_nwh(
             descriptor.windowHandle.ToPointer(),
             checked((ushort)width),
             checked((ushort)height),
             bgfx.TextureFormat.BGRA8,
-            bgfx.TextureFormat.D24S8);
+            bgfx.TextureFormat.D24s8);
 
     private BgfxWindowSurfaceResource ResolveSurface(RenderSurfaceHandle surface)
     {
@@ -285,7 +285,7 @@ public sealed unsafe partial class BgfxDevice
     {
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (m_activeGraph is not null || !m_activeEncoder.IsNull)
+        if (m_activeGraph is not null || m_activeEncoder != null)
         {
             throw new InvalidOperationException(
                 "Window surface changes require an API-thread point outside graph execution.");

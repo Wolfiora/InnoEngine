@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System;
 using System.Numerics;
@@ -11,21 +12,21 @@ namespace Inno.Adapter.Presentation.ImGui;
 
 internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
 {
-    private SDLRenderer m_renderer;
-    private SDLTexturePtr m_fontTexture;
+    private SDLRenderer* m_renderer;
+    private SDLTexture* m_fontTexture;
     private SDLVertex[] m_vertexScratch = [];
     private int[] m_indexScratch = [];
     private bool m_disposed;
 
     internal PlatformImGuiSdlRenderer(Sdl3PlatformWindow window)
     {
-        m_renderer = SDL.CreateRenderer(window.GetSdlWindow(), (byte*)0);
-        if (m_renderer.IsNull)
+        m_renderer = SDL.Raw.CreateRenderer(window.GetSdlWindow(), null);
+        if (m_renderer == null)
         {
-            throw new InvalidOperationException(SDL.GetError() ?? "SDL_CreateRenderer failed.");
+            throw new InvalidOperationException(Marshal.PtrToStringUTF8((nint)SDL.Raw.GetError()) ?? "SDL_CreateRenderer failed.");
         }
 
-        _ = SDL.SetRenderDrawBlendMode(m_renderer, SDL.SDL_BLENDMODE_BLEND);
+        _ = SDL.Raw.SetRenderDrawBlendMode(m_renderer, SDL.Constants.SDL_BLENDMODE_BLEND);
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <param name="drawData">
     /// The draw data consumed by render main; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public void RenderMain(IntPtr drawData) => Render(new ImDrawDataPtr((ImDrawData*)drawData));
+    public void RenderMain(IntPtr drawData) => Render((ImDrawData*)drawData);
 
     /// <summary>
     /// Synchronizes the main render output with the current drawable dimensions.
@@ -112,9 +113,9 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <inheritdoc />
     public void DrainViewportRetirements() { }
 
-    internal void Render(ImDrawDataPtr drawData)
+    internal void Render(ImDrawData* drawData)
     {
-        if (m_disposed || m_renderer.IsNull || drawData.IsNull || !drawData.Valid)
+        if (m_disposed || m_renderer == null || drawData == null || drawData->Valid == 0)
         {
             return;
         }
@@ -122,39 +123,39 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         ProcessTextureRequests(drawData);
         EnsureFontTexture();
 
-        _ = SDL.SetRenderViewport(m_renderer, SDLRectPtr.Null);
-        _ = SDL.SetRenderClipRect(m_renderer, SDLRectPtr.Null);
-        _ = SDL.SetRenderDrawColor(m_renderer, 20, 20, 22, 255);
-        _ = SDL.RenderClear(m_renderer);
+        _ = SDL.Raw.SetRenderViewport(m_renderer, null);
+        _ = SDL.Raw.SetRenderClipRect(m_renderer, null);
+        _ = SDL.Raw.SetRenderDrawColor(m_renderer, 20, 20, 22, 255);
+        _ = SDL.Raw.RenderClear(m_renderer);
 
-        var clipOff = drawData.DisplayPos;
-        var clipScale = drawData.FramebufferScale;
+        var clipOff = drawData->DisplayPos;
+        var clipScale = drawData->FramebufferScale;
 
-        for (var listIndex = 0; listIndex < drawData.CmdListsCount; listIndex++)
+        for (var listIndex = 0; listIndex < drawData->CmdListsCount; listIndex++)
         {
-            var drawList = drawData.CmdLists[listIndex];
-            if (drawList.IsNull)
+            var drawList = drawData->CmdLists.Data[listIndex];
+            if (drawList == null)
             {
                 continue;
             }
 
-            var vertexCount = drawList.VtxBuffer.Size;
+            var vertexCount = drawList->VtxBuffer.Size;
             if (vertexCount <= 0)
             {
                 continue;
             }
 
             EnsureVertexCapacity(vertexCount);
-            var srcVertices = drawList.VtxBuffer.Data;
+            var srcVertices = drawList->VtxBuffer.Data;
             for (var i = 0; i < vertexCount; i++)
             {
                 m_vertexScratch[i] = ToSdlVertex(srcVertices[i], clipOff, clipScale);
             }
 
-            var cmdBufferCount = drawList.CmdBuffer.Size;
+            var cmdBufferCount = drawList->CmdBuffer.Size;
             for (var cmdIndex = 0; cmdIndex < cmdBufferCount; cmdIndex++)
             {
-                var drawCmd = drawList.CmdBuffer[cmdIndex];
+                var drawCmd = drawList->CmdBuffer.Data[cmdIndex];
                 if (drawCmd.UserCallback != null)
                 {
                     continue;
@@ -170,13 +171,13 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
                     continue;
                 }
 
-                var clipRect = new SDLRect(
-                    x: (int)clipRectX,
-                    y: (int)clipRectY,
-                    w: (int)(clipRectZ - clipRectX),
-                    h: (int)(clipRectW - clipRectY));
+                var clipRect = new SDLRect
+                {
+                    X = (int)clipRectX, Y = (int)clipRectY,
+                    W = (int)(clipRectZ - clipRectX), H = (int)(clipRectW - clipRectY)
+                };
 
-                if (!SDL.SetRenderClipRect(m_renderer, ref clipRect))
+                if (SDL.Raw.SetRenderClipRect(m_renderer, &clipRect) == 0)
                 {
                     continue;
                 }
@@ -189,7 +190,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
 
                 EnsureIndexCapacity(elemCount);
 
-                var srcIndices = drawList.IdxBuffer.Data;
+                var srcIndices = drawList->IdxBuffer.Data;
                 var idxOffset = (int)drawCmd.IdxOffset;
                 var vtxOffset = (int)drawCmd.VtxOffset;
                 for (var i = 0; i < elemCount; i++)
@@ -197,9 +198,9 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
                     m_indexScratch[i] = srcIndices[idxOffset + i] + vtxOffset;
                 }
 
-                var textureId = drawCmd.GetTexID();
+                var textureId = ImGuiNative.Raw.GetTexID(&drawCmd);
                 var texture = TextureFromImGui(textureId);
-                if (texture.IsNull)
+                if (texture == null)
                 {
                     texture = m_fontTexture;
                 }
@@ -207,7 +208,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
                 fixed (SDLVertex* pVertices = m_vertexScratch)
                 fixed (int* pIndices = m_indexScratch)
                 {
-                    _ = SDL.RenderGeometry(
+                    _ = SDL.Raw.RenderGeometry(
                         m_renderer,
                         texture,
                         pVertices,
@@ -218,8 +219,8 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
             }
         }
 
-        _ = SDL.SetRenderClipRect(m_renderer, SDLRectPtr.Null);
-        _ = SDL.RenderPresent(m_renderer);
+        _ = SDL.Raw.SetRenderClipRect(m_renderer, null);
+        _ = SDL.Raw.RenderPresent(m_renderer);
     }
 
     /// <summary>
@@ -227,7 +228,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// </summary>
     internal void SynchronizeOutputSize()
     {
-        if (m_disposed || m_renderer.IsNull)
+        if (m_disposed || m_renderer == null)
         {
             return;
         }
@@ -235,13 +236,13 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         // A macOS live-resize expose callback can run before SDL's renderer event watcher has
         // consumed the matching pixel-size event. Re-applying the disabled presentation mode
         // makes SDL query the native drawable immediately instead of clipping to its old size.
-        _ = SDL.SetRenderLogicalPresentation(
+        _ = SDL.Raw.SetRenderLogicalPresentation(
             m_renderer,
             0,
             0,
             SDLRendererLogicalPresentation.Disabled);
-        _ = SDL.SetRenderViewport(m_renderer, SDLRectPtr.Null);
-        _ = SDL.SetRenderClipRect(m_renderer, SDLRectPtr.Null);
+        _ = SDL.Raw.SetRenderViewport(m_renderer, null);
+        _ = SDL.Raw.SetRenderClipRect(m_renderer, null);
     }
 
     /// <summary>
@@ -254,24 +255,24 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
             return;
         }
 
-        if (!m_fontTexture.IsNull)
+        if (m_fontTexture != null)
         {
-            SDL.DestroyTexture(m_fontTexture);
-            m_fontTexture = SDLTexturePtr.Null;
+            SDL.Raw.DestroyTexture(m_fontTexture);
+            m_fontTexture = null;
         }
 
-        if (!m_renderer.IsNull)
+        if (m_renderer != null)
         {
-            SDL.DestroyRenderer(m_renderer);
-            m_renderer = SDLRenderer.Null;
+            SDL.Raw.DestroyRenderer(m_renderer);
+            m_renderer = null;
         }
 
         m_disposed = true;
     }
 
-    private void ProcessTextureRequests(ImDrawDataPtr drawData)
+    private void ProcessTextureRequests(ImDrawData* drawData)
     {
-        var textures = drawData.Handle->Textures;
+        var textures = drawData->Textures;
         if (textures == null)
         {
             return;
@@ -280,12 +281,12 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         for (var i = 0; i < textures->Size; i++)
         {
             var textureData = textures->Data[i];
-            if (textureData.IsNull)
+            if (textureData == null)
             {
                 continue;
             }
 
-            switch (textureData.Status)
+            switch (textureData->Status)
             {
                 case ImTextureStatus.WantCreate:
                     CreateOrUpdateTexture(textureData, createIfMissing: true);
@@ -302,21 +303,21 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
 
     private void EnsureFontTexture()
     {
-        var io = ImGuiNative.GetIO();
-        var fonts = io.Fonts;
-        if (fonts.IsNull)
+        var io = ImGuiNative.Raw.GetIO();
+        var fonts = io->Fonts;
+        if (fonts == null)
         {
             return;
         }
 
-        fonts.RendererHasTextures = true;
-        var texData = fonts.TexData;
-        if (texData.IsNull)
+        fonts->RendererHasTextures = 1;
+        var texData = fonts->TexData;
+        if (texData == null)
         {
             return;
         }
 
-        switch (texData.Status)
+        switch (texData->Status)
         {
             case ImTextureStatus.WantCreate:
             case ImTextureStatus.WantUpdates:
@@ -327,86 +328,86 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
                 break;
         }
 
-        if (m_fontTexture.IsNull)
+        if (m_fontTexture == null)
         {
-            m_fontTexture = TextureFromImGui(texData.TexID);
+            m_fontTexture = TextureFromImGui(texData->TexId);
         }
     }
 
     private void CreateOrUpdateTexture(
-        ImTextureDataPtr textureData,
+        ImTextureData* textureData,
         bool createIfMissing
     ) {
-        var texture = TextureFromImGui(textureData.TexID);
-        if (texture.IsNull && createIfMissing)
+        var texture = TextureFromImGui(textureData->TexId);
+        if (texture == null && createIfMissing)
         {
-            texture = CreateTexture(textureData.Width, textureData.Height);
-            if (texture.IsNull)
+            texture = CreateTexture(textureData->Width, textureData->Height);
+            if (texture == null)
             {
                 return;
             }
 
-            textureData.SetTexID((ImTextureID)(void*)texture.Handle);
+            ImGuiNative.Raw.SetTexID(textureData, (ulong)(nuint)texture);
         }
 
-        if (texture.IsNull || textureData.Pixels == null)
+        if (texture == null || textureData->Pixels == null)
         {
             return;
         }
 
-        var pitch = textureData.GetPitch();
-        _ = SDL.UpdateTexture(texture, SDLRectPtr.Null, textureData.Pixels, pitch);
-        textureData.SetStatus(ImTextureStatus.Ok);
+        var pitch = ImGuiNative.Raw.GetPitch(textureData);
+        _ = SDL.Raw.UpdateTexture(texture, null, textureData->Pixels, pitch);
+        ImGuiNative.Raw.SetStatus(textureData, ImTextureStatus.Ok);
 
-        var io = ImGuiNative.GetIO();
-        if (textureData.TexID == io.Fonts.TexRef.GetTexID())
+        var io = ImGuiNative.Raw.GetIO();
+        if (textureData->TexId == ImGuiNative.Raw.GetTexID(&io->Fonts->TexRef))
         {
             m_fontTexture = texture;
         }
     }
 
-    private void DestroyTexture(ImTextureDataPtr textureData)
+    private void DestroyTexture(ImTextureData* textureData)
     {
-        var texture = TextureFromImGui(textureData.TexID);
-        if (!texture.IsNull)
+        var texture = TextureFromImGui(textureData->TexId);
+        if (texture != null)
         {
-            SDL.DestroyTexture(texture);
+            SDL.Raw.DestroyTexture(texture);
         }
 
         if (texture == m_fontTexture)
         {
-            m_fontTexture = SDLTexturePtr.Null;
+            m_fontTexture = null;
         }
 
-        textureData.SetTexID(ImTextureID.Null);
-        textureData.SetStatus(ImTextureStatus.Destroyed);
+        ImGuiNative.Raw.SetTexID(textureData, 0);
+        ImGuiNative.Raw.SetStatus(textureData, ImTextureStatus.Destroyed);
     }
 
-    private SDLTexturePtr CreateTexture(
+    private SDLTexture* CreateTexture(
         int width,
         int height
     ) {
         if (width <= 0 || height <= 0)
         {
-            return SDLTexturePtr.Null;
+            return null;
         }
 
         var props = SDL.CreateProperties();
         try
         {
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, (long)SDLPixelFormat.PixelformatRgba32);
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, (long)SDLTextureAccess.TextureaccessStatic);
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, height);
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, (long)SDLPixelFormat.Rgba32);
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, (long)SDLTextureAccess.Static);
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, height);
 
-            var texture = SDL.CreateTextureWithProperties(m_renderer, props);
-            if (texture.IsNull)
+            var texture = SDL.Raw.CreateTextureWithProperties(m_renderer, props);
+            if (texture == null)
             {
-                return SDLTexturePtr.Null;
+                return null;
             }
 
-            _ = SDL.SetTextureBlendMode(texture, SDL.SDL_BLENDMODE_BLEND);
-            _ = SDL.SetTextureScaleMode(texture, SDLScaleMode.ScalemodeLinear);
+            _ = SDL.Raw.SetTextureBlendMode(texture, SDL.Constants.SDL_BLENDMODE_BLEND);
+            _ = SDL.Raw.SetTextureScaleMode(texture, SDLScaleMode.Linear);
             return texture;
         }
         finally
@@ -417,22 +418,24 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
 
     private static SDLVertex ToSdlVertex(
         ImDrawVert vtx,
-        Vector2 displayPos,
-        Vector2 framebufferScale
+        ImVec2C displayPos,
+        ImVec2C framebufferScale
     ) {
         var color = ImGuiPackedColor.ToSdlFColor(vtx.Col);
         var x = (vtx.Pos.X - displayPos.X) * framebufferScale.X;
         var y = (vtx.Pos.Y - displayPos.Y) * framebufferScale.Y;
 
-        return new SDLVertex(
-            new SDLFPoint(x, y),
-            color,
-            new SDLFPoint(vtx.Uv.X, vtx.Uv.Y));
+        return new SDLVertex
+        {
+            Position = new SDLFPoint { X = x, Y = y },
+            Color = color,
+            TexCoord = new SDLFPoint { X = vtx.Uv.X, Y = vtx.Uv.Y }
+        };
     }
 
-    private static SDLTexturePtr TextureFromImGui(ImTextureID textureId)
+    private static SDLTexture* TextureFromImGui(ulong textureId)
     {
-        return (SDLTexturePtr)(SDLTexture*)(void*)textureId;
+        return (SDLTexture*)(nuint)textureId;
     }
 
     private void EnsureVertexCapacity(int requiredCount)

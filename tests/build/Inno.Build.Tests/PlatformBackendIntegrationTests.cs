@@ -18,7 +18,7 @@ public sealed class PlatformBackendIntegrationTests
         Assert.Equal("windows-x64", WindowsX64BgfxIntegration.nativeProfile.targetId);
         Assert.Equal("macos-arm64", MacOSArm64BgfxIntegration.nativeProfile.targetId);
         var context = new BuildCompositionContext("explicit-sdk", System.IO.Path.GetTempPath(),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator("explicit-sdk"));
+            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator());
         var standard = StandardBuildDistribution.Create(context);
         Assert.Same(WindowsX64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(BuildTargetId.windowsX64));
         Assert.Same(MacOSArm64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(BuildTargetId.macOSArm64));

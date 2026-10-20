@@ -41,7 +41,7 @@ internal sealed partial class ShaderEditorCanvas
                 break;
             case "inno.shader.reroute":
                 InspectorRow("reroute.type", "Type", () =>
-                    ImGuiApi.TextDisabled(Read(node, "valueType", new ShaderGraphType { id = "float" }).CreateType().id));
+                    Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, Read(node, "valueType", new ShaderGraphType { id = "float" }).CreateType().id));
                 Widget.Hint("Forwards the complete port type without changing the value.");
                 break;
             case "inno.shader.extract":
@@ -49,7 +49,7 @@ internal sealed partial class ShaderEditorCanvas
                 int index = Read(node, "index", 0);
                 InspectorRow("extract.component", "Component", () =>
                 {
-                    if (ImGuiApi.InputInt("##component", ref index) && index >= 0)
+                    if (ImGuiApi.InputInt("##component", ref index, 1, 100, 0) && index >= 0)
                         Set(node, "index", index);
                 });
                 break;
@@ -92,13 +92,13 @@ internal sealed partial class ShaderEditorCanvas
                 });
                 if (StoragePopup(ref resource))
                     Set(node, "resource", resource);
-                ImGuiApi.TextWrapped("Connect then → after to order memory effects.");
+                Widget.WrappedText("Connect then → after to order memory effects.");
                 break;
             case "inno.shader.discard":
-                ImGuiApi.TextWrapped("Discard fragments where condition is true.");
+                Widget.WrappedText("Discard fragments where condition is true.");
                 break;
             default:
-                ImGuiApi.TextDisabled("Extension node");
+                Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Extension node");
                 break;
         }
     }
@@ -149,10 +149,10 @@ internal sealed partial class ShaderEditorCanvas
             }
         });
         Widget.DrawItemTooltip(path);
-        InspectorRow("graph-node.kind", "Kind", () => ImGuiApi.TextDisabled(nodeInterface.kind.ToString()));
-        InspectorRow("graph-node.effect", "Effect", () => ImGuiApi.TextDisabled(nodeInterface.effect.ToString()));
+        InspectorRow("graph-node.kind", "Kind", () => Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.kind.ToString()));
+        InspectorRow("graph-node.effect", "Effect", () => Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.effect.ToString()));
         if (nodeInterface.kind == ShaderGraphNodeKind.DomainOutput)
-            InspectorRow("graph-node.role", "Target Role", () => ImGuiApi.TextDisabled(nodeInterface.role));
+            InspectorRow("graph-node.role", "Target Role", () => Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.role));
         RepairPorts(node);
     }
 
@@ -207,7 +207,7 @@ internal sealed partial class ShaderEditorCanvas
         int createOrder = settings.createOrder;
         InspectorRow("node-interface.order", "Order", () =>
         {
-            bool changed = ImGuiApi.InputInt("##order", ref createOrder);
+            bool changed = ImGuiApi.InputInt("##order", ref createOrder, 1, 100, 0);
             Gesture();
             if (changed)
             {
@@ -415,7 +415,7 @@ internal sealed partial class ShaderEditorCanvas
                 int integer = Read(node, "value", 0);
                 InspectorRow("constant.value", "Value", () =>
                 {
-                    bool integerChanged = ImGuiApi.InputInt("##value", ref integer);
+                    bool integerChanged = ImGuiApi.InputInt("##value", ref integer, 1, 100, 0);
                     Gesture();
                     if (integerChanged)
                         Set(node, "value", integer, true);
@@ -464,7 +464,7 @@ internal sealed partial class ShaderEditorCanvas
         });
         Widget.DrawItemTooltip(path);
         if (selected == Guid.Empty)
-            ImGuiApi.TextDisabled("Choose a library and one of its explicitly exported functions.");
+            Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Choose a library and one of its explicitly exported functions.");
         else
         {
             if (owner.assets.TryLoad(selected, out ShaderFunctionAsset? library) && library is not null && !library.isMissing)
@@ -582,7 +582,7 @@ internal sealed partial class ShaderEditorCanvas
         Widget.DrawItemTooltip("Stage semantic, not a native expression. Builtins must be supported by the selected stage and target; compute invocation IDs use uint3.");
         int location = input.location;
         bool locationChanged = false;
-        InspectorRow("input.location", "Location", () => locationChanged = ImGuiApi.InputInt("##location", ref location));
+        InspectorRow("input.location", "Location", () => locationChanged = ImGuiApi.InputInt("##location", ref location, 1, 100, 0));
         Gesture();
         if (locationChanged && location >= 0)
         {
@@ -613,7 +613,7 @@ internal sealed partial class ShaderEditorCanvas
                 if (texture is not null && owner.previews.TryGetTexture(texture, out var preview))
                     owner.previews.Draw(preview, new(120 * Canvas.zoom, 120 * Canvas.zoom));
                 else
-                    ImGuiApi.TextDisabled(texture is null ? "No default texture" : "Preparing preview…");
+                    Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, texture is null ? "No default texture" : "Preparing preview…");
             }
         }
     }
@@ -621,7 +621,7 @@ internal sealed partial class ShaderEditorCanvas
     private void Output(GraphNodeRecord node)
     {
         ShaderGraphStageSettings stage = Read(node, "settings", new ShaderGraphStageSettings());
-        InspectorRow("output.passes", "Passes", () => ImGuiApi.TextDisabled(string.Join(", ",
+        InspectorRow("output.passes", "Passes", () => Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, string.Join(", ",
             ShaderGraphPrograms.Read(Controller.document, owner.serialization, owner.context)
                 .Where(program => program.stages.Contains(node.id.value, StringComparer.Ordinal)).Select(static program => program.pass))));
         InspectorRow("output.settings", "Settings", () =>
@@ -635,7 +635,7 @@ internal sealed partial class ShaderEditorCanvas
             int x = stage.threadsX, y = stage.threadsY, z = stage.threadsZ;
             InspectorRow("output.threads-x", "Threads X", () =>
             {
-                if (ImGuiApi.InputInt("##threads-x", ref x) && x > 0)
+                if (ImGuiApi.InputInt("##threads-x", ref x, 1, 100, 0) && x > 0)
                 {
                     stage.threadsX = x;
                     Set(node, "settings", stage);
@@ -643,7 +643,7 @@ internal sealed partial class ShaderEditorCanvas
             });
             InspectorRow("output.threads-y", "Threads Y", () =>
             {
-                if (ImGuiApi.InputInt("##threads-y", ref y) && y > 0)
+                if (ImGuiApi.InputInt("##threads-y", ref y, 1, 100, 0) && y > 0)
                 {
                     stage.threadsY = y;
                     Set(node, "settings", stage);
@@ -651,7 +651,7 @@ internal sealed partial class ShaderEditorCanvas
             });
             InspectorRow("output.threads-z", "Threads Z", () =>
             {
-                if (ImGuiApi.InputInt("##threads-z", ref z) && z > 0)
+                if (ImGuiApi.InputInt("##threads-z", ref z, 1, 100, 0) && z > 0)
                 {
                     stage.threadsZ = z;
                     Set(node, "settings", stage);

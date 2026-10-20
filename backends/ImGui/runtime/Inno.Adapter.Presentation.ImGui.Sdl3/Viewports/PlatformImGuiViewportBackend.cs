@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Platform;
@@ -20,15 +21,15 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     {
         internal required PlatformImGuiViewportBackend owner;
         internal required Sdl3PlatformWindow registeredWindow;
-        internal ImGuiViewportPtr viewport;
+        internal ImGuiViewport* viewport;
         internal bool drawable;
         internal Task? retirement;
         internal bool detached;
-        internal SDLWindow window;
-        internal SDLRenderer renderer;
+        internal SDLWindow* window;
+        internal SDLRenderer* renderer;
         internal IPlatformImGuiRenderer? externalRenderer;
         internal PlatformImGuiViewportTarget? externalTarget;
-        internal SDLTexturePtr fontTexture;
+        internal SDLTexture* fontTexture;
         internal int fontTextureWidth;
         internal int fontTextureHeight;
         internal nint fontPixelsPtr;
@@ -42,18 +43,6 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         internal int[] indexScratch = [];
     }
 
-    private static readonly PlatformCreateWindow s_platformCreateWindow = PlatformCreateWindowCallback;
-    private static readonly PlatformDestroyWindow s_platformDestroyWindow = PlatformDestroyWindowCallback;
-    private static readonly PlatformShowWindow s_platformShowWindow = PlatformShowWindowCallback;
-    private static readonly PlatformSetWindowPos s_platformSetWindowPos = PlatformSetWindowPosCallback;
-    private static readonly PlatformSetWindowSize s_platformSetWindowSize = PlatformSetWindowSizeCallback;
-    private static readonly PlatformSetWindowFocus s_platformSetWindowFocus = PlatformSetWindowFocusCallback;
-    private static readonly PlatformGetWindowFocus s_platformGetWindowFocus = PlatformGetWindowFocusCallback;
-    private static readonly PlatformGetWindowMinimized s_platformGetWindowMinimized = PlatformGetWindowMinimizedCallback;
-    private static readonly PlatformSetWindowTitle s_platformSetWindowTitle = PlatformSetWindowTitleCallback;
-    private static readonly PlatformSetWindowAlpha s_platformSetWindowAlpha = PlatformSetWindowAlphaCallback;
-    private static readonly RendererRenderWindow s_rendererRenderWindow = RendererRenderWindowCallback;
-    private static readonly RendererSwapBuffers s_rendererSwapBuffers = RendererSwapBuffersCallback;
     private static readonly ImGuiPlatformIoNative.PlatformGetWindowPosCallback s_platformGetWindowPos = PlatformGetWindowPosOutCallback;
     private static readonly ImGuiPlatformIoNative.PlatformGetWindowSizeCallback s_platformGetWindowSize = PlatformGetWindowSizeOutCallback;
 
@@ -61,7 +50,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     private static readonly Dictionary<nuint, PlatformImGuiViewportBackend> S_BACKENDS_BY_CONTEXT = [];
 
     private readonly Sdl3PlatformApplication m_application;
-    private readonly SDLWindow m_mainWindow;
+    private readonly SDLWindow* m_mainWindow;
     private readonly IPlatformImGuiRenderer m_renderer;
     private readonly nuint m_contextKey;
     private readonly Dictionary<uint, ViewportWindowData> m_viewportsById = [];
@@ -77,10 +66,10 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         IPlatformImGuiRenderer renderer
     ) {
         ArgumentNullException.ThrowIfNull(renderer);
-        ImGuiContextPtr context = ImGuiNative.GetCurrentContext();
-        if (context.IsNull)
+        ImGuiNativeContext* context = ImGuiNative.Raw.GetCurrentContext();
+        if (context == null)
             throw new InvalidOperationException("An active ImGui context is required for viewport routing.");
-        m_contextKey = (nuint)context.Handle;
+        m_contextKey = (nuint)context;
         lock (S_CONTEXT_SYNC)
         {
             if (S_BACKENDS_BY_CONTEXT.ContainsKey(m_contextKey))
@@ -88,30 +77,30 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         }
         m_application = application;
         m_renderer = renderer;
-        _ = SDL.SetHint(SDL.SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED, "1");
+        _ = SDL.SetHint(SDL.Constants.SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED, "1");
         m_mainWindow = mainWindow.GetSdlWindow();
 
-        var platformIo = ImGuiNative.GetPlatformIO();
-        platformIo.PlatformCreateWindow = (delegate* unmanaged[Cdecl]<ImGuiViewport*, void>)FunctionPtr(s_platformCreateWindow);
-        platformIo.PlatformDestroyWindow = (delegate* unmanaged[Cdecl]<ImGuiViewport*, void>)FunctionPtr(s_platformDestroyWindow);
-        platformIo.PlatformShowWindow = (delegate* unmanaged[Cdecl]<ImGuiViewport*, void>)FunctionPtr(s_platformShowWindow);
-        platformIo.PlatformSetWindowPos = (delegate* unmanaged[Cdecl]<ImGuiViewport*, Vector2, void>)FunctionPtr(s_platformSetWindowPos);
-        platformIo.PlatformSetWindowSize = (delegate* unmanaged[Cdecl]<ImGuiViewport*, Vector2, void>)FunctionPtr(s_platformSetWindowSize);
-        platformIo.PlatformGetWindowFramebufferScale = null;
-        platformIo.PlatformSetWindowFocus = (delegate* unmanaged[Cdecl]<ImGuiViewport*, void>)FunctionPtr(s_platformSetWindowFocus);
-        platformIo.PlatformGetWindowFocus = (delegate* unmanaged[Cdecl]<ImGuiViewport*, byte>)FunctionPtr(s_platformGetWindowFocus);
-        platformIo.PlatformGetWindowMinimized = (delegate* unmanaged[Cdecl]<ImGuiViewport*, byte>)FunctionPtr(s_platformGetWindowMinimized);
-        platformIo.PlatformSetWindowTitle = (delegate* unmanaged[Cdecl]<ImGuiViewport*, byte*, void>)FunctionPtr(s_platformSetWindowTitle);
-        platformIo.PlatformSetWindowAlpha = (delegate* unmanaged[Cdecl]<ImGuiViewport*, float, void>)FunctionPtr(s_platformSetWindowAlpha);
-        platformIo.RendererRenderWindow = (delegate* unmanaged[Cdecl]<ImGuiViewport*, void*, void>)FunctionPtr(s_rendererRenderWindow);
-        platformIo.RendererSwapBuffers = (delegate* unmanaged[Cdecl]<ImGuiViewport*, void*, void>)FunctionPtr(s_rendererSwapBuffers);
+        var platformIo = ImGuiNative.Raw.GetPlatformIO();
+        platformIo->PlatformCreateWindow = &PlatformCreateWindowCallback;
+        platformIo->PlatformDestroyWindow = &PlatformDestroyWindowCallback;
+        platformIo->PlatformShowWindow = &PlatformShowWindowCallback;
+        platformIo->PlatformSetWindowPos = &PlatformSetWindowPosCallback;
+        platformIo->PlatformSetWindowSize = &PlatformSetWindowSizeCallback;
+        platformIo->PlatformGetWindowFramebufferScale = null;
+        platformIo->PlatformSetWindowFocus = &PlatformSetWindowFocusCallback;
+        platformIo->PlatformGetWindowFocus = &PlatformGetWindowFocusCallback;
+        platformIo->PlatformGetWindowMinimized = &PlatformGetWindowMinimizedCallback;
+        platformIo->PlatformSetWindowTitle = &PlatformSetWindowTitleCallback;
+        platformIo->PlatformSetWindowAlpha = &PlatformSetWindowAlphaCallback;
+        platformIo->RendererRenderWindow = &RendererRenderWindowCallback;
+        platformIo->RendererSwapBuffers = &RendererSwapBuffersCallback;
         ImGuiPlatformIoNative.SetPlatformGetWindowPos(platformIo, s_platformGetWindowPos);
         ImGuiPlatformIoNative.SetPlatformGetWindowSize(platformIo, s_platformGetWindowSize);
 
-        var mainViewport = ImGuiNative.GetMainViewport();
-        SDLWindow mainSdlWindow = mainWindow.GetSdlWindow();
-        mainViewport.PlatformHandle = (void*)mainSdlWindow.Handle;
-        mainViewport.PlatformHandleRaw = (void*)mainWindow.nativeHandles.windowHandle;
+        var mainViewport = ImGuiNative.Raw.GetMainViewport();
+        SDLWindow* mainSdlWindow = mainWindow.GetSdlWindow();
+        mainViewport->PlatformHandle = (void*)mainSdlWindow;
+        mainViewport->PlatformHandleRaw = (void*)mainWindow.nativeHandles.windowHandle;
 
         RefreshMonitors(mainSdlWindow);
         lock (S_CONTEXT_SYNC)
@@ -153,13 +142,13 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             return;
         }
 
-        ImGuiViewportPtr viewport = data.viewport;
+        ImGuiViewport* viewport = data.viewport;
         if (eventType == SDLEventType.WindowCloseRequested)
-            viewport.PlatformRequestClose = true;
+            viewport->PlatformRequestClose = 1;
         if (eventType == SDLEventType.WindowMoved)
-            viewport.PlatformRequestMove = true;
+            viewport->PlatformRequestMove = 1;
         if (eventType == SDLEventType.WindowResized || eventType == SDLEventType.WindowPixelSizeChanged)
-            viewport.PlatformRequestResize = true;
+            viewport->PlatformRequestResize = 1;
     }
 
     internal void SynchronizeMetrics()
@@ -169,13 +158,13 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             RefreshMonitors(m_mainWindow);
             m_monitorsDirty = false;
         }
-        var main = ImGuiNative.GetMainViewport();
+        var main = ImGuiNative.Raw.GetMainViewport();
         Vector2 scale = GetWindowFramebufferScale(m_mainWindow);
         if (scale.X > 0 && scale.Y > 0)
         {
-            main.FramebufferScale = scale;
-            if (main.DpiScale == 0f)
-                main.DpiScale = GetWindowDpiScale(m_mainWindow);
+            main->FramebufferScale = new ImVec2C { X = scale.X, Y = scale.Y };
+            if (main->DpiScale == 0f)
+                main->DpiScale = GetWindowDpiScale(m_mainWindow);
         }
         foreach (ViewportWindowData data in m_viewportsById.Values)
             SynchronizeWindow(data.windowId);
@@ -185,7 +174,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     /// Synchronizes a secondary viewport's drawable scale and renderer output.
     /// </summary>
     /// <param name="windowId">
-    /// The SDL window identifier owned by the viewport.
+    /// The SDL window identifier owned by the viewport->
     /// </param>
     internal void SynchronizeWindow(uint windowId)
     {
@@ -198,11 +187,11 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         {
             return;
         }
-        ImGuiViewportPtr viewport = data.viewport;
+        ImGuiViewport* viewport = data.viewport;
 
         var width = 0;
         var height = 0;
-        SDL.GetWindowSize(data.window, ref width, ref height);
+        SDL.Raw.GetWindowSize(data.window, &width, &height);
         if (width <= 0 || height <= 0)
         {
             data.drawable = false;
@@ -214,15 +203,15 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         Vector2 framebufferScale = GetWindowFramebufferScale(data.window);
         if (framebufferScale.X > 0 && framebufferScale.Y > 0)
         {
-            if (viewport.Handle->DpiScale == 0f)
-                viewport.Handle->DpiScale = GetWindowDpiScale(data.window);
-            viewport.Handle->FramebufferScale = framebufferScale;
+            if (viewport->DpiScale == 0f)
+                viewport->DpiScale = GetWindowDpiScale(data.window);
+            viewport->FramebufferScale = new ImVec2C { X = framebufferScale.X, Y = framebufferScale.Y };
         }
         int pixelWidth = 0;
         int pixelHeight = 0;
-        SDL.GetWindowSizeInPixels(data.window, ref pixelWidth, ref pixelHeight);
+        SDL.Raw.GetWindowSizeInPixels(data.window, &pixelWidth, &pixelHeight);
         data.drawable = pixelWidth > 0 && pixelHeight > 0
-            && (SDL.GetWindowFlags(data.window) & (SDLWindowFlags.Minimized | SDLWindowFlags.Hidden)) == 0;
+            && (((SDLWindowFlags)SDL.Raw.GetWindowFlags(data.window)) & (SDLWindowFlags.Minimized | SDLWindowFlags.Hidden)) == 0;
         if (data.externalRenderer is not null && data.externalTarget is not null)
         {
             if (data.drawable && (data.externalTarget.width != pixelWidth || data.externalTarget.height != pixelHeight))
@@ -261,15 +250,15 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         if (m_retiringViewports.Count != 0)
             throw new RetirementPendingException("Detached ImGui windows are still borrowed by their renderer.");
 
-        var platformIo = ImGuiNative.GetPlatformIO();
-        platformIo.ClearPlatformHandlers();
-        platformIo.ClearRendererHandlers();
+        var platformIo = ImGuiNative.Raw.GetPlatformIO();
+        ImGuiNative.Raw.ClearPlatformHandlers(platformIo);
+        ImGuiNative.Raw.ClearRendererHandlers(platformIo);
 
-        var mainViewport = ImGuiNative.GetMainViewport();
-        if (!mainViewport.IsNull)
+        var mainViewport = ImGuiNative.Raw.GetMainViewport();
+        if (mainViewport != null)
         {
-            mainViewport.PlatformHandle = null;
-            mainViewport.PlatformHandleRaw = null;
+            mainViewport->PlatformHandle = null;
+            mainViewport->PlatformHandleRaw = null;
         }
 
         lock (S_CONTEXT_SYNC)
@@ -283,77 +272,80 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         m_disposed = true;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformCreateWindowCallback(ImGuiViewport* viewport)
     {
         try
         {
-        if (viewport == null || viewport->PlatformUserData != null || (viewport->Flags & ImGuiViewportFlags.OwnedByApp) != 0)
+        if (viewport == null || viewport->PlatformUserData != null || (viewport->Flags & (int)ImGuiViewportFlags.OwnedByApp) != 0)
         {
             return;
         }
 
         var flags = SDLWindowFlags.Hidden | SDLWindowFlags.Resizable | SDLWindowFlags.HighPixelDensity;
-        if ((viewport->Flags & ImGuiViewportFlags.NoDecoration) != 0)
+        if ((viewport->Flags & (int)ImGuiViewportFlags.NoDecoration) != 0)
         {
             flags |= SDLWindowFlags.Borderless;
         }
 
-        if ((viewport->Flags & ImGuiViewportFlags.NoTaskBarIcon) != 0)
+        if ((viewport->Flags & (int)ImGuiViewportFlags.NoTaskBarIcon) != 0)
         {
             flags |= SDLWindowFlags.Utility;
         }
 
-        if ((viewport->Flags & ImGuiViewportFlags.TopMost) != 0)
+        if ((viewport->Flags & (int)ImGuiViewportFlags.TopMost) != 0)
         {
             flags |= SDLWindowFlags.AlwaysOnTop;
         }
 
         var width = Math.Max(1, (int)viewport->Size.X);
         var height = Math.Max(1, (int)viewport->Size.Y);
-        var window = SDL.CreateWindow("ImGui", width, height, flags);
-        if (window.IsNull)
+        SDLWindow* window;
+        fixed (byte* title = "ImGui\0"u8)
+            window = SDL.Raw.CreateWindow((sbyte*)title, width, height, (ulong)flags);
+        if (window == null)
         {
             return;
         }
 
-        _ = SDL.SetWindowPosition(window, (int)viewport->Pos.X, (int)viewport->Pos.Y);
+        _ = SDL.Raw.SetWindowPosition(window, (int)viewport->Pos.X, (int)viewport->Pos.Y);
 
         PlatformImGuiViewportBackend backend = GetCurrentBackend();
         IPlatformImGuiRenderer rendererBackend = backend.m_renderer;
-        SDLRenderer renderer = SDLRenderer.Null;
+        SDLRenderer* renderer = null;
         if (!rendererBackend.supportsViewports)
         {
-            renderer = SDL.CreateRenderer(window, (byte*)0);
-            if (renderer.IsNull)
+            renderer = SDL.Raw.CreateRenderer(window, null);
+            if (renderer == null)
             {
-                SDL.DestroyWindow(window);
+                SDL.Raw.DestroyWindow(window);
                 return;
             }
 
-            _ = SDL.SetRenderDrawBlendMode(renderer, SDL.SDL_BLENDMODE_BLEND);
+            _ = SDL.Raw.SetRenderDrawBlendMode(renderer, SDL.Constants.SDL_BLENDMODE_BLEND);
         }
 
         Sdl3PlatformWindow registeredWindow;
         try
         {
-            registeredWindow = backend.m_application.AdoptWindow((nint)window.Handle);
+            registeredWindow = backend.m_application.AdoptWindow((nint)window);
         }
         catch
         {
-            if (!renderer.IsNull)
-                SDL.DestroyRenderer(renderer);
-            SDL.DestroyWindow(window);
+            if (renderer != null)
+                SDL.Raw.DestroyRenderer(renderer);
+            SDL.Raw.DestroyWindow(window);
             throw;
         }
         var data = new ViewportWindowData
         {
             owner = backend,
             registeredWindow = registeredWindow,
-            viewport = new ImGuiViewportPtr(viewport),
+            viewport = viewport,
             drawable = true,
             window = window,
             renderer = renderer,
-            windowId = SDL.GetWindowID(window)
+            windowId = SDL.Raw.GetWindowId(window)
         };
         try
         {
@@ -361,7 +353,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             {
                 int pixelWidth = 0;
                 int pixelHeight = 0;
-                SDL.GetWindowSizeInPixels(window, ref pixelWidth, ref pixelHeight);
+                SDL.Raw.GetWindowSizeInPixels(window, &pixelWidth, &pixelHeight);
                 data.externalRenderer = rendererBackend;
                 data.externalTarget = new PlatformImGuiViewportTarget(
                     viewport->ID,
@@ -378,7 +370,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             var handlePtr = GCHandle.ToIntPtr(data.gcHandle);
             viewport->PlatformUserData = (void*)handlePtr;
             viewport->RendererUserData = (void*)handlePtr;
-            viewport->PlatformHandle = (void*)window.Handle;
+            viewport->PlatformHandle = (void*)window;
             viewport->PlatformHandleRaw = (void*)registeredWindow.nativeHandles.windowHandle;
         }
         catch
@@ -391,209 +383,313 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             }
         catch (Exception failure)
         {
-            GetCurrentBackend().m_callbackFailure = failure;
+            GetCurrentBackend().RecordCallbackFailure(failure);
         }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformDestroyWindowCallback(ImGuiViewport* viewport)
     {
-        if (viewport == null || (viewport->Flags & ImGuiViewportFlags.OwnedByApp) != 0)
+        try
         {
-            return;
-        }
+            if (viewport == null || (viewport->Flags & (int)ImGuiViewportFlags.OwnedByApp) != 0)
+            {
+                return;
+            }
 
-        if (TryGetViewportData(viewport, out var data))
+            if (TryGetViewportData(viewport, out var data))
+            {
+                data.owner.m_viewportsById.Remove(viewport->ID);
+                data.owner.m_windowToViewport.Remove(data.windowId);
+                DestroyViewportWindow(data);
+            }
+
+            viewport->PlatformUserData = null;
+            viewport->RendererUserData = null;
+            viewport->PlatformHandle = null;
+            viewport->PlatformHandleRaw = null;
+        }
+        catch (Exception failure)
         {
-            data.owner.m_viewportsById.Remove(viewport->ID);
-            data.owner.m_windowToViewport.Remove(data.windowId);
-            DestroyViewportWindow(data);
+            GetCurrentBackend().RecordCallbackFailure(failure);
         }
-
-        viewport->PlatformUserData = null;
-        viewport->RendererUserData = null;
-        viewport->PlatformHandle = null;
-        viewport->PlatformHandleRaw = null;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformShowWindowCallback(ImGuiViewport* viewport)
     {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
-            return;
-        }
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return;
+            }
 
-        _ = SDL.ShowWindow(window);
-        GetCurrentBackend().SynchronizeWindow(SDL.GetWindowID(window));
+            _ = SDL.Raw.ShowWindow(window);
+            GetCurrentBackend().SynchronizeWindow(SDL.Raw.GetWindowId(window));
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
+        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformSetWindowPosCallback(
         ImGuiViewport* viewport,
-        Vector2 pos
+        ImVec2C pos
     ) {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
-            return;
-        }
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return;
+            }
 
-        _ = SDL.SetWindowPosition(window, (int)pos.X, (int)pos.Y);
+            _ = SDL.Raw.SetWindowPosition(window, (int)pos.X, (int)pos.Y);
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
+        }
     }
 
     private static void PlatformGetWindowPosOutCallback(
         ImGuiViewport* viewport,
-        Vector2* outPos
+        ImVec2C* outPos
     ) {
-        if (outPos == null)
+        try
         {
-            return;
-        }
+            if (outPos == null)
+            {
+                return;
+            }
 
-        if (!TryGetWindow(viewport, out var window))
+            if (!TryGetWindow(viewport, out var window))
+            {
+                *outPos = default;
+                return;
+            }
+
+            var x = 0;
+            var y = 0;
+            _ = SDL.Raw.GetWindowPosition(window, &x, &y);
+            *outPos = new ImVec2C { X = x, Y = y };
+        }
+        catch (Exception failure)
         {
-            *outPos = Vector2.Zero;
-            return;
+            GetCurrentBackend().RecordCallbackFailure(failure);
         }
-
-        var x = 0;
-        var y = 0;
-        _ = SDL.GetWindowPosition(window, ref x, ref y);
-        *outPos = new Vector2(x, y);
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformSetWindowSizeCallback(
         ImGuiViewport* viewport,
-        Vector2 size
+        ImVec2C size
     ) {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
-            return;
-        }
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return;
+            }
 
-        _ = SDL.SetWindowSize(window, Math.Max(1, (int)size.X), Math.Max(1, (int)size.Y));
+            _ = SDL.Raw.SetWindowSize(window, Math.Max(1, (int)size.X), Math.Max(1, (int)size.Y));
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
+        }
     }
 
     private static void PlatformGetWindowSizeOutCallback(
         ImGuiViewport* viewport,
-        Vector2* outSize
+        ImVec2C* outSize
     ) {
-        if (outSize == null)
+        try
         {
-            return;
-        }
+            if (outSize == null)
+            {
+                return;
+            }
 
-        if (!TryGetWindow(viewport, out var window))
+            if (!TryGetWindow(viewport, out var window))
+            {
+                *outSize = default;
+                return;
+            }
+
+            var width = 0;
+            var height = 0;
+            SDL.Raw.GetWindowSize(window, &width, &height);
+            *outSize = new ImVec2C { X = width, Y = height };
+        }
+        catch (Exception failure)
         {
-            *outSize = Vector2.Zero;
-            return;
+            GetCurrentBackend().RecordCallbackFailure(failure);
         }
-
-        var width = 0;
-        var height = 0;
-        SDL.GetWindowSize(window, ref width, ref height);
-        *outSize = new Vector2(width, height);
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformSetWindowFocusCallback(ImGuiViewport* viewport)
     {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
-            return;
-        }
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return;
+            }
 
-        FocusWindow(window);
+            FocusWindow(window);
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
+        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static byte PlatformGetWindowFocusCallback(ImGuiViewport* viewport)
     {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return 0;
+            }
+
+            var flags = (SDLWindowFlags)((SDLWindowFlags)SDL.Raw.GetWindowFlags(window));
+            return (flags & SDLWindowFlags.InputFocus) != 0 ? (byte)1 : (byte)0;
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
             return 0;
         }
-
-        var flags = (SDLWindowFlags)SDL.GetWindowFlags(window);
-        return (flags & SDLWindowFlags.InputFocus) != 0 ? (byte)1 : (byte)0;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static byte PlatformGetWindowMinimizedCallback(ImGuiViewport* viewport)
     {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return 0;
+            }
+
+            var flags = (SDLWindowFlags)((SDLWindowFlags)SDL.Raw.GetWindowFlags(window));
+            return (flags & SDLWindowFlags.Minimized) != 0 ? (byte)1 : (byte)0;
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
             return 0;
         }
-
-        var flags = (SDLWindowFlags)SDL.GetWindowFlags(window);
-        return (flags & SDLWindowFlags.Minimized) != 0 ? (byte)1 : (byte)0;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformSetWindowTitleCallback(
         ImGuiViewport* viewport,
-        byte* title
+        sbyte* title
     ) {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
-            return;
-        }
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return;
+            }
 
-        _ = SDL.SetWindowTitle(window, title);
+            _ = SDL.Raw.SetWindowTitle(window, title);
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
+        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformSetWindowAlphaCallback(
         ImGuiViewport* viewport,
         float alpha
     ) {
-        if (!TryGetWindow(viewport, out var window))
+        try
         {
-            return;
-        }
+            if (!TryGetWindow(viewport, out var window))
+            {
+                return;
+            }
 
-        _ = SDL.SetWindowOpacity(window, alpha);
+            _ = SDL.Raw.SetWindowOpacity(window, alpha);
+        }
+        catch (Exception failure)
+        {
+            GetCurrentBackend().RecordCallbackFailure(failure);
+        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void RendererRenderWindowCallback(
         ImGuiViewport* viewport,
         void* renderArg
     ) {
-        _ = renderArg;
-        if (!TryGetViewportData(viewport, out var data) || viewport == null || viewport->DrawData == null)
+        try
         {
-            return;
-        }
+            _ = renderArg;
+            if (!TryGetViewportData(viewport, out var data) || viewport == null || viewport->DrawData == null)
+            {
+                return;
+            }
 
-        data.owner.SynchronizeWindow(data.windowId);
-        if (!data.drawable)
-            return;
+            data.owner.SynchronizeWindow(data.windowId);
+            if (!data.drawable)
+                return;
 
-        if (data.externalRenderer is not null && data.externalTarget is not null)
-        {
-            data.externalRenderer.RenderViewport(data.externalTarget, (IntPtr)viewport->DrawData);
+            if (data.externalRenderer is not null && data.externalTarget is not null)
+            {
+                data.externalRenderer.RenderViewport(data.externalTarget, (IntPtr)viewport->DrawData);
+            }
+            else
+            {
+                EnsureViewportFontTexture(data);
+                RenderDrawData(data, data.fontTexture, viewport->DrawData);
+            }
         }
-        else
+        catch (Exception failure)
         {
-            EnsureViewportFontTexture(data);
-            RenderDrawData(data, data.fontTexture, viewport->DrawData);
+            GetCurrentBackend().RecordCallbackFailure(failure);
         }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void RendererSwapBuffersCallback(
         ImGuiViewport* viewport,
         void* renderArg
     ) {
-        _ = renderArg;
-        if (!TryGetViewportData(viewport, out var data))
+        try
         {
-            return;
-        }
+            _ = renderArg;
+            if (!TryGetViewportData(viewport, out var data))
+            {
+                return;
+            }
 
-        data.owner.SynchronizeWindow(data.windowId);
-        if (!data.drawable)
-            return;
+            data.owner.SynchronizeWindow(data.windowId);
+            if (!data.drawable)
+                return;
 
-        if (data.externalRenderer is not null && data.externalTarget is not null)
-        {
-            data.externalRenderer.PresentViewport(data.externalTarget);
+            if (data.externalRenderer is not null && data.externalTarget is not null)
+            {
+                data.externalRenderer.PresentViewport(data.externalTarget);
+            }
+            else
+            {
+                _ = SDL.Raw.RenderPresent(data.renderer);
+            }
         }
-        else
+        catch (Exception failure)
         {
-            _ = SDL.RenderPresent(data.renderer);
+            GetCurrentBackend().RecordCallbackFailure(failure);
         }
     }
 
@@ -620,11 +716,11 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
     private static bool TryGetWindow(
         ImGuiViewport* viewport,
-        out SDLWindow window
+        out SDLWindow* window
     ) {
         if (viewport != null && viewport->PlatformHandle != null)
         {
-            window = new SDLWindow((nint)viewport->PlatformHandle);
+            window = (SDLWindow*)viewport->PlatformHandle;
             return true;
         }
 
@@ -634,106 +730,31 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             return true;
         }
 
-        window = SDLWindow.Null;
+        window = null;
         return false;
-    }
-
-    private static void RefreshMonitors(SDLWindow fallbackWindow)
-    {
-        var platformIo = ImGuiNative.GetPlatformIO();
-        platformIo.Monitors.Clear();
-
-        var displayCount = 0;
-        var displays = SDL.GetDisplays(&displayCount);
-        try
-        {
-            var primaryDisplay = SDL.GetPrimaryDisplay();
-            if (displays != null && displayCount > 0)
-            {
-                if (primaryDisplay != 0)
-                {
-                    AddDisplayMonitor(primaryDisplay, ref platformIo);
-                }
-
-                for (var i = 0; i < displayCount; i++)
-                {
-                    var displayId = displays[i];
-                    if (displayId == 0 || displayId == primaryDisplay)
-                    {
-                        continue;
-                    }
-
-                    AddDisplayMonitor(displayId, ref platformIo);
-                }
-            }
-
-            if (platformIo.Monitors.Size == 0 && !fallbackWindow.IsNull)
-            {
-                var fallbackDisplay = SDL.GetDisplayForWindow(fallbackWindow);
-                if (fallbackDisplay != 0)
-                {
-                    AddDisplayMonitor(fallbackDisplay, ref platformIo);
-                }
-            }
-
-        }
-        finally
-        {
-            if (displays != null)
-            {
-                SDL.Free(displays);
-            }
-        }
-    }
-
-    private static void AddDisplayMonitor(
-        uint displayId,
-        ref ImGuiPlatformIOPtr platformIo
-    ) {
-        SDLRect mainBounds = default;
-        if (!SDL.GetDisplayBounds(displayId, ref mainBounds))
-        {
-            return;
-        }
-
-        var workBounds = mainBounds;
-        _ = SDL.GetDisplayUsableBounds(displayId, ref workBounds);
-        var dpiScale = SDL.GetDisplayContentScale(displayId);
-        if (dpiScale <= 0f)
-        {
-            dpiScale = 1f;
-        }
-
-        platformIo.Monitors.PushBack(new ImGuiPlatformMonitor(
-            mainPos: new Vector2(mainBounds.X, mainBounds.Y),
-            mainSize: new Vector2(mainBounds.W, mainBounds.H),
-            workPos: new Vector2(workBounds.X, workBounds.Y),
-            workSize: new Vector2(workBounds.W, workBounds.H),
-            dpiScale: dpiScale,
-            platformHandle: (void*)(nuint)displayId));
     }
 
     private static void EnsureViewportFontTexture(ViewportWindowData data)
     {
-        var io = ImGuiNative.GetIO();
-        if (io.Fonts.IsNull)
+        var io = ImGuiNative.Raw.GetIO();
+        if (io->Fonts == null)
         {
             return;
         }
 
-        io.Fonts.RendererHasTextures = true;
-        var texData = io.Fonts.TexData;
-        if (texData.IsNull)
+        io->Fonts->RendererHasTextures = 1;
+        var texData = io->Fonts->TexData;
+        if (texData == null)
         {
             return;
         }
 
-        if (texData.Status == ImTextureStatus.WantDestroy)
+        if (texData->Status == ImTextureStatus.WantDestroy)
         {
-            if (!data.fontTexture.IsNull)
+            if (data.fontTexture != null)
             {
-                SDL.DestroyTexture(data.fontTexture);
-                data.fontTexture = SDLTexturePtr.Null;
+                SDL.Raw.DestroyTexture(data.fontTexture);
+                data.fontTexture = null;
                 data.fontTextureWidth = 0;
                 data.fontTextureHeight = 0;
                 data.fontPixelsPtr = 0;
@@ -746,53 +767,53 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             return;
         }
 
-        if (texData.Pixels == null || texData.Width <= 0 || texData.Height <= 0)
+        if (texData->Pixels == null || texData->Width <= 0 || texData->Height <= 0)
         {
             return;
         }
 
-        var needsRecreate = data.fontTexture.IsNull
-            || data.fontTextureWidth != texData.Width
-            || data.fontTextureHeight != texData.Height;
+        var needsRecreate = data.fontTexture == null
+            || data.fontTextureWidth != texData->Width
+            || data.fontTextureHeight != texData->Height;
         if (needsRecreate)
         {
-            if (!data.fontTexture.IsNull)
+            if (data.fontTexture != null)
             {
-                SDL.DestroyTexture(data.fontTexture);
-                data.fontTexture = SDLTexturePtr.Null;
+                SDL.Raw.DestroyTexture(data.fontTexture);
+                data.fontTexture = null;
             }
 
-            data.fontTexture = CreateTexture(data.renderer, texData.Width, texData.Height);
-            if (data.fontTexture.IsNull)
+            data.fontTexture = CreateTexture(data.renderer, texData->Width, texData->Height);
+            if (data.fontTexture == null)
             {
                 data.fontTextureWidth = 0;
                 data.fontTextureHeight = 0;
                 return;
             }
 
-            data.fontTextureWidth = texData.Width;
-            data.fontTextureHeight = texData.Height;
+            data.fontTextureWidth = texData->Width;
+            data.fontTextureHeight = texData->Height;
         }
 
-        var pitch = texData.GetPitch();
-        var pixelsPtr = (nint)texData.Pixels;
-        var uniqueId = texData.UniqueID;
-        var usedRect = texData.UsedRect;
-        var updateRect = texData.UpdateRect;
+        var pitch = ImGuiNative.Raw.GetPitch(texData);
+        var pixelsPtr = (nint)texData->Pixels;
+        var uniqueId = texData->UniqueId;
+        var usedRect = texData->UsedRect;
+        var updateRect = texData->UpdateRect;
         var needsUpload = needsRecreate
             || data.fontPixelsPtr != pixelsPtr
             || data.fontTexturePitch != pitch
             || data.fontTextureUniqueId != uniqueId
             || !TextureRectEquals(data.fontUsedRect, usedRect)
             || !TextureRectEquals(data.fontUpdateRect, updateRect)
-            || texData.Status == ImTextureStatus.WantCreate
-            || texData.Status == ImTextureStatus.WantUpdates;
+            || texData->Status == ImTextureStatus.WantCreate
+            || texData->Status == ImTextureStatus.WantUpdates;
         if (!needsUpload)
         {
             return;
         }
 
-        _ = SDL.UpdateTexture(data.fontTexture, SDLRectPtr.Null, texData.Pixels, pitch);
+        _ = SDL.Raw.UpdateTexture(data.fontTexture, null, texData->Pixels, pitch);
         data.fontPixelsPtr = pixelsPtr;
         data.fontTexturePitch = pitch;
         data.fontTextureUniqueId = uniqueId;
@@ -802,45 +823,45 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
     private static void RenderDrawData(
         ViewportWindowData data,
-        SDLTexturePtr fontTexture,
+        SDLTexture* fontTexture,
         ImDrawData* drawDataNative
     ) {
         var renderer = data.renderer;
-        if (renderer.IsNull || drawDataNative == null || drawDataNative->Valid == 0)
+        if (renderer == null || drawDataNative == null || drawDataNative->Valid == 0)
         {
             return;
         }
 
-        var drawData = new ImDrawDataPtr(drawDataNative);
-        _ = SDL.SetRenderViewport(renderer, SDLRectPtr.Null);
-        _ = SDL.SetRenderClipRect(renderer, SDLRectPtr.Null);
-        _ = SDL.SetRenderDrawColor(renderer, 0, 0, 0, 0);
-        _ = SDL.RenderClear(renderer);
+        var drawData = drawDataNative;
+        _ = SDL.Raw.SetRenderViewport(renderer, null);
+        _ = SDL.Raw.SetRenderClipRect(renderer, null);
+        _ = SDL.Raw.SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        _ = SDL.Raw.RenderClear(renderer);
 
-        var clipOff = drawData.DisplayPos;
-        var clipScale = drawData.FramebufferScale;
-        var fontTexId = ImGuiNative.GetIO().Fonts.TexRef.GetTexID();
+        var clipOff = drawData->DisplayPos;
+        var clipScale = drawData->FramebufferScale;
+        var fontTexId = ImGuiNative.Raw.GetTexID(&ImGuiNative.Raw.GetIO()->Fonts->TexRef);
 
-        for (var listIndex = 0; listIndex < drawData.CmdListsCount; listIndex++)
+        for (var listIndex = 0; listIndex < drawData->CmdListsCount; listIndex++)
         {
-            var drawList = drawData.CmdLists[listIndex];
-            if (drawList.IsNull || drawList.VtxBuffer.Size <= 0)
+            var drawList = drawData->CmdLists.Data[listIndex];
+            if (drawList == null || drawList->VtxBuffer.Size <= 0)
             {
                 continue;
             }
 
-            var vertexCount = drawList.VtxBuffer.Size;
+            var vertexCount = drawList->VtxBuffer.Size;
             EnsureVertexCapacity(data, vertexCount);
-            var srcVertices = drawList.VtxBuffer.Data;
+            var srcVertices = drawList->VtxBuffer.Data;
             for (var i = 0; i < vertexCount; i++)
             {
                 data.vertexScratch[i] = ToSdlVertex(srcVertices[i], clipOff, clipScale);
             }
 
-            var cmdCount = drawList.CmdBuffer.Size;
+            var cmdCount = drawList->CmdBuffer.Size;
             for (var cmdIndex = 0; cmdIndex < cmdCount; cmdIndex++)
             {
-                var drawCmd = drawList.CmdBuffer[cmdIndex];
+                var drawCmd = drawList->CmdBuffer.Data[cmdIndex];
                 if (drawCmd.UserCallback != null || drawCmd.ElemCount == 0)
                 {
                     continue;
@@ -855,12 +876,16 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                     continue;
                 }
 
-                var clipRect = new SDLRect((int)clipRectX, (int)clipRectY, (int)(clipRectZ - clipRectX), (int)(clipRectW - clipRectY));
-                _ = SDL.SetRenderClipRect(renderer, ref clipRect);
+                var clipRect = new SDLRect
+                {
+                    X = (int)clipRectX, Y = (int)clipRectY,
+                    W = (int)(clipRectZ - clipRectX), H = (int)(clipRectW - clipRectY)
+                };
+                _ = SDL.Raw.SetRenderClipRect(renderer, &clipRect);
 
                 var elemCount = (int)drawCmd.ElemCount;
                 EnsureIndexCapacity(data, elemCount);
-                var srcIndices = drawList.IdxBuffer.Data;
+                var srcIndices = drawList->IdxBuffer.Data;
                 var idxOffset = (int)drawCmd.IdxOffset;
                 var vtxOffset = (int)drawCmd.VtxOffset;
                 for (var i = 0; i < elemCount; i++)
@@ -868,8 +893,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                     data.indexScratch[i] = srcIndices[idxOffset + i] + vtxOffset;
                 }
 
-                var texture = drawCmd.GetTexID() == fontTexId ? fontTexture : TextureFromImGui(drawCmd.GetTexID());
-                if (texture.IsNull)
+                var texture = ImGuiNative.Raw.GetTexID(&drawCmd) == fontTexId ? fontTexture : TextureFromImGui(ImGuiNative.Raw.GetTexID(&drawCmd));
+                if (texture == null)
                 {
                     texture = fontTexture;
                 }
@@ -877,31 +902,31 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 fixed (SDLVertex* pVertices = data.vertexScratch)
                 fixed (int* pIndices = data.indexScratch)
                 {
-                    _ = SDL.RenderGeometry(renderer, texture, pVertices, vertexCount, pIndices, elemCount);
+                    _ = SDL.Raw.RenderGeometry(renderer, texture, pVertices, vertexCount, pIndices, elemCount);
                 }
             }
         }
 
-        _ = SDL.SetRenderClipRect(renderer, SDLRectPtr.Null);
+        _ = SDL.Raw.SetRenderClipRect(renderer, null);
     }
 
-    private static void FocusWindow(SDLWindow window)
+    private static void FocusWindow(SDLWindow* window)
     {
-        if (!window.IsNull)
+        if (window != null)
         {
-            _ = SDL.RaiseWindow(window);
+            _ = SDL.Raw.RaiseWindow(window);
         }
     }
 
     private static PlatformImGuiViewportBackend GetCurrentBackend()
     {
-        ImGuiContextPtr context = ImGuiNative.GetCurrentContext();
-        if (context.IsNull)
+        ImGuiNativeContext* context = ImGuiNative.Raw.GetCurrentContext();
+        if (context == null)
             throw new InvalidOperationException("No ImGui context is active for a viewport callback.");
         lock (S_CONTEXT_SYNC)
         {
             if (S_BACKENDS_BY_CONTEXT.TryGetValue(
-                    (nuint)context.Handle,
+                    (nuint)context,
                     out PlatformImGuiViewportBackend? backend))
             {
                 return backend;
@@ -910,20 +935,20 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         throw new InvalidOperationException("The active ImGui context has no viewport backend.");
     }
 
-    private static void SynchronizeRendererOutput(SDLRenderer renderer)
+    private static void SynchronizeRendererOutput(SDLRenderer* renderer)
     {
-        if (renderer.IsNull)
+        if (renderer == null)
         {
             return;
         }
 
-        _ = SDL.SetRenderLogicalPresentation(
+        _ = SDL.Raw.SetRenderLogicalPresentation(
             renderer,
             0,
             0,
             SDLRendererLogicalPresentation.Disabled);
-        _ = SDL.SetRenderViewport(renderer, SDLRectPtr.Null);
-        _ = SDL.SetRenderClipRect(renderer, SDLRectPtr.Null);
+        _ = SDL.Raw.SetRenderViewport(renderer, null);
+        _ = SDL.Raw.SetRenderClipRect(renderer, null);
     }
 
     private static void EnsureVertexCapacity(
@@ -950,23 +975,23 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         Array.Resize(ref data.indexScratch, required);
     }
 
-    private static SDLTexturePtr CreateTexture(
-        SDLRenderer renderer,
+    private static SDLTexture* CreateTexture(
+        SDLRenderer* renderer,
         int width,
         int height
     ) {
         var props = SDL.CreateProperties();
         try
         {
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, (long)SDLPixelFormat.PixelformatRgba32);
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, (long)SDLTextureAccess.TextureaccessStatic);
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
-            _ = SDL.SetNumberProperty(props, SDL.SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, height);
-            var texture = SDL.CreateTextureWithProperties(renderer, props);
-            if (!texture.IsNull)
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, (long)SDLPixelFormat.Rgba32);
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, (long)SDLTextureAccess.Static);
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
+            _ = SDL.SetNumberProperty(props, SDL.Constants.SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, height);
+            var texture = SDL.Raw.CreateTextureWithProperties(renderer, props);
+            if (texture != null)
             {
-                _ = SDL.SetTextureBlendMode(texture, SDL.SDL_BLENDMODE_BLEND);
-                _ = SDL.SetTextureScaleMode(texture, SDLScaleMode.ScalemodeLinear);
+                _ = SDL.Raw.SetTextureBlendMode(texture, SDL.Constants.SDL_BLENDMODE_BLEND);
+                _ = SDL.Raw.SetTextureScaleMode(texture, SDLScaleMode.Linear);
             }
 
             return texture;
@@ -977,11 +1002,11 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         }
     }
 
-    private static Vector2 GetWindowFramebufferScale(SDLWindow window)
+    private static Vector2 GetWindowFramebufferScale(SDLWindow* window)
     {
         var windowWidth = 0;
         var windowHeight = 0;
-        SDL.GetWindowSize(window, ref windowWidth, ref windowHeight);
+        SDL.Raw.GetWindowSize(window, &windowWidth, &windowHeight);
         if (windowWidth <= 0 || windowHeight <= 0)
         {
             return Vector2.Zero;
@@ -989,37 +1014,40 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
         var pixelWidth = 0;
         var pixelHeight = 0;
-        SDL.GetWindowSizeInPixels(window, ref pixelWidth, ref pixelHeight);
+        SDL.Raw.GetWindowSizeInPixels(window, &pixelWidth, &pixelHeight);
         return new Vector2(pixelWidth / (float)windowWidth, pixelHeight / (float)windowHeight);
     }
 
-    private static float GetWindowDpiScale(SDLWindow window)
+    private static float GetWindowDpiScale(SDLWindow* window)
     {
         // ImGui's DPI value is in logical coordinates; pixel density belongs to FramebufferScale.
-        float scale = SDL.GetWindowDisplayScale(window) / SDL.GetWindowPixelDensity(window);
+        float scale = SDL.Raw.GetWindowDisplayScale(window) / SDL.Raw.GetWindowPixelDensity(window);
         if (!float.IsFinite(scale) || scale <= 0f)
-            throw new InvalidOperationException("SDL could not resolve the live window's display scale: " + SDL.GetError());
+            throw new InvalidOperationException("SDL could not resolve the live window's display scale: "
+                + Marshal.PtrToStringUTF8((nint)SDL.Raw.GetError()));
         return scale;
     }
 
     private static SDLVertex ToSdlVertex(
         ImDrawVert vtx,
-        Vector2 displayPos,
-        Vector2 framebufferScale
+        ImVec2C displayPos,
+        ImVec2C framebufferScale
     ) {
         var color = ImGuiPackedColor.ToSdlFColor(vtx.Col);
         var x = (vtx.Pos.X - displayPos.X) * framebufferScale.X;
         var y = (vtx.Pos.Y - displayPos.Y) * framebufferScale.Y;
 
-        return new SDLVertex(
-            new SDLFPoint(x, y),
-            color,
-            new SDLFPoint(vtx.Uv.X, vtx.Uv.Y));
+        return new SDLVertex
+        {
+            Position = new SDLFPoint { X = x, Y = y },
+            Color = color,
+            TexCoord = new SDLFPoint { X = vtx.Uv.X, Y = vtx.Uv.Y }
+        };
     }
 
-    private static SDLTexturePtr TextureFromImGui(ImTextureID textureId)
+    private static SDLTexture* TextureFromImGui(ulong textureId)
     {
-        return (SDLTexturePtr)(SDLTexture*)(void*)textureId;
+        return (SDLTexture*)(nuint)textureId;
     }
 
     private static bool TextureRectEquals(
@@ -1032,8 +1060,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             && a.H == b.H;
     }
 
-    private static void* FunctionPtr(Delegate del)
-    {
-        return (void*)Marshal.GetFunctionPointerForDelegate(del);
-    }
+    private void RecordCallbackFailure(Exception failure) => m_callbackFailure = m_callbackFailure is null
+        ? failure : new AggregateException("Multiple native viewport callbacks failed in the same frame.", m_callbackFailure, failure);
+
 }

@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +20,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-internal sealed partial class FileBrowserPanel
+internal sealed unsafe partial class FileBrowserPanel
 
 {
 
@@ -28,7 +31,7 @@ internal sealed partial class FileBrowserPanel
         bool entriesVisible = NativeImGui.BeginChild(
             "##EntriesScroll",
             Vector2.Zero,
-            ImGuiChildFlags.None);
+            (int)ImGuiChildFlags.None);
         try
         {
             if (entriesVisible)
@@ -58,16 +61,16 @@ internal sealed partial class FileBrowserPanel
             ImGuiTableFlags.SizingStretchProp |
             ImGuiTableFlags.NoSavedSettings;
 
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         Vector2 tableOrigin = NativeImGui.GetCursorScreenPos();
         Vector2 tableSize = NativeImGui.GetContentRegionAvail();
-        NativeImGui.PushStyleVar(ImGuiStyleVar.CellPadding, new Vector2(style.WindowPadding.X, style.CellPadding.Y));
+        NativeImGui.PushStyleVar((int)ImGuiStyleVar.CellPadding, new Vector2(style->WindowPadding.X, style->CellPadding.Y));
         try
         {
             bool tableStarted = NativeImGui.BeginTable(
                 "##FileBrowserEntries",
                 3,
-                flags,
+                (int)flags,
                 new Vector2(0f, 0f));
             if (!tableStarted)
             {
@@ -78,30 +81,30 @@ internal sealed partial class FileBrowserPanel
             {
                 NativeImGui.TableSetupColumn(
                     "Name",
-                    ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize,
+                    (int)(ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
                     m_listNameSeparatorPosition);
                 NativeImGui.TableSetupColumn(
                     "Type",
-                    ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize,
+                    (int)(ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
                     m_listTypeSeparatorPosition - m_listNameSeparatorPosition);
                 NativeImGui.TableSetupColumn(
                     "Source",
-                    ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize,
+                    (int)(ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize),
                     1f - m_listTypeSeparatorPosition);
                 DrawHeaderRow();
 
                 uint rowBg = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionRow);
                 uint rowAltBg = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionRowAlternate);
-                float entryRowHeight = NativeImGui.GetTextLineHeight() + style.CellPadding.Y * 2f;
+                float entryRowHeight = NativeImGui.GetTextLineHeight() + style->CellPadding.Y * 2f;
                 for (int i = 0; i < entries.Count; i++)
                 {
                     FileBrowserDisplayEntry item = entries[i];
                     AssetFileEntry entry = item.entry;
                     if (i > 0)
-                        NativeImGui.TableNextRow(ImGuiTableRowFlags.None, EditorWidget.style.assetListRowSpacing);
-                    NativeImGui.TableNextRow(ImGuiTableRowFlags.None, entryRowHeight);
+                        NativeImGui.TableNextRow((int)ImGuiTableRowFlags.None, EditorWidget.style.assetListRowSpacing);
+                    NativeImGui.TableNextRow((int)ImGuiTableRowFlags.None, entryRowHeight);
                     NativeImGui.TableSetBgColor(
-                        ImGuiTableBgTarget.RowBg0,
+                        (int)ImGuiTableBgTarget.RowBg0,
                         i % 2 == 0 ? rowBg : rowAltBg);
 
                     DrawNameCell(context, item);
@@ -153,7 +156,7 @@ internal sealed partial class FileBrowserPanel
         nameHovered = NativeImGui.IsItemHovered();
         nameActive = NativeImGui.IsItemActive();
         if (nameHovered || nameActive)
-            NativeImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+            NativeImGui.SetMouseCursor((int)ImGuiMouseCursor.ResizeEw);
 
         if (nameActive)
         {
@@ -168,7 +171,7 @@ internal sealed partial class FileBrowserPanel
         typeHovered = NativeImGui.IsItemHovered();
         typeActive = NativeImGui.IsItemActive();
         if (typeHovered || typeActive)
-            NativeImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+            NativeImGui.SetMouseCursor((int)ImGuiMouseCursor.ResizeEw);
 
         if (typeActive)
         {
@@ -212,11 +215,13 @@ internal sealed partial class FileBrowserPanel
             : hovered
                 ? EditorPalette.assetBorder
                 : EditorPalette.assetBorderSoft;
-        NativeImGui.GetWindowDrawList().AddLine(
-            new Vector2(x, top),
-            new Vector2(x, bottom),
+        NativeImGui.Raw.AddLine(
+            NativeImGui.Raw.GetWindowDrawList(),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(x, top)),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(x, bottom)),
             NativeImGui.ColorConvertFloat4ToU32(color),
-            EditorWidget.style.borderSize);
+            EditorWidget.style.borderSize
+        );
     }
 
     private void SetListColumnSeparators(
@@ -238,10 +243,10 @@ internal sealed partial class FileBrowserPanel
     {
         NativeImGui.TableNextRow();
         NativeImGui.TableSetBgColor(
-            ImGuiTableBgTarget.RowBg0,
+            (int)ImGuiTableBgTarget.RowBg0,
             NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionHeader));
         NativeImGui.TableSetBgColor(
-            ImGuiTableBgTarget.RowBg1,
+            (int)ImGuiTableBgTarget.RowBg1,
             NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionHeader));
         _ = NativeImGui.TableSetColumnIndex(0);
         InsetListCellContent();
@@ -266,14 +271,14 @@ internal sealed partial class FileBrowserPanel
             : entry.nameWithoutExtension;
         bool selected = m_assets.browser.IsSelected(context, entry);
         bool editing = m_rename.IsEditing(context, entry.assetPath.ToString(), FileBrowserPresentation.List);
-        ImGuiTablePtr table = ImGuiP.GetCurrentTable();
-        float rowMinimumY = table.RowPosY1;
-        float rowMaximumY = table.RowPosY2;
+        ImGuiTable* table = NativeImGui.Raw.GetCurrentTable();
+        float rowMinimumY = table->RowPosY1;
+        float rowMaximumY = table->RowPosY2;
 
         InsetListCellContent();
-        NativeImGui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.Header, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.HeaderHovered, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.HeaderActive, EditorPalette.transparent);
         try
         {
             Vector2 iconTextPos = NativeImGui.GetCursorScreenPos();
@@ -284,9 +289,9 @@ internal sealed partial class FileBrowserPanel
             bool activated = NativeImGui.Selectable(
                 $"##entry_{entry.assetPath.ToString()}",
                 selected,
-                selectableFlags);
+                (int)selectableFlags);
             bool itemHovered = NativeImGui.IsItemHovered();
-            bool doubleClicked = itemHovered && NativeImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
+            bool doubleClicked = itemHovered && NativeImGui.IsMouseDoubleClicked((int)ImGuiMouseButton.Left);
             if (activated)
             {
                 HandleEntryActivation(
@@ -311,7 +316,7 @@ internal sealed partial class FileBrowserPanel
                     ? EditorPalette.GetHovered(EditorPalette.assetAccent)
                     : EditorPalette.assetAccent;
                 NativeImGui.TableSetBgColor(
-                    ImGuiTableBgTarget.RowBg1,
+                    (int)ImGuiTableBgTarget.RowBg1,
                     NativeImGui.ColorConvertFloat4ToU32(highlight));
             }
             if (!editing)
@@ -353,7 +358,7 @@ internal sealed partial class FileBrowserPanel
     ) {
         NativeImGui.TableNextColumn();
         InsetListCellContent();
-        NativeImGui.PushStyleColor(ImGuiCol.Text, color);
+        NativeImGui.PushStyleColor((int)ImGuiCol.Text, color);
         NativeImGui.TextUnformatted(text);
         NativeImGui.PopStyleColor();
     }

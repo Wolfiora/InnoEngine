@@ -10,17 +10,14 @@ namespace Inno.Adapter.Modules.DotNet;
 
 internal static class HostDependencyManifest
 {
-    internal static IReadOnlyList<AssemblyName> GetInnoRuntimeAssemblies(IReadOnlyList<Assembly> rootAssemblies)
+    internal static IReadOnlyDictionary<string, string> GetInnoRuntimeAssemblies(IReadOnlyList<Assembly> rootAssemblies)
     {
         ArgumentNullException.ThrowIfNull(rootAssemblies);
 
-        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var names = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (string dependencyFile in GetDependencyFiles(rootAssemblies))
             ReadRuntimeAssemblyNames(dependencyFile, names);
-        return names
-            .OrderBy(static name => name, StringComparer.OrdinalIgnoreCase)
-            .Select(static name => new AssemblyName(name))
-            .ToArray();
+        return names;
     }
 
     [UnconditionalSuppressMessage("SingleFile", "IL3000", Justification =
@@ -42,7 +39,7 @@ internal static class HostDependencyManifest
 
     private static void ReadRuntimeAssemblyNames(
         string dependencyFile,
-        ISet<string> names
+        IDictionary<string, string> names
     ) {
         try
         {
@@ -65,7 +62,8 @@ internal static class HostDependencyManifest
                         {
                             continue;
                         }
-                        names.Add(Path.GetFileNameWithoutExtension(fileName));
+                        names.TryAdd(Path.GetFileNameWithoutExtension(fileName),
+                            Path.Combine(Path.GetDirectoryName(dependencyFile)!, fileName));
                     }
                 }
             }

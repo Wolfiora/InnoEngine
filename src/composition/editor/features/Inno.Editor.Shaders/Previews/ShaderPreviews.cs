@@ -129,7 +129,7 @@ public sealed class ShaderPreviews : EditorModule
                 ImGuiApi.Dummy(new(logicalSize, logicalSize));
             Widget.Hint(compilation.usingLastGood ? "Draft preview · last-good candidate · Scene/Game unchanged" : "Isolated preview · Scene/Game unchanged");
             foreach (Diagnostic error in state.errors.Values)
-                ImGuiApi.TextWrapped(error.message);
+                Widget.WrappedText(error.message);
         }
         catch (Exception error) when (Recoverable(error))
         {

@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-// .NET 9's Emscripten 3.1.56 runtime archives omit the setjmp symbols emitted by its LLVM compiler.
+// The .NET 10.0.13 Emscripten 3.1.56 archives omit the setjmp symbols emitted by its LLVM compiler.
 // Match that SDK's wasm SjLj jump-buffer layout at the static link boundary. Other targets never link this shim.
 
 struct InnoWasmLongjmpArgs

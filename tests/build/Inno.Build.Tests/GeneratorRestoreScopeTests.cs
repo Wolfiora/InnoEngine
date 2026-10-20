@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -16,7 +17,7 @@ public sealed class GeneratorRestoreScopeTests
     [InlineData("src/foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj")]
     public async Task ProductTargetDoesNotChangeTheSharedCompilerToolRestoreOwner(string relative)
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(GeneratorRestoreScopeTests).Assembly);
         string project = Path.Combine(root, relative);
         using Process process = new() { StartInfo = new ProcessStartInfo("dotnet")
         {

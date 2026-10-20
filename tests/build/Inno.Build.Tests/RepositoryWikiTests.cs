@@ -1,6 +1,8 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Threading;
@@ -45,6 +47,8 @@ public sealed class RepositoryWikiTests
             }).ToArray();
             Assert.Contains("InnoEngine.Animation.Animation", types);
             Assert.Contains("InnoEngine.Animation.AnimationClipAsset", types);
+            Assert.Contains("InnoEngine.UI.UiVertex", types);
+            Assert.Contains("InnoEngine.Rendering.RenderPersistentResourceId", types);
         }
         finally
         {
@@ -83,9 +87,10 @@ public sealed class RepositoryWikiTests
     }
 
     [Fact]
+    [Trait("ExternalDependency", "NativeProduct")]
     public async Task CurrentWikiCompilesWithTheCurrentLogicalScriptContracts()
     {
-        string repository = FindRepository();
+        string repository = TestRepository.GetRoot(typeof(RepositoryWikiTests).Assembly);
         string owner = Path.Combine(repository, "artifacts", "acceptance", "wiki-gate", Guid.NewGuid().ToString("N"));
         string project = Path.Combine(owner, "Project");
         Directory.CreateDirectory(project);
@@ -97,6 +102,7 @@ public sealed class RepositoryWikiTests
             string runtime = Directory.EnumerateFiles(references, "Inno.ScriptApi.Runtime.dll", SearchOption.AllDirectories).Single();
             string editor = Directory.EnumerateFiles(references, "Inno.ScriptApi.Editor.dll", SearchOption.AllDirectories).Single();
             string target = OperatingSystem.IsWindows() ? "windows-x64" : "macos-arm64";
+            string configuration = typeof(RepositoryWikiTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
             TextWriter previousError = Console.Error;
             using var errors = new StringWriter();
             int result;
@@ -104,7 +110,8 @@ public sealed class RepositoryWikiTests
             {
                 Console.SetError(errors);
                 result = await BuildApplication.Run(
-                    ["verify", repository, "--wiki", "--wiki-target", target, "--dotnet", ToolchainEnvironment.ResolveExecutable("dotnet"),
+                    ["verify", repository, "--configuration", configuration, "--wiki", "--wiki-target", target,
+                        "--dotnet", ToolchainEnvironment.ResolveExecutable("dotnet"),
                         "--wiki-api", Path.Combine(owner, "api.json"),
                         "--wiki-examples", Path.Combine(owner, "examples.json"),
                         "--wiki-runtime-reference", runtime, "--wiki-editor-reference", editor],
@@ -157,11 +164,4 @@ public sealed class RepositoryWikiTests
         compiler.GenerateProjectFiles();
     }
 
-    private static string FindRepository()
-    {
-        for (DirectoryInfo? directory = new(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
-            if (File.Exists(Path.Combine(directory.FullName, "InnoEngine.sln")))
-                return directory.FullName;
-        throw new DirectoryNotFoundException("The repository Wiki gate requires the engine source checkout.");
-    }
 }

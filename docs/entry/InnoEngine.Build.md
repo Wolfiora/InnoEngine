@@ -4,7 +4,7 @@
 
 ## 职责与依赖
 
-普通 .NET 9 可执行项目，通过 ProjectReference 直接调用 BuildApplication.Run。SDK 编译工具源码；运行入口不再准备、发布或反射加载另一份 CLI。
+普通 .NET 10 可执行项目，通过 ProjectReference 直接调用 BuildApplication.Run。SDK 编译工具源码；运行入口不再准备、发布或反射加载另一份 CLI。
 
 无参数时准备当前 SDK 宿主的 Editor 支持产物。宿主只在 entry 选择，显式游戏发布目标继续由调用参数决定。
 

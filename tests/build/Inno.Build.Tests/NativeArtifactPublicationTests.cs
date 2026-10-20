@@ -64,7 +64,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string intermediate = Path.Combine(m_root, "Intermediate", "input.h");
         using NativeBuildProduct result1 = await NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => {
@@ -79,7 +79,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         File.WriteAllText(source, "int newer;");
         await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => {
@@ -100,7 +100,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         File.WriteAllText(intermediate, "previous");
         using NativeBuildProduct result2 = await NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => {
@@ -248,7 +248,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         await Assert.ThrowsAsync<IOException>(() => NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []),
             (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => throw new IOException("Compiler failed.")));
@@ -257,7 +257,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         context = CreateContext();
         await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => {
@@ -276,7 +276,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         File.WriteAllText(source, "source");
         using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => {
@@ -348,7 +348,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
 
         using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "windows-x64", [source], []), async (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => {
@@ -401,7 +401,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         using var cancellation = new CancellationTokenSource();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => NativeArtifactPublisher.PublishAsync(context,
             CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
-                scoped,
+                @scoped,
                 output,
                 token
             ) => {

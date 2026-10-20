@@ -43,7 +43,7 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
         }
 
         string header = $"{value.GetType().Name}##{context.path}_foldout";
-        if (!NativeImGui.TreeNodeEx(header, ImGuiTreeNodeFlags.SpanAvailWidth))
+        if (!NativeImGui.TreeNodeEx(header, (int)(ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }

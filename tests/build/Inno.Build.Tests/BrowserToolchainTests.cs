@@ -26,22 +26,20 @@ public sealed class BrowserToolchainTests : IDisposable
         string project = CreateProject();
         string? parentCache = Environment.GetEnvironmentVariable("EM_CACHE");
         string? parentRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        string? parentCompiler = Environment.GetEnvironmentVariable("BGCS_CC");
-        string? parentCppCompiler = Environment.GetEnvironmentVariable("BGCS_CPP2C_CXX");
+        string? parentLlvm = Environment.GetEnvironmentVariable("DOTNET_EMSCRIPTEN_LLVM_ROOT");
 
         IReadOnlyDictionary<string, string> environment = await EmscriptenToolchainResolver.ResolveAsync("dotnet", project);
 
         Assert.Equal(Path.Combine(m_root, "selected-sdk", "bin"), environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"]);
-        Assert.Equal(Path.Combine(m_root, "selected-sdk", "bin", OperatingSystem.IsWindows() ? "clang.exe" : "clang"), environment["BGCS_CC"]);
-        Assert.Equal(Path.Combine(m_root, "selected-sdk", "bin", OperatingSystem.IsWindows() ? "clang++.exe" : "clang++"), environment["BGCS_CPP2C_CXX"]);
+        Assert.True(File.Exists(Path.Combine(environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"], OperatingSystem.IsWindows() ? "clang.exe" : "clang")));
+        Assert.True(File.Exists(Path.Combine(environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"], OperatingSystem.IsWindows() ? "clang++.exe" : "clang++")));
         Assert.Equal(Path.Combine(m_root, "selected-cache"), environment["EM_CACHE"]);
         Assert.Equal(Path.Combine(m_root, "selected-node", "bin", NodeFileName()), environment["EMSDK_NODE"]);
         Assert.False(environment.ContainsKey("EMCC_CORES"));
         Assert.False(environment.ContainsKey("BINARYEN_CORES"));
         Assert.Equal(parentCache, Environment.GetEnvironmentVariable("EM_CACHE"));
         Assert.Equal(parentRoot, Environment.GetEnvironmentVariable("DOTNET_ROOT"));
-        Assert.Equal(parentCompiler, Environment.GetEnvironmentVariable("BGCS_CC"));
-        Assert.Equal(parentCppCompiler, Environment.GetEnvironmentVariable("BGCS_CPP2C_CXX"));
+        Assert.Equal(parentLlvm, Environment.GetEnvironmentVariable("DOTNET_EMSCRIPTEN_LLVM_ROOT"));
     }
 
     [Fact]

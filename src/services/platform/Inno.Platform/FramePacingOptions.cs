@@ -7,8 +7,6 @@ namespace Inno.Platform;
 /// </summary>
 public sealed class FramePacingOptions
 {
-    private int m_maximumFrameRate;
-
     /// <summary>
     /// Gets or sets whether presentation waits for display synchronization.
     /// </summary>
@@ -22,11 +20,11 @@ public sealed class FramePacingOptions
     /// </exception>
     public int maximumFrameRate
     {
-        get => m_maximumFrameRate;
+        get;
         set
         {
             ArgumentOutOfRangeException.ThrowIfNegative(value);
-            m_maximumFrameRate = value;
+            field = value;
         }
     }
 }

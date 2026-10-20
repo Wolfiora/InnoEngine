@@ -232,6 +232,9 @@ internal static class RuntimeTypeCatalogGenerator
     {
         foreach (ISymbol member in scope.GetMembers())
         {
+            // Extension declarations group members but cannot be named as runtime types.
+            if (member is INamedTypeSymbol { IsExtension: true })
+                continue;
             if (member is INamedTypeSymbol type)
                 yield return type;
             if (member is INamespaceOrTypeSymbol child)

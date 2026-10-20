@@ -20,7 +20,7 @@ namespace Inno.Editor.ImGui;
 /// <summary>
 /// Presents the backend-independent editor interaction runtime through ImGui.
 /// </summary>
-public sealed class ImGuiEditorRuntime : EditorRuntime
+public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
 {
     private readonly Stopwatch m_timer = Stopwatch.StartNew();
     private readonly EditorInteractionRuntime m_runtime;
@@ -151,31 +151,31 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
 
     private void DrawDockSpace()
     {
-        ImGuiViewportPtr viewport = NativeImGui.GetMainViewport();
-        Vector2 size = viewport.WorkSize;
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiViewport* viewport = NativeImGui.Raw.GetMainViewport();
+        Vector2 size = ImGui.FromNative(viewport->WorkSize);
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         if (m_dockspaceId == 0)
         {
-            uint hostId = ImGuiP.ImHashStr($"WindowOverViewport_{viewport.ID:X8}");
-            m_dockspaceId = ImGuiP.ImHashStr("DockSpace", hostId);
-            ImGuiDockNodePtr loaded = ImGuiP.DockBuilderGetNode(m_dockspaceId);
-            if (loaded != ImGuiDockNodePtr.Null)
-                ResizeDockSplits(loaded, size, style.DockingSeparatorSize, style.WindowMinSize);
+            uint hostId = ImGui.HashNativeId($"WindowOverViewport_{viewport->ID:X8}");
+            m_dockspaceId = ImGui.HashNativeId("DockSpace", hostId);
+            ImGuiDockNode* loaded = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
+            if (loaded != null)
+                ResizeDockSplits(loaded, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
         }
         else if (m_dockspaceSize != Vector2.Zero
             && (MathF.Abs(size.X - m_dockspaceSize.X) >= 0.5f
                 || MathF.Abs(size.Y - m_dockspaceSize.Y) >= 0.5f))
         {
-            ImGuiDockNodePtr root = ImGuiP.DockBuilderGetNode(m_dockspaceId);
-            if (root != ImGuiDockNodePtr.Null)
-                ResizeDockSplits(root, size, style.DockingSeparatorSize, style.WindowMinSize);
+            ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
+            if (root != null)
+                ResizeDockSplits(root, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
         }
 
-        NativeImGui.PushStyleColor(ImGuiCol.ResizeGripHovered, EditorPalette.accentHovered);
-        NativeImGui.PushStyleColor(ImGuiCol.ResizeGripActive, EditorPalette.accentActive);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.ResizeGripHovered), EditorPalette.accentHovered);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.ResizeGripActive), EditorPalette.accentActive);
         try
         {
-            uint submittedId = NativeImGui.DockSpaceOverViewport();
+            uint submittedId = NativeImGui.Raw.DockSpaceOverViewport(0, null, 0, null);
             if (submittedId != m_dockspaceId)
                 throw new InvalidOperationException("The ImGui viewport dockspace identity changed before layout could be resized.");
         }
@@ -185,33 +185,33 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         }
         if (m_dockspaceSize == Vector2.Zero)
         {
-            ImGuiDockNodePtr root = ImGuiP.DockBuilderGetNode(m_dockspaceId);
-            if (root != ImGuiDockNodePtr.Null)
-                ResizeDockSplits(root, size, style.DockingSeparatorSize, style.WindowMinSize);
+            ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
+            if (root != null)
+                ResizeDockSplits(root, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
         }
         m_dockspaceSize = size;
     }
 
     private static unsafe void ResizeDockSplits(
-        ImGuiDockNodePtr node,
+        ImGuiDockNode* node,
         Vector2 size,
         float separator,
         Vector2 minimumWindowSize
     ) {
-        ImGuiDockNodePtr first = new(node.ChildNodes[0].handle);
-        ImGuiDockNodePtr second = new(node.ChildNodes[1].handle);
-        if (first == ImGuiDockNodePtr.Null || second == ImGuiDockNodePtr.Null
-            || node.SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
+        ImGuiDockNode* first = node->ChildNodes[0];
+        ImGuiDockNode* second = node->ChildNodes[1];
+        if (first == null || second == null
+            || node->SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
             return;
-        bool horizontal = node.SplitAxis == ImGuiAxis.X;
-        float firstReference = horizontal ? first.Size.X : first.Size.Y;
-        float secondReference = horizontal ? second.Size.X : second.Size.Y;
-        float previousAvailable = (horizontal ? node.Size.X : node.Size.Y) - separator;
+        bool horizontal = node->SplitAxis == ImGuiAxis.X;
+        float firstReference = horizontal ? first->Size.X : first->Size.Y;
+        float secondReference = horizontal ? second->Size.X : second->Size.Y;
+        float previousAvailable = (horizontal ? node->Size.X : node->Size.Y) - separator;
         if (firstReference <= 0f || secondReference <= 0f
             || MathF.Abs(firstReference + secondReference - previousAvailable) > MathF.Max(1f, separator))
         {
-            firstReference = horizontal ? first.SizeRef.X : first.SizeRef.Y;
-            secondReference = horizontal ? second.SizeRef.X : second.SizeRef.Y;
+            firstReference = horizontal ? first->SizeRef.X : first->SizeRef.Y;
+            secondReference = horizontal ? second->SizeRef.X : second->SizeRef.Y;
         }
         float available = (horizontal ? size.X : size.Y) - separator;
         if (!float.IsFinite(firstReference) || !float.IsFinite(secondReference)
@@ -233,8 +233,8 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
             firstSize.Y = firstExtent;
             secondSize.Y = available - firstExtent;
         }
-        first.SizeRef = firstSize;
-        second.SizeRef = secondSize;
+        first->SizeRef = ImGui.ToNative(firstSize);
+        second->SizeRef = ImGui.ToNative(secondSize);
         ResizeDockSplits(first, firstSize, separator, minimumWindowSize);
         ResizeDockSplits(second, secondSize, separator, minimumWindowSize);
     }
@@ -253,7 +253,7 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
         // Text widgets own editing keys, including Backspace and clipboard/history gestures.
         // Explicit document save remains available without first leaving an input field.
         HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S, context.keyboard);
-        if (NativeImGui.GetIO().WantTextInput && (keyEvent.key != save.key || keyEvent.modifiers != save.modifiers))
+        if (NativeImGui.Raw.GetIO()->WantTextInput != 0 && (keyEvent.key != save.key || keyEvent.modifiers != save.modifiers))
             return;
         m_runtime.HandleKeyPressed(keyEvent);
     }
@@ -298,7 +298,7 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
                 continue;
             bool isOpen = extension.isOpen;
             if (initialSize.X > 0 && initialSize.Y > 0)
-                NativeImGui.SetNextWindowSize(initialSize, ImGuiCond.FirstUseEver);
+                NativeImGui.SetNextWindowSize(initialSize, (int)(ImGuiCond.FirstUseEver));
             ImGuiWindowFlags flags = ImGuiWindowFlags.NoCollapse;
             if (!allowScrolling)
                 flags |= ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
@@ -307,7 +307,7 @@ public sealed class ImGuiEditorRuntime : EditorRuntime
             EditorWidget.PanelWindow(extension.title, ref isOpen, () =>
             {
                 if (extension.Draw(context) &&
-                    NativeImGui.IsWindowFocused(Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows))
+                    NativeImGui.IsWindowFocused((int)(Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows)))
                 {
                     interactions.For(
                         $"panel/{extension.id}",

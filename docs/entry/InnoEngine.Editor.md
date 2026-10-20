@@ -4,7 +4,7 @@
 
 ## 职责与依赖
 
-普通 .NET 9 可执行项目。项目求值时选择 WindowsX64 或 MacOSArm64 Editor 的 ProjectReference，Program 在原始主线程直接调用对应组合的公开 Run。共同 Editor、服务和后端仍由所属类库维护。
+普通 .NET 10 可执行项目。项目求值时选择 WindowsX64 或 MacOSArm64 Editor 的 ProjectReference，Program 在原始主线程直接调用对应组合的公开 Run。共同 Editor、服务和后端仍由所属类库维护。
 
 入口与平台产品使用正常项目构建。修改 C# 源码后再次运行，SDK 编译受影响的依赖；程序不在启动过程中调用 MSBuild，也不加载另一份预构建 Editor。
 
@@ -30,5 +30,7 @@ dotnet run --configuration Release --project entry/InnoEngine.Editor/InnoEngine.
 ## 输出与验证
 
 平台产品准备的 Native 文件、部署索引和后端工具作为传递构建输出进入 entry 的输出目录。加载继续使用显式部署映射。
+
+平台组合库通过共同的 `InnoExposeRuntimeClosure` SDK 构建规则传递自身 `.deps.json` 与实际 `ReferenceCopyLocalPaths`。动态发现的 Panel 和 Feature 随运行闭包部署；`PrivateAssets="compile"` 继续隔离实现侧编译引用，入口不维护扩展类型名单。
 
 工程检查与编译结果见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。Rider 窗口、输入及项目加载的实机验证由用户完成；macOS 工程求值不等于 macOS 实机通过。

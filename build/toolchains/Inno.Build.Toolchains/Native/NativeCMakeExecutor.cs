@@ -122,6 +122,16 @@ public static class NativeCMakeExecutor
         configure.Add("-DINNO_LIBRARY_KIND=" + options.libraryKind.ToString().ToUpperInvariant());
         configure.AddRange(componentArguments.Select(sources.ResolveDefinition));
         configure.AddRange(options.cmakeArguments.Select(sources.ResolveDefinition));
+        if (context.selectedBindings.Count > 0)
+        {
+            Directory.CreateDirectory(buildDirectory);
+            string requirements = Path.Combine(buildDirectory, "BindingInputs.cmake");
+            NativeBindingCMake.Write(context, sources, requirements, component, target, cancellationToken);
+            const string hook = "-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=";
+            string[] hooks = configure.Where(argument => argument.StartsWith(hook, StringComparison.Ordinal)).ToArray();
+            configure.RemoveAll(argument => argument.StartsWith(hook, StringComparison.Ordinal));
+            configure.Add(hook + string.Join(';', hooks.Select(argument => argument[hook.Length..]).Append(requirements)));
+        }
         var environment = new Dictionary<string, string>(selection.environment, StringComparer.Ordinal);
         if (selection.TryResolveExecutable("python", out _))
         {

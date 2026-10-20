@@ -76,7 +76,7 @@ Core Events 是唯一事件机制；跨代 live object 经 Identity 解析。Mis
 
 ## 当前生产项目
 
-以下项目排除 tests、bin、obj 与生成项目，包含实际 binding extension。
+以下项目排除 tests、bin、obj 与生成项目。绑定配置由对应 Native 组件维护，SDK 扩展通过正式配置声明。
 
 ### src/foundation
 
@@ -208,7 +208,6 @@ Core Events 是唯一事件机制；跨代 live object 经 Identity 解析。Mis
 - `Inno.Adapter.Storage.FileSystem`：[`backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj`](../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj)。
 - `Inno.Build.Toolchains.ImGui`：[`backends/ImGui/build/Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj`](../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj)。
 - `Inno.Build.Toolchains.ImGuizmo`：[`backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj`](../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj)。
-- `Inno.Native.ImGui.BindingExtension`：[`backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj`](../../backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj)。
 - `Inno.Native.ImGui`：[`backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj`](../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj)。
 - `Inno.Native.ImGuizmo`：[`backends/ImGui/native/Inno.Native.ImGuizmo/Inno.Native.ImGuizmo.csproj`](../../backends/ImGui/native/Inno.Native.ImGuizmo/Inno.Native.ImGuizmo.csproj)。
 - `Inno.Adapter.Presentation.ImGui.Bgfx`：[`backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj`](../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj)。

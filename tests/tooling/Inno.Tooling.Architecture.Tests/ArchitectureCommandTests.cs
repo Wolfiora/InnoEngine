@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
@@ -24,8 +23,8 @@ public sealed class ArchitectureCommandTests
             string project = Path.Combine(root, projectLocation);
             Directory.CreateDirectory(project);
             File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
-                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup>"
-                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[2.1.0]\" /></ItemGroup></Project>");
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>"
+                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[3.0.1]\" /></ItemGroup></Project>");
             (_, string output) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(rejected, output.Contains("the interop runtime dependency belongs", StringComparison.Ordinal));
             Assert.DoesNotContain("does not resolve to a repository project", output, StringComparison.Ordinal);
@@ -59,7 +58,7 @@ public sealed class ArchitectureCommandTests
                 ? "<OutputType>Exe</OutputType><InnoProductId>player</InnoProductId><InnoProductTarget>windows-x64</InnoProductTarget><InnoNativeTarget>windows-x64</InnoNativeTarget>"
                 : string.Empty;
             File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
-                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework>"
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
                 + properties + "</PropertyGroup></Project>");
             string imported;
             if (scenario == "reference")
@@ -67,7 +66,7 @@ public sealed class ArchitectureCommandTests
                 string upper = Path.Combine(root, "platforms/MacOSArm64/runtime/Probe");
                 Directory.CreateDirectory(upper);
                 File.WriteAllText(Path.Combine(upper, "Probe.csproj"),
-                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
+                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
                 imported = "<ItemGroup Condition=\"'$(MSBuildProjectName)' == 'Inno.Core.Probe'\"><ProjectReference Include=\"$(MSBuildThisFileDirectory)platforms/MacOSArm64/runtime/Probe/Probe.csproj\" /></ItemGroup>";
             }
             else if (scenario == "source")
@@ -117,6 +116,37 @@ public sealed class ArchitectureCommandTests
             (_, string output) = ArchitectureCommandFixture.Run(root);
 
             Assert.Equal(rejected, output.Contains("place each parameter", StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("Directory.Build.props", "<Project><PropertyGroup><ImplicitUsings>true</ImplicitUsings></PropertyGroup></Project>", "implicit usings", true)]
+    [InlineData("build/Probe.targets", "<Project><ItemGroup><Using Include=\"System\" /></ItemGroup></Project>", "MSBuild Using", true)]
+    [InlineData("tests/Probe.cs", "global using System;", "global using", true)]
+    [InlineData("build/Probe.cs.txt", "global using System;", "global using", true)]
+    [InlineData("tests/Probe.cs", "using System; // global using is prohibited\ninternal class Probe { }", "global using", false)]
+    [InlineData("tests/Probe.cs", "internal class Probe { const string Message = \"global using System;\"; }", "global using", false)]
+    public void CliRejectsCompilationWideImportsAcrossSourceAndBuildInputs(
+        string relative,
+        string content,
+        string diagnostic,
+        bool rejected
+    ) {
+        string root = Path.Combine(Path.GetTempPath(), "InnoUsingPolicyTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
+            string path = Path.Combine(root, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, content);
+            (_, string output) = ArchitectureCommandFixture.Run(root);
+            Assert.Equal(rejected, output.Contains(diagnostic, StringComparison.OrdinalIgnoreCase));
         }
         finally
         {
@@ -180,12 +210,16 @@ public sealed class ArchitectureCommandTests
     }
 
     [Theory]
-    [InlineData("../Generated", "must not overlap", true)]
-    [InlineData("../Generated/target", "must not overlap", true)]
-    [InlineData("../../AnotherOwner/Generated", "inside its native owner", true)]
-    [InlineData("../obj/browser-wasm/Generated", "generated outputs", false)]
-    public void CliValidatesBindingOutputOwnership(
-        string targetOutput,
+    [InlineData("valid", "binding Config", false)]
+    [InlineData("missing-definition", "Bindings/bindings.props owner", true)]
+    [InlineData("missing-import", "import its binding definition exactly once", true)]
+    [InlineData("escaped-input", "literal relative children", true)]
+    [InlineData("missing-input", "binding Config input 'missing.json' is missing", true)]
+    [InlineData("unknown-property", "unknown or repeated property", true)]
+    [InlineData("conditional", "cannot evaluate conditions", true)]
+    [InlineData("duplicate-target", "unique explicit identities", true)]
+    public void CliValidatesBindingDefinitionOwnership(
+        string scenario,
         string expected,
         bool rejected
     ) {
@@ -202,9 +236,36 @@ public sealed class ArchitectureCommandTests
             string bindings = Path.Combine(root, "backends", "Probe", "native", "Inno.Native.Probe", "Bindings");
             Directory.CreateDirectory(bindings);
             File.WriteAllText(Path.Combine(Path.GetDirectoryName(bindings)!, "Inno.Native.Probe.csproj"),
-                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
-            File.WriteAllText(Path.Combine(bindings, "bindgen.json"), JsonSerializer.Serialize(new { outputPath = "../Generated" }));
-            File.WriteAllText(Path.Combine(bindings, "bindgen.browser-wasm.json"), JsonSerializer.Serialize(new { outputPath = targetOutput }));
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
+                + "<BindGenGeneratedBindings>true</BindGenGeneratedBindings></PropertyGroup>"
+                + (scenario == "missing-import" ? string.Empty : "<Import Project=\"Bindings/bindings.props\" />")
+                + "</Project>");
+            File.WriteAllText(Path.Combine(bindings, "bindgen.json"), "{}");
+            File.WriteAllText(Path.Combine(bindings, "bindgen.browser-wasm.json"), "{}");
+            string definition = """
+                <Project>
+                  <PropertyGroup>
+                    <InnoNativeComponentId>probe</InnoNativeComponentId>
+                    <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <InnoBindingTarget Include="browser-wasm">
+                      <Config>bindgen.browser-wasm.json</Config>
+                    </InnoBindingTarget>
+                  </ItemGroup>
+                </Project>
+                """;
+            definition = scenario switch
+            {
+                "escaped-input" => definition.Replace("bindgen.browser-wasm.json", "../outside.json", StringComparison.Ordinal),
+                "missing-input" => definition.Replace("bindgen.browser-wasm.json", "missing.json", StringComparison.Ordinal),
+                "unknown-property" => definition.Replace("</PropertyGroup>", "<InnoBindingBridgeConfig>bridge.json</InnoBindingBridgeConfig></PropertyGroup>", StringComparison.Ordinal),
+                "conditional" => definition.Replace("<ItemGroup>", "<ItemGroup Condition=\"'$(Target)' != ''\">", StringComparison.Ordinal),
+                "duplicate-target" => definition.Replace("</ItemGroup>", "<InnoBindingTarget Include=\"browser-wasm\"><Config>bindgen.browser-wasm.json</Config></InnoBindingTarget></ItemGroup>", StringComparison.Ordinal),
+                _ => definition
+            };
+            if (scenario != "missing-definition")
+                File.WriteAllText(Path.Combine(bindings, "bindings.props"), definition);
 
             (int code, string output) = ArchitectureCommandFixture.Run(root);
 

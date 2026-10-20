@@ -26,7 +26,7 @@ public sealed class BuildCompositionTests
     public void EditorAndStandaloneShaderToolsShareTheSameBindingFreeReleaseProducer(string target)
     {
         var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator("explicit-sdk"));
+            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator());
         BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
         ProductNativeBuildStep editor = Assert.Single(distribution.ResolveNativeProduct(target, "editor").steps,
             static step => step.id == "bgfx-tools");
@@ -42,7 +42,7 @@ public sealed class BuildCompositionTests
     [Fact]
     public void EveryHostObtainsTheSameFrozenBuiltInDistribution()
     {
-        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()), new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator("explicit-sdk"));
+        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()), new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator());
         BuildDistribution editor = StandardBuildDistribution.Create(context).build;
         BuildDistribution cli = StandardBuildDistribution.Create(context).build;
         BuildDistribution msbuild = StandardBuildDistribution.Create(context).build;
@@ -54,7 +54,7 @@ public sealed class BuildCompositionTests
         Assert.Equal(editor.ResolveNativeProduct("windows-x64", "editor").steps.Select(static step => step.id),
             msbuild.ResolveNativeProduct("windows-x64", "editor").steps.Select(static step => step.id));
         Assert.Throws<NotSupportedException>(() => editor.ResolveNativeProduct("browser-wasm", "editor"));
-        Assert.Throws<ArgumentException>(() => new BuildCompositionContext("sdk", "relative", new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator("explicit-sdk")));
+        Assert.Throws<ArgumentException>(() => new BuildCompositionContext("sdk", "relative", new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator()));
     }
 
     [Fact]

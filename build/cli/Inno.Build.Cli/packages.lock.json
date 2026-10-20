@@ -1,77 +1,59 @@
 {
   "version": 1,
   "dependencies": {
-    "net9.0": {
+    "net10.0": {
       "BGCS": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "dObBPvMPbKmZmMawOL1lfFGX9mcDzRPkslKhqHCcmMvD2aUjNBNCSYJBnoSZUxoV8/VRjgTrImKJgokxkiPnBg==",
+        "resolved": "3.0.1",
+        "contentHash": "oUMplXPrrqXGGFmQP5ZeEpin0JCipqH/OsDJGxEv4cTZLrKczHHT3Xbjfj3Rae9cKQeitT3+kbbI7apeT/R1Ag==",
         "dependencies": {
-          "BGCS.Core": "2.1.0",
-          "BGCS.CppAst": "2.1.0",
-          "BGCS.Intermediate": "2.1.0",
-          "BGCS.Language": "2.1.0",
-          "Microsoft.CodeAnalysis.CSharp": "4.14.0"
+          "BGCS.Contracts": "[3.0.1]",
+          "BGCS.ParserRuntime.osx-x64": "[3.0.1]",
+          "BGCS.Runtime": "[3.0.1]",
+          "ClangSharp": "[20.1.2.4]",
+          "ClangSharp.Interop": "[20.1.2.4]",
+          "Humanizer.Core": "[3.0.10]",
+          "Irony": "[1.5.3]",
+          "Json.More.Net": "[3.0.1]",
+          "JsonPointer.Net": "[7.0.3]",
+          "JsonSchema.Net": "[9.4.1]",
+          "Microsoft.CodeAnalysis.Analyzers": "[5.9.0-1.26328.17]",
+          "Microsoft.CodeAnalysis.CSharp": "[5.9.0]",
+          "Microsoft.CodeAnalysis.Common": "[5.9.0]",
+          "Microsoft.Extensions.DependencyInjection": "[10.0.12]",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.12]",
+          "Microsoft.Extensions.Logging": "[10.0.12]",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.12]",
+          "Microsoft.Extensions.Options": "[10.0.12]",
+          "Microsoft.Extensions.Primitives": "[10.0.12]",
+          "libClangSharp": "[20.1.2]",
+          "libClangSharp.runtime.linux-arm64": "[20.1.2]",
+          "libClangSharp.runtime.linux-x64": "[20.1.2]",
+          "libClangSharp.runtime.osx-arm64": "[20.1.2]",
+          "libClangSharp.runtime.win-arm64": "[20.1.2]",
+          "libClangSharp.runtime.win-x64": "[20.1.2]",
+          "libclang": "[20.1.2]",
+          "libclang.runtime.linux-arm64": "[20.1.2]",
+          "libclang.runtime.linux-x64": "[20.1.2]",
+          "libclang.runtime.osx-arm64": "[20.1.2]",
+          "libclang.runtime.win-arm64": "[20.1.2]",
+          "libclang.runtime.win-x64": "[20.1.2]"
         }
       },
-      "BGCS.Core": {
+      "BGCS.Contracts": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "c74KTIWpPybEhA8ghHAOLh2zjio9wRR+zBJbpoOYCMkkzJGpcwj4R3sMAurn9ZsaokxRZOzuF+3HKJ6ehVHRog==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.7",
-          "Microsoft.Extensions.Logging": "9.0.7",
-          "Newtonsoft.Json": "13.0.3"
-        }
+        "resolved": "3.0.1",
+        "contentHash": "ILplWA0mWw1zDIPYd7eDpRCDPTitU+s0ZVXVcE4lXa1664TeptCqBG/M721WmsP9pZ8k8r8zR0D6kp1oAqixiA=="
       },
-      "BGCS.Cpp2C": {
+      "BGCS.ParserRuntime.osx-x64": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "p0QkOiU8C2aeUf5+ZLmbjAJedXOixdxZBuD5jZKODMqMCLiNj8Y9l/Lns55m0Periz1Kq23kXiG7KcffaWDI+w==",
-        "dependencies": {
-          "BGCS.Core": "2.1.0",
-          "BGCS.CppAst": "2.1.0",
-          "BGCS.Intermediate": "2.1.0"
-        }
-      },
-      "BGCS.CppAst": {
-        "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "NsB3dl31CzN7JCxLrGMLfVyEHWYGKLX4gX7y/tC8YQU5nj9eXO2h1F2o3KLO6gngrS3UXCrhSO7Fs37+5MduFg==",
-        "dependencies": {
-          "BGCS.Core": "2.1.0",
-          "ClangSharp": "20.1.2.4",
-          "Irony": "1.5.3",
-          "libClangSharp.runtime.linux-arm64": "20.1.2",
-          "libClangSharp.runtime.linux-x64": "20.1.2",
-          "libClangSharp.runtime.osx-arm64": "20.1.2",
-          "libClangSharp.runtime.win-arm64": "20.1.2",
-          "libClangSharp.runtime.win-x64": "20.1.2",
-          "libclang.runtime.linux-arm64": "20.1.2",
-          "libclang.runtime.linux-x64": "20.1.2",
-          "libclang.runtime.osx-arm64": "20.1.2",
-          "libclang.runtime.win-arm64": "20.1.2",
-          "libclang.runtime.win-x64": "20.1.2"
-        }
-      },
-      "BGCS.Intermediate": {
-        "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "ZH5fBBNMd9vF6MseiJPlnDQrciEpeGmdVuPxVKtfTGYLPJhytZ8d+jnyI8ulnagsF9dx94eJEk2KbK/xSvzxFg=="
-      },
-      "BGCS.Language": {
-        "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "oeyN3oaQLlaxjgXhqMf3apiDvEIUU2wlwu7LISlNpbOhVLdohscky+ve8v1lgxOYgrwb7bg058Xi0f1YDuQ9Mg==",
-        "dependencies": {
-          "BGCS.Core": "2.1.0",
-          "Microsoft.CodeAnalysis.CSharp": "4.14.0"
-        }
+        "resolved": "3.0.1",
+        "contentHash": "cAZSxe6V21QgzGOgeSIUbkUuADIfqJk1FDSS54I1SUz7jecXqzYhwUNCJqSrQ7fV7IzNGtA0i6lSUxik8WisAw=="
       },
       "BGCS.Runtime": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "+FKMO+FW6aH+taP/dclqyPSmHWMqTErJfjsw6aGzq4kyW+/7XJ0wzxiCiIQCt/tBxaShHRucOCRs8t8zfba5Sw=="
+        "resolved": "3.0.1",
+        "contentHash": "sQRfxJieqlKGCEcNr+F1fTuDITDR+csgI2Khe/nv+MyCxpqhMI02Zg2Mz4LxUpNhFhH+Fk6MtV8uVfQszYa0UQ=="
       },
       "ClangSharp": {
         "type": "Transitive",
@@ -90,10 +72,37 @@
           "libClangSharp": "20.1.2"
         }
       },
+      "Humanizer.Core": {
+        "type": "Transitive",
+        "resolved": "3.0.10",
+        "contentHash": "yZIhtw8sYuvsONzQbZxWpR60tMWYHXoo0DL6nyOqSFiU5POjBTSEyWFpTQtJEZuy+oqiYTXKXY/Mjx7KnqIQFw=="
+      },
       "Irony": {
         "type": "Transitive",
         "resolved": "1.5.3",
         "contentHash": "wy0LlNq9Bhqy2C9O5burGCJPB9CyWuWf/JHwcnaxnM5wapPEc7uW6MBBzkymrV/pS2UwETK/0nJXzhh5Y6wv4Q=="
+      },
+      "Json.More.Net": {
+        "type": "Transitive",
+        "resolved": "3.0.1",
+        "contentHash": "fRctF2J2SILYG6wqP21drmeEODmCVkVQ/b3MndDu2fT1swfySyUgq7ePCk+aENGlDcIm05fyfjh9vcuqDEfv3w=="
+      },
+      "JsonPointer.Net": {
+        "type": "Transitive",
+        "resolved": "7.0.3",
+        "contentHash": "It/10weZ3oA+BGL+Gqyw9M6wsi4Tc16vWwU+u7x6LBwty57Y3aUh7bfcn2VWAzgVTAfGuCPb5KUpsH6IFjR08A==",
+        "dependencies": {
+          "Humanizer.Core": "3.0.10",
+          "Json.More.Net": "3.0.1"
+        }
+      },
+      "JsonSchema.Net": {
+        "type": "Transitive",
+        "resolved": "9.4.1",
+        "contentHash": "7Nh0XyIse3a5nsc1nJJTECZVjxqHVE5jANGEPpQc2H+/M7u2sLueL93X6ZUuJLkLYy/pYzFmJhKYEpVIctaUZw==",
+        "dependencies": {
+          "JsonPointer.Net": "7.0.3"
+        }
       },
       "libclang": {
         "type": "Transitive",
@@ -157,89 +166,70 @@
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Transitive",
-        "resolved": "3.11.0",
-        "contentHash": "v/EW3UE8/lbEYHoC2Qq7AR/DnmvpgdtAMndfQNmpuIMx/Mto8L5JnuCfdBYtgvalQOtfNCnxFejxuRrryvUTsg=="
+        "resolved": "5.9.0-1.26328.17",
+        "contentHash": "HP9NNk8ZjOSI2hgOyXnQg+kv7/X837Vr2nAlXiGAtqtYnYKjRRa1UmQFr8KFs5ynGYKqfbb8zB9APoWjiAGdMg=="
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "4.14.0",
-        "contentHash": "PC3tuwZYnC+idaPuoC/AZpEdwrtX7qFpmnrfQkgobGIWiYmGi5MCRtl5mx6QrfMGQpK78X2lfIEoZDLg/qnuHg==",
+        "resolved": "5.9.0",
+        "contentHash": "IYaIaUWdIx539AReKZOBEqTskFusZfCh/wFSPilDvCn5Say8MegLw2LONcSIcVy+v3Gzv53qYBspgvBGSErfbQ==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Analyzers": "3.11.0",
-          "System.Collections.Immutable": "9.0.0",
-          "System.Reflection.Metadata": "9.0.0"
+          "Microsoft.CodeAnalysis.Analyzers": "5.9.0-1.26328.17"
         }
       },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Transitive",
-        "resolved": "4.14.0",
-        "contentHash": "568a6wcTivauIhbeWcCwfWwIn7UV7MeHEBvFB2uzGIpM2OhJ4eM/FZ8KS0yhPoNxnSpjGzz7x7CIjTxhslojQA==",
+        "resolved": "5.9.0",
+        "contentHash": "7JGDA0UT1+h7k9ZcA3rF4eFC8+QPq1xyYaXxag4p8r/zzPurEJxvdi7aM+MRL/SfP7XADXpWF/pl/eUYXOq/ww==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Analyzers": "3.11.0",
-          "Microsoft.CodeAnalysis.Common": "[4.14.0]",
-          "System.Collections.Immutable": "9.0.0",
-          "System.Reflection.Metadata": "9.0.0"
+          "Microsoft.CodeAnalysis.Analyzers": "5.9.0-1.26328.17",
+          "Microsoft.CodeAnalysis.Common": "[5.9.0]"
         }
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Transitive",
-        "resolved": "9.0.7",
-        "contentHash": "i05AYA91vgq0as84ROVCyltD2gnxaba/f1Qw2rG7mUsS0gv8cPTr1Gm7jPQHq7JTr4MJoQUcanLVs16tIOUJaQ==",
+        "resolved": "10.0.12",
+        "contentHash": "lXyK2O5GoYvfxW8eCFcD16JFbcoSTM1sJkAM0UHS1jZyl9NYMW64Tqm6OQFT0IDBjZi+xHt95/Zg+nxZhGFhZg==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
-        "resolved": "9.0.7",
-        "contentHash": "iPK1FxbGFr2Xb+4Y+dTYI8Gupu9pOi8I3JPuPsrogUmEhe2hzZ9LpCmolMEBhVDo2ikcSr7G5zYiwaapHSQTew=="
+        "resolved": "10.0.12",
+        "contentHash": "9/qymSh7hVDMGTGwrLz8MRp5zRyXy9adGDOs4HwRdnLil3oZGYuWeZjbmHgCQ9BL1qBroVfgUK3U/nb61617Cw=="
       },
       "Microsoft.Extensions.Logging": {
         "type": "Transitive",
-        "resolved": "9.0.7",
-        "contentHash": "fdIeQpXYV8yxSWG03cCbU2Otdrq4NWuhnQLXokWLv3L9YcK055E7u8WFJvP+uuP4CFeCEoqZQL4yPcjuXhCZrg==",
+        "resolved": "10.0.12",
+        "contentHash": "6I46fTPfgYkrjRYfRXbho9WOvOelTnNjWuZws/hzGHDASH1LEJeA4VKK9k3wJvido8o7jJSB5WkMTonX7HM1bA==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "9.0.7",
-          "Microsoft.Extensions.Logging.Abstractions": "9.0.7",
-          "Microsoft.Extensions.Options": "9.0.7"
+          "Microsoft.Extensions.DependencyInjection": "10.0.12",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+          "Microsoft.Extensions.Options": "10.0.12"
         }
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "Transitive",
-        "resolved": "9.0.7",
-        "contentHash": "sMM6NEAdUTE/elJ2wqjOi0iBWqZmSyaTByLF9e8XHv6DRJFFnOe0N+s8Uc6C91E4SboQCfLswaBIZ+9ZXA98AA==",
+        "resolved": "10.0.12",
+        "contentHash": "+24lC4plfbEDNfLAdTV/SWKS7dW+16X4HdydO3R++134kSNTzcbYA4KpR1Hdh6uWisB8Za3AzwyOn+K+NxWIug==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
         }
       },
       "Microsoft.Extensions.Options": {
         "type": "Transitive",
-        "resolved": "9.0.7",
-        "contentHash": "trJnF6cRWgR5uMmHpGoHmM1wOVFdIYlELlkO9zX+RfieK0321Y55zrcs4AaEymKup7dxgEN/uJU25CAcMNQRXw==",
+        "resolved": "10.0.12",
+        "contentHash": "TDYD33TSRpXKZWlmTXNlj5kCihxatmv2Ec1u6C+bMYLphCS7PoSLE9Pjd/nunDoE7yETk+LLKjVJX78HYtWjpA==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.7",
-          "Microsoft.Extensions.Primitives": "9.0.7"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+          "Microsoft.Extensions.Primitives": "10.0.12"
         }
       },
       "Microsoft.Extensions.Primitives": {
         "type": "Transitive",
-        "resolved": "9.0.7",
-        "contentHash": "ti/zD9BuuO50IqlvhWQs9GHxkCmoph5BHjGiWKdg2t6Or8XoyAfRJiKag+uvd/fpASnNklfsB01WpZ4fhAe0VQ=="
-      },
-      "Newtonsoft.Json": {
-        "type": "Transitive",
-        "resolved": "13.0.3",
-        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
-      },
-      "System.Collections.Immutable": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "QhkXUl2gNrQtvPmtBTQHb0YsUrDiDQ2QS09YbtTTiSjGcf7NBqtYbrG/BE06zcBPCKEwQGzIv13IVdXNOSub2w=="
-      },
-      "System.Reflection.Metadata": {
-        "type": "Transitive",
-        "resolved": "9.0.0",
-        "contentHash": "ANiqLu3DxW9kol/hMmTWbt3414t9ftdIuiIU7j80okq2YzAueo120M442xk1kDJWtmZTqWQn7wHDvMRipVOEOQ=="
+        "resolved": "10.0.12",
+        "contentHash": "dYfCLR52UA+3DL7C4I/pvSaRPkNqxrUAQmbFL2u0zvYKKzqgrFCJl08Df+F1aYc8leu9JvpC9bsURUdpExcBXQ=="
       },
       "inno.adapter": {
         "type": "Project",
@@ -312,7 +302,7 @@
       "inno.adapter.presentation.imgui.sdl3": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Adapter.Platform": "[1.0.0, )",
           "Inno.Adapter.Platform.Sdl3": "[1.0.0, )",
           "Inno.Adapter.Presentation": "[1.0.0, )",
@@ -506,12 +496,7 @@
       "inno.build.bindings": {
         "type": "Project",
         "dependencies": {
-          "BGCS": "[2.1.0, 2.1.0]",
-          "BGCS.Core": "[2.1.0, 2.1.0]",
-          "BGCS.Cpp2C": "[2.1.0, 2.1.0]",
-          "BGCS.CppAst": "[2.1.0, 2.1.0]",
-          "BGCS.Intermediate": "[2.1.0, 2.1.0]",
-          "BGCS.Language": "[2.1.0, 2.1.0]",
+          "BGCS": "[3.0.1, 3.0.1]",
           "Inno.Build.Toolchains": "[1.0.0, )",
           "Inno.Core.IO": "[1.0.0, )"
         }
@@ -1240,14 +1225,14 @@
       "inno.native.bgfx": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.imgui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
@@ -1260,14 +1245,14 @@
       "inno.native.sdl3": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.ui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
@@ -1473,7 +1458,7 @@
           "Inno.Plugins.Authoring": "[1.0.0, )",
           "Inno.Runtime.Generators": "[1.0.0, )",
           "Inno.Scripting.Api": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.CSharp": "[4.8.0, )"
+          "Microsoft.CodeAnalysis.CSharp": "[5.9.0, )"
         }
       },
       "inno.scripting.reload": {
@@ -1522,7 +1507,7 @@
         "dependencies": {
           "Inno.Build.Toolchains": "[1.0.0, )",
           "Inno.Extensibility.Catalogs": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.CSharp": "[4.14.0, )"
+          "Microsoft.CodeAnalysis.CSharp": "[5.9.0, )"
         }
       },
       "inno.ui": {

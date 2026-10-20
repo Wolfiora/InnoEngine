@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using System;
 using System.Numerics;
 
@@ -8,12 +11,12 @@ using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
-public sealed class EditorPopupLayoutTests
+public sealed unsafe class EditorPopupLayoutTests
 {
     [Fact]
     public void ContextMenuSearchUsesCompletePopupContentWidth()
     {
-        ImGuiContextPtr context = NativeImGui.CreateContext();
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
             ConfigureContext();
@@ -22,8 +25,9 @@ public sealed class EditorPopupLayoutTests
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowSize(new Vector2(400f, 280f), ImGuiCond.Always);
-                _ = NativeImGui.Begin("Context menu bounds");
+                NativeImGui.SetNextWindowSize(new Vector2(400f, 280f), (int)(ImGuiCond.Always));
+                using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Context menu bounds", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
                 _ = NativeImGui.Button("Target");
                 NativeImGui.OpenPopup("commands");
 
@@ -45,14 +49,14 @@ public sealed class EditorPopupLayoutTests
         }
         finally
         {
-            NativeImGui.DestroyContext(context);
+            NativeImGui.Raw.DestroyContext(context);
         }
     }
 
     [Fact]
     public void TwoItemSelectorOpensBelowControlWithoutOverflow()
     {
-        ImGuiContextPtr context = NativeImGui.CreateContext();
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
             ConfigureContext();
@@ -61,9 +65,10 @@ public sealed class EditorPopupLayoutTests
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), ImGuiCond.Always);
-                NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), ImGuiCond.Always);
-                _ = NativeImGui.Begin("Selector bounds", ImGuiWindowFlags.NoTitleBar);
+                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
+                NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), (int)(ImGuiCond.Always));
+                using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Selector bounds", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar));
                 NativeImGui.SetNextItemWidth(140f);
                 float triggerBottom = NativeImGui.GetCursorScreenPos().Y + NativeImGui.GetFrameHeight();
                 NativeImGui.OpenPopup("##menu_selector_popup_tag");
@@ -87,14 +92,14 @@ public sealed class EditorPopupLayoutTests
         }
         finally
         {
-            NativeImGui.DestroyContext(context);
+            NativeImGui.Raw.DestroyContext(context);
         }
     }
 
     [Fact]
     public void LongSelectorNearWindowBottomScrollsWithoutOpeningUpward()
     {
-        ImGuiContextPtr context = NativeImGui.CreateContext();
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
             ConfigureContext();
@@ -102,9 +107,10 @@ public sealed class EditorPopupLayoutTests
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), ImGuiCond.Always);
-                NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), ImGuiCond.Always);
-                _ = NativeImGui.Begin("Selector near bottom", ImGuiWindowFlags.NoTitleBar);
+                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
+                NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), (int)(ImGuiCond.Always));
+                using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("Selector near bottom", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText2.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar));
                 NativeImGui.SetCursorScreenPos(new Vector2(35f, 225f));
                 float triggerBottom = NativeImGui.GetCursorScreenPos().Y + NativeImGui.GetFrameHeight();
                 NativeImGui.SetNextItemWidth(140f);
@@ -128,14 +134,14 @@ public sealed class EditorPopupLayoutTests
         }
         finally
         {
-            NativeImGui.DestroyContext(context);
+            NativeImGui.Raw.DestroyContext(context);
         }
     }
 
     [Fact]
     public void SelectorInsideLayoutChildUsesContainingPanelBounds()
     {
-        ImGuiContextPtr context = NativeImGui.CreateContext();
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
             ConfigureContext();
@@ -143,10 +149,11 @@ public sealed class EditorPopupLayoutTests
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), ImGuiCond.Always);
-                NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), ImGuiCond.Always);
-                _ = NativeImGui.Begin("Panel with layout child", ImGuiWindowFlags.NoTitleBar);
-                _ = NativeImGui.BeginChild("Fields", new Vector2(200f, 55f));
+                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
+                NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), (int)(ImGuiCond.Always));
+                using NativeStringLease nativeTestText3 = Utf8Codec.EncodeNullTerminated("Panel with layout child", allowsNull: false);
+                _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText3.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar));
+                _ = NativeImGui.BeginChild("Fields", new Vector2(200f, 55f), 0, 0);
                 NativeImGui.SetNextItemWidth(140f);
                 NativeImGui.OpenPopup("##menu_selector_popup_nested");
 
@@ -168,16 +175,16 @@ public sealed class EditorPopupLayoutTests
         }
         finally
         {
-            NativeImGui.DestroyContext(context);
+            NativeImGui.Raw.DestroyContext(context);
         }
     }
 
     private static void ConfigureContext()
     {
-        ImGuiIOPtr io = NativeImGui.GetIO();
-        io.DisplaySize = new Vector2(640f, 480f);
-        io.DeltaTime = 1f / 60f;
-        io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
-        io.Fonts.RendererHasTextures = true;
+        ImGuiIO* io = NativeImGui.Raw.GetIO();
+        io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+        io->DeltaTime = 1f / 60f;
+        io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+        io->Fonts->RendererHasTextures = 1;
     }
 }

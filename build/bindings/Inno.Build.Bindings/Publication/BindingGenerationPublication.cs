@@ -34,6 +34,7 @@ internal sealed class BindingGenerationPublication : IDisposable
 
     internal string managedDestination { get; }
     internal string? nativeDestination { get; }
+    internal string bgcsCandidate => Path.Combine(m_owner.directory, "Bgcs");
     internal string targetCandidate => m_candidates[managedDestination];
     internal IEnumerable<string> stagingPaths => m_candidates.Values;
 

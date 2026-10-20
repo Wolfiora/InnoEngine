@@ -67,6 +67,7 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 *.bgcs-lock
+**/.bgcs/
 !src/**/Artifacts/
 !src/**/Artifacts/**/*.cs
 

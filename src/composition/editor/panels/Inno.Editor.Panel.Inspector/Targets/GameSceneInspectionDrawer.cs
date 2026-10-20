@@ -121,8 +121,8 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
             return;
         }
 
-        NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, EditorWidget.style.compactItemSpacing);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.compactFramePadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ItemSpacing), EditorWidget.style.compactItemSpacing);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.compactFramePadding);
         try
         {
             DrawSystems(context, scene);
@@ -201,7 +201,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
                     {
                         if (missing is not null)
                         {
-                            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.error);
+                            NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.error);
                             ImGuiWidget.WrappedText(
                                 $"Missing system script ({missing.missingType.stableId:D}). " +
                                 "Its serialized state is preserved and will recover automatically when the type returns.");

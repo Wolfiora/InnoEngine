@@ -43,7 +43,7 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
                     ref value,
                     (int)Math.Clamp(Math.Ceiling(minimum), int.MinValue, int.MaxValue),
                     (int)Math.Clamp(Math.Floor(maximum), int.MinValue, int.MaxValue))
-                : NativeImGui.DragInt($"##{context.path}", ref value, 1f);
+                : NativeImGui.DragInt($"##{context.path}", ref value, 1f, 0, 0, "%d", 0);
             if (changed)
             {
                 context.SetValue(value);

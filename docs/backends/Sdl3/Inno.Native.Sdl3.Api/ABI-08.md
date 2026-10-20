@@ -1,1626 +1,915 @@
-# Inno.Native.Sdl3 ABI · SDLEvent → SDLGamepadType
+# Inno.Native.Sdl3 ABI · 08
 
 [项目与生命周期](../Inno.Native.Sdl3.md) · [ABI 索引](README.md)
 
-<details>
-<summary><code>Inno.Native.Sdl3.SDLEvent</code> · 169 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLEvent fd23cae8d85f46848a7dca528d18f70e9ff7c994e8a4a3ab8ad8d3a22178268d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Type 6b77f804de865ae79146a25f8d87aa56c734f16af8291b5ed3c9091c0aac1a24 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Common 1a0809d1a51456d1e769281a86afe4ec571fe2186222adb044d8e0d0d810098a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Display bd1a41f4ea90ec6a297118e059eeae9d8fa9deebbe7d2b29b6fbeca3659b27e4 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Window e5e30717af46915fcd2d3a805201871e85870b40b43c3362a52c1a6daa25a1ad -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Kdevice f3251f179ea267fda09290bc734f6962f84a4cb3246110f9f1a64f849250c64f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Key ee57ee6c863c822edbe5aef1fabb57e148b6e9f26ca3d7ad40f144c0214c6a2e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Edit 4c6c5ead7bfc5789bf3d1d4587c6e7785792b932f2260e57579d74fabecb39dc -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.EditCandidates f2f31ff00801982f7ba006d50419c30c0a9e24f21030879f0ffcf8ecafa75d1a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Text c94b94d438e054fa0dd3e79f9e4a2442d37227d292d9b43271a0b2011ad74e2d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Mdevice e527f94c749b267c3b45fc2725b463cb0290cd38a76e0fcfb61bcce87497bb1f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Motion 21236ac234f1703bda8c6fd5e0202f4844947f78d0d0df8210f4ef340acff27d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Button 459f8815e67a6214fcb733f7706b5544d3be9ebadde92d1e8a944cdd4e956f93 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Wheel 40a85765e289593052ad17e9fffa0f335803ce8f886b8992838853f48ed9d802 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Jdevice a04c2506eb00dd9599aac97f77367ac877d47f8130fea74c2d855421eb9bc3f7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Jaxis 51b37ca7f4d3c37bcf427e997625343db50ec67c69a615d2f4b58676535f686d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Jball 69290df68d0d577979009aa54a159b2d1764fe135f230dfe12dfb8256dccf359 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Jhat 4f2f4768ad9e4bd8a748f84ef35ae2707d5c2edaa06682e66d96718c45cdc961 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Jbutton 5bc2e8169c9491d1d54c663a7045b949fb97f22eb45a699f895aebf039f10e5c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Jbattery 0f99279957181f36a0fa868de8a091c77bc4c06ae23bbd4fed7ede6aa5632d69 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Gdevice 70aa440b6921720a21ad387151488e0673c6e494d77a4673c6e4b6f91e6a8cd6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Gaxis 09023029d9a81a50b4213a9d6c059591b2845a2bd66e10a730b8a4375a1a22f9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Gbutton 7d482f4ac52d1a99e186d8e4da770bf56e1eb4c33c1bbfedf50ac48d15223457 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Gtouchpad 5ff7f01efad56fecede988048be677fcf4da89bea4f8e92ecd244840616c8bb8 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Gsensor 28364d8beef88f5df30ef2f91117920146d89bf4cca35809f3167515de8662b1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Adevice 0fdb1b7988d9878a1bfc67b02417110fa141615e09f541492ecde23c25f57789 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Cdevice 2ceacaa567e4d4600d9955881aacd38fba14791a2333bef05a73d087f10e12b7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Sensor 1f3118859d2c77a5d929a30e1af01680849826deb4e53f4f4c72d9a7dd645e45 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Quit a563948fd9ed59fd38c18a43e0937d7edd30bcc98c53f3b2bdf8c04f7d7c3e18 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.User cb8a411707019d9f1b2b5353fd30887ddc4a2466ebea4991abbe452b9b8890a3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Tfinger 19e9e508b1087b45433c603140874a1b0dc090a9ca09aeb7f1223c19c8e25621 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Pinch a4dddc9fa50f33669bc1696487b887120502c330d721f9beccd96d60f9b4064d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Pproximity b8aad60bde3da43e73f4e52a35c2a2f1add81dc9119d33f152e4dec88f92f831 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Ptouch 0763deca418882e48d325590c4b4d57c2a513d6ce18d6f354ef2eb5f80e0b989 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Pmotion a4c4f8a68a3aae2ee6df8db00bea77bae50b53bf1614b3bc2da47b562c2ed67c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Pbutton cd22f263585a02d0865fd4c99daed2fd0690dcfc7b2d6cbf1adbb9f478d6f5ec -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Paxis bb750e6fbb81f482e76578dc4161f49bb15c544d479c54c19f52f89323f1a7a1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Render 005c6472b365e6f384f03f87112f231c3ae825d4b526342d56ee51521656bea5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Drop 5f97cee59c910f90933dc25b5f1ea6d104b6709989396c6d1ab5cb91fcda72ce -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Clipboard 24d669f935db8aaff77388ffe967d00dc4df7fa397b739486f4c0ae35fb51071 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_0 c81c417fca12e4f0acebd1df21437627faea7595fe21135e08cc0dcbb097dee7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_1 4783048d5e1d81062b2771741952c521c7a5ee4dc538d0c501e1ad09efac8a85 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_2 1f98781e671c084d3c0e52aca160394eecfe54c24fc14d0307189a2e1694f158 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_3 e25bef9ee9ddbb52e6ebe8b22bbcf2d519f8a1c842f807586b614b9cb5877aef -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_4 c0d252049be37d400139f1e14a92df6ad06f1eb16bc7dc837e9e389fc4c1c8e1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_5 86f5817b6f4a8542d87f10b8d0c60b5315ce020c90d1a02445805f246d099d89 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_6 679019063a3027e7eba3dc213884545b580aaeb65aa0b6ee9d42a63269bafef6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_7 3b518a19d5d4731c2c3beb2a3509a74e52a56b134e743af91b846b123f7ce3e3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_8 159ef9ac669edcbd050777f06178187845e52168769b7f6d38a2e5d9594d8884 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_9 17aae8766eaa51c21d4aa7ff2786e6aafd8033e70db66127f161715f1eba566f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_10 d4d57c18d6fe7d330c4b0c9397c9fc73fed1b9e54de3b69c30421ce1c9d5c60b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_11 a1f91b2bca63b0b7df416ad9b9db18397aafbb72d048fcd9cedd710d3cb281ee -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_12 16e443bc772be4ed465c204b9570f80c7209360211ef014bb52a5133f84f5777 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_13 c36117c0aede31814080a1bc0be9ca1efa9db7066b20312a91856b3c4a213a0d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_14 89f600a16e9ca7b9b9a1e435645c8a91a36d36e83eae967c78ec5a0c33a851da -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_15 6f82529130eb89c59739f956832d952e8b89fac77ef665f7c6493b464eeeac36 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_16 2512430696e17af5109b42c3fb21c41988f4bec5dcb3576d5367ac99ac1bb641 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_17 17383c55a943ee03ab592695249021b3991d97367ae1c60bb5180171b40fd9ce -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_18 914aa44bb44f959defe2a0567a640625966786c4570762fd83ef8b8737084f5c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_19 5cd426439e770c1f1753dd22d8916528f9571fdec2d6f7186ba7050f839cf49b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_20 c3682b6fef13eb8242f9a5ef2a5c7e075f55b380c9e882e06025984412ccf099 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_21 8959c2225cec953cd1efab3d3ab5adb07b0f80069d2f059cfeaa815d9d551691 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_22 91e4df175e6b954e8aab165e4c0b6593d0eb6a88648e8ee98f5a509d90b652fe -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_23 b1306407843f74519c6c2faef41b247945d2d18d958e1d2eb78462fc77e44749 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_24 bead35e677e26858a87b0fc154bf71ddd51ae70f05024b1f17d49a2c6097899c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_25 021938488c0245b10ff9d88c32bb745fa55a278c8e9d0f6cee194e95ed58324f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_26 a33cb2a2a1b7b16ab07f4546f76c3c44aa8ea751409fc56fb1b7aae95f97c00d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_27 de0b5b268085ad3ddd8c3758c5d46371e18430900ae97c4bcb49cf13a26dcc16 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_28 37d39e9b1a51156a1851bba2f140aa1367cadfb9d47ea2af46ec142abab85538 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_29 00140f7e04c4a816f3c1533dc15b1e2fe02f1646e4d6631af87354f0bb0ef71a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_30 6d0a39a87ed2bba9558f1239fe2c3a88f9e8f8b115753921d8216a6304128579 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_31 1e7cb36f0764a8317880ca0f6e2b7b85af216ff0efe71370f90ed7532d577dbd -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_32 221332da4e685a0be44fb59d9b9f2d0877e4034feedc471db063a8b9f413d813 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_33 8164518d7ce5ed2daed190b95404a6cc15f793ad4c2aec0a396a44da2527774b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_34 eea3cbd44f49d07a1a2841730a0e068aceb992f6f908baded325ad045a29954b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_35 cd3aa00c9e7a087a37f10aec6b050bd3ea2e288bfb915cc6c13371e3c50be9ae -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_36 72513e1cf47086610d3ba69579e541bf88484d7defd65d17bf81879346a0537d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_37 c6eb6f9ea5c9f3e1516b7e9a75c9b3ba026d61368f344f03377427bf47d86b66 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_38 5e6dfa9ff291998ee64e8fda129196af63a30f65514f665691a118525ca5f6f6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_39 fdefc5b7223b506a469be2c9df9a43ba33b2e51b7992d34939dc6ab34f6f3883 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_40 e3a95c3d39f8b46fa357c86338488d57f378e48ed30f32c620b4963aaa0ec695 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_41 567b1a2f008716932385a89c5fcc1f6556f696939e62d41143fff6470b348db5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_42 a92bddcfa4f8fde484c3b8e14edc02f3d85af6d29ae1a28540fb1e4115182ae1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_43 76d834cdac7f74491bda4f28f59d974999eaaebe23704c122b31538aa645dc7f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_44 515cd8e8a76d1729ec988a549e08c61cad07f30375e3291d65a12a5c7fa330d4 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_45 37e06fbab157d94aa21df6b348a669168a5a96139f7fb2f8d2f8016428085025 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_46 3cc02c7e4a66f26acbd63636744e6d58d80be757bee05974e6c1a646b94fa7fc -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_47 d3ac8a04d8b3895f999aba634959240133623374e6b3b14f6cfdfb170115172a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_48 b3924035af605699d9e697fda8533a3b0875b145ce2c4ead0fd339550c05f399 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_49 ae5975d690811d81e268c604a4e26e68cca0d1c0c52deb71b8293911f9f514a7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_50 2625b714e6c519cfb0ea76e8722a293d46ebf599ca5cbea9e7bca33ed2bdaf99 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_51 fb8dcb14c9e3bdf90faa53f2f99d000a7abf1f5f26148f9e4b0d01f16360ed57 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_52 7fb7f78f5f6d3d379029c1b6a9bfd4ff307cff673d64fc6df478d7e19b4dc6e1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_53 0c606f7926d2fe23378698aeba9584be74c0344808dad2dcb0fa25579e5c9602 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_54 250ad5ba1a2531b43a6649428ded52b3f24936ab640c2129d2b15cfee152c3ee -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_55 001c526c733678b7a2ff1522ec123cbf0a9a54ef0c15ce1bbe7869cac0063226 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_56 c9e679c45927f47da1bb6c90056c2a4343a35539f2c06fd6298f1c9bc0587aaf -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_57 6cf42fa5b76ea05eb6d979b9dc7373e66193d97f952e728bfc942366e0cc1d14 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_58 b0d9ec7ece0748e9deeab816e1cb65f8dc3e56b138528803587bbba357e6f448 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_59 c34f634b60e4c1f0b046db63e6a22ed9b5e8ffe0a573b8aedb3cc24b80780097 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_60 e6dbbd22a31590d80229954e02e476fdbef9d21fadf7f3abaad06884725f5a28 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_61 213635850fd2d5403ac3d9ad5966f14eba4e036ad59941fad5c24a4c290ef290 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_62 a04d9c64ecb0dbc6157914a702edd63c0c46dbce41f80281f9021e608da3b752 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_63 ef1ca249c1327eff448a7e5faf0f0ad2c5c6801b74c34eb22ca38202dabccfc2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_64 e92dc1b2e3024951bb1cb7016343040ef26abad1f9a2e278ff183fa617ef3404 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_65 717a46b39f35442f8dd7e325e527fecb6c0deea3eef82a0c92ae525262c01fb0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_66 c07211c400aa86695a9887ccceee7b4fb0af4c445403946d8e87dfd65e6937b5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_67 96e1e8196cf7e5d3814dec7037d800a35eacf6fbec99c1d00fc286287f3952cd -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_68 7499187bd27e8d14590434ad4a3506f44e21657aa0282fa23a48e3cde78032ee -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_69 1a85e7195b379b254a00d52eb46a7d8e78b063bf13f901879123bd71c9fd6ad3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_70 bbfb39fa08054ca9cb21706f7769ec7460a5bc23ca19effa644b24708be7d0da -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_71 29fdce0f6c5581825691456ddb92145100297bbff05277cbaf08fa86bb77c012 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_72 1be172338f80c9971818f5415407fdd8b598c0ca7fdfed441686e05e9d2cfe99 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_73 cc23dd030777841b0331b00345b4090d52bb2fa6af22cbbc737e2b0b4f50cd91 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_74 f7fe4a158dcdcb1a28010bf101e75dfb6980fbc73f1e862007101258156ac459 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_75 880a2750459c60e5bb8183a032562761156834d02bcf3af753478bc65d2fad33 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_76 64b59477e57dceea35825e7c9daa0c0b7e664eac42904625bcab033a879431b6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_77 3150ff3e8c97df620c34d87adef1f98c49faefe3a402bb196a5527ece658df17 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_78 b8b416785051a837f49c4431b0684b68961301c82641179ac43ee4227420029a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_79 1591287e501c4e512def7ab25aed45b94ac73ba89c9f42c049256fb1c8c7b87f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_80 a91c4bab7e13932ebe7d819850b7902f658018406cca576c37c35ddb519f2737 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_81 6b2b1f0c99b4ddfcf3e31ed35d8baa9fa223f725739159472ffa2c646430d02e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_82 f158f1dd4431b554003fa84648fd00a4b24d22432da29761cd24abb96280da94 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_83 a9a21155323aaf8b2368de39114279c63f4ef6cdb56a004f9ea9437e52dc45a6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_84 70b54b133fe8dfa4e25c3633fd4696d3e2500e11364bb3bca7f0e92a60a1ab29 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_85 e8fc4afaf15522956210030431b5caeaa08e4e545a78361d5865514db6d55bd7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_86 236a88134f0e84caab7e49d93043832269501e6f171fc5a7b87f0be2f11ecbe9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_87 b10275b453c4f093cca0f6046331e5adad2a9748296edf40c0efb97d5ac25590 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_88 a51eafcfa87fa13e3a9eaed908b680208d9588b1c6db3cc5ff8212df3a8ab95d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_89 2898de4f70727176d1ce0fec6ea801b778509f4920884baafe70f30ed2abe50b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_90 964f32a6a8d3d27ccef3ed04532b09fae6c49657e75a3dfc7a45874d984b5c47 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_91 a0f115d2052d25b00557380fbc308fe174e11a00e41a9efa801aee9c5354068b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_92 c1eb7a65ad984cda2116169370eef084c00c69dd8ad314cf76282db7e48348ca -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_93 b66b9eaeeb9ad246e75b28657a6bb32df02eba1c2910e24b69bf2f327322aab9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_94 46381e634eedf69aa14cca0ea1b96d2da32bbf6be381b97f0bb06e144e132479 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_95 94a0322e3287fef246dbab2fb32f387738f3f2d839f7c3a7062f1fcdf9963e8a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_96 2f1561e80f3696fc1564d008b139d4edcb7c04a47e4a253da89aedf971d6d678 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_97 d5265162185d0a591c3e707d99cf9bf930b987fc95894d08064dcd13c93a6717 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_98 62c30c084a3358b45bc41fe5b71d7f4bc00235e1df277ec9a1ff49dee175a2f9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_99 4644818e56c7f2c4b6619eb7e2ef4178786ea8eb8592cc1f6b9c0cc775c89030 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_100 fc970fcab3ad7fab799647fb19a06e1f427798b4de3aaf3f20f0aa4936a8c00b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_101 6638c68c86221fbbdb2ab974544d283d6e677c0017f292d8fc959af38d250fcb -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_102 9af59361321b3ab9ebaaf249650dbbc06d46ccdf92ebebb9e2aa3fa68968d364 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_103 aff3463336d329df162f1fa5c40482a83b9dc6b305c495e00e4e0fa3301d3e43 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_104 5c66da2dbc6a3d32a1c8276dc8009a07c0ee390d4cc36557bdb7752a1b54d7c0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_105 a4bfb25c29d7693d6b647228f5d5cfd752f13637204d040ef146e66583bbf9a9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_106 8e594f84c407b48d45bfe767b641780ccf8e79c02d5f74335fbb3a9e960498d5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_107 e119709f26a7626f2adc2aeb08e790ec3722047759d87a6da3ef85e8f6db202f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_108 f67da45ade677e4613b080f25052f94f6f6a1331dfc7ebed9fe6fe3c1e4ad153 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_109 81668d2d0fdd735c809cf0e6d6431d25fa1219eca99815d24bc355bee0c7f9e5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_110 ec6e1433d7b38c2b1d0e1331d7df05c43590ed04ed8b04dc8587048400078c63 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_111 fef789b5e5d6a64fec88072c553d4a24dfd43526154983b5d8f89de5fddaafc4 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_112 5ab02d89bbe70315f61d73f6306472564e56f6c4e7ca1ee9e03644c1faa36f2b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_113 2adf96be02916a7e2315a05f2b3db7fd8f21ae7ccd8151abc8710d7328e2f57d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_114 149859b17dc6dd524cd7ae24a7481df32f02758654b03acca0e23ccecb547730 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_115 937fba087ff25aec4f3fbeaf81c406b9bff21c8e9a55694ae877bb10b89227a8 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_116 4378f257f927d4acdb34c34677600357dd145e774f21e1ea61fb73156c9c2dbf -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_117 f3859a03d7e76e412d8511cfa54a114d8ddf4386df84e309a30b4bd40242299e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_118 f1edc25da8f1331d3aef1090af0cba70f968a7110ae095c9b7edcc21fe571eb0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_119 2522b36caa9c21216f637ba61dfa01a2b10fef0769b447509ba73c4cdcb707fa -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_120 3872a903a9c4cfaf6b533edd406ca47bebbf9a589b5d4084843893d7e5df4223 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_121 bb0e2755274b82acfd2ae309af21eda754606783d81b446fd58209cb47d9ac0b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_122 805bebcab69f710c58aceb1a391045c6374e32b693bca862393c81c79eeb38a9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_123 0f39e6e780ab2c1ba29fff324a9318d4116ce21c4988dcc8f90da4a81cb48813 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_124 35757bb4c92a9c986973282bc7aa1297697d03f268d160b15f75e8766519d994 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_125 f88758a600f217952796cfe0fc7bbfd4e35f7a76921622fa0b530bc22a7c842f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_126 ee20d791af51f7d63ede9b18917f05a226cb73f76924a5909049df43c5089c06 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEvent.Padding_127 ab4405b5c56f6b2cc842552fc6ee7ead05e0cfe03f0f1d51b6dd17b4b02e8923 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEvent.Padding 6991877feb60f5d0a88ac9f524d66990671dd0a90d63be5e869afb617ed2f211 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-2f963fb977816b0d"></a>[`public Inno.Native.Sdl3.SDLAudioDeviceEvent Inno.Native.Sdl3.SDLEvent.Adevice`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4124) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1afd958d8df1518e"></a>[`public Inno.Native.Sdl3.SDLMouseButtonEvent Inno.Native.Sdl3.SDLEvent.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4098) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-be1cec3c212e531d"></a>[`public Inno.Native.Sdl3.SDLCameraDeviceEvent Inno.Native.Sdl3.SDLEvent.Cdevice`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4126) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-04cb991a82fb4f0a"></a>[`public Inno.Native.Sdl3.SDLClipboardEvent Inno.Native.Sdl3.SDLEvent.Clipboard`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4152) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f733b4b74c9bf661"></a>[`public Inno.Native.Sdl3.SDLCommonEvent Inno.Native.Sdl3.SDLEvent.Common`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4078) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-93d5eb839eefd963"></a>[`public Inno.Native.Sdl3.SDLDisplayEvent Inno.Native.Sdl3.SDLEvent.Display`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4080) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-98588abf24f966b4"></a>[`public Inno.Native.Sdl3.SDLDropEvent Inno.Native.Sdl3.SDLEvent.Drop`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4150) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-acd6c9faec9fafff"></a>[`public Inno.Native.Sdl3.SDLTextEditingEvent Inno.Native.Sdl3.SDLEvent.Edit`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4088) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e9aac588d5d4feb5"></a>[`public Inno.Native.Sdl3.SDLTextEditingCandidatesEvent Inno.Native.Sdl3.SDLEvent.EditCandidates`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4090) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-47656e25cf89cf88"></a>[`public Inno.Native.Sdl3.SDLGamepadAxisEvent Inno.Native.Sdl3.SDLEvent.Gaxis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4116) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-7d7578d901f62060"></a>[`public Inno.Native.Sdl3.SDLGamepadButtonEvent Inno.Native.Sdl3.SDLEvent.Gbutton`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4118) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8a8a7ba30437b98c"></a>[`public Inno.Native.Sdl3.SDLGamepadDeviceEvent Inno.Native.Sdl3.SDLEvent.Gdevice`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4114) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-cb489f545829693a"></a>[`public Inno.Native.Sdl3.SDLGamepadSensorEvent Inno.Native.Sdl3.SDLEvent.Gsensor`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4122) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-94a813dca8eb298a"></a>[`public Inno.Native.Sdl3.SDLGamepadTouchpadEvent Inno.Native.Sdl3.SDLEvent.Gtouchpad`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4120) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-44d8e7a11be1f225"></a>[`public Inno.Native.Sdl3.SDLJoyAxisEvent Inno.Native.Sdl3.SDLEvent.Jaxis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4104) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8fcd51768854f3c8"></a>[`public Inno.Native.Sdl3.SDLJoyBallEvent Inno.Native.Sdl3.SDLEvent.Jball`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4106) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-02c78141a105bb5c"></a>[`public Inno.Native.Sdl3.SDLJoyBatteryEvent Inno.Native.Sdl3.SDLEvent.Jbattery`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4112) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-29a030af118b2204"></a>[`public Inno.Native.Sdl3.SDLJoyButtonEvent Inno.Native.Sdl3.SDLEvent.Jbutton`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4110) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-fd56ac2e160a2dc2"></a>[`public Inno.Native.Sdl3.SDLJoyDeviceEvent Inno.Native.Sdl3.SDLEvent.Jdevice`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4102) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-a6d650a41e59195f"></a>[`public Inno.Native.Sdl3.SDLJoyHatEvent Inno.Native.Sdl3.SDLEvent.Jhat`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4108) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bda2e5d330ec8125"></a>[`public Inno.Native.Sdl3.SDLKeyboardDeviceEvent Inno.Native.Sdl3.SDLEvent.Kdevice`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4084) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-7e3f31c4faef2653"></a>[`public Inno.Native.Sdl3.SDLKeyboardEvent Inno.Native.Sdl3.SDLEvent.Key`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4086) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-3b1725a709a2691c"></a>[`public Inno.Native.Sdl3.SDLMouseDeviceEvent Inno.Native.Sdl3.SDLEvent.Mdevice`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4094) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-137b2fa77d66f1c1"></a>[`public Inno.Native.Sdl3.SDLMouseMotionEvent Inno.Native.Sdl3.SDLEvent.Motion`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4096) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f16c326a95b92edf"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4154) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0dd06291b2acaf5b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4156) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0cd7c4fcf0a35e2e"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_10`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4174) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-d3d0889e93bf737c"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_100`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4354) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-cf050b7ddd8c9eba"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_101`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4356) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1f5934afd04c0d3f"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_102`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4358) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-aeddf0e281ddbdd5"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_103`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4360) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-49546d799a12cc2f"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_104`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4362) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-547e4da691f332f6"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_105`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4364) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bf221b99aa7e278b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_106`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4366) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-636e3aaf779887e4"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_107`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4368) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-3ba61426436d3890"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_108`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4370) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-edde0829c67cf7e2"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_109`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4372) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-6af489f280a5a6d8"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_11`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4176) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-af5696e9fcbdd899"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_110`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4374) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5d971563baf29cc2"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_111`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4376) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0369dd9cd4f1372b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_112`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4378) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e9967f41314d2fc4"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_113`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4380) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-2a181748d64c32a6"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_114`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4382) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9b1eb0df121695a5"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_115`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4384) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-a69a9a4e395bc01d"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_116`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4386) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f91672fea65412ed"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_117`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4388) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-16efa8784093dbb4"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_118`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4390) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-c69cfcb3819423fb"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_119`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4392) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-13ea356acf9873e8"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_12`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4178) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-702bd6f8db7ddf3b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_120`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4394) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-576b921ce8fe46b7"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_121`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4396) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9414bd5a8f29412d"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_122`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4398) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-72acc8009af3566b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_123`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4400) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-4672cc32055d5ec2"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_124`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4402) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-edbdb56f3fcf7460"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_125`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4404) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-95f687ad342def8d"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_126`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4406) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-499b2d643f654add"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_127`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4408) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-961c1bf2f4eb0263"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_13`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4180) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0952d74b34d702d0"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_14`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4182) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-57f588086366f1d2"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_15`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4184) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-211a9c2cfd578347"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4186) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-4bd3d84f56ad23fe"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_17`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4188) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-6fe5ecd9c89f253e"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_18`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4190) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0be860be7bfa2264"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_19`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4192) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-eb7fe345a80ce639"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4158) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-919cb25956dc7405"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_20`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4194) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bb35add27284724c"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_21`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4196) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5445bc824f9580e1"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_22`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4198) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1055e35848e674bd"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_23`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4200) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9f3e19c9e0077da1"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_24`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4202) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8fb2ec04d8f62d58"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_25`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4204) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-db924393f89c10d6"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_26`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4206) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-404b56e05e41d352"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_27`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4208) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1ee31ce758eb745f"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_28`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4210) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9293d230cc459aa6"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_29`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4212) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ab6ede500f37640d"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4160) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-30b654c735488a88"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_30`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4214) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e89f1c33a53da0a5"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_31`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4216) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-02eeafd6c7216b46"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4218) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-fbfb7503743ac552"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_33`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4220) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-13cd626d822107aa"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_34`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4222) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-75f99fe5febbf9a8"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_35`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4224) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-89eaf3d8647beb07"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_36`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4226) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-fff39db2b71726aa"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_37`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4228) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-69336ca98a3284d1"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_38`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4230) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-4aa29cc3ae8e8f03"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_39`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4232) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-781f622e8b042ebf"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4162) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-06de23e2b73550a7"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_40`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4234) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e7974d77132af173"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_41`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4236) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-55ea1a9b7cb01037"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_42`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4238) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-402e28e5fa279ae6"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_43`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4240) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-84b9fd62de8ff34b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_44`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4242) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-4b373fee291e1f85"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_45`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4244) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8e5e2de48cba73a7"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_46`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4246) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-c984b2a3cc2b88f5"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_47`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4248) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9d26a20e68445d62"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_48`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4250) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-327572d28b1632a0"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_49`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4252) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e71ea067158e6b07"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4164) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-d4b6ba7a1021904e"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_50`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4254) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-7f0a078b0de2df97"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_51`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4256) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-60dd49ce0f0839ad"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_52`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4258) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-06e7bd5c7fb298de"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_53`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4260) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-2e46aac8b187f538"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_54`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4262) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-821db7ff54f65471"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_55`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4264) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-df710d15355fcd40"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_56`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4266) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-73958be94927ccab"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_57`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4268) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-80ebd0c571ce693f"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_58`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4270) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-218baf6ee45b0b64"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_59`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4272) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-cb1a35f91d57b3ad"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4166) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ac944a87304600da"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_60`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4274) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-c8643df300651437"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_61`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4276) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0f17dd23cfc3b58b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_62`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4278) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-4d479460ee1408ac"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_63`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4280) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8aa152612b3e7c6c"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4282) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9371fe7737132825"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_65`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4284) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9e04b02a69f8da54"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_66`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4286) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f4fafbe983946712"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_67`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4288) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-48f13b233087c437"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_68`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4290) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-32b77043ddd20392"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_69`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4292) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-64a438c913038390"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4168) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-976a1d5e219207ad"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_70`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4294) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f48ea16e7798f06d"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_71`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4296) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0a34f0daf52268b4"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_72`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4298) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-932cc333510c7ef5"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_73`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4300) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-969d9147339d8de3"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_74`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4302) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e2bed8d633a7b728"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_75`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4304) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-35e264386eef58e5"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_76`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4306) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-7273f059723fdd1e"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_77`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4308) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-3ee5de1e3fd1ce19"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_78`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4310) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-51e42a8e21c96b87"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_79`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4312) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-00ee6a6d5f6f49e7"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4170) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ffa9c3f1b81f6618"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_80`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4314) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1c2c8991271433b4"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_81`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4316) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bb9cf5b475016f73"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_82`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4318) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-c02e1a8c55ce4ed5"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_83`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4320) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-59ba2673e702b4ff"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_84`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4322) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-75fc601c51f9ab9b"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_85`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4324) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-4d0e93044a0bcb6d"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_86`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4326) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-7a478eb0e800d368"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_87`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4328) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5d50517287e3d16e"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_88`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4330) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-a4c12bf321b5fa31"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_89`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4332) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-2b8bd42bec1b412c"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4172) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-18922e30225b344c"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_90`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4334) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f3b477d806c329c1"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_91`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4336) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-a6349f7b0cd94da2"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_92`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4338) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-4c27682331b0cbc2"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_93`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4340) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-b6471b83fc537f7c"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_94`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4342) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9f86cb6f68949b60"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_95`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4344) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ac04a74f9b2bb91e"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_96`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4346) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8d05d4452f53e71d"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_97`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4348) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0e3aa603535853cb"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_98`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4350) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f91534cd6be3ffef"></a>[`public byte Inno.Native.Sdl3.SDLEvent.Padding_99`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4352) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-472567263bf9296e"></a>[`public Inno.Native.Sdl3.SDLPenAxisEvent Inno.Native.Sdl3.SDLEvent.Paxis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4146) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-31ef6393091b6e68"></a>[`public Inno.Native.Sdl3.SDLPenButtonEvent Inno.Native.Sdl3.SDLEvent.Pbutton`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4144) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9c48bd354d5d44e7"></a>[`public Inno.Native.Sdl3.SDLPinchFingerEvent Inno.Native.Sdl3.SDLEvent.Pinch`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4136) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-7f3aa204fde4ad4c"></a>[`public Inno.Native.Sdl3.SDLPenMotionEvent Inno.Native.Sdl3.SDLEvent.Pmotion`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4142) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-975d63536262798d"></a>[`public Inno.Native.Sdl3.SDLPenProximityEvent Inno.Native.Sdl3.SDLEvent.Pproximity`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4138) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-36dc28f033f74d03"></a>[`public Inno.Native.Sdl3.SDLPenTouchEvent Inno.Native.Sdl3.SDLEvent.Ptouch`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4140) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1417556ebc187076"></a>[`public Inno.Native.Sdl3.SDLQuitEvent Inno.Native.Sdl3.SDLEvent.Quit`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4130) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5fb2d194309440cf"></a>[`public Inno.Native.Sdl3.SDLRenderEvent Inno.Native.Sdl3.SDLEvent.Render`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4148) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e5e3591ee5e90eea"></a>[`public Inno.Native.Sdl3.SDLSensorEvent Inno.Native.Sdl3.SDLEvent.Sensor`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4128) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0a26940c9ddc57d7"></a>[`public Inno.Native.Sdl3.SDLTextInputEvent Inno.Native.Sdl3.SDLEvent.Text`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4092) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-aff4104ca9b993a7"></a>[`public Inno.Native.Sdl3.SDLTouchFingerEvent Inno.Native.Sdl3.SDLEvent.Tfinger`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4134) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0b5f3633f58c4562"></a>[`public uint Inno.Native.Sdl3.SDLEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4076) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-67b6a948be9bd953"></a>[`public Inno.Native.Sdl3.SDLUserEvent Inno.Native.Sdl3.SDLEvent.User`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4132) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f6a80bfe5a16862b"></a>[`public Inno.Native.Sdl3.SDLMouseWheelEvent Inno.Native.Sdl3.SDLEvent.Wheel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4100) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-d5e0eb8e3f534ec5"></a>[`public Inno.Native.Sdl3.SDLWindowEvent Inno.Native.Sdl3.SDLEvent.Window`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4082) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1d4d7bd2bfb14f3c"></a>[`public System.Span<byte> Inno.Native.Sdl3.SDLEvent.Padding { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4409) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-6f4a26e735d41cf9"></a>[`public struct Inno.Native.Sdl3.SDLEvent`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L4073) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLEventAction</code> · 4 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLEventAction 5f96038ec130656983b617694abbc29ee9e6d9692cb22c32aee8e4e641ad7820 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventAction.Addevent 039c126f43bc8b9e5ac57a14fa36597740291d8a09064d84b2a1661e7111319c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventAction.Peekevent e122cdbc4b4dcf5301cf0632bb85eddb0c05dcd5989fe920d2d51ba0fbbd6b71 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventAction.Getevent e1595f8c3dedd8e7c45ecf8885bbfe14a0b274504b8a4cee53981afb3b3dba98 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-611e159a64504bca"></a>[`Inno.Native.Sdl3.SDLEventAction.Addevent = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1297) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-33075e41ad63c095"></a>[`Inno.Native.Sdl3.SDLEventAction.Getevent = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1299) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-11d23cd178c6e85d"></a>[`Inno.Native.Sdl3.SDLEventAction.Peekevent = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1298) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-385625b9d16bb537"></a>[`public enum Inno.Native.Sdl3.SDLEventAction : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1295) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLEventFilter</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLEventFilter 59e230b22a21173c3789cc866b688e68de9e9d1adf8e2dfe31db4bcd919179fe -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventFilter.#ctor(System.Object,System.IntPtr) f59fb8284cc50ea79da9372d628b4fd668492d1c198bd78dc2d0ad69408124db -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventFilter.Invoke(System.Void*,Inno.Native.Sdl3.SDLEvent*) a71c7679347a24cfc554254297452bc74f661ce24504a4ab0cff74f4824ae103 -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventFilter.BeginInvoke(System.Void*,Inno.Native.Sdl3.SDLEvent*,System.AsyncCallback,System.Object) fade4c721fa113b4651d581bec3da572d22f5c2c98e23cf4e0d87a4784ca1346 -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventFilter.EndInvoke(System.IAsyncResult) 3589533bdddde78c77ead33f1dcc3e93649303f3ec9e0ee2c17d0a1ac4906f1d -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-ea38ef4e2608300b"></a>[`public Inno.Native.Sdl3.SDLEventFilter.SDLEventFilter(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6875) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-cfeb0075d8990f07"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.SDLEventFilter.BeginInvoke(void* userdata, Inno.Native.Sdl3.SDLEvent* evnt, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6875) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9a76608b626c3e8c"></a>[`public virtual byte Inno.Native.Sdl3.SDLEventFilter.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6875) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-69d4c136dfe36a73"></a>[`public virtual byte Inno.Native.Sdl3.SDLEventFilter.Invoke(void* userdata, Inno.Native.Sdl3.SDLEvent* evnt)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6875) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-39267be22a4730be"></a>[`public delegate byte Inno.Native.Sdl3.SDLEventFilter(void* userdata, Inno.Native.Sdl3.SDLEvent* evnt)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6875) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLEventPtr</code> · 53 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLEventPtr 0df5e91ea884c73df9725930c0cc900dc5f42d5bacf14bb42e6db215b98c205c -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.#ctor(Inno.Native.Sdl3.SDLEvent*) 7622672567a2c77768f4909166e686ceffeb5f2a06e893db696bed8d62e223c0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventPtr.Handle a91eb26d1a0f66e8e93060a15db0eccf6a0dd4d0c466c5ccb6aeb76591b7c984 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.IsNull 39c1b5deb2be458430b9673a77206546e273d189b04965e45bb463a507064cbd -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Null 8f5636cda6691ea287c639a3308d3eecaaa7e8d4edbf6b87810a25bf0a9f976e -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Item(System.Int32) 5569dc14993d748fc001ab032f67cd168d8240689d9db449bcd2e0532f451c8e -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.op_Implicit(Inno.Native.Sdl3.SDLEvent*)~Inno.Native.Sdl3.SDLEventPtr f98d7ba54b5eb68e77a8500c8d772aab5c070451736964eea7fef6020350a39d -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.op_Implicit(Inno.Native.Sdl3.SDLEventPtr)~Inno.Native.Sdl3.SDLEvent* 157207d33edea45b0eb3cda5f481bdd6bb69bdb3e744cb32dba4a7813a55d6b5 -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.op_Equality(Inno.Native.Sdl3.SDLEventPtr,Inno.Native.Sdl3.SDLEventPtr) b38b5d695cedef5626b0abf9135d5ed6ddd1cd45cc9f5e380632a08bfa8e329e -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.op_Inequality(Inno.Native.Sdl3.SDLEventPtr,Inno.Native.Sdl3.SDLEventPtr) 25f8803f4513c2482fb4841d519dc05567d1cd9ba27e93f821e7b5cf64699c97 -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.Equals(Inno.Native.Sdl3.SDLEventPtr) 6f5878bcbc88c555807b2ea6fd2c4b54524e05b5ae8f91ceb0f88714ecea491e -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.Equals(System.Object) 4e78bc17fb5c6006d3cf1f20f236f248bd7f78fd8029e274eacbae24c400d90b -->
-<!-- api: M:Inno.Native.Sdl3.SDLEventPtr.GetHashCode 5dd9cf9986f12a75ea1fbe48a7d2dc7460043058f942b886d4e97ea0cd8a8d42 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Type 13d0e09dba5023a3b2d45b4de11a61f1c81e429d6fa1ee43cac08bd7e6623f1b -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Common 36f03a0329cd32d51a9d0fa3d253cf8bb2a4058c8288e9b55c062dc55242ddc6 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Display df0538301f5c02452de9334cee3cb50d2867f2123b6190379bbbc9d929b06956 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Window 50a1ef69f7329113d15f353b6df409e4dba5a952cd5869078587a0f1f11d0836 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Kdevice 0ede321b4d3cf2c856554f0cd0553e81ff2429126db285e6fae4cfed47eb3de1 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Key 1a6161a5c88fd95e92db0c2b6777e607d0482a8306e4b0ecc1ed56cd9fa55ad7 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Edit 3be257ff32a8032fff2cd62cdc14e3c4c014aefc19f7ef9f28ef4c9348ca0faf -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.EditCandidates 07c868c38c83b1aaa90a615f459aba4e2f10aa7b31e8ea18619ff110e9d02120 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Text c8940cc4fa42235204bdebf86a9bfc92d4bdb266ce23456eca0929f15833d710 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Mdevice 21926b601b9f3147a494e4a25524cb83acbd3653b69c9da2f0bbfb8dec903198 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Motion 4b926e3cba3b86bced086a62a7a7281e264562d6c8a9037ae1fcccaca2f00dcc -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Button fbd0685403daf4751959ef4130d8ec1b951831a9a1243d37e221760097240e1f -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Wheel dc45423840b88a836b0ae416b9a9ab3bc5fff602ce0812687533325771f4a790 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Jdevice e01df6bacf8bac3be943852a73151807036f7e2229957de75fcf8cae7e196e95 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Jaxis 13089b2079fdfd18ad0bbde6520d4d8b27628639623b6dd86af55f9619b9cda2 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Jball 92646cfbf2e64789e4c50bd4f49fcea55e0d05e3d9ee9a36e9430d4ec371f1e3 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Jhat 933baf5d3a4393203452782b6c27a3bc262e1ef5fa2b21acf4cea9123c481b03 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Jbutton 966c414aabd1908d745b7dd6fa3d32add327ae3c96d9282467f43e5ccb39b9f4 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Jbattery 9132173f3ba022459fad753252e74b02d4b1d3faa60c29f9f13cf67d42b19e7d -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Gdevice 5b9b6bb0c28d693f1e77301bca1551d7974c42598d7ae911f7c42bc6e2a06d61 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Gaxis bb11a0be06a9923c22b63351bedd546b284291ab390f6316bb8e447d23ffd113 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Gbutton 4a74ab12bfbb13835b1df682c79462bf4b36ebf4f492ed9588b62765ed8ca875 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Gtouchpad c4ec650561540eb2df06ab5495efcca5ec14c5e5d51ffa1aac28ff2201b1939a -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Gsensor 3bdd0fb1d7119ade4d4434423635adc7a96c2b851264fc436489bdc9ea44f48b -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Adevice 58ca050ce0f3a00c3764f16f0e9a22fb6c848b124db14ca153a5032e86b5d14b -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Cdevice 8a0490f3e56f7a31f9473807d42cd3c2219f225dfec1e70017ca381e65e0ca06 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Sensor 6b20d51c1a17d6bef05c9d4d3ea2b3bdf3357edfb4986a9c4cc3401c9ef2495d -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Quit 964f26e1bd5b99e0be71ba935f1ed7ea63cc7c7313ae775ad76379f1d1f86f86 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.User 7a9ae4d8d358d0fc40e434a470cc5c9dceab9b585eabceac4e23571ccb578063 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Tfinger 846c89425772df8d53e2d9bced9f08c886b5063647f67a636bd820be270e72c6 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Pinch 4592bf3410e80b852a975c08929ef4de4cf175c6d390639590f208036d6c6010 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Pproximity 0d992c7fc9f0e3da76b72a802426adde7803d1e277def517f9c1133854ff8650 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Ptouch b233303200388c9d169a504bf26666c18bdfc83b660ccceae0c6438b2ca97114 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Pmotion 827054810a2c71ee1db691f3c65bfcf9208c31d11f65a65a5cbcc85fbcad747b -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Pbutton 6f45835b9ffce80847f97edc3772cdaf3ce1a3ced0a002429882c27690621fda -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Paxis ddc0b34fed5b5ecbfaa9a36fcfb55f44141a486257ee29cba29ba43059ba80af -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Render 4ea639f0b364c1ef777e31c4ce9dfe6b185c857003d156c38a71a1cd1e1207d2 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Drop de18969de325bf58540c354eb2babd1adb8282dbef153f6c2d6f304854f24219 -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Clipboard a8d614c153637bfa95309b80c28b41cd8fcbb3a1edcd86f4f7592f8e679bea2e -->
-<!-- api: P:Inno.Native.Sdl3.SDLEventPtr.Padding 255b743ae223bc752cc3a1e65fc8aaedfc62c5ecfe3cfdc173c1e6e6ee98ff76 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-0fd83368163ccf62"></a>[`public Inno.Native.Sdl3.SDLEvent* Inno.Native.Sdl3.SDLEventPtr.Handle`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8262) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5e2d0ad15209b462"></a>[`public Inno.Native.Sdl3.SDLEventPtr.SDLEventPtr(Inno.Native.Sdl3.SDLEvent* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8257) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-0fde065fee42cca6"></a>[`public bool Inno.Native.Sdl3.SDLEventPtr.Equals(Inno.Native.Sdl3.SDLEventPtr other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8272) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-96625f0e22a9ebab"></a>[`public override bool Inno.Native.Sdl3.SDLEventPtr.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8273) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-1a32f3cb187eeda5"></a>[`public override int Inno.Native.Sdl3.SDLEventPtr.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8274) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-3ba8ecd20dba6d49"></a>[`public static bool Inno.Native.Sdl3.SDLEventPtr.operator ==(Inno.Native.Sdl3.SDLEventPtr left, Inno.Native.Sdl3.SDLEventPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8270) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c1e75ca3649cf1f0"></a>[`public static Inno.Native.Sdl3.SDLEventPtr.implicit operator Inno.Native.Sdl3.SDLEventPtr(Inno.Native.Sdl3.SDLEvent* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8268) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d2c3b6cbffa52cde"></a>[`public static Inno.Native.Sdl3.SDLEventPtr.implicit operator Inno.Native.Sdl3.SDLEvent*(Inno.Native.Sdl3.SDLEventPtr handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8269) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6f6b2b84d916b214"></a>[`public static bool Inno.Native.Sdl3.SDLEventPtr.operator !=(Inno.Native.Sdl3.SDLEventPtr left, Inno.Native.Sdl3.SDLEventPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8271) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8af81324d8faac1b"></a>[`public ref Inno.Native.Sdl3.SDLAudioDeviceEvent Inno.Native.Sdl3.SDLEventPtr.Adevice { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8300) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-a4986a88d2dcd92a"></a>[`public ref Inno.Native.Sdl3.SDLMouseButtonEvent Inno.Native.Sdl3.SDLEventPtr.Button { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8287) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-56598db2b4ee212e"></a>[`public ref Inno.Native.Sdl3.SDLCameraDeviceEvent Inno.Native.Sdl3.SDLEventPtr.Cdevice { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8301) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-9e0605a1383a6b6d"></a>[`public ref Inno.Native.Sdl3.SDLClipboardEvent Inno.Native.Sdl3.SDLEventPtr.Clipboard { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8314) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-54f166a219d5fdfa"></a>[`public ref Inno.Native.Sdl3.SDLCommonEvent Inno.Native.Sdl3.SDLEventPtr.Common { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8277) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-80f60c5146a3b41d"></a>[`public ref Inno.Native.Sdl3.SDLDisplayEvent Inno.Native.Sdl3.SDLEventPtr.Display { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8278) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-0fc3fd33510b4812"></a>[`public ref Inno.Native.Sdl3.SDLDropEvent Inno.Native.Sdl3.SDLEventPtr.Drop { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8313) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-030fe89c8cc373e8"></a>[`public ref Inno.Native.Sdl3.SDLTextEditingEvent Inno.Native.Sdl3.SDLEventPtr.Edit { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8282) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-cb86eb2658cc2646"></a>[`public ref Inno.Native.Sdl3.SDLTextEditingCandidatesEvent Inno.Native.Sdl3.SDLEventPtr.EditCandidates { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8283) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-d7477012d0743fe7"></a>[`public ref Inno.Native.Sdl3.SDLGamepadAxisEvent Inno.Native.Sdl3.SDLEventPtr.Gaxis { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8296) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-40c694997b6fbdf9"></a>[`public ref Inno.Native.Sdl3.SDLGamepadButtonEvent Inno.Native.Sdl3.SDLEventPtr.Gbutton { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8297) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-6c4fc357254754c7"></a>[`public ref Inno.Native.Sdl3.SDLGamepadDeviceEvent Inno.Native.Sdl3.SDLEventPtr.Gdevice { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8295) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-27d6526c01762128"></a>[`public ref Inno.Native.Sdl3.SDLGamepadSensorEvent Inno.Native.Sdl3.SDLEventPtr.Gsensor { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8299) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-929e2d8fbe3eef5c"></a>[`public ref Inno.Native.Sdl3.SDLGamepadTouchpadEvent Inno.Native.Sdl3.SDLEventPtr.Gtouchpad { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8298) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-30d1a8e241ed6915"></a>[`public bool Inno.Native.Sdl3.SDLEventPtr.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8263) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-0a483a212991208f"></a>[`public Inno.Native.Sdl3.SDLEvent Inno.Native.Sdl3.SDLEventPtr.this[int index] { get; set; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8266) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-36ce82d719386ed0"></a>[`public ref Inno.Native.Sdl3.SDLJoyAxisEvent Inno.Native.Sdl3.SDLEventPtr.Jaxis { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8290) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-a600514bb3d3824b"></a>[`public ref Inno.Native.Sdl3.SDLJoyBallEvent Inno.Native.Sdl3.SDLEventPtr.Jball { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8291) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-3d427596ebc0e183"></a>[`public ref Inno.Native.Sdl3.SDLJoyBatteryEvent Inno.Native.Sdl3.SDLEventPtr.Jbattery { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8294) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-3c152a5b10e53c5a"></a>[`public ref Inno.Native.Sdl3.SDLJoyButtonEvent Inno.Native.Sdl3.SDLEventPtr.Jbutton { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8293) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-5632dac5acd7792f"></a>[`public ref Inno.Native.Sdl3.SDLJoyDeviceEvent Inno.Native.Sdl3.SDLEventPtr.Jdevice { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8289) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-64dfb0237342101c"></a>[`public ref Inno.Native.Sdl3.SDLJoyHatEvent Inno.Native.Sdl3.SDLEventPtr.Jhat { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8292) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-3cc4f11a7c173c60"></a>[`public ref Inno.Native.Sdl3.SDLKeyboardDeviceEvent Inno.Native.Sdl3.SDLEventPtr.Kdevice { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8280) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-1cdde553ab74f42e"></a>[`public ref Inno.Native.Sdl3.SDLKeyboardEvent Inno.Native.Sdl3.SDLEventPtr.Key { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8281) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-dffd89a5e5c7ebc6"></a>[`public ref Inno.Native.Sdl3.SDLMouseDeviceEvent Inno.Native.Sdl3.SDLEventPtr.Mdevice { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8285) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-b7cb5c72f950ea9e"></a>[`public ref Inno.Native.Sdl3.SDLMouseMotionEvent Inno.Native.Sdl3.SDLEventPtr.Motion { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8286) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-43f86c216460602a"></a>[`public static Inno.Native.Sdl3.SDLEventPtr Inno.Native.Sdl3.SDLEventPtr.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8264) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-374e067634bdf5db"></a>[`public System.Span<byte> Inno.Native.Sdl3.SDLEventPtr.Padding { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8315) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-deaa2ed80e82f83a"></a>[`public ref Inno.Native.Sdl3.SDLPenAxisEvent Inno.Native.Sdl3.SDLEventPtr.Paxis { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8311) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-aeb3406d16fbc7ad"></a>[`public ref Inno.Native.Sdl3.SDLPenButtonEvent Inno.Native.Sdl3.SDLEventPtr.Pbutton { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8310) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-371e5c35441840a1"></a>[`public ref Inno.Native.Sdl3.SDLPinchFingerEvent Inno.Native.Sdl3.SDLEventPtr.Pinch { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8306) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-9419d8c61789ce0e"></a>[`public ref Inno.Native.Sdl3.SDLPenMotionEvent Inno.Native.Sdl3.SDLEventPtr.Pmotion { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8309) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-657bdc399c980573"></a>[`public ref Inno.Native.Sdl3.SDLPenProximityEvent Inno.Native.Sdl3.SDLEventPtr.Pproximity { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8307) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-89f9e75a68217a7f"></a>[`public ref Inno.Native.Sdl3.SDLPenTouchEvent Inno.Native.Sdl3.SDLEventPtr.Ptouch { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8308) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-96bb283851582ed6"></a>[`public ref Inno.Native.Sdl3.SDLQuitEvent Inno.Native.Sdl3.SDLEventPtr.Quit { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8303) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-35b48fe4a26fd329"></a>[`public ref Inno.Native.Sdl3.SDLRenderEvent Inno.Native.Sdl3.SDLEventPtr.Render { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8312) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-592da65e53ec01a0"></a>[`public ref Inno.Native.Sdl3.SDLSensorEvent Inno.Native.Sdl3.SDLEventPtr.Sensor { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8302) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-d3fa0605ea7b85dd"></a>[`public ref Inno.Native.Sdl3.SDLTextInputEvent Inno.Native.Sdl3.SDLEventPtr.Text { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8284) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-4d9c3bf449d38f5f"></a>[`public ref Inno.Native.Sdl3.SDLTouchFingerEvent Inno.Native.Sdl3.SDLEventPtr.Tfinger { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8305) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-867dae7b4a6658f8"></a>[`public ref uint Inno.Native.Sdl3.SDLEventPtr.Type { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8276) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-0955695d349e1c7b"></a>[`public ref Inno.Native.Sdl3.SDLUserEvent Inno.Native.Sdl3.SDLEventPtr.User { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8304) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-4b0c232c2f1d9fe3"></a>[`public ref Inno.Native.Sdl3.SDLMouseWheelEvent Inno.Native.Sdl3.SDLEventPtr.Wheel { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8288) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-8919198c51a21785"></a>[`public ref Inno.Native.Sdl3.SDLWindowEvent Inno.Native.Sdl3.SDLEventPtr.Window { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8279) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-8d70aa2debff4ab2"></a>[`public struct Inno.Native.Sdl3.SDLEventPtr : System.IEquatable<Inno.Native.Sdl3.SDLEventPtr>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8255) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLEventType</code> · 125 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLEventType 41541825d696775328c4ac34e7adf8677315dddca205dd653aa1d20c7a96fe7b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.First ab2c33478a6f48d5d4967de53a8b7d0d9197a071ec253977cf196fc8f6290710 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.Quit bff14e11b5d4d2f0884c8733d45c07f7b9df57edd388a72058fdad71fd6f3f0c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.Terminating a4ea908c3d30c0c2d93fc5afcabe081064433d0c2c41b40ad1b0d3ec21475969 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.LowMemory 90b66d2c8891cf66239e05e7a7fa04d6bd449432e4220b65e112da4c5fbd70ec -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WillEnterBackground e549da04fe4a061070975fc28fa57d3980681ca6c76b4625de29b1b619b9c74b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DidEnterBackground af178551ff7bec5943033dad650aa0fe4e4ed0f1306d85114d0d78737e66d9b6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WillEnterForeground 5002f97ccda0a453695033926d7dfa419e76c95ba302528c7c133c8c40a4c3cb -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DidEnterForeground 189d7f2905336dd00bc4ebc62037336ca23391a9205e0f3d15af57086597bfac -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.LocaleChanged b7ad54d000c5f0de928108a87695aef5431d8eaac9de5a75e8b9de84bf09e2b9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.SystemThemeChanged 3b60e310ebf51d9d38f7474fc6bc3cccc8980c6643f657ea7581eef814aef4fe -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayOrientation 11c58d414ac8527f165958228fc904e6b2265812cc5631e7a9ab90a8033a5743 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayAdded efd45a971042e5f70a03995afab358be201a00f7e04a8e97bd607ae6b67ac2e0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayRemoved 83b42e460b830eb382e3ff05e082057387c189ecf4de387b9149739c06181c6e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayMoved d8542fa4976378b1115ec7078305f3a439cc0315c41ad97210295e94d960c352 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayDesktopModeChanged 5cef4688fd782f82d77af2634dc9ea8c3fb0677a5151dbddc75b3b3fc7fb1a32 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayCurrentModeChanged 85948ea1a396d2b73ae6ca466c7e31cd7b0b3821ce4c07f22bd5bbe4d126be10 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayContentScaleChanged f51aa4a0fe65e078e35eeb5beb67bd8ce73ccbc9fea17311bb34767e49f2af7c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayUsableBoundsChanged 32033683ac00822987b8b1d84fe3f8d2cf6c6ee56c65e476c84f3077867e24d9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayFirst f06aac7ef0701f6d178289ec89b88bfe1ea98b35b8b60d9ad6ca4f67890297c8 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DisplayLast 76f55ff9b24b1eb8d80fb4928a1638da03fbba2c66df93d7efdf8e313565bb0b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowShown 3f5d8f7508c3427677db05ad5e414f4429b128247aa4258e9c8d6240f633bcc4 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowHidden 2d3d8975c0332883fae3cfed28ce9eba7bbe64a301c3aa133287e1cf93139518 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowExposed 6f9419b488df029bc5a0ea35689b43ac86a3ac6eba672649240cebe81528c8b3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowMoved c8dbbc49beb5274ee3e1b80f75aafed561052195d57db3faa5519accc06fdc06 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowResized da4ceeb7d67aeb0ce04a6127f0366f102b7f485e6ac6f56d3ba022b29621c72e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowPixelSizeChanged d997e4dc46cea0d5c1f2d886f46dbb120f87d724c1eadff77416ae73db135c48 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowMetalViewResized 1a0e0abdd7bca9c03566ad0d9a6288475bc52f0b86949688d63ff5e829e2f2c9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowMinimized 215a5e7fecacaf4faeb1791423d4f82e5dc7c67e471a36694898270643bc5d6c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowMaximized 655aab19611ae48b5881ffd10649dce324f1d740b2e1025385e46f30ff17d8e5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowRestored 98a3d80e18027d6f98f16937a9c11f9552afa186f80a3fe0545ed17dcf64fa99 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowMouseEnter 6a750b76a953c3f3cb2a503938f3bdd7035c50c9c9c71e307e7ad90fd74d15ae -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowMouseLeave 0f74f13f8a3698b431f3d4ab5a5345e318bb5bd99cf4ad1e85f1f01127bb5a19 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowFocusGained 463ab29f1bec4bda5da0503bc8601543d07c50d7b23c068fc831152ec88d7ea1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowFocusLost 2fb4f5971b97a62058fe7ae0e58cf204a039b7ebdc6f09b3ba8991fab5fd628c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowCloseRequested d0bd762f86017e9e5e9d3a762267f0843f3e2f387b36287fb0ab387696430dd0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowHitTest 8bd7bdc16ebf14fb4d87695bd75f70a69470c6b950ddcce67474b97599891244 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowIccprofChanged cac0ff912f71d66c3d50e0b6ef81370245f7e632c12e8a8bc90377e529ee170e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowDisplayChanged 317bb787f4e68fbaf55694b566fe511c886feafa35453f61c252772f565ccde8 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowDisplayScaleChanged 1f7f5ec23625d4ab9c17a0042a2190a940dbebce271f5fd9d51ed84ec289d33d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowSafeAreaChanged a4d7c3b874ea193c9977b50a62edc8f541ab1cdab843ae231e658f33f713f233 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowOccluded 0ffd5000c9723ad0fc92c29e619643c85e0de41df229f24951a3b24f59dc180c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowEnterFullscreen 283647bff0605c894e1683ba88a527e788e33083748248caa5ff5d03eca46057 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowLeaveFullscreen 0ae7db32d40c2cdee07de5ebc048c9da50ca5d4bb2fd1af5da9c50a8869e060b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowDestroyed 23c3a90d0f9a918273fc3067314a7469a79ed13f2eafc3364d505a60b3d61ca6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowHdrStateChanged 61c2f7be1a9388f5a0688befa8e5397d7766de5a9bc4f63595606dcf2dfb313b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowFirst 065b6bfeb9be75ae97a85928092d5ab0b353a3b9159956282152c51eac2f9097 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.WindowLast 7a152767088144955136b47f67e2b434159b2330c6155f27248fd25b8ad278ac -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.KeyDown 391372a7f3f4bbb98210f6b3c6c15315e5b06011c4564f8360a93e414da38484 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.KeyUp ce66e74ac2912ba080448ed57bb8c12f3d8ebfe6361ffc35aca060aa61a880b3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.TextEditing 9e31e2c4e3fe7751e7c1581e41f7b5aeb238641d1564a50c4787f05f25736481 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.TextInput 3230ff0ef48666424b605cc5038a697b45fb82bf4fa18df5c609eb0d434f3392 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.KeymapChanged a7cbd633aef960b32e72eb616d5b39dbff045a591f1ac11533feff9179162ab2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.KeyboardAdded 5003d44f6035089f02b000c2d3eecc949cfcfee26bdcd69ca70dec2d10a47c1b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.KeyboardRemoved 7e194031891f91a3a36701ff469da7b6301371bd078ca5bd2cc19c365f6a9a22 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.TextEditingCandidates 65d98be5d1c3a3bc352eac42f23280affa83fc4bd9d50d5fb71009f5682c7d5a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.ScreenKeyboardShown 2e8bf5ff7f9fb187eb4c88bca22583199c3d61aad281c836ae1c3b585111cd70 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.ScreenKeyboardHidden 43e9e376eb9a28cd5de538128a77293f0506bca1e75777237fe9de4c13aa2ec3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.MouseMotion d77a8184a08cfa524f3d064b6f2622bcf25b29df6491213516c04a03a29d8e0f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.MouseButtonDown 35d68d70549ad10e47e83a5f85a48347a5c3dd641e859f37157c5572efc6766f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.MouseButtonUp f81bd6a740327821a6071e4a781c6acc581e001bdde84bcbb304a844db73c4fb -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.MouseWheel 70bbc12298c9a66b3c0ddf1b45d554483cc5d41c0e1ece8a07915bb7f4c72b1c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.MouseAdded e0d66e5ca86c4c785581d2bd241daa27f1a1553083f7ad55b9d9ddedbd690bb0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.MouseRemoved d41579bf380c8e544a18c7125f0dcc6c9cbfa117c63b2c6a2bb67b164aef7c1c -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickAxisMotion 4499bf849860d7578794f04cfb265672932c1e8b895dec6325479ddd8c90d794 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickBallMotion 9dee5548c1978e2cf9b5826c0bef86c4b46c91cf60b17671b47164e3ee23d61b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickHatMotion be748e5fec54455d283d6a61ad3e23148bd9a105bf3f6d5794793b95a1799547 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickButtonDown 2c5bf424e859978c648a9a4c122ee1c8f16b9d6bb9f7bb2175148fb43f98eb8a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickButtonUp 8ba60240e9f90d055c50fd7bc3f8294c5b021f0875d8482f56bc086218a53272 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickAdded 7e901fa8e5667eeebdba24fc64699b4ff0720636629abdf061b92b6fe3d70ea3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickRemoved 1556da65effd20064f3a143f1085d395187a832edc3ce62dd127514679e4bfc3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickBatteryUpdated 2effc896a4eb3a7b69fe50db3bc378aa0796d6494743f9ebc8a2d01a7e61c8ff -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.JoystickUpdateComplete 6f36c0bb7e3e954ee6b2604b7b4cfcc1db0a50ed2e1b8a84e4afadb57f7e7fc5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadAxisMotion 1d29445aee1257632e58f86bf3f01abf39bd044c589ff89e60c30f9900316d82 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadButtonDown c82632fb33bed1f889730df94e7dc01cf50823881faa3601d9697842fba8b162 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadButtonUp 08ba2c6eb95d74ac75af91c11b83b131127c51eba79fa9759220b698facc21a0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadAdded 76e44bf7a469edef60ada480f6bd84acaa8b11e77b3e38a3307ddea836ed7784 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadRemoved cc8d9aa2b35e63dd3a95da613bcc7dd2c4d5c8270d3defd6678ac13e282db713 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadRemapped bae6b69ea495de5bfcf2e526dba87d762e04c9255743ad2c486744ed09dfb798 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadTouchpadDown e1ac0dad5659b2c911454cd7ef67a3f60684fb5f4b3020c57657611cad8a9e76 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadTouchpadMotion 2d918c5bcb6328626d44719bc7c09ec7753ff44b993330341b314aac6534d425 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadTouchpadUp ec82dfd38e93ab16b8d6c270d0bd87737ccf08ca1cd391c8ab71b50a83de6bb2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadSensorUpdate 9db023a613bf544961388c9c18cb9bcfd79acdbaacf77db8c8bd8343094a3922 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadUpdateComplete cb8fcf73aa7d1f4b73b60e7b5841bbd46780f49403c8cfc3f305ed93769bb82d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.GamepadSteamHandleUpdated 688d127fcbb2cb08c2de3715eab20f47f72b36945f7d199e84f21f138477bf46 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.FingerDown 35456a0eeb0bbabead12904dcae6480367c3601acbf3c9a7796f4f3295d966a0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.FingerUp 269fa0b275586a041d4a5ad02bef56dd708b85f4bf18ee28292b1c254d85257d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.FingerMotion 4bdaa0280312f70968d9d8756f89824c2c32960418cc7635359004e08b891926 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.FingerCanceled d2e09c89ad5e239213468c922e223e575b5386e958146a1e48422221e919543a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PinchBegin 35632f495f9390812649b6d49c916f919929f4fdc6366495dfebbda5dc4b7bef -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PinchUpdate 27b70a84c5a0ddadddb8c519c8ec216ce52e4c9dc5c96becc01e206d97e125ab -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PinchEnd 203a58b6cb75341317793f70aafaf79f4038cac51613dba2ad85d6a301c58c3e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.ClipboardUpdate 671e3f41d1f5731435753f7a2bddace0843248405d5351a02cc773e1ad3bf7ca -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DropFile 1e3da1ce7093c576fac2d5ae50dfec097fc427cd15a35a206abf601f9496dc5f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DropText 26f8d706f95bad7ab98cc5214ddc30ce7002db5825e3bc35adf1b40c81646532 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DropBegin 1629bf4365573fb53e7528142818dc3fc8100cbe3b63399a5eb0a5e5ec5e2b8b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DropComplete b3f6c05db9114d2753c7f57c1fd40309220ac192b1a3f97d9d13411ff96873c0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.DropPosition fcdb783cbdfab07003749b985aefd0acfbf0f4fe92b1b41c1aa444c4d3924740 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.AudioDeviceAdded a6218a2ad3b4a4f0276c23efc9efea3a286892a2a56d32323921abf62260ded6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.AudioDeviceRemoved 8ae2f67e2de82f04bcce2b304ad7ecda622df1066008ab2e7d08a4d470b9941e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.AudioDeviceFormatChanged c53891f38069f76f9541c7da59f1bbd7f970d5a06297cfdf81765e8376135ab1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.SensorUpdate 2eb3d6c62f127148d5ea6d3b15c0440f678c3f1a5872dc0fd9db07055b2d4b8b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenProximityIn 0501f3bf77a6c5b8a67f9278ea43a4c00b316bf1698a76efd2a60d8291e61064 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenProximityOut bbcd0f7f5cccda31c2176c40ffebc285499c60f6f6160817636c4405b8ef7521 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenDown d54166fc14c578c5081958716dd5298366d3790bea96599db1613559b93d938d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenUp 8af9e6dc80b97276a5f39fbb1cac115d018347113841bd22ea669723a4abc5ed -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenButtonDown d2a9522d8bd0f9d1be0f11248155ac836cbf3dd1841f825aedb048cf91d0626d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenButtonUp 08d6c5c51399493396b472e3b36be16d4635116537ecc237b928a1c2ee908ea5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenMotion 17a952b57a0da73b490f9875d1a90f7a0ca97800dc574d515f88eb0e6c842e6e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PenAxis 46df1318235193ebf655b003d1bb590240c17ca8c76fc6c15dc580e7bd4128e6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.CameraDeviceAdded fb6a09cf2d9c34e8ea346ba7e47568f8ccd7a2904f6ef7647a39c61517206872 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.CameraDeviceRemoved c990ed04ca1b5b947cc90db191f60f8890431ed0d42d134fb6557353dff1a817 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.CameraDeviceApproved 7f0953daed687bfc301ba8afa46ec15c1af4e146a661aa24fdbda0efa450813d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.CameraDeviceDenied 05cfe613c1e3ae076790ae05f7f5488540db83eeddea9c8aad2eb0ea0783a26a -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.RenderTargetsReset 42996cca6d315ffa2f5e360cedf97272f43b62bf1565182e8e1212641cca8e5d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.RenderDeviceReset d42553dd578c0840759d52e7e189891a03b059a4f86ea1a0110e4f7e264e1b87 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.RenderDeviceLost eef88390962bdae7160639f5e65c4eaf86d4cdf0b04213372d8a510abf968880 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.Private0 a622e8e7dbe2e58afb896f555c81424e5b0f5282b086ec60b783f855ad9a3ee3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.Private1 4eda21694f1e490b2bc55b952340c3ad6066fdaa34b0fad5e6e987123731e42d -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.Private2 5e1b2c93b47ce2741b9a5d0a13feea4bea7c0a8a6870eb00513c766366cfee4e -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.Private3 0e336036e14dadc31dbea97a66b806012da65cd501a17ce33d557283395b0aba -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.PollSentinel acb76cb79929278869701836d5c298a7e5eb611c85124ab3d3edbed27b580f8f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.User b784fe1ed09f46c17b39ef9bd8af9a4cc4faf39ac4146fd385c43f1c91624b7f -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.Last 128504c5eb0afd51c702b8169b10c9b655cde6984b8a8bd13670fe6209708f2b -->
-<!-- api: F:Inno.Native.Sdl3.SDLEventType.EnumPadding 7536db2c1e9e930453e8a49bafcfa3f194ee0ce0cc75647f1eb4406aeb613dbe -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-ecf8282237adc6ff"></a>[`Inno.Native.Sdl3.SDLEventType.AudioDeviceAdded = 4352`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1263) | 当前常量或枚举值：`4352`。 | — |
-| <a id="api-ecbb8d48c4d0f767"></a>[`Inno.Native.Sdl3.SDLEventType.AudioDeviceFormatChanged = 4354`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1265) | 当前常量或枚举值：`4354`。 | — |
-| <a id="api-a04ddaf63ceca86b"></a>[`Inno.Native.Sdl3.SDLEventType.AudioDeviceRemoved = 4353`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1264) | 当前常量或枚举值：`4353`。 | — |
-| <a id="api-cd76647b1dacaa0b"></a>[`Inno.Native.Sdl3.SDLEventType.CameraDeviceAdded = 5120`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1275) | 当前常量或枚举值：`5120`。 | — |
-| <a id="api-5f6f3227edcec59e"></a>[`Inno.Native.Sdl3.SDLEventType.CameraDeviceApproved = 5122`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1277) | 当前常量或枚举值：`5122`。 | — |
-| <a id="api-b8569e6e64f13037"></a>[`Inno.Native.Sdl3.SDLEventType.CameraDeviceDenied = 5123`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1278) | 当前常量或枚举值：`5123`。 | — |
-| <a id="api-7d09ecb20f5208d8"></a>[`Inno.Native.Sdl3.SDLEventType.CameraDeviceRemoved = 5121`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1276) | 当前常量或枚举值：`5121`。 | — |
-| <a id="api-90066ec0c4756109"></a>[`Inno.Native.Sdl3.SDLEventType.ClipboardUpdate = 2304`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1257) | 当前常量或枚举值：`2304`。 | — |
-| <a id="api-83f08b9c3fc4d550"></a>[`Inno.Native.Sdl3.SDLEventType.DidEnterBackground = 260`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1171) | 当前常量或枚举值：`260`。 | — |
-| <a id="api-c6aef52f1dbb256b"></a>[`Inno.Native.Sdl3.SDLEventType.DidEnterForeground = 262`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1173) | 当前常量或枚举值：`262`。 | — |
-| <a id="api-5273c4836fe5dd00"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayAdded = 338`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1177) | 当前常量或枚举值：`338`。 | — |
-| <a id="api-cd1584dc397c0721"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayContentScaleChanged = 343`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1182) | 当前常量或枚举值：`343`。 | — |
-| <a id="api-822974eb896adefe"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayCurrentModeChanged = 342`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1181) | 当前常量或枚举值：`342`。 | — |
-| <a id="api-570851b1dd70edd8"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayDesktopModeChanged = 341`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1180) | 当前常量或枚举值：`341`。 | — |
-| <a id="api-1cb2ae2b87e7c823"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayFirst = 337`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1184) | 当前常量或枚举值：`337`。 | — |
-| <a id="api-e538ad7f363ad431"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayLast = 344`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1185) | 当前常量或枚举值：`344`。 | — |
-| <a id="api-abd59f004bf48e76"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayMoved = 340`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1179) | 当前常量或枚举值：`340`。 | — |
-| <a id="api-b762cec5f6931e80"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayOrientation = 337`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1176) | 当前常量或枚举值：`337`。 | — |
-| <a id="api-9d9b9b5fe42dfe84"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayRemoved = 339`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1178) | 当前常量或枚举值：`339`。 | — |
-| <a id="api-68acec38a89986b7"></a>[`Inno.Native.Sdl3.SDLEventType.DisplayUsableBoundsChanged = 344`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1183) | 当前常量或枚举值：`344`。 | — |
-| <a id="api-b2780a8faeead9ee"></a>[`Inno.Native.Sdl3.SDLEventType.DropBegin = 4098`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1260) | 当前常量或枚举值：`4098`。 | — |
-| <a id="api-96bb6701db21e0a9"></a>[`Inno.Native.Sdl3.SDLEventType.DropComplete = 4099`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1261) | 当前常量或枚举值：`4099`。 | — |
-| <a id="api-c5910e821d50e89c"></a>[`Inno.Native.Sdl3.SDLEventType.DropFile = 4096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1258) | 当前常量或枚举值：`4096`。 | — |
-| <a id="api-6cfd7913b5d0c411"></a>[`Inno.Native.Sdl3.SDLEventType.DropPosition = 4100`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1262) | 当前常量或枚举值：`4100`。 | — |
-| <a id="api-17a31061f8b2b3ce"></a>[`Inno.Native.Sdl3.SDLEventType.DropText = 4097`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1259) | 当前常量或枚举值：`4097`。 | — |
-| <a id="api-8743bb0b76649fad"></a>[`Inno.Native.Sdl3.SDLEventType.EnumPadding = 2147483647`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1289) | 当前常量或枚举值：`2147483647`。 | — |
-| <a id="api-1f32f6209b38be46"></a>[`Inno.Native.Sdl3.SDLEventType.FingerCanceled = 1795`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1253) | 当前常量或枚举值：`1795`。 | — |
-| <a id="api-0e9894e849f533f0"></a>[`Inno.Native.Sdl3.SDLEventType.FingerDown = 1792`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1250) | 当前常量或枚举值：`1792`。 | — |
-| <a id="api-34925b751ea185f9"></a>[`Inno.Native.Sdl3.SDLEventType.FingerMotion = 1794`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1252) | 当前常量或枚举值：`1794`。 | — |
-| <a id="api-e9fc0df39a749d72"></a>[`Inno.Native.Sdl3.SDLEventType.FingerUp = 1793`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1251) | 当前常量或枚举值：`1793`。 | — |
-| <a id="api-40d03e6a9f65a08f"></a>[`Inno.Native.Sdl3.SDLEventType.First = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1166) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-8994b0b0d669b98a"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadAdded = 1619`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1241) | 当前常量或枚举值：`1619`。 | — |
-| <a id="api-8b84932e51fbb265"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadAxisMotion = 1616`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1238) | 当前常量或枚举值：`1616`。 | — |
-| <a id="api-7bdc74dc9e4c7591"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadButtonDown = 1617`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1239) | 当前常量或枚举值：`1617`。 | — |
-| <a id="api-22fa3ff5f23620a3"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadButtonUp = 1618`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1240) | 当前常量或枚举值：`1618`。 | — |
-| <a id="api-7443e502de6616da"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadRemapped = 1621`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1243) | 当前常量或枚举值：`1621`。 | — |
-| <a id="api-d562be19821c2726"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadRemoved = 1620`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1242) | 当前常量或枚举值：`1620`。 | — |
-| <a id="api-831d1190f6aef5f7"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadSensorUpdate = 1625`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1247) | 当前常量或枚举值：`1625`。 | — |
-| <a id="api-026b5c77851becce"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadSteamHandleUpdated = 1627`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1249) | 当前常量或枚举值：`1627`。 | — |
-| <a id="api-f34ba3e47b4d2344"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadTouchpadDown = 1622`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1244) | 当前常量或枚举值：`1622`。 | — |
-| <a id="api-41f8f01cba6e0460"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadTouchpadMotion = 1623`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1245) | 当前常量或枚举值：`1623`。 | — |
-| <a id="api-907d7cfbad03d4ee"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadTouchpadUp = 1624`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1246) | 当前常量或枚举值：`1624`。 | — |
-| <a id="api-b4663f675900e993"></a>[`Inno.Native.Sdl3.SDLEventType.GamepadUpdateComplete = 1626`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1248) | 当前常量或枚举值：`1626`。 | — |
-| <a id="api-056e864d069ba2a2"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickAdded = 1541`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1234) | 当前常量或枚举值：`1541`。 | — |
-| <a id="api-0c31250194f1921e"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickAxisMotion = 1536`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1229) | 当前常量或枚举值：`1536`。 | — |
-| <a id="api-95532d8eefddfe2b"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickBallMotion = 1537`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1230) | 当前常量或枚举值：`1537`。 | — |
-| <a id="api-79ab8d67806cfe6a"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickBatteryUpdated = 1543`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1236) | 当前常量或枚举值：`1543`。 | — |
-| <a id="api-adb42e34c93389e8"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickButtonDown = 1539`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1232) | 当前常量或枚举值：`1539`。 | — |
-| <a id="api-2155bbfcd242f1db"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickButtonUp = 1540`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1233) | 当前常量或枚举值：`1540`。 | — |
-| <a id="api-d7848ae06d993339"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickHatMotion = 1538`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1231) | 当前常量或枚举值：`1538`。 | — |
-| <a id="api-623ffdacc7f62e02"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickRemoved = 1542`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1235) | 当前常量或枚举值：`1542`。 | — |
-| <a id="api-536631e02c5197f9"></a>[`Inno.Native.Sdl3.SDLEventType.JoystickUpdateComplete = 1544`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1237) | 当前常量或枚举值：`1544`。 | — |
-| <a id="api-951e491f323fef6d"></a>[`Inno.Native.Sdl3.SDLEventType.KeyboardAdded = 773`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1218) | 当前常量或枚举值：`773`。 | — |
-| <a id="api-160c13f6ee896aa0"></a>[`Inno.Native.Sdl3.SDLEventType.KeyboardRemoved = 774`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1219) | 当前常量或枚举值：`774`。 | — |
-| <a id="api-9da460c20129edc2"></a>[`Inno.Native.Sdl3.SDLEventType.KeyDown = 768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1213) | 当前常量或枚举值：`768`。 | — |
-| <a id="api-d710953d8ab82ec4"></a>[`Inno.Native.Sdl3.SDLEventType.KeymapChanged = 772`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1217) | 当前常量或枚举值：`772`。 | — |
-| <a id="api-39d37dfdf8622d5f"></a>[`Inno.Native.Sdl3.SDLEventType.KeyUp = 769`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1214) | 当前常量或枚举值：`769`。 | — |
-| <a id="api-b7aa0b43855d2f88"></a>[`Inno.Native.Sdl3.SDLEventType.Last = 65535`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1288) | 当前常量或枚举值：`65535`。 | — |
-| <a id="api-208ab421deb0bce4"></a>[`Inno.Native.Sdl3.SDLEventType.LocaleChanged = 263`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1174) | 当前常量或枚举值：`263`。 | — |
-| <a id="api-ea927af28c0a6385"></a>[`Inno.Native.Sdl3.SDLEventType.LowMemory = 258`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1169) | 当前常量或枚举值：`258`。 | — |
-| <a id="api-75ffe3a7960f14fa"></a>[`Inno.Native.Sdl3.SDLEventType.MouseAdded = 1028`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1227) | 当前常量或枚举值：`1028`。 | — |
-| <a id="api-2c4366cc21c43a65"></a>[`Inno.Native.Sdl3.SDLEventType.MouseButtonDown = 1025`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1224) | 当前常量或枚举值：`1025`。 | — |
-| <a id="api-9b020e4771c0f39e"></a>[`Inno.Native.Sdl3.SDLEventType.MouseButtonUp = 1026`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1225) | 当前常量或枚举值：`1026`。 | — |
-| <a id="api-e986bfec4174c856"></a>[`Inno.Native.Sdl3.SDLEventType.MouseMotion = 1024`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1223) | 当前常量或枚举值：`1024`。 | — |
-| <a id="api-8ba929e2db0726b6"></a>[`Inno.Native.Sdl3.SDLEventType.MouseRemoved = 1029`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1228) | 当前常量或枚举值：`1029`。 | — |
-| <a id="api-1338e002d02cb71d"></a>[`Inno.Native.Sdl3.SDLEventType.MouseWheel = 1027`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1226) | 当前常量或枚举值：`1027`。 | — |
-| <a id="api-dc3c2af927cdc2b6"></a>[`Inno.Native.Sdl3.SDLEventType.PenAxis = 4871`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1274) | 当前常量或枚举值：`4871`。 | — |
-| <a id="api-7464e4efd3c0b7a8"></a>[`Inno.Native.Sdl3.SDLEventType.PenButtonDown = 4868`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1271) | 当前常量或枚举值：`4868`。 | — |
-| <a id="api-b81e6204ba912ce2"></a>[`Inno.Native.Sdl3.SDLEventType.PenButtonUp = 4869`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1272) | 当前常量或枚举值：`4869`。 | — |
-| <a id="api-a01f78390817466b"></a>[`Inno.Native.Sdl3.SDLEventType.PenDown = 4866`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1269) | 当前常量或枚举值：`4866`。 | — |
-| <a id="api-a65c68b64df074cd"></a>[`Inno.Native.Sdl3.SDLEventType.PenMotion = 4870`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1273) | 当前常量或枚举值：`4870`。 | — |
-| <a id="api-7b9efe5043b82e8f"></a>[`Inno.Native.Sdl3.SDLEventType.PenProximityIn = 4864`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1267) | 当前常量或枚举值：`4864`。 | — |
-| <a id="api-8516bf890f871e11"></a>[`Inno.Native.Sdl3.SDLEventType.PenProximityOut = 4865`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1268) | 当前常量或枚举值：`4865`。 | — |
-| <a id="api-854b294ec87962e2"></a>[`Inno.Native.Sdl3.SDLEventType.PenUp = 4867`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1270) | 当前常量或枚举值：`4867`。 | — |
-| <a id="api-d64d08e5015f53f2"></a>[`Inno.Native.Sdl3.SDLEventType.PinchBegin = 1808`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1254) | 当前常量或枚举值：`1808`。 | — |
-| <a id="api-903fbb7275d83290"></a>[`Inno.Native.Sdl3.SDLEventType.PinchEnd = 1810`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1256) | 当前常量或枚举值：`1810`。 | — |
-| <a id="api-971f4c7ec00deddd"></a>[`Inno.Native.Sdl3.SDLEventType.PinchUpdate = 1809`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1255) | 当前常量或枚举值：`1809`。 | — |
-| <a id="api-d6a4e5236882dea3"></a>[`Inno.Native.Sdl3.SDLEventType.PollSentinel = 32512`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1286) | 当前常量或枚举值：`32512`。 | — |
-| <a id="api-df0ba8fba690fd13"></a>[`Inno.Native.Sdl3.SDLEventType.Private0 = 16384`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1282) | 当前常量或枚举值：`16384`。 | — |
-| <a id="api-8d41bd9bf3e4ad85"></a>[`Inno.Native.Sdl3.SDLEventType.Private1 = 16385`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1283) | 当前常量或枚举值：`16385`。 | — |
-| <a id="api-93fa7e2d7e9a58f4"></a>[`Inno.Native.Sdl3.SDLEventType.Private2 = 16386`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1284) | 当前常量或枚举值：`16386`。 | — |
-| <a id="api-8b225911431cc75c"></a>[`Inno.Native.Sdl3.SDLEventType.Private3 = 16387`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1285) | 当前常量或枚举值：`16387`。 | — |
-| <a id="api-6bd870e14c8cb8ff"></a>[`Inno.Native.Sdl3.SDLEventType.Quit = 256`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1167) | 当前常量或枚举值：`256`。 | — |
-| <a id="api-84ba88462d742ee2"></a>[`Inno.Native.Sdl3.SDLEventType.RenderDeviceLost = 8194`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1281) | 当前常量或枚举值：`8194`。 | — |
-| <a id="api-2b91bbd463cbcf81"></a>[`Inno.Native.Sdl3.SDLEventType.RenderDeviceReset = 8193`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1280) | 当前常量或枚举值：`8193`。 | — |
-| <a id="api-5aafdc190d473699"></a>[`Inno.Native.Sdl3.SDLEventType.RenderTargetsReset = 8192`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1279) | 当前常量或枚举值：`8192`。 | — |
-| <a id="api-ae3c4770c2d4a6eb"></a>[`Inno.Native.Sdl3.SDLEventType.ScreenKeyboardHidden = 777`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1222) | 当前常量或枚举值：`777`。 | — |
-| <a id="api-813e9537cbadbb06"></a>[`Inno.Native.Sdl3.SDLEventType.ScreenKeyboardShown = 776`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1221) | 当前常量或枚举值：`776`。 | — |
-| <a id="api-931686f7f1008434"></a>[`Inno.Native.Sdl3.SDLEventType.SensorUpdate = 4608`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1266) | 当前常量或枚举值：`4608`。 | — |
-| <a id="api-d75d4f2bb949dcfd"></a>[`Inno.Native.Sdl3.SDLEventType.SystemThemeChanged = 264`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1175) | 当前常量或枚举值：`264`。 | — |
-| <a id="api-b14d3f85bc465c81"></a>[`Inno.Native.Sdl3.SDLEventType.Terminating = 257`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1168) | 当前常量或枚举值：`257`。 | — |
-| <a id="api-be905e2b0e7a3e51"></a>[`Inno.Native.Sdl3.SDLEventType.TextEditing = 770`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1215) | 当前常量或枚举值：`770`。 | — |
-| <a id="api-677371bcc902b72c"></a>[`Inno.Native.Sdl3.SDLEventType.TextEditingCandidates = 775`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1220) | 当前常量或枚举值：`775`。 | — |
-| <a id="api-fbab1764ee4955c8"></a>[`Inno.Native.Sdl3.SDLEventType.TextInput = 771`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1216) | 当前常量或枚举值：`771`。 | — |
-| <a id="api-1482bfb4df17fbde"></a>[`Inno.Native.Sdl3.SDLEventType.User = 32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1287) | 当前常量或枚举值：`32768`。 | — |
-| <a id="api-fa7192bd71d32fcd"></a>[`Inno.Native.Sdl3.SDLEventType.WillEnterBackground = 259`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1170) | 当前常量或枚举值：`259`。 | — |
-| <a id="api-454c0470e91926d4"></a>[`Inno.Native.Sdl3.SDLEventType.WillEnterForeground = 261`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1172) | 当前常量或枚举值：`261`。 | — |
-| <a id="api-32bd4ea6dc6ba6d0"></a>[`Inno.Native.Sdl3.SDLEventType.WindowCloseRequested = 528`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1200) | 当前常量或枚举值：`528`。 | — |
-| <a id="api-0c5f179ae923d13a"></a>[`Inno.Native.Sdl3.SDLEventType.WindowDestroyed = 537`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1209) | 当前常量或枚举值：`537`。 | — |
-| <a id="api-f4d6713dcb2abe14"></a>[`Inno.Native.Sdl3.SDLEventType.WindowDisplayChanged = 531`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1203) | 当前常量或枚举值：`531`。 | — |
-| <a id="api-acac75bfc3d5db85"></a>[`Inno.Native.Sdl3.SDLEventType.WindowDisplayScaleChanged = 532`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1204) | 当前常量或枚举值：`532`。 | — |
-| <a id="api-c8cdd9e398b4b2b4"></a>[`Inno.Native.Sdl3.SDLEventType.WindowEnterFullscreen = 535`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1207) | 当前常量或枚举值：`535`。 | — |
-| <a id="api-7f550f36bd31363c"></a>[`Inno.Native.Sdl3.SDLEventType.WindowExposed = 516`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1188) | 当前常量或枚举值：`516`。 | — |
-| <a id="api-5c27652ed76b9e46"></a>[`Inno.Native.Sdl3.SDLEventType.WindowFirst = 514`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1211) | 当前常量或枚举值：`514`。 | — |
-| <a id="api-90e2032c45fcf2c8"></a>[`Inno.Native.Sdl3.SDLEventType.WindowFocusGained = 526`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1198) | 当前常量或枚举值：`526`。 | — |
-| <a id="api-dd6171f35e19bcc7"></a>[`Inno.Native.Sdl3.SDLEventType.WindowFocusLost = 527`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1199) | 当前常量或枚举值：`527`。 | — |
-| <a id="api-ddf32f7d0ddf6b66"></a>[`Inno.Native.Sdl3.SDLEventType.WindowHdrStateChanged = 538`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1210) | 当前常量或枚举值：`538`。 | — |
-| <a id="api-d50c11157163efc2"></a>[`Inno.Native.Sdl3.SDLEventType.WindowHidden = 515`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1187) | 当前常量或枚举值：`515`。 | — |
-| <a id="api-3908d25b6489f1a9"></a>[`Inno.Native.Sdl3.SDLEventType.WindowHitTest = 529`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1201) | 当前常量或枚举值：`529`。 | — |
-| <a id="api-556a82e6ff0d7e19"></a>[`Inno.Native.Sdl3.SDLEventType.WindowIccprofChanged = 530`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1202) | 当前常量或枚举值：`530`。 | — |
-| <a id="api-9c0b67c8e56974bd"></a>[`Inno.Native.Sdl3.SDLEventType.WindowLast = 538`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1212) | 当前常量或枚举值：`538`。 | — |
-| <a id="api-31cba988c14a4110"></a>[`Inno.Native.Sdl3.SDLEventType.WindowLeaveFullscreen = 536`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1208) | 当前常量或枚举值：`536`。 | — |
-| <a id="api-a6f31c9992b4b288"></a>[`Inno.Native.Sdl3.SDLEventType.WindowMaximized = 522`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1194) | 当前常量或枚举值：`522`。 | — |
-| <a id="api-e852e13fc881c764"></a>[`Inno.Native.Sdl3.SDLEventType.WindowMetalViewResized = 520`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1192) | 当前常量或枚举值：`520`。 | — |
-| <a id="api-878e5068d3a1328e"></a>[`Inno.Native.Sdl3.SDLEventType.WindowMinimized = 521`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1193) | 当前常量或枚举值：`521`。 | — |
-| <a id="api-11d3d3732dc915f5"></a>[`Inno.Native.Sdl3.SDLEventType.WindowMouseEnter = 524`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1196) | 当前常量或枚举值：`524`。 | — |
-| <a id="api-40fc8d0ef4acfd2b"></a>[`Inno.Native.Sdl3.SDLEventType.WindowMouseLeave = 525`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1197) | 当前常量或枚举值：`525`。 | — |
-| <a id="api-08244a9dd273f18b"></a>[`Inno.Native.Sdl3.SDLEventType.WindowMoved = 517`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1189) | 当前常量或枚举值：`517`。 | — |
-| <a id="api-906b786c3bb83ee1"></a>[`Inno.Native.Sdl3.SDLEventType.WindowOccluded = 534`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1206) | 当前常量或枚举值：`534`。 | — |
-| <a id="api-66efd37868e68a5e"></a>[`Inno.Native.Sdl3.SDLEventType.WindowPixelSizeChanged = 519`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1191) | 当前常量或枚举值：`519`。 | — |
-| <a id="api-36e3fcf5bd53a2c5"></a>[`Inno.Native.Sdl3.SDLEventType.WindowResized = 518`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1190) | 当前常量或枚举值：`518`。 | — |
-| <a id="api-7e85a1dd57a9d107"></a>[`Inno.Native.Sdl3.SDLEventType.WindowRestored = 523`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1195) | 当前常量或枚举值：`523`。 | — |
-| <a id="api-bf2ab0a4926f3d78"></a>[`Inno.Native.Sdl3.SDLEventType.WindowSafeAreaChanged = 533`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1205) | 当前常量或枚举值：`533`。 | — |
-| <a id="api-99636ec739cb48fb"></a>[`Inno.Native.Sdl3.SDLEventType.WindowShown = 514`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1186) | 当前常量或枚举值：`514`。 | — |
-| <a id="api-26886c92e85bc48d"></a>[`public enum Inno.Native.Sdl3.SDLEventType : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1164) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFColor</code> · 6 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFColor 971953fc663c907b3856459e32e575c78b0cd9fc2fca25be57dcc2f7b60d2c43 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFColor.R 0d1306de4ea93789b93966bb2a3f8490d785fa41894aea453bc85bb2f725b1b1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFColor.G 2652fa3d2e590010f0305de3cf96fe5a5d220be660482505d377681e0f72f1ea -->
-<!-- api: F:Inno.Native.Sdl3.SDLFColor.B 3e8300c1206003982c043c9a5314384f74d0591c138caf95e329cdf112811957 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFColor.A 135caa6d92d1fa5ed8b5303d196f2ead5ae04203dc5a78effb6cd44f346d9e10 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColor.#ctor(System.Single,System.Single,System.Single,System.Single) e5e85d07f55c88ebd45c4398f36ca56043c8551543facf98777a6199561cb1bc -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-d154b0c2abe45d63"></a>[`public float Inno.Native.Sdl3.SDLFColor.A`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2347) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-44a23f9321739fc1"></a>[`public float Inno.Native.Sdl3.SDLFColor.B`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2346) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-649bc0d0139e8dbd"></a>[`public float Inno.Native.Sdl3.SDLFColor.G`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2345) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-2d5b800ca9b85105"></a>[`public float Inno.Native.Sdl3.SDLFColor.R`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2344) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-a8877860cc635943"></a>[`public Inno.Native.Sdl3.SDLFColor.SDLFColor(float r = 0, float g = 0, float b = 0, float a = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2348) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-ff6e39fe33f1a4b7"></a>[`public struct Inno.Native.Sdl3.SDLFColor`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2342) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFColorPtr</code> · 17 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFColorPtr d9ec2785dc1ecbae814c4a46749eb46606547f43d721eccea27d21a844c2b459 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.#ctor(Inno.Native.Sdl3.SDLFColor*) c3379f4998e51046440016992bf4de37119f4a0b2dff9b8a437d9c799b2d55d1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFColorPtr.Handle 447a42d5eb2e7684b6437698345fe77f98f28040aa7c1b43d5e0e4ddde0e2aa0 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFColorPtr.IsNull cdd574b2aa7c82e2943171f73bba57055c67cf12c0930162db71c06a7829c81a -->
-<!-- api: P:Inno.Native.Sdl3.SDLFColorPtr.Null 3a82bf13cb25d763e15fdcea089eda27714a021bfc4c4acff9a942c0cea93167 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFColorPtr.Item(System.Int32) 58ea58414372190be64908e509397d83abeb5cea17edc9769a3314d5bec5d74e -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.op_Implicit(Inno.Native.Sdl3.SDLFColor*)~Inno.Native.Sdl3.SDLFColorPtr 630d15f7cf9a96ba0384b0ab099cb453035445e7e4fe2d08153f28fc2f6e09d4 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.op_Implicit(Inno.Native.Sdl3.SDLFColorPtr)~Inno.Native.Sdl3.SDLFColor* f705b293bac106e40188898dc9860ddf81718d68aef1f0de6f89586d56f3c9f9 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.op_Equality(Inno.Native.Sdl3.SDLFColorPtr,Inno.Native.Sdl3.SDLFColorPtr) ba7bf0af10d3df1fe6f92e33c387d187e3bbd41e05e8926512d0200801dc0610 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.op_Inequality(Inno.Native.Sdl3.SDLFColorPtr,Inno.Native.Sdl3.SDLFColorPtr) f88f16c3358a00226a04ef81acfbedf0bd5eacd3d3c767dfa7bb36c584f99e98 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.Equals(Inno.Native.Sdl3.SDLFColorPtr) e365d604ea7b69be5aa198e68cfffb00379631393fca1b82bf0ab0be40f11af0 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.Equals(System.Object) 4ff2ffb05192066c62a185d5365fa1c4bed6d718af7a886c78123d6ea7437423 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFColorPtr.GetHashCode e0ed90e9f4ff25e079ba37f5af93d9673ba8cb42df9fe48e250c83399c23e776 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFColorPtr.R fbb7504abce28c342c8dc526e90ca9a6a3d64102bbb9ba6917d065fbb2582349 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFColorPtr.G 1f34e7964399b5f678e5177a6664bd30eba39e7633eb6e70b668154a4e6269a6 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFColorPtr.B 47189556a06e2f90e13301bb33b3aac1ec44d5ab2417578d7fe59ee28d726efb -->
-<!-- api: P:Inno.Native.Sdl3.SDLFColorPtr.A c587f7fe98a63321284206e3aed59bc477121b423836e30b531d8144dc8b7474 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-39f0cc6a5f7edf80"></a>[`public Inno.Native.Sdl3.SDLFColor* Inno.Native.Sdl3.SDLFColorPtr.Handle`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8326) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-6f74c631deeaa568"></a>[`public Inno.Native.Sdl3.SDLFColorPtr.SDLFColorPtr(Inno.Native.Sdl3.SDLFColor* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8321) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-397e550d77895c64"></a>[`public bool Inno.Native.Sdl3.SDLFColorPtr.Equals(Inno.Native.Sdl3.SDLFColorPtr other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8336) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-0d8951de69fcb31a"></a>[`public override bool Inno.Native.Sdl3.SDLFColorPtr.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8337) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-b55370db9730e931"></a>[`public override int Inno.Native.Sdl3.SDLFColorPtr.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8338) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-367894fff9b5a0ec"></a>[`public static bool Inno.Native.Sdl3.SDLFColorPtr.operator ==(Inno.Native.Sdl3.SDLFColorPtr left, Inno.Native.Sdl3.SDLFColorPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8334) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-74c6a75cacf6814b"></a>[`public static Inno.Native.Sdl3.SDLFColorPtr.implicit operator Inno.Native.Sdl3.SDLFColorPtr(Inno.Native.Sdl3.SDLFColor* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8332) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-59b330b4737efc73"></a>[`public static Inno.Native.Sdl3.SDLFColorPtr.implicit operator Inno.Native.Sdl3.SDLFColor*(Inno.Native.Sdl3.SDLFColorPtr handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8333) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-32e9dd37f5a3f5f2"></a>[`public static bool Inno.Native.Sdl3.SDLFColorPtr.operator !=(Inno.Native.Sdl3.SDLFColorPtr left, Inno.Native.Sdl3.SDLFColorPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8335) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-43ad6c0ee1b4f8c9"></a>[`public ref float Inno.Native.Sdl3.SDLFColorPtr.A { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8343) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-123340b922ac2f02"></a>[`public ref float Inno.Native.Sdl3.SDLFColorPtr.B { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8342) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-0ba30aa5c3c68201"></a>[`public ref float Inno.Native.Sdl3.SDLFColorPtr.G { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8341) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-0e788dce2e577cca"></a>[`public bool Inno.Native.Sdl3.SDLFColorPtr.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8327) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-8b9fb982d7252dd0"></a>[`public Inno.Native.Sdl3.SDLFColor Inno.Native.Sdl3.SDLFColorPtr.this[int index] { get; set; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8330) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-1d6750e93174c8ee"></a>[`public static Inno.Native.Sdl3.SDLFColorPtr Inno.Native.Sdl3.SDLFColorPtr.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8328) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-4ef56a9822c77b9e"></a>[`public ref float Inno.Native.Sdl3.SDLFColorPtr.R { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8340) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-6c75df1de4ea9f22"></a>[`public struct Inno.Native.Sdl3.SDLFColorPtr : System.IEquatable<Inno.Native.Sdl3.SDLFColorPtr>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8319) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFileDialogType</code> · 4 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFileDialogType d4ed12231c97ccf6c437bdaeb44b7b112300468dadb2d94d7803180e0bcc452c -->
-<!-- api: F:Inno.Native.Sdl3.SDLFileDialogType.FiledialogOpenfile 9bd477b30d10cd740c5609d0f60e84dac85e28def335830d4c6056652f0e3601 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFileDialogType.FiledialogSavefile 1877fa3387a3688e93493ba6a252271e95a2c324e7d4f99d1bcc9a55f51f3df4 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFileDialogType.FiledialogOpenfolder 6ff734ef7fb9311dfadb5b2a79aaf3703a412b143941425e78c2dfcf07b30bbc -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-ce8fc67df8a1f13b"></a>[`Inno.Native.Sdl3.SDLFileDialogType.FiledialogOpenfile = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L644) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-0281bda346d7eeb9"></a>[`Inno.Native.Sdl3.SDLFileDialogType.FiledialogOpenfolder = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L646) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-f977bf7e7b895b3f"></a>[`Inno.Native.Sdl3.SDLFileDialogType.FiledialogSavefile = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L645) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-1edd8277df6c32dd"></a>[`public enum Inno.Native.Sdl3.SDLFileDialogType : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L642) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFinger</code> · 6 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFinger 1613f3f431fffa3e1449ad33bc0af8e6fb654a325c9e0e7a8e9c90e9f0b22ddf -->
-<!-- api: F:Inno.Native.Sdl3.SDLFinger.Id 6691b060b5f88e10ba1d8b1d4bd5497d7354d8a1888afecbae2b257b4fb6d4ce -->
-<!-- api: F:Inno.Native.Sdl3.SDLFinger.X bf2c3f768e6e94f74875413db337323e26746666056ce35be39e11e1683e80d9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFinger.Y 1967afefabe666d67b7de2661595b8c6db651b6ecd125e0de7fec1cf4f9eef27 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFinger.Pressure 56a0549407f1cebf6c5c1715e6083b7e0de076fcb0343652144f8beb037b3d28 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFinger.#ctor(System.UInt64,System.Single,System.Single,System.Single) 91bdf3fa206a0db647487fe40f658da1a8ded74d1a1c87408f46169b610662d7 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-17429b7d3ddd1b54"></a>[`public ulong Inno.Native.Sdl3.SDLFinger.Id`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3054) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1354a166790862a9"></a>[`public float Inno.Native.Sdl3.SDLFinger.Pressure`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3057) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-2e981bb160f5f79d"></a>[`public float Inno.Native.Sdl3.SDLFinger.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3055) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-32e35cf27eb5264a"></a>[`public float Inno.Native.Sdl3.SDLFinger.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3056) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5d9e9ce31dd41016"></a>[`public Inno.Native.Sdl3.SDLFinger.SDLFinger(ulong id = 0, float x = 0, float y = 0, float pressure = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3058) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-dc5c6f0500ccb6a1"></a>[`public struct Inno.Native.Sdl3.SDLFinger`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3052) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFingerPtrPtr</code> · 13 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFingerPtrPtr 726cd20d6a8503ee9effe851a663f72f1d6abb7095befac56c0a07fc07d5275e -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.#ctor(Inno.Native.Sdl3.SDLFinger**) 0e745c1fa80ae583186bb7cd999cdd667a388696e59328c74234c2f83786c363 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFingerPtrPtr.Handle f4d7faf5d91e549860a55af8b970a5ff2d135d3d5b070531ea4d4f9e86371784 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFingerPtrPtr.IsNull fe2996918fae79c3ca5c92e061fa1c411b4958c01724a5094a059a4d254b9cd8 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFingerPtrPtr.Null 56daad18890b9dad00461d88c294533748c9d96ea84fd14add2b9aadde250e63 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFingerPtrPtr.Item(System.Int32) 6fb039522406426fe0a8cc789e97a1eab17e9351825f2c5e0cd1d43f07541157 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.op_Implicit(Inno.Native.Sdl3.SDLFinger**)~Inno.Native.Sdl3.SDLFingerPtrPtr 40eb186fd6f460b191ab8f795dd86c0b3af11ca180317e0654b0e122681fa8a2 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.op_Implicit(Inno.Native.Sdl3.SDLFingerPtrPtr)~Inno.Native.Sdl3.SDLFinger** 3178ccf0b34fabeabe6f8e217280c3ef470bd4083a0b65d853f7b8188bbc69d3 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.op_Equality(Inno.Native.Sdl3.SDLFingerPtrPtr,Inno.Native.Sdl3.SDLFingerPtrPtr) b266d1834c36404b0fe4541ff051160d42ba6a81817bfc69fe4615c7543bd8b1 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.op_Inequality(Inno.Native.Sdl3.SDLFingerPtrPtr,Inno.Native.Sdl3.SDLFingerPtrPtr) 7e90d7acc1fe7853ed63d1cc64f81326e0346c3b8e5a198ae137ec2917ce0776 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.Equals(Inno.Native.Sdl3.SDLFingerPtrPtr) a2f8cfa69330a704a8c2f1add9a982de5f52d9cea8a06e9cd0de8ae2deac69c6 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.Equals(System.Object) 0652fd5d827eaef9b4d3f10784ae5eaf5a52dc0fa61865ab84977f962924eaa8 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFingerPtrPtr.GetHashCode 1afcc079683274b12270637cebba86e312c2da10312a4e9388d0242415fa636e -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-92c2528c674c7593"></a>[`public Inno.Native.Sdl3.SDLFinger** Inno.Native.Sdl3.SDLFingerPtrPtr.Handle`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8408) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ff194300f39bf746"></a>[`public Inno.Native.Sdl3.SDLFingerPtrPtr.SDLFingerPtrPtr(Inno.Native.Sdl3.SDLFinger** handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8403) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-3e96eaa741a9316d"></a>[`public bool Inno.Native.Sdl3.SDLFingerPtrPtr.Equals(Inno.Native.Sdl3.SDLFingerPtrPtr other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8418) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-bc3c8dc7ec00f28a"></a>[`public override bool Inno.Native.Sdl3.SDLFingerPtrPtr.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8419) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-2a5926716126bbcf"></a>[`public override int Inno.Native.Sdl3.SDLFingerPtrPtr.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8420) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-baf9162e2de57936"></a>[`public static bool Inno.Native.Sdl3.SDLFingerPtrPtr.operator ==(Inno.Native.Sdl3.SDLFingerPtrPtr left, Inno.Native.Sdl3.SDLFingerPtrPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8416) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5bb7236aef1470f2"></a>[`public static Inno.Native.Sdl3.SDLFingerPtrPtr.implicit operator Inno.Native.Sdl3.SDLFingerPtrPtr(Inno.Native.Sdl3.SDLFinger** handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8414) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-45c312e22923e56a"></a>[`public static Inno.Native.Sdl3.SDLFingerPtrPtr.implicit operator Inno.Native.Sdl3.SDLFinger**(Inno.Native.Sdl3.SDLFingerPtrPtr handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8415) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d8dff3266f5a4593"></a>[`public static bool Inno.Native.Sdl3.SDLFingerPtrPtr.operator !=(Inno.Native.Sdl3.SDLFingerPtrPtr left, Inno.Native.Sdl3.SDLFingerPtrPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8417) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-24e2196cd4bc5829"></a>[`public bool Inno.Native.Sdl3.SDLFingerPtrPtr.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8409) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-f35a3eb3a89aade4"></a>[`public Inno.Native.Sdl3.SDLFinger* Inno.Native.Sdl3.SDLFingerPtrPtr.this[int index] { get; set; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8412) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-8bcc180754eb3edd"></a>[`public static Inno.Native.Sdl3.SDLFingerPtrPtr Inno.Native.Sdl3.SDLFingerPtrPtr.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8410) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-6e09f6650f8c9eb9"></a>[`public struct Inno.Native.Sdl3.SDLFingerPtrPtr : System.IEquatable<Inno.Native.Sdl3.SDLFingerPtrPtr>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8401) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFlashOperation</code> · 4 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFlashOperation 11dcd79a4e9e3f4d192e587f2672f8aa91c1fc68748b7b82af3f7ba60128bccf -->
-<!-- api: F:Inno.Native.Sdl3.SDLFlashOperation.Cancel a5d0368dc7b749d09c474a238283a1233cbb73ecb6b2263047e3eeebad7af7cd -->
-<!-- api: F:Inno.Native.Sdl3.SDLFlashOperation.Briefly 2f9214d0524e10c78a1947f134519e297de6afce84f36c7d945ec5d452f9b3e5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFlashOperation.UntilFocused 0d58fc54fef3698e87a7a48b9b51424ba530062099c15b572b83ee79727883da -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-4ad0e085e6dd0f01"></a>[`Inno.Native.Sdl3.SDLFlashOperation.Briefly = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L570) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-8ff623ce5824ff27"></a>[`Inno.Native.Sdl3.SDLFlashOperation.Cancel = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L569) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-b002c5ddbb3e271d"></a>[`Inno.Native.Sdl3.SDLFlashOperation.UntilFocused = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L571) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-cacf1d54850f149c"></a>[`public enum Inno.Native.Sdl3.SDLFlashOperation : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L567) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFlipMode</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFlipMode 050f1733527e091668db4a2b563549491bd977d5070c6688ca630f1e81d5589e -->
-<!-- api: F:Inno.Native.Sdl3.SDLFlipMode.None bfb1676df45288da3d67890cc79ad7313ce3606fdeeeffca845e564cd7302bcc -->
-<!-- api: F:Inno.Native.Sdl3.SDLFlipMode.Horizontal b2b42a2e3ff3c4a1442cba52375a32d70cbbfe7eac17a5b1a1672c51a2e02c43 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFlipMode.Vertical bba94b3f69d9bc04b70303fea026649f1a077d4cbfe9a8ad77f29578420e2f07 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFlipMode.HorizontalAndVertical dd994392406fac36ab3c86635b49c44e80e65c6a6cf604148a8243e8cc68c623 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-f90a5ad2ecef5162"></a>[`Inno.Native.Sdl3.SDLFlipMode.Horizontal = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L517) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-9c5e602ff507cc7f"></a>[`Inno.Native.Sdl3.SDLFlipMode.HorizontalAndVertical = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L519) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-7d921922969440d7"></a>[`Inno.Native.Sdl3.SDLFlipMode.None = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L516) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-a2d6a1e268881160"></a>[`Inno.Native.Sdl3.SDLFlipMode.Vertical = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L518) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-5b54416d01689b5c"></a>[`public enum Inno.Native.Sdl3.SDLFlipMode : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L514) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFolder</code> · 13 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFolder e9423c19656199478436195ce1ae8f1b4fde598e6ba9f27ad3386c21dc37ebe2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Home c1f7107158cc582ea97353b285bebe9aa1a8837e5a8b5abf407fd112959cae51 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Desktop 4ac7ace322bed5f2fc065a5d88e3f4971fe20ac4f3ca341bfdc0a2a21e858723 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Documents 913f38c7d978a3a286a1f37b74e825e1e1bd04d84b27b0dbe750c29a700618e3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Downloads 5938f77e5b49b2d1802fe6285c1e91cfcd464cc9367398a77992ffd144b12244 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Music 5604fad051166dbf674ad5f5a4a82cf76ce54d7f12b91117128937e853eb05d6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Pictures 4e2c2fcf27af744a0ed44bf49131a94b61dd0be46d348cef247862b2b36bf9b2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Publicshare 596d6865b06e8835ca3a1461c51241d068276f029cf4f9bd3b14254a2cf206f1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Savedgames 868762ab702d271a2a77a0bc7b81a7cd3434e5137748519ee3b128e4ef7c4d52 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Screenshots 64b2c9a3ad2838089e54bba6434728a76f4c84ed650e85b789bc456a1e89d03c -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Templates a72705f3c85b47ad1a701546b45ad30e72c2765ed5b2d61554ac343348457128 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Videos 7c02008673db717310576507f2755c5cf36740e04b300e9b007ecf098108d8ac -->
-<!-- api: F:Inno.Native.Sdl3.SDLFolder.Count f8b013bdfacafd5cbc614c01d7dba22b69251436469382b5b924f2559195739d -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-36311aaa41f7e580"></a>[`Inno.Native.Sdl3.SDLFolder.Count = 11`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1318) | 当前常量或枚举值：`11`。 | — |
-| <a id="api-445a7490d4e5037c"></a>[`Inno.Native.Sdl3.SDLFolder.Desktop = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1308) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-9f80a1616ed6dcd2"></a>[`Inno.Native.Sdl3.SDLFolder.Documents = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1309) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-29c7b85befbd8613"></a>[`Inno.Native.Sdl3.SDLFolder.Downloads = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1310) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-d0f6796d528ff4ff"></a>[`Inno.Native.Sdl3.SDLFolder.Home = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1307) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-f40ded86b09b7b28"></a>[`Inno.Native.Sdl3.SDLFolder.Music = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1311) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-1642afadb40f10e3"></a>[`Inno.Native.Sdl3.SDLFolder.Pictures = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1312) | 当前常量或枚举值：`5`。 | — |
-| <a id="api-5a73f75ff3ed1902"></a>[`Inno.Native.Sdl3.SDLFolder.Publicshare = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1313) | 当前常量或枚举值：`6`。 | — |
-| <a id="api-797e254c4079e0c0"></a>[`Inno.Native.Sdl3.SDLFolder.Savedgames = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1314) | 当前常量或枚举值：`7`。 | — |
-| <a id="api-280f374ff4639738"></a>[`Inno.Native.Sdl3.SDLFolder.Screenshots = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1315) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-6e5afbc8651813c4"></a>[`Inno.Native.Sdl3.SDLFolder.Templates = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1316) | 当前常量或枚举值：`9`。 | — |
-| <a id="api-b92e800222a4e99e"></a>[`Inno.Native.Sdl3.SDLFolder.Videos = 10`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1317) | 当前常量或枚举值：`10`。 | — |
-| <a id="api-d40c9a584a0eea68"></a>[`public enum Inno.Native.Sdl3.SDLFolder : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L1305) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFPoint</code> · 4 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFPoint e88b06700b23785132ed04fbe9b55c99c3ed127f463e9fb0e37a09b116f0a1e3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFPoint.X 1d3d02069ec61e9283b2aa9ea05fecaca7d24ffb3c612297fd74b703b3baf987 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFPoint.Y 857386a0a35d60b105bcdbf03004ad5e9995bff219cc69b0d88dda7c42b0130c -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPoint.#ctor(System.Single,System.Single) 4c9c0554adb869e3665a4e2ba1a51579b1c21e55505b90cb357406607541ba36 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-621f79a51d130cca"></a>[`public float Inno.Native.Sdl3.SDLFPoint.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2448) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ec75870de64c748f"></a>[`public float Inno.Native.Sdl3.SDLFPoint.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2449) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-6ab9eb7b5b64a351"></a>[`public Inno.Native.Sdl3.SDLFPoint.SDLFPoint(float x = 0, float y = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2450) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-a246332e4cd9730e"></a>[`public struct Inno.Native.Sdl3.SDLFPoint`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2446) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFPointPtr</code> · 15 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFPointPtr 402688096d479aee5300d6b3b26558ba93bdcaa873d522c8fc92108f3fd3cb87 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.#ctor(Inno.Native.Sdl3.SDLFPoint*) 4a28a43d952e68f6350b590c7988bcc89d08e36a9c6fba7855d7247a4a9207e3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFPointPtr.Handle b769f2e1091c4ed203b8833ca19bbd8d9bc13d46140b1b3f531be4c6f61c7150 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFPointPtr.IsNull 35b9af3e4d6a4fbeb517e5cfa9fdd3f3a5a8ba812ed26a95761024ee61cc8354 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFPointPtr.Null 091aea9c004726a08bd9b2823a8a2d8140dd49f78fd58c80f2c2fdf1fc7cb654 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFPointPtr.Item(System.Int32) 2cfa4bae203ed835f15a6d419ab9e04a9658af4f53da796d49aae4344eece36e -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.op_Implicit(Inno.Native.Sdl3.SDLFPoint*)~Inno.Native.Sdl3.SDLFPointPtr 76a35e7aa0bb1be951e8a1c97c8e7e5f9e2745b900bb3b3d20fab98933339c61 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.op_Implicit(Inno.Native.Sdl3.SDLFPointPtr)~Inno.Native.Sdl3.SDLFPoint* b7d4298c0ad2f01f7772ad5015edb4d195bb09432b268de70467b8734a3533ab -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.op_Equality(Inno.Native.Sdl3.SDLFPointPtr,Inno.Native.Sdl3.SDLFPointPtr) 9d8e5bedf3cb9ded420cc8ebed66859043a2f107a6436278c06c41aef70286e0 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.op_Inequality(Inno.Native.Sdl3.SDLFPointPtr,Inno.Native.Sdl3.SDLFPointPtr) 4b5b55dbbb85325db16316b0e9f680c34ec7e091bdbb702287a64e6d06bb6bf9 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.Equals(Inno.Native.Sdl3.SDLFPointPtr) 8e2ee1ae15cb2378765ca843dc68ed79c038b271c8409ec1d2cd4edd4f727e8b -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.Equals(System.Object) 30b7be672de7ded30b0997c63c946367884bc0aad68654dc887b729efee6cca8 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFPointPtr.GetHashCode be7febef419db18c22ccd85254c8954cee8d631ef1ee9e9c0ebd0a4bd3e812f5 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFPointPtr.X 91823ca38e268a39e8d40ec81f68bcd68e4b08edcb9299f31dddb2265e0ba22b -->
-<!-- api: P:Inno.Native.Sdl3.SDLFPointPtr.Y 6c7f173ce3f877d0a8f1b9a7e1917c5250f9813ab30ced16063874c6c92b461a -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-70830d69b73e715b"></a>[`public Inno.Native.Sdl3.SDLFPoint* Inno.Native.Sdl3.SDLFPointPtr.Handle`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8354) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e534675eef5f1f6e"></a>[`public Inno.Native.Sdl3.SDLFPointPtr.SDLFPointPtr(Inno.Native.Sdl3.SDLFPoint* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8349) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-65b04a44f2cfa62c"></a>[`public bool Inno.Native.Sdl3.SDLFPointPtr.Equals(Inno.Native.Sdl3.SDLFPointPtr other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8364) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-6f34f3f1ea156faa"></a>[`public override bool Inno.Native.Sdl3.SDLFPointPtr.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8365) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-71d6516de0c0a3c9"></a>[`public override int Inno.Native.Sdl3.SDLFPointPtr.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8366) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-d7c428cd2d341f9a"></a>[`public static bool Inno.Native.Sdl3.SDLFPointPtr.operator ==(Inno.Native.Sdl3.SDLFPointPtr left, Inno.Native.Sdl3.SDLFPointPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8362) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-951f4a2e51a9e146"></a>[`public static Inno.Native.Sdl3.SDLFPointPtr.implicit operator Inno.Native.Sdl3.SDLFPointPtr(Inno.Native.Sdl3.SDLFPoint* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8360) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9bad630883b00f19"></a>[`public static Inno.Native.Sdl3.SDLFPointPtr.implicit operator Inno.Native.Sdl3.SDLFPoint*(Inno.Native.Sdl3.SDLFPointPtr handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8361) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-da394cf083b57b4d"></a>[`public static bool Inno.Native.Sdl3.SDLFPointPtr.operator !=(Inno.Native.Sdl3.SDLFPointPtr left, Inno.Native.Sdl3.SDLFPointPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8363) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-766faf04cb851568"></a>[`public bool Inno.Native.Sdl3.SDLFPointPtr.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8355) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-deacf9080e356cfc"></a>[`public Inno.Native.Sdl3.SDLFPoint Inno.Native.Sdl3.SDLFPointPtr.this[int index] { get; set; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8358) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-b526b69c67133fde"></a>[`public static Inno.Native.Sdl3.SDLFPointPtr Inno.Native.Sdl3.SDLFPointPtr.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8356) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-c3125a2a9be9d7db"></a>[`public ref float Inno.Native.Sdl3.SDLFPointPtr.X { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8368) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-50668c9106eeb109"></a>[`public ref float Inno.Native.Sdl3.SDLFPointPtr.Y { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8369) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-7188689f3c29fb10"></a>[`public struct Inno.Native.Sdl3.SDLFPointPtr : System.IEquatable<Inno.Native.Sdl3.SDLFPointPtr>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8347) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFRect</code> · 6 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFRect d4e98cb233358c9f220013bbc33ba15004331edbb3ebd121df3f3a6c8a4bd14e -->
-<!-- api: F:Inno.Native.Sdl3.SDLFRect.X d517913860b9651699308758844ca213f76714ac5e31c9e4d819a1ddc22fd80c -->
-<!-- api: F:Inno.Native.Sdl3.SDLFRect.Y 9baf585f80041f6bc5270c6f3c2fb63013408825171f9b84aa509c9887af86f0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFRect.W 69c7047b47018a63333e7e3febd70d6a3bf297bd4c2c3d49bda0e503a7ccd6df -->
-<!-- api: F:Inno.Native.Sdl3.SDLFRect.H 6be4183472f6f0802a7aa0236685045581556512a02b1866cf1e0f04f73677de -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRect.#ctor(System.Single,System.Single,System.Single,System.Single) 519f1b32c36619df7d5e490390dcbcfa16ac98d2cdf3f2fcc103e21481745cad -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-5000d22e3fb5b4ce"></a>[`public float Inno.Native.Sdl3.SDLFRect.H`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2485) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-60a02b76f6ca302c"></a>[`public float Inno.Native.Sdl3.SDLFRect.W`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2484) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-fcc22f88a20b0ed8"></a>[`public float Inno.Native.Sdl3.SDLFRect.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2482) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-adf11c4489ea2eba"></a>[`public float Inno.Native.Sdl3.SDLFRect.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2483) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f9f3634323594af1"></a>[`public Inno.Native.Sdl3.SDLFRect.SDLFRect(float x = 0, float y = 0, float w = 0, float h = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2486) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-99c76ef6bb0e7248"></a>[`public struct Inno.Native.Sdl3.SDLFRect`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2480) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFRectPtr</code> · 17 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFRectPtr db78c139678a8e546274a0e9fcddc4d211002eaac37009b1e5c9f553de545702 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.#ctor(Inno.Native.Sdl3.SDLFRect*) 775fe72427754c0a8f045bfe5ba176c652ee78806ae6a7f61736f5bad61a04b5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLFRectPtr.Handle da58906167f0a9a8b578ef819c09bb1e409bcdbb14d75b77e4dd1483ebb1fc66 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFRectPtr.IsNull bbcbf5aed6e0c7d0588c2a8e3392e85360d960892aad040f0429e6fa5b344023 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFRectPtr.Null 746b488722fa97259bcb1c8106fe5e5b88f37c918aa49642ac8c3678d1e57579 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFRectPtr.Item(System.Int32) 63658502be8b55f779c85bf8ddd1577621df7afe97ab8248d1a217ebdeb59cf6 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.op_Implicit(Inno.Native.Sdl3.SDLFRect*)~Inno.Native.Sdl3.SDLFRectPtr 22d8e6343ff4d5ff00284e2207935074ca37aaa15a8b0f8696cef743dfc009b1 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.op_Implicit(Inno.Native.Sdl3.SDLFRectPtr)~Inno.Native.Sdl3.SDLFRect* fe243a5176027d4c1490707f7174a7c51ee4d1820e0ca0c8a257d7ba1c13a4dd -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.op_Equality(Inno.Native.Sdl3.SDLFRectPtr,Inno.Native.Sdl3.SDLFRectPtr) b1e46068daeb4ef0deb0ff4fe270ca1697f2d66ec14c510ac693d324dffb32fa -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.op_Inequality(Inno.Native.Sdl3.SDLFRectPtr,Inno.Native.Sdl3.SDLFRectPtr) bba5a0f524d4c4e01a21d2ad88fcb8065af9d01ce044b40e2fd681ec6586a84c -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.Equals(Inno.Native.Sdl3.SDLFRectPtr) eeb1e725864897666f81be80944710e67f3f72f7263faef01aed087cb6904984 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.Equals(System.Object) ddb7377f9aaf32f3dd061ee0cab5bc4526609af1b0e942221949fa407f83c0c9 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFRectPtr.GetHashCode 952eb5a4dd7b86326431337c378f741f7e64c40634e14161a46f344b7759c4ca -->
-<!-- api: P:Inno.Native.Sdl3.SDLFRectPtr.X 69246758a700a2ac81c276aa8c26e5be0c45bb2047593705265724d8c1cc7bf4 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFRectPtr.Y 5a25bc7952281b901ae59a3efaa5bb2609cc6796583a32b640b8f5509be15c18 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFRectPtr.W 6bdae901f18a40a9462ae3c24b4528908f5b1498f2fca04b2be8109b39580a21 -->
-<!-- api: P:Inno.Native.Sdl3.SDLFRectPtr.H 110cec6d6e994b86eb1d77ccdbafe67996594e746ea0d286175acdb526c7e210 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-6c8e7ce8d143bccb"></a>[`public Inno.Native.Sdl3.SDLFRect* Inno.Native.Sdl3.SDLFRectPtr.Handle`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8380) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-dc0fc7ec78a02698"></a>[`public Inno.Native.Sdl3.SDLFRectPtr.SDLFRectPtr(Inno.Native.Sdl3.SDLFRect* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8375) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-fe891ec5ad6fae77"></a>[`public bool Inno.Native.Sdl3.SDLFRectPtr.Equals(Inno.Native.Sdl3.SDLFRectPtr other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8390) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-97f1fb562996e1b6"></a>[`public override bool Inno.Native.Sdl3.SDLFRectPtr.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8391) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-c783708ae34f235a"></a>[`public override int Inno.Native.Sdl3.SDLFRectPtr.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8392) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-2867b9a1ccea5354"></a>[`public static bool Inno.Native.Sdl3.SDLFRectPtr.operator ==(Inno.Native.Sdl3.SDLFRectPtr left, Inno.Native.Sdl3.SDLFRectPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8388) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-caa48698ca32a48c"></a>[`public static Inno.Native.Sdl3.SDLFRectPtr.implicit operator Inno.Native.Sdl3.SDLFRectPtr(Inno.Native.Sdl3.SDLFRect* handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8386) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-09aa4b2d6dfe9dd4"></a>[`public static Inno.Native.Sdl3.SDLFRectPtr.implicit operator Inno.Native.Sdl3.SDLFRect*(Inno.Native.Sdl3.SDLFRectPtr handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8387) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-27efe0aac09be489"></a>[`public static bool Inno.Native.Sdl3.SDLFRectPtr.operator !=(Inno.Native.Sdl3.SDLFRectPtr left, Inno.Native.Sdl3.SDLFRectPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8389) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-76719889d4b01df6"></a>[`public ref float Inno.Native.Sdl3.SDLFRectPtr.H { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8397) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-abfeedfb857ecbc7"></a>[`public bool Inno.Native.Sdl3.SDLFRectPtr.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8381) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-1c88e78962af94b3"></a>[`public Inno.Native.Sdl3.SDLFRect Inno.Native.Sdl3.SDLFRectPtr.this[int index] { get; set; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8384) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-5fc051820ebdac00"></a>[`public static Inno.Native.Sdl3.SDLFRectPtr Inno.Native.Sdl3.SDLFRectPtr.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8382) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-54276e239c2f3477"></a>[`public ref float Inno.Native.Sdl3.SDLFRectPtr.W { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8396) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-f882f91a59d97141"></a>[`public ref float Inno.Native.Sdl3.SDLFRectPtr.X { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8394) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-12a3cec67face85f"></a>[`public ref float Inno.Native.Sdl3.SDLFRectPtr.Y { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8395) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-cbbd93428e4b240a"></a>[`public struct Inno.Native.Sdl3.SDLFRectPtr : System.IEquatable<Inno.Native.Sdl3.SDLFRectPtr>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L8373) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFreeFunc</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFreeFunc 40bdbdd5805f60a8cad34cece56add7c07d51ab47a8dc2e6420eb308056bf5c0 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFreeFunc.#ctor(System.Object,System.IntPtr) 5efee16756b807d8fb7cbaac9716ef7d754b3d4c61155ac230a3bada81a261f2 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFreeFunc.Invoke(System.Void*) 3c5a91c9f617c05a2ffdbe2bad8a2daacd039bf67b84c112ec2b3799aa57ef7d -->
-<!-- api: M:Inno.Native.Sdl3.SDLFreeFunc.BeginInvoke(System.Void*,System.AsyncCallback,System.Object) 6f85a0f3ce9e5d2c3834e630eb48d3edc6c54009aba5ffb36db10285a559a388 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFreeFunc.EndInvoke(System.IAsyncResult) 16a0dcec08e5789c3c0bc60b7ad8ed8c8edc29187c30d109d521e25675ee99cc -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-082d7fc867196fac"></a>[`public Inno.Native.Sdl3.SDLFreeFunc.SDLFreeFunc(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6780) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-4cfe78db70442f36"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.SDLFreeFunc.BeginInvoke(void* mem, System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6780) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2bbc156349b48d12"></a>[`public virtual void Inno.Native.Sdl3.SDLFreeFunc.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6780) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c4d9b269b2363eaa"></a>[`public virtual void Inno.Native.Sdl3.SDLFreeFunc.Invoke(void* mem)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6780) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-005733603ebbeb04"></a>[`public delegate void Inno.Native.Sdl3.SDLFreeFunc(void* mem)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6780) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLFunctionPointer</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLFunctionPointer 9ee4b4321208e623ed60616c28035a7cf55271a5c54976de909d6abbac14ec86 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFunctionPointer.#ctor(System.Object,System.IntPtr) d67e2c1782d687f84bac704c1c6f8994455392ebd15a87c75718cb4aa69839ee -->
-<!-- api: M:Inno.Native.Sdl3.SDLFunctionPointer.Invoke 6e6ab72b0f068d34881639399b4d0032ad2f3e7158281df39e671d6dc5179c33 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFunctionPointer.BeginInvoke(System.AsyncCallback,System.Object) 6273d18d2814fc7856e148a67a5be87a546e09b51c57c2c699dd74027494e8e3 -->
-<!-- api: M:Inno.Native.Sdl3.SDLFunctionPointer.EndInvoke(System.IAsyncResult) 17f43dd03ade8f590a02d3873683ab76f5d13d99663de03255ff44315251f2fa -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-862f537f09e16d27"></a>[`public Inno.Native.Sdl3.SDLFunctionPointer.SDLFunctionPointer(object @object, nint method)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6795) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-39cb8661f5ab0b49"></a>[`public virtual System.IAsyncResult Inno.Native.Sdl3.SDLFunctionPointer.BeginInvoke(System.AsyncCallback callback, object @object)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6795) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-769c3f40aa2c1702"></a>[`public virtual void Inno.Native.Sdl3.SDLFunctionPointer.EndInvoke(System.IAsyncResult result)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6795) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4509aac0dde9a705"></a>[`public virtual void Inno.Native.Sdl3.SDLFunctionPointer.Invoke()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6795) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8dd8a54777a38a45"></a>[`public delegate void Inno.Native.Sdl3.SDLFunctionPointer()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L6795) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepad</code> · 11 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepad a9a7dcd858dd68edf66a77f100e9769d88341d5d454cdc31284175af74edb282 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepad.#ctor(System.IntPtr) 5ce78b0e1facc44b0494af292742ce51ced36846613605019e560f01451fcd87 -->
-<!-- api: P:Inno.Native.Sdl3.SDLGamepad.Handle 03c31fac9845d9638203a51533945f18ef6aada4c06de8ac1ff5ba2d74779a2b -->
-<!-- api: P:Inno.Native.Sdl3.SDLGamepad.IsNull 274d5dc80695976e93184b2f2c741be2bbded1034750ce85ea4e6412f2463101 -->
-<!-- api: P:Inno.Native.Sdl3.SDLGamepad.Null bb7ad4a494c47a79e3c3da74a60aecb6dffc5f54f6aadb89bb4a13602978c6d5 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepad.op_Implicit(System.IntPtr)~Inno.Native.Sdl3.SDLGamepad 7b3212cbe356c8cbabeac0ebcf5412e3713efccae18e60fd6026106520c23faa -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepad.op_Equality(Inno.Native.Sdl3.SDLGamepad,Inno.Native.Sdl3.SDLGamepad) b2608531a43d8a29427802929ce5a651723cf79b4f09045eec4254643014d878 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepad.op_Inequality(Inno.Native.Sdl3.SDLGamepad,Inno.Native.Sdl3.SDLGamepad) 50a56dd05d5caf5d919ef6571975b9bd5ee8834de4d49ea747a795430f0abf3b -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepad.Equals(Inno.Native.Sdl3.SDLGamepad) 5699b1fe9fb19a19a75c3961b3575a4f2bbf7f0a21832176dc5af1b9cc5328e1 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepad.Equals(System.Object) 711c2e1a0f0a5b795a94d1e11dcbcece39d864592e323e25d8c2dd0a532a18da -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepad.GetHashCode 80530f366fe58ac077594ed4bfdcd1936e0dd5e619fb6119f79d5c12f51812fc -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-b97c4b598c2e6f3d"></a>[`public Inno.Native.Sdl3.SDLGamepad.SDLGamepad(nint handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2897) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-3208439d33c5cb50"></a>[`public bool Inno.Native.Sdl3.SDLGamepad.Equals(Inno.Native.Sdl3.SDLGamepad other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2909) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-b37ae71dac55a468"></a>[`public override bool Inno.Native.Sdl3.SDLGamepad.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2910) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-6a09114d334029a0"></a>[`public override int Inno.Native.Sdl3.SDLGamepad.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2911) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-7f14d9ab9f065f9b"></a>[`public static bool Inno.Native.Sdl3.SDLGamepad.operator ==(Inno.Native.Sdl3.SDLGamepad left, Inno.Native.Sdl3.SDLGamepad right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2907) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-74f9edfcd517360f"></a>[`public static Inno.Native.Sdl3.SDLGamepad.implicit operator Inno.Native.Sdl3.SDLGamepad(nint handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2906) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b84ec6df69c2e0a5"></a>[`public static bool Inno.Native.Sdl3.SDLGamepad.operator !=(Inno.Native.Sdl3.SDLGamepad left, Inno.Native.Sdl3.SDLGamepad right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2908) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ddbab371e2ad48f2"></a>[`public nint Inno.Native.Sdl3.SDLGamepad.Handle { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2902) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-8bdeb24485f62e26"></a>[`public bool Inno.Native.Sdl3.SDLGamepad.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2903) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-7bb0273b0286d286"></a>[`public static Inno.Native.Sdl3.SDLGamepad Inno.Native.Sdl3.SDLGamepad.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2904) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-af93354a20e4f9ae"></a>[`public readonly struct Inno.Native.Sdl3.SDLGamepad : System.IEquatable<Inno.Native.Sdl3.SDLGamepad>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2895) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadAxis</code> · 9 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadAxis 5b8085643220006511c1a33d30ecf5982d903af9d2ee9ba464082aacca925e2e -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.Invalid c8412e6f3c53e814d23b23312963e77c064237e69badf016c196982ed5240c70 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.Leftx 0e456e4e52dce1ff9c1db586e8cea61a98e38ecbd325be9fb2541c05859c2178 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.Lefty 0145772c851f68c07b168247678f1d34d9d20d9ee71b1acdba62b2d72597a22e -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.Rightx d8923414384d1d30f4cf411d45b5e1a4d6fb1cfda6d8721b07fbdf04d6cf9c9f -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.Righty 85592e4c4e0b16bace53c2a6d9f02736fbf8e671daaffbb9c569b9e9530264c2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.LeftTrigger 66b68055b3af8d4ed9adb553f5e509c810c355c490ffcc132d0a88d58b1ea0cc -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.RightTrigger ea6aa153e08a15fcc244cc0c0aac1645e74a65fe9f19e61c83692462ff9ec260 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxis.Count 7b9456c584440bee14c85eac4dd2668577b7efcb2b5c6fe6533758c6a881fd0c -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-9c086e834a40392f"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.Count = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L790) | 当前常量或枚举值：`6`。 | — |
-| <a id="api-56ad80166d9b9552"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.Invalid = -1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L783) | 当前常量或枚举值：`-1`。 | — |
-| <a id="api-82bb930719eaa06e"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.LeftTrigger = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L788) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-02ba45673744226e"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.Leftx = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L784) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-9ad5e7b848939743"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.Lefty = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L785) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-01b82717057f7992"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.RightTrigger = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L789) | 当前常量或枚举值：`5`。 | — |
-| <a id="api-acffe2cae3cab7f2"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.Rightx = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L786) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-01f4d156ae9370fe"></a>[`Inno.Native.Sdl3.SDLGamepadAxis.Righty = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L787) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-3410a9aea3b55103"></a>[`public enum Inno.Native.Sdl3.SDLGamepadAxis : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L781) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadAxisEvent</code> · 12 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadAxisEvent dc83139d2b090c75e4411baebbd6c940a1113eae37b3e65e5f47514c02253daf -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Type 43ecbd5e55e3d5e2345a5310aa41a1635715cd38eb7b481fd6aa06281ecaaf73 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Reserved b63dca2d43a83f5cf838b67e11b97f7b252fbe4bf3e1ed9fb3646f456d22a986 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Timestamp 127f595529c054ebd199ff17ef5fe6ef5e3c676dd0f67ed6789d6c3ed6e953d7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Which 251ebb2934a50e91b10224bcde5179f13067406578eb82df7a67de4b08663b54 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Axis 4ea00d5ac03bb5c429970e41d5c3c083573329c9adc1f6af059735ffe19f9d0e -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding1 48428802870d75456e1be0eadd98dbf8a0ab33a424ee67498d0dd76b082df671 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding2 7ff35da7a8c58615924d12f8591b35cda6ebc0b7ca465903c06ab936af202a1d -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding3 e7131d029dea4d49a70e5d139a0ce34524b3fc351bb6ee9d5b0b3705b14b9640 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Value aa8fda1e0fc4a00b2a965a5e5d44c6650bacc31f5bf8061fdb18fdfbe95c17c3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding4 15b292ecf6bda0ca1f325e84be791ba321c103bb3001195bde1844d2edbd5fd0 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadAxisEvent.#ctor(Inno.Native.Sdl3.SDLEventType,System.UInt32,System.UInt64,System.UInt32,System.Byte,System.Byte,System.Byte,System.Byte,System.Int16,System.UInt16) 8f63d7ff81ce0c4af281963b61c5907291150140d7f56049d896940802c19cc3 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-671c4c89417dafbd"></a>[`public byte Inno.Native.Sdl3.SDLGamepadAxisEvent.Axis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3547) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bec0a3c7468e5b75"></a>[`public byte Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3548) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8ab8d361b6a05e54"></a>[`public byte Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3549) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bf49aa1b5b906cc3"></a>[`public byte Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3550) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f5d29b04881735db"></a>[`public ushort Inno.Native.Sdl3.SDLGamepadAxisEvent.Padding4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3552) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-dcbb73108dfe6f82"></a>[`public uint Inno.Native.Sdl3.SDLGamepadAxisEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3544) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ed5f404b2a8a8c71"></a>[`public ulong Inno.Native.Sdl3.SDLGamepadAxisEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3545) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-7ea8acdacd76a26f"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLGamepadAxisEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3543) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-aebcd11b5ef52730"></a>[`public short Inno.Native.Sdl3.SDLGamepadAxisEvent.Value`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3551) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-632f12432b21d6cb"></a>[`public uint Inno.Native.Sdl3.SDLGamepadAxisEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3546) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-71ee3e1b1827dec5"></a>[`public Inno.Native.Sdl3.SDLGamepadAxisEvent.SDLGamepadAxisEvent(Inno.Native.Sdl3.SDLEventType type = Inno.Native.Sdl3.SDLEventType.First, uint reserved = 0, ulong timestamp = 0, uint which = 0, byte axis = 0, byte padding1 = 0, byte padding2 = 0, byte padding3 = 0, short value = 0, ushort padding4 = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3553) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-91c6426d39428dca"></a>[`public struct Inno.Native.Sdl3.SDLGamepadAxisEvent`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3541) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBinding</code> · 6 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBinding 2a2c05fba54b2822306eb18b7e88714ad476d28bd9dc8fd718ffb1bd552a7038 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputType 4e0f7ca1372c25d3c0575f447daf52fa73dde76df73aac7f4edeb86b6bfbe5a0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.Input ee9bdc61c828a564150930f19c02ed360c4d230d4d63e5478910a1804f2e405b -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.OutputType babc7dcd6d71afb83bab030f2931c4a6036ae3de6352ecabd1f4dfbcdfa812bd -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.Output 2a8645c561642a1db19ddda7f51f1630fa908e9b6a9de2e016d0583d13193ce9 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBinding.#ctor(Inno.Native.Sdl3.SDLGamepadBindingType,Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous,Inno.Native.Sdl3.SDLGamepadBindingType,Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous) c0766579790636f8732140d9a5b1720e4c7fbddff2fd79850b6b6debbea2990d -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-355e92352314d833"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous Inno.Native.Sdl3.SDLGamepadBinding.Input`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2997) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e881c998d697b645"></a>[`public Inno.Native.Sdl3.SDLGamepadBindingType Inno.Native.Sdl3.SDLGamepadBinding.InputType`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2996) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-d21a35e3d5c09d3b"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous Inno.Native.Sdl3.SDLGamepadBinding.Output`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2999) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f81d5cb15af78bc1"></a>[`public Inno.Native.Sdl3.SDLGamepadBindingType Inno.Native.Sdl3.SDLGamepadBinding.OutputType`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2998) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e2193270f5d50b37"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.SDLGamepadBinding(Inno.Native.Sdl3.SDLGamepadBindingType input_type = Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeNone, Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous input = default(Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous), Inno.Native.Sdl3.SDLGamepadBindingType output_type = Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeNone, Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous output = default(Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous))`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3000) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-b816d36ef2eb5f0a"></a>[`public struct Inno.Native.Sdl3.SDLGamepadBinding`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2919) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous</code> · 4 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous 195ef31b353fa8b349b81c5297e258611f03bec98d23aa097e4fb0267d44fc2f -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.Button 8db5937e16afe014ad07fb95febfa8b895c5f2d9f08d57e15e18ccb1169ab853 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.Axis 9f4812311bc0d49e6b65955c95f04cec6f2d59681bef2a22eae0f897f0d5f273 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.Hat 607c66f23d42e9aa8828e9c7fd71d4299d942cf14359a847afb5d9799f1b3035 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-ddc7009fbc517b80"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.Axis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2962) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ef097d3d9a65a74e"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2960) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-20fb04c96df632a9"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.Hat`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2964) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0e1bcf11980814ec"></a>[`public struct Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2925) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous ac9f6f1fe9d0fea707aac8f3a866a85426f2cf0f6b126d5166134945f761311d -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.Axis e404857085f2fc54c20c7f9322f675958d5d10f8d5f268e65c9ef9bcfa62b635 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.AxisMin 8d698ac4d3fc51c2b9bf15953f488217ee91214cb2213dfd771da5bfb30ccc8b -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.AxisMax 78b6740c831f4bdaced0ad362d3a158f8fa39b25f8eea657da2ec018ea4918b8 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.#ctor(System.Int32,System.Int32,System.Int32) 53e9b5f97a34032ec14b07aaed6a0e8151c6ebff8c69631aba88ed07ddfa248c -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-b7d4d5f98eb1d22b"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.Axis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2933) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f0a2b19fb934bd32"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.AxisMax`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2935) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-853e3ff214d1040a"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.AxisMin`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2934) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-c504a510bc3154d1"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous.AxisAnonymous(int axis = 0, int axis_min = 0, int axis_max = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2936) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-40fcbbc4e1d8937b"></a>[`public struct Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.AxisAnonymous`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2931) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous</code> · 4 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous 552c668506f03c28618bb2a8058022512b74c09a40b875f0fa784b495eef0eb2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous.Hat 29eafed40a35a8b12d2d73f6fb3b9aac10dac1f890edf824addbe159f8ee87ea -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous.HatMask 17fa1294be8b24b43dfdb99199463350ac08234ef2de431d6f12d2793c0bc29c -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous.#ctor(System.Int32,System.Int32) ef7e932110dce9b22f43ba3a643dcfc7a4ed05146e9157b336721fa699e9f3b7 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-4231c7253dd1ce35"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous.Hat`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2950) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-fff1c83c5119bc93"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous.HatMask`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2951) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-ccc503fbbd5dce79"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous.HatAnonymous(int hat = 0, int hat_mask = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2952) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-044726568e4e8772"></a>[`public struct Inno.Native.Sdl3.SDLGamepadBinding.InputAnonymous.HatAnonymous`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2948) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous</code> · 3 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous b77b2b6eb928eb45ae23952ab5d307aeccf65ba78d68f4a0a7c3dd426831f401 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.Button a80efef672821524ebea18afbcc0e15d0a48f7c985bd22232e244b074181d756 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.Axis a46ab13f8c20f475415ec682f9957867f4abe9f25fa7977ddfbafce14ad25a71 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-518add600c547b8d"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.Axis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2993) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5be0253828a92cab"></a>[`public Inno.Native.Sdl3.SDLGamepadButton Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2991) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-56723941d124265b"></a>[`public struct Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2971) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous dc3f29a226871824259e31668f032437873cf2e9263cd70c818b00ae284be855 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.Axis ace5bf18ceb1b9745c7909a218ba75ee8d5cd8e6027bff01dd1dd069558d9082 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.AxisMin 92a985030b0cdc825c78820f1a1de024d22b79faa76678d239160a68b7bbe2cf -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.AxisMax 6b9fd2a2a06fa6f919720a2509ed2af71c9519801f7a21e26813a47c52fcfe08 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.#ctor(Inno.Native.Sdl3.SDLGamepadAxis,System.Int32,System.Int32) 2ba72dd5a3146b48cab1831efa4b830f766cdbc16d68aa1e7536a80d800f2cd9 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-6d339efd09c9a8ef"></a>[`public Inno.Native.Sdl3.SDLGamepadAxis Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.Axis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2979) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-20257f2c5f18ace5"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.AxisMax`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2981) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-d8b7a51fa04cf7fc"></a>[`public int Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.AxisMin`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2980) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1cb31e9710573058"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous.AxisAnonymous(Inno.Native.Sdl3.SDLGamepadAxis axis = Inno.Native.Sdl3.SDLGamepadAxis.Leftx, int axis_min = 0, int axis_max = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2982) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-d54fc88d8dbed991"></a>[`public struct Inno.Native.Sdl3.SDLGamepadBinding.OutputAnonymous.AxisAnonymous`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L2977) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBindingPtrPtr</code> · 13 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr 9deaf7a52c6c1dd6053ee012e039bcd20236ac4f9f4da2c3c6bc10c18383effb -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.#ctor(Inno.Native.Sdl3.SDLGamepadBinding**) d824451d321326b6a3b79e526bea5cb49c0413aedc24fc01c9501fd801cc2d97 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Handle 1a8289a056248c2d24cd7939ff7672c9c2c814a0d487479abd4975959e8447e7 -->
-<!-- api: P:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.IsNull 5679fac5eb3a07af2a45e21bbfeec3dc1c2e9c0813d245d1728e4c140317bf12 -->
-<!-- api: P:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Null e370eb69b276739d6fb392f4b734c622e87805812c6de894dce894c6a1e2e4bd -->
-<!-- api: P:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Item(System.Int32) 245f68f057622164f6cd990dff1674ce3196dac9d1c3e20c17fbf60a4550282a -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.op_Implicit(Inno.Native.Sdl3.SDLGamepadBinding**)~Inno.Native.Sdl3.SDLGamepadBindingPtrPtr 68135eea1545d4d0a169ff6ced9fb6573b158825b5e76c3b7eec09c9ab57708f -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.op_Implicit(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr)~Inno.Native.Sdl3.SDLGamepadBinding** 475ffd54f5f17e39f99e556c8f50d4852fb39d7eaa6ff9daa4b18fe225ea39e2 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.op_Equality(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr,Inno.Native.Sdl3.SDLGamepadBindingPtrPtr) f5f1a354874b7ad942862a0dde34acd37751710a89e33a92fad75027a2836b56 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.op_Inequality(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr,Inno.Native.Sdl3.SDLGamepadBindingPtrPtr) c43ca2c794803a4728bc2fa1d6749d8d6687e6730e2b3c4d66c8c422970e3dc1 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Equals(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr) ab8f814ea0982f5d83fe200e439e9942b163d619951760997d53afb0c069805e -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Equals(System.Object) 6178c686083624a642ce63969f1987d01ff400d51633cd6ea08926c92920f303 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.GetHashCode 96a7606cffb7cb6b10d76abab6a684a28f6227aa47552e5683ca14dd8edc3ebc -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-404bddaa1686eb60"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding** Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Handle`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9195) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-11350aa269732bf5"></a>[`public Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.SDLGamepadBindingPtrPtr(Inno.Native.Sdl3.SDLGamepadBinding** handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9190) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-1a372176ad700c0b"></a>[`public bool Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Equals(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr other)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9205) | Indicates whether the current object is equal to another object of the same type.<br>返回：if the current object is equal to the `other` parameter; otherwise, . | — |
-| <a id="api-cd03464fefcfdc0a"></a>[`public override bool Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Equals(object? obj)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9206) | Indicates whether this instance and a specified object are equal.<br>返回：if `obj` and this instance are the same type and represent the same value; otherwise, . | — |
-| <a id="api-2f262e8eb0dd7924"></a>[`public override int Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.GetHashCode()`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9207) | Returns the hash code for this instance.<br>返回：A 32-bit signed integer that is the hash code for this instance. | — |
-| <a id="api-c260e04d5017de0f"></a>[`public static bool Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.operator ==(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr left, Inno.Native.Sdl3.SDLGamepadBindingPtrPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9203) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2837bb73d37f6f17"></a>[`public static Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.implicit operator Inno.Native.Sdl3.SDLGamepadBindingPtrPtr(Inno.Native.Sdl3.SDLGamepadBinding** handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9201) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bbf86e31681873e2"></a>[`public static Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.implicit operator Inno.Native.Sdl3.SDLGamepadBinding**(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr handle)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9202) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c781a2434fc27066"></a>[`public static bool Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.operator !=(Inno.Native.Sdl3.SDLGamepadBindingPtrPtr left, Inno.Native.Sdl3.SDLGamepadBindingPtrPtr right)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9204) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-daa8642295436256"></a>[`public bool Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.IsNull { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9196) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-ad73b4c740b96519"></a>[`public Inno.Native.Sdl3.SDLGamepadBinding* Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.this[int index] { get; set; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9199) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-ed777b6678e71306"></a>[`public static Inno.Native.Sdl3.SDLGamepadBindingPtrPtr Inno.Native.Sdl3.SDLGamepadBindingPtrPtr.Null { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9197) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-88af15e87df6fde3"></a>[`public struct Inno.Native.Sdl3.SDLGamepadBindingPtrPtr : System.IEquatable<Inno.Native.Sdl3.SDLGamepadBindingPtrPtr>`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L9188) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadBindingType</code> · 5 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadBindingType bd44f1fb18713c5e2598f9957e7943fb10fcf14a405bab7ee131b3398162d1af -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeNone 364e91558e4ed90af94bbbde333b524a6fac867bc9ba476e9c7f59396f01447a -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeButton 4b2ae63c756618cd48b565c5ba44ae6dc155bab1ae95d9977d6e60e993993466 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeAxis a7c02b56de8ada7b3efd462b16810db9796ec437b7b119a14f5518ec0f79136e -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeHat b920fa004bd0efde3c7fadb4c036cc9d5e35e662d357210a934c13590926fa9d -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-ff67f611f85b2ceb"></a>[`Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeAxis = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L800) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-855b0a447633c568"></a>[`Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeButton = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L799) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-6458e82c1a340816"></a>[`Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeHat = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L801) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-0d5d2731c413a020"></a>[`Inno.Native.Sdl3.SDLGamepadBindingType.BindtypeNone = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L798) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-23dec6365cc02d5b"></a>[`public enum Inno.Native.Sdl3.SDLGamepadBindingType : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L796) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadButton</code> · 29 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadButton 5b3de208193ef976555d288c48adc5250b3100cc459acc1a1b40d703f5b634d5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Invalid de9b75349868c88c7ba8a7d5c42353d96f4af9e72e2d362aa71f7d67e2903249 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.South aa75fcc89ca2c25efd9f5694e5288e5049b555d7d9a4e63ad3c593249ae0c4b6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.East c3d6b8be0a736c5ba48d12c5ebaa84f646d6903b5d30cd29d6d0534470c4a995 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.West 1e451a312f6984db392440bccde3e7e6d02dc99fbb0527be6ba651214c564ddd -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.North e88e8b64128951b26a362a5a199cfcdc1aaee4a5698be9b439c5495df13b8956 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Back 003ff05c7f3c4c87fe976099d143808c23ab23d176068051365321b60b066d8c -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Guide 8f9c70d1b5ed49a658c75f1ee0edab5c65d25e515ea407a945dc48b559b9fb02 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Start f3a73b302daf755f071dc738e69615d2d4cf8be8ca5b371aab5fb4c8261d435c -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.LeftStick 8b0e90f3bef54f409c9b83426e85a218338e65ac3b1cedc3d34287ac1de77daa -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.RightStick 093db865588792d885330359bc37f9eb5ec0450a60dbc90ab1133357b8d535ff -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.LeftShoulder 74a0abf472694ab96c0f92c36b5dda45cf45764aa860530773d0ef0fc7cd9857 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.RightShoulder f3984d325606ba9b824bd08228ffce545d9f365e1f07e5a306ae69d7267b7595 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.DpadUp cff1c129306f9c73f7afb8e658867c0759008b8a7d69f699a1d97e603bd37071 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.DpadDown 3e32990569a95c216ca129b68098e5a880fa4ebfc37b4645b58816f5b2ea902f -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.DpadLeft c634f90c55751b0ebc54f78c9f6dab6cac0b7961c46cc265fde06e56ff50492e -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.DpadRight 86f70e1c3f60195f7b07b47631f1c13a3e7e106b8d68bd6f6a78719b02d058fd -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Misc1 61368041408be07e8721678431aa7ac15acdf27c62076b01dec9894487532ce6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.RightPaddle1 5077bddbaae4107853e53454d8cb70b5b294afce3b025d6964529de64cbd77cf -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.LeftPaddle1 a32acfb6aa96a26093d51de27957e8ba4ea853e9512feb0ae4dabe0a897c1b04 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.RightPaddle2 84dd43dc0d43b812e7a4b068c87fcb764ebcc376f6ff791c69d3f8bab6f52673 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.LeftPaddle2 f859b84de7c7f3f98a6a91bbb554fb890ed0e3f3bfbb54fc2c6656071c85328a -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Touchpad 9dde032797e0f6e24c3406e7fb0153270c78ffdf9f1ee1c94c1a524ded25a19a -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Misc2 70095b64abee77693122fb0230a5cf432ec2087676329e8e940dadc013e3d0bf -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Misc3 cfb20675c039596d1d67f64d28a0ab8281245deaf21bf60529f04c76327e0091 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Misc4 f13e06ef517a41f8d1ce7a33b555d2ad53d287dfda332608d317eccbbe16f8f2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Misc5 3d82780b4b87afb8f96f76dcf7e2d2e4e8e2bcdce2b2679a33f5c8abbc0e9395 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Misc6 258eb7338197217c956ca049474b200529c5b80603d011a9b8f5f3204784347c -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButton.Count aded961b7610865e830be97839be5d12670ed3380cdad7d43aea7b6db8c31dd8 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-8aef3e2620a9cefe"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Back = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L737) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-21cbdf5d4367acea"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Count = 26`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L759) | 当前常量或枚举值：`26`。 | — |
-| <a id="api-4e99ace5268c5dce"></a>[`Inno.Native.Sdl3.SDLGamepadButton.DpadDown = 12`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L745) | 当前常量或枚举值：`12`。 | — |
-| <a id="api-4d4cb2350bef0d4e"></a>[`Inno.Native.Sdl3.SDLGamepadButton.DpadLeft = 13`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L746) | 当前常量或枚举值：`13`。 | — |
-| <a id="api-47b1613eff364ec4"></a>[`Inno.Native.Sdl3.SDLGamepadButton.DpadRight = 14`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L747) | 当前常量或枚举值：`14`。 | — |
-| <a id="api-dfafc84761bf3ff5"></a>[`Inno.Native.Sdl3.SDLGamepadButton.DpadUp = 11`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L744) | 当前常量或枚举值：`11`。 | — |
-| <a id="api-596ca779d87116c8"></a>[`Inno.Native.Sdl3.SDLGamepadButton.East = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L734) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-6c48af5af8cc6acb"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Guide = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L738) | 当前常量或枚举值：`5`。 | — |
-| <a id="api-5d1e42924a383a6f"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Invalid = -1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L732) | 当前常量或枚举值：`-1`。 | — |
-| <a id="api-185edac774894688"></a>[`Inno.Native.Sdl3.SDLGamepadButton.LeftPaddle1 = 17`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L750) | 当前常量或枚举值：`17`。 | — |
-| <a id="api-e16dbc33384ce705"></a>[`Inno.Native.Sdl3.SDLGamepadButton.LeftPaddle2 = 19`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L752) | 当前常量或枚举值：`19`。 | — |
-| <a id="api-fd3fdacb0b74a0ff"></a>[`Inno.Native.Sdl3.SDLGamepadButton.LeftShoulder = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L742) | 当前常量或枚举值：`9`。 | — |
-| <a id="api-3d941d1708602287"></a>[`Inno.Native.Sdl3.SDLGamepadButton.LeftStick = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L740) | 当前常量或枚举值：`7`。 | — |
-| <a id="api-7d426859771798c8"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Misc1 = 15`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L748) | 当前常量或枚举值：`15`。 | — |
-| <a id="api-5625b7ae1810a46e"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Misc2 = 21`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L754) | 当前常量或枚举值：`21`。 | — |
-| <a id="api-2383c90a92789866"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Misc3 = 22`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L755) | 当前常量或枚举值：`22`。 | — |
-| <a id="api-ae2bebaa0f89eb5f"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Misc4 = 23`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L756) | 当前常量或枚举值：`23`。 | — |
-| <a id="api-384f1b00bdbabd1f"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Misc5 = 24`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L757) | 当前常量或枚举值：`24`。 | — |
-| <a id="api-6c6bc79b40200995"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Misc6 = 25`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L758) | 当前常量或枚举值：`25`。 | — |
-| <a id="api-9c862944773b752d"></a>[`Inno.Native.Sdl3.SDLGamepadButton.North = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L736) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-28cc6e1a2ed210c4"></a>[`Inno.Native.Sdl3.SDLGamepadButton.RightPaddle1 = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L749) | 当前常量或枚举值：`16`。 | — |
-| <a id="api-a5ddaacffa686706"></a>[`Inno.Native.Sdl3.SDLGamepadButton.RightPaddle2 = 18`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L751) | 当前常量或枚举值：`18`。 | — |
-| <a id="api-5df05f9e8fa36784"></a>[`Inno.Native.Sdl3.SDLGamepadButton.RightShoulder = 10`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L743) | 当前常量或枚举值：`10`。 | — |
-| <a id="api-27a01da9ea57e142"></a>[`Inno.Native.Sdl3.SDLGamepadButton.RightStick = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L741) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-dde17ae9a514e2d1"></a>[`Inno.Native.Sdl3.SDLGamepadButton.South = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L733) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-5eb72f50df69160e"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Start = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L739) | 当前常量或枚举值：`6`。 | — |
-| <a id="api-9a1ade2eef656cc3"></a>[`Inno.Native.Sdl3.SDLGamepadButton.Touchpad = 20`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L753) | 当前常量或枚举值：`20`。 | — |
-| <a id="api-5f249c93d45402fc"></a>[`Inno.Native.Sdl3.SDLGamepadButton.West = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L735) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-885ed9b7f805a63c"></a>[`public enum Inno.Native.Sdl3.SDLGamepadButton : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L730) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadButtonEvent</code> · 10 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadButtonEvent 53117d1a338f11c0c5b2c015fcfc6b1305785d82bbb43f2069921d5b77e6b8f0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Type 46c09a609d8969471eb8c68bd699fc2c2c6bf863814830c8f405088e584ea795 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Reserved 80ea0efeff4e71cff009cce165db2a46215662df66441a9d034e440ab4a11d55 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Timestamp 79cbcef91ce4604365dd17eb426dbd6cdc9c3e34444552940db890373a6ad5c9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Which ca69d41e7208c7686d63818b967a574c1695fbaf1b7104279f683e6765aca14c -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Button 89647ec20b4f9d15e22563fe5cb87a29710b4d55105054b1404163965179798a -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Down 135d93c54436c0daedefdbc0554d6a2f43182976baca8051f973c27850b17e20 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Padding1 fe97cbce5f21a8f8f7408da72b2ecad651f05b7dfe8ebbb1550452a5246aef37 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonEvent.Padding2 6e6251d732907ce8f425b6c6392d46c50248ffd16863f19e7ddc0fd0e8d91496 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadButtonEvent.#ctor(Inno.Native.Sdl3.SDLEventType,System.UInt32,System.UInt64,System.UInt32,System.Byte,System.Byte,System.Byte,System.Byte) 5e707a6280e16b5cc1a080c7f1de07c3b6de7a958fc1945d303df67c57cd3687 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-59bfe08d6ba9fa46"></a>[`public byte Inno.Native.Sdl3.SDLGamepadButtonEvent.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3578) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bb8cb5768040f631"></a>[`public byte Inno.Native.Sdl3.SDLGamepadButtonEvent.Down`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3579) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-a5b70e9d83f9f0b5"></a>[`public byte Inno.Native.Sdl3.SDLGamepadButtonEvent.Padding1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3580) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8ad462ed20736451"></a>[`public byte Inno.Native.Sdl3.SDLGamepadButtonEvent.Padding2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3581) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-5eb614561a463ad9"></a>[`public uint Inno.Native.Sdl3.SDLGamepadButtonEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3575) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f9fef6dacff03f18"></a>[`public ulong Inno.Native.Sdl3.SDLGamepadButtonEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3576) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e94a8854a9fb89ce"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLGamepadButtonEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3574) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-27f3a8daabf66519"></a>[`public uint Inno.Native.Sdl3.SDLGamepadButtonEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3577) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-700c66f8fe126f14"></a>[`public Inno.Native.Sdl3.SDLGamepadButtonEvent.SDLGamepadButtonEvent(Inno.Native.Sdl3.SDLEventType type = Inno.Native.Sdl3.SDLEventType.First, uint reserved = 0, ulong timestamp = 0, uint which = 0, byte button = 0, byte down = 0, byte padding1 = 0, byte padding2 = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3582) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-26d835eee3f4b775"></a>[`public struct Inno.Native.Sdl3.SDLGamepadButtonEvent`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3572) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadButtonLabel</code> · 10 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadButtonLabel 53d9bd163f7c3d3927b3b380d3d1a875b76a928ac47877364ff01cdc83bbd428 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.Unknown 8aafdc753a6d3a430ecd67e62336fe362dfd482e8fdc800c81d21914190586e3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.A fbcf08f67973a8ba072d217b330b381b26eae254d908c27a25e48559fc77738a -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.B 0fad905869db973f8ec44019e0e53611ec8fabab64a673564f08c3b27e1d1586 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.X 60779cc7876270e1304fcdb5c73e71e95ccb267c3c1263617994b6df5b24f732 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.Y ad3239596fa5f23601f4ef711af3201195b254776730168c73d91943560c00b2 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.Cross 316bad72718b97c32fffdb96c5b90f6fd054ba254e9e8d8e996dfa58e6179226 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.Circle 249785d07bf5c5ebcd2e90a4bd99cbca575443c95eb583ee909a1173b571e329 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.Square 86e6e0b606d18480f74084d2cecad03519681df67c854990c14077dc8756dc3c -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadButtonLabel.Triangle aa6bd0f9d038504040bf01a53b6ef5af86037c62384c38848e77a21700d22af9 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-684b74575233d97c"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.A = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L768) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-25171ecd5ba9420e"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.B = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L769) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-250dd9401923ca7c"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.Circle = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L773) | 当前常量或枚举值：`6`。 | — |
-| <a id="api-a6978192e6ee2121"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.Cross = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L772) | 当前常量或枚举值：`5`。 | — |
-| <a id="api-96a7c8d37417c22e"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.Square = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L774) | 当前常量或枚举值：`7`。 | — |
-| <a id="api-8e1abfd022b8bd69"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.Triangle = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L775) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-65a7106b5ce9ee5b"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.Unknown = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L767) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-0f2fcd8f002fa6ec"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.X = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L770) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-d335030a41ca4430"></a>[`Inno.Native.Sdl3.SDLGamepadButtonLabel.Y = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L771) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-cf342f96cc089cbf"></a>[`public enum Inno.Native.Sdl3.SDLGamepadButtonLabel : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L765) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadDeviceEvent</code> · 6 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadDeviceEvent 1df81ec2e0d0b06718429e759b7d8a4a37e7fc96f55966940f2c41c7edf3b28a -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadDeviceEvent.Type 8dc5e7f9d4e66906f586de7dbf0324e1db5d823684c3c2daae2f143dd2f20c5c -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadDeviceEvent.Reserved 8b1f5afb70a932f36fb6e4df1d1920a55b7f70030e63de481fda030ba01b9c20 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadDeviceEvent.Timestamp 365d95c5ce0b030c0c89a207a21b8cbc685136bd9553fc560315cd1fbb80eaf7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadDeviceEvent.Which 3e88f98a6a034bde22b8d6a28efc055f4b65427e8b11d15fdfc04638b9d46b86 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadDeviceEvent.#ctor(Inno.Native.Sdl3.SDLEventType,System.UInt32,System.UInt64,System.UInt32) 1898c430ce4de158c37e7ac79ed4be5fda612ad0761f01134c8342a2121fdbc2 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-69fd499e690d0383"></a>[`public uint Inno.Native.Sdl3.SDLGamepadDeviceEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3602) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-21c9cb200986352d"></a>[`public ulong Inno.Native.Sdl3.SDLGamepadDeviceEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3603) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-54ba7d6b969d8619"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLGamepadDeviceEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3601) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-e80d5b1a5ffb5109"></a>[`public uint Inno.Native.Sdl3.SDLGamepadDeviceEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3604) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9838a3f24fd128e9"></a>[`public Inno.Native.Sdl3.SDLGamepadDeviceEvent.SDLGamepadDeviceEvent(Inno.Native.Sdl3.SDLEventType type = Inno.Native.Sdl3.SDLEventType.First, uint reserved = 0, ulong timestamp = 0, uint which = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3605) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-121edb4fe9c8617a"></a>[`public struct Inno.Native.Sdl3.SDLGamepadDeviceEvent`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3599) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadSensorEvent</code> · 12 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadSensorEvent 1fd2d0965b24126efe839a55c01da19bbdd3c307d6a40844da0657c0e6f8fbe0 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Type 58cdb6cd4cd95bbdea464e67f839424adb42e87fd937311097690add64127564 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Reserved dbb79cb11b932f9c1ceb9ecf42359f1ade029a19454a1fd740b0e828b14ecf53 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Timestamp 9aadbcf3bd0ba73a2c5fd302d578a4a7d06c5f04438af89da0e75f0437fe94a3 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Which 895b968b16fb1502f5602269e37e638a7393f91c2e21de8a9877c2a6de601602 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Sensor 9c67d0540db7692f0789cba7674706015aeed54e77d10ce45b886abc878557f8 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Data_0 1b17bdcd8dde2d13d8438f9f61334a200545560d1e37cd40004a576cc1f8c1ca -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Data_1 31462994fc9794240d5781ac26076da4c27d5f30cbb0e499006a5c3a45ba2be6 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.Data_2 be449a5ffc93dd2fbd52a9b3e3ae9d45114f75d8d6de460c811912230c78d377 -->
-<!-- api: P:Inno.Native.Sdl3.SDLGamepadSensorEvent.Data c41cad3215230ec241bf342d6498cf849b6ed9f5e22dd95228b45073cd148b8d -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadSensorEvent.SensorTimestamp bd502360cb07cc60aa51155fb436e1c7a73331d5ecf5cd1a84d9ff6f7925ff89 -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadSensorEvent.#ctor(Inno.Native.Sdl3.SDLEventType,System.UInt32,System.UInt64,System.UInt32,System.Int32,System.Single*,System.UInt64) 619c1f3518076853cdf34f65b9446f076f29bd6078485b43004685c6e7714705 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-78d42b5ba0313be8"></a>[`public float Inno.Native.Sdl3.SDLGamepadSensorEvent.Data_0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3654) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-56d6fbb8cd761c23"></a>[`public float Inno.Native.Sdl3.SDLGamepadSensorEvent.Data_1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3655) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-541effbbe2fe34d0"></a>[`public float Inno.Native.Sdl3.SDLGamepadSensorEvent.Data_2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3656) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-11a9ce319d3b0f5a"></a>[`public uint Inno.Native.Sdl3.SDLGamepadSensorEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3650) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-adcd0df04d555c11"></a>[`public int Inno.Native.Sdl3.SDLGamepadSensorEvent.Sensor`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3653) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-f5a123ec7869075e"></a>[`public ulong Inno.Native.Sdl3.SDLGamepadSensorEvent.SensorTimestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3659) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-8621d1865bea6363"></a>[`public ulong Inno.Native.Sdl3.SDLGamepadSensorEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3651) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bb4e14fb07d2e25c"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLGamepadSensorEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3649) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-df6e4fcd33dd66e7"></a>[`public uint Inno.Native.Sdl3.SDLGamepadSensorEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3652) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-a53d7667cd975708"></a>[`public Inno.Native.Sdl3.SDLGamepadSensorEvent.SDLGamepadSensorEvent(Inno.Native.Sdl3.SDLEventType type = Inno.Native.Sdl3.SDLEventType.First, uint reserved = 0, ulong timestamp = 0, uint which = 0, int sensor = 0, float* data = null, ulong sensor_timestamp = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3660) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-8aca05eff71c7e6f"></a>[`public System.Span<float> Inno.Native.Sdl3.SDLGamepadSensorEvent.Data { get; }`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3657) | 按声明读取或修改当前值/视图；get/set 能力由签名明确给出。 | — |
-| <a id="api-09a0cb5b566e2d82"></a>[`public struct Inno.Native.Sdl3.SDLGamepadSensorEvent`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3647) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadTouchpadEvent</code> · 11 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadTouchpadEvent b875c3476d28eeb2c146d383913d81445046cec5b3a6a26d0451fbffae57c8aa -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Type 54c4017cad2c2c74af960ccda78d96dfa0993d0d1367d1823cf68d7f7ebc9dea -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Reserved cbd922c48740ed0306f2b4099d21909c60175a9afe9df09a158c5aeac27f5a56 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Timestamp 023637d89db34113c015052d80818b8bc1405730c4f539701a54439c1ef4e304 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Which 1e48dad1c1a8ead51b92dcd10b5a1a49e8b25d90900427183d1aa4e7b119d822 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Touchpad 01ddab5b5fb9f02fe95025b735ac13247cbefebee42923df4e5da970d4b800d9 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Finger decb3c1d19950c7624ba9a29da88c0668b65e06513158245e5a962cca4cd8641 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.X ce9cc652a68542d622fc18a5eb8029da5d0b9235a6389c637eb250e88fef756f -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Y 8963c530667342ecc6b4815d79ce49fd3cbf462b620c446cc60c8b5f936598f1 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Pressure 85d747141d47a97b0621e5420b479adad88a1070f3f833278540f721f5cf637f -->
-<!-- api: M:Inno.Native.Sdl3.SDLGamepadTouchpadEvent.#ctor(Inno.Native.Sdl3.SDLEventType,System.UInt32,System.UInt64,System.UInt32,System.Int32,System.Int32,System.Single,System.Single,System.Single) 2c0f327d3b5cd5de4588d67abc522a7ee80e05fd76b9a4075df7c3734c95ebf9 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-8f67e2e0a7e587ff"></a>[`public int Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Finger`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3625) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-c6db000ce4da7577"></a>[`public float Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Pressure`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3628) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-efe87ac5f5b93e64"></a>[`public uint Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3621) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-87d930d57899ed78"></a>[`public ulong Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3622) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-1022dbcec8136f01"></a>[`public int Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Touchpad`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3624) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-447e732352f10f77"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3620) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-bf7dbcde8dec34c2"></a>[`public uint Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3623) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-d2f0984d8f0c8f72"></a>[`public float Inno.Native.Sdl3.SDLGamepadTouchpadEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3626) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-9264d15cdff46ace"></a>[`public float Inno.Native.Sdl3.SDLGamepadTouchpadEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3627) | 当前数据布局的字段；值或地址类型由声明明确给出。 | — |
-| <a id="api-0718050723f6532f"></a>[`public Inno.Native.Sdl3.SDLGamepadTouchpadEvent.SDLGamepadTouchpadEvent(Inno.Native.Sdl3.SDLEventType type = Inno.Native.Sdl3.SDLEventType.First, uint reserved = 0, ulong timestamp = 0, uint which = 0, int touchpad = 0, int finger = 0, float x = 0, float y = 0, float pressure = 0)`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3629) | 构造当前托管类型；此声明本身不证明取得原生销毁权。 | — |
-| <a id="api-61b356a687c30e11"></a>[`public struct Inno.Native.Sdl3.SDLGamepadTouchpadEvent`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L3618) | 当前 ABI 的托管类型或借用视图声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.Sdl3.SDLGamepadType</code> · 14 个声明</summary>
-
-<!-- api: T:Inno.Native.Sdl3.SDLGamepadType b4ba0ec697b1f6d8abd848da07bbee3e28593fb44e516bd09679e4f4dac309c5 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Unknown dc8891fbd7dcde22746f465cf63c83bdf5f96ac7f1b422d33f15f5505e94998a -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Standard 02728383e8bdea8a7991fa4e0e5012e4570c2da28bb1c8f874bffcb2c85711c4 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Xbox360 86858821de092631f94ddf5224f27610d7c675045414f44ee3db7c860fd97e30 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Xboxone 9e2d0c5afb65c97036936aa2efaae8c123847a43ad35bc3ebd13c9c5dd3aa64b -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Ps3 985bb50bb5b822d9bc9845022dec5cc2477c571cdf7008c13ab833e9375c0908 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Ps4 4ab1160a97df8048ad9c834b7f1ddc695d30f2119eae65a865526476e80f9c6c -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Ps5 21435b4a4b05e7629f1c127b51f003148f287d2c9d3c3c00f84daf58211db22b -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchPro 067f42247286d0342de680889556bbc35e44dcb732872f42b501bf27cbffb394 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchJoyconLeft 40027c15afd8aca86f3313287cb180c48dc3cd45b8817f9be349e4c4b28552e7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchJoyconRight eb4c883ce733bd941602e3de61301f61e8a9b3d6225a1a5802a87908940c85a7 -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchJoyconPair 47cdf12ca1a3f0f6a7a28f5a2b3a057cca6ea4aa9119c27f8e159c2afd2fb3aa -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Gamecube 230b4d30e32bba364f77440acae425b626e24d33edbe7c946ec7ebd0bfb6d40e -->
-<!-- api: F:Inno.Native.Sdl3.SDLGamepadType.Count b5abd3db4d4b7603c3a0ad398e5f1d1754bf0d65292812ab7cd42357af510cdc -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-f149062fbf7aab2e"></a>[`Inno.Native.Sdl3.SDLGamepadType.Count = 12`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L724) | 当前常量或枚举值：`12`。 | — |
-| <a id="api-11ffb37d16207e51"></a>[`Inno.Native.Sdl3.SDLGamepadType.Gamecube = 11`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L723) | 当前常量或枚举值：`11`。 | — |
-| <a id="api-2e0bdb8af0108388"></a>[`Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchJoyconLeft = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L720) | 当前常量或枚举值：`8`。 | — |
-| <a id="api-02c1c45b2c78daf9"></a>[`Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchJoyconPair = 10`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L722) | 当前常量或枚举值：`10`。 | — |
-| <a id="api-6bfdfe45522a6ff8"></a>[`Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchJoyconRight = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L721) | 当前常量或枚举值：`9`。 | — |
-| <a id="api-de7ff5fd0613e7b5"></a>[`Inno.Native.Sdl3.SDLGamepadType.NintendoSwitchPro = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L719) | 当前常量或枚举值：`7`。 | — |
-| <a id="api-f0c8121c565dbe5a"></a>[`Inno.Native.Sdl3.SDLGamepadType.Ps3 = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L716) | 当前常量或枚举值：`4`。 | — |
-| <a id="api-81747f101e4510a1"></a>[`Inno.Native.Sdl3.SDLGamepadType.Ps4 = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L717) | 当前常量或枚举值：`5`。 | — |
-| <a id="api-2dcd2dcfece0ee31"></a>[`Inno.Native.Sdl3.SDLGamepadType.Ps5 = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L718) | 当前常量或枚举值：`6`。 | — |
-| <a id="api-08347cf8302fb7b5"></a>[`Inno.Native.Sdl3.SDLGamepadType.Standard = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L713) | 当前常量或枚举值：`1`。 | — |
-| <a id="api-a7c1ea8b528cce4c"></a>[`Inno.Native.Sdl3.SDLGamepadType.Unknown = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L712) | 当前常量或枚举值：`0`。 | — |
-| <a id="api-8eea8c7a641aac86"></a>[`Inno.Native.Sdl3.SDLGamepadType.Xbox360 = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L714) | 当前常量或枚举值：`2`。 | — |
-| <a id="api-50cc2b2b31a377c2"></a>[`Inno.Native.Sdl3.SDLGamepadType.Xboxone = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L715) | 当前常量或枚举值：`3`。 | — |
-| <a id="api-ce6cfcfa6dc70b61"></a>[`public enum Inno.Native.Sdl3.SDLGamepadType : int`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L710) | Native 取值集合；当前取值见本类型成员。 | — |
-
-</details>
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.AttackLevel 5b34594d1b4c1e31f5de22eebff6e9cdaf8b0e07b8131dc42a3408242db18fc5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Button 868aafafb6dc59a2aecf65c81fa21860cf0e471200442cb08262722747ff0655 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Delay a86e77b54b3c08c20b9749fdf3249fc5602b1861a79e16f565e8c05f9b330a07 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Direction f6907494e7f9eff3b51287797ff9d5b2f8b8d173fcc608d226ecf48e0515cd14 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.FadeLength 2b8c6653c264737d6d198927ab85c81391c8896bf393fc89fe83a72bbbc484d2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.FadeLevel d5383afa6b565471593d98e8bd35d69a370b0a4f2c719e0bbe986f5af34d765b -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Interval 8dad549fb854d369d41808a7e3abf0b9c6519052b34c0b179232d0565df910d2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Length 32d7c29a24cdfb72e20e70b59c53d8fcdd955dc52c6667621a04575b83ee224f -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Magnitude 3ce1cbe033773ffe1fbc9c13cfcc03b038c92a48178c9879085f74986910394b -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Offset 676436f1f711f189bf50dc9cb2a20b8522ddd664a5f92a6adff9b7d0106f34c2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Period f671b7d9a1570583aee3601061b7a545633998077e8d778c43cb9bab4ca1d51b -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Phase de7fe5f3e9be9feb6adb9f0522e2990d6d87d36688fc490fdf3116c71865c9d3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticPeriodic.Type cf3263df63f6eef941b06df1047d2d6be2495ddf927ace602e9cf448a13da566 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.AttackLength 518455f9cec0e33306ed07e246e71fc88769639276d33bb4b5689ea7982d5034 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.AttackLevel 29cb82f9e1ce421249e49f904b203d213981ccfa5634edd328570e2792d48bfb -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.Button 6fd4ebf720e36c41c9c77d291b38b8461e1d2ec5eac0d3408e83d2274d1995ec -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.Delay 9450170a3cbf901233385d9096c315cde071b44204d916e5c5ba5869905c3b3d -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.Direction 847a9994b3cf543eb9482946ccef87be0c6537fcbeb1e3e3ffeb1529ecf20933 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.End 9c08bbdcc0bd6d63f7ff00ea3bc89f5090efef2d61dfc47abbe02a3e35d16975 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.FadeLength 0c0b19be580528affae83bd6946955a0e0cc7b49b2cc3ac3a9f6459f566d5646 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.FadeLevel b8d251a0536b4f03874be9c30166bcf2e9831853b7497edf0ff95803162c8938 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.Interval 22e247515437dedf518f2a0a6aaa2518dde42740765adfd101b9d2f8b0f07b58 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.Length c6b5377e696b11acec687433011586e176283ab2e59f1e314fe5e57c238f44fd -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.Start 6f940f5516156d213661ad0263e9379c23e9d635cb0f924fe904aa86b5dd7b5c -->
+<!-- api: F:Inno.Native.Sdl3.SDLHapticRamp.Type 5cc6e99833750aa859da46352b319d2358a401b37b02bd03f83b1b680f76b4f6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_BLUETOOTH a5a2321685e73cf5a01f251f18620e4c7fd8b11804d12388c9983ac1c9854e04 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_I2C 127caa4b5309c725e5dbcd93ebc0aeb500412bef43ed41c222ef861e5d14d8f2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_SPI b9de8bbbba8bca0119b228c7716f85f3df9eb2cae88c240d566eb7bc62fcb8fd -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_UNKNOWN f5a02905af041d4e882ef6eb7cd07c7355158faf9eeb9ef8cbbfaa55efbb0131 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_USB dd5a00afd033ea342c3541c32f809c18da127f6ad7002435ae62b234be694214 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.BusType c641033c7ce83c51e3092b19c432b4cbc943f97ddf25d6fb44be525e0a68d8d6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceClass f2a063be880b2b389061c1dd4c346ac2b5587647928f1b20202a823c2708a3b0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceNumber 65cc85fd388059a1645edf2aa0e49c541664d390f3162bd634580439541a78ac -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceProtocol 23e4e36f42324a910817353230fcf9f8a09d0ebd627caf3f530c0b0d70ad728d -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceSubclass ce9be96733ed0a4abed05b24fd05b2c3357fe7d0d37faff141e3a84b3d7b4f1c -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.ManufacturerString c71eb7ecacc2563fef94e4df75ca8c95a05bf0b0fc20ab828c891779a7c3c030 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.Next abbc7569bcb3ceaeadca96f584604b6323b9bbc6cd3b34e39fa53db40e7ff422 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.Path 012ba78f2dd6b9e056135a13f36b11736f453dcb0a7061988e6013708b12b733 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.ProductId 3b7956d3dc3727778953b9bbf1b619a83af9a975d5d2dd12e4c6ab58dab40387 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.ProductString 2b31bcfb2e8f92fe217e55c9312547893d3612ccb0516eba6cf01fa9d3a434f4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.ReleaseNumber 9f6fa84cb1d599565eec12ae41e33d14793ab9f7ad3b9ab605182203d82c511b -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.SerialNumber cbe1aea888a0a4f44f6ef4e867a897573f2e23b0589141108805ccc50ad08c69 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.Usage 3d03cda048a8339c74ff481ccc50fb2dd973a9ec750f84bf32e6753a66018eec -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.UsagePage 9870e60094d061e46813eaf20bd142671fc01a0e4edb7ea3b2e3082030a14179 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHidDeviceInfo.VendorId 03598c32ab2c4d8dc4192d65dc5ab226679fddf479012fbb6315b1229046b72d -->
+<!-- api: F:Inno.Native.Sdl3.SDLHintPriority.SDL_HINT_DEFAULT dede1f30f16d61e63682df908000c7592a682bca1e01bc752215cf112782a3b4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHintPriority.SDL_HINT_NORMAL 35cf9f4373c43ea896243876c83eb2c26df632b789c799aa51de31b62542ac89 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHintPriority.SDL_HINT_OVERRIDE a382f782fb3c488a5f88ea5d65103f52bcda0f5736cd56d69af607a2f0fdc545 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_DRAGGABLE db2713d67aae31acb673913cc623408e4cff6bcca64d338a56e0a860175c8bc9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_NORMAL 4a7f3a5812424aacc3cf34ee4d94062e0db5f76fad969fc514fea91b72d8a0a7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_BOTTOM a09760acc83cf1f3557a7d3e49efb3938059124cf86ab2960da5ab409f781462 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_BOTTOMLEFT 9a9e92636737bceda57c88a9518c711a9d50168f29aa77c500a323688e5ec5d6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_BOTTOMRIGHT 3e6e614e6047d9cccb3ca9b4b289db16c3207c6082d9d640ec5a516fdf7aafdb -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_LEFT 8a995006516a5d247eed66daedac22d1dee67461b0234be58c43bcf384fa1e99 -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_RIGHT 465dab0219212b63f02ec28bf9a66b71ab17670ed342fefad410b66993079c7c -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_TOP fcd093ca8a40687ffb6f6e76b5f8b15461b044496eda48c53f8403a7fba2b57e -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_TOPLEFT 3842682ac5c9670c9a4a98cddf4223efa420e4a572f944743a256ffdd3f5b8cd -->
+<!-- api: F:Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_TOPRIGHT 85b76b0562f9a583aeabfe30a39c933cf48ca9ddc24ee23998564eae4cf3d81b -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_EOF 35b1726da5b56c8ac5a1b080bfc21291562e6c56887630b71ee784f1109f7e75 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_ERROR 8866ec046462e176c5d7b25b88c079a672c6cb646f75e9c2ef74c0d524b37569 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_NOT_READY c6cc4e7cb828a3bade3f618f063c447bb474e97143f89f0249b996954f9fc09d -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_READONLY 18a185c284afd00971e4cb35208909883d178a60816c5cfdbe1065b51413caa2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_READY 70150cfa77139aca7e7269d2aa34368bb6cc3f29c5295bb1a721ad2d884af05e -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_WRITEONLY 252183f6d600562e5474af2f39bcaec3e6cfddc576a9fd3fc44ac3b8bd8fd739 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStreamInterface.Close 9f44a51c8aeb106e60294f7bb7f2b196bebd95e57dd24d9d930a1af4479ca5f2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStreamInterface.Flush f148842958e9663c53420f1d070aa618dc87f70bec9f0133b30d50b1c9b2beb8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStreamInterface.Read 4a12e451a39eb949b872f541c9175a1a6985bcd0f02bbbf9fe5f037f9b3cdd22 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStreamInterface.Seek 721f94d954b0adc5d46ad05c29d2f6b0ff75295f1910b22c0f701f3011f5e2e9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStreamInterface.Size d577bdff439d4b9fbd53d9f06fd40d83f8e3937fad6662d42daff8ccedef0786 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStreamInterface.Version ad11a899381bbd477a6aeb7aaa3c438c5e6243c7629754704c1371eb90866af3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOStreamInterface.Write 79d5614aae0cbea096daeba561669445aee07848c1f6ef1ac4d955e9cfce0530 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOWhence.SDL_IO_SEEK_CUR d47c27668a07c01e80e052d308ea73817c71b14d98ee964fc823250e5c8ef4a6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOWhence.SDL_IO_SEEK_END 0b32d2858b1a361cad1074b9037a1442ac3652c91e10e4bc71a6b932bee92b9a -->
+<!-- api: F:Inno.Native.Sdl3.SDLIOWhence.SDL_IO_SEEK_SET d74ddcb147ba494fc78c511d2d16fa37d5a3093f29926047917b9f5043aec2be -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Audio aad0c92fa911766687122f56631c6425276c458b539f79974c269b029ae62a62 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Camera f279be2ed1e9bc41fa5c54199db99faa11b22cb7b0fa2750f3438b84adfe1ac4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Events 1a8c92dfe5e48af7531d32d75125686d6db39b049bdcbd759a424899bd95dac5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Gamepad 17a33e885232819a21f2133ea0bdef11299c058b1d56aa0fe8eba0a4ee87d832 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Haptic c1770488cdb304cfc936b66e227aec17c26bb8893252a90bc3e4afc0a1fbbbaa -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Joystick 0aee0a8bf5e6b101e19b4394fa4e1a25e161bdd1ae8d01d3fb913bd82931ae20 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Sensor 72c8be9ccc8353b80d23f792a05447b17e9f5821ce705dca5fc2a29701563f3c -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Timer 75dd8c05e5d883dc9d33bb2e183b7d56fa342533bb59afb8683ecb8fa14d362a -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitFlags.Video 2e3fd0a577242078800e4004460a572fe6ecd020b6be7b69e2e0bdb34ca0def6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitState.Reserved 74c8d5b39d8fe075c8f85648a7040d576098209ebda243654418c95bf00b4e04 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitState.Status 3d0312c95fa0e8e33ca00be24cb4f961293327587d8fc681c2e7547a88af6dd5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitState.Thread 28c0678cfa5a72c082c983064ef1f721e82acf3d5ee7b67602a1a0d2f0e2e3fa -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_INITIALIZED 184d5aa8edc341e88d1cb8d1d7f87ffccaf21be54316ba61799862f52b8110d3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_INITIALIZING 4f0f55cb201eb8071358642aeae15b87623572dc3d1f5c28b4de6555ee7cdb48 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_UNINITIALIZED 98a5566a9ec9a0d51eb790fd3764f582f7e12d9f566a3e30d49db60a273c42d5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_UNINITIALIZING 14ed3e33ca6b6521d64ea8a704fe47d8d8b4f908e8b0f40e5de1b6d2ea90330a -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Axis 48cda77430ca12b63fdccc648ec58e152f0b2d059338502ad7d6608bac8abdca -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Padding1 921a2a88e4622b1a6971653f03fae948a950a4411b531e2e2d51c50624d95b2b -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Padding2 a48fd9c70a359f748fe76114bd20bddb80a35d90dd6f7c62f23aaddbc1c1d82c -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Padding3 570a30797d6ec4f7e201ca09753e4d1da2b53e9845addccf40ab136afed0c129 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Padding4 3bcec7097b7f0ce4e88c5c8cd375fc63b1dc4b9da7e739d0a433dbd25d4a640b -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Reserved b5014dc4a48c05956de444d42ad8dd862827b8e0df10889852a4f24bceaf95f8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Timestamp bc3a06ef4ee56ff3884030abd062d3be2d8fa0bb2a045292e7e88abaff4ad2b8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Type 674c92018aabe050f2e512092c7c9a60c967a8db3104d9652468af4446115739 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Value 783e2155e5c40f4f68b4f80eb15e9229f61137cce429b19cfc1fb415471eb363 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyAxisEvent.Which 21dac10031ab5916121c2afe69366aae99eda910cbc5279cdf1c30b215a9cc7c -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Ball 30cbe3610731364797388cdec62672b1448da8c4581059d4919bb8852584b141 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Padding1 b48374cae33f9e08d3131a262df38be8318f304c146b207e1bf66bef5b4a24d7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Padding2 3ba775129514dd6d65212cf6e1b9d8adf4ec2d64655eeb8cd61152205e816372 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Padding3 aae41a0d853b1394bfa5940eac3787cb6dbec9c593d3beb26403019d2a7c3b88 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Reserved ccd203151df93f637474617d31a90ab29e46a2d839a3e9fcb4071c0f8f1f307d -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Timestamp e08223d759ff3b2fe07e38379c4ca32628c9a8de9cf6373e88358f129c3e1778 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Type 757c564f3488fa4ccb425b986d57b6e1628962b7922037627bf92ab11a9ff8ff -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Which 1e7c5a4f56cabbbaa7c472585e60b2fbfc73867dc3c0b98842ac2900599da241 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Xrel 375e4040d33519b64a284fd966cc35277446ccd91c830ed23fee24bcc5abf3e8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBallEvent.Yrel b58b2deb8a97d2b9249472c59df72fde07bdd2e82b656838d8bce59de5b69e23 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBatteryEvent.Percent e5a6e617630165da10e0da68e0988aeebfe36abbadb7e60ed972ae5b298b5d05 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBatteryEvent.Reserved 6d2adb7764ded98a0747c5d9e03543126bb93419aff96371c00c2bf35934b963 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBatteryEvent.State d1a8e35335835c3b039bfc763377e2da27adc30b6da91828a1fe06c3ae1ac88a -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBatteryEvent.Timestamp 4bace3930bab090d08860ca430fe567d31fe9d7b063fb86e488f3d3e4336fab8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBatteryEvent.Type 52d581b16201613afe93ad1939ae6fc53924868c8db8af19bb201719186eaefc -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyBatteryEvent.Which 4bfcb36d5fae892928b27a26c5e7273492a56a63a238de2670ef0b9d49afe6f0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Button 29d7b14f1f36975ca302f4859b65c274fd015bdfb44091bc80f66d45e23ce49f -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Down 6cdbdf09163a5f03fbdaefe3b39b88e2f6afd1c34d22967cd765cc15cf006e33 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Padding1 1aaf9a7c6d8ed75a9955412bcee4878c94050982bda7c271908eef092412c45b -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Padding2 92c7a859b9515544185daeaf61bf736dd9ad0a16c01f93c104dcf41099746b60 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Reserved 61292dc0c4f909973643bee311806dc856d3cca8e71ddaa8e9598c97e73492c4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Timestamp 1b17ecae2ad9a46b594c685a84253781b106ba28a2681f05afe86b49396dc0de -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Type 9f2c0868485eb99f2ead897ee073ce60ade32a2bd33938811ab3bb86f6ab0bec -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyButtonEvent.Which ec5a7cbc28e89d5c533fe9961b84d9db470a5dce2df73de3fdabdd001281bda0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyDeviceEvent.Reserved 497bbe4f8c4dd5d397016a66d20401923e766ab9e95a90ab876641295fcd069f -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyDeviceEvent.Timestamp 463386fad7c5e4bc5b1caa15acf7137996d9dfa04fcffc3a56ad64e4822ddc0d -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyDeviceEvent.Type 6a1edd11d1d54681ea11a7da9264b62f3f15fa4a8806544c374bf0ee7a2e5f39 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyDeviceEvent.Which 45bbef82d81128a86ac592961e200b41a77706910b3d683dd79f05016fb48ba1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Hat 2f3fee17062314c2c17056d4768fd16435b74a635757416ee79e028010996c52 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Padding1 89f1784d2e3e297fea656365eb6ded698e7f5e05fe1c05073a938374f67e2fc4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Padding2 2f7d64345f5c2956040de1d064ca929832c7f1ec163850affd763fdc52ca5fce -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Reserved 5b934eda7981cd59af0fc5dcb566ac0b332de0d19356c8d941ebc088e696d6f7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Timestamp 59ab7b080366af0635bd5cec6cada14773ec73e5a5de7ad5bf521e7b9a1bfc30 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Type b37403522c02d6333efddb442fa36292bd9164991225dccdf8d72fef830df2d9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Value b6cb1c20fd270e4de065153fb6f881e531f494b98f59cb44bbf32d0862ce54c3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoyHatEvent.Which b1f254827fdec5cb9d5823deeb70782a9b12a157933ed60104faf7668485903a -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_INVALID c8bec1eb454a4008321a444c6f4afb4bc51a74a737fcab391a5435327c185f29 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_UNKNOWN 0401f71a4d26857184f0fa710ee9ec7a2313772ea8fe19bb200de38f867bd49f -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_WIRED 3b1e45bcf663f283f7b1aeedd2c398deec567db33d7aaf94acc18458588115bb -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_WIRELESS 98165ef8e40780730124b4a911598c9b55bccde6ff1371a15fd1320eec171330 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_ARCADE_PAD 62f80756a3002b9273b0f758c50d3bd64ebc96b6058c3c741b57dda0a4fcbed5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_ARCADE_STICK 91500209da11f47664d2d363a45efa3db53e5f9438dd14954d092316bc4c39da -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_COUNT da094b0444d99ba9a1f94420367454e05c0e816430e07089e7a5c0d90600d57c -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_DANCE_PAD 8200ab274a0bae5cb01b19f33069f51d230df708dab31f63483940a0767f8005 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_DRUM_KIT b554ae55c9e308ce7f4f6be9597eba63588fa133c94d66b727b589d623f89f4b -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_FLIGHT_STICK 3211c38384329cb76e2bec4ea45a72945b0c4b39e5ac5afe0fe7a2feeb94c210 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_GAMEPAD 686fe9b7d3f4ba0194385a7eb3319595456253e99492daf34ff63aebe85e62c7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_GUITAR 09dff65edd119570ed488fc874b089b8ee83ee112336788122bf746c3f70c327 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_THROTTLE 33aeea6b2154cef96c6b52d83b88c55dbd544b8ddad274826466860dcf71c251 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_UNKNOWN d0bfc63c08ce281efc47bcae381b5a51b1d2ba57bde1602f919ee3e2840ce1b4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_WHEEL d254e4f4cd65b54260017e0af1a90fe95fc094ed874904a3febfd8bb4ace780f -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Reserved a4bdb662f4f41a9c37960da9096a3486b145a3e1b6240bcc52148fa1ab229829 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Timestamp 1e212cc404995f342f9bf5c8ce3dbf0366f75725f5fbb41dfda2c2574e84483a -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Type f7dc5308792970e5bfbc5c862b6995bbb87939dbf6e715f9f3d34798214250bc -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Which 4612dd60b4ceed89bc2bbb63e6f4f0303318c84ebf5dc1ad269c4d6453d09481 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Down a16c7bd1cd6bb334aee93339d8a713dcbd6996cbb851a9bb0ab6655c2de91bc9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Key 7b2ddff460bfc68bf13d484cc0b78a64cac92b933b88ca324fd40d6a6b63fe8b -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Mod a92c7ba0a2d4301e18d4e3d5b262d28341519ae00f25781d67f96df19680f68f -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Raw 1f896da245416ec72174a48cf38532761c77d418837f6880a6daceba6cc212e5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Repeat d30ab3a36710b3ff828380700353571d8d285f56d3596be14b4fcb96ed5720d7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Reserved 4fffca1b8ba945c0f424bf7ed855cb3f7be7be08503034e1fc15ec1b34b88810 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Scancode e6fce9dcc1cae38d6b205669e7567c5f8507b1cf051687dc084fe94c001cae2d -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Timestamp 48c3291af323d95ece3c500f574df39e75347fde2f67061a42ed552c0a312a79 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Type 870b91cd96d3b8aad0176f56de51a6639a3850fd5f84535c7d6921a524b3eed1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.Which 3a593b6eb1c18b6f2a252ed785f9830a464ebb4bc75a4a968116c6415ded4602 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeyboardEvent.WindowID 60f44d5ba07a437648b1e302f0fa205257ff818e56d8c4fd4ac975152ccbe742 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Alt 71219b14d2d668e315cb2e1580affa0503c9203ce9f63f35bebc1f55e39ceb6b -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Caps d17b5e12bf73bacd7f52af3a3eb7c61c5cf9a53bff6a771b3826c2737e21bd7b -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Ctrl 423682316aa3ce5336190c8b5820bb0462d7a791640f081198eec4a450e3636e -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Gui 622ab541466d4ac39113a05e1f5e2cf7d7069d1c287aadf710d33b3e161c9de1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Lalt 47c856c780fa2c1731787b5c01a7424c08470038e665695a9b0269a574644181 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Lctrl ee9d2ec9ded0be21b6486db684497e8ff1eb02f302b6c2d0f898de08f6c58933 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Level5 553d8be5f6ef58135171b6bd7ab2131b9abef197ed8b681b2c86bbbf49e8f979 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Lgui 55f8beb25e71a880d716d9cbaed4609b87a30706ff465f94bfff5f212b55d8c0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Lshift d133c477920faeffe297b8079bc5f23711ffc756098b3d4bea5a3ada840b36b7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Mode 4b5752ba5d0c5da36a7cdff76507f57e43c44177e5b451fd2b2439bc2fd6c117 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.None e9aab3d1f6005529c3127ee6cdd4df5367fe814c1521389a81227497b1703fb9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Num e20c3b2d41e2399dd37382a15bb87c7478644d1058c8ac7ad6563f5982b11dfd -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Ralt e33cc3413bec8b201b237bbf79a871467251c6e6f3ae6a9deeadf8e7a21256fc -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Rctrl 8f0571355e16eb919a675cb2131b13d9c84da6b8422776c14d360eb7ca1414c2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Rgui 42e0d4d3f22c66a661d4d585611f3a53447c91413faf30d9bb74eff888f27254 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Rshift 3953bcd5331f27c85dbcd93c66d5825a3e7e4ebd7096ac3d71fee37e82aa1a50 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Scroll fd5c875c59b0c5658ad0f592f49d509f1ba5ccab7923e7f38dcbecd674d72818 -->
+<!-- api: F:Inno.Native.Sdl3.SDLKeymod.Shift 9a0298d6b7170f2c1c5c3d287f4ed2c7f119464dc01c8333022b84cd40bfd0a5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLocale.Country 2f1ddf52dff575ef141f4c3528dd3eef8b538e3c3edfb6c88781e199f2396ff0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLocale.Language 0103aab5d24dac5e95da5f6cee5e53309125e6c6c1e4cd3a9d9b35dfa690e539 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_APPLICATION 40adc50b52b2dc05ba72484e3f5dca9213c1afa0af7e198584f85c5c05661856 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_ASSERT 5eb8262606dbeb6f2c36d9b8206f465b585848b4ba97be07b82a0041a6e63c64 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_AUDIO be454a6654aeec3c4f923ed65f25104e7ec4e2e012a6b53780a2e1ea5708adf2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_CUSTOM 016dbca430d9ad529376af4175e4bc49f2cd00289e0f71cbe96b99311515505c -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_ERROR c79a78b7b00c09bdd5007ddf63049ae1d6b1ab3c8f1b6ec0b749725b58208264 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_GPU 287928e49a7215302be0e6291a5c604f78c361b3d3a35d203a36151a2604a292 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_INPUT 87aa229533793d78e3a41eead8c13257bf69a6776775ac989a33f49dc51cf271 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RENDER 9995f01d6aa248cbee07960f9aff73cf602c3ad5f3667572ffc4295f22f9bd09 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED10 63a49a323048e53c2c49914d0ac307e9c752742f88a8b9af6ee7e54311991e47 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED2 9c205621daf24709d8d3b64e380f90e42630a30cd38b544a8052c31d707ad78e -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED3 f76783cbf4c62cfb1936a699c05134f0dc178ca3b7261690711c2c76905c59c7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED4 58c02713e9a5923f1704937d7c1a7a7d062560dc6abe4f9c128dfe4b54e64897 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED5 4aab0bc1ba779d77cd30e6feb8f1248fc17be42a3092e4e66cf7b21d7df9cdbc -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED6 67b80a3990c15aed1792ac0ad806bd3dcf1c584c0f76c672a257a101aef56331 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED7 29f093ad0f3aa72ac658bc1f8da7d9051c00dff9f7fb10e118a06eeb907b519f -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED8 d4b78831858c76a3694d668fcf321043dfb29f3041330702e88b50f391252c88 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED9 dc99ee097e5c94d90a32670f97ac0abf4f200439f7e3fb2c9fd3fc413ff094c4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_SYSTEM c6fbc312731ec936fbda40067a9b163b70459e55f2c93809f35dd951e73195cf -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_TEST 964f1a9ca99fe1a1266bbcdace23cb6795c750864e3a6dd191f02a40486f2828 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_VIDEO 3e3e095cd273e0ceca93160ec9f3c0c93c1439c86054f0c3196f7e51f6f21dec -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_COUNT 85ae417d0d15562c27e34129233a48b27b39a332206b4b779a36ab84e68aa520 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_CRITICAL 8bd1496da9e1f6c2cf9be5e00733f49e35ffc572a2da91703a6eab597e26f25d -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_DEBUG f77a0ee256ae2bb49646416693c7bcb3ecec62a4c20c9ca877422a9cd6bf5e5f -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_ERROR fba0e48c1f24901fab875b123357cde4a94cd40d583c7d0324bc823bbad69f72 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_INFO e7af639b97f50d7210b49b32df19c0875772380e36a9f958ef83253916ca5c39 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_INVALID 37b9a9d223988e8490ba13a90e0384debd220e2320995c40573b7c6e4e6e1424 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_TRACE 7995dc9092008f0977e0ecc6836d587a81b59463dba3634eda498f2ae1f33975 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_VERBOSE ef7f406fcc41909f2e6b2fedfc9b1a603cf1a18ceb8127c63b92fdd70354cd75 -->
+<!-- api: F:Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_WARN 9f10d92373aaa8c126e1f8f67df7df20f49b76e59671cd231ebb4d92c08464f0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT2020_CL 85c2b54dd20e4bd494b0d7162aaf9f49264638e34d1f6a7bea51f5b9d9d6a2e2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT2020_NCL 07d947b38c4adfadfbd21ae062aecf8b23a69d1e56b0a710b6736c62bf99608d -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT470BG e215c873b4dc55e09452e78be7728f830fa5b81b88fed702fb5b75486f76381d -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT601 b8eab2a3c17e61d73ac32b56c710d83a2b93f3d2d239ad4fca8920fa959f5320 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT709 ec57add179950740b5a758cac6b764b04d3714640586967734388052e64ca1d8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_CL 16ed812b80aa67d5cda7a7d691f93669fabd504d50ea4260323c98421238278f -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL 07c03457c5a3e94ea1515d96ceec0b15efea29f8c0cf258c8bb44da651bc9535 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_CUSTOM 822eabbaa2325cbb3b58ceea3f6dfa7bbfc133896a6003232eca5e9b49dfb565 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_FCC 6a8d7331c379d999a9e48fc742ecea1bb254ac8b22881d16daa45c6d065925ab -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_ICTCP 1c830b711c131efa1cb6d19f51fafc3f6539253df637bbdf849c1d4f11fca193 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_IDENTITY 1c5e7b5386482fc2ce568cb104fba1bdc703874f0c272f473015e509ffaed70a -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_SMPTE2085 f762b54cec66f8dc8d5c5c73440cc34bcca9a1bcc4a231b9c3cf561cc95ce441 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_SMPTE240 d0f8472afc96497e364916f7abb6a79faa97f6670aac7fa674870808e4bc17ca -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_UNSPECIFIED ac7630fee28d8dd6dfaf231ec5c2d473a2d06a9934af67e5dde0dbe85ae0b4c4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_YCGCO d985da101f88dfeeaeb13f4079134fff3125043fe233da89c091ec273756b912 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxButtonData.ButtonId 7d49756546775541c83492a6606f66e8c77630ba4e497b487ae514296803b791 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxButtonData.Flags 2df32be0fb521b1265e944eb11d1c9ac51dd7d70d0e7269a6c7c0541c2231418 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxButtonData.Text 2284fc7a473d73a27b39c6885f2682252bbfe076ec99834d5638fb077447279a -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColor.B c15bdea1ae24eedcdb6a28a0aa30523c84f22a553acb0949b83d6bd70aee0ad1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColor.G 55252667e4f46607f78c607a60ad3b3596144b97b8a316df24ab974020cd676c -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColor.R 47db887385d1222acfa6a950daff255bba21b1f670e3d028440bb4284dd27a77 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColorScheme.Colors 5fce277166f957798c5ea4c963ffe771b05c352c89ca8e1e09407a0832e0c53e -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BACKGROUND 0cc96721334aaac4f875b648065fe5a24c50006e2aeb0cdd9d7e5ecc9755a193 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND 5870a357ef10d111db6e6229665492cdd23133adeef1d0dc5b4f79a128302240 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BUTTON_BORDER e9aeaed23bcccdda9fca22258444a83c071e4bfb3c017b0c20731b998a3aa8eb -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED a3a4096d1155a6914d508f88b48d7c87aab268ea4d6399abd6b279a32244a612 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_COUNT dccd9f66dcb7340aaf12172b1d3eecc77dd5caf887efd898bfb25c72b34268aa -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_TEXT 1e34342e05df932ab457d03be7768f91b64ca413a48f899accca7f6bd543d2ee -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxData.Buttons ada4b316e17c9f533073f531da975f760552ef5e0ba5c50e4a53058c9b6fbc60 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxData.ColorScheme beab5e594f455a617e6b65a1147a61e7c3d0a0479981df0e626e73765e0e317c -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxData.Flags 971983a40b034c2301509afbd3873feed748970dfbc413b9e9d8c94e5bdbd0e4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxData.Message 81e6a6f978097a38c3fe4b4b3b1898f5e4d44f0ecbadfa357958ec9b449c96c7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxData.Numbuttons 63048e8f5cfcdcade9f08ba1e01ea17f7d9547228d6868a96da674c53a4e377a -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxData.Title 275fe3e89105bedc3583b65aaea54121ca014087c690e6a6c02710f8015aa436 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxData.Window b5cc25ab1f398ea6eb4da59ff49c3d06eefae40949bf78bafeb65f503d345960 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxFlags.Error f15b433402f3e9650cf2c0bad7fd77e7b0e34a1d31454588ee8d63caa852b94d -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxFlags.Information b686b06b75a15d3b6639d2b89d8fc6c49fbe88997f8a41e97e533ba991358e63 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMessageBoxFlags.Warning 7b2e798c48ffab6cefb72ed154b1f4a6d9fdab40a5d2c146b3f05b786d8cf1c6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Button f7e80b63eb76d1bf992bbf28694b193bace6a8e91a91b6b1384f0196a3e742c0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Clicks 9e9cf95bc11ac70d33fb8d19c68977594cce401a2c3fdd2dab9106b50292ed11 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Down e5fa0eb2ffb1ed4652238a68295b6c045a05ae15bfc8e784d6574ff66786f046 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Padding 7aa92a0b44d3390e9fc507c8ad6116f22c4b83a6d4779ac5ca07f9454c6e0cb0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Reserved d7bc28c7662dced55a539b1350dfacb86957b3bf84d18f07ea7b9e9a91d9ad44 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Timestamp 5c5672cb4ad72266d3fcb23303f12acd8c3243b6cded06e543d2f4937053bf7b -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Type 362e76ee8afdc34c10ee4fd3f4db86cd89af277cba5dfedaf8de37c9a3394a32 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Which 615fb591099f21e561120a2ded05a4e02cd999d67c6910d2b9de43fe50b02f70 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.WindowID c8c143d8b3ef8c790cde62d3799b09bfca61bff1029406f41e166fd9c3243a17 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.X c0007c7c0665c9d858039a70229452c25f3d1471fa4e6ee032357c03cdf92f75 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonEvent.Y 99b18735235fa3b0a352afebd15e9306431951c93ca17ef30b0ff31993ba099c -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonFlags.Left c56d153450d8eca997e5288f766688ca96725c0f38a0178c5fddf2b5ff998a40 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonFlags.Middle e5d4ae414e970f1625017f75c2c0ac4c6364aafa6881926cbf4ad294c00288ba -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonFlags.None 4fd90304a91c107da34f692ff13042ded3cfdea1fe5d6134cda866640c314bd7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonFlags.Right e4fb720080755c6b3b60937a5916287afea7a034ab6d54298d9473140bbcc606 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonFlags.X1 fabb9545a1c0f56ccb35cedcd720251f0b0d3b32c755ad9d158392d0a3eaf51e -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseButtonFlags.X2 ad81e00222031e0d87b29075189dd53ae872beb2dd26df8cf96d9924ef5b380a -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseDeviceEvent.Reserved b0e1bbbc963d920a6597387a0a8fc856ce071a25eb8e487f29d877e726683d69 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseDeviceEvent.Timestamp 45c0abb427c454eaeee480cbd894926cfc127f4f7871d9927d8bf7696fd908c7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseDeviceEvent.Type bff2cc69b8b9c46db1fbb9741cb99a036186d7fd59aa514f87a44334313bb351 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseDeviceEvent.Which 74d1506dc1327c23e4c947fab813df48209951e954bf0f53c2875f71056c31ae -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.Reserved c38a81ec97064ff5389272b6d73609b15646802e9cf3d9233d1aef9a465ff484 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.State 9686ecdc45c210ebb6059c81f86aed94cac67563c8a6c069f1486ac6ec084a5b -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.Timestamp a3b464ec2741b8284c8b48ac791666fc8aaaeba1f6426abcac74d0b34c46d715 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.Type 489267f3235ada18faeab25b4a34dc75b99ace0f3a0d7d3d1c33999fb195f16f -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.Which 53ef895229b994dfa7cc5cdcf50e6fb2a2e3e95871681a4a42f61d9c1a513294 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.WindowID e764af76f482d5b6e0e0157be6828984d99a8e158db6ba75666acd0b73e6e75c -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.X 4ee96ab927a6eaa87ebfafe53753075fd1458e48ab223be6a8da766c418f51a3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.Xrel 93b3a9e308aa4ca1e52cfc75c6a5c77c73092d32f9b6723fae8594a37f41f37b -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.Y 56aa2d64ba188a69ea5118c153911c41f6412ccaa532ef022952b41dbd4ea88c -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseMotionEvent.Yrel 060dac737db0f79351ce78078d290e1a977cd23dabe3ce73247e92bc8bf29beb -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelDirection.MousewheelFlipped 6cd55d8ec639edf284723fa434153f16903fff6e10771607bf8e92b7df7a73bb -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelDirection.MousewheelNormal a1941ac9a6f8108f1bcc9ad9c878605adb3f7718e1ffe27d49363e50537886bd -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.Direction 1658311031e2802f4df4ee88fa4815282f0e191cea888c51c5a87fbac71a5b6b -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.IntegerX 65b6190a9cf98f361d72f99e0dd3c984ef5dc30c029d3b1dadac06c0d33f35db -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.IntegerY 98dfe7759153983e68bf964b359a5bdeb6c16a4b4b4bf12173803e06b1584349 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.MouseX b9be82b45135f473f76554882723a16bf0416db41ee293e82e3bcd3bb8af377e -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.MouseY b5fe35365827fde481d683c4a0c972bdf5b4777d4ba21caa3b17db0187fd5f77 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.Reserved 158b60ea533742869a0e28ce8177aaa01b7eab2d7ab70cc026e22a81db0cdd18 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.Timestamp 18ec3fde541440f001c4b9755b1674923d9d9cb8c1f4b5dd07b8506bcf733e2f -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.Type 9bef4fbb9bb1c791f5c462c61277bbba0c6cdf05bf157ed49c47e1d5eedfac09 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.Which c01a8686ce67c8fe8108022b904388890889a65ca3b5902957fa2ca5a0a11af1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.WindowID de96e2c3b501882b76641bfcb6859b66b87facb8eb8ccb3f6a6b18dad4f609a7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.X f27d3329f858536a24fdafe5957b3c935f038fe0c7a4190b05c16e530f39e85a -->
+<!-- api: F:Inno.Native.Sdl3.SDLMouseWheelEvent.Y dfb961b02516aabf8e3beb6bbc88b65a3859fe2aa8a6c001c77a03936ed684c7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_1010102 54c4e89b0af7c3412c37b3e03ec6b2e8919779b5d98203ae8b112b9f33c539de -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_1555 0456366a8f906af4895929a45ea6d68efabaadc096ac89c026f191231ab21c3b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_2101010 41d0850d25839a1f9af93ecf6ebe5e7ac071b340b0177f60c7150ce1df4451ed -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_332 6543298f084ba3bde72a894ac2be263b177e2f5fef698e361303ba5ecd037e57 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_4444 7b784c29f0b8d1d4b4e6ecbe433b6ab0b8601cdfd2f09444071e44b2c5b06106 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_5551 e44d42bfd001353991bf70b38ee4bd783e40754d747f2d13ec6b618a91324113 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_565 e6f45e537d9bc36744c1b2a51726087dea19223daecb3c4cb103801dee1c09b0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_8888 62c3c924dd0d4be93bf157ed44febea314fd06541e4c184f359bed2b01356d1c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_NONE 8cb16a9d9e079fa287ba36e4bde3ca89c4b738d6f9486410990deec868578e18 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_ABGR f28bfa40574eab76657caa72a8be247b4c95de91b2d96c45e2149c92eacf6b67 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_ARGB 5b1e46b58a796a92f37cd2c46d92cc5150a5753ec87da0636396e36c9fd4af03 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_BGRA cba3164450fbaad989fa1e3c6f3a209251a96d7c333d344ada0dbea2124ec0f7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_BGRX f9f7e29ce3c191f0b96626f16055378a5fbc87e7631deb8ab8341b924fd846fa -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_NONE 4ef325da0d54327b2c481a1038e9f9067dba5e6667f7c9691d00de87fd4e9cb5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_RGBA 5a5b9158c2e3949b98cd7f28ee606e3a99e346bd00ca80a705b90ee5d52b193e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_RGBX cf8adea6b50fd0d5c3f283c284aa4a654d016439bd67162e792bb8e944f6e061 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_XBGR cf021a9bf2e27d1d94e3861112ff33153c2f0b46e5cc45453b15370bdb58c90e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_XRGB e38fca358a3b0a0d3749db7d19775d488c28372742a878efcc864242f802507b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPalette.Colors bd642cc2353bbd2565abe6d234382e461584913ccede7ee4ce1db54faeae00d8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPalette.Ncolors 00a80bd52259a9f968d2de2ac761e224be8fc4aa83092c2fa9616ae26e3035a0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPalette.Refcount a557204b48877cb03873e81e13fdb32aa5aa08803ba26508bea482a82af49001 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPalette.Version 1711bfb015e082ff42e88f3d41af654823986d30fcedafabf73c9fd459fd8c52 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathInfo.AccessTime bca7d6824accdf1e6ecd318a036b3986294cd41fd3fdf7a18469774e1c45616b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathInfo.CreateTime 9456fa746813ce4cad08b66267189f1778ba2e6c165d8c43b38a76e4afb50378 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathInfo.ModifyTime 62bfe2740a1131d37208639d5c57a1e0211c5d2348579e2f66989105b0242cf3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathInfo.Size 826edf964166969ff0985db64818036759bd807602c507516d079cb120226dad -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathInfo.Type bdb9345c9ab7e2350e58b1b542856f7c0ffa9abd12af6e139410519dfe89663c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_DIRECTORY d817ed5a488a0b314df69f5d13d94fff143fe5cbd16a272e9ae2273812b72490 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_FILE 81cba3d73a72d7d66e75257bfe4400b9924b4d321627b1f859ddddecd43d2094 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_NONE e660250f04e7e579743a388713066aba7db141d4cb938b7939bc57d525561ce1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_OTHER 9548c498cd25dba6b388ea7ebee50f5e5fd35462f2531de0883241819eb323f1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_COUNT 7cf46bd54fceea8b8edb9d529a82b0239ea5301d93aa00bd12065d97c9300f92 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_DISTANCE 8f886bd285c9dd7a036f7f5f6f9429189f32cc865234d70e69f56dccdfe6614d -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_PRESSURE 9a4ff17393659b7dbe85149c63c6d8a1dd9dde4b73ad1b04c07025aae4a07394 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_ROTATION bafc5c7bc053bbf2c5fb1da6464fab5e26b19fa2aa831315d7ce334a4e88ec28 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_SLIDER f28e4e5589b3a6248781f4dc24931dafd46819ab4e3d7fc83eea6eea87945589 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_TANGENTIAL_PRESSURE 7534e9b0028b70336d55c98a215e29c7e81a58dbb7d096f0c03ed2069e1e30e0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_XTILT 51fc42a084be116b8dd5392450961e9e2f95eb8e78ff1b3a52c7aaaadda1e55e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_YTILT debedd6d2a0bd70e69d9b3bfc8d856e0adfab140bed6748c882d022c4d372c2d -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.Axis 7316dd720151605103634806f1631ccdf113f23f566670945163d70fa059a17e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.PenState 334569d1844b04d5d45f5ef5368c313b407a3eb9bf3f5d9e9d8e1ba0265788c2 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.Reserved 4c0e1855f92b36e275975ef735760ec949e8e92eacf720270b913129400b1140 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.Timestamp 51032bde5c216b462b70cec64e9e40bc4e4e905cd1bee0dc2347af2d7b525902 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.Type 180e2b2ce7d4316a930fe6dce5a9edce6f805a8ff6ef552416881f59c2f2afc8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.Value 203322bdc323912c60b7e980984b5a91b64dc7154e234211e6183e25bbe93f25 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.Which 90b298d7223ad4d14e276581d4a29aa55ff17a1f0d8a01c31a70b52d247df982 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.WindowId dde748740c7fff39681adbcf5cde4ef8ec829eac0c7b4e1b136163ca16efec0a -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.X d5c7f78a0916a3398e7f6155b4d700f08a0fc15091d0cfee6a5e777770f8113c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenAxisEvent.Y 24a04e61962aa5a52f6824d02c1598d89c1995f0bf2be9c1dc90c8160a4bb440 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.Button 7b34bbb61202fcb393940a909ca4fbc63dd4e666aa8c7d4e548df2a7253a1a8f -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.Down a7f06232b20b12cf74c54a0fed21e0c72bc1526be59e4d5ccb4dbb4fdde52e40 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.PenState a72f1649c0cf6818f57bc940cf2cc75a7fb850a924176d4350c09d8aa5391275 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.Reserved 4a62de4b4bf697519c55bba4f3f29238221dc5bb25d551b66d53a05784389f00 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.Timestamp 2346ce4048f49618ac75a2c0737aae414dff1a0cec8c093790d93123b975055c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.Type 5ba8725c56622c7fe186b0630e73d579ed0a1165be2e8616362f7c833f3d0af5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.Which ad2eec84368d978efef6919ca2062e49d753602459e4ccd4d7221888713107cd -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.WindowId 7e2303510c0ef41b4e57b84849cbf3302ff1a87d20c8b6a82d3a8248b2fe99af -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.X 9acfc84c57ae9dca64a90dd9e557bf2c296740158a7106e816b1fcac72f9917f -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenButtonEvent.Y 70bf65019281de5fbf870752d1895c73a7fc8da6be46d4cd642d45efbf035d71 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_DIRECT b2d762970e64c98de3adf5b8ac964007fcd6b310d809e3a961e14b14bd51fa7b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_INDIRECT 9b9a4a60520a3bfeb7e0a838058b60846c8da0c7666d187e54d856802de678f7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_INVALID d30b1323ef1cfb414d12b2f5e4dc4d3dc65f842e1b8a928f3f8fb6a9141981db -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_UNKNOWN 0de03bf71f3d84594eb66e83f9860ae6cc817a2ab91b8b0e1e65d2c4ebcb5dad -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.PenState f47f847d088097a72032600adda3509b2116207986ebb1a4773f79c24cc58d10 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.Reserved 1c932205d8df91965e1d1be0a02f038532a0f92dbf3cc3212e41f7a821f5a924 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.Timestamp ee0358cd2f9157c6bd68991693b01ea0108f672a6798ea682a92d4a91446e484 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.Type cb3d43a9650a1f7891febd953c64f2e220766f69c4140c69d4104bec409976ea -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.Which f206868e4e7d2f1a7baac3a95fc46c658aa458fd07861f7f39e76b6306b9c281 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.WindowId 9ea17f920023baa8e55e1b586e3d806313530ff8cefbc122ecd84f192684bda7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.X 834d79e17f3947ac96519d468e09065f9023205821fece16fde44c41eaaf9925 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenMotionEvent.Y 7ae8d8b173aeb3ecc069ad430928b9c0e7905be4b4fbaaf7eed22408c27edc6b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenProximityEvent.Reserved fa85f1513f13bb4655eda55f65512b485e288edc5cefe3d7d2acdc1a924917b0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenProximityEvent.Timestamp 0e903492a74dd4bc6174ec32eee135d7f229c87506fef204e5c530530071e82b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenProximityEvent.Type d41e43c44e52bb17f0c2e612f6a76b7ae293971c2178fb96d12fb73abda869c4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenProximityEvent.Which b321010432230e19505b678f61980a20c95564dc11db80084e5ff756fd2accd1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenProximityEvent.WindowId b11f2642e770e602b64c1af76c58e10b3d75bcac4081ad6e2e86acc0e62a7261 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.Down fdc57137b23c4cde7219a9f385a3b24105f9f624d3767c6a9d2e90a0af8bef16 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.Eraser 0829800f7e198ab7357d88de0b4d1a07ad25aa47394292d750cba3768a6e419a -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.PenState bba8d0bc7ffd9091d19f75a09cbcdcf9e8e5e397476212ab8c1694eb05f71b0e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.Reserved fe21e5d2f123805fa816b1dda7f7bdda749caf5ab73fc0263ec22e6bdb2cbba9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.Timestamp 182e5ce0adbd1e45860ff750a0274ac630128e86a1f324521014b094f1fa4d6b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.Type fbd1dfd250b6847e48f09e04332f8d47dd70ea882885ecd7e874833b950b7a8c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.Which 45a53798d419e956b56755b1ff30d3ee47dcb48858a8f4657ec8a7afd4e99383 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.WindowId 0665d685a6819ffd142ef9ec3495047bac4c731778eba236ee7d89547c14bbeb -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.X 15779fcb364b98193cd50d22777ee241ec8bf6d708d1a59a69786d36ccf1d59d -->
+<!-- api: F:Inno.Native.Sdl3.SDLPenTouchEvent.Y 0e11b83c157ad1f38eda91cff39a5210172fa919db6a41db0d2c6353606cf681 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPinchFingerEvent.Reserved 3907b5b23919b4f8f3d52e61a86e003db2b8c086e01b1643e911bf9dfc703329 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPinchFingerEvent.Scale a5e8b7ca0fbdf752e1ac3f90af049e13bf5819e5c5060b5afbad384017eef86b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPinchFingerEvent.Timestamp b4c98a2b7383f263470c3602cd99915f3fb6a2f9d37b16c5c24b251e0b8e33d7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPinchFingerEvent.Type c7ef7d23eb6f8734198d4bd87e77d9d25ecba3e944e66895a6fdb89a44e7c164 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPinchFingerEvent.WindowId 69f5d3e7be7e961d7a054f8abf9baf415130ea33e085cf5f165c703b651d6c0f -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr128Float 2ca296aa2e8a6d6ed3acae2bcf451c9d15ae8c6fc723dd943b636d3aba025f25 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr1555 ddc266b6db230c3e0cac265ea867f8575aad0900545305929e1a9da1eccaa2dd -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr2101010 764043813e2e865a42aa9b48a4e513c6216ab76c84cfbddb17ffed96df7c8ea4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr32 754185bd8652f3f49a2ce080eda5e81e1f2b98c4b38da90df3c03b1d08e9a26c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr4444 452e66b4feedee26f6997730aa69200ba3281f221e0a354cb0cfb89a57c12d58 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr64 8347e6945e4ae65eef6949c7b530f2ee991dff9eba9ae14d7bf5085c5499b1f3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr64Float 7567961868b64328836916d36629061eb99710efcd0dfe9e9d51d3ff4e6a9427 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Abgr8888 c9eb4dbae5f43ed4d9e887a0570c126887bf23a732d70f22af75549963356d11 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb128Float aada472ce0251f14938c12acb480d066454321bc992b0803ab9b02c1144eefdf -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb1555 35220581713507586b5aefe6034a390538ec4058fe35639d143dcedcaa96725c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb2101010 022ccc9b714c9a5e568d06b5e8e8a04cec31206f97aaed825bd058438330347e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb32 1b05ab49746d2bbac519815e868423d0e0d48e0eb1754f970e01315ecda08725 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb4444 a7f62f4e4c5fa8dff5e1e47d950d51ddc3beacb5501fcbad9615f09a25373cb9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb64 ca3b5622a8a8023195c25de3e5b64059c0901284c06c6b12416d15960cdd439e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb64Float 0d35ccf9a49879deb64d662fa1513017eac06740fedd404bbf60558111012764 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Argb8888 d4f43a327c92f2bcb657fb6678a74a21e3a848d23087e08ecc65a99e91710ffe -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgr24 f9acbe1e52fc2a1f29cf0ccafbad18ffb356c4c2cc0c3d9f61218c201b48f7a7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgr48 020fec87e89f68bd36013957cc09036cdea0eb61bc97e51eff5288912dc58af6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgr48Float 6e72f54056877d74c0d332b309b463294dd6b679cd7ef0e9e5dcf59eeaa2bfe4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgr565 9d43c02df07f28e1029fc4a2a73f8e2f9b394a93dab5154cc4969ca94283cc7d -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgr96Float a221a71d62acdadef2f9e86a7b6797ddfda5e4007e27b47d09f352a89fd550f6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgra128Float 0e72530cf5252d886193c4e5a2de85e610c7c581046bee67d92066e29ba8ab8a -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgra32 05b45810dabe4da822dd4ff7d83cf85cbceb21899db8a5f3e3524fed0c13fd43 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgra4444 16438bcf796adec9634102597c8f3cf520e84efe95dc63d05b8206d060ad24ae -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgra5551 c1d9a602bebc4865ca7c300d0aee02de0eab0f71ebdf61c2739ff5093f22c1d0 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgra64 c15422133fec0e14f70da94e16e33ef7b87c3a1bcfb581a6e4ff9b364dcf53e1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgra64Float 22c83eda8ac4c5c9525a79a5a7d0324abf02335d77448a60e15d1acf5c0eb910 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgra8888 1f875db026ebefa678d1babae164452a897b68ca60868d19a0c33f9ffc77127c -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgrx32 3cb2d9d8bee27e1b12bae6dcfa9327ee9130d135484cec29235de33ba9ff24c6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Bgrx8888 08f67ddb5138cf3ea0dbfbcded447188c669d2d61836344d2b35f67d26a806e7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.ExternalOes 9093bea1bbe803e9d075f97565c96c2adfeb985dfe0223c536bd9c0d1ee97091 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Index1Lsb d33bc5d31aaf64f0365d9b9292ece073e49188f19e3aad63664f9e1e8c2e8ae8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Index1Msb 52bbfedcc74943a828b4ceee088efcb0db91775e665ca44c9f6b0ac501e9ffd3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Index2Lsb fb9932a7ccbc31fb1122906b526e14e37222800ddf9cc98d79e8a162e64320f6 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Index2Msb 9abaca69effdf5d5bf45aa210c609712ce5b5b2de418672752fdd3d105002204 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Index4Lsb 4cac1574d66638f5184674e4237ff46875d126aa31f5a09b31a7ce3109916d67 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Index4Msb ce659f188618e30c6d0d6e61702dca872aefee5f032baeb6dfcd0432ecf86f61 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Index8 fce512efcf3e2f967a1aa4e08db3e67cbf58603ac8ef52bcd5493919436c1164 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Iyuv 7be39879e6f0ef6871d058e5e6f84f126e7d4ea2868a89925d3d65e227f6369b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Mjpg e14cc011c055c1e6c2154e2d5bbc1a62c551ded467b3a6972c646e43c308479f -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Nv12 def3536cac3af08fac4306235186767e103667c872ec37ec7a6f63e5066f4ebc -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Nv21 eda8fe90e34564a0a4c41b753ee3cc1d5a9d1efb042915fa9750f7b0d0049cf7 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.P010 8733736a8565725f1d7d452b1efe41c8aea50395de17016b4bc92867f324c3f5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgb24 e023f6f4253c188aebb3f707a5eae46ca0f8b5c6d5d354c82894634b2f6148f5 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgb332 21c82892c0da0721e044fa89eeec66ee65e95782192ee19b375cd0aec76d8345 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgb48 27147bd8802993672b589a1a6680bdf3f8c7fdf39c31f47f39abf69aad8c2e04 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgb48Float ce08b70b0f0055e3757ffceb1e18fc085f7c8549496241e1e985824399831edb -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgb565 918aa9ddbb54b20388a74b5029636c9da71c7417c405153e1f8a0147c5ccc73e -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgb96Float 397d131adda12db9e0397d8f1391df51d4644ff4fde71f5fcc099f98bb029ff4 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgba128Float 440ca7fa7bdcb135fd2bf8af9a1d6fc0a2069527a1735bad8477728df0140bea -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgba32 30e7e22c97f4bc75cd674383806577f3a788e160d746f4a96ce480cd8d3d2c6b -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgba4444 e1ed86197e78f33394da9722577e215fe0a9d89d569df34a0ed4042e6972ce1f -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgba5551 8d849b320301de2ded7804d7ea6cb180afbde4d0c76dfcf0d2484fb2b9aea1d3 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgba64 be8c2e627ddff315a2cfee09709f49a33f3e4f154db0497b38fc5099a4abe190 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgba64Float 2d6fa5f0e48b38c048f2895dcfcbb261c7f1df3665bfedf9e72cf50e9ba156e9 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgba8888 fdac60f3593f6a5d77c39f6bf1d159e2646a173446fdd568d3fcfaf40a9dba36 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgbx32 41d9dd433bb1a66e784089e475aaafba2ed8c9c08f532fd6b874c866d058b619 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Rgbx8888 f308de0c0fb1174550785d9da9e3c132b9aeb365df0197167a39c94126ebfba8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Unknown 2476fcca610725f8ec5980ca2f5788aa0d5ecd496b24cda77f1713b0aa7ed068 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Uyvy ee16eb733963a8a66faa2d850236dcc7cee683054d00a0d58d88afa053a12b40 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Xbgr1555 6626a0934e7d3b34df5ab23fe763e44dbf375b94190e8829bd423b05c7b6be87 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Xbgr2101010 2d70407d9f202356034ec7f25b84950d90e08f73f44196817a8d48db34d91ed8 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Xbgr32 35e27f1801f46a53b49b1a740b1bcbf3e14f599d87525dabfc59d82578f26742 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Xbgr4444 2c4a2e7403f14c7aeea04b00a33094b70984fb0388ea5a45a5828d3520dfb4d1 -->
+<!-- api: F:Inno.Native.Sdl3.SDLPixelFormat.Xbgr8888 e5e434374e373417380cd7e79eac29ecf2c91001902d271cd5dc0e12b356f034 -->
+
+| 声明 | 语义与限制 |
+| --- | --- |
+| <a id="api-de653b3cf8d4ce36"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.AttackLevel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62096) | Level at the start of the attack. |
+| <a id="api-fa626aeb96ccc900"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62061) | Button that triggers the effect. |
+| <a id="api-6f0dad50c28c7767"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.Delay`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62056) | Delay before starting the effect. |
+| <a id="api-a38b7573086e52c4"></a>[`public Inno.Native.Sdl3.SDLHapticDirection Inno.Native.Sdl3.SDLHapticPeriodic.Direction`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62046) | Direction of the effect. |
+| <a id="api-ec43eed01862d66c"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.FadeLength`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62101) | Duration of the fade. |
+| <a id="api-1f517a506652786a"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.FadeLevel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62106) | Level at the end of the fade. |
+| <a id="api-1bd516368fed2663"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.Interval`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62066) | How soon it can be triggered again after button. |
+| <a id="api-90a0409d1db4ec09"></a>[`public uint Inno.Native.Sdl3.SDLHapticPeriodic.Length`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62051) | Duration of the effect. |
+| <a id="api-6d57642a5ad9cf78"></a>[`public short Inno.Native.Sdl3.SDLHapticPeriodic.Magnitude`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62076) | Peak value; if negative, equivalent to 180 degrees extra phase shift. |
+| <a id="api-10cbd5f54b343ea3"></a>[`public short Inno.Native.Sdl3.SDLHapticPeriodic.Offset`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62081) | Mean value of the wave. |
+| <a id="api-728a49a7b594b7ea"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.Period`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62071) | Period of the wave. |
+| <a id="api-e73db9775f02c748"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.Phase`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62086) | Positive phase shift given by hundredth of a degree. |
+| <a id="api-4bea43378bae7bb5"></a>[`public ushort Inno.Native.Sdl3.SDLHapticPeriodic.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62041) | SDL_HAPTIC_SINE, SDL_HAPTIC_SQUARE SDL_HAPTIC_TRIANGLE, SDL_HAPTIC_SAWTOOTHUP or SDL_HAPTIC_SAWTOOTHDOWN |
+| <a id="api-1f9d042766823528"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.AttackLength`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62183) | Duration of the attack. |
+| <a id="api-8abb2a1c95a2b026"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.AttackLevel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62188) | Level at the start of the attack. |
+| <a id="api-8006eb8e8522d9c1"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62163) | Button that triggers the effect. |
+| <a id="api-a641e53e7385f300"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.Delay`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62158) | Delay before starting the effect. |
+| <a id="api-d1d66ef1855a4f52"></a>[`public Inno.Native.Sdl3.SDLHapticDirection Inno.Native.Sdl3.SDLHapticRamp.Direction`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62148) | Direction of the effect. |
+| <a id="api-2b107dbcbd84e5f2"></a>[`public short Inno.Native.Sdl3.SDLHapticRamp.End`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62178) | Ending strength level. |
+| <a id="api-e2a56ac21feb2ebc"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.FadeLength`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62193) | Duration of the fade. |
+| <a id="api-8d5ff3051f22de68"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.FadeLevel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62198) | Level at the end of the fade. |
+| <a id="api-3845ecb16392e126"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.Interval`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62168) | How soon it can be triggered again after button. |
+| <a id="api-8d48429f0e38aa74"></a>[`public uint Inno.Native.Sdl3.SDLHapticRamp.Length`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62153) | Duration of the effect. |
+| <a id="api-ab815650d71b7b60"></a>[`public short Inno.Native.Sdl3.SDLHapticRamp.Start`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62173) | Beginning strength level. |
+| <a id="api-394b2e9fd0ee1e6f"></a>[`public ushort Inno.Native.Sdl3.SDLHapticRamp.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62143) | SDL_HAPTIC_RAMP |
+| <a id="api-c89233c73822290c"></a>[`Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_BLUETOOTH = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62238) | Bluetooth or Bluetooth LE bus Specifications: https://www.bluetooth.com/specifications/specs/human-interface-device-profile-1-1-1/ https://www.bluetooth.com/specifications/specs/hid-service-1-0/ https://www.bluetooth.com/specifications/specs/hid-over-gatt-profile-1-0/<br>常量：`2` |
+| <a id="api-7d611ae400806640"></a>[`Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_I2C = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62244) | I2C bus Specifications: https://docs.microsoft.com/previous-versions/windows/hardware/design/dn642101(v=vs.85)<br>常量：`3` |
+| <a id="api-477977b48356d034"></a>[`Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_SPI = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62250) | SPI bus Specifications: https://www.microsoft.com/download/details.aspx?id=103325<br>常量：`4` |
+| <a id="api-e2b36d4dba96ccf4"></a>[`Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_UNKNOWN = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62224) | Unknown bus type<br>常量：`0` |
+| <a id="api-c3020afebef2b1b9"></a>[`Inno.Native.Sdl3.SDLHidBusType.SDL_HID_API_BUS_USB = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62230) | USB bus Specifications: https://usb.org/hid<br>常量：`1` |
+| <a id="api-77ffd6c097e85fb1"></a>[`public Inno.Native.Sdl3.SDLHidBusType Inno.Native.Sdl3.SDLHidDeviceInfo.BusType`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62349) | Underlying bus type |
+| <a id="api-c1118cf2da5187b1"></a>[`public int Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceClass`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62340) | Additional information about the USB interface. Valid on libusb and Android implementations. |
+| <a id="api-37d6cc9229e1b2a2"></a>[`public int Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceNumber`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62334) | The USB interface which this logical device represents. Valid only if the device is a USB HID device. Set to -1 in all other cases. |
+| <a id="api-f122899660a82082"></a>[`public int Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceProtocol`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62344) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-5e22d1ede5b08000"></a>[`public int Inno.Native.Sdl3.SDLHidDeviceInfo.InterfaceSubclass`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62342) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-03a0df227be48fbb"></a>[`public ushort* Inno.Native.Sdl3.SDLHidDeviceInfo.ManufacturerString`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62309) | Manufacturer String |
+| <a id="api-711d24ba8adff0ae"></a>[`public Inno.Native.Sdl3.SDLHidDeviceInfo* Inno.Native.Sdl3.SDLHidDeviceInfo.Next`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62354) | Pointer to the next device |
+| <a id="api-005c7b8e37976aeb"></a>[`public sbyte* Inno.Native.Sdl3.SDLHidDeviceInfo.Path`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62283) | Platform-specific device path |
+| <a id="api-ccb5f71811012e74"></a>[`public ushort Inno.Native.Sdl3.SDLHidDeviceInfo.ProductId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62293) | Device Product ID |
+| <a id="api-c466c7995c385ad3"></a>[`public ushort* Inno.Native.Sdl3.SDLHidDeviceInfo.ProductString`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62314) | Product string |
+| <a id="api-3fb7266b71534550"></a>[`public ushort Inno.Native.Sdl3.SDLHidDeviceInfo.ReleaseNumber`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62304) | Device Release Number in binary-coded decimal, also known as Device Version Number |
+| <a id="api-dba1a9fdb37d30d5"></a>[`public ushort* Inno.Native.Sdl3.SDLHidDeviceInfo.SerialNumber`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62298) | Serial Number |
+| <a id="api-b554e9220adb27b6"></a>[`public ushort Inno.Native.Sdl3.SDLHidDeviceInfo.Usage`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62326) | Usage for this Device/Interface (Windows/Mac/hidraw only) |
+| <a id="api-872a52afc0230e21"></a>[`public ushort Inno.Native.Sdl3.SDLHidDeviceInfo.UsagePage`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62320) | Usage Page for this Device/Interface (Windows/Mac/hidraw only) |
+| <a id="api-69f2c7f530a827c3"></a>[`public ushort Inno.Native.Sdl3.SDLHidDeviceInfo.VendorId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62288) | Device Vendor ID |
+| <a id="api-df92d93c24f819c4"></a>[`Inno.Native.Sdl3.SDLHintPriority.SDL_HINT_DEFAULT = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62404) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-eb179d87eb08b305"></a>[`Inno.Native.Sdl3.SDLHintPriority.SDL_HINT_NORMAL = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62405) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-16b3f31f64f72fc1"></a>[`Inno.Native.Sdl3.SDLHintPriority.SDL_HINT_OVERRIDE = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62406) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-1563ca8ba68ee982"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_DRAGGABLE = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62451) | Region can drag entire window.<br>常量：`1` |
+| <a id="api-7209e2d5cab95f9b"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_NORMAL = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62447) | Region is normal. No special properties.<br>常量：`0` |
+| <a id="api-b5b27229b10d2688"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_BOTTOM = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62475) | Region is the resizable bottom border.<br>常量：`7` |
+| <a id="api-1b61e2a5f648dd10"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_BOTTOMLEFT = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62479) | Region is the resizable bottom-left corner border.<br>常量：`8` |
+| <a id="api-83f6acca847130be"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_BOTTOMRIGHT = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62471) | Region is the resizable bottom-right corner border.<br>常量：`6` |
+| <a id="api-d3bd9b07af3d3f9d"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_LEFT = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62483) | Region is the resizable left border.<br>常量：`9` |
+| <a id="api-ecc68268d76187e7"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_RIGHT = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62467) | Region is the resizable right border.<br>常量：`5` |
+| <a id="api-0eba565638ecf425"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_TOP = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62459) | Region is the resizable top border.<br>常量：`3` |
+| <a id="api-013decb4ca642155"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_TOPLEFT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62455) | Region is the resizable top-left corner border.<br>常量：`2` |
+| <a id="api-6e255f48d8b8ba6e"></a>[`Inno.Native.Sdl3.SDLHitTestResult.SDL_HITTEST_RESIZE_TOPRIGHT = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62463) | Region is the resizable top-right corner border.<br>常量：`4` |
+| <a id="api-496023b1f81e986d"></a>[`Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_EOF = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62641) | End of file<br>常量：`2` |
+| <a id="api-6260a6dc531ebf8b"></a>[`Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_ERROR = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62637) | Read or write I/O error<br>常量：`1` |
+| <a id="api-de95efa9f69412e3"></a>[`Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_NOT_READY = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62645) | Non blocking I/O, not ready<br>常量：`3` |
+| <a id="api-27f48ecdc5fe487c"></a>[`Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_READONLY = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62649) | Tried to write a read-only buffer<br>常量：`4` |
+| <a id="api-0e3e35d69870f7cb"></a>[`Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_READY = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62633) | Everything is ready (no errors and not EOF).<br>常量：`0` |
+| <a id="api-a133c3aa195bd194"></a>[`Inno.Native.Sdl3.SDLIOStatus.SDL_IO_STATUS_WRITEONLY = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62653) | Tried to read a write-only buffer<br>常量：`5` |
+| <a id="api-efdcd5bb6b0bcf07"></a>[`public delegate* unmanaged[Cdecl]<void*, byte> Inno.Native.Sdl3.SDLIOStreamInterface.Close`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62751) | Close and free any allocated resources. This does not guarantee file writes will sync to physical media; they can be in the system's file cache, waiting to go to disk. The SDL_IOStream is still destroyed even if this fails, so clean up anything even if flushing buffers, etc, returns an error. @return true if successful or false on write error when flushing data. |
+| <a id="api-5775846b40312b79"></a>[`public delegate* unmanaged[Cdecl]<void*, Inno.Native.Sdl3.SDLIOStatus*, byte> Inno.Native.Sdl3.SDLIOStreamInterface.Flush`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62740) | If the stream is buffering, make sure the data is written out. On failure, you should set `*status` to a value from the SDL_IOStatus enum. You do not have to explicitly set this on a successful flush. @return true if successful or false on write error when flushing data. |
+| <a id="api-21c074416277d179"></a>[`public delegate* unmanaged[Cdecl]<void*, void*, ulong, Inno.Native.Sdl3.SDLIOStatus*, ulong> Inno.Native.Sdl3.SDLIOStreamInterface.Read`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62719) | Read up to `size` bytes from the data stream to the area pointed at by `ptr`. `size` will always be > 0. On an incomplete read, you should set `*status` to a value from the SDL_IOStatus enum. You do not have to explicitly set this on a complete, successful read. @return the number of bytes read |
+| <a id="api-31bd49bc0631669c"></a>[`public delegate* unmanaged[Cdecl]<void*, long, Inno.Native.Sdl3.SDLIOWhence, long> Inno.Native.Sdl3.SDLIOStreamInterface.Seek`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62708) | Seek to `offset` relative to `whence`, one of stdio's whence values: SDL_IO_SEEK_SET, SDL_IO_SEEK_CUR, SDL_IO_SEEK_END @return the final offset in the data stream, or -1 on error. |
+| <a id="api-cfa6b6d4bdbab45f"></a>[`public delegate* unmanaged[Cdecl]<void*, long> Inno.Native.Sdl3.SDLIOStreamInterface.Size`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62700) | Return the number of bytes in this SDL_IOStream @return the total size of the data stream, or -1 on error. |
+| <a id="api-8019131067a4bde8"></a>[`public uint Inno.Native.Sdl3.SDLIOStreamInterface.Version`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62693) | The version of this interface |
+| <a id="api-856cde988d823e44"></a>[`public delegate* unmanaged[Cdecl]<void*, void*, ulong, Inno.Native.Sdl3.SDLIOStatus*, ulong> Inno.Native.Sdl3.SDLIOStreamInterface.Write`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62730) | Write exactly `size` bytes from the area pointed at by `ptr` to data stream. `size` will always be > 0. On an incomplete write, you should set `*status` to a value from the SDL_IOStatus enum. You do not have to explicitly set this on a complete, successful write. @return the number of bytes written |
+| <a id="api-a5917d0916287882"></a>[`Inno.Native.Sdl3.SDLIOWhence.SDL_IO_SEEK_CUR = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62783) | Seek relative to current read point<br>常量：`1` |
+| <a id="api-2c2b3e8c4df46df8"></a>[`Inno.Native.Sdl3.SDLIOWhence.SDL_IO_SEEK_END = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62787) | Seek relative to the end of data<br>常量：`2` |
+| <a id="api-103f12c2176b4ad0"></a>[`Inno.Native.Sdl3.SDLIOWhence.SDL_IO_SEEK_SET = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62779) | Seek from the beginning of data<br>常量：`0` |
+| <a id="api-8b8d9b855fe47bec"></a>[`Inno.Native.Sdl3.SDLInitFlags.Audio = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62507) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-ca77e6364b71eefc"></a>[`Inno.Native.Sdl3.SDLInitFlags.Camera = 65536`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62514) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`65536` |
+| <a id="api-fc5bf6794fc3070a"></a>[`Inno.Native.Sdl3.SDLInitFlags.Events = 16384`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62512) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16384` |
+| <a id="api-4e8b6711bd241bd8"></a>[`Inno.Native.Sdl3.SDLInitFlags.Gamepad = 8192`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62511) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8192` |
+| <a id="api-6d6a93e92671385b"></a>[`Inno.Native.Sdl3.SDLInitFlags.Haptic = 4096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62510) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4096` |
+| <a id="api-2540613c559304e8"></a>[`Inno.Native.Sdl3.SDLInitFlags.Joystick = 512`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62509) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`512` |
+| <a id="api-e2945a1cf3e09ce5"></a>[`Inno.Native.Sdl3.SDLInitFlags.Sensor = 32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62513) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32768` |
+| <a id="api-5cc1074796d7b6c7"></a>[`Inno.Native.Sdl3.SDLInitFlags.Timer = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62506) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-81c68b2fefba82e1"></a>[`Inno.Native.Sdl3.SDLInitFlags.Video = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62508) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-bba58cf7b55126d4"></a>[`public void* Inno.Native.Sdl3.SDLInitState.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62588) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-86deda26a73802f1"></a>[`public Inno.Native.Sdl3.SDLAtomicInt Inno.Native.Sdl3.SDLInitState.Status`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62584) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-64f67e59bbedf93e"></a>[`public ulong Inno.Native.Sdl3.SDLInitState.Thread`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62586) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-04230be890412f0a"></a>[`Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_INITIALIZED = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62613) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-1e4f75d6ae007b7a"></a>[`Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_INITIALIZING = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62612) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-ee7cfe938da2db1b"></a>[`Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_UNINITIALIZED = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62611) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-abcdc0196c8eacc3"></a>[`Inno.Native.Sdl3.SDLInitStatus.SDL_INIT_STATUS_UNINITIALIZING = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62614) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-7acc637172883f1d"></a>[`public byte Inno.Native.Sdl3.SDLJoyAxisEvent.Axis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62826) | The joystick axis index |
+| <a id="api-8d172e3291de38d0"></a>[`public byte Inno.Native.Sdl3.SDLJoyAxisEvent.Padding1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62828) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-ccaf01c0c3668c95"></a>[`public byte Inno.Native.Sdl3.SDLJoyAxisEvent.Padding2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62830) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-7c4af721018851fc"></a>[`public byte Inno.Native.Sdl3.SDLJoyAxisEvent.Padding3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62832) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-f331bae48e7fa0f5"></a>[`public ushort Inno.Native.Sdl3.SDLJoyAxisEvent.Padding4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62839) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-efeb68e9ff43a705"></a>[`public uint Inno.Native.Sdl3.SDLJoyAxisEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62811) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-a7fb97518f7ce85b"></a>[`public ulong Inno.Native.Sdl3.SDLJoyAxisEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62816) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-1c8280c04c32c039"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLJoyAxisEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62809) | SDL_EVENT_JOYSTICK_AXIS_MOTION |
+| <a id="api-c9de42bdeda68aa3"></a>[`public short Inno.Native.Sdl3.SDLJoyAxisEvent.Value`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62837) | The axis value (range: -32768 to 32767) |
+| <a id="api-c6ec59533e40028f"></a>[`public uint Inno.Native.Sdl3.SDLJoyAxisEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62821) | The joystick instance id |
+| <a id="api-0d106afd635e4206"></a>[`public byte Inno.Native.Sdl3.SDLJoyBallEvent.Ball`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62885) | The joystick trackball index |
+| <a id="api-f6eb163654e37b4c"></a>[`public byte Inno.Native.Sdl3.SDLJoyBallEvent.Padding1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62887) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-90a53d4cfae83f5d"></a>[`public byte Inno.Native.Sdl3.SDLJoyBallEvent.Padding2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62889) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-535cb12b68125a03"></a>[`public byte Inno.Native.Sdl3.SDLJoyBallEvent.Padding3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62891) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-1bf257696e169e17"></a>[`public uint Inno.Native.Sdl3.SDLJoyBallEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62870) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-1c3fc30e4d64bf23"></a>[`public ulong Inno.Native.Sdl3.SDLJoyBallEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62875) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-694ce53185a97f54"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLJoyBallEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62868) | SDL_EVENT_JOYSTICK_BALL_MOTION |
+| <a id="api-bb826ee903390eac"></a>[`public uint Inno.Native.Sdl3.SDLJoyBallEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62880) | The joystick instance id |
+| <a id="api-68210aad0aafe60a"></a>[`public short Inno.Native.Sdl3.SDLJoyBallEvent.Xrel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62896) | The relative motion in the X direction |
+| <a id="api-78a2003de61ab5d2"></a>[`public short Inno.Native.Sdl3.SDLJoyBallEvent.Yrel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62901) | The relative motion in the Y direction |
+| <a id="api-64bfb995598234d4"></a>[`public int Inno.Native.Sdl3.SDLJoyBatteryEvent.Percent`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62952) | The joystick battery percent charge remaining |
+| <a id="api-478f2b4380da4cb8"></a>[`public uint Inno.Native.Sdl3.SDLJoyBatteryEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62932) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-2f0e13c5894441d5"></a>[`public Inno.Native.Sdl3.SDLPowerState Inno.Native.Sdl3.SDLJoyBatteryEvent.State`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62947) | The joystick battery state |
+| <a id="api-61501f646100ba3f"></a>[`public ulong Inno.Native.Sdl3.SDLJoyBatteryEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62937) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-fe2016e0a22da214"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLJoyBatteryEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62930) | SDL_EVENT_JOYSTICK_BATTERY_UPDATED |
+| <a id="api-a303da965864341e"></a>[`public uint Inno.Native.Sdl3.SDLJoyBatteryEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62942) | The joystick instance id |
+| <a id="api-967091d44d1899db"></a>[`public byte Inno.Native.Sdl3.SDLJoyButtonEvent.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62998) | The joystick button index |
+| <a id="api-23db1a4086666841"></a>[`public byte Inno.Native.Sdl3.SDLJoyButtonEvent.Down`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63003) | true if the button is pressed |
+| <a id="api-06aa2e387257ef68"></a>[`public byte Inno.Native.Sdl3.SDLJoyButtonEvent.Padding1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63005) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-7939a8b4bfac0df6"></a>[`public byte Inno.Native.Sdl3.SDLJoyButtonEvent.Padding2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63007) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-78e96a297f82f1e0"></a>[`public uint Inno.Native.Sdl3.SDLJoyButtonEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62983) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-e6f466db6a35c81c"></a>[`public ulong Inno.Native.Sdl3.SDLJoyButtonEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62988) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-a3b95b666feaedf5"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLJoyButtonEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62981) | SDL_EVENT_JOYSTICK_BUTTON_DOWN or SDL_EVENT_JOYSTICK_BUTTON_UP |
+| <a id="api-22b7021ae510f401"></a>[`public uint Inno.Native.Sdl3.SDLJoyButtonEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L62993) | The joystick instance id |
+| <a id="api-dd3a4d04d9c156db"></a>[`public uint Inno.Native.Sdl3.SDLJoyDeviceEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63042) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-7b8a247f496d5ff0"></a>[`public ulong Inno.Native.Sdl3.SDLJoyDeviceEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63047) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-a81551e3eb7d04b9"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLJoyDeviceEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63040) | SDL_EVENT_JOYSTICK_ADDED or SDL_EVENT_JOYSTICK_REMOVED or SDL_EVENT_JOYSTICK_UPDATE_COMPLETE |
+| <a id="api-86586c5af2b3d5e8"></a>[`public uint Inno.Native.Sdl3.SDLJoyDeviceEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63052) | The joystick instance id |
+| <a id="api-a24e44e739585290"></a>[`public byte Inno.Native.Sdl3.SDLJoyHatEvent.Hat`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63098) | The joystick hat index |
+| <a id="api-df4c7cf858c4c908"></a>[`public byte Inno.Native.Sdl3.SDLJoyHatEvent.Padding1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63110) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-f9973650e2e0b603"></a>[`public byte Inno.Native.Sdl3.SDLJoyHatEvent.Padding2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63112) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-280e7d26a9e76332"></a>[`public uint Inno.Native.Sdl3.SDLJoyHatEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63083) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-732d78ce72f2b7c1"></a>[`public ulong Inno.Native.Sdl3.SDLJoyHatEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63088) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-f15e6a8cafbb3561"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLJoyHatEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63081) | SDL_EVENT_JOYSTICK_HAT_MOTION |
+| <a id="api-cd8ea96ea583d5c3"></a>[`public byte Inno.Native.Sdl3.SDLJoyHatEvent.Value`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63108) | The hat position value. @sa SDL_HAT_LEFTUP SDL_HAT_UP SDL_HAT_RIGHTUP @sa SDL_HAT_LEFT SDL_HAT_CENTERED SDL_HAT_RIGHT @sa SDL_HAT_LEFTDOWN SDL_HAT_DOWN SDL_HAT_RIGHTDOWN Note that zero means the POV is centered. |
+| <a id="api-4ce75fab3b28f2d7"></a>[`public uint Inno.Native.Sdl3.SDLJoyHatEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63093) | The joystick instance id |
+| <a id="api-52a90c780c021eb9"></a>[`Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_INVALID = -1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63148) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`-1` |
+| <a id="api-37ce2d082d56f5cd"></a>[`Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_UNKNOWN = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63149) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-e4903c56205e9e08"></a>[`Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_WIRED = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63150) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-e7a346db2a2ef7ef"></a>[`Inno.Native.Sdl3.SDLJoystickConnectionState.SDL_JOYSTICK_CONNECTION_WIRELESS = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63151) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-88b3ff2e5f640997"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_ARCADE_PAD = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63183) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-5369730e1ffe8ecd"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_ARCADE_STICK = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63178) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-7cde5d3317f99f55"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_COUNT = 10`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63185) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`10` |
+| <a id="api-36bdc11644342771"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_DANCE_PAD = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63180) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`5` |
+| <a id="api-38d82ac2911269fe"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_DRUM_KIT = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63182) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`7` |
+| <a id="api-f403f0be10f91c10"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_FLIGHT_STICK = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63179) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-dbba08a7b438fe02"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_GAMEPAD = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63176) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-3bebd5c69f78dc5f"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_GUITAR = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63181) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`6` |
+| <a id="api-895a459c2efc83cc"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_THROTTLE = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63184) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`9` |
+| <a id="api-499863829b7d90d6"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_UNKNOWN = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63175) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-0f74cd5ea222ab54"></a>[`Inno.Native.Sdl3.SDLJoystickType.SDL_JOYSTICK_TYPE_WHEEL = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63177) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-48c0e8281f2d242c"></a>[`public uint Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63209) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-3525f410411a6e91"></a>[`public ulong Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63214) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-31389496045cb61a"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63207) | SDL_EVENT_KEYBOARD_ADDED or SDL_EVENT_KEYBOARD_REMOVED |
+| <a id="api-6a63a64f09f08ca6"></a>[`public uint Inno.Native.Sdl3.SDLKeyboardDeviceEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63219) | The keyboard instance id |
+| <a id="api-32125e3d47c08e32"></a>[`public byte Inno.Native.Sdl3.SDLKeyboardEvent.Down`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63298) | true if the key is pressed |
+| <a id="api-56ab77f8ff4e743e"></a>[`public uint Inno.Native.Sdl3.SDLKeyboardEvent.Key`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63283) | SDL virtual key code |
+| <a id="api-0f589f62d1b291cf"></a>[`public ushort Inno.Native.Sdl3.SDLKeyboardEvent.Mod`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63288) | current key modifiers |
+| <a id="api-bbbd0791d81b334f"></a>[`public ushort Inno.Native.Sdl3.SDLKeyboardEvent.Raw`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63293) | The platform dependent scancode for this event |
+| <a id="api-6096436f0bd0f559"></a>[`public byte Inno.Native.Sdl3.SDLKeyboardEvent.Repeat`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63303) | true if this is a key repeat |
+| <a id="api-f7f9a416f9e8609d"></a>[`public uint Inno.Native.Sdl3.SDLKeyboardEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63258) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-e8aa4d87ecca353b"></a>[`public Inno.Native.Sdl3.SDLScancode Inno.Native.Sdl3.SDLKeyboardEvent.Scancode`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63278) | SDL physical key code |
+| <a id="api-5998105fa20c7856"></a>[`public ulong Inno.Native.Sdl3.SDLKeyboardEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63263) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-3475e87da581e757"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLKeyboardEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63256) | SDL_EVENT_KEY_DOWN or SDL_EVENT_KEY_UP |
+| <a id="api-fefc3c53775b0b35"></a>[`public uint Inno.Native.Sdl3.SDLKeyboardEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63273) | The keyboard instance id, or 0 if unknown or virtual |
+| <a id="api-5db32819fd62d9a5"></a>[`public uint Inno.Native.Sdl3.SDLKeyboardEvent.WindowID`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63268) | The window with keyboard focus, if any |
+| <a id="api-a9dd183cd030d4f6"></a>[`Inno.Native.Sdl3.SDLKeymod.Alt = Inno.Native.Sdl3.SDLKeymod.Lalt &#124; Inno.Native.Sdl3.SDLKeymod.Ralt`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63338) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`768` |
+| <a id="api-141ded08fc3c31df"></a>[`Inno.Native.Sdl3.SDLKeymod.Caps = 8192`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63333) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8192` |
+| <a id="api-3fe4dbda65b6ad3b"></a>[`Inno.Native.Sdl3.SDLKeymod.Ctrl = Inno.Native.Sdl3.SDLKeymod.Lctrl &#124; Inno.Native.Sdl3.SDLKeymod.Rctrl`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63336) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`192` |
+| <a id="api-22adc6cf242a80f3"></a>[`Inno.Native.Sdl3.SDLKeymod.Gui = Inno.Native.Sdl3.SDLKeymod.Lgui &#124; Inno.Native.Sdl3.SDLKeymod.Rgui`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63339) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3072` |
+| <a id="api-f1eb9d2708ed7354"></a>[`Inno.Native.Sdl3.SDLKeymod.Lalt = 256`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63328) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`256` |
+| <a id="api-45c3d714c88333ad"></a>[`Inno.Native.Sdl3.SDLKeymod.Lctrl = 64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63326) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`64` |
+| <a id="api-aa00db96faf598d2"></a>[`Inno.Native.Sdl3.SDLKeymod.Level5 = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63325) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-705e02533a8ea566"></a>[`Inno.Native.Sdl3.SDLKeymod.Lgui = 1024`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63330) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1024` |
+| <a id="api-9ab2e96cae976a8c"></a>[`Inno.Native.Sdl3.SDLKeymod.Lshift = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63323) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-d8b2beed1b49eec8"></a>[`Inno.Native.Sdl3.SDLKeymod.Mode = 16384`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63334) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16384` |
+| <a id="api-3e61b3839ae67c8d"></a>[`Inno.Native.Sdl3.SDLKeymod.None = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63322) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-a483e898890f5d35"></a>[`Inno.Native.Sdl3.SDLKeymod.Num = 4096`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63332) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4096` |
+| <a id="api-389f5b76d4986b59"></a>[`Inno.Native.Sdl3.SDLKeymod.Ralt = 512`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63329) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`512` |
+| <a id="api-f626b5a31d2276e2"></a>[`Inno.Native.Sdl3.SDLKeymod.Rctrl = 128`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63327) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`128` |
+| <a id="api-50356326921e0afc"></a>[`Inno.Native.Sdl3.SDLKeymod.Rgui = 2048`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63331) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2048` |
+| <a id="api-fcf1b9c28c3bab00"></a>[`Inno.Native.Sdl3.SDLKeymod.Rshift = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63324) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-b931cc7864273768"></a>[`Inno.Native.Sdl3.SDLKeymod.Scroll = 32768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63335) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32768` |
+| <a id="api-95f3f063ed7f8e3f"></a>[`Inno.Native.Sdl3.SDLKeymod.Shift = Inno.Native.Sdl3.SDLKeymod.Lshift &#124; Inno.Native.Sdl3.SDLKeymod.Rshift`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63337) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-93223e984b6992df"></a>[`public sbyte* Inno.Native.Sdl3.SDLLocale.Country`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63372) | A country, like "US" for America. Can be NULL. |
+| <a id="api-9553916008df17cc"></a>[`public sbyte* Inno.Native.Sdl3.SDLLocale.Language`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63367) | A language name, like "en" for English. |
+| <a id="api-98f606e6bd59b285"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_APPLICATION = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63398) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-aa859af98a6d1a11"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_ASSERT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63400) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-b5b3fb6d27895a75"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_AUDIO = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63402) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-aa18bf27f1988423"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_CUSTOM = 19`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63453) | Beyond this point is reserved for application use, e.g. enum { MYAPP_CATEGORY_AWESOME1 = SDL_LOG_CATEGORY_CUSTOM, MYAPP_CATEGORY_AWESOME2, MYAPP_CATEGORY_AWESOME3, ... };<br>常量：`19` |
+| <a id="api-24042eec63b9fc8c"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_ERROR = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63399) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-c73ebc2467817ea1"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_GPU = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63407) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`9` |
+| <a id="api-b0897ced94994d21"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_INPUT = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63405) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`7` |
+| <a id="api-42d681e81febbd47"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RENDER = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63404) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`6` |
+| <a id="api-fcd97fbebd4bdcea"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED10 = 18`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63443) | Reserved for future SDL library use<br>常量：`18` |
+| <a id="api-b1c907c1b03ae461"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED2 = 10`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63411) | Reserved for future SDL library use<br>常量：`10` |
+| <a id="api-195efae602718609"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED3 = 11`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63415) | Reserved for future SDL library use<br>常量：`11` |
+| <a id="api-df50650fec029c56"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED4 = 12`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63419) | Reserved for future SDL library use<br>常量：`12` |
+| <a id="api-0fd01367189c6267"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED5 = 13`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63423) | Reserved for future SDL library use<br>常量：`13` |
+| <a id="api-44fd6c4f15c433c4"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED6 = 14`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63427) | Reserved for future SDL library use<br>常量：`14` |
+| <a id="api-10fba571ae2186a3"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED7 = 15`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63431) | Reserved for future SDL library use<br>常量：`15` |
+| <a id="api-f1e5c28097af527d"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED8 = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63435) | Reserved for future SDL library use<br>常量：`16` |
+| <a id="api-14a9de8fabba38cc"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_RESERVED9 = 17`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63439) | Reserved for future SDL library use<br>常量：`17` |
+| <a id="api-377de04a9211abb9"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_SYSTEM = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63401) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-ac2421df407cb853"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_TEST = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63406) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-2fe99d6cfe2e7264"></a>[`Inno.Native.Sdl3.SDLLogCategory.SDL_LOG_CATEGORY_VIDEO = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63403) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`5` |
+| <a id="api-29f03fd60b8aa7af"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_COUNT = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63500) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-ee33fd064ee8904d"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_CRITICAL = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63499) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`7` |
+| <a id="api-0f970745f3615c3a"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_DEBUG = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63495) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-b69616296638b663"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_ERROR = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63498) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`6` |
+| <a id="api-d73a4b44b0be4e32"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_INFO = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63496) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-33c5ed4180bf671b"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_INVALID = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63492) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-754856b37c117717"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_TRACE = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63493) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-2550c3c7090afd23"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_VERBOSE = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63494) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-4b52345f0236765c"></a>[`Inno.Native.Sdl3.SDLLogPriority.SDL_LOG_PRIORITY_WARN = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63497) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`5` |
+| <a id="api-cf743ef7e0a2dd9e"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT2020_CL = 10`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63589) | ITU-R BT.2020-2 constant luminance<br>常量：`10` |
+| <a id="api-05a9f8b454091c45"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT2020_NCL = 9`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63585) | ITU-R BT.2020-2 non-constant luminance<br>常量：`9` |
+| <a id="api-22085f0444ed377a"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT470BG = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63572) | ITU-R BT.470-6 System B, G / ITU-R BT.601-7 625, functionally the same as SDL_MATRIX_COEFFICIENTS_BT601<br>常量：`5` |
+| <a id="api-e4d0dad217745d1c"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT601 = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63576) | ITU-R BT.601-7 525<br>常量：`6` |
+| <a id="api-e51ba33bbcdf4a56"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_BT709 = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63563) | ITU-R BT.709-6<br>常量：`1` |
+| <a id="api-90bed0472e127129"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_CL = 13`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63595) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`13` |
+| <a id="api-18e39285bdf1fd5b"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_CHROMA_DERIVED_NCL = 12`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63594) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`12` |
+| <a id="api-f88f3a7581e43911"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_CUSTOM = 31`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63600) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`31` |
+| <a id="api-c3b1a7bf86461a5a"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_FCC = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63568) | US FCC Title 47<br>常量：`4` |
+| <a id="api-e729b65d64e0ab54"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_ICTCP = 14`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63599) | ITU-R BT.2100-0 ICTCP<br>常量：`14` |
+| <a id="api-ffceb8d71e46ef65"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_IDENTITY = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63559) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-977af109e680dc1e"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_SMPTE2085 = 11`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63593) | SMPTE ST 2085<br>常量：`11` |
+| <a id="api-90f4fe2a7ae84cee"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_SMPTE240 = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63580) | SMPTE 240M<br>常量：`7` |
+| <a id="api-bf306f0c5bb14fb2"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_UNSPECIFIED = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63564) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-2fe53cc9a86f6c51"></a>[`Inno.Native.Sdl3.SDLMatrixCoefficients.SDL_MATRIX_COEFFICIENTS_YCGCO = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63581) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-9f7ad24d5b8be53c"></a>[`public int Inno.Native.Sdl3.SDLMessageBoxButtonData.ButtonId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63624) | User defined button id (value returned via SDL_ShowMessageBox) |
+| <a id="api-c64b4ceddb2b1f71"></a>[`public uint Inno.Native.Sdl3.SDLMessageBoxButtonData.Flags`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63619) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-4139b21dd668c90c"></a>[`public sbyte* Inno.Native.Sdl3.SDLMessageBoxButtonData.Text`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63629) | The UTF-8 button text |
+| <a id="api-50db0b966a500592"></a>[`public byte Inno.Native.Sdl3.SDLMessageBoxColor.B`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63659) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-0550f1fc7cf5fcab"></a>[`public byte Inno.Native.Sdl3.SDLMessageBoxColor.G`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63657) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-e26dc1be1bbd05da"></a>[`public byte Inno.Native.Sdl3.SDLMessageBoxColor.R`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63655) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-2018a27663e52a14"></a>[`public Inno.Native.Sdl3.NativeArray_f74c8ee287b17c81 Inno.Native.Sdl3.SDLMessageBoxColorScheme.Colors`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63685) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-ba2a93b1e3c19c38"></a>[`Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BACKGROUND = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63707) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-b495391eaec5c3e3"></a>[`Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63710) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-09e403b350ff2df6"></a>[`Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BUTTON_BORDER = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63709) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-3d730de6b51cec8f"></a>[`Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63711) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-90f06ea8876d9dd1"></a>[`Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_COUNT = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63715) | Size of the colors array of SDL_MessageBoxColorScheme.<br>常量：`5` |
+| <a id="api-d50fa1b3f3a23e53"></a>[`Inno.Native.Sdl3.SDLMessageBoxColorType.SDL_MESSAGEBOX_COLOR_TEXT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63708) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-1d7c15ea7749f2aa"></a>[`public Inno.Native.Sdl3.SDLMessageBoxButtonData* Inno.Native.Sdl3.SDLMessageBoxData.Buttons`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63753) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-3ffcc58503bf9da1"></a>[`public Inno.Native.Sdl3.SDLMessageBoxColorScheme* Inno.Native.Sdl3.SDLMessageBoxData.ColorScheme`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63758) | SDL_MessageBoxColorScheme, can be NULL to use system settings |
+| <a id="api-363ed5fca7b2add9"></a>[`public uint Inno.Native.Sdl3.SDLMessageBoxData.Flags`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63734) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-499203a4503e6eaf"></a>[`public sbyte* Inno.Native.Sdl3.SDLMessageBoxData.Message`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63749) | UTF-8 message text |
+| <a id="api-ac486e5cab951233"></a>[`public int Inno.Native.Sdl3.SDLMessageBoxData.Numbuttons`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63751) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-a0470ee3f121cd49"></a>[`public sbyte* Inno.Native.Sdl3.SDLMessageBoxData.Title`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63744) | UTF-8 title |
+| <a id="api-0a48f3a15de450fe"></a>[`public Inno.Native.Sdl3.SDLWindow* Inno.Native.Sdl3.SDLMessageBoxData.Window`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63739) | Parent window, can be NULL |
+| <a id="api-980ae5cb750c070b"></a>[`Inno.Native.Sdl3.SDLMessageBoxFlags.Error = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63777) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-93af4eed4beddebb"></a>[`Inno.Native.Sdl3.SDLMessageBoxFlags.Information = 64`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63779) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`64` |
+| <a id="api-0e350684dcc83d57"></a>[`Inno.Native.Sdl3.SDLMessageBoxFlags.Warning = 32`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63778) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-5a0d5ef6774b1f3c"></a>[`public byte Inno.Native.Sdl3.SDLMouseButtonEvent.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63823) | The mouse button index |
+| <a id="api-17a34cfc414acad3"></a>[`public byte Inno.Native.Sdl3.SDLMouseButtonEvent.Clicks`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63833) | 1 for single-click, 2 for double-click, etc. |
+| <a id="api-521c4485fd259ec4"></a>[`public byte Inno.Native.Sdl3.SDLMouseButtonEvent.Down`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63828) | true if the button is pressed |
+| <a id="api-e155cae4b65436e1"></a>[`public byte Inno.Native.Sdl3.SDLMouseButtonEvent.Padding`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63835) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-c70ccec75e22367f"></a>[`public uint Inno.Native.Sdl3.SDLMouseButtonEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63803) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-ca766d1638f763d2"></a>[`public ulong Inno.Native.Sdl3.SDLMouseButtonEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63808) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-034cac3f1244f802"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLMouseButtonEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63801) | SDL_EVENT_MOUSE_BUTTON_DOWN or SDL_EVENT_MOUSE_BUTTON_UP |
+| <a id="api-6e66521cb2cc1cf4"></a>[`public uint Inno.Native.Sdl3.SDLMouseButtonEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63818) | The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, or 0 |
+| <a id="api-e6f20a7f3925d9dd"></a>[`public uint Inno.Native.Sdl3.SDLMouseButtonEvent.WindowID`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63813) | The window with mouse focus, if any |
+| <a id="api-2ec3e433fba5a285"></a>[`public float Inno.Native.Sdl3.SDLMouseButtonEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63840) | X coordinate, relative to window |
+| <a id="api-c648730e6a195f13"></a>[`public float Inno.Native.Sdl3.SDLMouseButtonEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63845) | Y coordinate, relative to window |
+| <a id="api-95089473cc43c4d8"></a>[`Inno.Native.Sdl3.SDLMouseButtonFlags.Left = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63865) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-2b93656330b97c74"></a>[`Inno.Native.Sdl3.SDLMouseButtonFlags.Middle = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63866) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-3d322a912957fab3"></a>[`Inno.Native.Sdl3.SDLMouseButtonFlags.None = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63864) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-2c2bea1f0affa7dd"></a>[`Inno.Native.Sdl3.SDLMouseButtonFlags.Right = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63867) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-e2426d102114439f"></a>[`Inno.Native.Sdl3.SDLMouseButtonFlags.X1 = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63868) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-da17bf26e95f2072"></a>[`Inno.Native.Sdl3.SDLMouseButtonFlags.X2 = 16`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63869) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-45b4522964ac37c2"></a>[`public uint Inno.Native.Sdl3.SDLMouseDeviceEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63893) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-985914503759bc53"></a>[`public ulong Inno.Native.Sdl3.SDLMouseDeviceEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63898) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-93118876fd63a01b"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLMouseDeviceEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63891) | SDL_EVENT_MOUSE_ADDED or SDL_EVENT_MOUSE_REMOVED |
+| <a id="api-7adcebd763d34619"></a>[`public uint Inno.Native.Sdl3.SDLMouseDeviceEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63903) | The mouse instance id |
+| <a id="api-9df35dcc7aa8b2cb"></a>[`public uint Inno.Native.Sdl3.SDLMouseMotionEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63934) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-c3bb22553d7ab214"></a>[`public uint Inno.Native.Sdl3.SDLMouseMotionEvent.State`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63954) | The current button state |
+| <a id="api-6e77dcd53804092f"></a>[`public ulong Inno.Native.Sdl3.SDLMouseMotionEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63939) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-f706585387e19c80"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLMouseMotionEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63932) | SDL_EVENT_MOUSE_MOTION |
+| <a id="api-d9a1731baf7847dc"></a>[`public uint Inno.Native.Sdl3.SDLMouseMotionEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63949) | The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, or 0 |
+| <a id="api-c0ae4928bd166b32"></a>[`public uint Inno.Native.Sdl3.SDLMouseMotionEvent.WindowID`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63944) | The window with mouse focus, if any |
+| <a id="api-45e0fe856c78c3f0"></a>[`public float Inno.Native.Sdl3.SDLMouseMotionEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63959) | X coordinate, relative to window |
+| <a id="api-ac8bd4568e6f1221"></a>[`public float Inno.Native.Sdl3.SDLMouseMotionEvent.Xrel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63969) | The relative motion in the X direction |
+| <a id="api-70b23d43c0964fb3"></a>[`public float Inno.Native.Sdl3.SDLMouseMotionEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63964) | Y coordinate, relative to window |
+| <a id="api-67eec4a8e2a3ed7f"></a>[`public float Inno.Native.Sdl3.SDLMouseMotionEvent.Yrel`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L63974) | The relative motion in the Y direction |
+| <a id="api-85ab14f1b953bbe2"></a>[`Inno.Native.Sdl3.SDLMouseWheelDirection.MousewheelFlipped = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64042) | The scroll direction is flipped / natural<br>常量：`1` |
+| <a id="api-27afec51463c16e8"></a>[`Inno.Native.Sdl3.SDLMouseWheelDirection.MousewheelNormal = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64038) | The scroll direction is normal<br>常量：`0` |
+| <a id="api-5753cf1ad9355ef5"></a>[`public Inno.Native.Sdl3.SDLMouseWheelDirection Inno.Native.Sdl3.SDLMouseWheelEvent.Direction`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64096) | Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back |
+| <a id="api-164f772f3afc1e8f"></a>[`public int Inno.Native.Sdl3.SDLMouseWheelEvent.IntegerX`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64111) | The amount scrolled horizontally, accumulated to whole scroll "ticks" (added in 3.2.12) |
+| <a id="api-00619f0ce48d16f2"></a>[`public int Inno.Native.Sdl3.SDLMouseWheelEvent.IntegerY`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64116) | The amount scrolled vertically, accumulated to whole scroll "ticks" (added in 3.2.12) |
+| <a id="api-74a309fe7fe94d95"></a>[`public float Inno.Native.Sdl3.SDLMouseWheelEvent.MouseX`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64101) | X coordinate, relative to window |
+| <a id="api-28e717d6ffea1916"></a>[`public float Inno.Native.Sdl3.SDLMouseWheelEvent.MouseY`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64106) | Y coordinate, relative to window |
+| <a id="api-4eb9ed3f386482fd"></a>[`public uint Inno.Native.Sdl3.SDLMouseWheelEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64066) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-4ccad83e137fba84"></a>[`public ulong Inno.Native.Sdl3.SDLMouseWheelEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64071) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-d13acbffbdf3c8ff"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLMouseWheelEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64064) | SDL_EVENT_MOUSE_WHEEL |
+| <a id="api-49343f4de608bd68"></a>[`public uint Inno.Native.Sdl3.SDLMouseWheelEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64081) | The mouse instance id in relative mode or 0 |
+| <a id="api-0c8197869e62c2e1"></a>[`public uint Inno.Native.Sdl3.SDLMouseWheelEvent.WindowID`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64076) | The window with mouse focus, if any |
+| <a id="api-e31a10bad0b3cd52"></a>[`public float Inno.Native.Sdl3.SDLMouseWheelEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64086) | The amount scrolled horizontally, positive to the right and negative to the left |
+| <a id="api-d31b6133e7937477"></a>[`public float Inno.Native.Sdl3.SDLMouseWheelEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64091) | The amount scrolled vertically, positive away from the user and negative toward the user |
+| <a id="api-43b9fe85eed8108c"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_1010102 = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64189) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-bdecd5bd52e821da"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_1555 = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64184) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-6ef860d57e102be0"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_2101010 = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64188) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`7` |
+| <a id="api-279671e463085efe"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_332 = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64182) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-78d326742470f6a6"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_4444 = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64183) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-6fd233a5844d36f3"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_5551 = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64185) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-c41358ac8e473944"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_565 = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64186) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`5` |
+| <a id="api-b57daa86248d8d2c"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_8888 = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64187) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`6` |
+| <a id="api-50650d688d2d04d5"></a>[`Inno.Native.Sdl3.SDLPackedLayout.SDL_PACKEDLAYOUT_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64181) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-c80fe9a7eb9abc35"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_ABGR = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64212) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`7` |
+| <a id="api-793fc8c2a9f1d12e"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_ARGB = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64208) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`3` |
+| <a id="api-28a4e72a75925800"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_BGRA = 8`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64213) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-e83ed713a95ce3aa"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_BGRX = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64211) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`6` |
+| <a id="api-c5997adcf1899705"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64205) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-cdbe2c33977781ac"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_RGBA = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64209) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-96ad8ccce2c55d1b"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_RGBX = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64207) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-8a89384775b7a9f5"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_XBGR = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64210) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`5` |
+| <a id="api-e53e6ad06f6a77a8"></a>[`Inno.Native.Sdl3.SDLPackedOrder.SDL_PACKEDORDER_XRGB = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64206) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-3333513de6657f01"></a>[`public Inno.Native.Sdl3.SDLColor* Inno.Native.Sdl3.SDLPalette.Colors`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64242) | an array of colors, `ncolors` long. |
+| <a id="api-29f630365325d02a"></a>[`public int Inno.Native.Sdl3.SDLPalette.Ncolors`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64237) | number of elements in `colors`. |
+| <a id="api-57873af7e68c0d87"></a>[`public int Inno.Native.Sdl3.SDLPalette.Refcount`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64252) | internal use only, do not touch. |
+| <a id="api-fb44fe334f23a10a"></a>[`public uint Inno.Native.Sdl3.SDLPalette.Version`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64247) | internal use only, do not touch. |
+| <a id="api-ff6135512ec00948"></a>[`public long Inno.Native.Sdl3.SDLPathInfo.AccessTime`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64305) | the last time the path was read |
+| <a id="api-f24e4e7fe3db76e4"></a>[`public long Inno.Native.Sdl3.SDLPathInfo.CreateTime`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64295) | the time when the path was created |
+| <a id="api-317f37f0cb293b9e"></a>[`public long Inno.Native.Sdl3.SDLPathInfo.ModifyTime`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64300) | the last time the path was modified |
+| <a id="api-c5f066d791810c65"></a>[`public ulong Inno.Native.Sdl3.SDLPathInfo.Size`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64290) | the file size in bytes |
+| <a id="api-09f496e3feafa6de"></a>[`public Inno.Native.Sdl3.SDLPathType Inno.Native.Sdl3.SDLPathInfo.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64285) | the path type |
+| <a id="api-4329aa87e55b2a1e"></a>[`Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_DIRECTORY = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64343) | a directory<br>常量：`2` |
+| <a id="api-53699539f057cbd4"></a>[`Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_FILE = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64339) | a normal file<br>常量：`1` |
+| <a id="api-6f754a22bcf30874"></a>[`Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_NONE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64335) | path does not exist<br>常量：`0` |
+| <a id="api-43ac012d5af35aa9"></a>[`Inno.Native.Sdl3.SDLPathType.SDL_PATHTYPE_OTHER = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64347) | something completely different like a device node (not a symlink, those are always followed)<br>常量：`3` |
+| <a id="api-34aef74a016a4a0e"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_COUNT = 7`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64401) | Total known pen axis types in this version of SDL. This number may grow in future releases!<br>常量：`7` |
+| <a id="api-d3ea859721922f6b"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_DISTANCE = 3`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64385) | Pen distance to drawing surface. Unidirectional: 0.0 to 1.0<br>常量：`3` |
+| <a id="api-0768ab8142f78dcf"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_PRESSURE = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64373) | Pen pressure. Unidirectional: 0 to 1.0<br>常量：`0` |
+| <a id="api-390e9aa466bfcfde"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_ROTATION = 4`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64389) | Pen barrel rotation. Bidirectional: -180 to 179.9 (clockwise, 0 is facing up, -180.0 is facing down).<br>常量：`4` |
+| <a id="api-1f66acfab24463a3"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_SLIDER = 5`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64393) | Pen finger wheel or slider (e.g., Airbrush Pen). Unidirectional: 0 to 1.0<br>常量：`5` |
+| <a id="api-4f88d2cd4687e729"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_TANGENTIAL_PRESSURE = 6`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64397) | Pressure from squeezing the pen ("barrel pressure").<br>常量：`6` |
+| <a id="api-e4c3ef3df74a80f2"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_XTILT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64377) | Pen horizontal tilt angle. Bidirectional: -90.0 to 90.0 (left-to-right).<br>常量：`1` |
+| <a id="api-58dc5051ff052919"></a>[`Inno.Native.Sdl3.SDLPenAxis.SDL_PEN_AXIS_YTILT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64381) | Pen vertical tilt angle. Bidirectional: -90.0 to 90.0 (top-to-down).<br>常量：`2` |
+| <a id="api-a0a6a0d2403f680e"></a>[`public Inno.Native.Sdl3.SDLPenAxis Inno.Native.Sdl3.SDLPenAxisEvent.Axis`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64462) | Axis that has changed |
+| <a id="api-eb547e5ea42f7c26"></a>[`public uint Inno.Native.Sdl3.SDLPenAxisEvent.PenState`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64447) | Complete pen input state at time of event |
+| <a id="api-21d0272ec85f0e29"></a>[`public uint Inno.Native.Sdl3.SDLPenAxisEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64427) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-436e43414af1c1de"></a>[`public ulong Inno.Native.Sdl3.SDLPenAxisEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64432) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-30563d21f2746adc"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLPenAxisEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64425) | SDL_EVENT_PEN_AXIS |
+| <a id="api-224e82b171e2f235"></a>[`public float Inno.Native.Sdl3.SDLPenAxisEvent.Value`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64467) | New value of axis |
+| <a id="api-e7678f42ea0db8a8"></a>[`public uint Inno.Native.Sdl3.SDLPenAxisEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64442) | The pen instance id |
+| <a id="api-d256f67db32bf6b5"></a>[`public uint Inno.Native.Sdl3.SDLPenAxisEvent.WindowId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64437) | The window with pen focus, if any |
+| <a id="api-078a8a470690c0c0"></a>[`public float Inno.Native.Sdl3.SDLPenAxisEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64452) | X coordinate, relative to window |
+| <a id="api-227c7f52ebed2846"></a>[`public float Inno.Native.Sdl3.SDLPenAxisEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64457) | Y coordinate, relative to window |
+| <a id="api-65af3ae80ee80067"></a>[`public byte Inno.Native.Sdl3.SDLPenButtonEvent.Button`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64535) | The pen button index (first button is 1). |
+| <a id="api-fd964df9fd23ff66"></a>[`public byte Inno.Native.Sdl3.SDLPenButtonEvent.Down`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64540) | true if the button is pressed |
+| <a id="api-9446d193d825e752"></a>[`public uint Inno.Native.Sdl3.SDLPenButtonEvent.PenState`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64520) | Complete pen input state at time of event |
+| <a id="api-ded6e01539de0b63"></a>[`public uint Inno.Native.Sdl3.SDLPenButtonEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64500) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-6da67da20daac4aa"></a>[`public ulong Inno.Native.Sdl3.SDLPenButtonEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64505) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-c3d750e5a79f8087"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLPenButtonEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64498) | SDL_EVENT_PEN_BUTTON_DOWN or SDL_EVENT_PEN_BUTTON_UP |
+| <a id="api-24b2cf7269b1b39c"></a>[`public uint Inno.Native.Sdl3.SDLPenButtonEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64515) | The pen instance id |
+| <a id="api-40b5eaa3c91c8a93"></a>[`public uint Inno.Native.Sdl3.SDLPenButtonEvent.WindowId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64510) | The window with mouse focus, if any |
+| <a id="api-6460c15952729012"></a>[`public float Inno.Native.Sdl3.SDLPenButtonEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64525) | X coordinate, relative to window |
+| <a id="api-c08415666b7d89f7"></a>[`public float Inno.Native.Sdl3.SDLPenButtonEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64530) | Y coordinate, relative to window |
+| <a id="api-9ed09302a0af6ac1"></a>[`Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_DIRECT = 1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64582) | Pen touches display.<br>常量：`1` |
+| <a id="api-6e27dec2270b6222"></a>[`Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_INDIRECT = 2`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64586) | Pen touches something that isn't the display.<br>常量：`2` |
+| <a id="api-e53f312b53542d9e"></a>[`Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_INVALID = -1`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64574) | Not a valid pen device.<br>常量：`-1` |
+| <a id="api-cc9d23712d30c49e"></a>[`Inno.Native.Sdl3.SDLPenDeviceType.SDL_PEN_DEVICE_TYPE_UNKNOWN = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64578) | Don't know specifics of this pen.<br>常量：`0` |
+| <a id="api-9f0a847e1c1c928d"></a>[`public uint Inno.Native.Sdl3.SDLPenMotionEvent.PenState`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64637) | Complete pen input state at time of event |
+| <a id="api-4fb5abbe955ba307"></a>[`public uint Inno.Native.Sdl3.SDLPenMotionEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64617) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-60c938b30901521b"></a>[`public ulong Inno.Native.Sdl3.SDLPenMotionEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64622) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-88a9c80e456302e0"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLPenMotionEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64615) | SDL_EVENT_PEN_MOTION |
+| <a id="api-865ea6b80d85fafc"></a>[`public uint Inno.Native.Sdl3.SDLPenMotionEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64632) | The pen instance id |
+| <a id="api-7d227d57befbb453"></a>[`public uint Inno.Native.Sdl3.SDLPenMotionEvent.WindowId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64627) | The window with pen focus, if any |
+| <a id="api-2e9b1d73c1632ac9"></a>[`public float Inno.Native.Sdl3.SDLPenMotionEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64642) | X coordinate, relative to window |
+| <a id="api-a8166ece8cf31a39"></a>[`public float Inno.Native.Sdl3.SDLPenMotionEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64647) | Y coordinate, relative to window |
+| <a id="api-2e31fcef138c58e0"></a>[`public uint Inno.Native.Sdl3.SDLPenProximityEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64688) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-a75ba6d6963b2ab1"></a>[`public ulong Inno.Native.Sdl3.SDLPenProximityEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64693) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-100999a7fbd41de2"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLPenProximityEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64686) | SDL_EVENT_PEN_PROXIMITY_IN or SDL_EVENT_PEN_PROXIMITY_OUT |
+| <a id="api-1532bd43f62de260"></a>[`public uint Inno.Native.Sdl3.SDLPenProximityEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64703) | The pen instance id |
+| <a id="api-c3d5e9f9d220bfc3"></a>[`public uint Inno.Native.Sdl3.SDLPenProximityEvent.WindowId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64698) | The window with pen focus, if any |
+| <a id="api-74706e8b50c21667"></a>[`public byte Inno.Native.Sdl3.SDLPenTouchEvent.Down`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64776) | true if the pen is touching or false if the pen is lifted off |
+| <a id="api-3bf692460f16b039"></a>[`public byte Inno.Native.Sdl3.SDLPenTouchEvent.Eraser`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64771) | true if eraser end is used (not all pens support this). |
+| <a id="api-7220bb454754314d"></a>[`public uint Inno.Native.Sdl3.SDLPenTouchEvent.PenState`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64756) | Complete pen input state at time of event |
+| <a id="api-1de7da7e1da35a66"></a>[`public uint Inno.Native.Sdl3.SDLPenTouchEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64736) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-6fb401a09282158e"></a>[`public ulong Inno.Native.Sdl3.SDLPenTouchEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64741) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-f243b7e5e3b26e55"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLPenTouchEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64734) | SDL_EVENT_PEN_DOWN or SDL_EVENT_PEN_UP |
+| <a id="api-89ccae0bacf627c5"></a>[`public uint Inno.Native.Sdl3.SDLPenTouchEvent.Which`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64751) | The pen instance id |
+| <a id="api-6bd91411cc5c6ee0"></a>[`public uint Inno.Native.Sdl3.SDLPenTouchEvent.WindowId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64746) | The window with pen focus, if any |
+| <a id="api-4982b363f34af5a4"></a>[`public float Inno.Native.Sdl3.SDLPenTouchEvent.X`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64761) | X coordinate, relative to window |
+| <a id="api-881642f94e8cc018"></a>[`public float Inno.Native.Sdl3.SDLPenTouchEvent.Y`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64766) | Y coordinate, relative to window |
+| <a id="api-7c080551968750e4"></a>[`public uint Inno.Native.Sdl3.SDLPinchFingerEvent.Reserved`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64805) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-cdc54d13ea627953"></a>[`public float Inno.Native.Sdl3.SDLPinchFingerEvent.Scale`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64817) | The scale change since the last SDL_EVENT_PINCH_UPDATE. Scale < 1 is "zoom out". Scale > 1 is "zoom in". |
+| <a id="api-a83d4e0973328ce8"></a>[`public ulong Inno.Native.Sdl3.SDLPinchFingerEvent.Timestamp`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64810) | In nanoseconds, populated using SDL_GetTicksNS() |
+| <a id="api-573994f2ec42c395"></a>[`public Inno.Native.Sdl3.SDLEventType Inno.Native.Sdl3.SDLPinchFingerEvent.Type`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64803) | ::SDL_EVENT_PINCH_BEGIN or ::SDL_EVENT_PINCH_UPDATE or ::SDL_EVENT_PINCH_END |
+| <a id="api-dad9683570826295"></a>[`public uint Inno.Native.Sdl3.SDLPinchFingerEvent.WindowId`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64822) | The window underneath the finger, if any |
+| <a id="api-da78905b410853dc"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr128Float = 459309072`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65087) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGRA, 0, 128, 16),<br>常量：`459309072` |
+| <a id="api-a063dc7bfc5e1eb7"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr1555 = 359862274`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64947) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_5551, 16, 2),<br>常量：`359862274` |
+| <a id="api-88ace4a666e276e0"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr2101010 = 376905732`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65015) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_2101010, 32, 4),<br>常量：`376905732` |
+| <a id="api-317a4b621a7fce7a"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr32 = 373694468`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65131) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`373694468` |
+| <a id="api-def365de2fe37212"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr4444 = 359796738`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64931) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_4444, 16, 2),<br>常量：`359796738` |
+| <a id="api-18b5841a9b81567e"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr64 = 408961032`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65039) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGRA, 0, 64, 8),<br>常量：`408961032` |
+| <a id="api-b8aa33e395810bf2"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr64Float = 442515464`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65063) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGRA, 0, 64, 8),<br>常量：`442515464` |
+| <a id="api-024abc35256fce9b"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Abgr8888 = 376840196`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64995) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_8888, 32, 4),<br>常量：`376840196` |
+| <a id="api-75c20379910724a0"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb128Float = 456163344`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65079) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGBA, 0, 128, 16),<br>常量：`456163344` |
+| <a id="api-ccba6ba5a8ddeb31"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb1555 = 355667970`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64939) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_BGRA, SDL_PACKEDLAYOUT_4444, 16, 2),<br>常量：`355667970` |
+| <a id="api-119373e45b112e00"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb2101010 = 372711428`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65011) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_2101010, 32, 4),<br>常量：`372711428` |
+| <a id="api-29bcf288f75e5b76"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb32 = 377888772`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65129) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`377888772` |
+| <a id="api-0b471609238aff11"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb4444 = 355602434`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64923) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_1555, 15, 2),<br>常量：`355602434` |
+| <a id="api-ef386ec336d4d696"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb64 = 405815304`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65031) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGBA, 0, 64, 8),<br>常量：`405815304` |
+| <a id="api-620a5b4920b8fa2f"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb64Float = 439369736`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65055) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGBA, 0, 64, 8),<br>常量：`439369736` |
+| <a id="api-99528ebea1696859"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Argb8888 = 372645892`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64987) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_BGRX, SDL_PACKEDLAYOUT_8888, 24, 4),<br>常量：`372645892` |
+| <a id="api-01606f1ee27d5586"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgr24 = 390076419`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64967) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU8, SDL_ARRAYORDER_RGB, 0, 24, 3),<br>常量：`390076419` |
+| <a id="api-31f92958c47c3a77"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgr48 = 406859782`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65023) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_RGB, 0, 48, 6),<br>常量：`406859782` |
+| <a id="api-6c1ff6b9dfafb717"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgr48Float = 440414214`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65047) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_RGB, 0, 48, 6),<br>常量：`440414214` |
+| <a id="api-7cb95e0201059e21"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgr565 = 357896194`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64959) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_565, 16, 2),<br>常量：`357896194` |
+| <a id="api-963e47dcdb48d658"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgr96Float = 457203724`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65071) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_RGB, 0, 96, 12),<br>常量：`457203724` |
+| <a id="api-447719aa2e120e21"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgra128Float = 458260496`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65083) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ARGB, 0, 128, 16),<br>常量：`458260496` |
+| <a id="api-17807df1b1a81414"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgra32 = 372645892`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65130) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`372645892` |
+| <a id="api-9dafa0169ed4c37c"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgra4444 = 360845314`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64935) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_4444, 16, 2),<br>常量：`360845314` |
+| <a id="api-051739e833c64059"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgra5551 = 360976386`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64951) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_1555, 16, 2),<br>常量：`360976386` |
+| <a id="api-4ca4308ff94f530d"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgra64 = 407912456`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65035) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ARGB, 0, 64, 8),<br>常量：`407912456` |
+| <a id="api-4252e683162c73a0"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgra64Float = 441466888`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65059) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ARGB, 0, 64, 8),<br>常量：`441466888` |
+| <a id="api-a5c66eb0dc8a3c5e"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgra8888 = 377888772`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64999) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_8888, 32, 4),<br>常量：`377888772` |
+| <a id="api-311a8bf50b2ba083"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgrx32 = 370546692`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65134) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`370546692` |
+| <a id="api-a30c0d9eeebc6aff"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Bgrx8888 = 375789572`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64983) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_8888, 24, 4),<br>常量：`375789572` |
+| <a id="api-cdf23e634e18be68"></a>[`Inno.Native.Sdl3.SDLPixelFormat.ExternalOes = 542328143`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65123) | Android video texture format<br>常量：`542328143` |
+| <a id="api-f055a9ee837e663d"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Index1Lsb = 286261504`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64875) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`286261504` |
+| <a id="api-c43a7cf4417cf742"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Index1Msb = 287310080`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64879) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX1, SDL_BITMAPORDER_4321, 0, 1, 0),<br>常量：`287310080` |
+| <a id="api-8705b90f4c9b5d0a"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Index2Lsb = 470811136`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64883) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX1, SDL_BITMAPORDER_1234, 0, 1, 0),<br>常量：`470811136` |
+| <a id="api-94c81231ad500c48"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Index2Msb = 471859712`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64887) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_4321, 0, 2, 0),<br>常量：`471859712` |
+| <a id="api-f1413702e22aba62"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Index4Lsb = 303039488`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64891) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX2, SDL_BITMAPORDER_1234, 0, 2, 0),<br>常量：`303039488` |
+| <a id="api-cb6bc99f41863c44"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Index4Msb = 304088064`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64895) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX4, SDL_BITMAPORDER_4321, 0, 4, 0),<br>常量：`304088064` |
+| <a id="api-20edcbc9e3183e3f"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Index8 = 318769153`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64899) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX4, SDL_BITMAPORDER_1234, 0, 4, 0),<br>常量：`318769153` |
+| <a id="api-027e89c5c7851126"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Iyuv = 1448433993`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65095) | Planar mode: Y + U + V (3 planes)<br>常量：`1448433993` |
+| <a id="api-d30adf57d6628c5a"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Mjpg = 1196444237`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65127) | Motion JPEG<br>常量：`1196444237` |
+| <a id="api-bb247a7deafdad4b"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Nv12 = 842094158`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65111) | Planar mode: Y + U/V interleaved (2 planes)<br>常量：`842094158` |
+| <a id="api-db5ec834629e5dac"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Nv21 = 825382478`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65115) | Planar mode: Y + V/U interleaved (2 planes)<br>常量：`825382478` |
+| <a id="api-1ab0c65c2f2edd25"></a>[`Inno.Native.Sdl3.SDLPixelFormat.P010 = 808530000`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65119) | Planar mode: Y + U/V interleaved (2 planes)<br>常量：`808530000` |
+| <a id="api-034ceb13684d8a1e"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgb24 = 386930691`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64963) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XBGR, SDL_PACKEDLAYOUT_565, 16, 2),<br>常量：`386930691` |
+| <a id="api-9cda7400e31d0cf8"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgb332 = 336660481`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64903) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_INDEX8, 0, 0, 8, 1),<br>常量：`336660481` |
+| <a id="api-408e18f4626e9eda"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgb48 = 403714054`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65019) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ABGR, SDL_PACKEDLAYOUT_2101010, 32, 4),<br>常量：`403714054` |
+| <a id="api-bdb89158259bcc5e"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgb48Float = 437268486`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65043) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_ABGR, 0, 64, 8),<br>常量：`437268486` |
+| <a id="api-a421d45106e21f97"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgb565 = 353701890`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64955) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_BGRA, SDL_PACKEDLAYOUT_5551, 16, 2),<br>常量：`353701890` |
+| <a id="api-cceda1c03a8d454c"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgb96Float = 454057996`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65067) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_ABGR, 0, 64, 8),<br>常量：`454057996` |
+| <a id="api-ca6789f55766cd89"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgba128Float = 455114768`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65075) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_BGR, 0, 96, 12),<br>常量：`455114768` |
+| <a id="api-b32bbc6b4b5b9611"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgba32 = 376840196`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65128) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`376840196` |
+| <a id="api-5bbb471426442bec"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgba4444 = 356651010`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64927) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_4444, 16, 2),<br>常量：`356651010` |
+| <a id="api-0cc98d722b3883a3"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgba5551 = 356782082`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64943) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_1555, 16, 2),<br>常量：`356782082` |
+| <a id="api-4674f52b4afc07a6"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgba64 = 404766728`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65027) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYU16, SDL_ARRAYORDER_BGR, 0, 48, 6),<br>常量：`404766728` |
+| <a id="api-782c8be47170530d"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgba64Float = 438321160`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65051) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF16, SDL_ARRAYORDER_BGR, 0, 48, 6),<br>常量：`438321160` |
+| <a id="api-56fc4ee78780cea5"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgba8888 = 373694468`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64991) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB, SDL_PACKEDLAYOUT_8888, 32, 4),<br>常量：`373694468` |
+| <a id="api-f8c1073d9250fe97"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgbx32 = 374740996`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65132) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`374740996` |
+| <a id="api-d0d4553d5fb4cdb0"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Rgbx8888 = 371595268`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64975) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_8888, 24, 4),<br>常量：`371595268` |
+| <a id="api-dcb8d3417f216f91"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Unknown = 0`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64874) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-c44ea6025b8d420a"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Uyvy = 1498831189`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65103) | Packed mode: U0+Y0+V0+Y1 (1 plane)<br>常量：`1498831189` |
+| <a id="api-8fc9d96461be171c"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Xbgr1555 = 357764866`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64919) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_1555, 15, 2),<br>常量：`357764866` |
+| <a id="api-02745bbaca500cf2"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Xbgr2101010 = 374808580`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65007) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_2101010, 32, 4),<br>常量：`374808580` |
+| <a id="api-e12e4536e477bff1"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Xbgr32 = 371595268`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L65135) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`371595268` |
+| <a id="api-99b4e5d05bee40ef"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Xbgr4444 = 357698562`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64911) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED16, SDL_PACKEDORDER_XRGB, SDL_PACKEDLAYOUT_4444, 12, 2),<br>常量：`357698562` |
+| <a id="api-eb33804d8391e69c"></a>[`Inno.Native.Sdl3.SDLPixelFormat.Xbgr8888 = 374740996`](../../../../backends/Sdl3/native/Inno.Native.Sdl3/Generated/Bindings.cs#L64979) | SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBX, SDL_PACKEDLAYOUT_8888, 24, 4),<br>常量：`374740996` |

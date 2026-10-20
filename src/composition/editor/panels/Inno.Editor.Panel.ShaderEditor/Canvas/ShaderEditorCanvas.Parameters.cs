@@ -16,7 +16,7 @@ internal sealed partial class ShaderEditorCanvas
 {
     private bool StoragePopup(ref ShaderGraphType type)
     {
-        ImGuiApi.SetNextWindowSize(new(490, 390), ImGuiCond.Appearing);
+        ImGuiApi.SetNextWindowSize(new(490, 390), (int)(ImGuiCond.Appearing));
         if (!ImGuiApi.BeginPopup("##storage"))
             return false;
         bool changed = false;
@@ -87,7 +87,7 @@ internal sealed partial class ShaderEditorCanvas
                     changed = true;
                 }
             }
-            ImGuiApi.TextWrapped("Storage resources are bound by the render pass. The graph declares types and access; the Render Graph owns resource lifetime and synchronization.");
+            Widget.WrappedText("Storage resources are bound by the render pass. The graph declares types and access; the Render Graph owns resource lifetime and synchronization.");
         }
         finally
         {

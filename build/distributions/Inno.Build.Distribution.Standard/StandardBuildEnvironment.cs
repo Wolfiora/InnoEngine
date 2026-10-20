@@ -51,6 +51,6 @@ public static class StandardBuildEnvironment
         };
         string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
         host = ToolchainEnvironment.ResolveExecutable(host);
-        return new BuildCompositionContext(host, applicationDirectory, new BuildHostDescriptor(system, architecture), toolsTarget, new NativeBindingGenerator(host));
+        return new BuildCompositionContext(host, applicationDirectory, new BuildHostDescriptor(system, architecture), toolsTarget, new NativeBindingGenerator());
     }
 }

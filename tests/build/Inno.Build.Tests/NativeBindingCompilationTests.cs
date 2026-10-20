@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +14,7 @@ using Xunit;
 
 namespace Inno.Build.Tests;
 
+[Trait("ExternalDependency", "BGCS")]
 public sealed class NativeBindingCompilationTests
 {
     [Fact]
@@ -20,19 +22,21 @@ public sealed class NativeBindingCompilationTests
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoBindingCompilation", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(root, "Generated"));
+        Directory.CreateDirectory(Path.Combine(root, "Source"));
         try
         {
             File.WriteAllText(Path.Combine(root, "Generated", "Bindings.cs"), "#error Host bindings must not be compiled for this target.");
-            File.WriteAllText(Path.Combine(root, "api.h"), "int sample(int value);");
+            File.WriteAllText(Path.Combine(root, "Source", "api.h"), "int sample(int value);");
             string config = Path.Combine(root, "bindgen.json");
             File.WriteAllText(config, JsonSerializer.Serialize(new
             {
-                Preset = "c-library", Namespace = "Fixture.Native", ApiName = "Api", LibName = "fixture",
-                EntryFiles = new[] { "api.h" }, AllowedHeaders = new[] { "api.h" },
-                GenerateRuntimeSource = false, MergeGeneratedFilesToSingleFile = true,
-                SingleFileOutputName = "Bindings.cs"
+                schemaVersion = 1,
+                library = new { id = "fixture", nativeName = "fixture" },
+                source = new { language = "c", headers = new[] { "Source/api.h" } },
+                api = new { @namespace = "Fixture.Native", name = "Api" },
+                output = new { root = "Generated", layout = "singleFile" }
             }));
-            string engine = FindEngine();
+            string engine = TestRepository.GetRoot(typeof(NativeBindingCompilationTests).Assembly);
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), string.Empty);
             string definition = Path.Combine(root, "bindings.props");
             new XDocument(new XElement("Project",
@@ -44,7 +48,8 @@ public sealed class NativeBindingCompilationTests
             string project = Path.Combine(root, "Fixture.csproj");
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
                 new XElement("PropertyGroup",
-                    new XElement("TargetFramework", "net9.0"),
+                    new XElement("TargetFramework", "net10.0"),
+                    new XElement("LangVersion", "14.0"),
                     new XElement("AllowUnsafeBlocks", "true"),
                     new XElement("ImplicitUsings", "disable"),
                     new XElement("EnableDefaultCompileItems", "false"),
@@ -58,7 +63,7 @@ public sealed class NativeBindingCompilationTests
                 new XElement("Import", new XAttribute("Project", definition)),
                 new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
                 new XElement("ItemGroup", new XElement("Reference", new XAttribute("Include", "BGCS.Runtime"),
-                    new XElement("HintPath", typeof(BGCS.Runtime.FunctionTable).Assembly.Location))),
+                    new XElement("HintPath", typeof(BGCS.Runtime.NativeModuleSession).Assembly.Location))),
                 new XElement("Target", new XAttribute("Name", "CaptureCompileSources"),
                     new XAttribute("AfterTargets", "ValidateBindGenBindings"),
                     new XElement("WriteLinesToFile", new XAttribute("File", sources),
@@ -70,12 +75,12 @@ public sealed class NativeBindingCompilationTests
             Assert.Equal(1, output.Split("INNO-TASK-HOST verified", StringSplitOptions.None).Length - 1);
             string selected = Assert.Single(File.ReadAllLines(sources)
                 .Where(static path => Path.GetFileName(path) == "Bindings.cs"));
-            Assert.Equal(Path.Combine(root, "obj", "Release", "net9.0", "bindings", "Bindings.cs"), selected);
+            Assert.Equal(Path.Combine(root, "obj", "Release", "net10.0", "bindings", "Bindings.cs"), selected);
             Assert.True(File.Exists(selected), output);
             string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "artifacts", "bindings", "fixture", "fixture-target")));
             string publishedSource = Path.Combine(artifact, "Generated", "Bindings.cs");
             Assert.Equal(File.ReadAllBytes(publishedSource), File.ReadAllBytes(selected));
-            Assert.True(File.Exists(Path.Combine(root, "bin", "Release", "net9.0", "Fixture.dll")), output);
+            Assert.True(File.Exists(Path.Combine(root, "bin", "Release", "net10.0", "Fixture.dll")), output);
 
             string selection = Path.Combine(root, "SelectedBindings.props");
             NativeBindingGenerationDescriptor.WriteSelection(selection,
@@ -86,7 +91,7 @@ public sealed class NativeBindingCompilationTests
                         fingerprint = Path.GetFileName(artifact),
                         artifactDirectory = artifact,
                         bindingsPath = publishedSource,
-                        bridgeDirectory = string.Empty
+                        nativeDirectory = string.Empty
                     }
                 }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Shared });
             (int reused, string reuseOutput) = await Build(project, ["-p:InnoNativeBindingSelection=" + selection]);
@@ -105,7 +110,7 @@ public sealed class NativeBindingCompilationTests
                         fingerprint = Path.GetFileName(artifact),
                         artifactDirectory = artifact,
                         bindingsPath = publishedSource,
-                        bridgeDirectory = string.Empty
+                        nativeDirectory = string.Empty
                     }
                 }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Static });
             string bootstrap = Path.Combine(root, "Bootstrap.cs");
@@ -146,7 +151,7 @@ public sealed class NativeBindingCompilationTests
         {
             Directory.CreateDirectory(Path.GetDirectoryName(entry.path)!);
             var document = new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                new XElement("PropertyGroup", new XElement("TargetFramework", "net9.0"),
+                new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"),
                     new XElement("IsTestProject", "true"), new XElement("EnableDefaultCompileItems", "false"),
                     new XElement("InnoProductReferenceProperties", "FixtureDeclared=true")),
                 new XElement("Import", new XAttribute("Project", Path.Combine(engine, "Directory.Build.targets"))),
@@ -167,14 +172,6 @@ public sealed class NativeBindingCompilationTests
             .Where(static path => Path.GetFileName(path) == "Bindings.cs")));
     }
 
-    private static string FindEngine()
-    {
-        DirectoryInfo? current = new(AppContext.BaseDirectory);
-        while (current is not null && !File.Exists(Path.Combine(current.FullName, "InnoEngine.sln")))
-            current = current.Parent;
-        return current?.FullName ?? throw new DirectoryNotFoundException("The engine checkout is unavailable.");
-    }
-
     private static async Task<(int exitCode, string output)> Build(
         string project,
         string[] arguments
@@ -183,7 +180,7 @@ public sealed class NativeBindingCompilationTests
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
         var start = new ProcessStartInfo(host)
         {
-            WorkingDirectory = FindEngine(), UseShellExecute = false, CreateNoWindow = true,
+            WorkingDirectory = TestRepository.GetRoot(typeof(NativeBindingCompilationTests).Assembly), UseShellExecute = false, CreateNoWindow = true,
             RedirectStandardOutput = true, RedirectStandardError = true
         };
         foreach (string argument in new[] { "build", project, "-c", "Release", "--disable-build-servers", "-m:1", "-nodeReuse:false", "-v:normal" }

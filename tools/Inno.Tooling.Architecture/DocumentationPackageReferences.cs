@@ -15,7 +15,7 @@ internal static class DocumentationPackageReferences
         if (!File.Exists(assets))
             return [];
         string project = Directory.EnumerateFiles(projectDirectory, "*.csproj").Single();
-        string framework = XDocument.Load(project).Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net9.0";
+        string framework = XDocument.Load(project).Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net10.0";
         using JsonDocument document = JsonDocument.Parse(File.ReadAllText(assets));
         JsonElement root = document.RootElement;
         JsonElement targets = root.GetProperty("targets");

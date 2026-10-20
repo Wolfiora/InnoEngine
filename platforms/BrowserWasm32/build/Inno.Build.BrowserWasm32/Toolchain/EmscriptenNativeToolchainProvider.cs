@@ -50,6 +50,8 @@ public sealed class EmscriptenNativeToolchainProvider : INativeToolchainProvider
             environment[name] = value;
         var tools = new Dictionary<string, string>(StringComparer.Ordinal)
         {
+            ["clang"] = Path.Combine(sdk["DOTNET_EMSCRIPTEN_LLVM_ROOT"], host.system == "Windows" ? "clang.exe" : "clang"),
+            ["clang++"] = Path.Combine(sdk["DOTNET_EMSCRIPTEN_LLVM_ROOT"], host.system == "Windows" ? "clang++.exe" : "clang++"),
             ["cmake"] = ToolchainEnvironment.ResolveExecutable("cmake"),
             ["ninja"] = ToolchainEnvironment.ResolveExecutable("ninja"),
             ["dotnet"] = sdk["DOTNET_HOST_PATH"],

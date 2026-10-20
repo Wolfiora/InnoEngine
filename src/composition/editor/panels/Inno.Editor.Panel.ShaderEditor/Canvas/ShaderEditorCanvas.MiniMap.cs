@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +14,7 @@ using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
 namespace Inno.Editor.Panel.ShaderEditor;
 
-internal sealed partial class ShaderEditorCanvas
+internal sealed unsafe partial class ShaderEditorCanvas
 {
     private const float C_MINI_MAP_WIDTH = 220f;
     private const float C_MINI_MAP_HEIGHT = 145f;
@@ -69,16 +72,16 @@ internal sealed partial class ShaderEditorCanvas
         Vector2 size = maximum - minimum;
         Vector2 cursor = ImGuiApi.GetCursorScreenPos();
         ImGuiApi.SetCursorScreenPos(minimum);
-        ImGuiApi.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        ImGuiApi.PushStyleColor(ImGuiCol.ChildBg, new Vector4(0.085f, 0.092f, 0.11f, 0.95f));
+        ImGuiApi.PushStyleVar((int)ImGuiStyleVar.WindowPadding, Vector2.Zero);
+        ImGuiApi.PushStyleColor((int)ImGuiCol.ChildBg, new Vector4(0.085f, 0.092f, 0.11f, 0.95f));
         bool began = false;
         try
         {
             bool visible = ImGuiApi.BeginChild(
                 "##shader-mini-map",
                 size,
-                ImGuiChildFlags.Borders,
-                ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings);
+                (int)ImGuiChildFlags.Borders,
+                (int)(ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings));
             began = true;
             if (!visible)
                 return;
@@ -87,8 +90,8 @@ internal sealed partial class ShaderEditorCanvas
             ImGuiApi.InvisibleButton(
                 "##mini-map-navigation",
                 Vector2.Max(ImGuiApi.GetContentRegionAvail(), Vector2.One),
-                ImGuiButtonFlags.MouseButtonLeft);
-            if (ImGuiApi.IsItemActive() && ImGuiApi.IsMouseDown(ImGuiMouseButton.Left))
+                (int)ImGuiButtonFlags.MouseButtonLeft);
+            if (ImGuiApi.IsItemActive() && ImGuiApi.IsMouseDown((int)ImGuiMouseButton.Left))
             {
                 Vector2 graphPoint = layout.ToWorld(Vector2.Clamp(ImGuiApi.GetMousePos(), minimum, maximum));
                 Canvas.SetViewport(
@@ -97,7 +100,7 @@ internal sealed partial class ShaderEditorCanvas
                     Canvas.zoom);
             }
 
-            DrawMiniMapContents(ImGuiApi.GetWindowDrawList(), layout);
+            DrawMiniMapContents(ImGuiApi.Raw.GetWindowDrawList(), layout);
         }
         finally
         {
@@ -139,7 +142,7 @@ internal sealed partial class ShaderEditorCanvas
     }
 
     private void DrawMiniMapContents(
-        ImDrawListPtr draw,
+        ImDrawList* draw,
         MiniMapLayout layout
     ) {
         foreach (GraphEdgeRecord edge in Controller.document.edges)
@@ -147,7 +150,13 @@ internal sealed partial class ShaderEditorCanvas
             if (!m_miniMapGeometry.TryGetValue(edge.output.nodeId, out MiniMapNodeGeometry source) ||
                 !m_miniMapGeometry.TryGetValue(edge.input.nodeId, out MiniMapNodeGeometry target))
                 continue;
-            draw.AddLine(layout.ToScreen(source.center), layout.ToScreen(target.center), Color(0.55f, 0.42f, 0.76f, 0.65f));
+            ImGuiApi.Raw.AddLine(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(source.center)),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(target.center)),
+                Color(0.55f, 0.42f, 0.76f, 0.65f),
+                1f
+            );
         }
 
         foreach (GraphNodeRecord node in Controller.document.nodes)
@@ -156,15 +165,37 @@ internal sealed partial class ShaderEditorCanvas
             uint fill = Canvas.selectedNodes.Contains(node.id)
                 ? Color(0.60f, 0.44f, 0.83f)
                 : Color(0.34f, 0.37f, 0.44f);
-            draw.AddRectFilled(layout.ToScreen(geometry.minimum), layout.ToScreen(geometry.maximum), fill, 2f);
+            ImGuiApi.Raw.AddRectFilled(
+                draw,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(geometry.minimum)),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(geometry.maximum)),
+                fill,
+                2f,
+                0
+            );
         }
 
         Vector2 viewMinimum = -new Vector2(Canvas.pan.x, Canvas.pan.y) / Canvas.zoom;
         Vector2 viewMaximum = viewMinimum + m_size / Canvas.zoom;
         Vector2 screenMinimum = layout.ToScreen(viewMinimum);
         Vector2 screenMaximum = layout.ToScreen(viewMaximum);
-        draw.AddRectFilled(screenMinimum, screenMaximum, Color(0.65f, 0.47f, 0.88f, 0.10f));
-        draw.AddRect(screenMinimum, screenMaximum, Color(0.76f, 0.62f, 0.95f), 0f, ImDrawFlags.None, 1.5f);
+        ImGuiApi.Raw.AddRectFilled(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMinimum),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMaximum),
+            Color(0.65f, 0.47f, 0.88f, 0.10f),
+            0,
+            0
+        );
+        ImGuiApi.Raw.AddRect(
+            draw,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMinimum),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMaximum),
+            Color(0.76f, 0.62f, 0.95f),
+            0f,
+            (int)ImDrawFlags.None,
+            1.5f
+        );
     }
 
 }

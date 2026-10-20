@@ -16,7 +16,7 @@ internal sealed partial class ShaderEditorCanvas
         GraphNodeRecord node,
         ShaderGraphStageSettings stage
     ) {
-        ImGuiApi.SetNextWindowSize(new(540, 600), ImGuiCond.Appearing);
+        ImGuiApi.SetNextWindowSize(new(540, 600), (int)(ImGuiCond.Appearing));
         if (!ImGuiApi.BeginPopup("##stage-settings"))
             return;
         try
@@ -105,7 +105,7 @@ internal sealed partial class ShaderEditorCanvas
                 Gesture();
                 int location = output.location;
                 bool locationChanged = false;
-                InspectorRow("output.location", "Location", () => locationChanged = ImGuiApi.InputInt("##location", ref location));
+                InspectorRow("output.location", "Location", () => locationChanged = ImGuiApi.InputInt("##location", ref location, 1, 100, 0));
                 if (locationChanged)
                 {
                     output.location = location;
@@ -215,14 +215,14 @@ internal sealed partial class ShaderEditorCanvas
                 });
                 int mask = state.colorWriteMask;
                 bool maskChanged = false;
-                InspectorRow("state.write-mask", "RGBA Write Mask", () => maskChanged = ImGuiApi.InputInt("##write-mask", ref mask));
+                InspectorRow("state.write-mask", "RGBA Write Mask", () => maskChanged = ImGuiApi.InputInt("##write-mask", ref mask, 1, 100, 0));
                 if (maskChanged)
                 {
                     state.colorWriteMask = (byte)Math.Clamp(mask, 0, 15);
                     changed = true;
                 }
                 RenderBlendState blend = state.blend;
-                if (ImGuiApi.TreeNode("Custom Blending"))
+                if (ImGuiApi.TreeNodeEx("Custom Blending", 0))
                 {
                     bool enabled = blend.enabled;
                     bool enabledChanged = false;
@@ -304,7 +304,7 @@ internal sealed partial class ShaderEditorCanvas
                         InspectorRow("variant.option", "Option " + (j + 1), () =>
                         {
                             optionChanged = EditorImGui.InputText("##option", ref option, 128);
-                            ImGuiApi.SameLine();
+                            ImGuiApi.SameLine(0f, -1f);
                             remove = ImGuiApi.SmallButton("Remove");
                         });
                         if (optionChanged)

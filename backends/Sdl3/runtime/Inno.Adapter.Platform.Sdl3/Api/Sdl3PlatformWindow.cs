@@ -7,7 +7,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 /// <summary>
 /// Represents a native platform window.
 /// </summary>
-public sealed partial class Sdl3PlatformWindow : IPlatformWindow, INativeWindowSurface
+public sealed unsafe partial class Sdl3PlatformWindow : IPlatformWindow, INativeWindowSurface
 {
     /// <summary>
     /// Gets the platform window identifier.

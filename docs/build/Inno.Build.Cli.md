@@ -25,6 +25,12 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- verify .
 
 项目命令支持 `--dotnet <absolute-sdk-host>`，内容工具、Pack 准备及最终发布共用该冻结 SDK 选择。未声明的参数与缺值立即失败；不能靠改变产品目标来选择工具宿主。SDK 与 workload 的安装是开发环境准备，产物缓存清理不删除 SDK。
 
+`scripts --ide` 在成功编译项目及安装插件后，通过同一 `ScriptCompiler` 正式生成 .NET 10 / C# 14 IDE 工程和裁剪引用。普通 `scripts` 仍只导出脚本程序集。IDE 工程与 `Library/` 是派生内容，不手工修改。
+
+SDK 生成的 `Inno.Build.Cli.deps.json` 随开发入口复制。该清单属于 CLI 自己的显式创作闭包，使库宿主和开发入口发现同一组脚本契约；不在编译器中维护领域类型名单。
+
+CLI 与平台 Editor 组合库显式启用共同的 `InnoExposeRuntimeClosure` SDK 构建规则。清单与实际运行依赖随引用复制，不改变项目的 `PrivateAssets="compile"` 边界，也不扫描输出目录来猜测扩展。
+
 | 命令 | 行为 |
 | --- | --- |
 | `support` | 准备所选目标的 Editor 或 Player 支持产物，不构建整个 Editor 托管产品。 |
@@ -40,6 +46,10 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- verify .
 `clean --scope cache` 只退休明确登记的无引用 generation；`--dry-run` 输出同一份候选计划。默认成功构建按 64 GiB、20 GiB 空闲阈值和 5 秒完整操作预算评估回收。未知、重复、缺值以及不属于该命令的参数会被拒绝。
 
 Editor 配置独立于游戏发布配置。Support Pack 保持 Release 准备语义；Browser 的最终链接与 workload 由明确的 Browser 发布目标选择。
+
+项目命令也接受 `--engine-root <checkout>`，用于通过 SDK 的独立输出目录运行工具时明确指定 Native 工具的源码输入。该路径在启动工具或创建 Project 工作状态前校验；普通 checkout 内的开发入口可以自动定位。游戏使用独立输出目录时先通过 `support-pack --engine-root ...` 准备所需 Pack，再传入 `--support-packs`。
+
+`verify-native` 要求 PowerShell 7 的 `pwsh`，并在开始生成前检查统一测试入口。第一阶段用 `HostSource` 的独立候选比对仓库中的完整 managed/native 生成源码；目标产物由后续正式 Native 产品构建准备，不要求首次运行前已经存在内容寻址缓存。原生测试完成部署后复用 `tests/Invoke-IsolatedTests.ps1`，普通与 `ProcessIsolation=Required` 用例分别执行并汇总失败；不排除 BGCS。TRX、发现结果及执行清单位于 `artifacts/acceptance/native-bindings/<target>/<operation>/`，成功报告记录实际结果目录。
 
 ## 公开 API
 

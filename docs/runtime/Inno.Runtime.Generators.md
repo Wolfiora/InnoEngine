@@ -26,7 +26,7 @@ SerializationConverterGenerator 另外输出本程序集的 RuntimeSerialization
 分析阶段检查泛型约束，合法组合注册工厂，不满足约束的已知组合记录为拒绝事实。
 `INNORUN002` 在构建阶段拒绝无法访问或缺少无参数构造入口的封闭 Converter。
 私有泛型构造入口使用对应的泛型辅助类型，保留声明的类型参数顺序与约束，
-符合 [.NET 9 UnsafeAccessor 的签名匹配规则](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/9.0/unsafeaccessor-generics)。
+符合 [UnsafeAccessor 的签名匹配规则](https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.unsafeaccessorattribute)。
 
 ## 当前源码公开 API 清单
 

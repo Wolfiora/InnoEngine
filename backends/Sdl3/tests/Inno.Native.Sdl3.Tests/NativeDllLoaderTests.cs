@@ -14,12 +14,13 @@ public sealed class NativeDllLoaderTests
 #endif
 
     [Fact]
-    public void ExplicitOwnerCanLoadTheSameLibraryMoreThanOnce()
+    public void ExplicitDeploymentSupportsIndependentLibraryOwners()
     {
-        nint first = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(SDL).Assembly);
+        string libraryPath = NativeDllLoader.FindNativeLibrary(C_LIBRARY_NAME);
+        nint first = NativeLibrary.Load(libraryPath);
         try
         {
-            nint second = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(SDL).Assembly);
+            nint second = NativeLibrary.Load(libraryPath);
             try
             {
                 Assert.NotEqual(0, NativeLibrary.GetExport(first, "SDL_GetVersion"));
@@ -36,10 +37,25 @@ public sealed class NativeDllLoaderTests
         }
     }
 
-    [Fact]
-    public void InvalidInputsFailBeforeResolverPublication()
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData(".")]
+    [InlineData("..")]
+    [InlineData("native/SDL3")]
+    [InlineData("native\\SDL3")]
+    [InlineData("SDL*")]
+    [InlineData("SDL?")]
+    public void InvalidNamesFailBeforeDeploymentLookup(string libraryName)
     {
-        Assert.Throws<ArgumentNullException>(() => NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, null!));
-        Assert.Throws<ArgumentException>(() => NativeDllLoader.LoadNativeDll(" ", typeof(SDL).Assembly));
+        ArgumentException failure = Assert.Throws<ArgumentException>(() => NativeDllLoader.FindNativeLibrary(libraryName));
+        Assert.Equal(nameof(libraryName), failure.ParamName);
+    }
+
+    [Fact]
+    public void NullNamesFailBeforeDeploymentLookup()
+    {
+        ArgumentNullException failure = Assert.Throws<ArgumentNullException>(() => NativeDllLoader.FindNativeLibrary(null!));
+        Assert.Equal("libraryName", failure.ParamName);
     }
 }

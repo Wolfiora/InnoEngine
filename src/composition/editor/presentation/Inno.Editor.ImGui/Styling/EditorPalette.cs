@@ -8,7 +8,7 @@ namespace Inno.Editor.ImGui;
 /// <summary>
 /// Defines the complete editor color palette in one theme surface.
 /// </summary>
-public static class EditorPalette
+public static unsafe class EditorPalette
 {
     /// <summary>
     /// Gets zero opacity for invisible surfaces.
@@ -613,62 +613,62 @@ public static class EditorPalette
             from.W + (to.W - from.W) * value);
     }
 
-    internal static void Apply(ImGuiStylePtr style)
+    internal static void Apply(ImGuiStyle* style)
     {
-        style.Colors[(int)ImGuiCol.Text] = text;
-        style.Colors[(int)ImGuiCol.TextDisabled] = textDisabled;
-        style.Colors[(int)ImGuiCol.WindowBg] = windowBackground;
-        style.Colors[(int)ImGuiCol.ChildBg] = transparent;
-        style.Colors[(int)ImGuiCol.PopupBg] = popupBackground;
-        style.Colors[(int)ImGuiCol.Border] = border;
-        style.Colors[(int)ImGuiCol.BorderShadow] = borderShadow;
-        style.Colors[(int)ImGuiCol.FrameBg] = frame;
-        style.Colors[(int)ImGuiCol.FrameBgHovered] = frameHovered;
-        style.Colors[(int)ImGuiCol.FrameBgActive] = frameActive;
-        style.Colors[(int)ImGuiCol.TitleBg] = title;
-        style.Colors[(int)ImGuiCol.TitleBgActive] = titleActive;
-        style.Colors[(int)ImGuiCol.TitleBgCollapsed] = titleCollapsed;
-        style.Colors[(int)ImGuiCol.MenuBarBg] = transparent;
-        style.Colors[(int)ImGuiCol.ScrollbarBg] = WithOpacity(frame, opacityNone);
-        style.Colors[(int)ImGuiCol.ScrollbarGrab] = scrollbarGrab;
-        style.Colors[(int)ImGuiCol.ScrollbarGrabHovered] = scrollbarGrabHovered;
-        style.Colors[(int)ImGuiCol.ScrollbarGrabActive] = scrollbarGrabActive;
-        style.Colors[(int)ImGuiCol.CheckMark] = scrollbarGrabActive;
-        style.Colors[(int)ImGuiCol.SliderGrab] = accent;
-        style.Colors[(int)ImGuiCol.SliderGrabActive] = accentActive;
-        style.Colors[(int)ImGuiCol.Button] = frame;
-        style.Colors[(int)ImGuiCol.ButtonHovered] = frameHovered;
-        style.Colors[(int)ImGuiCol.ButtonActive] = frameActive;
-        style.Colors[(int)ImGuiCol.Header] = accent;
-        style.Colors[(int)ImGuiCol.HeaderHovered] = accentHovered;
-        style.Colors[(int)ImGuiCol.HeaderActive] = accentActive;
-        style.Colors[(int)ImGuiCol.Separator] = border;
-        style.Colors[(int)ImGuiCol.SeparatorHovered] = accentHovered;
-        style.Colors[(int)ImGuiCol.SeparatorActive] = accentActive;
-        style.Colors[(int)ImGuiCol.ResizeGrip] = transparent;
-        style.Colors[(int)ImGuiCol.ResizeGripHovered] = transparent;
-        style.Colors[(int)ImGuiCol.ResizeGripActive] = transparent;
-        style.Colors[(int)ImGuiCol.Tab] = tab;
-        style.Colors[(int)ImGuiCol.TabHovered] = tabHovered;
-        style.Colors[(int)ImGuiCol.TabSelected] = tabSelected;
-        style.Colors[(int)ImGuiCol.TabDimmed] = tabDimmed;
-        style.Colors[(int)ImGuiCol.TabDimmedSelected] = tabDimmedSelected;
-        style.Colors[(int)ImGuiCol.TabSelectedOverline] = tabSelectedOverline;
-        style.Colors[(int)ImGuiCol.PlotLines] = scrollbarGrabActive;
-        style.Colors[(int)ImGuiCol.PlotLinesHovered] = accentHovered;
-        style.Colors[(int)ImGuiCol.PlotHistogram] = accent;
-        style.Colors[(int)ImGuiCol.PlotHistogramHovered] = accentHovered;
-        style.Colors[(int)ImGuiCol.TableHeaderBg] = tableHeader;
-        style.Colors[(int)ImGuiCol.TableBorderStrong] = tableBorderStrong;
-        style.Colors[(int)ImGuiCol.TableBorderLight] = tableBorderLight;
-        style.Colors[(int)ImGuiCol.TableRowBg] = transparent;
-        style.Colors[(int)ImGuiCol.TableRowBgAlt] = tableRowAlternate;
-        style.Colors[(int)ImGuiCol.TextSelectedBg] = accentHovered;
-        style.Colors[(int)ImGuiCol.DragDropTarget] = dragDropTarget;
-        style.Colors[(int)ImGuiCol.NavWindowingHighlight] = navigationHighlight;
-        style.Colors[(int)ImGuiCol.NavWindowingDimBg] = navigationDim;
-        style.Colors[(int)ImGuiCol.ModalWindowDimBg] = modalDim;
-        style.Colors[(int)ImGuiCol.DockingPreview] = accentActive;
+        style->Colors[(int)ImGuiCol.Text] = ImGui.ToNative(text);
+        style->Colors[(int)ImGuiCol.TextDisabled] = ImGui.ToNative(textDisabled);
+        style->Colors[(int)ImGuiCol.WindowBg] = ImGui.ToNative(windowBackground);
+        style->Colors[(int)ImGuiCol.ChildBg] = ImGui.ToNative(transparent);
+        style->Colors[(int)ImGuiCol.PopupBg] = ImGui.ToNative(popupBackground);
+        style->Colors[(int)ImGuiCol.Border] = ImGui.ToNative(border);
+        style->Colors[(int)ImGuiCol.BorderShadow] = ImGui.ToNative(borderShadow);
+        style->Colors[(int)ImGuiCol.FrameBg] = ImGui.ToNative(frame);
+        style->Colors[(int)ImGuiCol.FrameBgHovered] = ImGui.ToNative(frameHovered);
+        style->Colors[(int)ImGuiCol.FrameBgActive] = ImGui.ToNative(frameActive);
+        style->Colors[(int)ImGuiCol.TitleBg] = ImGui.ToNative(title);
+        style->Colors[(int)ImGuiCol.TitleBgActive] = ImGui.ToNative(titleActive);
+        style->Colors[(int)ImGuiCol.TitleBgCollapsed] = ImGui.ToNative(titleCollapsed);
+        style->Colors[(int)ImGuiCol.MenuBarBg] = ImGui.ToNative(transparent);
+        style->Colors[(int)ImGuiCol.ScrollbarBg] = ImGui.ToNative(WithOpacity(frame, opacityNone));
+        style->Colors[(int)ImGuiCol.ScrollbarGrab] = ImGui.ToNative(scrollbarGrab);
+        style->Colors[(int)ImGuiCol.ScrollbarGrabHovered] = ImGui.ToNative(scrollbarGrabHovered);
+        style->Colors[(int)ImGuiCol.ScrollbarGrabActive] = ImGui.ToNative(scrollbarGrabActive);
+        style->Colors[(int)ImGuiCol.CheckMark] = ImGui.ToNative(scrollbarGrabActive);
+        style->Colors[(int)ImGuiCol.SliderGrab] = ImGui.ToNative(accent);
+        style->Colors[(int)ImGuiCol.SliderGrabActive] = ImGui.ToNative(accentActive);
+        style->Colors[(int)ImGuiCol.Button] = ImGui.ToNative(frame);
+        style->Colors[(int)ImGuiCol.ButtonHovered] = ImGui.ToNative(frameHovered);
+        style->Colors[(int)ImGuiCol.ButtonActive] = ImGui.ToNative(frameActive);
+        style->Colors[(int)ImGuiCol.Header] = ImGui.ToNative(accent);
+        style->Colors[(int)ImGuiCol.HeaderHovered] = ImGui.ToNative(accentHovered);
+        style->Colors[(int)ImGuiCol.HeaderActive] = ImGui.ToNative(accentActive);
+        style->Colors[(int)ImGuiCol.Separator] = ImGui.ToNative(border);
+        style->Colors[(int)ImGuiCol.SeparatorHovered] = ImGui.ToNative(accentHovered);
+        style->Colors[(int)ImGuiCol.SeparatorActive] = ImGui.ToNative(accentActive);
+        style->Colors[(int)ImGuiCol.ResizeGrip] = ImGui.ToNative(transparent);
+        style->Colors[(int)ImGuiCol.ResizeGripHovered] = ImGui.ToNative(transparent);
+        style->Colors[(int)ImGuiCol.ResizeGripActive] = ImGui.ToNative(transparent);
+        style->Colors[(int)ImGuiCol.Tab] = ImGui.ToNative(tab);
+        style->Colors[(int)ImGuiCol.TabHovered] = ImGui.ToNative(tabHovered);
+        style->Colors[(int)ImGuiCol.TabSelected] = ImGui.ToNative(tabSelected);
+        style->Colors[(int)ImGuiCol.TabDimmed] = ImGui.ToNative(tabDimmed);
+        style->Colors[(int)ImGuiCol.TabDimmedSelected] = ImGui.ToNative(tabDimmedSelected);
+        style->Colors[(int)ImGuiCol.TabSelectedOverline] = ImGui.ToNative(tabSelectedOverline);
+        style->Colors[(int)ImGuiCol.PlotLines] = ImGui.ToNative(scrollbarGrabActive);
+        style->Colors[(int)ImGuiCol.PlotLinesHovered] = ImGui.ToNative(accentHovered);
+        style->Colors[(int)ImGuiCol.PlotHistogram] = ImGui.ToNative(accent);
+        style->Colors[(int)ImGuiCol.PlotHistogramHovered] = ImGui.ToNative(accentHovered);
+        style->Colors[(int)ImGuiCol.TableHeaderBg] = ImGui.ToNative(tableHeader);
+        style->Colors[(int)ImGuiCol.TableBorderStrong] = ImGui.ToNative(tableBorderStrong);
+        style->Colors[(int)ImGuiCol.TableBorderLight] = ImGui.ToNative(tableBorderLight);
+        style->Colors[(int)ImGuiCol.TableRowBg] = ImGui.ToNative(transparent);
+        style->Colors[(int)ImGuiCol.TableRowBgAlt] = ImGui.ToNative(tableRowAlternate);
+        style->Colors[(int)ImGuiCol.TextSelectedBg] = ImGui.ToNative(accentHovered);
+        style->Colors[(int)ImGuiCol.DragDropTarget] = ImGui.ToNative(dragDropTarget);
+        style->Colors[(int)ImGuiCol.NavWindowingHighlight] = ImGui.ToNative(navigationHighlight);
+        style->Colors[(int)ImGuiCol.NavWindowingDimBg] = ImGui.ToNative(navigationDim);
+        style->Colors[(int)ImGuiCol.ModalWindowDimBg] = ImGui.ToNative(modalDim);
+        style->Colors[(int)ImGuiCol.DockingPreview] = ImGui.ToNative(accentActive);
     }
 
     /// <summary>

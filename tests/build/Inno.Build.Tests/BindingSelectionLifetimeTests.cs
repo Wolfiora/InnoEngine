@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -14,7 +15,7 @@ public sealed class BindingSelectionLifetimeTests
     [Fact]
     public async Task PublicationWithoutItsCompiledSelectionFailsBeforePreparingTheTaskRuntime()
     {
-        string engine = ToolchainEnvironment.FindRepoRoot();
+        string engine = TestRepository.GetRoot(typeof(BindingSelectionLifetimeTests).Assembly);
         string root = Path.Combine(Path.GetTempPath(), "InnoSelectionPreflight", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
@@ -49,7 +50,7 @@ public sealed class BindingSelectionLifetimeTests
     [Fact]
     public async Task SelectionRemainsProductOwnedThroughBuildAndPublish()
     {
-        string engine = ToolchainEnvironment.FindRepoRoot();
+        string engine = TestRepository.GetRoot(typeof(BindingSelectionLifetimeTests).Assembly);
         string root = Path.Combine(Path.GetTempPath(), "InnoSelectionLifetime", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
@@ -73,7 +74,7 @@ public sealed class BindingSelectionLifetimeTests
                 .Save(Path.Combine(root, "Directory.Build.targets"));
             string project = Path.Combine(root, "Fixture.csproj");
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                new XElement("PropertyGroup", new XElement("TargetFramework", "net9.0"),
+                new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"),
                     new XElement("ImplicitUsings", "disable"), new XElement("Nullable", "enable"))))
                 .Save(project);
             File.WriteAllText(Path.Combine(root, "Api.cs"), "public static class Api { public static int value => 42; }");

@@ -11,7 +11,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     private const float C_TOOLTIP_MINIMUM_WIDTH = 300f;
     private const float C_TOOLTIP_WRAP_WIDTH = 440f;
@@ -35,10 +35,10 @@ public static partial class ImGuiWidget
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
-        NativeImGui.SetNextWindowViewport(NativeImGui.GetWindowViewport().ID);
+        NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         ImGuiWindowFlags flags = ImGuiWindowFlags.AlwaysAutoResize |
                                  ImGuiWindowFlags.NoSavedSettings;
-        if (NativeImGui.BeginPopup(id, flags))
+        if (NativeImGui.BeginPopup(id, (int)(flags)))
             return true;
         PopContextMenuStyle();
         return false;
@@ -63,7 +63,7 @@ public static partial class ImGuiWidget
     public static bool BeginMenuTooltip()
     {
         PushContextMenuStyle();
-        NativeImGui.SetNextWindowViewport(NativeImGui.GetWindowViewport().ID);
+        NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         if (NativeImGui.BeginTooltip())
             return true;
         PopContextMenuStyle();
@@ -88,7 +88,7 @@ public static partial class ImGuiWidget
     public static void DrawItemTooltip(string? text)
     {
         if (string.IsNullOrWhiteSpace(text) ||
-            !NativeImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            !NativeImGui.IsItemHovered((int)(ImGuiHoveredFlags.AllowWhenDisabled)))
         {
             return;
         }
@@ -107,9 +107,9 @@ public static partial class ImGuiWidget
         if (string.IsNullOrWhiteSpace(text))
             return;
 
-        ImGuiViewportPtr viewport = NativeImGui.GetWindowViewport();
+        ImGuiViewport* viewport = NativeImGui.Raw.GetWindowViewport();
         Vector2 margin = new(6f * style.zoom);
-        Vector2 available = Vector2.Max(Vector2.One, viewport.WorkSize - margin * 2f);
+        Vector2 available = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize) - margin * 2f);
         Vector2 padding = style.menuWindowPadding;
         float outerWidth = MathF.Min(C_TOOLTIP_WRAP_WIDTH * style.zoom, available.X);
         float innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
@@ -120,7 +120,7 @@ public static partial class ImGuiWidget
         innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
         textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
         Vector2 size = new(outerWidth, MathF.Min(available.Y, textSize.Y + padding.Y * 2f + style.menuBorderSize * 2f));
-        Vector2 workMin = viewport.WorkPos + margin;
+        Vector2 workMin = ImGui.FromNative(viewport->WorkPos) + margin;
         Vector2 workMax = workMin + available;
         Vector2 mouse = NativeImGui.GetMousePos();
         Vector2 position = mouse + new Vector2(16f, 20f) * style.zoom;
@@ -164,9 +164,9 @@ public static partial class ImGuiWidget
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
-        NativeImGui.SetNextWindowViewport(NativeImGui.GetWindowViewport().ID);
+        NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         ConstrainContextMenu();
-        if (NativeImGui.BeginPopupContextItem(id, ImGuiPopupFlags.MouseButtonRight))
+        if (NativeImGui.BeginPopupContextItem(id, (int)(ImGuiPopupFlags.MouseButtonRight)))
             return true;
         PopContextMenuStyle();
         return false;
@@ -185,11 +185,11 @@ public static partial class ImGuiWidget
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
-        NativeImGui.SetNextWindowViewport(NativeImGui.GetWindowViewport().ID);
+        NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         ConstrainContextMenu();
         if (NativeImGui.BeginPopupContextWindow(
                 id,
-                ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems))
+                (int)(ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems)))
         {
             return true;
         }
@@ -208,11 +208,11 @@ public static partial class ImGuiWidget
     private static bool IsPopupBlockingInteraction()
         => NativeImGui.IsPopupOpen(
             string.Empty,
-            ImGuiPopupFlags.AnyPopupId | ImGuiPopupFlags.AnyPopupLevel);
+            (int)(ImGuiPopupFlags.AnyPopupId | ImGuiPopupFlags.AnyPopupLevel));
 
     private static void ConstrainContextMenu()
     {
-        Vector2 workSize = NativeImGui.GetWindowViewport().WorkSize;
+        Vector2 workSize = ImGui.FromNative(NativeImGui.Raw.GetWindowViewport()->WorkSize);
         float minimumWidth = MathF.Min(
             workSize.X,
             style.searchPopupWidth + style.menuWindowPadding.X * 2f + style.menuBorderSize * 2f);
@@ -231,7 +231,7 @@ public static partial class ImGuiWidget
         Vector2 pixelMinimum = Vector2.Min(pixelMaximum, new Vector2(
             MathF.Ceiling(minimum.X),
             MathF.Ceiling(minimum.Y)));
-        NativeImGui.SetNextWindowSizeConstraints(pixelMinimum, pixelMaximum, &RoundMenuPopupSize);
+        NativeImGui.Raw.SetNextWindowSizeConstraints(ImGui.ToNative(pixelMinimum), ImGui.ToNative(pixelMaximum), &RoundMenuPopupSize, null);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
@@ -239,25 +239,25 @@ public static partial class ImGuiWidget
     {
         // ImGui truncates constrained sizes. Round content upward within integer bounds so
         // fractional padding cannot turn a fully fitting menu into a scrolling window.
-        data->DesiredSize = new Vector2(
+        data->DesiredSize = ImGui.ToNative(new Vector2(
             MathF.Ceiling(data->DesiredSize.X),
-            MathF.Ceiling(data->DesiredSize.Y));
+            MathF.Ceiling(data->DesiredSize.Y)));
     }
 
     private static void PushContextMenuStyle()
     {
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.menuText);
-        NativeImGui.PushStyleColor(ImGuiCol.PopupBg, EditorPalette.menuBackground);
-        NativeImGui.PushStyleColor(ImGuiCol.Header, EditorPalette.menuItem);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.menuItemHovered);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.menuItemActive);
-        NativeImGui.PushStyleColor(ImGuiCol.Separator, EditorPalette.menuSeparator);
-        NativeImGui.PushStyleColor(ImGuiCol.NavCursor, EditorPalette.transparent);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, style.menuWindowPadding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, style.menuFramePadding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, style.menuItemSpacing);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.PopupRounding, style.menuRounding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.PopupBorderSize, style.menuBorderSize);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.menuText);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.PopupBg), EditorPalette.menuBackground);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.menuItem);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.menuItemHovered);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.menuItemActive);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Separator), EditorPalette.menuSeparator);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.NavCursor), EditorPalette.transparent);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.WindowPadding), style.menuWindowPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.menuFramePadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ItemSpacing), style.menuItemSpacing);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.PopupRounding), style.menuRounding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.PopupBorderSize), style.menuBorderSize);
     }
 
     private static void PopContextMenuStyle()

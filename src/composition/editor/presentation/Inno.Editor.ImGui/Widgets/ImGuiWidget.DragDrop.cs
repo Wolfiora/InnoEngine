@@ -1,4 +1,5 @@
 using System;
+using BGCS.Runtime;
 using System.Numerics;
 
 using Inno.Native.ImGui;
@@ -9,7 +10,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Publishes an unmanaged drag payload for the most recently submitted item.
@@ -47,7 +48,7 @@ public static partial class ImGuiWidget
         ImGuiDragDropFlags sourceFlags = allowHoldToOpenOthers
             ? ImGuiDragDropFlags.None
             : ImGuiDragDropFlags.SourceNoHoldToOpenOthers;
-        if (!NativeImGui.BeginDragDropSource(sourceFlags))
+        if (!NativeImGui.BeginDragDropSource((int)(sourceFlags)))
         {
             return false;
         }
@@ -98,7 +99,7 @@ public static partial class ImGuiWidget
         ImGuiDragDropFlags sourceFlags = allowHoldToOpenOthers
             ? ImGuiDragDropFlags.None
             : ImGuiDragDropFlags.SourceNoHoldToOpenOthers;
-        if (!NativeImGui.BeginDragDropSource(sourceFlags))
+        if (!NativeImGui.BeginDragDropSource((int)(sourceFlags)))
         {
             return false;
         }
@@ -202,12 +203,13 @@ public static partial class ImGuiWidget
         ImGuiDragDropFlags flags = ImGuiDragDropFlags.AcceptBeforeDelivery;
         if (!drawDefaultHighlight)
             flags |= ImGuiDragDropFlags.AcceptNoDrawDefaultRect;
-        ImGuiPayloadPtr nativePayload = NativeImGui.AcceptDragDropPayload(payloadType, flags);
+        using NativeStringLease nativeType = Utf8Codec.EncodeNullTerminated(payloadType, allowsNull: false);
+        ImGuiPayload* nativePayload = NativeImGui.Raw.AcceptDragDropPayload((sbyte*)nativeType.pointer, (int)flags);
         bool compatible = TryReadDragDropPayload(nativePayload, out payload);
         if (compatible)
-            isPreviewing = nativePayload.Preview;
+            isPreviewing = nativePayload->Preview != 0;
 
-        bool delivered = compatible && nativePayload.Delivery;
+        bool delivered = compatible && nativePayload->Delivery != 0;
         NativeImGui.EndDragDropTarget();
         return delivered;
     }
@@ -261,19 +263,20 @@ public static partial class ImGuiWidget
         isPreviewing = false;
         if (maximum.X <= minimum.X || maximum.Y <= minimum.Y)
             return false;
-        ImRect bounds = new() { Min = minimum, Max = maximum };
-        if (!ImGuiP.BeginDragDropTargetCustom(bounds, targetId))
+        ImRect bounds = new() { Min = ImGui.ToNative(minimum), Max = ImGui.ToNative(maximum) };
+        if (NativeImGui.Raw.BeginDragDropTargetCustom(bounds, targetId) == 0)
             return false;
         try
         {
             ImGuiDragDropFlags flags = ImGuiDragDropFlags.AcceptBeforeDelivery;
             if (!drawDefaultHighlight)
                 flags |= ImGuiDragDropFlags.AcceptNoDrawDefaultRect;
-            ImGuiPayloadPtr nativePayload = NativeImGui.AcceptDragDropPayload(payloadType, flags);
+            using NativeStringLease nativeType = Utf8Codec.EncodeNullTerminated(payloadType, allowsNull: false);
+            ImGuiPayload* nativePayload = NativeImGui.Raw.AcceptDragDropPayload((sbyte*)nativeType.pointer, (int)flags);
             bool compatible = TryReadDragDropPayload(nativePayload, out payload);
             if (compatible)
-                isPreviewing = nativePayload.Preview;
-            return compatible && nativePayload.Delivery;
+                isPreviewing = nativePayload->Preview != 0;
+            return compatible && nativePayload->Delivery != 0;
         }
         finally
         {
@@ -288,19 +291,20 @@ public static partial class ImGuiWidget
         where TPayload : unmanaged
     {
         TPayload payloadCopy = payload;
-        _ = NativeImGui.SetDragDropPayload(payloadType, &payloadCopy, (nuint)sizeof(TPayload));
+        using NativeStringLease nativeType = Utf8Codec.EncodeNullTerminated(payloadType, allowsNull: false);
+        _ = NativeImGui.Raw.SetDragDropPayload((sbyte*)nativeType.pointer, &payloadCopy, (uint)sizeof(TPayload), 0);
     }
 
     private static unsafe bool TryReadDragDropPayload<TPayload>(
-        ImGuiPayloadPtr nativePayload,
+        ImGuiPayload* nativePayload,
         out TPayload payload
     )
         where TPayload : unmanaged
     {
         payload = default;
-        if (nativePayload.IsNull || nativePayload.DataSize != sizeof(TPayload) || nativePayload.Data == null)
+        if ((nativePayload == null) || nativePayload->DataSize != sizeof(TPayload) || nativePayload->Data == null)
             return false;
-        payload = *(TPayload*)nativePayload.Data;
+        payload = *(TPayload*)nativePayload->Data;
         return true;
     }
 }
