@@ -1,24 +1,24 @@
-#if !INNO_STATIC_NATIVE
-using BGCS.Runtime;
 using Inno.Native.LibraryLoading;
 
 namespace Inno.Native.UI;
 
 /// <summary>
-/// Initializes generated imports against the component's dynamic native library.
+/// Initializes the explicitly deployed module through the generated BGCS API.
 /// </summary>
 public static unsafe partial class UiNative
 {
 #if DEBUG
-    private const string C_LIBRARY_NAME = "inno-ui-debug";
+    internal const string LibName = "inno-ui-debug";
 #else
-    private const string C_LIBRARY_NAME = "inno-ui-release";
+    internal const string LibName = "inno-ui-release";
 #endif
 
     static UiNative()
     {
-        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(UiNative).Assembly);
-        InitApi(new NativeLibraryContext(handle));
+#if INNO_STATIC_NATIVE
+        FromStatic();
+#else
+        Load(NativeDllLoader.FindNativeLibrary(LibName));
+#endif
     }
 }
-#endif

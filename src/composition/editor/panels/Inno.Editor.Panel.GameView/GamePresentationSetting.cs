@@ -40,9 +40,9 @@ internal sealed class GamePresentationSetting : ProjectSettingEditor<GamePresent
         NativeImGui.BeginDisabled(!preserve);
         try
         {
-            if (NativeImGui.InputInt("Reference Width", ref width))
+            if (NativeImGui.InputInt("Reference Width", ref width, 1, 100, 0))
                 setting.referenceWidth = Math.Max(1, width);
-            if (NativeImGui.InputInt("Reference Height", ref height))
+            if (NativeImGui.InputInt("Reference Height", ref height, 1, 100, 0))
                 setting.referenceHeight = Math.Max(1, height);
         }
         finally

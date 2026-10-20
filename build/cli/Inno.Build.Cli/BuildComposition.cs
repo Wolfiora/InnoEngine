@@ -24,10 +24,10 @@ internal static class BuildComposition
 
     internal static async Task<ProductNativeBuildResult> PrepareNativeAsync(
         BuildCompositionContext context,
+        string engineRoot,
         CancellationToken cancellationToken
     ) {
-        string root = ToolchainEnvironment.FindRepoRoot();
-        var nativeContext = new NativeBuildContext(root, C_HOST_CONFIGURATION).WithBindingGenerator(context.bindingGenerator);
+        var nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(context.bindingGenerator);
         var provider = StandardBuildDistribution.Create(context).build.ResolveNativeToolchain(context.toolsTarget.value);
         nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
             nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));

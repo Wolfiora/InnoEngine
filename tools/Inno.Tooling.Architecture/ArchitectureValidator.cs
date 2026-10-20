@@ -150,9 +150,9 @@ public static partial class ArchitectureValidator
                 continue;
             ValidateDirectories(repositoryRoot, root, failures);
             ValidateSources(repositoryRoot, root, failures, documentationModels);
-            ValidateProjects(repositoryRoot, root, failures);
         }
 
+        UsingPolicyValidator.Validate(repositoryRoot, failures);
         ValidateProjectReferences(repositoryRoot, failures);
         ValidateProductionSolutionFolders(repositoryRoot, failures);
         ValidateTestSolutionFolders(repositoryRoot, failures);
@@ -249,8 +249,6 @@ public static partial class ArchitectureValidator
                 "type forwarding is forbidden", failures);
             AddSourceFailure(CompatibilityFieldPattern().IsMatch(source), relative,
                 "schema compatibility fields are forbidden", failures);
-            AddSourceFailure(GlobalUsingPattern().IsMatch(source), relative,
-                "global using directives are forbidden", failures);
             AddSourceFailure(UninformativeXmlPattern().IsMatch(source), relative,
                 "public API XML contains an uninformative generated placeholder", failures);
 
@@ -301,25 +299,6 @@ public static partial class ArchitectureValidator
             }
         }
         return changedFileCount;
-    }
-
-    private static void ValidateProjects(
-        string repositoryRoot,
-        string root,
-        ICollection<string> failures
-    ) {
-        foreach (string path in EnumerateFiles(root, "*.csproj"))
-        {
-            XDocument project = XDocument.Load(path, LoadOptions.SetLineInfo);
-            string relative = Relative(repositoryRoot, path);
-            foreach (XElement implicitUsings in project.Descendants("ImplicitUsings"))
-            {
-                if (string.Equals(implicitUsings.Value.Trim(), "enable", StringComparison.OrdinalIgnoreCase))
-                    failures.Add($"{relative}: implicit usings must be disabled.");
-            }
-            foreach (XElement usingItem in project.Descendants("Using"))
-                failures.Add($"{relative}: MSBuild Using items are forbidden ({usingItem.Attribute("Include")?.Value}).");
-        }
     }
 
     private static void ValidateProjectReferences(
@@ -774,9 +753,6 @@ public static partial class ArchitectureValidator
 
     [GeneratedRegex(@"\b(schemaVersion|formatVersion|formerVersion)\b", RegexOptions.IgnoreCase)]
     private static partial Regex CompatibilityFieldPattern();
-
-    [GeneratedRegex(@"^\s*global\s+using\b", RegexOptions.Multiline)]
-    private static partial Regex GlobalUsingPattern();
 
     [GeneratedRegex(@"Executes this contract at the caller-controlled boundary|Transforms validated inputs into a deterministic result|Gets caller-visible|input consumed by this operation|state exposed by this contract|value associated with this contract|Models the .* domain value|Performs the .* operation|Runs the .* operation|Gets the .* value owned by the current instance")]
     private static partial Regex UninformativeXmlPattern();

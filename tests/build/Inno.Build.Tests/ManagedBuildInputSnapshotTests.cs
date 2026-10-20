@@ -17,9 +17,9 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
     {
         Directory.CreateDirectory(m_root);
         File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), "fixture");
-        Write("Shared/Shared.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
+        Write("Shared/Shared.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
         Write("Shared/Shared.cs", "public sealed class Shared { }");
-        Write("App/App.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework>"
+        Write("App/App.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
             + "<ImplicitUsings>disable</ImplicitUsings></PropertyGroup><Import Project=\"Options.props\" />"
             + "<ItemGroup><ProjectReference Include=\"../Shared/Shared.csproj\" /><EmbeddedResource Include=\"data.txt\" />"
             + "<AdditionalFiles Include=\"input.txt\" /></ItemGroup></Project>");
@@ -27,20 +27,20 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         Write("App/App.cs", "public sealed class App { }");
         Write("App/data.txt", "first");
         Write("App/input.txt", "first");
-        Write("Tool/Tool.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework></PropertyGroup></Project>");
+        Write("Tool/Tool.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
         Write("Tool/Tool.cs", "public sealed class Tool { }");
     }
 
     [Theory]
-    [InlineData("net9.0-browser")]
+    [InlineData("net10.0-browser")]
     [InlineData("netstandard2.0")]
     public async Task FrameworkSelectionUsesTheSdkAndRestoredTargetSemantics(string framework)
     {
         string project = Path.Combine(m_root, "App", "App.csproj");
-        File.WriteAllText(project, File.ReadAllText(project).Replace("<TargetFramework>net9.0</TargetFramework>",
+        File.WriteAllText(project, File.ReadAllText(project).Replace("<TargetFramework>net10.0</TargetFramework>",
             "<TargetFramework>" + framework + "</TargetFramework>", StringComparison.Ordinal));
         string shared = Path.Combine(m_root, "Shared", "Shared.csproj");
-        File.WriteAllText(shared, File.ReadAllText(shared).Replace("<TargetFramework>net9.0</TargetFramework>",
+        File.WriteAllText(shared, File.ReadAllText(shared).Replace("<TargetFramework>net10.0</TargetFramework>",
             "<TargetFramework>" + framework + "</TargetFramework>", StringComparison.Ordinal));
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
@@ -117,7 +117,7 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         File.WriteAllText(original, "public sealed class App { }");
         await snapshot.VerifyAsync();
         await execution.VerifyAsync();
-        string output = Path.Combine(Path.GetDirectoryName(execution.project)!, "bin", "Release", "net9.0", "App.dll");
+        string output = Path.Combine(Path.GetDirectoryName(execution.project)!, "bin", "Release", "net10.0", "App.dll");
         using FileStream stream = File.OpenRead(output);
         using var image = new System.Reflection.PortableExecutable.PEReader(stream);
         System.Reflection.Metadata.MetadataReader metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(image);
@@ -173,6 +173,52 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             string entry,
             IReadOnlyDictionary<string, string> globals
         ) => ManagedBuildInputSnapshot.CaptureAsync(new NativeBuildContext(m_root, "release"), selected, entry, globals).AsTask();
+    }
+
+    /// <summary>
+    /// Captures SDK-generated symbols without invoking compilation or product preparation.
+    /// </summary>
+    /// <returns>
+    /// Completion after a target-derived symbol change invalidates the frozen snapshot.
+    /// </returns>
+    [Fact]
+    [Trait("ProcessIsolation", "Required")]
+    public async Task SdkPreparedSymbolsParticipateInTheFrozenInputIdentity()
+    {
+        string project = Path.Combine(m_root, "App", "App.csproj");
+        File.WriteAllText(project, File.ReadAllText(project).Replace("</Project>", "<Import Project=\"Symbols.targets\" /></Project>", StringComparison.Ordinal));
+        Write("App/Symbols.targets", """
+            <Project>
+              <Target Name="AppendObservedSymbol" AfterTargets="GenerateTargetFrameworkDefineConstants">
+                <Error Condition="'$(ImplicitFrameworkDefine)' != 'NET10_0'" Text="The SDK framework symbol was not prepared." />
+                <PropertyGroup><DefineConstants>$(DefineConstants);$(INNO_TEST_COMPILER_SYMBOL)</DefineConstants></PropertyGroup>
+              </Target>
+              <Target Name="RejectCompilation" BeforeTargets="PrepareForBuild;CoreCompile">
+                <Error Text="Input capture must not compile or prepare a product." />
+              </Target>
+            </Project>
+            """);
+        string? previous = Environment.GetEnvironmentVariable("INNO_TEST_COMPILER_SYMBOL");
+        try
+        {
+            Environment.SetEnvironmentVariable("INNO_TEST_COMPILER_SYMBOL", "FIRST_SYMBOL");
+            string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+            DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
+            await ToolchainEnvironment.RunAsync(sdk.hostPath, [sdk.cliPath, "restore", project, "--nologo", "-v:quiet"],
+                m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+            ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+                new NativeBuildContext(m_root, "release"), sdk, project,
+                new Dictionary<string, string> { ["Configuration"] = "Release" });
+            await snapshot.VerifyAsync();
+            Environment.SetEnvironmentVariable("INNO_TEST_COMPILER_SYMBOL", "SECOND_SYMBOL");
+            InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() => snapshot.VerifyAsync().AsTask());
+            Assert.Contains("CompilerDefineConstants", failure.Message, StringComparison.Ordinal);
+            Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("INNO_TEST_COMPILER_SYMBOL", previous);
+        }
     }
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);

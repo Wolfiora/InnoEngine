@@ -86,8 +86,6 @@ public static class EmscriptenToolchainResolver
             ["DOTNET_HOST_PATH"] = host,
             ["DOTNET_ROOT"] = root,
             ["DOTNET_EMSCRIPTEN_LLVM_ROOT"] = Path.Combine(sdk, "bin"),
-            ["BGCS_CC"] = clang,
-            ["BGCS_CPP2C_CXX"] = clangCpp,
             ["DOTNET_EMSCRIPTEN_BINARYEN_ROOT"] = sdk,
             ["DOTNET_EMSCRIPTEN_NODE_JS"] = node,
             ["EM_CACHE"] = cache,

@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Threading;
@@ -12,7 +13,7 @@ public sealed class SolutionBootstrapOwnershipTests
     [Fact]
     public async Task SolutionSharesOneBootstrapOwnerAndRenewsItForTheNextBuild()
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(SolutionBootstrapOwnershipTests).Assembly);
         string fixture = Path.Combine(Path.GetTempPath(), "InnoSolutionOwnerTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(fixture);
         try
@@ -28,7 +29,7 @@ public sealed class SolutionBootstrapOwnershipTests
                       </Target>
                     </Project>
                     """);
-            string solution = Path.Combine(fixture, "Fixture.sln");
+            string solution = Path.Combine(fixture, "InnoEngine.sln");
             await File.WriteAllTextAsync(solution, """
                 Microsoft Visual Studio Solution File, Format Version 12.00
                 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "First", "First.csproj", "{BF56473A-8C5D-4E17-8A0A-67289A364EB0}"
@@ -52,8 +53,12 @@ public sealed class SolutionBootstrapOwnershipTests
             for (int build = 0; build < 2; build++)
             {
                 using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-                await ToolchainEnvironment.RunAsync(host, ["msbuild", solution, "-m:2", "-nodeReuse:false", "-v:quiet"],
-                    fixture, cancellation.Token, DotNetSdkEnvironment.Create(host));
+                using var output = new StringWriter();
+                using var error = new StringWriter();
+                Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
+                    host, ["msbuild", solution, "-m:2", "-nodeReuse:false", "-v:quiet"],
+                    fixture, cancellation.Token, DotNetSdkEnvironment.Create(host), output, error));
+                Assert.True(failure is null, $"{failure}{Environment.NewLine}{output}{Environment.NewLine}{error}");
                 string first = File.ReadAllText(Path.Combine(fixture, "First.owner")).Trim();
                 Assert.True(Guid.TryParseExact(first, "N", out _));
                 Assert.Equal(first, File.ReadAllText(Path.Combine(fixture, "Second.owner")).Trim());

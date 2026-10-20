@@ -25,23 +25,23 @@ internal static class FileBrowserUtility
 
     internal static void PushBrowserStyle()
     {
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.assetText);
-        NativeImGui.PushStyleColor(ImGuiCol.WindowBg, EditorPalette.collectionHeader);
-        NativeImGui.PushStyleColor(ImGuiCol.ChildBg, EditorPalette.collectionHeader);
-        NativeImGui.PushStyleColor(ImGuiCol.Border, EditorPalette.assetBorder);
-        NativeImGui.PushStyleColor(ImGuiCol.TableHeaderBg, EditorPalette.collectionHeader);
-        NativeImGui.PushStyleColor(ImGuiCol.TableBorderStrong, EditorPalette.assetBorder);
-        NativeImGui.PushStyleColor(ImGuiCol.TableBorderLight, EditorPalette.assetBorderSoft);
-        NativeImGui.PushStyleColor(ImGuiCol.TableRowBg, EditorPalette.collectionRow);
-        NativeImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, EditorPalette.collectionRowAlternate);
-        NativeImGui.PushStyleColor(ImGuiCol.Header, EditorPalette.assetAccent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.assetAccent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.assetAccent);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, EditorWidget.style.assetWindowPadding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.ChildBorderSize, EditorWidget.style.borderSize);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.CellPadding, EditorWidget.style.assetCellPadding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, EditorWidget.style.assetItemSpacing);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, EditorWidget.style.assetFrameRounding);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.assetText);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.WindowBg), EditorPalette.collectionHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.ChildBg), EditorPalette.collectionHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.assetBorder);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.TableHeaderBg), EditorPalette.collectionHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.TableBorderStrong), EditorPalette.assetBorder);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.TableBorderLight), EditorPalette.assetBorderSoft);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.TableRowBg), EditorPalette.collectionRow);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.assetAccent);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.assetAccent);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.assetAccent);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.WindowPadding), EditorWidget.style.assetWindowPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ChildBorderSize), EditorWidget.style.borderSize);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.CellPadding), EditorWidget.style.assetCellPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ItemSpacing), EditorWidget.style.assetItemSpacing);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), EditorWidget.style.assetFrameRounding);
     }
 
     internal static void PopBrowserStyle()
@@ -52,9 +52,9 @@ internal static class FileBrowserUtility
 
     internal static void PushButtonColors(Vector4 color)
     {
-        NativeImGui.PushStyleColor(ImGuiCol.Button, color);
-        NativeImGui.PushStyleColor(ImGuiCol.ButtonHovered, EditorPalette.GetHovered(color));
-        NativeImGui.PushStyleColor(ImGuiCol.ButtonActive, EditorPalette.GetActive(color));
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Button), color);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.ButtonHovered), EditorPalette.GetHovered(color));
+        NativeImGui.PushStyleColor((int)(ImGuiCol.ButtonActive), EditorPalette.GetActive(color));
     }
 
     internal static bool IsDirectoryPath(

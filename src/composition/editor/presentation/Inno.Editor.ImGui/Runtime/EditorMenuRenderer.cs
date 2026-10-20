@@ -14,7 +14,7 @@ namespace Inno.Editor.ImGui;
 /// <summary>
 /// Renders immutable editor menu models through ImGui.
 /// </summary>
-public static class EditorMenuRenderer
+public static unsafe class EditorMenuRenderer
 {
     private static readonly Dictionary<uint, string> m_contextSearches = [];
 
@@ -158,7 +158,7 @@ public static class EditorMenuRenderer
             ? string.Empty
             : m_contextSearches.GetValueOrDefault(popupId, string.Empty);
         NativeImGui.PushStyleVar(
-            ImGuiStyleVar.FramePadding,
+            (int)(ImGuiStyleVar.FramePadding),
             EditorWidget.style.menuSearchFramePadding);
         try
         {
@@ -199,13 +199,13 @@ public static class EditorMenuRenderer
 
     private static bool ShouldResolveItemContextMenu(string id)
         => NativeImGui.IsPopupOpen(id) ||
-           NativeImGui.IsItemHovered() && NativeImGui.IsMouseReleased(Inno.Native.ImGui.ImGuiMouseButton.Right);
+           NativeImGui.IsItemHovered() && NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
 
     private static bool ShouldResolveWindowContextMenu(string id)
         => NativeImGui.IsPopupOpen(id) ||
            NativeImGui.IsWindowHovered() &&
            !NativeImGui.IsAnyItemHovered() &&
-           NativeImGui.IsMouseReleased(Inno.Native.ImGui.ImGuiMouseButton.Right);
+           NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
 
     /// <summary>
     /// Draws the complete editor main menu bar for the supplied menu context.
@@ -234,17 +234,17 @@ public static class EditorMenuRenderer
     ) {
         if (items.Count == 0)
             return;
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         float extent = NativeImGui.GetFrameHeight();
-        float width = extent * items.Count + style.ItemSpacing.X * (items.Count - 1);
+        float width = extent * items.Count + style->ItemSpacing.X * (items.Count - 1);
         float centeredOffset = (NativeImGui.GetWindowWidth() - width) * 0.5f;
-        float minimumOffset = NativeImGui.GetCursorPosX() + style.ItemSpacing.X;
+        float minimumOffset = NativeImGui.GetCursorPosX() + style->ItemSpacing.X;
         NativeImGui.SameLine(MathF.Max(centeredOffset, minimumOffset), 0f);
 
         for (int i = 0; i < items.Count; i++)
         {
             if (i > 0)
-                NativeImGui.SameLine(0f, style.ItemSpacing.X);
+                NativeImGui.SameLine(0f, style->ItemSpacing.X);
             DrawToolbarItem(interaction, items[i], new Vector2(extent, extent));
         }
     }
@@ -271,17 +271,20 @@ public static class EditorMenuRenderer
                 : hovered
                     ? EditorPalette.accentHovered
                     : EditorPalette.accent;
-            NativeImGui.GetWindowDrawList().AddRectFilled(
-                minimum,
-                minimum + size,
+            NativeImGui.Raw.AddRectFilled(
+                NativeImGui.Raw.GetWindowDrawList(),
+                ImGui.ToNative(minimum),
+                ImGui.ToNative(minimum + size),
                 NativeImGui.ColorConvertFloat4ToU32(background),
-                NativeImGui.GetStyle().FrameRounding);
+                NativeImGui.Raw.GetStyle()->FrameRounding,
+                0
+            );
         }
 
-        uint color = NativeImGui.GetColorU32(disabled ? ImGuiCol.TextDisabled : ImGuiCol.Text);
+        uint color = NativeImGui.GetColorU32((int)(disabled ? ImGuiCol.TextDisabled : ImGuiCol.Text));
         EditorWidget.AddGlyphCentered(
-            NativeImGui.GetWindowDrawList(),
-            NativeImGui.GetFont(),
+            NativeImGui.Raw.GetWindowDrawList(),
+            NativeImGui.Raw.GetFont(),
             NativeImGui.GetFontSize(),
             GetToolbarIcon(item.icon),
             minimum + size * 0.5f,

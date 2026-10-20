@@ -40,25 +40,26 @@ static async ValueTask PrepareAsync(
 
 ## 配置与执行
 
-每个组件的 `Bindings/bindings.props` 是唯一生成入口声明。它记录相对于文件的 host config、可选 bridge/extension 和明确 target 映射；ABI/marshalling 仍属于 BGCS JSON。声明拒绝条件、表达式、执行代码、路径逃逸和目标缺失，不尝试其他 ABI。
+每个组件的 `Bindings/bindings.props` 是唯一生成入口声明。它声明 `InnoNativeComponentId`、`InnoBindingHostConfig` 和带单个 `Config` 的 `InnoBindingTarget`；配置路径是所属 Bindings 目录中的明确相对输入。ABI、类型映射和 SDK 插件继续由 BGCS 正式 JSON 配置表达。声明拒绝条件、表达式、执行代码、路径逃逸和目标缺失，不尝试其他 ABI，也不自行构建扩展工程。
 
 生成身份使用本次选择的配置、目标、输出模式、扩展和实际输入。新增未选择目标的映射不会使当前生成失效；修改当前配置、facade、include、SDK、工具或生成实现仍会失效。每个验证阶段重新解析定义，不能借此跳过当前选择变化的检查。
 
 1. 冻结组件、目标、HostSource/TargetArtifacts、CheckOnly 与预期指纹。
-2. 解析定义、准备实际 extension，取得全部 generation lease（规范路径排序）。
+2. 通过 BGCS 的 GenerationRequest 解析选中配置、继承链和插件输入，取得全部 generation lease（规范路径排序）。
 3. 在 fresh binding-locks 阶段校验完整输入；批次内物理读取去重。
-4. C++ facade → BGCS Cpp2C C bridge → C header → BGCS managed 单文件；纯 C 从 header 开始。完整目标缓存可复用。
+4. 通过 BindingHost 执行正式生成流程：C++ facade 经 SDK 的 Cpp2C 和 managed 生成链输出，纯 C 从 header 开始。消费经过 BindingArtifactManifest 验证的实际产物，完整目标缓存可复用。
 5. fresh binding-generation 校验，取消检查，再发布全部完整结果；失败不返回部分闭包。
 
-路径配置中的 `%NAME%` 只从本次 `NativeToolchainSelection.environment` 展开；managed 与 C++ bridge 使用相同规则。
-直接库调用不会继承为子进程准备的环境，也不修改进程环境。缺少或嵌套未展开的变量在候选创建前明确失败。
+BGCS 路径使用正式配置中的明确输入；目标 SDK 的 compiler、sysroot 和系统 include 通过本次 `NativeToolchainSelection` 转换为 SDK 的 typed target settings，不提供自定义环境变量替换语法。直接库调用不修改进程环境。
 CLI 和 MSBuild 的 TargetArtifacts 请求先通过同一发行解析明确目标的工具链；HostSource 不隐式选择发布目标。
 独立绑定定义不必注册游戏发布目标；MSBuild 仅取得发行明确贡献的 SDK。
-未贡献 SDK 的独立定义仍可解析自身完整的路径和 ABI，但不能展开缺失的 SDK 变量，也不借用另一目标。
+未贡献 SDK 的独立定义仍可解析自身完整的路径和 ABI，不借用另一目标。
+
+嵌入 MSBuild 时，生成器通过 SDK 的 `WorkerAssetProvisioner` 验证和准备自身部署闭包，并经 `WithWorkerAssetRoot` 交给 Host。定位基于已加载 BGCS 程序集所在的部署目录，不依赖 MSBuild 宿主的 application base，也不自行解包或实现 worker 查找。
 
 ## 输出与所有权
 
-HostSource 使用组件已有 `Generated/Bindings.cs` 及 `Native/Generated`。TargetArtifacts 使用`artifacts/bindings/<component>/<target>/<fingerprint>/Generated`、`Native` 与完整性 manifest。候选由批次 owner 清理；已完整发布的独立缓存可留存。生成锁位于组件 `obj/bindings/generation.lock`，锁文件保留。扩展产物位于 `artifacts/build-tools/bindings/extensions`，拥有独立完整性、源码/SDK 身份与 lease。
+HostSource 使用组件的 `Generated/Bindings.cs` 及 `Native/Generated`。TargetArtifacts 使用 `artifacts/bindings/<component>/<target>/<fingerprint>/Generated`、`Native` 与完整性 manifest。候选由批次 owner 清理；已完整发布的独立缓存可留存。生成锁位于组件 `obj/bindings/generation.lock`，锁文件保留。SDK 自身缓存位于 `artifacts/build-tools/bgcs-cache/<component>/<target>`，不进入创作源码目录。
 
 CheckOnly 生成候选并比较完整输出，不能改写当前产物。对外请求不暴露 BGCS/MSBuild 类型。`WithBindingGenerator` 不接管 provider 生命周期。GenerateAsync 返回成功的只读完整映射；参数、缺 SDK、错误定义、损坏或变化输入和取消均明确失败。没有 provider 的实际生成请求在 staging 前失败。
 
@@ -73,14 +74,13 @@ using Inno.Build.Toolchains;
 
 static async ValueTask InspectBindingsAsync(
     string engineRoot,
-    string selectedDotnetHost,
     NativeToolchainSelection selectedTools,
     IReadOnlyList<NativeComponentDescriptor> components,
     CancellationToken cancellationToken
 ) {
     NativeBuildContext operation = new NativeBuildContext(engineRoot, "release")
         .WithToolchain(selectedTools)
-        .WithBindingGenerator(new NativeBindingGenerator(selectedDotnetHost));
+        .WithBindingGenerator(new NativeBindingGenerator());
     using NativeBindingGenerationResult generations =
         await NativeBindingPreparation.PrepareAsync(
             operation, components, cancellationToken);
@@ -89,7 +89,7 @@ static async ValueTask InspectBindingsAsync(
 }
 ```
 
-示例中的 engineRoot、selectedTools、selectedDotnetHost、components 由产品组合预检并冻结。内部 reader、identity、batch、publication 不作为稳定 API。
+示例中的 engineRoot、selectedTools、components 由产品组合预检并冻结。内部 reader、identity、batch、publication 不作为稳定 API。
 
 ## 验证入口
 
@@ -97,9 +97,9 @@ static async ValueTask InspectBindingsAsync(
 
 ## 生成工具宿主资产
 
-生成器和 BindingExtension 的 RuntimeIdentifier 使用所选 SDK 的 NETCoreSdkRuntimeIdentifier，独立于游戏发布 target。NuGet Restore 选择实际宿主 Native 包资产；不以文件名列表删掉其他平台 DLL。Runtime 与生成器继续分开，Player 不携带 BGCS 生成器。
+生成工具的 RuntimeIdentifier 使用所选 SDK 的 NETCoreSdkRuntimeIdentifier，独立于游戏发布 target。NuGet Restore 选择实际宿主 Native 包资产；不以文件名列表删掉其他平台 DLL。BGCS worker manifests 与 worker assets 使用正式包的部署布局；私有 Task 宿主也必须携带完整执行闭包。Runtime 与生成器继续分开，Player 不携带 BGCS 生成器。
 
-BindingExtension 在冻结输入目录前，先在共享 Restore 协调 lease 内完成 Release 宿主 Restore。首次构建产生的宿主 lock 文件因此属于初始身份；构建后的 fresh 校验仍拒绝之后发生的输入变化，不把正常 Restore 写入误判为编译期间修改。
+当前包消费、worker 私有宿主及可重定位原生输入的验收状态见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。SDK 插件由正式配置和公开宿主装载，不恢复独立的引擎扩展工程协议。
 
 ## 当前源码公开 API 清单
 
@@ -108,21 +108,20 @@ BindingExtension 在冻结输入目录前，先在共享 Restore 协调 lease �
 ### `Inno.Build.Bindings.NativeBindingGenerator`
 
 <!-- api: T:Inno.Build.Bindings.NativeBindingGenerator ed761625983dcc7ca08f22a1852393bcfb68053a389526618ce30b3118fc7c10 -->
-<!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.#ctor(System.String) 065140b7b23dc421801fad061a92ba8193d54e85537cde0a1a1f89321a74ad6e -->
+<!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.#ctor 5bcd38257514b993e8ce75c55682adf186c62b4662ada83ea94ce03469e886c3 -->
 <!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.GenerateAsync(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.NativeBindingGenerationRequest,System.Threading.CancellationToken) 82521de32f3f4f1a83373536efc6b9f158d28e80579bc7f9ca648e87d6d0d70a -->
 
 <!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.ComputeInputFingerprintAsync(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.NativeBindingGenerationRequest,System.Threading.CancellationToken) 725170f81c1190e69bebe9aac0632962a242124c9621e27f115c3791dfce006d -->
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-bdcbd846b59dd852"></a>[`public Inno.Build.Bindings.NativeBindingGenerator.NativeBindingGenerator(string dotnetHost)`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.cs#L25) | Captures the managed tool executable used only when a declared generator extension must build.<br>`dotnetHost`：The explicit host executable or command selected by composition. | — | `System.ArgumentException`：The executable is empty. |
+| <a id="api-binding-generator-constructor"></a>[`public Inno.Build.Bindings.NativeBindingGenerator.NativeBindingGenerator()`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.cs#L20) | Creates a generator that obtains target tools and input ownership from each build operation. | The caller supplies each frozen NativeBuildContext. | Input and SDK failures are reported by the requested operation. |
 | <a id="api-bdc543b7cd9f7e86"></a>[`public System.Threading.Tasks.ValueTask<Inno.Build.Toolchains.NativeBindingGenerationResult> Inno.Build.Bindings.NativeBindingGenerator.GenerateAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBindingGenerationRequest request, System.Threading.CancellationToken cancellationToken)`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.cs#L32) | Generates or verifies the requested closure under publication ownership.<br>返回：An owned complete immutable map indexed by Native owner project, never a partial closure. Dispose the result only after all generated-source and native-bridge consumers finish.<br>`context`：The borrowed operation owning frozen inputs, tool selection and statistics. Configuration path variables must resolve from its selected toolchain without changing process state.<br>`request`：The immutable target, component closure and publication policy.<br>`cancellationToken`：Cancels preparation; active work must drain before returning. | — | `System.InvalidOperationException`：Inputs change during preparation, a required frozen SDK value is absent, or required generator capabilities are unavailable.<br>`System.IO.InvalidDataException`：A definition or generated output fails its declared contract.<br>`System.OperationCanceledException`：The request was canceled and its active work has completed cleanup. |
 | <a id="api-f9f1859591826b8a"></a>[`public sealed class Inno.Build.Bindings.NativeBindingGenerator : Inno.Build.Toolchains.INativeBindingGenerator`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.cs#L12) | Executes the shared facade-to-C-to-managed binding workflow independently of MSBuild. | — | — |
-| <a id="api-b68756500cefb4ae"></a>[`public System.Threading.Tasks.ValueTask<string> Inno.Build.Bindings.NativeBindingGenerator.ComputeInputFingerprintAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBindingGenerationRequest request, System.Threading.CancellationToken cancellationToken)`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.Inputs.cs#L16) | 按同一 binding definition 选择当前配置，用内容哈希覆盖继承链、header、真实生成实现和 extension 源码/资源/依赖。 | 返回 source preparation identity；不接管 context，不调用实际生成。 | 要求本地 owned 配置；解析、依赖或 SDK 不可用时失败；观察 cancellation。 |
+| <a id="api-b68756500cefb4ae"></a>[`public System.Threading.Tasks.ValueTask<string> Inno.Build.Bindings.NativeBindingGenerator.ComputeInputFingerprintAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBindingGenerationRequest request, System.Threading.CancellationToken cancellationToken)`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.Inputs.cs#L16) | 按同一 binding definition 选择当前配置，用内容哈希覆盖继承链、header、真实生成实现、插件清单及依赖输入。 | 返回 source preparation identity；不接管 context，不调用实际生成。 | 要求本地 owned 配置；解析、依赖或 SDK 不可用时失败；观察 cancellation。 |
 
 ## 项目依赖
 
 - [Inno.Build.Toolchains](Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
 - [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
 - `BGCS`：实现依赖，PrivateAssets="compile"。
-- `BGCS.Cpp2C`：实现依赖，PrivateAssets="compile"。

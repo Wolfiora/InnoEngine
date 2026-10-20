@@ -35,7 +35,7 @@ MSBuild 的薄适配层，调用与 CLI 相同的库。引用固定版本的 Mic
 | `GenerateBindingsTask.CheckOnly` | 在独立 staging 重新生成并比较，不提交变更。 |
 | `GenerateBindingsTask.DescriptorOutputPath` | 可选的请求独占描述文件，仅在成功后写入。 |
 | `GenerateBindingsTask.ExpectedFingerprint` | 可选的冻结身份；当前输入不匹配时在生成前失败，避免托管绑定与已编译原生库来自不同请求。 |
-| `GeneratedBindings` / `GenerationFingerprint` / `NativeBridgeDirectory` | MSBuild 输出参数；表达本次校验成功的源、身份和可选桥，不能由固定 current 目录推断。 |
+| `GeneratedBindings` / `GenerationFingerprint` / `NativeDirectory` | MSBuild 输出参数；表达本次校验成功的源、身份以及完整原生产物和编译要求，不能由固定 current 目录推断。 |
 | `GenerateBindingsTask.Execute()` / `Cancel()` | 失败返回 false 并记录结构化错误；取消等待生成流程退出，在目标 staging 提交前检查取消。 |
 
 没有供派生实现者使用的 protected 扩展点。SDK Task 的基础属性属于 MSBuild。
@@ -146,7 +146,7 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 <!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.ExpectedFingerprint c45fbc96ef738c6ccbbaa09a63442aa9248320c261ba3ab67f85f5434c68b3db -->
 <!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.GeneratedBindings 51e1e88206b45e6308882aafea8531d0b9209b2949698b0fc9469efea32c59a1 -->
 <!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.GenerationFingerprint 3573f4c3015cf9fb7871a0a919fa6d9df75195a5c1f24bf74d892244a99b1924 -->
-<!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.NativeBridgeDirectory a9388b0153090da90c73330cd905ee2074dabd54c03eb92adfe4c0f8497c41e6 -->
+<!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.NativeDirectory ef4b387dcc0ac2adb2b0e6f76b18522308e866de74284d032632a6248c261b2f -->
 <!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.ArtifactDirectory c17ec197a5817bc20134d2e2c30c3c063223732aa5408c75913ebb89263d1ac1 -->
 <!-- api: M:Inno.Build.Tasks.GenerateBindingsTask.Cancel 6450d836be0b8cae8c50e013978bec40372ba8b55d248611dba53f9864007117 -->
 <!-- api: M:Inno.Build.Tasks.GenerateBindingsTask.Execute 3d0f76b35164ef0bff7c13131341d9139b45174dcd8fe52e61dd9c83833312a2 -->
@@ -168,7 +168,7 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 | <a id="api-9264f16119860a61"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ExpectedFingerprint { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L69) | Gets or sets an optional expected identity; stale requests fail before generation. | — | — |
 | <a id="api-47ecc7e873a694fd"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GeneratedBindings { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L74) | Gets the single source selected after complete publication or successful comparison. | — | — |
 | <a id="api-aade4e3b794412b5"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GenerationFingerprint { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L79) | Gets the complete validated input identity. | — | — |
-| <a id="api-470866008b43e628"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.NativeBridgeDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L84) | Gets the complete C bridge directory, or an empty value for a direct C API. | — | — |
+| <a id="api-470866008b43e628"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.NativeDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L84) | Gets the complete native artifacts and compilation requirements selected by this operation. | — | — |
 | <a id="api-af714cac5c42448a"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.OutputMode { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L52) | Gets or sets HostSource or TargetArtifacts without deriving publication from a path. | — | — |
 | <a id="api-2e58c35aa575bcc7"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.TargetId { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L47) | Gets or sets the explicit configuration identity selected from the definition. | — | — |
 | <a id="api-56d9cd602fa62564"></a>[`public sealed class Inno.Build.Tasks.GenerateBindingsTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L17) | Maps an explicit MSBuild request to the shared binding application without owning generation policy. | — | — |

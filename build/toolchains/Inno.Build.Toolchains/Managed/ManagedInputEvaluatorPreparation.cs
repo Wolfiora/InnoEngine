@@ -32,13 +32,18 @@ internal static class ManagedInputEvaluatorPreparation
             ?? throw new InvalidOperationException("The managed graph evaluator source resource is absent.");
         using var reader = new StreamReader(source);
         string code = await reader.ReadToEndAsync(cancellation).ConfigureAwait(false);
+        using Stream compilerInputs = typeof(ManagedInputEvaluatorPreparation).Assembly.GetManifestResourceStream(
+            "Inno.Build.Toolchains.Managed.ManagedCompilerInputs.targets")
+            ?? throw new InvalidOperationException("The compiler input target resource is absent.");
+        using var compilerInputsReader = new StreamReader(compilerInputs);
+        string compilerInputsCode = await compilerInputsReader.ReadToEndAsync(cancellation).ConfigureAwait(false);
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
         string[] assemblies = ["Microsoft.Build.dll", "Microsoft.Build.Framework.dll", "Microsoft.Build.Utilities.Core.dll", "NuGet.Frameworks.dll"];
         NativeBuildInput[] inputs = assemblies.Select(name => NativeBuildInput.FromPath(context.engineRoot, Path.Combine(sdkRoot, name)))
             .Concat(new[] { sdk.cliPath, sdk.hostPath, Path.Combine(sdkRoot, "Roslyn", "bincore"),
                 Path.Combine(sdkRoot, "Microsoft.NETCoreSdk.BundledVersions.props") }
                 .Select(path => NativeBuildInput.FromPath(context.engineRoot, path))).ToArray();
-        string[] declarations = ["managed-input-evaluator", "net9.0", "Release", sdk.sdkIdentity, code];
+        string[] declarations = ["managed-input-evaluator", "net10.0", "Release", sdk.sdkIdentity, code, compilerInputsCode];
         string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         string directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators", fingerprint);
         var cache = new BuildCachePublisher(Path.GetDirectoryName(directory)!, BuildCacheArtifactRole.ImmutableArtifact);
@@ -71,7 +76,7 @@ internal static class ManagedInputEvaluatorPreparation
                     Directory.CreateDirectory(candidate);
                     string project = Path.Combine(candidate, "ManagedInputGraphTask.csproj");
                     var definition = new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                        new XElement("PropertyGroup", new XElement("TargetFramework", "net9.0"), new XElement("OutputType", "Library"),
+                        new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"), new XElement("LangVersion", "14.0"), new XElement("OutputType", "Library"),
                             new XElement("ImplicitUsings", "disable"), new XElement("Nullable", "disable"),
                             new XElement("ImportDirectoryBuildProps", "false"), new XElement("ImportDirectoryBuildTargets", "false"),
                             new XElement("GenerateAssemblyInfo", "false"), new XElement("DebugType", "None"),

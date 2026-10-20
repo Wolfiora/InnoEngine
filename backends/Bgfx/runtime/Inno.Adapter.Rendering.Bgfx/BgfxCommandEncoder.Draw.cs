@@ -53,7 +53,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 "The active graphics backend does not support procedural vertex-ID draws.");
         }
         ValidateDrawCounts(vertexCount, instanceCount);
-        bgfx.encoder_set_vertex_count(m_encoder, checked((uint)vertexCount));
+        bgfx.Raw.encoder_set_vertex_count(m_encoder, checked((uint)vertexCount));
         Submit(pipeline, instanceCount);
     }
 
@@ -157,7 +157,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 m_indexBuffer.descriptor.elementCount - m_firstIndex);
         }
         SetDrawState(pipeline);
-        bgfx.encoder_submit_indirect(
+        bgfx.Raw.encoder_submit_indirect(
             m_encoder,
             m_viewId,
             pipeline.program,
@@ -184,11 +184,11 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
         if (!m_instanceDataBound && instanceCount > 1)
         {
-            bgfx.encoder_set_instance_count(m_encoder, checked((uint)instanceCount));
+            bgfx.Raw.encoder_set_instance_count(m_encoder, checked((uint)instanceCount));
         }
 
         SetDrawState(pipeline);
-        bgfx.encoder_submit(
+        bgfx.Raw.encoder_submit(
             m_encoder,
             m_viewId,
             pipeline.program,
@@ -201,13 +201,13 @@ internal sealed unsafe partial class BgfxCommandEncoder
     private void SetDrawState(BgfxPipelineResource pipeline)
     {
         RenderRasterState state = m_rasterState ?? pipeline.rasterState!;
-        bgfx.encoder_set_state(m_encoder, RasterState(state), state.blend.constantRgba);
+        bgfx.Raw.encoder_set_state(m_encoder, RasterState(state), state.blend.constantRgba);
         if (!m_stencilState.enabled)
         {
-            bgfx.encoder_set_stencil(m_encoder, 0, 0);
+            bgfx.Raw.encoder_set_stencil(m_encoder, 0, 0);
             return;
         }
-        bgfx.encoder_set_stencil(
+        bgfx.Raw.encoder_set_stencil(
             m_encoder,
             StencilFlags(m_stencilState, m_stencilState.front),
             StencilFlags(m_stencilState, m_stencilState.back));

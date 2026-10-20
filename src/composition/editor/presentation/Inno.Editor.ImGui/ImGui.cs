@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using BGCS.Runtime;
 
 using Inno.Native.ImGui;
 using RawImGui = Inno.Native.ImGui.ImGui;
@@ -10,13 +11,13 @@ namespace Inno.Editor.ImGui;
 /// Exposes a script-safe, pointer-free subset of Dear ImGui for custom Editor tools.
 /// Every call is valid only while an Editor drawing callback is active.
 /// </summary>
-public static class ImGui
+public static unsafe class ImGui
 {
     /// <summary>
     /// Draws unformatted text.
     /// </summary>
     /// <param name="text">
-    /// The text text validated by the text operation.
+    /// Literal text to draw; percent characters are displayed without format-string interpretation.
     /// </param>
     public static void Text(string text) => RawImGui.TextUnformatted(text);
 
@@ -44,7 +45,7 @@ public static class ImGui
     /// <see langword="true"/> when the button is activated.
     /// </returns>
     /// <param name="label">
-    /// The label text validated by the small button operation.
+    /// The visible label and optional ImGui identity suffix.
     /// </param>
     public static bool SmallButton(string label) => RawImGui.SmallButton(label);
 
@@ -58,7 +59,7 @@ public static class ImGui
     /// <see langword="true"/> when the value changes.
     /// </returns>
     /// <param name="value">
-    /// The concrete value read or transformed by this operation.
+    /// The checked state, updated when the user toggles the control.
     /// </param>
     public static bool Checkbox(
         string label,
@@ -141,12 +142,12 @@ public static class ImGui
     /// <see langword="true"/> when the value changes.
     /// </returns>
     /// <param name="value">
-    /// The concrete value read or transformed by this operation.
+    /// The integer displayed by the control and replaced after an accepted edit.
     /// </param>
     public static bool InputInt(
         string label,
         ref int value
-    ) => RawImGui.InputInt(label, ref value);
+    ) => RawImGui.InputInt(label, ref value, 1, 100, 0);
 
     /// <summary>
     /// Draws and edits a floating-point value.
@@ -158,12 +159,12 @@ public static class ImGui
     /// <see langword="true"/> when the value changes.
     /// </returns>
     /// <param name="value">
-    /// The concrete value read or transformed by this operation.
+    /// The number displayed with three fractional digits and replaced after an accepted edit.
     /// </param>
     public static bool InputFloat(
         string label,
         ref float value
-    ) => RawImGui.InputFloat(label, ref value);
+    ) => RawImGui.InputFloat(label, ref value, 0f, 0f, "%.3f", 0);
 
     /// <summary>
     /// Draws a floating-point drag control.
@@ -223,7 +224,7 @@ public static class ImGui
         float maximum,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None
     )
-        => RawImGui.SliderFloat(label, ref value, minimum, maximum, flags);
+        => RawImGui.SliderFloat(label, ref value, minimum, maximum, (int)flags);
 
     /// <summary>
     /// Draws and edits a four-component color.
@@ -246,7 +247,10 @@ public static class ImGui
         ImGuiColorEditFlags flags = ImGuiColorEditFlags.None
     ) {
         fixed (Vector4* nativeValue = &value)
-            return RawImGui.ColorEdit4(label, (float*)nativeValue, flags);
+        {
+            using NativeStringLease nativeLabel = Utf8Codec.EncodeNullTerminated(label, allowsNull: false);
+            return RawImGui.Raw.ColorEdit4((sbyte*)nativeLabel.pointer, (float*)nativeValue, (int)flags) != 0;
+        }
     }
 
     /// <summary>
@@ -306,7 +310,7 @@ public static class ImGui
         Vector2 size = default,
         ImGuiChildFlags flags = ImGuiChildFlags.None
     )
-        => RawImGui.BeginChild(id, size, flags);
+        => RawImGui.BeginChild(id, size, (int)(flags));
 
     /// <summary>
     /// Ends the current child region.
@@ -337,7 +341,7 @@ public static class ImGui
         ImGuiTableFlags flags = ImGuiTableFlags.None,
         Vector2 size = default
     )
-        => RawImGui.BeginTable(id, columns, flags, size);
+        => RawImGui.BeginTable(id, columns, (int)flags, size);
 
     /// <summary>
     /// Ends the current table.
@@ -361,7 +365,7 @@ public static class ImGui
         ImGuiTableColumnFlags flags = ImGuiTableColumnFlags.None,
         float widthOrWeight = 0f
     )
-        => RawImGui.TableSetupColumn(label, flags, widthOrWeight);
+        => RawImGui.TableSetupColumn(label, (int)(flags), widthOrWeight);
 
     /// <summary>
     /// Draws the table header row from configured column labels.
@@ -401,7 +405,7 @@ public static class ImGui
         string preview,
         ImGuiComboFlags flags = ImGuiComboFlags.None
     )
-        => RawImGui.BeginCombo(label, preview, flags);
+        => RawImGui.BeginCombo(label, preview, (int)(flags));
 
     /// <summary>
     /// Ends the current combo popup.
@@ -428,7 +432,7 @@ public static class ImGui
         bool selected = false,
         ImGuiSelectableFlags flags = ImGuiSelectableFlags.None
     )
-        => RawImGui.Selectable(label, selected, flags);
+        => RawImGui.Selectable(label, selected, (int)flags);
 
     /// <summary>
     /// Draws a collapsible section header.
@@ -446,7 +450,7 @@ public static class ImGui
         string label,
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None
     )
-        => RawImGui.CollapsingHeader(label, flags);
+        => RawImGui.CollapsingHeader(label, (int)(flags));
 
     /// <summary>
     /// Draws a tree node and pushes its tree scope when it is open.
@@ -463,7 +467,7 @@ public static class ImGui
     public static bool TreeNode(
         string label,
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None
-    ) => RawImGui.TreeNodeEx(label, flags);
+    ) => RawImGui.TreeNodeEx(label, (int)(flags));
 
     /// <summary>
     /// Ends the current open tree-node scope.
@@ -485,7 +489,7 @@ public static class ImGui
     public static bool BeginTabBar(
         string id,
         ImGuiTabBarFlags flags = ImGuiTabBarFlags.None
-    ) => RawImGui.BeginTabBar(id, flags);
+    ) => RawImGui.BeginTabBar(id, (int)(flags));
 
     /// <summary>
     /// Ends the current tab bar.
@@ -507,7 +511,10 @@ public static class ImGui
     public static bool BeginTabItem(
         string label,
         ImGuiTabItemFlags flags = ImGuiTabItemFlags.None
-    ) => RawImGui.BeginTabItem(label, flags);
+    ) {
+        using NativeStringLease nativeLabel = Utf8Codec.EncodeNullTerminated(label, allowsNull: false);
+        return RawImGui.Raw.BeginTabItem((sbyte*)nativeLabel.pointer, null, (int)flags) != 0;
+    }
 
     /// <summary>
     /// Begins one closeable tab item.
@@ -529,10 +536,7 @@ public static class ImGui
         ref bool isOpen,
         ImGuiTabItemFlags flags = ImGuiTabItemFlags.None
     ) {
-        byte nativeOpen = isOpen ? (byte)1 : (byte)0;
-        bool visible = RawImGui.BeginTabItem(label, &nativeOpen, flags);
-        isOpen = nativeOpen != 0;
-        return visible;
+        return RawImGui.BeginTabItem(label, ref isOpen, (int)flags);
     }
 
     /// <summary>
@@ -552,7 +556,7 @@ public static class ImGui
     public static void OpenPopup(
         string id,
         ImGuiPopupFlags flags = ImGuiPopupFlags.None
-    ) => RawImGui.OpenPopup(id, flags);
+    ) => RawImGui.OpenPopup(id, (int)(flags));
 
     /// <summary>
     /// Begins a named popup.
@@ -569,7 +573,7 @@ public static class ImGui
     public static bool BeginPopup(
         string id,
         ImGuiWindowFlags flags = ImGuiWindowFlags.None
-    ) => RawImGui.BeginPopup(id, flags);
+    ) => RawImGui.BeginPopup(id, (int)(flags));
 
     /// <summary>
     /// Ends the current popup.
@@ -637,7 +641,7 @@ public static class ImGui
     public static void PushStyleColor(
         ImGuiCol color,
         Vector4 value
-    ) => RawImGui.PushStyleColor(color, value);
+    ) => RawImGui.PushStyleColor((int)(color), value);
 
     /// <summary>
     /// Pops color overrides.
@@ -659,7 +663,7 @@ public static class ImGui
     public static void PushStyleVar(
         ImGuiStyleVar style,
         float value
-    ) => RawImGui.PushStyleVar(style, value);
+    ) => RawImGui.PushStyleVar((int)(style), value);
 
     /// <summary>
     /// Pushes one two-component style override.
@@ -673,7 +677,7 @@ public static class ImGui
     public static void PushStyleVar(
         ImGuiStyleVar style,
         Vector2 value
-    ) => RawImGui.PushStyleVar(style, value);
+    ) => RawImGui.PushStyleVar((int)(style), value);
 
     /// <summary>
     /// Pops style-variable overrides.
@@ -799,7 +803,7 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when the query succeeds.
     /// </returns>
-    public static bool IsItemHovered(ImGuiHoveredFlags flags = ImGuiHoveredFlags.None) => RawImGui.IsItemHovered(flags);
+    public static bool IsItemHovered(ImGuiHoveredFlags flags = ImGuiHoveredFlags.None) => RawImGui.IsItemHovered((int)(flags));
 
     /// <summary>
     /// Gets whether the previous item is active.
@@ -818,7 +822,7 @@ public static class ImGui
     /// <returns>
     /// <see langword="true"/> when the item was clicked.
     /// </returns>
-    public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsItemClicked(button);
+    public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsItemClicked((int)(button));
 
     /// <summary>
     /// Converts a floating-point RGBA color to Dear ImGui packed color order.
@@ -852,7 +856,7 @@ public static class ImGui
         uint color,
         float thickness = 1f
     )
-        => RawImGui.GetWindowDrawList().AddLine(start, end, color, thickness);
+        => RawImGui.Raw.AddLine(RawImGui.Raw.GetWindowDrawList(), ImGui.ToNative(start), ImGui.ToNative(end), color, thickness);
 
     /// <summary>
     /// Adds a rectangle outline to the current window draw list.
@@ -879,7 +883,7 @@ public static class ImGui
         float rounding = 0f,
         float thickness = 1f
     )
-        => RawImGui.GetWindowDrawList().AddRect(minimum, maximum, color, rounding, thickness);
+        => RawImGui.Raw.AddRect(RawImGui.Raw.GetWindowDrawList(), ImGui.ToNative(minimum), ImGui.ToNative(maximum), color, rounding, 0, thickness);
 
     /// <summary>
     /// Adds a filled rectangle to the current window draw list.
@@ -902,7 +906,7 @@ public static class ImGui
         uint color,
         float rounding = 0f
     )
-        => RawImGui.GetWindowDrawList().AddRectFilled(minimum, maximum, color, rounding);
+        => RawImGui.Raw.AddRectFilled(RawImGui.Raw.GetWindowDrawList(), ImGui.ToNative(minimum), ImGui.ToNative(maximum), color, rounding, 0);
 
     /// <summary>
     /// Adds text to the current window draw list.
@@ -920,7 +924,56 @@ public static class ImGui
         Vector2 position,
         uint color,
         string text
-    ) => RawImGui.GetWindowDrawList().AddText(position, color, text);
+    ) => ImGui.DrawNativeText(RawImGui.Raw.GetWindowDrawList(), position, color, text);
+
+    internal static ImVec2C ToNative(Vector2 value) => new() { X = value.X, Y = value.Y };
+
+    internal static ImVec4C ToNative(Vector4 value) => new() { X = value.X, Y = value.Y, Z = value.Z, W = value.W };
+
+    internal static Vector2 FromNative(ImVec2C value) => new(value.X, value.Y);
+
+    internal static Vector4 FromNative(ImVec4C value) => new(value.X, value.Y, value.Z, value.W);
+
+    internal static void DrawNativeText(
+        ImDrawList* drawList,
+        Vector2 position,
+        uint color,
+        string text
+    ) {
+        using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(text, allowsNull: false);
+        RawImGui.Raw.AddText(drawList, ToNative(position), color, (sbyte*)nativeText.pointer, null);
+    }
+
+    internal static void DrawNativeText(
+        ImDrawList* drawList,
+        ImFont* font,
+        float fontSize,
+        Vector2 position,
+        uint color,
+        string text,
+        float wrapWidth = 0f
+    ) {
+        using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(text, allowsNull: false);
+        RawImGui.Raw.AddText(drawList, font, fontSize, ToNative(position), color, (sbyte*)nativeText.pointer, null, wrapWidth, null);
+    }
+
+    internal static bool BeginNativeWindow(
+        string label,
+        ImGuiWindowFlags flags,
+        bool modal
+    ) {
+        using NativeStringLease nativeLabel = Utf8Codec.EncodeNullTerminated(label, allowsNull: false);
+        return (modal ? RawImGui.Raw.BeginPopupModal((sbyte*)nativeLabel.pointer, null, (int)flags)
+            : RawImGui.Raw.Begin((sbyte*)nativeLabel.pointer, null, (int)flags)) != 0;
+    }
+
+    internal static uint HashNativeId(
+        string text,
+        uint seed = 0
+    ) {
+        using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(text, allowsNull: false);
+        return RawImGui.Raw.ImHashStr((sbyte*)nativeText.pointer, 0, seed);
+    }
 
     private static float LinearToSrgb(float value) => value <= 0.0031308f ? value * 12.92f : 1.055f * MathF.Pow(value, 1f / 2.4f) - 0.055f;
 

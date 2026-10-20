@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Xml.Linq;
@@ -71,7 +72,7 @@ internal sealed class DocumentationSourceModels
         foreach (string project in projects)
         {
             XDocument document = XDocument.Load(project);
-            string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net9.0";
+            string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net10.0";
             string? target = document.Descendants("InnoProductTarget").FirstOrDefault()?.Value;
             string directory = Path.Combine(Path.GetDirectoryName(project)!,
                 target is null ? "bin" : Path.Combine("bin", target),
@@ -83,7 +84,7 @@ internal sealed class DocumentationSourceModels
             string projectOutput = Path.Combine(directory, assemblyName + ".dll");
             if (File.Exists(projectOutput))
                 projectOutputs[assemblyName] = projectOutput;
-            foreach (string path in Directory.EnumerateFiles(directory, "*.dll"))
+            foreach (string path in Directory.EnumerateFiles(directory, "*.dll").Where(IsManagedAssembly))
                 paths.TryAdd(Path.GetFileNameWithoutExtension(path), path);
         }
         // A consumer's copied dependency must not replace the owning project's contract snapshot.
@@ -150,7 +151,8 @@ internal sealed class DocumentationSourceModels
             m_trees = RepositorySourceInventory.Files(projectDirectory, "*.cs")
                 .Where(IsSourcePath)
                 .ToDictionary(static value => Path.GetFullPath(value), static value =>
-                    (SyntaxTree)CSharpSyntaxTree.ParseText(File.ReadAllText(value), path: value),
+                    (SyntaxTree)CSharpSyntaxTree.ParseText(File.ReadAllText(value),
+                        new CSharpParseOptions(LanguageVersion.CSharp14), path: value),
                     StringComparer.OrdinalIgnoreCase);
             m_compilation = CSharpCompilation.Create(
                 Path.GetFileNameWithoutExtension(Directory.EnumerateFiles(projectDirectory, "*.csproj").Single()),
@@ -188,6 +190,13 @@ internal sealed class DocumentationSourceModels
             directory = directory.Parent;
         }
         return null;
+    }
+
+    private static bool IsManagedAssembly(string path)
+    {
+        using FileStream stream = File.OpenRead(path);
+        using var image = new PEReader(stream);
+        return image.HasMetadata;
     }
 
     private static bool IsSourcePath(string path)

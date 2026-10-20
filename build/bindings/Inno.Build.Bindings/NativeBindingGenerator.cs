@@ -11,21 +11,11 @@ namespace Inno.Build.Bindings;
 /// </summary>
 public sealed partial class NativeBindingGenerator : INativeBindingGenerator
 {
-    private readonly string m_dotnetHost;
-
     /// <summary>
-    /// Captures the managed tool executable used only when a declared generator extension must build.
+    /// Creates a generator that obtains target tools and input ownership from each build operation.
     /// </summary>
-    /// <param name="dotnetHost">
-    /// The explicit host executable or command selected by composition.
-    /// </param>
-    /// <exception cref="ArgumentException">
-    /// The executable is empty.
-    /// </exception>
-    public NativeBindingGenerator(string dotnetHost)
+    public NativeBindingGenerator()
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
-        m_dotnetHost = dotnetHost;
     }
 
     /// <inheritdoc />
@@ -37,7 +27,7 @@ public sealed partial class NativeBindingGenerator : INativeBindingGenerator
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(request);
         cancellationToken.ThrowIfCancellationRequested();
-        using var operation = new BindingGenerationOperation(context, request, m_dotnetHost);
+        using var operation = new BindingGenerationOperation(context, request);
         return await operation.ExecuteAsync(cancellationToken).ConfigureAwait(false);
     }
 }

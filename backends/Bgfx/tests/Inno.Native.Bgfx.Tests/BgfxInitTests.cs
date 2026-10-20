@@ -9,13 +9,21 @@ public sealed class BgfxInitTests
     public unsafe void InitAndShutdown_ShouldSucceed()
     {
         bgfx.Init init;
-        bgfx.init_ctor(&init);
+        bgfx.Raw.init_ctor(&init);
         init.type = bgfx.RendererType.Noop;
         init.resolution.width = 1;
         init.resolution.height = 1;
 
-        var ok = bgfx.init(&init);
+        bool ok = bgfx.Raw.init(&init) != 0;
         Assert.True(ok);
-        bgfx.shutdown();
+        try
+        {
+            Assert.True(bgfx.Raw.get_caps() != null);
+            Assert.Equal(bgfx.RendererType.Noop, bgfx.get_renderer_type());
+        }
+        finally
+        {
+            bgfx.shutdown();
+        }
     }
 }

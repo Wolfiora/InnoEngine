@@ -383,7 +383,6 @@ public struct AudioMixerFeatureConfiguration
 [StableTypeId("6e167326-d078-45e9-ad33-993300ee5fed")]
 public sealed class AudioMixerAsset : AssetObject
 {
-    private AudioMixerFeatureConfiguration[] m_features = [];
 
     /// <summary>
     /// Gets or sets the globally stable mixer extension identifier.
@@ -403,11 +402,11 @@ public sealed class AudioMixerAsset : AssetObject
     [SerializableProperty]
     public AudioMixerFeatureConfiguration[] features
     {
-        get => m_features;
+        get;
         set
         {
             ArgumentNullException.ThrowIfNull(value);
-            m_features = value.ToArray();
+            field = value.ToArray();
         }
-    }
+    } = [];
 }

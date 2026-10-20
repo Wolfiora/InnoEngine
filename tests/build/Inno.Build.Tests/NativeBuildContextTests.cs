@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Threading;
@@ -49,7 +50,7 @@ public sealed class NativeBuildContextTests : IDisposable
         Assert.Equal(Path.GetFullPath(m_root), context.engineRoot);
         Assert.Equal("release", context.configuration);
         Assert.Equal(Path.Combine(owner, "obj", "native"), context.GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj")));
-        Assert.NotEqual(ToolchainEnvironment.FindRepoRoot(), context.engineRoot);
+        Assert.NotEqual(TestRepository.GetRoot(typeof(NativeBuildContextTests).Assembly), context.engineRoot);
         Assert.False(Directory.Exists(Path.Combine(owner, "obj")));
     }
 

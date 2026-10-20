@@ -14,6 +14,8 @@ namespace Inno.Scripting.Compiler;
 /// Enforces logical scripting namespaces and rejects direct implementation namespace access.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisCorrectness", "RS1041",
+    Justification = "This analyzer is loaded only by the .NET 10 SDK compiler shared by authoring and generated IDE projects.")]
 public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
 {
     /// <summary>

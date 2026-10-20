@@ -362,10 +362,10 @@ public sealed class ArchitectureSymbolTests
             params string[] dependencies
         ) {
             string directory = Path.Combine(m_root, relative);
-            string output = Path.Combine(directory, "bin", "Debug", "net9.0", assemblyName + ".dll");
+            string output = Path.Combine(directory, "bin", "Debug", "net10.0", assemblyName + ".dll");
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                new XElement("PropertyGroup", new XElement("TargetFramework", "net9.0"))))
+                new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"))))
                 .Save(Path.Combine(directory, assemblyName + ".csproj"));
             string[] platform = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
             MetadataReference[] references = platform.Concat(dependencies).Distinct(StringComparer.OrdinalIgnoreCase)

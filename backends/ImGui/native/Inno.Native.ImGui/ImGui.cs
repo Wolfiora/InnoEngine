@@ -1,22 +1,24 @@
-using BGCS.Runtime;
 using Inno.Native.LibraryLoading;
 
 namespace Inno.Native.ImGui;
 
 /// <summary>
-/// Initializes generated imports against the component's dynamic native library.
+/// Initializes the explicitly deployed module through the generated BGCS API.
 /// </summary>
-public static partial class ImGui
+public static unsafe partial class ImGui
 {
 #if DEBUG
-    private const string C_LIBRARY_NAME = "libcimgui-debug";
+    internal const string LibName = "libcimgui-debug";
 #else
-    private const string C_LIBRARY_NAME = "libcimgui-release";
+    internal const string LibName = "libcimgui-release";
 #endif
 
     static ImGui()
     {
-        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(ImGui).Assembly);
-        InitApi(new NativeLibraryContext(handle));
+#if INNO_STATIC_NATIVE
+        FromStatic();
+#else
+        Load(NativeDllLoader.FindNativeLibrary(LibName));
+#endif
     }
 }

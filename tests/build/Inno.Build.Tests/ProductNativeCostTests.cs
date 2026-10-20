@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,12 +23,12 @@ public sealed class ProductNativeCostTests
     {
         if (Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_IMGUI_BUILD") is null)
             return;
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(ProductNativeCostTests).Assembly);
         ProductNativeBuildStep[] steps = StandardNativeBuildPlans.CreateEditor(WindowsX64BgfxIntegration.nativeProfile).steps
             .Where(static step => step.id is "cimgui" or "cimguizmo").ToArray();
         var plan = new ProductNativeBuildPlan("presentation-acceptance", steps);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
-        var context = new NativeBuildContext(root, "debug").WithBindingGenerator(new NativeBindingGenerator("dotnet"));
+        var context = new NativeBuildContext(root, "debug").WithBindingGenerator(new NativeBindingGenerator());
         NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(context,
             new BuildHostDescriptor("Windows", "x64"), "windows-x64", cancellation.Token);
         context = context.WithToolchain(sdk);
@@ -41,12 +42,12 @@ public sealed class ProductNativeCostTests
     {
         if (Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_NATIVE_COST") is not string evidence)
             return;
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(ProductNativeCostTests).Assembly);
         ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateEditor(WindowsX64BgfxIntegration.nativeProfile);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));
         async Task<NativeBuildContext> Context()
         {
-            var context = new NativeBuildContext(root, "debug").WithBindingGenerator(new NativeBindingGenerator("dotnet"));
+            var context = new NativeBuildContext(root, "debug").WithBindingGenerator(new NativeBindingGenerator());
             NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(context,
                 new BuildHostDescriptor("Windows", "x64"), "windows-x64", cancellation.Token);
             return context.WithToolchain(sdk);

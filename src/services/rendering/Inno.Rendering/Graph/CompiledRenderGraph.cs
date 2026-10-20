@@ -362,6 +362,7 @@ public interface IRenderGraphBackend
 public sealed class CompiledRenderGraph
 {
     private readonly IReadOnlyList<CompiledRenderPass> m_passes;
+    private readonly CompiledRenderPass[] m_parallelPasses;
     private readonly IReadOnlyList<CompiledRenderTexture> m_textures;
     private readonly IReadOnlyList<CompiledRenderBuffer> m_buffers;
 
@@ -373,6 +374,7 @@ public sealed class CompiledRenderGraph
     ) {
         this.generation = generation;
         m_passes = Array.AsReadOnly(passes.ToArray());
+        m_parallelPasses = m_passes.Where(static pass => pass.recordingMode == RenderPassRecordingMode.Parallel).ToArray();
         m_textures = Array.AsReadOnly(textures.ToArray());
         m_buffers = Array.AsReadOnly(buffers.ToArray());
     }
@@ -415,35 +417,51 @@ public sealed class CompiledRenderGraph
     ) {
         ArgumentNullException.ThrowIfNull(backend);
         List<Exception>? errors = null;
+        Dictionary<CompiledRenderPass, RecordedRenderCommandEncoder>? recorded = null;
         bool graphStarted = false;
 
         try
         {
             backend.BeginGraph(this);
             graphStarted = true;
-            Dictionary<CompiledRenderPass, RecordedRenderCommandEncoder> recorded =
-                RecordParallelPasses(frameIndex);
+            if (m_parallelPasses.Length != 0)
+                recorded = RecordParallelPasses(frameIndex);
             foreach (CompiledRenderPass pass in m_passes)
             {
                 bool passStarted = false;
+                Exception? passFailure = null;
                 try
                 {
                     RenderCommandEncoder commands = backend.BeginPass(pass);
                     ArgumentNullException.ThrowIfNull(commands);
                     commands.SetFrameIndex(frameIndex);
                     passStarted = true;
-                    if (recorded.TryGetValue(pass, out RecordedRenderCommandEncoder? commandList))
+                    if (recorded is not null && recorded.TryGetValue(pass, out RecordedRenderCommandEncoder? commandList))
                         commandList.Replay(commands);
                     else
                         pass.Execute(new RenderPassContext(commands, frameIndex));
+                }
+                catch (Exception exception)
+                {
+                    passFailure = exception;
                 }
                 finally
                 {
                     if (passStarted)
                     {
-                        backend.EndPass(pass);
+                        try
+                        {
+                            backend.EndPass(pass);
+                        }
+                        catch (Exception exception)
+                        {
+                            passFailure = passFailure is null ? exception
+                                : new AggregateException("Render pass execution and cleanup both failed.", passFailure, exception);
+                        }
                     }
                 }
+                if (passFailure is not null)
+                    ExceptionDispatchInfo.Capture(passFailure).Throw();
             }
         }
         catch (Exception exception)
@@ -464,6 +482,9 @@ public sealed class CompiledRenderGraph
                     errors.Add(exception);
                 }
             }
+            if (recorded is not null)
+                foreach (RecordedRenderCommandEncoder commands in recorded.Values)
+                    commands.Dispose();
         }
 
         if (errors is null)
@@ -481,29 +502,44 @@ public sealed class CompiledRenderGraph
 
     private Dictionary<CompiledRenderPass, RecordedRenderCommandEncoder> RecordParallelPasses(ulong frameIndex)
     {
-        CompiledRenderPass[] parallelPasses = m_passes
-            .Where(static pass => pass.recordingMode == RenderPassRecordingMode.Parallel)
-            .ToArray();
         var recorded = new System.Collections.Concurrent.ConcurrentDictionary<
             CompiledRenderPass,
             RecordedRenderCommandEncoder>();
-        Parallel.ForEach(
-            parallelPasses,
-            new ParallelOptions
-            {
-                MaxDegreeOfParallelism = Math.Max(
-                    1,
-                    Math.Min(Environment.ProcessorCount, parallelPasses.Length))
-            },
-            pass =>
-            {
-                var commands = new RecordedRenderCommandEncoder();
-                commands.SetFrameIndex(frameIndex);
-                pass.Execute(new RenderPassContext(commands, frameIndex));
-                commands.Seal();
-                recorded[pass] = commands;
-            });
-        return recorded.ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        try
+        {
+            Parallel.ForEach(
+                m_parallelPasses,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Math.Max(
+                        1,
+                        Math.Min(Environment.ProcessorCount, m_parallelPasses.Length))
+                },
+                pass =>
+                {
+                    var commands = new RecordedRenderCommandEncoder();
+                    try
+                    {
+                        commands.SetFrameIndex(frameIndex);
+                        pass.Execute(new RenderPassContext(commands, frameIndex));
+                        commands.Seal();
+                        if (!recorded.TryAdd(pass, commands))
+                            throw new InvalidOperationException("A parallel render pass was recorded more than once.");
+                    }
+                    catch
+                    {
+                        commands.Dispose();
+                        throw;
+                    }
+                });
+            return recorded.ToDictionary(static pair => pair.Key, static pair => pair.Value);
+        }
+        catch
+        {
+            foreach (RecordedRenderCommandEncoder commands in recorded.Values)
+                commands.Dispose();
+            throw;
+        }
     }
 }
 

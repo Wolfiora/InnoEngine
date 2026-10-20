@@ -10,7 +10,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     private const string C_COMPACT_FLOAT_FORMAT = "%.1f";
     private const string C_PRECISE_FLOAT_FORMAT = "%.9g";
@@ -79,7 +79,7 @@ public static partial class ImGuiWidget
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp
             | ImGuiTableFlags.NoSavedSettings
             | ImGuiTableFlags.NoPadOuterX;
-        if (!NativeImGui.BeginTable($"##property_{id}", 2, flags))
+        if (!NativeImGui.BeginTable($"##property_{id}", 2, (int)flags, Vector2.Zero, 0f))
         {
             return;
         }
@@ -107,8 +107,8 @@ public static partial class ImGuiWidget
     /// </summary>
     public static void SetupPropertyColumns()
     {
-        NativeImGui.TableSetupColumn("##label", ImGuiTableColumnFlags.WidthStretch, style.propertyLabelRatio);
-        NativeImGui.TableSetupColumn("##value", ImGuiTableColumnFlags.WidthStretch, 1f - style.propertyLabelRatio);
+        NativeImGui.TableSetupColumn("##label", (int)(ImGuiTableColumnFlags.WidthStretch), style.propertyLabelRatio);
+        NativeImGui.TableSetupColumn("##value", (int)(ImGuiTableColumnFlags.WidthStretch), 1f - style.propertyLabelRatio);
     }
 
     /// <summary>
@@ -157,10 +157,10 @@ public static partial class ImGuiWidget
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(drawValue);
         NativeImGui.AlignTextToFramePadding();
-        NativeImGui.TextDisabled(metadata);
+        ColoredText(EditorPalette.textDisabled, metadata);
         DrawItemTooltip(tooltip);
         NativeImGui.SameLine(0f, style.propertyMetadataSpacing);
-        NativeImGui.TextDisabled("·");
+        ColoredText(EditorPalette.textDisabled, "·");
         NativeImGui.SameLine(0f, style.propertyMetadataSpacing);
         NativeImGui.SetNextItemWidth(-1f);
         drawValue();
@@ -189,7 +189,7 @@ public static partial class ImGuiWidget
     ) {
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(value);
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.textDisabled);
         try
         {
             WrappedText(metadata + " · " + value);
@@ -276,7 +276,7 @@ public static partial class ImGuiWidget
             minimum ?? 0f,
             maximum ?? 0f,
             format,
-            flags);
+            (int)(flags));
     }
 
     /// <summary>
@@ -316,7 +316,7 @@ public static partial class ImGuiWidget
                 minimum,
                 maximum,
                 C_PRECISE_FLOAT_FORMAT,
-                flags);
+                (int)(flags));
         }
         return NativeImGui.SliderFloat(
             label,
@@ -324,7 +324,7 @@ public static partial class ImGuiWidget
             minimum,
             maximum,
             C_COMPACT_FLOAT_FORMAT,
-            flags);
+            (int)(flags));
     }
 
     /// <summary>
@@ -356,7 +356,7 @@ public static partial class ImGuiWidget
         float speed = 1f
     ) {
         DrawAxisPrefix(id, axis, width);
-        return NativeImGui.DragInt($"##axis_int_{id}_{axis}", ref value, speed);
+        return NativeImGui.DragInt($"##axis_int_{id}_{axis}", ref value, speed, 0, 0, "%d", 0);
     }
 
     /// <summary>
@@ -401,12 +401,14 @@ public static partial class ImGuiWidget
         float toX,
         float y
     ) {
-        uint color = NativeImGui.GetColorU32(ImGuiCol.DragDropTarget);
-        NativeImGui.GetForegroundDrawList().AddLine(
-            new Vector2(fromX, y),
-            new Vector2(toX, y),
+        uint color = NativeImGui.GetColorU32((int)(ImGuiCol.DragDropTarget));
+        NativeImGui.Raw.AddLine(
+            NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
+            ImGui.ToNative(new Vector2(fromX, y)),
+            ImGui.ToNative(new Vector2(toX, y)),
             color,
-            style.interactionOverlayThickness);
+            style.interactionOverlayThickness
+        );
     }
 
     /// <summary>
@@ -423,13 +425,15 @@ public static partial class ImGuiWidget
         Vector2 min,
         Vector2 max
     ) {
-        NativeImGui.GetForegroundDrawList().AddRect(
-            min,
-            max,
-            NativeImGui.GetColorU32(ImGuiCol.DragDropTarget),
+        NativeImGui.Raw.AddRect(
+            NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
+            ImGui.ToNative(min),
+            ImGui.ToNative(max),
+            NativeImGui.GetColorU32((int)(ImGuiCol.DragDropTarget)),
             style.frameRounding,
-            ImDrawFlags.None,
-            style.interactionOverlayThickness);
+            (int)(ImDrawFlags.None),
+            style.interactionOverlayThickness
+        );
     }
 
     /// <summary>
@@ -490,18 +494,18 @@ public static partial class ImGuiWidget
             width * style.axisPrefixWidthRatio);
         Vector2 prefixMin = NativeImGui.GetCursorScreenPos();
         Vector2 prefixMax = prefixMin + new Vector2(axisWidth, height);
-        NativeImGui.GetWindowDrawList().AddRectFilled(
-            prefixMin,
-            prefixMax,
+        NativeImGui.Raw.AddRectFilled(
+            NativeImGui.Raw.GetWindowDrawList(),
+            ImGui.ToNative(prefixMin),
+            ImGui.ToNative(prefixMax),
             NativeImGui.ColorConvertFloat4ToU32(GetAxisColor(axis)),
-            1f);
+            1f,
+            0
+        );
 
         Vector2 textSize = NativeImGui.CalcTextSize(axis);
         Vector2 textPosition = prefixMin + (new Vector2(axisWidth, height) - textSize) * 0.5f;
-        NativeImGui.GetWindowDrawList().AddText(
-            textPosition,
-            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.text),
-            axis);
+        ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), textPosition, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.text), axis);
 
         NativeImGui.Dummy(new Vector2(axisWidth, height));
         NativeImGui.SameLine(0f, 0f);
@@ -510,16 +514,16 @@ public static partial class ImGuiWidget
 
     private static bool WantsPreciseFloatInput(string label)
     {
-        bool inputRequested = NativeImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left) ||
-                              (NativeImGui.GetIO().KeyCtrl &&
-                               NativeImGui.IsMouseClicked(ImGuiMouseButton.Left));
+        bool inputRequested = NativeImGui.IsMouseDoubleClicked((int)(ImGuiMouseButton.Left)) ||
+                              (NativeImGui.Raw.GetIO()->KeyCtrl != 0 &&
+                               NativeImGui.IsMouseClicked((int)(ImGuiMouseButton.Left)));
         if (!inputRequested)
             return false;
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 maximum = minimum + new Vector2(
             MathF.Max(1f, NativeImGui.CalcItemWidth()),
             NativeImGui.GetFrameHeight());
-        return NativeImGui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows)
+        return NativeImGui.IsWindowHovered((int)(ImGuiHoveredFlags.RootAndChildWindows))
             && NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
     }
 

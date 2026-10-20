@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -13,7 +16,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Editor.Panel.Settings;
 
 [EditorModal("editor.settings", "Settings", order: 100)]
-internal sealed class SettingsModal(
+internal sealed unsafe class SettingsModal(
     EditorSettings editorSettings,
     ProjectSettingsEditor projectSettings,
     SettingsWindowModule window
@@ -84,7 +87,7 @@ internal sealed class SettingsModal(
             m_navigation.Replace(selected.path);
 
         float footerHeight = NativeImGui.GetFrameHeightWithSpacing() +
-                             NativeImGui.GetStyle().ItemSpacing.Y;
+                             NativeImGui.Raw.GetStyle()->ItemSpacing.Y;
         Vector2 available = NativeImGui.GetContentRegionAvail();
         DrawBody(
             session,
@@ -105,26 +108,26 @@ internal sealed class SettingsModal(
                                 ImGuiTableFlags.NoSavedSettings;
         float splitterWidth = MathF.Max(
             5f * EditorWidget.style.zoom,
-            NativeImGui.GetStyle().DockingSeparatorSize);
+            NativeImGui.Raw.GetStyle()->DockingSeparatorSize);
         float treeWidth = ResolveTreeWidth(size.X, splitterWidth);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.CellPadding, Vector2.Zero);
+        NativeImGui.PushStyleVar((int)ImGuiStyleVar.CellPadding, Vector2.Zero);
         bool tableStarted = false;
         try
         {
-            tableStarted = NativeImGui.BeginTable("##settings_split", 3, flags, size);
+            tableStarted = NativeImGui.BeginTable("##settings_split", 3, (int)flags, size);
             if (tableStarted)
             {
                 NativeImGui.TableSetupColumn(
                     "##settings_tree",
-                    ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize,
+                    (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
                     treeWidth);
                 NativeImGui.TableSetupColumn(
                     "##settings_splitter",
-                    ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize,
+                    (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
                     splitterWidth);
                 NativeImGui.TableSetupColumn(
                     "##settings_page",
-                    ImGuiTableColumnFlags.WidthStretch);
+                    (int)ImGuiTableColumnFlags.WidthStretch);
                 NativeImGui.TableNextRow();
                 _ = NativeImGui.TableSetColumnIndex(0);
                 DrawTreePane(pages, size.Y);
@@ -149,8 +152,8 @@ internal sealed class SettingsModal(
         bool visible = NativeImGui.BeginChild(
             "##settings_tree_pane",
             new Vector2(0f, height),
-            ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding,
-            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
+            (int)(ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding),
+            (int)(ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
         try
         {
             if (!visible)
@@ -180,7 +183,7 @@ internal sealed class SettingsModal(
                 }
             }
             NativeImGui.Separator();
-            bool scrollVisible = NativeImGui.BeginChild("##settings_tree_scroll", Vector2.Zero);
+            bool scrollVisible = NativeImGui.BeginChild("##settings_tree_scroll", Vector2.Zero, 0, 0);
             try
             {
                 if (scrollVisible)
@@ -211,7 +214,7 @@ internal sealed class SettingsModal(
         bool visible = NativeImGui.BeginChild(
             "##settings_page_pane",
             new Vector2(0f, height),
-            ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding);
+            (int)(ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding));
         try
         {
             if (!visible)
@@ -249,10 +252,10 @@ internal sealed class SettingsModal(
         bool hovered = NativeImGui.IsItemHovered();
         bool active = NativeImGui.IsItemActive();
         if (hovered || active)
-            NativeImGui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+            NativeImGui.SetMouseCursor((int)ImGuiMouseCursor.ResizeEw);
         if (active)
         {
-            Vector2 delta = NativeImGui.GetMouseDragDelta(ImGuiMouseButton.Left);
+            Vector2 delta = NativeImGui.GetMouseDragDelta((int)ImGuiMouseButton.Left);
             if (MathF.Abs(delta.X) > 0f)
             {
                 float usable = MathF.Max(0f, availableWidth - width);
@@ -260,7 +263,7 @@ internal sealed class SettingsModal(
                 m_treePaneRatio = usable > float.Epsilon
                     ? Math.Clamp(requested / usable, 0f, 1f)
                     : 0.25f;
-                NativeImGui.ResetMouseDragDelta(ImGuiMouseButton.Left);
+                NativeImGui.ResetMouseDragDelta((int)ImGuiMouseButton.Left);
             }
         }
 
@@ -272,11 +275,13 @@ internal sealed class SettingsModal(
                 ? EditorPalette.assetBorder
                 : EditorPalette.assetBorderSoft;
         float centerX = (minimum.X + maximum.X) * 0.5f;
-        NativeImGui.GetWindowDrawList().AddLine(
-            new Vector2(centerX, minimum.Y),
-            new Vector2(centerX, maximum.Y),
+        NativeImGui.Raw.AddLine(
+            NativeImGui.Raw.GetWindowDrawList(),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(centerX, minimum.Y)),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(centerX, maximum.Y)),
             NativeImGui.ColorConvertFloat4ToU32(color),
-            EditorWidget.style.borderSize);
+            EditorWidget.style.borderSize
+        );
     }
 
     private float ResolveTreeWidth(
@@ -300,10 +305,10 @@ internal sealed class SettingsModal(
 
     private void DrawButtons(SettingsEditSession session)
     {
-        ImGuiStylePtr style = NativeImGui.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         if (!session.isDirty)
         {
-            float okWidth = NativeImGui.CalcTextSize("OK").X + style.FramePadding.X * 2f;
+            float okWidth = NativeImGui.CalcTextSize("OK").X + style->FramePadding.X * 2f;
             NativeImGui.SetCursorPosX(
                 NativeImGui.GetCursorPosX() +
                 MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - okWidth));
@@ -312,16 +317,16 @@ internal sealed class SettingsModal(
             return;
         }
 
-        float cancelWidth = NativeImGui.CalcTextSize("Cancel").X + style.FramePadding.X * 2f;
-        float applyWidth = NativeImGui.CalcTextSize("Apply").X + style.FramePadding.X * 2f;
-        float totalWidth = cancelWidth + style.ItemSpacing.X + applyWidth;
+        float cancelWidth = NativeImGui.CalcTextSize("Cancel").X + style->FramePadding.X * 2f;
+        float applyWidth = NativeImGui.CalcTextSize("Apply").X + style->FramePadding.X * 2f;
+        float totalWidth = cancelWidth + style->ItemSpacing.X + applyWidth;
         NativeImGui.SetCursorPosX(
             NativeImGui.GetCursorPosX() +
             MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - totalWidth));
         if (NativeImGui.Button("Cancel"))
             window.Close();
 
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         if (NativeImGui.Button("Apply"))
             _ = session.Apply();
     }

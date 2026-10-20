@@ -13,6 +13,7 @@ using System.Numerics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using BGCS.Runtime;
 
 using Inno.Assets;
 using Inno.Assets.Pipeline;
@@ -682,7 +683,8 @@ public sealed class BuildPipelineTests : IDisposable
     }
 
     [Fact]
-    public void EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices()
+    [Trait("ExternalDependency", "NativeProduct")]
+    public unsafe void EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices()
     {
         SaveStartupScene();
         Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
@@ -699,28 +701,29 @@ public sealed class BuildPipelineTests : IDisposable
         Assert.True(runtime.interactions.For("editor/main-menu").Execute("export/game"));
         EditorModalExtension modal = Assert.Single(runtime.modals.Where(static item => item.id == "export.game"));
         EditorModalExtension progress = Assert.Single(runtime.modals.Where(static item => item.id == "export.game.progress"));
-        ImGuiContextPtr imgui = NativeImGui.CreateContext();
+        ImGuiNativeContext* imgui = NativeImGui.Raw.CreateContext(null);
         try
         {
-            ImGuiIOPtr io = NativeImGui.GetIO();
-            io.DisplaySize = new Vector2(1200f, 900f);
-            io.DeltaTime = 1f / 60f;
-            io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
-            io.Fonts.RendererHasTextures = true;
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = new ImVec2C { X = 1200f, Y = 900f };
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            using NativeStringLease title = Utf8Codec.EncodeNullTerminated("Export lifecycle verification", allowsNull: false);
             Vector2 exportCenter = Vector2.Zero;
             for (int frame = 0; frame < 4; frame++)
             {
                 if (frame == 2)
                 {
-                    io.AddMousePosEvent(exportCenter.X, exportCenter.Y);
-                    io.AddMouseButtonEvent(0, true);
+                    NativeImGui.Raw.AddMousePosEvent(io, exportCenter.X, exportCenter.Y);
+                    NativeImGui.Raw.AddMouseButtonEvent(io, 0, 1);
                 }
                 if (frame == 3)
-                    io.AddMouseButtonEvent(0, false);
+                    NativeImGui.Raw.AddMouseButtonEvent(io, 0, 0);
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f), ImGuiCond.Always);
-                NativeImGui.SetNextWindowSize(new Vector2(1000f, 800f), ImGuiCond.Always);
-                _ = NativeImGui.Begin("Export lifecycle verification", ImGuiWindowFlags.NoSavedSettings);
+                NativeImGui.SetNextWindowPos(new Vector2(20f), (int)ImGuiCond.Always);
+                NativeImGui.SetNextWindowSize(new Vector2(1000f, 800f), (int)ImGuiCond.Always);
+                _ = NativeImGui.Raw.Begin((sbyte*)title.pointer, null, (int)ImGuiWindowFlags.NoSavedSettings);
                 Assert.True(modal.Draw(context));
                 exportCenter = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
                 NativeImGui.End();
@@ -748,7 +751,7 @@ public sealed class BuildPipelineTests : IDisposable
         finally
         {
             provisioner.cleanup.TrySetResult();
-            NativeImGui.DestroyContext(imgui);
+            NativeImGui.Raw.DestroyContext(imgui);
         }
     }
 

@@ -51,7 +51,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     [Required]
     public string OutputMode { get; set; } = string.Empty;
     /// <summary>
-    /// Gets or sets the explicitly selected SDK host for declared generator extensions.
+    /// Gets or sets the explicitly selected managed SDK host used to compose the target toolchain.
     /// </summary>
     [Required]
     public string DotnetHost { get; set; } = string.Empty;
@@ -78,10 +78,10 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     [Output]
     public string GenerationFingerprint { get; private set; } = string.Empty;
     /// <summary>
-    /// Gets the complete C bridge directory, or an empty value for a direct C API.
+    /// Gets the complete native artifacts and compilation requirements selected by this operation.
     /// </summary>
     [Output]
-    public string NativeBridgeDirectory { get; private set; } = string.Empty;
+    public string NativeDirectory { get; private set; } = string.Empty;
 
     /// <summary>
     /// Gets the protected immutable artifact root, or an empty value for host-source generation.
@@ -119,7 +119,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             var owner = new NativeComponentDescriptor(ComponentId, project, project,
                 bindingDefinition: definition);
             var context = new NativeBuildContext(root, "release");
-            INativeBindingGenerator generator = new NativeBindingGenerator(DotnetHost);
+            INativeBindingGenerator generator = new NativeBindingGenerator();
             context = context.WithBindingGenerator(generator);
             if (mode == NativeBindingOutputMode.TargetArtifacts)
             {
@@ -144,7 +144,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
                 result.Write(DescriptorOutputPath);
             GeneratedBindings = result.bindingsPath;
             GenerationFingerprint = result.fingerprint;
-            NativeBridgeDirectory = result.bridgeDirectory;
+            NativeDirectory = result.nativeDirectory;
             ArtifactDirectory = result.artifactDirectory;
             Log.LogMessage(MessageImportance.High,
                 "INNO-BINDINGS-PREPARE project={0} fingerprint={1} batches={2} generations={3}",

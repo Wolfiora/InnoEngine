@@ -32,7 +32,7 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
             return;
         }
 
-        if (!NativeImGui.TreeNodeEx($"{context.propertyType.Name}##{context.path}", ImGuiTreeNodeFlags.SpanAvailWidth))
+        if (!NativeImGui.TreeNodeEx($"{context.propertyType.Name}##{context.path}", (int)(ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }

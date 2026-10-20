@@ -13,8 +13,7 @@ internal static class PackageDependencyBoundaryValidator
         ICollection<string> failures
     ) {
         bool test = project.StartsWith("tests/", StringComparison.Ordinal) || project.Contains("/tests/", StringComparison.Ordinal);
-        bool generator = project == "build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj"
-            || project == "backends/ImGui/native/Inno.Native.ImGui/Bindings/Extension/Inno.Native.ImGui.BindingExtension.csproj";
+        bool generator = project == "build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj";
         foreach (XElement package in document.Descendants("PackageReference"))
         {
             string? id = package.Attribute("Include")?.Value;

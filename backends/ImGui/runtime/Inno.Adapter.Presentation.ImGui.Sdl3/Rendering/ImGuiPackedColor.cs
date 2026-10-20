@@ -51,7 +51,7 @@ internal static class ImGuiPackedColor
         var g = ((packedColor >> s_gShift) & 0xFF) * inv255;
         var b = ((packedColor >> s_bShift) & 0xFF) * inv255;
         var a = ((packedColor >> s_aShift) & 0xFF) * inv255;
-        return new SDLFColor(r, g, b, a);
+        return new SDLFColor { R = r, G = g, B = b, A = a };
     }
 
     private static int SelectBestShift(

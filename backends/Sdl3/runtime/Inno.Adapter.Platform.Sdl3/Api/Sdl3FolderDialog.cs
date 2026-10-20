@@ -35,7 +35,7 @@ public static class Sdl3FolderDialog
         GCHandle callbackOwner = GCHandle.Alloc(result);
         try
         {
-            SDL.ShowOpenFolderDialog(&Complete, (void*)GCHandle.ToIntPtr(callbackOwner), default, null, 0);
+            SDL.Raw.ShowOpenFolderDialog(&Complete, (void*)GCHandle.ToIntPtr(callbackOwner), default, null, 0);
             Exception? pumpFailure = null;
             while (!result.Task.IsCompleted)
             {
@@ -66,14 +66,14 @@ public static class Sdl3FolderDialog
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static unsafe void Complete(
         void* userData,
-        byte** files,
+        sbyte** files,
         int filter
     ) {
         var result = (TaskCompletionSource<string?>)GCHandle.FromIntPtr((nint)userData).Target!;
         try
         {
             if (files == null)
-                result.TrySetException(new InvalidOperationException(SDL.GetError() ?? "The native folder dialog failed."));
+                result.TrySetException(new InvalidOperationException(Sdl3NativeText.ReadError() ?? "The native folder dialog failed."));
             else
                 result.TrySetResult(files[0] == null ? null : Marshal.PtrToStringUTF8((nint)files[0]));
         }

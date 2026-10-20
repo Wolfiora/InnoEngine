@@ -1,7 +1,11 @@
 {
-  "baseConfig": {
-    "url": "file://bindgen.json"
-  },
-  "targetId": "linux-x64-gnu",
-  "outputPath": "../obj/linux-x64/Generated"
+  "schemaVersion": 1,
+  "extends": [
+    "common.json"
+  ],
+  "targets": [
+    {
+      "id": "linux-x64-gnu"
+    }
+  ]
 }

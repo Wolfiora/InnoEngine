@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -70,7 +71,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         NativeBuildContext context = Context().WithComponentOptions(owner, new(NativeLibraryKind.Shared));
         NativeBuildRecipe recipe = ui ? UiToolchain.CreateRecipe(context) : TextToolchain.CreateRecipe(context);
         Assert.Equal(owner.id, recipe.component);
-        Assert.Contains(recipe.declarations, value => value == (ui ? "-DINNO_UI_BRIDGE_ROOT" : "-DINNO_TEXT_BRIDGE_ROOT"));
+        Assert.DoesNotContain(recipe.declarations, value => value.Contains("BRIDGE_ROOT", StringComparison.Ordinal));
         Assert.DoesNotContain(recipe.inputs, input => input.physicalPath.EndsWith("Native", StringComparison.Ordinal)
             || input.physicalPath.Contains("Generated", StringComparison.Ordinal));
         Assert.Contains(recipe.inputs, input => input.physicalPath.EndsWith("CMakeLists.txt", StringComparison.Ordinal));
@@ -143,7 +144,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         bool produced = false;
         await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context, Recipe(context),
             (
-                scoped,
+                @scoped,
                 output,
                 cancellation
             ) => {
@@ -221,16 +222,20 @@ public sealed class NativeRecipeClosureTests : IDisposable
         string fingerprint,
         string generated,
         string bridge
-    ) => new(new Dictionary<string, NativeBindingGenerationDescriptor>
-    {
-        [m_owner.nativeProject] = new()
+    ) {
+        File.WriteAllText(Path.Combine(bridge, "compilation.json"), JsonSerializer.Serialize(new NativeBindingCompilation
         {
-            fingerprint = fingerprint,
-            bindingsPath = generated,
-            bridgeDirectory = bridge,
-            artifactDirectory = string.Empty
-        }
-    }, []);
+            roots = [new("generated", "", true, true)], files = [], includeDirectories = [], defines = [], compilerDefines = [],
+            cxxStandard = 0, cStandard = 0, requiredExports = [], staticExportSymbols = [], staticExportAbi = "", staticExportNames = []
+        }));
+        return new(new Dictionary<string, NativeBindingGenerationDescriptor>
+        {
+            [m_owner.nativeProject] = new()
+            {
+                fingerprint = fingerprint, bindingsPath = generated, nativeDirectory = bridge, artifactDirectory = string.Empty
+            }
+        }, []);
+    }
 
     private string Write(
         string relative,

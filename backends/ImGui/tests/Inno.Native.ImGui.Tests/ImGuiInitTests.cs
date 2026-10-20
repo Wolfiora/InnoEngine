@@ -1,4 +1,6 @@
 using System.Numerics;
+using System;
+using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,37 +18,40 @@ public sealed unsafe class ImGuiInitTests
     [Fact]
     public void CreateAndDestroyContext_ShouldSucceed()
     {
-        var context = ImGui.CreateContext();
+        var context = ImGui.Raw.CreateContext(null);
         Assert.True(context != null);
 
-        var version = ImGui.GetVersion();
+        var version = Marshal.PtrToStringUTF8((nint)ImGui.Raw.GetVersion());
         output.WriteLine($"ImGui.GetVersion: {version}");
         Assert.False(string.IsNullOrWhiteSpace(version));
 
-        ImGui.DestroyContext(new ImGuiContextPtr(context));
+        ImGui.Raw.DestroyContext(context);
     }
 
     [Fact]
     public void TextDisabled_UsesTheLoadedCimguiSymbol()
     {
-        var context = ImGui.CreateContext();
+        var context = ImGui.Raw.CreateContext(null);
         try
         {
-            ImGuiIOPtr io = ImGui.GetIO();
-            io.DisplaySize = new Vector2(320f, 200f);
-            io.DeltaTime = 1f / 60f;
-            io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
-            io.Fonts.RendererHasTextures = true;
+            ImGuiIO* io = ImGui.Raw.GetIO();
+            io->DisplaySize = new ImVec2C { X = 320f, Y = 200f };
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
 
             ImGui.NewFrame();
-            _ = ImGui.Begin("Native Text Test");
-            ImGui.TextDisabled("Plugin status");
+            bool open = true;
+            _ = ImGui.Begin("Native Text Test", ref open);
+            ReadOnlySpan<byte> text = "Plugin status\0"u8;
+            fixed (byte* bytes = text)
+                ImGui.Raw.TextDisabled((sbyte*)bytes);
             ImGui.End();
             ImGui.Render();
         }
         finally
         {
-            ImGui.DestroyContext(new ImGuiContextPtr(context));
+            ImGui.Raw.DestroyContext(context);
         }
     }
 

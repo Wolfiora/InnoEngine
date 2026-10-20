@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using Inno.Build.Toolchains;
@@ -10,22 +11,32 @@ public sealed class ToolchainEnvironmentTests
     [Fact]
     public void NativeBuildRootBelongsToTheToolchainProject()
     {
-        string expected = Path.Combine(ToolchainEnvironment.FindRepoRoot(),
+        string engine = TestRepository.GetRoot(typeof(ToolchainEnvironmentTests).Assembly);
+        string expected = Path.Combine(engine,
             "build", "toolchains", "Inno.Build.Toolchains", "obj", "native");
+        var component = new NativeComponentDescriptor(
+            "fixture",
+            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj");
+        var context = new NativeBuildContext(engine, "debug");
 
-        Assert.Equal(expected, new NativeBuildContext(ToolchainEnvironment.FindRepoRoot(), "debug").GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj")));
+        Assert.Equal(expected, context.GetNativeBuildRoot(component));
     }
 
     [Fact]
     public void NativeBuildRootRejectsAnUnrelatedOwner()
     {
-        Assert.Throws<InvalidOperationException>(
-            () => new NativeBuildContext(ToolchainEnvironment.FindRepoRoot(), "debug").GetNativeBuildRoot(new NativeComponentDescriptor("missing", "missing/Native.csproj", "missing/Build.csproj")));
+        var context = new NativeBuildContext(TestRepository.GetRoot(typeof(ToolchainEnvironmentTests).Assembly), "debug");
+        var component = new NativeComponentDescriptor("missing", "missing/Native.csproj", "missing/Build.csproj");
+
+        Assert.Throws<InvalidOperationException>(() => context.GetNativeBuildRoot(component));
     }
 
     [Fact]
     public void NativeBuildRootRequiresAnOwner()
     {
-        Assert.Throws<ArgumentNullException>(() => new NativeBuildContext(ToolchainEnvironment.FindRepoRoot(), "debug").GetNativeBuildRoot(null!));
+        var context = new NativeBuildContext(TestRepository.GetRoot(typeof(ToolchainEnvironmentTests).Assembly), "debug");
+
+        Assert.Throws<ArgumentNullException>(() => context.GetNativeBuildRoot(null!));
     }
 }

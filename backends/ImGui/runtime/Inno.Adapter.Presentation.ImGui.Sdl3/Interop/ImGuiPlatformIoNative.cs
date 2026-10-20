@@ -11,30 +11,30 @@ internal static unsafe class ImGuiPlatformIoNative
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal unsafe delegate void PlatformGetWindowPosCallback(
         ImGuiViewport* viewport,
-        Vector2* outPos
+        ImVec2C* outPos
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal unsafe delegate void PlatformGetWindowSizeCallback(
         ImGuiViewport* viewport,
-        Vector2* outSize
+        ImVec2C* outSize
     );
 
     internal static void SetPlatformGetWindowPos(
-        ImGuiPlatformIOPtr platformIo,
+        ImGuiPlatformIO* platformIo,
         PlatformGetWindowPosCallback callback
     ) {
         var callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
-        var setterArg = (delegate* unmanaged[Cdecl]<ImGuiViewport*, Vector2*, void>)callbackPtr;
-        ImGuiNative.PlatformIOSetPlatformGetWindowPos(platformIo, setterArg);
+        var setterArg = (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
+        ImGuiNative.Raw.PlatformIOSetPlatformGetWindowPos(platformIo, setterArg);
     }
 
     internal static void SetPlatformGetWindowSize(
-        ImGuiPlatformIOPtr platformIo,
+        ImGuiPlatformIO* platformIo,
         PlatformGetWindowSizeCallback callback
     ) {
         var callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
-        var setterArg = (delegate* unmanaged[Cdecl]<ImGuiViewport*, Vector2*, void>)callbackPtr;
-        ImGuiNative.PlatformIOSetPlatformGetWindowSize(platformIo, setterArg);
+        var setterArg = (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
+        ImGuiNative.Raw.PlatformIOSetPlatformGetWindowSize(platformIo, setterArg);
     }
 }

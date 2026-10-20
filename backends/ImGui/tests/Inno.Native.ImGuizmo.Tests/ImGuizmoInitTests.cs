@@ -1,4 +1,5 @@
 using Xunit;
+using System;
 using Xunit.Abstractions;
 
 namespace Inno.Native.ImGuizmo.Tests;
@@ -23,39 +24,45 @@ public sealed class ImGuizmoInitTests
     [Fact]
     public unsafe void OwnedStyleCanRetireWithoutReleasingTheGlobalBorrow()
     {
-        Style* borrowed = ImGuizmo.GetStyle();
+        Style* borrowed = ImGuizmo.Raw.GetStyle();
         Assert.True(borrowed != null);
-        Style* owned = ImGuizmo.StyleStyle();
+        Style* owned = ImGuizmo.Raw.StyleStyle();
         Assert.True(owned != null);
         Assert.True(owned != borrowed);
         try
         {
-            Assert.Equal(borrowed->Colors.Length, owned->Colors.Length);
+            ReadOnlySpan<ImVec4C> borrowedColors = borrowed->Colors;
+            ReadOnlySpan<ImVec4C> ownedColors = owned->Colors;
+            Assert.Equal(borrowedColors.Length, ownedColors.Length);
             Assert.True(owned->TranslationLineThickness > 0);
         }
         finally
         {
-            ImGuizmo.StyleDestroy(new StylePtr(owned));
+            ImGuizmo.Raw.StyleDestroy(owned);
         }
-        Assert.True(ImGuizmo.GetStyle() == borrowed);
+        Assert.True(ImGuizmo.Raw.GetStyle() == borrowed);
         Assert.True(borrowed->TranslationLineThickness > 0);
     }
 
     [Fact]
-    public void IntegerScopeAndSingleStringIdRestoreTheirParentState()
+    public unsafe void IntegerScopeAndSingleStringIdRestoreTheirParentState()
     {
-        uint original = ImGuizmo.GetID("gizmo-probe");
-        ImGuizmo.PushID(9137);
-        try
+        ReadOnlySpan<byte> text = "gizmo-probe\0"u8;
+        fixed (byte* bytes = text)
         {
-            uint scoped = ImGuizmo.GetID("gizmo-probe");
-            Assert.NotEqual(original, scoped);
-            Assert.Equal(scoped, ImGuizmo.GetID("gizmo-probe"));
+            uint original = ImGuizmo.Raw.GetID((sbyte*)bytes);
+            ImGuizmo.PushID(9137);
+            try
+            {
+                uint scoped = ImGuizmo.Raw.GetID((sbyte*)bytes);
+                Assert.NotEqual(original, scoped);
+                Assert.Equal(scoped, ImGuizmo.Raw.GetID((sbyte*)bytes));
+            }
+            finally
+            {
+                ImGuizmo.PopId();
+            }
+            Assert.Equal(original, ImGuizmo.Raw.GetID((sbyte*)bytes));
         }
-        finally
-        {
-            ImGuizmo.PopID();
-        }
-        Assert.Equal(original, ImGuizmo.GetID("gizmo-probe"));
     }
 }

@@ -53,7 +53,7 @@ sealed unsafe partial class BgfxDevice
                         attachment.isDepth,
                         attachment.mipLevel,
                         attachment.arrayLayer);
-                    bgfx.attachment_init(
+                    bgfx.Raw.attachment_init(
                         &attachments[index],
                         nativeTexture,
                         bgfx.Access.Write,
@@ -63,10 +63,10 @@ sealed unsafe partial class BgfxDevice
                         (byte)bgfx.ResolveFlags.None);
                 }
 
-                bgfx.FrameBufferHandle frameBuffer = bgfx.create_frame_buffer_from_attachment(
+                bgfx.FrameBufferHandle frameBuffer = bgfx.Raw.create_frame_buffer_from_attachment(
                     checked((byte)pass.attachments.Count),
                     attachments,
-                    false);
+                    0);
                 if (!frameBuffer.Valid)
                 {
                     throw new InvalidOperationException($"BGFX could not create framebuffer for pass '{pass.name}'.");

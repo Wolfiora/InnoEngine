@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
@@ -18,28 +21,28 @@ using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
-public sealed class ConsolePanelNativeLayoutTests
+public sealed unsafe class ConsolePanelNativeLayoutTests
 {
     [Theory]
     [InlineData(false, 1f)]
     [InlineData(true, 1f)]
     [InlineData(false, 1.5f)]
     [InlineData(true, 1.5f)]
-    public unsafe void RealConsoleKeepsCompleteLabelsOnFirstExpansionAndResize(
+    public void RealConsoleKeepsCompleteLabelsOnFirstExpansionAndResize(
         bool diagnostic,
         float scale
     ) {
         string root = Path.Combine(Path.GetTempPath(), "InnoConsoleLayout", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         _ = Assembly.Load("Inno.Editor.Panel.Logging");
-        ImGuiContextPtr context = ImGuiApi.CreateContext();
+        ImGuiNativeContext* context = ImGuiApi.Raw.CreateContext(null);
         try
         {
-            ImGuiApi.GetIO().DisplaySize = new(1200, 800);
-            ImGuiApi.GetIO().DeltaTime = 1f / 60;
-            ImGuiApi.GetIO().BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
-            ImGuiApi.GetIO().Fonts.RendererHasTextures = true;
-            ImGuiApi.GetStyle().ScaleAllSizes(scale);
+            ImGuiApi.Raw.GetIO()->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1200, 800));
+            ImGuiApi.Raw.GetIO()->DeltaTime = 1f / 60;
+            ImGuiApi.Raw.GetIO()->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            ImGuiApi.Raw.GetIO()->Fonts->RendererHasTextures = 1;
+            ImGuiApi.Raw.ScaleAllSizes(ImGuiApi.Raw.GetStyle(), scale);
             using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly)});
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
@@ -61,49 +64,52 @@ public sealed class ConsolePanelNativeLayoutTests
                 ImGuiApi.NewFrame();
                 ImGuiApi.SetNextWindowPos(new(0, 0));
                 ImGuiApi.SetNextWindowSize(new(width, 700));
-                _ = ImGuiApi.Begin("Console Layout");
+                using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Console Layout", allowsNull: false);
+                _ = ImGuiApi.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
                 Assert.True(panel.Draw(runtime.context));
                 ImGuiApi.End();
                 ImGuiApi.Render();
                 Assert.Single(console.Capture().occurrences);
             }
             Draw(960); Draw(960);
-            ImGuiWindowPtr card = default;
-            for (int i = 0; i < context.Windows.Size; i++)
+            ImGuiWindow* card = default;
+            for (int i = 0; i < context->Windows.Size; i++)
             {
-                ImGuiWindowPtr window = context.Windows[i];
-                if (Marshal.PtrToStringUTF8((nint)window.Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true) card = window;
+                ImGuiWindow* window = context->Windows.Data[i];
+                if (Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true) card = window;
             }
-            Assert.True(card.Handle != null);
-            ImGuiTablePtr header = ImGuiP.TableFindByID(card.GetID("##HeaderTable"));
-            Assert.True(header.Handle != null);
-            Vector2 toggle = new(header.Columns.Data[0].WorkMinX + 6, header.RowPosY1 + ImGuiApi.GetFontSize() / 2);
-            ImGuiApi.GetIO().AddMousePosEvent(toggle.X, toggle.Y);
+            Assert.True(card != null);
+            using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("##HeaderTable", allowsNull: false);
+            ImGuiTable* header = ImGuiApi.Raw.TableFindByID(ImGuiApi.Raw.GetID(card, (sbyte*)nativeTestText1.pointer, null));
+            Assert.True(header != null);
+            Vector2 toggle = new(header->Columns.Data[0].WorkMinX + 6, header->RowPosY1 + ImGuiApi.GetFontSize() / 2);
+            ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), toggle.X, toggle.Y);
             Draw(960);
-            Assert.True(context.HoveredId != 0, $"No toggle hovered: {toggle}; window {Marshal.PtrToStringUTF8((nint)context.HoveredWindow.Name)}");
-            ImGuiApi.GetIO().AddMouseButtonEvent(0, true); Draw(960);
-            Assert.True(context.ActiveId != 0, "Toggle did not activate.");
-            ImGuiApi.GetIO().AddMouseButtonEvent(0, false); Draw(960);
+            Assert.True(context->HoveredId != 0, $"No toggle hovered: {toggle}; window {Marshal.PtrToStringUTF8((nint)context->HoveredWindow->Name)}");
+            ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (true ? (byte)1 : (byte)0)); Draw(960);
+            Assert.True(context->ActiveId != 0, "Toggle did not activate.");
+            ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (false ? (byte)1 : (byte)0)); Draw(960);
             // Switching from fixed height to AutoResizeY uses a native measurement frame.
             Draw(960);
             foreach (float width in new[] { 960f, 500f, 260f, 140f, 960f })
             {
                 Draw(width);
-                uint occurrenceId = card.GetID(unchecked((int)Assert.Single(console.Capture().occurrences).sequence));
-                ImGuiTablePtr table = ImGuiP.TableFindByID(ImGuiP.ImHashStr("##ConsoleEntryDetails", occurrenceId));
-                bool details = table.Handle != null && table.LastFrameActive == ImGuiApi.GetFrameCount();
+                uint occurrenceId = ImGuiApi.Raw.GetID(card, unchecked((int)Assert.Single(console.Capture().occurrences).sequence));
+                using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("##ConsoleEntryDetails", allowsNull: false);
+                ImGuiTable* table = ImGuiApi.Raw.TableFindByID(ImGuiApi.Raw.ImHashStr((sbyte*)nativeTestText2.pointer, 0, occurrenceId));
+                bool details = table != null && table->LastFrameActive == ImGuiApi.GetFrameCount();
                 if (details)
                 {
-                    ImGuiTableColumn label = table.Columns.Data[0], value = table.Columns.Data[1];
+                    ImGuiTableColumn label = table->Columns.Data[0], value = table->Columns.Data[1];
                     Assert.True(label.WidthGiven >= ImGuiApi.CalcTextSize("Session:").X - 1);
                     Assert.True(value.MinX > label.MinX + ImGuiApi.CalcTextSize("Source:").X);
                     Assert.True(label.ClipRect.Max.X >= label.WorkMinX + ImGuiApi.CalcTextSize("Source:").X);
                 }
-                if (width >= 500) Assert.True(details, $"Width {width}, details {details}, toggle {toggle}, card {card.Pos} / {card.Size}");
+                if (width >= 500) Assert.True(details, $"Width {width}, details {details}, toggle {toggle}, card {card->Pos} / {card->Size}");
                 if (width == 140) Assert.False(details);
             }
         }
-        finally { ImGuiApi.DestroyContext(context); Directory.Delete(root, true); }
+        finally { ImGuiApi.Raw.DestroyContext(context); Directory.Delete(root, true); }
     }
 
     private sealed class InactivePlayMode : IEditorPlayMode

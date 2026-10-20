@@ -1,33 +1,33 @@
-# Inno.Native.ImGui ABI 参考
+# Inno.Native.ImGui ABI
 
-[权威项目页](../Inno.Native.ImGui.md)
+[项目与生命周期](../Inno.Native.ImGui.md)
 
-以下参考保留当前宿主 ABI 的全部语义签名和源码位置；它们不是服务层或脚本 API。原生调用的 owner、线程和关闭顺序从项目页进入。
+按当前正式生成结果分页列出精确 ABI 签名。Raw 指针不携带托管所有权；未声明完整安全语义的接口只提供 Raw 调用。
 
-- [AdapterIndexToStorageId → ImDrawListFlags](ABI-01.md)
-- [ImDrawListPtr → ImFontAtlasBuilder](ABI-02.md)
-- [ImFontAtlasBuilderPtr → ImFontStackData](ABI-03.md)
-- [ImGui → ImGui](ABI-04.md)
-- [ImGui → ImGui](ABI-05.md)
-- [ImGui → ImGui](ABI-06.md)
-- [ImGui → ImGui](ABI-07.md)
-- [ImGui → ImGui](ABI-08.md)
-- [ImGui → ImGui](ABI-09.md)
-- [ImGui → ImGuiConfigFlags](ABI-10.md)
-- [ImGuiContext → ImGuiContext](ABI-11.md)
-- [ImGuiContext → ImGuiDataTypeInfo](ABI-12.md)
-- [ImGuiDataTypeInfoPtr → ImGuiInputFlags](ABI-13.md)
-- [ImGuiInputFlagsPrivate → ImGuiInputTextStatePtr](ABI-14.md)
-- [ImGuiIO → ImGuiItemStatusFlags](ABI-15.md)
-- [ImGuiKey → ImGuiMenuColumns](ABI-16.md)
-- [ImGuiMenuColumnsPtr → ImGuiOnceUponAFramePtr](ABI-17.md)
-- [ImGuiP → ImGuiP](ABI-18.md)
-- [ImGuiP → ImGuiP](ABI-19.md)
-- [ImGuiP → ImGuiP](ABI-20.md)
-- [ImGuiP → ImGuiSelectionBasicStorage](ABI-21.md)
-- [ImGuiSelectionBasicStoragePtr → ImGuiStyleVarInfo](ABI-22.md)
-- [ImGuiStyleVarInfoPtr → ImGuiTableHeaderData](ABI-23.md)
-- [ImGuiTableHeaderDataPtr → ImGuiTextFilterPtr](ABI-24.md)
-- [ImGuiTextFlags → ImGuiWindowClass](ABI-25.md)
-- [ImGuiWindowClassPtr → ImTextureRef](ABI-26.md)
-- [ImTextureRefPtr → WriteAllFn](ABI-27.md)
+- [ABI 01](ABI-01.md)：227 个声明
+- [ABI 02](ABI-02.md)：227 个声明
+- [ABI 03](ABI-03.md)：227 个声明
+- [ABI 04](ABI-04.md)：227 个声明
+- [ABI 05](ABI-05.md)：227 个声明
+- [ABI 06](ABI-06.md)：227 个声明
+- [ABI 07](ABI-07.md)：227 个声明
+- [ABI 08](ABI-08.md)：227 个声明
+- [ABI 09](ABI-09.md)：227 个声明
+- [ABI 10](ABI-10.md)：227 个声明
+- [ABI 11](ABI-11.md)：227 个声明
+- [ABI 12](ABI-12.md)：227 个声明
+- [ABI 13](ABI-13.md)：227 个声明
+- [ABI 14](ABI-14.md)：228 个声明
+- [ABI 15](ABI-15.md)：227 个声明
+- [ABI 16](ABI-16.md)：227 个声明
+- [ABI 17](ABI-17.md)：227 个声明
+- [ABI 18](ABI-18.md)：227 个声明
+- [ABI 19](ABI-19.md)：227 个声明
+- [ABI 20](ABI-20.md)：227 个声明
+- [ABI 21](ABI-21.md)：227 个声明
+- [ABI 22](ABI-22.md)：227 个声明
+- [ABI 23](ABI-23.md)：227 个声明
+- [ABI 24](ABI-24.md)：227 个声明
+- [ABI 25](ABI-25.md)：227 个声明
+- [ABI 26](ABI-26.md)：227 个声明
+- [ABI 27](ABI-27.md)：228 个声明

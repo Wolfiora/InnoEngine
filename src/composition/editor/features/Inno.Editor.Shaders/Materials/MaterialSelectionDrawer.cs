@@ -83,7 +83,7 @@ protected override void DrawHeader(
                 foreach (var draft in drafts)
                     _ = context.interactions.documents.Save(draft.documentId);
             }
-            ImGuiApi.SameLine();
+            ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Revert Selected"))
             {
                 documents!.CommitMany(target.assetIds);

@@ -1,7 +1,11 @@
 {
-  "baseConfig": {
-    "url": "file://bindgen.json"
-  },
-  "targetId": "macos-arm64-darwin",
-  "outputPath": "../obj/macos-arm64/Generated"
+  "schemaVersion": 1,
+  "extends": [
+    "common.json"
+  ],
+  "targets": [
+    {
+      "id": "macos-arm64-darwin"
+    }
+  ]
 }

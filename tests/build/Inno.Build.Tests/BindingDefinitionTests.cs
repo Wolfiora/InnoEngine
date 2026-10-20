@@ -30,7 +30,7 @@ public sealed class BindingDefinitionTests : IDisposable
         File.WriteAllText(Path.Combine(m_root, "bindings.props"), "<Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId></PropertyGroup>" + body + "</Project>");
         var descriptor = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var request = new NativeBindingGenerationRequest([descriptor], "fixture", NativeBindingOutputMode.HostSource);
-        await Assert.ThrowsAsync<InvalidDataException>(async () => await new NativeBindingGenerator("dotnet")
+        await Assert.ThrowsAsync<InvalidDataException>(async () => await new NativeBindingGenerator()
             .GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
         Assert.False(Directory.Exists(Path.Combine(m_root, "obj")));
     }
@@ -43,7 +43,7 @@ public sealed class BindingDefinitionTests : IDisposable
             """);
         var descriptor = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var request = new NativeBindingGenerationRequest([descriptor], "unknown", NativeBindingOutputMode.TargetArtifacts);
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await new NativeBindingGenerator("dotnet")
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await new NativeBindingGenerator()
             .GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
         Assert.False(Directory.Exists(Path.Combine(m_root, "obj")));
     }

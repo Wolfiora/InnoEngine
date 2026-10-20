@@ -1,7 +1,9 @@
+using Inno.Testing.Source;
 using Inno.Build.Bindings;
 using Inno.Integration.BrowserWasm32.Bgfx;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Composition;
@@ -27,15 +29,15 @@ public sealed class PlatformOwnershipContractTests
             : new BuildHostDescriptor("Windows", "x64");
         var source = new WindowsX64PlayerSupportPackSource(
             StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile),
-            host, sdk, new NativeBindingGenerator(sdk), new WindowsX64SupportPackValidator());
+            host, sdk, new NativeBindingGenerator(), new WindowsX64SupportPackValidator());
         var publisher = new PlayerSupportPackPublisher([source]);
 
         if (unsupportedHost)
             await Assert.ThrowsAsync<PlatformNotSupportedException>(() => publisher.PublishAsync(
-                ToolchainEnvironment.FindRepoRoot(), output, BuildTargetId.windowsX64, sdk).AsTask());
+                TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly), output, BuildTargetId.windowsX64, sdk).AsTask());
         else
             await Assert.ThrowsAsync<FileNotFoundException>(() => publisher.PublishAsync(
-                ToolchainEnvironment.FindRepoRoot(), output, BuildTargetId.windowsX64, sdk).AsTask());
+                TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly), output, BuildTargetId.windowsX64, sdk).AsTask());
 
         Assert.False(Directory.Exists(output));
     }
@@ -60,7 +62,7 @@ public sealed class PlatformOwnershipContractTests
     public void StandardShaderTargetIsIndependentOfTheOfflineToolTarget()
     {
         var context = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator("explicit-sdk"));
+            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator());
         StandardBuildDistribution distribution = StandardBuildDistribution.Create(context);
 
         Assert.Same(BrowserWasm32BgfxShaderProfiles.target,
@@ -74,14 +76,24 @@ public sealed class PlatformOwnershipContractTests
     public void DistributionDoesNotDeriveProductTargetsFromTheToolHost()
     {
         var windows = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator("explicit-sdk"));
+            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator());
         var apple = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("MacOS", "arm64"), BuildTargetId.macOSArm64, new NativeBindingGenerator("explicit-sdk"));
+            new BuildHostDescriptor("MacOS", "arm64"), BuildTargetId.macOSArm64, new NativeBindingGenerator());
         BuildDistribution first = StandardBuildDistribution.Create(windows).build;
         BuildDistribution second = StandardBuildDistribution.Create(apple).build;
 
         Assert.Equal(first.availableTargets, second.availableTargets);
         Assert.Contains(BuildTargetId.browserWasm, first.availableTargets);
+        ProductNativeBuildPlan browser = first.ResolveNativeProduct("browser-wasm", "player");
+        Assert.Equal(browser.steps.Select(static step => step.component.id),
+            second.ResolveNativeProduct("browser-wasm", "player").steps.Select(static step => step.component.id));
+        Assert.All(browser.steps, static step =>
+        {
+            Assert.Equal(NativeLibraryKind.Static, step.options.libraryKind);
+            Assert.Null(step.build);
+            Assert.NotNull(step.component.staticBuild);
+        });
+        Assert.Throws<NotSupportedException>(() => first.ResolveNativeProduct("browser-wasm", "editor"));
         Assert.DoesNotContain(new BuildTargetId("desktop"), first.availableTargets);
         Assert.DoesNotContain(new BuildTargetId("linux-x64"), first.availableTargets);
         Assert.Throws<NotSupportedException>(() => first.ResolveNativeToolchain("linux-x64"));

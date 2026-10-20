@@ -40,7 +40,7 @@ internal sealed class TextInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         string text = ((TextAttribute)context.attribute).text;
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.textDisabled);
         try
         {
             ImGuiWidget.WrappedText(text);

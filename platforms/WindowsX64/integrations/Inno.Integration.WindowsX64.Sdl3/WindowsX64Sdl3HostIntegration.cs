@@ -30,9 +30,11 @@ public sealed class WindowsX64Sdl3HostIntegration : ISdl3HostIntegration
     {
         if (windowHandle == 0)
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
-        SDLWindow window = new(windowHandle);
-        uint properties = SDL.GetWindowProperties(window);
-        nint surface = (nint)SDL.GetPointerProperty(properties, SDL.SDL_PROP_WINDOW_WIN32_HWND_POINTER, null);
+        uint properties = SDL.Raw.GetWindowProperties((SDLWindow*)windowHandle);
+        ReadOnlySpan<byte> propertyName = "SDL.window.win32.hwnd\0"u8;
+        nint surface;
+        fixed (byte* name = propertyName)
+            surface = (nint)SDL.Raw.GetPointerProperty(properties, (sbyte*)name, null);
         if (surface == 0)
             throw new InvalidOperationException("SDL did not provide the required Windows surface.");
         return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.win32);

@@ -63,7 +63,7 @@ macOS 支持区分大小写的 APFS，不能从 OS 推断目录等价。[Apple �
 位置：
 
 - [Inno.Build.Cli.csproj](../../../build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj#L4)：`CopyLocalLockFileAssemblies=true`，当前工具 Restore 没有收敛到宿主 RID。
-- [BuildApplication.Runtime.cs](../../../build/cli/Inno.Build.Cli/BuildApplication.Runtime.cs#L185)：完整输出目录全部哈希与发布。
+- 当时的 `build/cli/Inno.Build.Cli/BuildApplication.Runtime.cs:185`：完整输出目录全部哈希与发布。该历史源码文件当前已删除，本条保留原审查位置。
 
 当前 WindowsX64 工具 publication 总计 **1,163,319,881 bytes**，包括：
 

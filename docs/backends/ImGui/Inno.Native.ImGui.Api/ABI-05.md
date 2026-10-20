@@ -1,741 +1,461 @@
-# Inno.Native.ImGui ABI · ImGui → ImGui
+# Inno.Native.ImGui ABI · 05
 
 [项目与生命周期](../Inno.Native.ImGui.md) · [ABI 索引](README.md)
 
-<details>
-<summary><code>Inno.Native.ImGui.ImGui</code> · 361–540</summary>
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.LineCount 31b0d68c24ba3d918515f43cb4a6dce23753334441086696d4ebaca8a7dc535c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.ReloadSelectionEnd ed1d25967ab4e09443b1ce05969c8a7a151771ff5c6552b068d21f02e3f5628f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.ReloadSelectionStart ae1c6b449f35a20f0216aef9656a69fb4002f5e09c5f84f86b88201d3fb052a7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.Scroll 7131a9884f32b83e19e34246754fd78a638d68460cd5e5e39ada9253bf00f8f0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.SelectedAllMouseLock b569ed9c899a4c5ac17b4e8ed50a6c30e22ac0b46529bddd1893b9b65916e152 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.Stb 0fe2c0991e1a321afb0fa0161aa654545d6e5237c6cd47ee51b3a03fa7b2e34b -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.TextA 8dc6f082ceab169645c3b83e572f0285a4ed7346e51f0b43a0266da6b6dc25da -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.TextLen a24db05f880e63e956d660294baaa3d01533b0d4c0db9b5f411d6676aa327e37 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.TextSrc 78e147d3d72554a8ea8db2c0ffe3eba05d98fb5bb4376a3f602fb5df2c7456ed -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.TextToRevertTo 378198f3dbf26459d6bb8b655f199512842af4b5f0e6296f545baedbf1d0dc3e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.WantReloadUserBuf 4db46609c314bfc9529b386bbb7f3605bb4fdaee0eba5432dd543defce715bb0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiInputTextState.WrapWidth da0e32f9149449c1b67d033336bc1b6d2865d26fe8aed8b161dfab4455d5fcc4 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.AllowDuplicateId f7cf4498873d673845f58e791b5536bcc80b2684bd3b072e90107e1683085fca -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.AutoClosePopups 3545cb7b93ac704f3120dd1a5e0097b08fdabfb81162d3fc8d039ac3a763795c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.ButtonRepeat c8f47729215ab1688c4aaa353eb31abe2da2d1b1a016ccdd00eca310d8f5e3a6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.Disabled fe216da5787ba8f8c35db5fd89f52169d550db019769746cea063e69b676bcbd -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.NoNav 6d291fb200e3c7f5918cf9e2557da21c5aaf35ada653a9610f90088c1a4b7a5e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.NoNavDefaultFocus e4bcbb27118bfdb349eb9ef96c4a308581bbaad677060f5c55e0fba5ef53adf9 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.NoTabStop 46cbd523d6e3c8dff843ed8a5137e442789afa74d2507430e6d6df9f6d7b861f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlags.None c28fdf200a21a53a91afcc3b595353de63fe1a337247a4d8fbd7c44693ace665 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.AllowOverlap 41a1abcd7a2092aac0d70a3cf0957055a023580f4acfacccd1fbf9e6298f263b -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.Default c307b0abf7210d71c14d90bd351079e1dbd87537bd6df7ce28a72715d77242d7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.HasSelectionUserData 4ce711ad3956932c5404f5bb9782775a1542ed14ed485d94c71bf8de6409b783 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.Inputable b11737fcfba3702e4d8057f610e14d22efa498f4205059e889d4bab3cfe9cbf6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.IsMultiSelect 08bd515d9ad14d37aef8d421bfcc8dcf3d4681588172bdafa48457f72fc02635 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.MixedValue a1c07b6bace148be2eec5330bb176ca356f42f3aa793be8d6b3f44ec207eee47 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoFocus 93b4b36294c1e5ac8f52db5d22098b4b8ea03989e49a680d17190afea2afbc88 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoMarkEdited f8371bffabdc35faf5b35f027554c3a6e9e1f1851352f6144934b8894df42130 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoNavDisableMouseHover d01529a621b28b6420a6233ad8c5239ed5aa8b6b0f93d6ed077d9263e61af8a2 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoWindowHoverableCheck 06d689b7f79093addc13d888b10400c82eabdce9ad56c4415b989c7e5a229be7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemFlagsPrivate.ReadOnly a662a934b36d956f654cac4a53dca4a4e93f9464883d080319a7c0d1c5bd6d31 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.Deactivated 6f55bdcaeac5cafc0149acd3b357318486ba1a664aece960c761bad1b1c58152 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.Edited ac7fef635a7e4c5e0713a3e61fae8b84c76553d7b70b331086c11db5ae802f6a -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.HasClipRect c7e698c3f7b51229c0fefe79c90051455d75b4ccedbd17e2fea1dd3b93b013cc -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.HasDeactivated fb654fe396e2c50cebb96a0d18458695cfb48d2f7ac35529e7453b0ccb3d064b -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.HasDisplayRect b353826eeca527d33ddc03b55038c3298e573621b69993ee5db597307d988844 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.HasShortcut b2995824d3448932dd744e0a391610e0cd9962172c814b1461253ddcaf663cb0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.HoveredRect 546545768099a88f4ab87cf146eac433ab2289a99796239cf755636eb3c15eb9 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.HoveredWindow c6581d2eceb5c1cb3b5d31c8b9d840201bc16eed5cacfe3d31ae23ed4e878696 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.None a68ce50f8fe5d2a477d01d15e11effb06878f2d05253478aa172973394e534f3 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.ToggledOpen 07df7f227bbfe27557cbe1ac096c21a8bd0553da752880ab5dd5c04375142f0c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.ToggledSelection 5dfb81b5e56c21399501abf60cd97af1c66236bfb46fccf52a3353c9fdb0e04f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiItemStatusFlags.Visible f1b12d964625a4140dfc1bf80e6087fbf835a78cafd7020ca327185de7bc3427 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.A 10f5c065d46fb83d8467a52bf275ec6e58771516f551167653da430cfeb6ccad -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Apostrophe 9ef879e5e950135ef54c4e73155e47e225c5cfc425df052a75f0fa532ea5062d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.AppBack 980befd95f9bbacf79313f16adb5985809dd486300ca2c81b86c966567224fb1 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.AppForward 97e240227a3a18c1d9317f49fbf231a0a0a940e0bdc2cae88ae75272688a6540 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.B 86c415ba393c87114e686d658b8a9ccc03e3427d3f278a18effa141c06eb803d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Backslash 60e0566b4142b73aa3b5267624d997b0a28cb8d9c86d8902d8d0f87a0406c124 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Backspace 97c6a5516f50787e6bdcfd1b65c34c4e7dacd98783b82ca2fb6c07e8a962f4f5 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.C 98f28547d109f779b9859525a86d62f4797a76a1f95b437b92c51bb7f02769a0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.CapsLock 3c6dece1a10d5c27e3cd88107164d9045d2169158f4789327a4aca89a875defd -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Comma cb0603451eaf79f65b9d310194b4ce42a81291033c5c7931215e34fa76066133 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.D 8eed7023d425a113741381193bc3f66c677bc223efae1f2baf330094f56f97b6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Delete 43347a87deeb8347d09af8e0705f65d4ab85b259ff921562bbe42d1cd70eb3fc -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.DownArrow 747d2ca475b03c5d857ca5b4859dee793936d036958a2e4361596be7726d000e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.E 64e97c1f9ed82865f6f39e44132db582baea13fa43be7f375d4fae59c0febb71 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.End c267d555da614aceb54bb02232067fb9d51507be33926307eac5723e00454bbc -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Enter 7f053126380551e2266bf9dc11aba33d2f8fd53aacdf77d9575e71546b991ab7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Equal ffc1b693445471c910c14d13a76adfdf539680a3aeb2bc03b5b860bab3614352 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Escape b19a1f857cf221538ae1233c90efa82562211555aecf763660adf8823aec8832 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F 6928c19f9bcc86b8f7bd4430798209347fc04fa190c83b6a771220f2949ea43e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F1 49b4bacf1123a55823298edcfd14986ce38f1dbe3d96f74b435274eb41bf37f6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F10 3d4e6ed5fb0e61b581b5246dd44b9587ade669f842c36d83c594a3d4e82ec458 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F11 abeb6161ccc9310eda77c90f613e93c49096aa9fdecc28bd59d86d2010d3e36f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F12 7f4e911c6cdda0facebf9b22d0f2577e563c44fdaf9d51102a4fbbae7e3a9c53 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F13 972cc1acf02c7aaa099036fb4c79d632f65a3df738fd93d925a79bad4d675dd3 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F14 922f48024f2f0d6753892c93c39af94001d559fb596be306613857adfced31c7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F15 3c763e8d2b2da0ba3972525657592113282ab83c716046a58ab72d88f447ee37 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F16 cae0f0f5ba92664b1e288f5fcee0bba9e0750a292df88a84a5c5b203fb94a943 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F17 5d18a097793de3c0b58bef31072617b3e8d46e06cf9acc586900b2070fc9f563 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F18 2f787244ed8fbcd6d574984d78a50a76f0fb96b792a32fc0372d7273870178c8 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F19 774dcde4879df17921da57c7425cdaebae452f9f952c53107ee0d0cb9ae74718 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F2 59e1c5b439e793f8dc45109b5ee08fc3130eca2d2bac8f760782ae8bee8127ec -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F20 3a2202117bd305275629a91eca713f247f28e314c353fe4a11c0b24419da04ea -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F21 1032c0788dd37baf2ce33e59456f47a3ed359be59774bd1d691bcc895eb75382 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F22 03977743c5ad9522209e504afeb61b1b9718b62bbd84edb1b9e1bfe6ecf481b5 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F23 24832932e6975f73c7f7bae4e4d7f2b4c642d71f9bf994f24ba91f325061c46a -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F24 1b8d817778203bd4d5cc5d2c36110d5c5376a7772741081e5c338a17b53f5696 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F3 feefbb5dadbd57a68b8d02c88c3796b59f082957ce3f05c2db49b111ed93856e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F4 33ee741264946f2bc2b566945345266b1747ba0d3a4259f566b6a321e1d657b1 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F5 795e8233351d922cc57328441c1bfec98dbfaa195ff6de087e22fe841aa3e71e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F6 da1b0bf0e6f160863f36eca66a54c52435afe1b203da5c93214f24294010f77f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F7 cfb07775e6914cb63b49e6083cdb078310c7322034c7062d05fda0a08b2e532f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F8 17bcc3ee7c9d598e63a1855ab2243fc9c3f4a11ec4f0bce685dbd7f4cb8f6736 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.F9 d0fc026786bd32317767a7810a11f555081fde75637d39345967f85cdff627b6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.G b9dbf827d4045385523599efc34c69c397e0a51c715206d9e0e1201c407f4549 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadBack 026441b01553b093e80e7e64ba0a4bf9994373f5e276c3dfe3f671f2d8eccba9 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadDpadDown 69a8f9e866eff8836b18c28e533aaf75a9f2341be05fae7b066b6a13988445ee -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadDpadLeft cfe41534e89a2d52e2f50c24ac1a86265a88579b466201a9412ac7bf7da802ee -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadDpadRight e9fe0e3f0e9ceef5d56297997b3dcb88fb45248b1967e0fc4214a86f1e99e40a -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadDpadUp 95833ae47f20da362fb96fa7b1a9223af84a1f60aabb1db3bc26a09295c381f5 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadFaceDown 84a5f4dcce6b65f813a7fa5e5e30cdf858b89aa19e62731a6d8d4d32c969eef4 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadFaceLeft 713bb20b6375c69ae19715d83aade49b2a10e87c2e90dce98efc07f1f1ab0060 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadFaceRight 804178d9206e3362aa48a2233121eef962f9d82ca9217854f5b8789a93253ed3 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadFaceUp 9ca9cba1ce4f164da5e7a037ac4cc6660e110c39efdc9c432cf7910e1b9ed548 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadL1 8b954d21e4fb13ee704a75d96585a9f9c14b761837ec84a540f334178f22defb -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadL2 b66330f818b01b56e3b1690963b47fea150fedbd1e6c0f3cf5a5487ed2185c21 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadL3 fec2f312125aca163cc0cd54fdf6f8f9ae3961d07fd1224ff7cd41c0b97d1d8f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadLStickDown 61db765f8e4df22be65a7427598ce40f39600e6eda1b2c1afe6f2becda830c17 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadLStickLeft b172f920ea66783ae83252521460a41757288e1ff9b9ac7411c580b75bd3a618 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadLStickRight 6ff7220d71c9fe54bbc8dd1332f2faf2d753a6205ff0aea637add192a48cab6f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadLStickUp 1c35024e94316026a8c3f35557dc6fe9bd1d2309db3918c3324103137c3df471 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadR1 2ee6fc601465158470bec7a51f49c1862e550c73f77a000c3583750c7db98e85 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadR2 ebdb00248233c995758cb9dc3cb8805026ebf4aff0b540447f06323b5672a036 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadR3 71ef011d571a1de89b45490e06402451ecdf49182fce3d07ced4b2c59493c80a -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadRStickDown 6a875f9277865dc62ccb57d8b589e849e82f5401135eec60a94597dd19c7324e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadRStickLeft ac04dfd5fa3e200b27d290ea352d00b183b3cdc9338e85ebb921b5efd3136962 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadRStickRight 5e3b892f26303af36daf7110f714e870edb3a9be64239eb14d9a9fefd6487c9d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadRStickUp 57a37fa865cad6a449749063853b7db7a8d904abe252f3ec9fa45eb2427fac34 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GamepadStart 9465945a78e9df4af80bf08e1e47d100d7b53b765605a4b20a4c572e72a29be3 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.GraveAccent 5abb54698656bdcff45214a0d9e82c4b608951c06989f5e93e7e2a493bf74312 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.H 36536cfcf9e09b4cbc61b7a716bdda9c9be469d1c1d5eeb177a1db93011d3007 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Home 50785efab30e0007caa20269ca25153efa68f8ec0c750c6b4204a6c6ab5a2c67 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.I 070e08666db16f2382ef5055fbc41fa4617091ded591ef2cb2f4d80865624a25 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ImGuiModAlt 6ae8b3f3a6926fd7a8d76f5ef642b00c78b5ab18ebc685c66103bf356d02e7d8 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ImGuiModCtrl f2268595d7d5d124352b0683b5170a6ed80d2ccb47fb150fdc55728029f1a49f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ImGuiModMask 4e6876b322c623a04bd95fdd4f39daeb1f68d6e5a55085676ae60ed0b3116329 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ImGuiModNone 212feeaa16ed4c7542d6bd96301ddb3728ed344bc63728242aca42a809ddd24c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ImGuiModShift 208bff2d5c23f904da74299404b616643c5afe17f0ee8f3be3cc3333bac9d955 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ImGuiModSuper 011b197a5ef979e06158321db334669d9989a8fd2876dd3dd35ee797302ce5d6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Insert 7e4992889c2a33ec322fa9c055d338a1e7dfddb7b4671e8127ee274a0cc069d9 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.J ed4f828c9e52ea075abb52edac9e665968ef06c25a86b91117678d04decd9fd7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.K 3598198f86a38cf9ba9cc5dc50f2b517d826e57f6ca223066fe88c8799cfc16d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad0 009996990285b77facbf8a6d602bb010c17b8c6af1451ed15d09da3e63a4dff1 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad1 9b7d60db4ce5f51f58cf7018f074208827860c40ba7ad45b7a8d5ab1726691a3 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad2 92ab26f64ca906b19030e4355278df32d8372d4285c758f13a869f62d0af0b5c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad3 55f3e165132321b5a758646bce86a906e005fcf83786bdef152888f9caeb27df -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad4 da4e7f081650509af8c0508ada42c824010936fc541ca51f2c9219c50bc35356 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad5 a68f78a33f2ed0a2225a213f6aa3a827b3e9310e9c2e617e44041904b1d60c94 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad6 02d0aa0898321aa47e3389a7199ab53e853279e407453c06fb16767302c12d89 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad7 06fdbf63e7c4d5000d138ecec4aedb51c4df31c4112141262072c41358da1961 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad8 28aed8e63316b8ee0b4486b529f98f14009ab16a8f14a451ebebc03616301e8d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Keypad9 e3fedb99f64c32f5cf97b3ebee7b9725cab4fbf07be80bb7130e0c91021b6da1 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.KeypadAdd 8ff4a134f4550940f0ff8c1952d5b0cfcda46d511da361ab621e141a8998bc14 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.KeypadDecimal 646d009bf3d979648cfedf7344552288872943ef6612fe7c0062b512148629b9 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.KeypadDivide 2bf476c8795ff9363c4a92f806056f2442f274d2a1055228f5cf8c701c4b63c9 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.KeypadEnter a0e3652778235cdfea09e241fa3f4fc7c77469d34d4f40ae5dda355353e95dbb -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.KeypadEqual 4bfc2c48b5c664ac9ef11205d746d33d3d8c3124c4127c1be32e12602354a30f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.KeypadMultiply df0d25717059650b7efc71e8af90ba5548acd95833fb21231c851d1b47bcc1e3 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.KeypadSubtract cb5ca2b823b7d019be29327e4f6d674287794f918ee20180a0c22174aee2217c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.L dd61c4cf6fb05fa6fda418699d5a5a49342ace8e8d15495ca211cee2c04329ed -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.LeftAlt 5747641b5c8f2483e039dfc181fa5db6c5b08da7ebbbfb8cb445948736b93129 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.LeftArrow ae4989ea9ae1e76c8f779f315090e9a25c02cfe77e3039a57b77afc7f58b8322 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.LeftBracket 533e3397e0089e76877b9cb01f3645d4c0283c81c8b8318b20ac652002b63328 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.LeftCtrl f6bfe51b18a162e2b141f881f5af00d87e63fc31a5b350684beaf9f0515adfb4 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.LeftShift 2eee1d8aa123fbf46acb09e92768dc86feb808407129b24a57fdd46730c2f3f0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.LeftSuper 14cf1ab211aaecb40676e6de46c18304976416248197e31dc27cdc70de6fd061 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.M d2b42f2950fc39162d5a7ad33509478f2e8a0bdea39ee04824e5018782477fda -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Menu dfe5f8a491d3b99b0fd8bc50627efdedaadf98a9220b554f2b04d4b94a233261 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Minus 318d4d2c3696918fe9f0a8af4c335c8d6d96b7c09ca121b5eca200b3d23bc004 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.MouseLeft 4f5e87d28c66b289b70dd5ca114e33e5356508fc7587b62af6e1fd5c59d4281f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.MouseMiddle 2ab5a4a25c1c6bd540a29f74cd03e534d61be5e742137da6546612c48eb3a35b -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.MouseRight a4c0b15789c7be6bed7092cfb3dc47ca178e8529ed39d48be8a253c7d7c850a8 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.MouseWheelX dae8185b2dad92d4c3ede8ad0c7369cee8612d3eda27f38b7d80e805bfa5bbbc -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.MouseWheelY 383598c1b3f6d561f6fb59f73657edfa152ac090e0a12b64611b9bf880eff3a6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.MouseX1 ba39df49a8081d1605bfa904b694420209af8613043452d5964c22b14cd37b88 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.MouseX2 86ab71e165e56d9067963bbb48e90e59c1da5fee7bcb3ae2ffc56db519de8713 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.N f0d2d51944729d02941d934da0a482ce1fcff07d0299a764c5c26c8260eb3949 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.NamedKeyBegin f5f3c7d07ba1d24d89c0b5d98c918c0e9fca584ec21b886ae5474aa313dec6a2 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.NamedKeyCount a6af752d84926dffafc1d86bff133e0d55901ddc54a0a29c4f7512adc2bf4944 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.NamedKeyEnd 3a0c14c357d346e7d9d52dc8657c7ae82260f201ccf88b7eff5af35851456f74 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.None 646048518d13c52f80ea1062cb736fc8c5f8d3057f71088a9d41e80530954e52 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.NumLock 18d527a399f4249cf05118172677ab39af6ced8177e7fa74e57320ec488caea5 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.O bcdef98e7b4d63aa683317c37d0a7c24bfdcceda1228339144b1e9260f66ccc9 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Oem102 91498ed3871aa079b591f5582de190a663f1033035a76c80a0723205ac92291c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.P 264cef9d8fb109be9171398ad3d2a01ecb93043e952534d42f36bb6c110ab663 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.PageDown 0fceb6ba954cab7bdcb9e5e09aba6e98863e4397634d1ebdf21576394f31b5b6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.PageUp 64ff22e391c7ee6d402548f96ed36a5c8e04e06dded87f339b699a5e3b9e3db4 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Pause ae166548d92a5f7ff07d55c7fc1920b861e35cd85fbce7eb2b645539bc09229f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Period 3f1935ea9442c2118c4c805536c9ec647ff67e702a30693581787b38a8fc325d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.PrintScreen ac9b9d36f29f200fe3052ccd4dc4758595cead920b6e4d1201e2a364e836fdd7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Q a98c7cb776bae9f23459c1d7603652c144681ec7fee32bc216f83002cfbb9fb5 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.R 0336f319a9e3c6ec315315c6a91217254e3a7f2c762b1c8859059ca2d8b44e37 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ReservedForModAlt ffc6082724ac1d96b03a05ec9dbfc2f8b43f9cecb32dd9ad8ef8414b57f01c4f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ReservedForModCtrl 3f0acd73fdd1128366c9f63017a2c47b0e94489852e5daa32d4bec76dd9be7c8 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ReservedForModShift 42a67fc0fc77d5dc6c4dc3143fc94479d731f75ae97abddacdf98cd3e8bb5f06 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ReservedForModSuper 3f3da7d52b267d328ac699253a8761c72a701ff3d4bdb8666a6ca635e3b0e314 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.RightAlt 213e63d60802590f2d26b8324ec9b75d38cab32a31ea491380efcc0fb4cd6b8d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.RightArrow 597ad22dfdefd6ce245da9a926a39c64caf81c4bae77efc5378ed477b06e13cb -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.RightBracket e9968b841a5d25751a1566a7f8e3d893813e10667c21e3f94e671ed1aef16ec6 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.RightCtrl f449e18175ab957816ed522a97bf061b6d5bd79bdf50141794d14dfa813bd6da -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.RightShift 0a90a307707b9aebc2320c353321edc8b9d78f89a1b77669aa3d50040855e945 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.RightSuper 81eff2e63f7e163226ad64de90389bb82eb32566a3e6bf13ad35395964be0d2b -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.S 6220a2216362e8ff4496aed31c586601acf521cfd48eeba8ca0b9198cf39498d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.ScrollLock bec7cbb3e9bd27a489563c6322cf4291a2688b41ab83061e36b262b2fa925425 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Semicolon c745c41f5d04ddbdaa3fc1ddef4ba0e91e7a4cfca5eaa63e0f2b7754e34cfa6d -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Slash 24ab1e5cf69dd70347dacdce6630a2b4139d8918b47cc9d0df58bf732b0d53cb -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Space d950a2b0961226bfddb1ca624eb8547199304a4050bc43ab3eef0c2be391c7c7 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.T b41ebcc47be58edaa5d19e3b311672319bc0967d2bb2b1945859ebb1f8e4a69e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Tab f5872b80cd8df90b4673395cc60e50044c10820fa43fd69ad15515cd3b751c0f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.U 84db1854e78bab8ec3c2fe0db782fafb9b1134643928ecd78490e042b570077a -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.UpArrow 84a3ad7eec2169fa1fd6dcf5d3b7ec5c3306eccca11d5a5d27884ada1c5dbb1f -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.V a138551d2f8ce19ca069e48075ec6c8a5a102d2d750dd033b34363787375a077 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.W 3e39aba5c1f5e958ee061821c426be8b83b150d312b1720015fc4446468afdca -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.X e7039a738db1793f2caadab804bfb40cc4a733bd223a14aeb1738c32a186505c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Y b9db3be40ed24eb4784fc78e8521bc345d82f86d624c615f01a4ed2a864e0515 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey.Z 0aded0546b89bac44f85a962fe0ce9102884fd41702eb1f99cc04234905d2885 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._0 6ce2a7b0125c5a51cd9fea579209b99f0e720c7da02904c36492128c5ced326e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._1 d97897250a0923e7cb58ebaaf269e0c6e4ad0a6045b0f7fafad5ff2ffa9e66df -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._2 4abb8103484ff819e8d153c0c8616decea6935232be83eca4b6475ddf49050ff -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._3 3c8c5ee3ac9778fa21b8cee4d2945b63fce7519d16fa11b687e00cdca89b63e0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._4 b3722a23997d821237568152deddbb521a134859905995f757dcfb8a665182dc -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._5 066c06750ddbc7509bd001d07567650386942019026abe4e6cb4fabb8ea8a886 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._6 67592dfde285daa61650683258307ddfd6baec08a164985b4d7a8e7e9dd4501c -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._7 dd2259345190e1ac9e0d818609834df54d14cb07700230e82fbaed686c187a20 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._8 a1607e33cf34b4f7448b90fcf675619a0aaa1eccb4c01b8c2d4a7092f5ed05ad -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKey._9 3a08ebeee0ca94b80517cdfb2bf66ea21a056e18a0c12094c236e524e41e6f0e -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyData.AnalogValue 1b380438a80944c39490ca1b7525b7e99399704b81a617bac482f577b403f6fe -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyData.Down 0c1b515638a2d394a90c4ba945f2022f16fe21490b35d111e15e278e4dde2781 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyData.DownDuration 27ec4fe5488fabc0ea5474816b58a49fe710872fd324b85658a538afcbeccf16 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyData.DownDurationPrev ec69b806e7c6fae6dde08f2dea1a9da4fb17192ba767aee873ca3c85f4dbadbe -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyOwnerData.LockThisFrame f9e876640385c4bd223bd5d98ff7aef557f59bf2def558a38fe392c2582b0fe0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyOwnerData.LockUntilRelease c2b86ea6ddc8980fca8744bb3606265f75118e694422ac731f4fe4cb8adbea71 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyOwnerData.OwnerCurr 4fa49ae72357f4f89d109ccf0ee8504d4b28fade88a43adb80bf5b8821dc0521 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyOwnerData.OwnerNext 0c9bb8c9b835da4645c37ecc60a0dc2b7ab25ef146061d99017921e484b06ba0 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingData.Mods fdf5893be9e92df5a3cd6e5972f86928d051f821f6f48a0e3a0736bf54f6b878 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingData.NextEntryIndex c3084574e32b431795658d95b8c33452291cbaa2f58e85c1eab35ccda4f5abbb -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingCurr 473c0abe771c66a3f74ef12dbdc2e2e8fea282669ff5f0cddd988232d5bb5c21 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingCurrScore 3bb450b95e25e56e299d3b783c6cd63cf8466b6b1b1fff0a5d5700d14a419177 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingNext 8420af391f03ce6b7b88467c9eb1310b5597af4c93434b98cb2aae7fcdf389dc -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingNextScore d5c4edef2ce40e0fa8a86badf84fef5be9b2ccc8fabdff0b8ad724e4af81df2b -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingTable.Entries 7f6d9b58c824e94df036fc2589202574f28b7294fc627cdbc12bf0ebfc4b18fb -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingTable.EntriesNext b44f42a0ec4daad902f6ca9c183b51c6cce5fb8a2762a68e33cb92e04e1a3fcc -->
+<!-- api: F:Inno.Native.ImGui.ImGuiKeyRoutingTable.Index 787c92a13d74a354af8735342455b8b05e063156ac9009172e7be0348d0baac5 -->
+<!-- api: F:Inno.Native.ImGui.ImGuiLastItemData.ClipRect f759e793d939fc558418df732a7ea90f90aaca52a5b5bd26c4fc744dddde022b -->
+<!-- api: F:Inno.Native.ImGui.ImGuiLastItemData.DisplayRect 068f2365e1e815a7343972aeb8da734df46090fa43cc3950e07ee814ce9bb901 -->
 
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSize(System.String,System.String,System.Single) 2e7c2c467992954e22014833bdf0e2829ba29dc6a4079e9debfa62fa772c2f49 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSize(System.String,System.String) 6d643353d4fc1c41aac806d23beec569925c53775a78ce58d33cef650b1ea5eb -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSize(System.String) d3b3d258d4d6a52fa89e0f09a159ae9ac921b499463c658997d77c4193a8c7d3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFont@,System.Single,System.Single,System.Single,System.Byte*,System.Byte*,System.Byte**) 386335cb5cee2de91c5435720b06f2b5060bdcd5a67877b73db030529402e5c7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr,System.Single,System.Single,System.Single,System.Byte*,System.Byte*,System.Byte**) 62e449ffdb3f289cea804e995a9a58b0b35acc4fa2bafcf6244993ff3e6d1a26 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr,System.Single,System.Single,System.Single,System.String,System.Byte**) 955445d66b6540b8a7a855ca4ad9f43ce5c4b0a289aae1c110ab0a26b6c22148 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr,System.Single,System.Single,System.Single,System.String,System.String,System.Byte**) 8d2392ee531c7ce9d45f713d5804427fed3010c1bd0a7fe7de01fc067f5d4c3a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr,System.Single,System.Single,System.Single,System.String,System.String) bb2f521e68ca051aeddb9a1690fe6ec21871990bce4828e6609f84b181dd0927 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr,System.Single,System.Single,System.Single,System.String) 12eb901f4831f9d73040c006a96755c8b038ecf7f6afbe43464b1b8ef19f5559 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcWordWrapPosition(Inno.Native.ImGui.ImFont@,System.Single,System.Byte*,System.Byte*,System.Single) 5d83f3f3f787bd2ec97218559c866622395374333722b9e61b30393349e1bf11 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcWordWrapPosition(Inno.Native.ImGui.ImFontPtr,System.Single,System.Byte*,System.Byte*,System.Single) db1fde0936f3dde8a8da0cfcdcaabee3aa4cc180e6de0836c261ad89fb013878 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcWordWrapPosition(Inno.Native.ImGui.ImFontPtr,System.Single,System.String,System.String,System.Single) b79f47d864fd1b482eed8a9f828fd8428f4b7419c692f1c51c96fe1a2b772f6d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcWorkRectPos(Inno.Native.ImGui.ImGuiViewportP@,System.Numerics.Vector2) 20032cb498dbdabfae90ee9a6f0cee8c27467e96173cea9e12489026595def0e -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcWorkRectPos(Inno.Native.ImGui.ImGuiViewportPPtr,System.Numerics.Vector2) 23fc10637fb6899722ec640834a0392e499b39cf57902948ebc6de1b978abcc8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcWorkRectSize(Inno.Native.ImGui.ImGuiViewportP@,System.Numerics.Vector2,System.Numerics.Vector2) d32e6c2afc581905786e837ed9ceb78942a712ca6b3f55dbede4979692a42b3f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CalcWorkRectSize(Inno.Native.ImGui.ImGuiViewportPPtr,System.Numerics.Vector2,System.Numerics.Vector2) f16a668846c820af6412606c5f2c68db97fb4ea6a7d1ab534e6985ebf21f2ef6 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ChannelsMerge(Inno.Native.ImGui.ImDrawList@) 29ff0f2b1d78b478484a261133f3c75f9c84becd6c7f847ed810abfe019030f5 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ChannelsMerge(Inno.Native.ImGui.ImDrawListPtr) 625fad7f823bcebcfe4016bbc36f244f7f3fd64953d7acf798d3c82bbd76f420 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ChannelsSetCurrent(Inno.Native.ImGui.ImDrawList@,System.Int32) 43a417fe28bdc76201eaa4c331f909672f75e8d0ca9da11b7d9d85be80328e15 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ChannelsSetCurrent(Inno.Native.ImGui.ImDrawListPtr,System.Int32) d754efd6bf5dd65a2b8f6edc409e6db9265682ccdfaecd328774a61198cb5be4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ChannelsSplit(Inno.Native.ImGui.ImDrawList@,System.Int32) f63e4fab3b3f2bfc58b8c5baa71a2990c64a0c8c4352c65bb1eed55906e8c28d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ChannelsSplit(Inno.Native.ImGui.ImDrawListPtr,System.Int32) a6a362c60e18ce4165ecafa6dfac5c1318a5bfe9a7a581c2e75a073bb5b98eba -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Checkbox(System.Byte*,System.Byte*) 412d4c8a0c30083873815d9bfd55858f29080a3069399e46162ae2bba5da2c33 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Checkbox(System.String,System.Boolean@) 965d6f29728ba9bfaf8c37bf2e5db7204d94b58ef57eba3d419f012f73491150 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CheckboxFlags(System.Byte*,System.Int32*,System.Int32) efcc9cd1016e96f52390e0d4838978ef506f9df510592c30b244ed1ba942fb93 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CheckboxFlags(System.Byte*,System.UInt32*,System.UInt32) 16560d1c99deb3b033ab7f9e5ae0d99f54f4a9216a81eb1e7a23c48fec3eee5b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CheckboxFlags(System.String,System.Int32@,System.Int32) 1ecf1f68d0a034f2393ef3ad406f26e0bcda0a74bb2273084c8db06a94aa27a3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CheckboxFlags(System.String,System.UInt32@,System.UInt32) aa272a852cea7ae302207aa59c9a239a1d33ecd62a3ba9a5a6294d50e5058776 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImBitVector@) ed271c55833a2d2838946ae904b46214c115bb488d8030bedc0e511d93fe56f4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImBitVectorPtr) ec1b5664884ba7cda291025afdc44bfb13530a18791d1b9237d5059cae7e1d34 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImDrawData@) 054e329b3a7cdac050a5b59abe1cc2a0220056821a62b0261ba467d88aa87dc9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImDrawDataPtr) aa0b0366fcc23afe4504933b9c8d0860f76cee3ef511489a5919dda3ce70d91a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImDrawListSplitter@) 076bffc2d18e87d957d5e6870c93dbf693a2a1d52f001e1ba40179e3c363f45c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImDrawListSplitterPtr) 47f3752b6ea37633dc2861f622c177dddf112ad53cebdd1c7d006fc2041219d7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImFontAtlas@) 8e19a0ac11bec380d50012561545860fe418bd86111de6d2151baa0750c8f8ab -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImFontAtlasPtr) 42101757454e5a380b81c6b33243231b9cf805caaa9d004d68199156fd4dc7f2 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImFontGlyphRangesBuilder@) 845d8e0324a22d7615a96a9c7d7269e43be3cd5977c337067749667e47c0cf11 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImFontGlyphRangesBuilderPtr) d242c05b527ccce6c8b0bf1ffcd9a6ea425fd6ad49eb164abd00ef326e2da109 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiKeyRoutingTable@) adc304833097c1fdb4352faf58caff0448ca5a20a08e8ea5d459c1fda4d491ac -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiKeyRoutingTablePtr) a1885353d95549f75a54dbe04140ca235ee3ce0b519fca430d53e38cd340e2d2 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiMultiSelectTempData@) 869b022beda28e5c908e07bb857bf17d7b9d353fde5bb1e026e329ace98ab2d5 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiMultiSelectTempDataPtr) 35177e36a888cef175ee792f57943946329c911d6b80e3a25311238a60767501 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiNavItemData@) 8101cd31453fbd179b02f5df32736fabb6b2b9aa8c560756d4233130ade6d43d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiNavItemDataPtr) 63b9d96be2510714836e499425ecfb2ba793388618b80d2b654b7d2edc4dc751 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiPayload@) 2be4516ed1031d00680faff66298d8856c304a3fd1b1826a627d3e436ef6ee3b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiPayloadPtr) 051a017698cc9adafd8583659044453ae4db327ea70965bff725682883eb8f5a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiSelectionBasicStorage@) 678222a72946e321423d8b658d091ec6d5f56ddaa5e17e0a93abb3f72cb86131 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiSelectionBasicStoragePtr) 4c4516bd1c4c49b9f1ab16aa3ec6fb0261ec7e5a30fb8356afedfd5d5e9b96f0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiStorage@) 05a9edeeb9fcfcbb9418ce69839c34be51e1af75b5683c952da5c3403c147ae8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiStoragePtr) 5c098bae0f973712fa887e81483f098ab6fa7538a7a3995547dee2d07e061884 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.clear(Inno.Native.ImGui.ImGuiTextBuffer@) 5d21553af77d46fde284d15f0c35e4888b9db53f7fe879a28b3b8b54588cf74d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.clear(Inno.Native.ImGui.ImGuiTextBufferPtr) a2f789edf1f59d26f21058dc6bb3097a3867a801fc63992846b61a6ac9bda0cd -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiTextFilter@) 5e1578a2180340ccef78c230566a9c60aa9742c619c52dbce5db4e6409f8bef3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiTextFilterPtr) f6f73fb6abb1436b59f803e58a54cda8256586d1d0b72bb84672df1f878af00b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.clear(Inno.Native.ImGui.ImGuiTextIndex@) 05585a59e2dacfb3b10d7aa10bfe4f1ce6818b52aed8606e28acf34ba5357a18 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.clear(Inno.Native.ImGui.ImGuiTextIndexPtr) e567231370c26cb737db56b304535057a0557a249f67f8350e39e219af3a6349 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiTypingSelectState@) fac0ddeedb840437fb204e63e0e39e1dedf28bdb831264a07ca54dbbb8e9e64f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiTypingSelectStatePtr) dcf1473a531d87874c72f4d3781b315381c1f0477f25b50883dfecd8d91dae2d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearBit(Inno.Native.ImGui.ImBitVector@,System.Int32) 53dcd65c80f7f7c5c33ba61e87931a37f44aa9e5591ec0336e9d7df6f9e2e3bd -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearBit(Inno.Native.ImGui.ImBitVectorPtr,System.Int32) 0208a399693c31e4342ddc7a2d30e53985faf3fd484bb6efdceac60a6725d5e9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearEventsQueue(Inno.Native.ImGui.ImGuiIO@) ce4e7b510dfaeea12db759b5fe2393a60d3063b38122afa164c13b8b325ee821 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearEventsQueue(Inno.Native.ImGui.ImGuiIOPtr) 4782c18f02c071015abf12d3c4a4b7a1204b3ebc1753a66e0c3b17f6c8ee5277 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFlags(Inno.Native.ImGui.ImGuiNextItemData@) 0e66fc244c51868dd213dc8f51e9dcd69ac2e5c4340b2bcd45d75bd7b7a6f40d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFlags(Inno.Native.ImGui.ImGuiNextItemDataPtr) 4e4a29f6036746fb2deec0e86c22b3791088a60fe064977b4964b95d77981c1f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFlags(Inno.Native.ImGui.ImGuiNextWindowData@) 706f619e2239f16f7360d06bb8f285462311038cc61ea2a5b301b3c019b43340 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFlags(Inno.Native.ImGui.ImGuiNextWindowDataPtr) fb02af2862dc7e636f3daa42928385c3588c72e62ab2d5d3b14ed804abe6a9a6 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFonts(Inno.Native.ImGui.ImFontAtlas@) 9a6f539de104512c167c68214fca67ba36423d8e7687146937c3eb51881444ff -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFonts(Inno.Native.ImGui.ImFontAtlasPtr) 984a8770cf7a7eef0ed453958cee59ecdf1bf90efc848db0e5f57e1082973ee6 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImDrawListSplitter@) 074dbf158d3fbd2ac8e94ef26e4621582a50a85b776fcccafef86e857ec57300 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImDrawListSplitterPtr) 17daf075793172d7b0244110a040d60951faa05bee1df6c5e606aeb936737443 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImGuiInputTextDeactivatedState@) 73eb391f7b823e6169f32100f3e9c95650270e02ae094131914ab5f0ff5eae7d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImGuiInputTextDeactivatedStatePtr) 140c6b2ef94e2c10a2a0421798b870545134bfd404e869803559dc2ba35ed9c0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImGuiInputTextState@) 829eb9c51a27993b2f66b9ca390ccba3c965252f5d2dbce92d5c83cc8a2f8da5 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImGuiInputTextStatePtr) 18befa88358ab627fabdafa863ce6a61e131972c9d30fd29683000385a5733a0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearInputData(Inno.Native.ImGui.ImFontAtlas@) 70d47c5d6e4102c6123a6c98a346477234176f72eb668ac5b7a462bc02ce0030 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearInputData(Inno.Native.ImGui.ImFontAtlasPtr) d114ea21d31df116f36eb9d98898a41af9f7a58a05f9762d7834cf20260c7d26 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearInputKeys(Inno.Native.ImGui.ImGuiIO@) 31f8dbafc8ae4276244007afc16a6d6ccbf63d7b1c1ad22941e6a50a5209066c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearInputKeys(Inno.Native.ImGui.ImGuiIOPtr) 66d118b6b77285013c329bbe8060c83e8694706c58699af77c09d439f4921c9b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearInputMouse(Inno.Native.ImGui.ImGuiIO@) 65e0887d8bba9e283e986dfd051649be96534c67bbcff24530551305a1c21078 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearInputMouse(Inno.Native.ImGui.ImGuiIOPtr) 078756141c78206a8082f940590ada6f6b767be1798ace365859bd0f8e5b0a42 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearIO(Inno.Native.ImGui.ImGuiMultiSelectTempData@) 998886ffa002cdc5e6ad3f0f132245834167363182c1064b61ac46022d9c4248 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearIO(Inno.Native.ImGui.ImGuiMultiSelectTempDataPtr) 4a2feed92455d21444a4443a1ee2aa5e38223ca44a9cf8383eddae65820048e7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearOutputData(Inno.Native.ImGui.ImFont@) 1188714c5ba521be8a9914b08061ec7055ba7696af63e26ed0329fe52d6475e0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearOutputData(Inno.Native.ImGui.ImFontBaked@) 540e7b48f8c9e088c3d5969fc01cd010025cbaf52241713fb25fe6ba5d291180 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearOutputData(Inno.Native.ImGui.ImFontBakedPtr) fbdce58964eafbb9b813977774f6f9fe6d007c0340255e22ade6a70b4b2d5542 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearOutputData(Inno.Native.ImGui.ImFontPtr) 7c2e16be5f0f11fea869fe4474861dba6f2cdd8d544a502aa867b2d5e41c7395 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearPlatformHandlers(Inno.Native.ImGui.ImGuiPlatformIO@) 44bd01e01bb6e9063f42b7756b6794efd151a60c496e31585c0cfc26d8b4517e -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearPlatformHandlers(Inno.Native.ImGui.ImGuiPlatformIOPtr) fa008b48a8a8e5d31b639ff3850e1465ac6167017b880476f342b05fe93a937d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearRendererHandlers(Inno.Native.ImGui.ImGuiPlatformIO@) bceb8da685fb7c875408b6a77c6995166d5d24b8e4db95ec46638914a0d91e92 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearRendererHandlers(Inno.Native.ImGui.ImGuiPlatformIOPtr) 879d4924ed283ea5f7684dd4d0d41e88a3aa556670c592687b5ed99c338364f6 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearRequestFlags(Inno.Native.ImGui.ImGuiViewportP@) 4e13ecced1a13ef0e14e8bee2e57a6286d438e691633569ca042159b88ff79db -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearRequestFlags(Inno.Native.ImGui.ImGuiViewportPPtr) bda2875eee5839acadb65bdcd7bb21c6189c10c4e94311401de3a477a2b6edb3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearSelection(Inno.Native.ImGui.ImGuiInputTextCallbackData@) b7ba59d86de397df0af0b7fc561d0b20a54d6aa8079f076e5cade39dd8127b7b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearSelection(Inno.Native.ImGui.ImGuiInputTextCallbackDataPtr) 20577f5859916345da1a8199376b0587adb406febb22fcccaa42f38fbb8ae0ff -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearSelection(Inno.Native.ImGui.ImGuiInputTextState@) 18a325650885cbe4c42a9d273a39dd09e319933b2607fd41959672a23ad3b604 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearSelection(Inno.Native.ImGui.ImGuiInputTextStatePtr) 566b95da386468e9819ab614465b111894ee6abd04457a5148bd93266decad60 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearTexData(Inno.Native.ImGui.ImFontAtlas@) aff69d3c94a20cdb3cdc48599d7c951111e0f58ef151a9993cf638aca184fe6d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearTexData(Inno.Native.ImGui.ImFontAtlasPtr) 3a6d633bd2bd84f87110a889ed972bdfcf311e76d7fc5838d30ecb6b83e90576 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearText(Inno.Native.ImGui.ImGuiInputTextState@) 2a85b631c24f30bedbf4a78c724420b995a57d5477afffd255f960fed7d1e07f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClearText(Inno.Native.ImGui.ImGuiInputTextStatePtr) 7e6bdab53fd7a7b288e69ede3202c33716e26002972375c490e8043a9b2efdd1 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClipWith(Inno.Native.ImGui.ImRect@,Inno.Native.ImGui.ImRect) 282fe6d8fc629ead0ab420136d9a4b12cb76ba1185450f314958f329607827d7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClipWith(Inno.Native.ImGui.ImRectPtr,Inno.Native.ImGui.ImRect) 1e117230df15c37c25cfdb0ad5c67201bc1822aa97540d532d224f9e8beb2a64 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClipWithFull(Inno.Native.ImGui.ImRect@,Inno.Native.ImGui.ImRect) 19b22662b5d3075911ad9fb1cfd53d37ed1235926e3389af77c8d148d3529536 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ClipWithFull(Inno.Native.ImGui.ImRectPtr,Inno.Native.ImGui.ImRect) 6d77bc6068552a8576771e5fce1b000b5cfd5e4df9abf51dd93ab323473f8682 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CloneOutput(Inno.Native.ImGui.ImDrawList@) 5a81010a04159ea7eb6909e60b3db288d12fad2bd17e7b7582d4501412c50a93 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CloneOutput(Inno.Native.ImGui.ImDrawListPtr) b3b8030e00a9cfa8b8dcbae68d5b95370228faf709c6293c3eaa130896fcbb10 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CloseCurrentPopup 23de2c56922dcfc5c2f4201786b9fcf211dabe731114426f552c58e007ae8b8a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CollapsingHeader(System.Byte*,Inno.Native.ImGui.ImGuiTreeNodeFlags) 137ba27d1fd8783ebe55cf630dbc960530b47eb61d6b9c106f2ecbd500350ada -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CollapsingHeader(System.Byte*,System.Byte*,Inno.Native.ImGui.ImGuiTreeNodeFlags) a70e8eb527f16c1033809940847dd59a083724e328f2263fba92d7c0b07bc7e7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CollapsingHeader(System.String,Inno.Native.ImGui.ImGuiTreeNodeFlags) 6676aca4b3bc55cc431c15d2d75f9c1203b4200935afb35fb8d80850a7715992 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CollapsingHeader(System.String,System.Boolean@,Inno.Native.ImGui.ImGuiTreeNodeFlags) 59b77d1509924a8630c7ffc8ae44a902d7c05136e16e516f78ab38e3db77dca0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CollapsingHeader(System.String,System.Boolean@) 765d5d1282b33b7ca23a5a4f148bb1a1c06c220e107160478b0a2876f1437810 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CollapsingHeader(System.String) 02d0ef3a11911061500af079a08a09ff25dc7a6930031e0916af003b8e350316 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorButton(System.Byte*,System.Numerics.Vector4,Inno.Native.ImGui.ImGuiColorEditFlags,System.Numerics.Vector2) 72b8a0df815ab701c581c41aee0f4dc7f5b71663d66617cd63193ca35dfa2322 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorButton(System.String,System.Numerics.Vector4,Inno.Native.ImGui.ImGuiColorEditFlags,System.Numerics.Vector2) 417c31ba4dfa418be9cb001c9699367a9c16b4c7883f0c3acaf0a8fdcc22b540 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorButton(System.String,System.Numerics.Vector4,Inno.Native.ImGui.ImGuiColorEditFlags) 10ff709ad2b6ece8822f625dcd730599de315672d6ec422a1b40dfb29b6b3de6 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorButton(System.String,System.Numerics.Vector4,System.Numerics.Vector2) f86079a787ea2d13269aaca2b875a422a053e9be0a05cf5d7f6add360d20b88d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorButton(System.String,System.Numerics.Vector4) 298d70c54fa57ced7fa6d7263aa20ff4fd012078e848f4a632a089688c7925e3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorConvertFloat4ToU32(System.Numerics.Vector4) e59e850d48f2f411bf4b37d96b7850d514e92603c151fcfe14af0c7da9057788 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorConvertHSVtoRGB(System.Single,System.Single,System.Single,System.Single@,System.Single@,System.Single@) 21c3898ae353f4958f6f00666ece376bfd2e1bd98cc8ab774474edf819d98388 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorConvertHSVtoRGB(System.Single,System.Single,System.Single,System.Single*,System.Single*,System.Single*) e29a6b4ed5ee0956cb36dfaa86536df9bce6678e0180c06b7ea88a409c5c752b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorConvertRGBtoHSV(System.Single,System.Single,System.Single,System.Single@,System.Single@,System.Single@) 72921d2b4a23d98efa075369f6f849862b45d428e6be33562c0b7bea46abac98 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorConvertRGBtoHSV(System.Single,System.Single,System.Single,System.Single*,System.Single*,System.Single*) e2c3ba2204a09f8efbb6290f7d17ad7958d191e8dd5cd11f11a528a44bf4e0c4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorConvertU32ToFloat4(System.UInt32) 324a98e2ec6cd1cd9fc7fe2adff617f35d08d8b905a40d4075c27eaed9c6e0ed -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorEdit3(System.Byte*,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags) 4fcb710edeb155eb10573aabf47f18e6efde6f24c35eecfb654647c200cf15bf -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorEdit3(System.String,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags) f554adbd9e4620c225887735085809aea1a40a72d20b86773aaf22199120795d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorEdit3(System.String,System.Single*) 2d68014f57d4d95a893f2f42c8540b6a118ef19aa4e841a3502753686fd8d607 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorEdit4(System.Byte*,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags) eb9d5a64328b28a1575042822fffdac30c4fae680d3a329bd33ccf2badca1594 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorEdit4(System.String,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags) 34c8b1be9c5e504a63e5ace94651c50fde2e4c63d4d88fd01b5968d5853f98ff -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorEdit4(System.String,System.Single*) 5ff5bce1866877c2832655dd33723cdbede4ab8c927e9b6aca102f1517f844fe -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker3(System.Byte*,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags) 16015ccbddd72ab3446f3b59eda976444936bfb575263aa049804d381f4c691a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker3(System.String,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags) d892dfc86d9448063c739d0e574007342847f1bce54ffe1eff57d516d0b0aeea -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker3(System.String,System.Single*) cd0a0908b8137c928b2186fc8c62402efdba7a89e0b5d46f2f7fed490b30aa66 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker4(System.Byte*,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags,System.Single*) f7b0cfdd1dc2bcabeea6e42fd6eb275097273b311a35f469e698e65f4bf01c2f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker4(System.String,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags,System.Single*) 1308521cc265107c0251a7016b1648b688515e12c4fa475017774b59abcbb489 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker4(System.String,System.Single*,Inno.Native.ImGui.ImGuiColorEditFlags) 46796c8e31f55d119e2d72c98630810a031695f2c6cf3872b1df4be09bfda57c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker4(System.String,System.Single*,System.Single*) 4b6fb68f986f1d4680952b790d27e58bbf3ff91506fc36014feb30c38475aa4e -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ColorPicker4(System.String,System.Single*) 4ffa298678216e5e1323947835d3d976c89f2aec4777d3c9c5b0288fd5b27ad1 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns 14cbdf75897a292c671e592775e16b7c4ce1e1c7a278a02237f0b4c786f24f77 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.Boolean) b2d375a9404d5492a5c5c8a1d9c5ab51f957ec4c547b820517ce32dd95471da1 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.Int32,System.Boolean) 3605fd9f06298855f8c36504ef2f9ff62fe41b26207ee5f319618c94f1cd62a8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.Int32,System.Byte*,System.Byte) 40d4024bb1f60cdbdcacb4dfffe948c3cb35b5915b8b25daec7fd2bf9f8d28a4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.Int32,System.String,System.Boolean) 8b681971c9e5d60bdc2c7525d00c2224ffa0cbcc43edce0c3bd37291c1a63d48 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.Int32,System.String) 2494908e9823e0654512e91a5201956300af7989906f9ec12a72632f91a4b400 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.Int32) 2dbbb9b3861bfc0ffd98e60d9464c685402d69cbacb367ac2bc9161f5b104448 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.String,System.Boolean) 10fefa55b567b0db204f62db439d835f1617f0ee74babe3ba460d802f9f4203d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Columns(System.String) fad2556bf603bb4ab8a3140f3aa3b6b4de6edfc4c2924737463e350e77dfab43 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.Byte*,System.Int32*,,System.Void*,System.Int32,System.Int32) 8c0c03dc82a6cd04fcad49d7301b257ffc104b88705490fb3071b2214a2e5a8f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.Byte*,System.Int32*,System.Byte*,System.Int32) 4f633d1f2400d964868d9f6a93aa25f485e3cf7a2b984fd96b8378b27a1d39de -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.Byte*,System.Int32*,System.Byte**,System.Int32,System.Int32) af82dd5f6a0c8dc7b9a8e35f748ce36dfe0d288a7e74560d60fe8be8df8d264f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.String,System.Int32@,System.String,System.Int32) a2029fe28d41fe4bf6dac1ad1f6a186d81e38baf1c77c5f0da84cb2de564cdde -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.String,System.Int32@,System.String) 8775bc29bced6954ae1493d0f46319622c09bd5fdacdfa9a7691d6283d02616b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.String,System.Span{System.Int32},,System.Void*,System.Int32) fafa00b3ef780cbc3ebe6fd1bd39eef9d58ca13b98638cf0153839077e850ecb -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.String,System.Span{System.Int32},,System.Void*) a3d0b941ae011664957e7854d9927110838b998ed190b5cf9c07e399a2550958 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.String,System.Span{System.Int32},System.ReadOnlySpan{System.IntPtr},System.Int32) 710e073230d63634a7835fab0815ebdada88ceabf1ccb602d78d9e2442f5b727 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Combo(System.String,System.Span{System.Int32},System.ReadOnlySpan{System.IntPtr}) 9e4375e7318a706a155088be5e022ff24b00560f670635109401dffc129c1620 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CompactCache(Inno.Native.ImGui.ImFontAtlas@) ae560a1a6e15bc7455f145062f7ca35bf947285f1b0b36cf031c532310497ba1 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CompactCache(Inno.Native.ImGui.ImFontAtlasPtr) 3f3c08534b5cdcf8d971cef5937dd98810be65ee3013f473f2bab644edd718b3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImGuiSelectionBasicStorage@,System.UInt32) e910bc4473376f575aa8ff2611189669d2e0a9425a013e2ea6ef92324959d4fc -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImGuiSelectionBasicStoragePtr,System.UInt32) c9c047c4b3a9446bb53ba2be6e9d169c4c1bb87467a083a38baed6f748d56910 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImRect@,Inno.Native.ImGui.ImRect) 1931e7f154b816a9d24e6f0566b6221cfcc0cb95b65eb8948d48cfbc8dc89d21 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImRect@,System.Numerics.Vector2) d7bc8faab1403d225410d7d937d460f32d9b396953de84a6ef69ca465be37a99 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImRectPtr,Inno.Native.ImGui.ImRect) 83cb9afe0cecc2ca303234c0a7b17a1c38fea8c6051c677bfbd0ff89a40f2096 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImRectPtr,System.Numerics.Vector2) ac4ca52b0f45a44e6f87196a7589f119e888e28f92cd2500fd13304a05aa3170 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ContainsWithPad(Inno.Native.ImGui.ImRect@,System.Numerics.Vector2,System.Numerics.Vector2) 6d1055cf13314a9e0659837e1bc5700fee8ec128c0ac17868ed98f43f2cc3fdf -->
-<!-- api: M:Inno.Native.ImGui.ImGui.ContainsWithPad(Inno.Native.ImGui.ImRectPtr,System.Numerics.Vector2,System.Numerics.Vector2) 8de687e8f4f83771858051a210979d76292d54c2b0aa7823ad11f127037bdc71 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Create(Inno.Native.ImGui.ImBitVector@,System.Int32) d538ab98643fb4be13ffc30023fc52820b281d5ae9f3a0f0dc14c21782ef3d5c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Create(Inno.Native.ImGui.ImBitVectorPtr,System.Int32) 8bfb07d58a5f1e845eae2180f4e94a90791122fd88ff610e41eb7175dbdf75ee -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Create(Inno.Native.ImGui.ImTextureData@,Inno.Native.ImGui.ImTextureFormat,System.Int32,System.Int32) 6cd4b1146d58fd7594fd06bec8b9c9dc9505ef301a28f6cb48024d0be7530520 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Create(Inno.Native.ImGui.ImTextureDataPtr,Inno.Native.ImGui.ImTextureFormat,System.Int32,System.Int32) 2ead663b9213adf08c9a8edaa66953b20bd1818f796e0aeaa40f91488cc5de45 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CreateContext ec98cd39e4821a5c382631b782bbd6db71626a6ab3052a3df7a28da3e15a675d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CreateContext(Inno.Native.ImGui.ImFontAtlas@) 02577abeb924aba5f17117aa7d09a0d386b5e8739b9d3c5aee9ccf6e4313001c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CreateContext(Inno.Native.ImGui.ImFontAtlasPtr) 4197c18d97eac9ceee69b55a5714b6fd0778e921ddb141687b154654ca9220c8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CursorAnimReset(Inno.Native.ImGui.ImGuiInputTextState@) 1a66a1b0d99b72aec4407ac19bea1aad08060de8bf74f979fb80e80c61245049 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CursorAnimReset(Inno.Native.ImGui.ImGuiInputTextStatePtr) 6519301d58a2596de3c7588aeae94928ad9b62665e63021cd49b21302ba324b8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CursorClamp(Inno.Native.ImGui.ImGuiInputTextState@) f3585b7a63ec8ff5c2997eac4196c0c6c3e1fb4da4439a673e907a9e2134d20f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.CursorClamp(Inno.Native.ImGui.ImGuiInputTextStatePtr) f47e2e2d03e8fac91101e65cd3f059e78d76061edad246c460b14da8fc45b37d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugCheckVersionAndDataLayout(System.Byte*,System.UIntPtr,System.UIntPtr,System.UIntPtr,System.UIntPtr,System.UIntPtr,System.UIntPtr) 9cf9ecfe608ac8820d6636c89f93552198d042ca54652a2e9814369dc23c5703 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugCheckVersionAndDataLayout(System.String,System.UIntPtr,System.UIntPtr,System.UIntPtr,System.UIntPtr,System.UIntPtr,System.UIntPtr) 78729e51abf87c3ecc91591fa371e2143021ac360b407eba9cf1c9b53a18f287 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugFlashStyleColor(Inno.Native.ImGui.ImGuiCol) f8b249364445aca266982f36dcb8e56aaeeb49c766d3952de020e7a3eef71209 -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-d4ed64ff7253972a"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSize(string text, string? textEnd, float wrapWidth)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44066) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5813a2a22a6eea1c"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSize(string text, string? textEnd)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44034) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7cd126921008a8a0"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSize(string text)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44026) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9a3b6005d2179a15"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSizeA(ref Inno.Native.ImGui.ImFont self, float size, float maxWidth, float wrapWidth, byte* textBegin, byte* textEnd, byte** outRemaining)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49800) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-10a98c96af3ce41e"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr self, float size, float maxWidth, float wrapWidth, byte* textBegin, byte* textEnd, byte** outRemaining)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49793) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-009f8f8ae319d129"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr self, float size, float maxWidth, float wrapWidth, string textBegin, byte** outRemaining)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49848) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7721deb361867ce1"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr self, float size, float maxWidth, float wrapWidth, string textBegin, string? textEnd, byte** outRemaining)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49810) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0cc8b1ece60d1f18"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr self, float size, float maxWidth, float wrapWidth, string textBegin, string? textEnd)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49840) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0f28c52eb78c05c4"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcTextSizeA(Inno.Native.ImGui.ImFontPtr self, float size, float maxWidth, float wrapWidth, string textBegin)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49832) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-db693b906e189bbe"></a>[`public static byte* Inno.Native.ImGui.ImGui.CalcWordWrapPosition(ref Inno.Native.ImGui.ImFont self, float size, byte* text, byte* textEnd, float wrapWidth)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49861) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9e17a313c2a406a3"></a>[`public static byte* Inno.Native.ImGui.ImGui.CalcWordWrapPosition(Inno.Native.ImGui.ImFontPtr self, float size, byte* text, byte* textEnd, float wrapWidth)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49854) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-765cc5c39d9be5f4"></a>[`public static string? Inno.Native.ImGui.ImGui.CalcWordWrapPosition(Inno.Native.ImGui.ImFontPtr self, float size, string text, string textEnd, float wrapWidth)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49871) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0a302939c006fb97"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcWorkRectPos(ref Inno.Native.ImGui.ImGuiViewportP self, System.Numerics.Vector2 insetMin)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51975) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-09b90ab295283ac2"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcWorkRectPos(Inno.Native.ImGui.ImGuiViewportPPtr self, System.Numerics.Vector2 insetMin)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51968) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1f5eaa7fe65f1b05"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcWorkRectSize(ref Inno.Native.ImGui.ImGuiViewportP self, System.Numerics.Vector2 insetMin, System.Numerics.Vector2 insetMax)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51992) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-dce7b6408d79b6a9"></a>[`public static System.Numerics.Vector2 Inno.Native.ImGui.ImGui.CalcWorkRectSize(Inno.Native.ImGui.ImGuiViewportPPtr self, System.Numerics.Vector2 insetMin, System.Numerics.Vector2 insetMax)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51985) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fbf4d37ca369e4da"></a>[`public static void Inno.Native.ImGui.ImGui.ChannelsMerge(ref Inno.Native.ImGui.ImDrawList self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48149) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ac9c9f7e04508376"></a>[`public static void Inno.Native.ImGui.ImGui.ChannelsMerge(Inno.Native.ImGui.ImDrawListPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48143) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bfc9c5f57539adbc"></a>[`public static void Inno.Native.ImGui.ImGui.ChannelsSetCurrent(ref Inno.Native.ImGui.ImDrawList self, int n)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48164) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9aa13bf0fd02a7fd"></a>[`public static void Inno.Native.ImGui.ImGui.ChannelsSetCurrent(Inno.Native.ImGui.ImDrawListPtr self, int n)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48158) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f32221e1653c270b"></a>[`public static void Inno.Native.ImGui.ImGui.ChannelsSplit(ref Inno.Native.ImGui.ImDrawList self, int count)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48134) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-33b503a69ddcf168"></a>[`public static void Inno.Native.ImGui.ImGui.ChannelsSplit(Inno.Native.ImGui.ImDrawListPtr self, int count)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48128) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6bc490077a2c3cb2"></a>[`public static byte Inno.Native.ImGui.ImGui.Checkbox(byte* label, byte* v)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L34791) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7e8aa7b77bc62b91"></a>[`public static bool Inno.Native.ImGui.ImGui.Checkbox(string label, ref bool v)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L34798) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-60cd546915b5d583"></a>[`public static byte Inno.Native.ImGui.ImGui.CheckboxFlags(byte* label, int* flags, int flagsValue)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L34818) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e0b5f4227d60ba1c"></a>[`public static byte Inno.Native.ImGui.ImGui.CheckboxFlags(byte* label, uint* flags, uint flagsValue)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L34845) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7fc215db6e5834df"></a>[`public static bool Inno.Native.ImGui.ImGui.CheckboxFlags(string label, ref int flags, int flagsValue)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L34825) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-47276ce117d88908"></a>[`public static bool Inno.Native.ImGui.ImGui.CheckboxFlags(string label, ref uint flags, uint flagsValue)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L34852) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b59cace933db2bae"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImBitVector self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50652) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-be993731e373f8e0"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImBitVectorPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50646) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-622b34f3dff4adaf"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImDrawData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48506) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f8f463a7b75e9951"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImDrawDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48500) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-01e3af24dd5474bf"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImDrawListSplitter self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46769) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f5e7c3140d6dbda7"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImDrawListSplitterPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46763) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-07b34657a66730fd"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImFontAtlas self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49423) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6e7cb26cad5b9791"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImFontAtlasPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49417) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9aa0e38e01f801b7"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImFontGlyphRangesBuilder self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48819) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7e2b77dd93caee36"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImFontGlyphRangesBuilderPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48813) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-730f3e0ba40dc3e0"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiKeyRoutingTable self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51486) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3ef908447c7d8af1"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiKeyRoutingTablePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51480) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-449e9a7b136a080e"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiMultiSelectTempData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51669) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-782a27d26718cf00"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiMultiSelectTempDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51663) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1e4d51ca30bf14bc"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiNavItemData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51564) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6c73c0565d8ca215"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiNavItemDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51558) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-692ca9ec82bb258e"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiPayload self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45315) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-be60960b45aae32d"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiPayloadPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45309) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a707f0ea276d5840"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiSelectionBasicStorage self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46570) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7ed27b9282dd3b7b"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiSelectionBasicStoragePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46564) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-99d2aaff778761fc"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiStorage self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45971) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0c363a130dc048f6"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiStoragePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45965) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bc4db8bf353073cd"></a>[`public static void Inno.Native.ImGui.ImGui.clear(ref Inno.Native.ImGui.ImGuiTextBuffer self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45799) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f86c81c690bdec1d"></a>[`public static void Inno.Native.ImGui.ImGui.clear(Inno.Native.ImGui.ImGuiTextBufferPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45793) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f86788de8cef9b96"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiTextFilter self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45586) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7e82714f3e26c59e"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiTextFilterPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45580) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f328d5073d03607d"></a>[`public static void Inno.Native.ImGui.ImGui.clear(ref Inno.Native.ImGui.ImGuiTextIndex self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50714) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7b6cfa363ab44482"></a>[`public static void Inno.Native.ImGui.ImGui.clear(Inno.Native.ImGui.ImGuiTextIndexPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50708) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-85fa456f4859124a"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(ref Inno.Native.ImGui.ImGuiTypingSelectState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51594) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a2f71164e8f417f8"></a>[`public static void Inno.Native.ImGui.ImGui.Clear(Inno.Native.ImGui.ImGuiTypingSelectStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51588) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-27de12a25e8c622d"></a>[`public static void Inno.Native.ImGui.ImGui.ClearBit(ref Inno.Native.ImGui.ImBitVector self, int n)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50699) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1853f016636bcf42"></a>[`public static void Inno.Native.ImGui.ImGui.ClearBit(Inno.Native.ImGui.ImBitVectorPtr self, int n)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50693) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2d7cc04d7f639906"></a>[`public static void Inno.Native.ImGui.ImGui.ClearEventsQueue(ref Inno.Native.ImGui.ImGuiIO self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45062) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f26d2c41fec198c8"></a>[`public static void Inno.Native.ImGui.ImGui.ClearEventsQueue(Inno.Native.ImGui.ImGuiIOPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45056) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e58066968ede4727"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFlags(ref Inno.Native.ImGui.ImGuiNextItemData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51366) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-49b96c7c92c7a92a"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFlags(Inno.Native.ImGui.ImGuiNextItemDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51360) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-765ee1dc404a8309"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFlags(ref Inno.Native.ImGui.ImGuiNextWindowData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51336) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f683a5ec88b35a96"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFlags(Inno.Native.ImGui.ImGuiNextWindowDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51330) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b4917a17dcc74719"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFonts(ref Inno.Native.ImGui.ImFontAtlas self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49486) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-53568917a3fd7bf2"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFonts(Inno.Native.ImGui.ImFontAtlasPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49480) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-dfb70ef7792b7ad4"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFreeMemory(ref Inno.Native.ImGui.ImDrawListSplitter self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46784) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6bfb5fa76651b2aa"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImDrawListSplitterPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46778) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-095ae5f7edd9e24d"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFreeMemory(ref Inno.Native.ImGui.ImGuiInputTextDeactivatedState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51026) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c29ef4c3ead4cbfa"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImGuiInputTextDeactivatedStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51020) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-aa34102cf61f370e"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFreeMemory(ref Inno.Native.ImGui.ImGuiInputTextState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51071) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e9c1e03af8bc5b75"></a>[`public static void Inno.Native.ImGui.ImGui.ClearFreeMemory(Inno.Native.ImGui.ImGuiInputTextStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51065) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5aa6b258e9769f0f"></a>[`public static void Inno.Native.ImGui.ImGui.ClearInputData(ref Inno.Native.ImGui.ImFontAtlas self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49471) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3821643647f216d6"></a>[`public static void Inno.Native.ImGui.ImGui.ClearInputData(Inno.Native.ImGui.ImFontAtlasPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49465) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-dda675238182efba"></a>[`public static void Inno.Native.ImGui.ImGui.ClearInputKeys(ref Inno.Native.ImGui.ImGuiIO self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45077) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d45a2ecb4e256b5d"></a>[`public static void Inno.Native.ImGui.ImGui.ClearInputKeys(Inno.Native.ImGui.ImGuiIOPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45071) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3dc7ef10d370d1db"></a>[`public static void Inno.Native.ImGui.ImGui.ClearInputMouse(ref Inno.Native.ImGui.ImGuiIO self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45092) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-69440070a470d375"></a>[`public static void Inno.Native.ImGui.ImGui.ClearInputMouse(Inno.Native.ImGui.ImGuiIOPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45086) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-83cb16e61a4e5748"></a>[`public static void Inno.Native.ImGui.ImGui.ClearIO(ref Inno.Native.ImGui.ImGuiMultiSelectTempData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51684) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9ecd84dff244cd18"></a>[`public static void Inno.Native.ImGui.ImGui.ClearIO(Inno.Native.ImGui.ImGuiMultiSelectTempDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51678) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-346ca053682bb2a5"></a>[`public static void Inno.Native.ImGui.ImGui.ClearOutputData(ref Inno.Native.ImGui.ImFont self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49986) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2f129da359d4573c"></a>[`public static void Inno.Native.ImGui.ImGui.ClearOutputData(ref Inno.Native.ImGui.ImFontBaked self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49618) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0ce1b32e5dc108b7"></a>[`public static void Inno.Native.ImGui.ImGui.ClearOutputData(Inno.Native.ImGui.ImFontBakedPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49612) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-108bf13c985336d1"></a>[`public static void Inno.Native.ImGui.ImGui.ClearOutputData(Inno.Native.ImGui.ImFontPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49980) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-360b4d1a784fa2ec"></a>[`public static void Inno.Native.ImGui.ImGui.ClearPlatformHandlers(ref Inno.Native.ImGui.ImGuiPlatformIO self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50111) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d060e6cbb2f74391"></a>[`public static void Inno.Native.ImGui.ImGui.ClearPlatformHandlers(Inno.Native.ImGui.ImGuiPlatformIOPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50105) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-06f54fb087d9d087"></a>[`public static void Inno.Native.ImGui.ImGui.ClearRendererHandlers(ref Inno.Native.ImGui.ImGuiPlatformIO self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50126) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e4e675232709dd7f"></a>[`public static void Inno.Native.ImGui.ImGui.ClearRendererHandlers(Inno.Native.ImGui.ImGuiPlatformIOPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50120) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2cb6b9e7af73c096"></a>[`public static void Inno.Native.ImGui.ImGui.ClearRequestFlags(ref Inno.Native.ImGui.ImGuiViewportP self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51959) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c32d671940927bb5"></a>[`public static void Inno.Native.ImGui.ImGui.ClearRequestFlags(Inno.Native.ImGui.ImGuiViewportPPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51953) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1d5ae0d83b77ea01"></a>[`public static void Inno.Native.ImGui.ImGui.ClearSelection(ref Inno.Native.ImGui.ImGuiInputTextCallbackData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45239) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-eeecb2bc83cdaf03"></a>[`public static void Inno.Native.ImGui.ImGui.ClearSelection(Inno.Native.ImGui.ImGuiInputTextCallbackDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45233) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9c05815f1d5b4997"></a>[`public static void Inno.Native.ImGui.ImGui.ClearSelection(ref Inno.Native.ImGui.ImGuiInputTextState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51180) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-05761f58e024aff6"></a>[`public static void Inno.Native.ImGui.ImGui.ClearSelection(Inno.Native.ImGui.ImGuiInputTextStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51174) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c6e77aaa620a44b9"></a>[`public static void Inno.Native.ImGui.ImGui.ClearTexData(ref Inno.Native.ImGui.ImFontAtlas self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49501) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d8b541164f833e13"></a>[`public static void Inno.Native.ImGui.ImGui.ClearTexData(Inno.Native.ImGui.ImFontAtlasPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49495) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c264afe82006c1b7"></a>[`public static void Inno.Native.ImGui.ImGui.ClearText(ref Inno.Native.ImGui.ImGuiInputTextState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51056) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9788045a1507aab0"></a>[`public static void Inno.Native.ImGui.ImGui.ClearText(Inno.Native.ImGui.ImGuiInputTextStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51050) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8e314c4862617cba"></a>[`public static void Inno.Native.ImGui.ImGui.ClipWith(ref Inno.Native.ImGui.ImRect self, Inno.Native.ImGui.ImRect r)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50556) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-26d90e6ccf00e07b"></a>[`public static void Inno.Native.ImGui.ImGui.ClipWith(Inno.Native.ImGui.ImRectPtr self, Inno.Native.ImGui.ImRect r)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50550) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4b233c8fa94ae6f5"></a>[`public static void Inno.Native.ImGui.ImGui.ClipWithFull(ref Inno.Native.ImGui.ImRect self, Inno.Native.ImGui.ImRect r)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50571) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e28afbd8096a62c4"></a>[`public static void Inno.Native.ImGui.ImGui.ClipWithFull(Inno.Native.ImGui.ImRectPtr self, Inno.Native.ImGui.ImRect r)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50565) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d44cb92ace2b3729"></a>[`public static Inno.Native.ImGui.ImDrawList* Inno.Native.ImGui.ImGui.CloneOutput(ref Inno.Native.ImGui.ImDrawList self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48118) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bf8fe18b81994150"></a>[`public static Inno.Native.ImGui.ImDrawListPtr Inno.Native.ImGui.ImGui.CloneOutput(Inno.Native.ImGui.ImDrawListPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48111) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a666b772eb1c257c"></a>[`public static void Inno.Native.ImGui.ImGui.CloseCurrentPopup()`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42354) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-abad6ff242526d97"></a>[`public static byte Inno.Native.ImGui.ImGui.CollapsingHeader(byte* label, Inno.Native.ImGui.ImGuiTreeNodeFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L40207) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-87039f15331fc58f"></a>[`public static byte Inno.Native.ImGui.ImGui.CollapsingHeader(byte* label, byte* pVisible, Inno.Native.ImGui.ImGuiTreeNodeFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L40239) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-da996acdaf43f4cf"></a>[`public static bool Inno.Native.ImGui.ImGui.CollapsingHeader(string label, Inno.Native.ImGui.ImGuiTreeNodeFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L40214) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-215a0f4f6065871c"></a>[`public static bool Inno.Native.ImGui.ImGui.CollapsingHeader(string label, ref bool pVisible, Inno.Native.ImGui.ImGuiTreeNodeFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L40246) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-01b1cbd751e5ecad"></a>[`public static bool Inno.Native.ImGui.ImGui.CollapsingHeader(string label, ref bool pVisible)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L40268) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-161acf4f54478625"></a>[`public static bool Inno.Native.ImGui.ImGui.CollapsingHeader(string label)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L40233) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1fca5a8e07057e49"></a>[`public static byte Inno.Native.ImGui.ImGui.ColorButton(byte* descId, System.Numerics.Vector4 col, Inno.Native.ImGui.ImGuiColorEditFlags flags, System.Numerics.Vector2 size)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39848) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-57989b2d5f694983"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorButton(string descId, System.Numerics.Vector4 col, Inno.Native.ImGui.ImGuiColorEditFlags flags, System.Numerics.Vector2 size)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39855) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9088a7f950209b6c"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorButton(string descId, System.Numerics.Vector4 col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39882) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-496afc46a1e8a648"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorButton(string descId, System.Numerics.Vector4 col, System.Numerics.Vector2 size)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39890) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c57d335fb684590b"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorButton(string descId, System.Numerics.Vector4 col)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39874) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fffb2942fa37d1f0"></a>[`public static uint Inno.Native.ImGui.ImGui.ColorConvertFloat4ToU32(System.Numerics.Vector4 input)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44087) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1d056590c3531ad1"></a>[`public static void Inno.Native.ImGui.ImGui.ColorConvertHSVtoRGB(float h, float s, float v, ref float outR, ref float outG, ref float outB)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44121) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-657e7ca1fd8c6fd5"></a>[`public static void Inno.Native.ImGui.ImGui.ColorConvertHSVtoRGB(float h, float s, float v, float* outR, float* outG, float* outB)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44115) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-aee73e83f1a1275f"></a>[`public static void Inno.Native.ImGui.ImGui.ColorConvertRGBtoHSV(float r, float g, float b, ref float outH, ref float outS, ref float outV)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44100) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bff24b98c1206189"></a>[`public static void Inno.Native.ImGui.ImGui.ColorConvertRGBtoHSV(float r, float g, float b, float* outH, float* outS, float* outV)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44094) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a3d04b094056c303"></a>[`public static System.Numerics.Vector4 Inno.Native.ImGui.ImGui.ColorConvertU32ToFloat4(uint input)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44080) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bcd1f0c7b2ac4e91"></a>[`public static byte Inno.Native.ImGui.ImGui.ColorEdit3(byte* label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39704) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-67ad9d099c3aaa7f"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorEdit3(string label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39711) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d068c155587f6bef"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorEdit3(string label, float* col)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39730) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3ad40e66e711f3e8"></a>[`public static byte Inno.Native.ImGui.ImGui.ColorEdit4(byte* label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39736) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d57bffbd190396a9"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorEdit4(string label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39743) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-19e29b3dadaffcdf"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorEdit4(string label, float* col)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39762) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fe8f4011c57fb379"></a>[`public static byte Inno.Native.ImGui.ImGui.ColorPicker3(byte* label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39768) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8ec5439e6dc895c4"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorPicker3(string label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39775) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d7cd3acd04a3bad1"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorPicker3(string label, float* col)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39794) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-081ed564d0fd88a3"></a>[`public static byte Inno.Native.ImGui.ImGui.ColorPicker4(byte* label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags, float* refCol)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39800) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-595752a8d912c93d"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorPicker4(string label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags, float* refCol)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39807) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e49a830f5a0ba634"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorPicker4(string label, float* col, Inno.Native.ImGui.ImGuiColorEditFlags flags)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39834) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f4294a26c7b31c03"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorPicker4(string label, float* col, float* refCol)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39842) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a7527c836f9b5844"></a>[`public static bool Inno.Native.ImGui.ImGui.ColorPicker4(string label, float* col)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L39826) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4ce8133ed77b5108"></a>[`public static void Inno.Native.ImGui.ImGui.Columns()`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42899) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-da0cbfd856b5a163"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(bool borders)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42931) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bfd703a2779f8851"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(int count, bool borders)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42939) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-aa1e3a68e5acff1f"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(int count, byte* id, byte borders)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42875) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-45c864fe5969b225"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(int count, string? id, bool borders)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42881) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ad0ea66198d76c08"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(int count, string? id)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42915) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-dec238890951c309"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(int count)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42907) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-eae077f08f3ae422"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(string? id, bool borders)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42947) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bf9fd45ca5f36a05"></a>[`public static void Inno.Native.ImGui.ImGui.Columns(string? id)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L42923) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ff66b5988dd6cbbc"></a>[`public static byte Inno.Native.ImGui.ImGui.Combo(byte* label, int* currentItem, delegate* unmanaged[Cdecl]<void*, int, byte*> getter, void* userData, int itemsCount, int popupMaxHeightInItems)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35334) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-123ed78e4c239aff"></a>[`public static byte Inno.Native.ImGui.ImGui.Combo(byte* label, int* currentItem, byte* itemsSeparatedByZeros, int popupMaxHeightInItems)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35295) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0df690d113721672"></a>[`public static byte Inno.Native.ImGui.ImGui.Combo(byte* label, int* currentItem, byte** items, int itemsCount, int popupMaxHeightInItems)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35257) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-83ec2efa09e54ee1"></a>[`public static bool Inno.Native.ImGui.ImGui.Combo(string label, ref int currentItem, string itemsSeparatedByZeros, int popupMaxHeightInItems)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35302) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-692f1148b9180a1e"></a>[`public static bool Inno.Native.ImGui.ImGui.Combo(string label, ref int currentItem, string itemsSeparatedByZeros)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35328) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-517339f07fcea0c0"></a>[`public static bool Inno.Native.ImGui.ImGui.Combo(string label, System.Span<int> currentItem, delegate* unmanaged[Cdecl]<void*, int, byte*> getter, void* userData, int popupMaxHeightInItems)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35341) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-75cce4ec1f2297c4"></a>[`public static bool Inno.Native.ImGui.ImGui.Combo(string label, System.Span<int> currentItem, delegate* unmanaged[Cdecl]<void*, int, byte*> getter, void* userData)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35363) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0fd865a955b82934"></a>[`public static bool Inno.Native.ImGui.ImGui.Combo(string label, System.Span<int> currentItem, System.ReadOnlySpan<nint> items, int popupMaxHeightInItems)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35264) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-925b45656dd251b2"></a>[`public static bool Inno.Native.ImGui.ImGui.Combo(string label, System.Span<int> currentItem, System.ReadOnlySpan<nint> items)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L35289) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8cbe1cdfa498710f"></a>[`public static void Inno.Native.ImGui.ImGui.CompactCache(ref Inno.Native.ImGui.ImFontAtlas self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49438) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-67a98cfe168c9a74"></a>[`public static void Inno.Native.ImGui.ImGui.CompactCache(Inno.Native.ImGui.ImFontAtlasPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49432) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a9c55f0e0e212464"></a>[`public static bool Inno.Native.ImGui.ImGui.Contains(ref Inno.Native.ImGui.ImGuiSelectionBasicStorage self, uint id)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46547) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fa66e72e0b3780be"></a>[`public static bool Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImGuiSelectionBasicStoragePtr self, uint id)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46557) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7a55f3b79cc3fb2e"></a>[`public static bool Inno.Native.ImGui.ImGui.Contains(ref Inno.Native.ImGui.ImRect self, Inno.Native.ImGui.ImRect r)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50394) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-910104350677cc14"></a>[`public static bool Inno.Native.ImGui.ImGui.Contains(ref Inno.Native.ImGui.ImRect self, System.Numerics.Vector2 p)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50377) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3d26264d9e966944"></a>[`public static bool Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImRectPtr self, Inno.Native.ImGui.ImRect r)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50404) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-deae4e065bdf152e"></a>[`public static bool Inno.Native.ImGui.ImGui.Contains(Inno.Native.ImGui.ImRectPtr self, System.Numerics.Vector2 p)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50387) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a186fc8b96e61f27"></a>[`public static bool Inno.Native.ImGui.ImGui.ContainsWithPad(ref Inno.Native.ImGui.ImRect self, System.Numerics.Vector2 p, System.Numerics.Vector2 pad)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50411) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-36eab1563bd294d8"></a>[`public static bool Inno.Native.ImGui.ImGui.ContainsWithPad(Inno.Native.ImGui.ImRectPtr self, System.Numerics.Vector2 p, System.Numerics.Vector2 pad)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50421) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ef20e5597ef45faf"></a>[`public static void Inno.Native.ImGui.ImGui.Create(ref Inno.Native.ImGui.ImBitVector self, int sz)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50637) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c5c9cf80e9dbc25a"></a>[`public static void Inno.Native.ImGui.ImGui.Create(Inno.Native.ImGui.ImBitVectorPtr self, int sz)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50631) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-608e4564a93c856c"></a>[`public static void Inno.Native.ImGui.ImGui.Create(ref Inno.Native.ImGui.ImTextureData self, Inno.Native.ImGui.ImTextureFormat format, int w, int h)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48591) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-43ff2edd26b45db2"></a>[`public static void Inno.Native.ImGui.ImGui.Create(Inno.Native.ImGui.ImTextureDataPtr self, Inno.Native.ImGui.ImTextureFormat format, int w, int h)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48585) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3bbd523c500d8749"></a>[`public static Inno.Native.ImGui.ImGuiContextPtr Inno.Native.ImGui.ImGui.CreateContext()`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32809) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-97c0ef96ebf4e2be"></a>[`public static Inno.Native.ImGui.ImGuiContext* Inno.Native.ImGui.ImGui.CreateContext(ref Inno.Native.ImGui.ImFontAtlas sharedFontAtlas)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32797) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6d06850bf545be01"></a>[`public static Inno.Native.ImGui.ImGuiContextPtr Inno.Native.ImGui.ImGui.CreateContext(Inno.Native.ImGui.ImFontAtlasPtr sharedFontAtlas)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32790) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d3530a6af6ce688e"></a>[`public static void Inno.Native.ImGui.ImGui.CursorAnimReset(ref Inno.Native.ImGui.ImGuiInputTextState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51133) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-cb41910f20e10eb2"></a>[`public static void Inno.Native.ImGui.ImGui.CursorAnimReset(Inno.Native.ImGui.ImGuiInputTextStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51127) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f7954da3d2708adb"></a>[`public static void Inno.Native.ImGui.ImGui.CursorClamp(ref Inno.Native.ImGui.ImGuiInputTextState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51148) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-02d0918c90cc52b3"></a>[`public static void Inno.Native.ImGui.ImGui.CursorClamp(Inno.Native.ImGui.ImGuiInputTextStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51142) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8f5347813b6a8b3e"></a>[`public static byte Inno.Native.ImGui.ImGui.DebugCheckVersionAndDataLayout(byte* versionStr, nuint szIo, nuint szStyle, nuint szvec2, nuint szvec4, nuint szDrawvert, nuint szDrawidx)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44592) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4371ac56223c9696"></a>[`public static bool Inno.Native.ImGui.ImGui.DebugCheckVersionAndDataLayout(string versionStr, nuint szIo, nuint szStyle, nuint szvec2, nuint szvec4, nuint szDrawvert, nuint szDrawidx)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44599) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b1deefa84a48e9e5"></a>[`public static void Inno.Native.ImGui.ImGui.DebugFlashStyleColor(Inno.Native.ImGui.ImGuiCol idx)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44580) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-
-</details>
-
-<details>
-<summary><code>Inno.Native.ImGui.ImGui</code> · 541–720</summary>
-
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugLogV(System.Byte*,System.Byte*) 63ce57a1f6c51a34df353eef5152e455bd4242f22ea45b8402ffaf2d2ab22f69 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugLogV(System.String,System.Byte*) 74bea1ab210169d61f5fcc060fcd5942fe279eb1c70dbd1f8bc52ae08a048b31 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugStartItemPicker 9e02f94e6d8c9eea51a21e3972ab484d5c9414ed9f5b09daf9df3edbb0738fbc -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugTextEncoding(System.Byte*) 2ab93e9422fc3c42968c7514541321eb8e9889cf5358c4a4c53424f371a187b9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DebugTextEncoding(System.String) 41dd3b0cac15769517d0c2deb9931a3c4a07da1cc5239a95d9d811e25aadd13e -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DeclColumns(Inno.Native.ImGui.ImGuiMenuColumns@,System.Single,System.Single,System.Single,System.Single) ce038005180ca6a31a6a6344d3986abb2184e3997110357ef239c438d39fd5d4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DeclColumns(Inno.Native.ImGui.ImGuiMenuColumnsPtr,System.Single,System.Single,System.Single,System.Single) 42337a29108203ede760c92691a0d979449292b2c3a8387714d00d463bddc2d6 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DeIndexAllBuffers(Inno.Native.ImGui.ImDrawData@) b1bc293b6a21f689e3ebb4f55c2dc23fd19969bfefa3bc833ba6eaf8c47ff8e3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DeIndexAllBuffers(Inno.Native.ImGui.ImDrawDataPtr) 5b0492df9b053f46f03ac4aa6b891cf8d81572d0d5a488d08f5d5b2de035180f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DeleteChars(Inno.Native.ImGui.ImGuiInputTextCallbackData@,System.Int32,System.Int32) e79065a6cf5a0ec3be5b1e88ff3468b8e3f307b7dc2657dd7c734826872ebc6c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.DeleteChars(Inno.Native.ImGui.ImGuiInputTextCallbackDataPtr,System.Int32,System.Int32) 904e583835d0fa1b1b0f62d44666bb7bd03b537e1550d89ba10335ad3c5cb22d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImColor@) 6d09fa882fda0f3029b0fa40ad67eccfb9f94a53d060384e47d4decba8a74776 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImColorPtr) a4942a65909bc94d581de831a218f867761909743edea59daf03067f8a947840 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawCmd@) bee236f12c37b9bc3579980eb6badc9a92ab1cba1bb69d5154a112263ae5143f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawCmdPtr) ffe63d8bf7a92818858ef1d5cc6683505d1424c68a5bdf88568375bd3d7c4a86 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawData@) d6eec9bdd1ec86953b8063db6bc0852f26fd529fc85ad09bce755dbd712593d6 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawDataBuilder@) 808241333fcf79b1da23f59b88f186a689a55fe92e6280e3293f8f1294f89384 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawDataBuilderPtr) 1bdef36bb2f4446fbd74003fd536d2091c08c2dcf022bf5beb2272291211c88d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawDataPtr) c65fdc3b2ab2e02d0f33aa279af58836201bfff38c1b193ac4c30eca74253b18 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawList@) 8ddd84c25cce16d67c73abfdc3d800a7b69bf013f96246ebc483db49e3828b07 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListPtr) e517e97f3b6325a52cf27ba2e1fac408b85d999fd1919e9130ab1e1539cf5b91 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListSharedData@) 97c30e4cdf7c33dcd8583a93e4b113660ecade409167285a224e38d709c41245 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListSharedDataPtr) 4a7e25970732da507be1f3c67621dcaab8d49f31c35617095353ab89c8bd4bb3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListSplitter@) 773e0e18630de90b59aaf57a01e986032ec1b30f7c5dfc57f6562c134de4ea01 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListSplitterPtr) 0dfb8c1df41e866cc895a0cbf4e4e85f02ca3c7da82a15286948464910f799ca -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFont@) 471f27882a7346b7bd724f6ea0c1d6e19e630ded5a86e8f3d3ed5ea8cc766fdd -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlas@) d109ed5f11b5a7b6981e456b1636315fcc4ec18d99afb4cd769042a60a397028 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasBuilder@) b0f85c8cf1a5c63224aceb3967289cdda888f33346825f4ac497f1f50cac18a9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasBuilderPtr) ab50781d717a03bee02c6b7263c9d21679c7ab0c1f5d9301faf31d07585b1d9f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasPtr) 74659bbf45f92bc491ca0fbe9133abd8921a212a6fc1acf01beb9dcc73100b1a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasRect@) 288843d6244698031c689d67f37e4ee466a7c8730812e789edd4e64adeb73a93 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasRectPtr) 8d11fd896dc65e64a744c519a3333731fa14245a661fae211c9cd2144ec6a98f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontBaked@) e998ba7d08c29ecaac0889ffcf1494bd5aac8d6413b858a501785e8e0c2929c2 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontBakedPtr) 64c20dcc38faddef02715a4ac0f5c9e649dfe03f493d7791eb4e8e32f6720526 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontConfig@) 2b5b0335dec9f0dac80f30886caa01081392a8b8171e29938eafb0a6ca5f278f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontConfigPtr) ab10d4b359af8a724c875c5951931d2160b24f76847a01fd2df2a3b80daf3da8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontGlyph@) f2e38ee045530382b7158528579fe856a103f8dd2f83c33e2938e54181edaf8c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontGlyphPtr) 71480b74370829b0c89b63003441f43aa951b8fa53bb1043430304b510440326 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontGlyphRangesBuilder@) aad4287ad48f938f0dca837ba54f1e4f813f2d4a0a5147d9a18b5289594d7a7c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontGlyphRangesBuilderPtr) 4f0b0d3755ec7edba6feca6493175fda6584ac19ea69541841f1ae01ae995f28 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontLoader@) 7b4c53a42df33a24f90bdeafe945ec3a9f47a8696ce1c882a830f0f4ef3a54f8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontLoaderPtr) fea48ed7948200b892eddfcc14488ada3fce443e3322f85d2ea5b8222a3688ee -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontPtr) 2a65cf68150055f71d8505d5cb8aa3386ff67103833bedcd4e8eb9e8855d898f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiBoxSelectState@) 1f944880d43e7e62ec87ef69f8e1f906f4f48ec4659cebf567f7461c8415c644 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiBoxSelectStatePtr) 0bd71cce2b13cf4809daf122829db10e72f16f3613e2f4edebbd94ef8c3234bb -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiComboPreviewData@) e20f0d34fc9b3e4fb43e5712a53e4248c47a6ff017a9387d3ed6752883d12c49 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiComboPreviewDataPtr) 7869b1775c75fd3c06e9e01d03f3c9734d7af4735c7752a92cbaf4e19deaccd9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiContext@) 64419eab39229a1b6133e083a7f22c904427121ca42261a4128c29e40b2d5497 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiContextHook@) 820b9fd0481802ae19e92d6b902862ee28dae50e67001aa805182ed4e545dc99 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiContextHookPtr) 9273436a273e3486b03dfe1517d4d4f50f8c6c3326fdb169c0be1e9e7b46d3a0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiContextPtr) 0c3393d1873980f291d6bcbdd22b5e81841d611fa5d0b9c5d285c42491f11fe3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDebugAllocInfo@) b97b5a1ce5eb3023ef7f10f73d4ed780a86ec7d39397738fd4a8cdafab957d07 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDebugAllocInfoPtr) 94e5f66ccf17e13d74d8916c0ae9465333bb625760494d65372c0ee5d586bf77 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDebugItemPathQuery@) 20bf6b4ad33a1981db4e3997c3785fe305f6148aa8468f029183b916074c5890 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDebugItemPathQueryPtr) 40879685072f9c4595fba600c993773c800d5cba1976b2d0aa55bf82da3c98e0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDockContext@) bf3bacab633677320791d32b591e47d3cf046cbf4329ea210a85101da28dafe8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDockContextPtr) 7a2c8f290604544c971a5c43f6ec3d0c33bff3422c78178c0334838590c738d4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDockNode@) b39c3aece69f848e566c82482d7ebe86729461989f7a09a5d321558fcc64c662 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDockNodePtr) 66572082e0610fccf14addbc9a36bae5015933982e507e6a7430bf5253f00a08 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiErrorRecoveryState@) ade670fedbd747b594ed3be11614a09a505a2c0e60684bfdde6f6b68fbca7468 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiErrorRecoveryStatePtr) 8f706859c50a0e676ef723163e0c87503cabf1e4b28cd94549514b48cf127def -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiIDStackTool@) eb4c8e33d0d0ba0ee2f37b04551e40ccbcf3cd4418cf449b6cb23b4366adde5b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiIDStackToolPtr) 09f689b4862a498143d442ecbc9c0b18d8bd3359f9dd6067bfafe1551ee80865 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputEvent@) 65c6b405a567c7a0212cd29556ef504232de81af6d6d712bb67f7ba33778ef8a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputEventPtr) 4b1e2cfa82d31cb23aa45ba337d50f7fcb12e82123b974ccc5576129f5b9a2be -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextCallbackData@) 3ed8003a4130f7d09531f717d40754e4173ae35e10fa9f236bcd72cfa96df8fe -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextCallbackDataPtr) 63c5c32b365c99ad1a5e332054fe32a7ab9288986b4e99a564fdbbb4b3bc09cb -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextDeactivatedState@) e049eae4e43950f66cdf89d3339864779a5cc84896f10ac319b81f8c2b44dc5c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextDeactivatedStatePtr) 75b14414d9e91910e5c32c840716a12e5f1dd3e76ffa4af4e114a7fde0a778bb -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextState@) 144911c687c80c6bc960aeab37b34357d5cab4a3abfc6354279c0cd3c7552e02 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextStatePtr) 1c576ac4eee1a0e59aee5aac32c8ef5caacc1b16af614547b0ed7950cdbfb859 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiIO@) 2231ac56effa03a633c0782baf64533598e012ce1536309e43f508ce9b95b6a4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiIOPtr) 8d8d9c05d8ee9703a06101a632e6c061d5cc20ee8e2eaaa98d225e2613255ba2 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyOwnerData@) 897e3c32af3136eb8b8b8c7a72e58a8f369c2cd305118ed932daa4d017ab8853 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyOwnerDataPtr) 5136acf343615c3692fd0ee7267bee5fa262890ca500e788361d812e4efceb61 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyRoutingData@) e729965cd0d1c75ae12c510cbbc8b99d90337e5026896c2a984d734471abca52 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyRoutingDataPtr) 356a3401a038bde27e2ee12a4c7655c1e661c797ba7c3f6b1208ae55a210dee3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyRoutingTable@) 8142f85b999e235940f638c29ca9c99fdc58bbd3bf5945d763653dc31e23e267 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyRoutingTablePtr) 7168f25aeba4d8c924fa941965ab14cd2717d25d089cd66e46f9f36abfc426cf -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiLastItemData@) 6de7921f562cd2d4c311f78e84691ac02cdb921cee611b717ec92de8321b8f44 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiLastItemDataPtr) 36533edf3883aec53f53fb088ff6f3cb289bd1b13ddd3249519402ac34888207 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiListClipper@) 721c789df62c713491aa57866e42b18432f25068cc064c92f2a07e8f8f47aa2d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiListClipperData@) 19e454f660ade8f707df49244372a4221963409e6789398596f83d56d074dcb9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiListClipperDataPtr) 2f7bff0f68bee75a84403450359861c50b9628a23855f9a073daa9447953c5f1 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiListClipperPtr) 8a353d252a2bef2649ca98363ce264c2eefec7b6a3909ad4525d2954978eb56f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMenuColumns@) deb8191ac2b0b8cee2006878aa42841a589d63d9affda1c274470f8bb20f02b9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMenuColumnsPtr) b56023dec3b92278788442e79f54b9c43ca095056682bfc6a30d81821fd87e3e -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMultiSelectState@) 87371ba3dc8a203826dc069d8e31bade8e583b1892ae4078804a14149b32bd62 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMultiSelectStatePtr) b4024fb0d54573f35c57b4af3b1005c00cc5c391ae5f33bc6aa481bce780c068 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMultiSelectTempData@) 112c941d9a6e8fe87dda7290fd199754f0384de3b26a9b3d6b74ed3d0e1b9e54 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMultiSelectTempDataPtr) 0f979c7d03d4a1a109a4cb3dac3e15c907a36cee66e68561661807c3afb89d2f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNavItemData@) 0419dc42b2c05510c3627e16f8f23a1c3b7890a39e1e7fa50e54823751bc7b7b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNavItemDataPtr) 0f0b0f5b0e4ddec956d4eee61a81baeab7f08fcf4f045535546c13eba351b3b8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNextItemData@) 74681648122619e022f2ba66f99784520d48611273d535a1e4acdddb0bbd74ab -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNextItemDataPtr) 9561148fe34d27d8ede10b026cc27e52f7c17172d8a046e9d7d5c1f5f1db6ce8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNextWindowData@) 18c7f815d28488df9a45e7cfbbec5fcbed88b9396fca9b0014abb16ea0d42d35 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNextWindowDataPtr) 5a08ee4e2b5410898457f28ff1e99c31b2ca6867c142fd07f54ce92e77b4af16 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOldColumnData@) 0dd2f1abbc6e87b908aa0f8f1ab4e2955452eea6e7e5d4ece22aa004fec7146b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOldColumnDataPtr) 80fc7a6df783e050fbf7b214aeafdc9a9a2982686f40260e809c669e9d960fd7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOldColumns@) be835b4a6fe5cbd83b32f7213cbe694b8241bf3cb63066d8703b646e4df18eb2 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOldColumnsPtr) 69535ba06bcb6f6f1e34cdae421ce034fdd3e9255527f759c0dbe2c0c15896a0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOnceUponAFrame@) 14a79f42dad89a0569fe3d02fa4540a7fda593dc4805d8ff311dd831a3d8ccbc -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOnceUponAFramePtr) d2c389b9e7b49bb8d82b9cb1f222713337bc2340890504275c61e79c9a983345 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPayload@) c7bf6261b79528f8343089572f86b929b60c539e53a10101a5b1e3b8f9bf9621 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPayloadPtr) 357a54d394e9c08460417217c69e00ddddd162cbfecd55507069a1af04ff6903 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformImeData@) 25df8d659a6dd1b0b92cb2f0d6a670953092da7452a480f5b922a55729a7b719 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformImeDataPtr) 293376cc27ded49c01918b1cd5ff5365310ccd8387ff0c3e39c6999dfba2f133 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformIO@) e6f1670290ea52a3ecef6f7930006fb6aa1ac58399f0b4c8e4904ad79b0e89b0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformIOPtr) 3b92d80771802e82a627044587243fb7e21ab24b72577d16a1fe90f1848fa1b9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformMonitor@) 9abb0d02d45c1e7788118b20a811df4c49eceb1969858072f4b1541aeeea66ce -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformMonitorPtr) 712564721ba93c52056551bc2c19427cddb8b72fc27be712516ef60874ec05ae -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPopupData@) 2212580b7f8cc00cdd378898cba7268709abea046a753609a4d0010c450b8410 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPopupDataPtr) cb01fcf4a2a8a3b9e2c4f5f62911c44bd261d6a6dd29d7a66ea5d6860e85dbf1 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPtrOrIndex@) 32d87ba87571026ab26ae21875b9b3d6564d0b44a0a43c678454140d77b65809 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPtrOrIndexPtr) 911f85f1e8925472a7cc65fba9d906b8eb00adb54728d4a8429358dce4a56c91 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSelectionBasicStorage@) 140ece20d71052ba55e902d0d5b5111e8615a222caa0e1e13d7d3664e5bbfc55 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSelectionBasicStoragePtr) 297b8567399bbfafe28f55ecc771bb654f640502c50c90e21f6766cb5be38123 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSelectionExternalStorage@) 172e574340fa1322e3ce717c7011a5f35032d3c4003a03798b2ef001b6b6ccc9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSelectionExternalStoragePtr) ffa621c27f2366803ab6de9f0166bf3c8f21699dc896340d8c17050248f603a3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSettingsHandler@) 5500bd3ec73b621e845ee75f1d25256fa845babf75b610fb94184cc01435caf3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSettingsHandlerPtr) dc0a83f0c51dcb08f670e3caffe298a2c2f0c7bc03af21e5bab5c458d643f6db -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStackLevelInfo@) e3a15537fecffb29523e6afbb74caec93657b1725a6f448e4926485137dab3a0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStackLevelInfoPtr) c9343065362731957af9dac25b0ea06bb4df2bee5185524dda3353fa67e2d88a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStoragePair@) ee1dfc1e02a0252e5b0f98ad0a67d947cf5af66c0ea97549d4760496fe50dc09 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStoragePairPtr) d9c04870f9b856c3fadbb23de3ca078f8aa1a4c82e07393c9206f2472c6ed92f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStyle@) 2cd2e9db60bbdf3d926daf9b2966b70530ff9523f47cc56856066178155f855a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStyleMod@) 1458049e2cf133501e60703dc8b386dad71891a50404394d707229048bfe21d4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStyleModPtr) eafb64d064cff249ad6b4254f350e52d72198be660825052e08d582576a5003f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStylePtr) 0b7398b2fe5cacfd5c5b12735ce2597ba0724fc00a2336fb09faa0c268a8f8f4 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTabBar@) bd4f66bbdc12133f9b11a16c91986d7b163ba02ce5226eb494b655e5700f666c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTabBarPtr) 9cd9c4a01e73d390d5cbccd601618f7d45c20f43cdbe564506a96b7b1dfeaef9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTabItem@) a00f0746a3fe8c8e4365e4f8a153104da5d0facff96088732ea9d3aac26969ea -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTabItemPtr) 09455648ec606660a73722a4298f3b1d3a4619c11cfea50f0d7dd076c58b41d7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTable@) fc93298f857c035a00683f46ea364b13e8f700338bc576319064e3b1e959531e -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumn@) b4d6e729ec17f2f14aa8a3fc37a8355be0150796cf16ea5f5e89a009e1ca5d7d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnPtr) ad6c2c9867dc1cf557cca0fe9fbe40209022707fe855c1af1d541ef8d9a996ac -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnSettings@) 2965cdeae0fb79eb0c6c10c7ef9fd54490d29951e145e82bc5b7af960dcf0320 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnSettingsPtr) fc7095e9402575fd27916b1252c54227e64358d5bcdcd0fb45ea2a4a7a7b3fe9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnSortSpecs@) b40d35f8aaf03f944a13d4e9d17c1ad82c8878f09c28044e065de699663dea5e -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnSortSpecsPtr) 89d3a179fb0caeba3d3a60cebbf206238dcc204e1d249c6a5fe10f48d25c0779 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableInstanceData@) 61218adf9d0bba3074b29365d9b5477271fcf1c441e8818753d4fad168a14491 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableInstanceDataPtr) cba3c4fe4e90649087fdbc753cb138d2780a3e8c448254656003d90d2a3b0391 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTablePtr) dcacc9452e1bc70e9b5f11a4ed827c9d1869e3cd02cc04b617a3ffbca3084e2c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableSettings@) d5c3d3c950b7dc4694eeee52fd4786672a4444f6ae7788a5b0f075d952185e29 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableSettingsPtr) ae501c52c53b607c4c31482ebe6a53aeaf6b70062906e69034727f28c4541b2f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableSortSpecs@) a6dfb4825d1aea9c0b7f2129ae100016c3e847b8783cadf058a76ec1c8f5b993 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableSortSpecsPtr) 68d45e7a871df8bd78c1f09d51290dbc3dd0c5dc6b99ecfe685fa7ff2912bd09 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableTempData@) 10251d26395be1cdce05eea275c1f9a52f88e98a5c6e3cef51956fb273f8534a -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableTempDataPtr) 6f9e5448b98863e9d0cd0147884b852837547abb61e4ed1c406df39d1697434f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextBuffer@) fd35a6a44685f932d1e393d67f08204ea2db3d89344b33acc672592cd5868c03 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextBufferPtr) 7db1cf1d07d033249b58f5c490b2ba9d4833d5d8cc6523eb5f51bff29d4f4b52 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextFilter@) a9d24a64fef31092859ae30ae1d513574d8ab1e25f8332a2bbe0da907404eca9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextFilterPtr) 4808c5581a20aec97a582d687af74276f683f6a042ae992411c9efc40d0feced -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextRange@) 9c0f19da75a7fc7589ddea7a4922b81ecb3161843fe1d26fe7753318c5067725 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextRangePtr) ee45be0f0ef26c9382c5f6a2261abb64f7046f6c3c72e4afc5764504024d41c3 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTypingSelectState@) c4f6bf110404fd4fe88e9985d1b8148a1e950f3638a89beaac98dacef3fa51c0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTypingSelectStatePtr) db46ab8c9ff6bd823f0949c44db0ae691510ae804614e184cbdcd35ca6c7748b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiViewport@) cf148d2a9d43120e1b213fb2942ef8f18e2dcc3106ad700f8a2ef4a84ddb0e4b -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiViewportP@) eb71ac77ce6859038567a5674d3cf8f543ecc072e586086282ee3e8dce9abef8 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiViewportPPtr) 677b4d900cc54e81479c3c0de0f4516939ef597651c5b7ab9fa43c3fc16f018d -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiViewportPtr) f0d873a1aa75936b7e5d6de06bd2d4d9d68a8e2b20b5ce6932297007bcbf14b0 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindow@) 2a8fbb1037e450c894cd2510ed8bd037e88faa96449cae45914c57393596995f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowClass@) 16846b012eedbb5e83ec8500e18db44013a87133972d12f693e82e54cc1d4237 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowClassPtr) 20282b82180b05abb0da91aa1f575b4854dc8bea05f2a6cda73c89f594fcb7f9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowPtr) a72d008875480098d29d115624f99b83f249af2600995188979b18ea13ce3c65 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowSettings@) 5a0e9599408c9136a91e41948853a43a2e692d2935cbd616ea6d1ae09b3c5b12 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowSettingsPtr) 233105699ebbf587b0a77d3f827240effe77ace364b92db32b91cad4b23afb4c -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImRect@) 8fa90676620095ecfb864bc28da384596a14d71b5f626ac58bf0bea3f4d385e7 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImRectPtr) a16208a38e713498f0b548285cbe39f96298d008a2dd0c6054e424c5362cc736 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImTextureData@) 1c31e05b02353d6845f0ab0f3717e3b9cd330065fcca2a049f3f3c4e212f1590 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImTextureDataPtr) b54cf5aef8685df53582e06fc884bea288ba789002c7fcafc0a7751549949181 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImTextureRef@) 9e7724271f7743b918d86c15771cccb1a937613818039700d209985785aa513f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImTextureRefPtr) ed81da338093d0893914c16dd4f6fcb05ed53c0bddc3fc8e3c4905f025222adc -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImVec1@) d299e8fa55f56e4fbdfc2f7e13b692065bd29370251c4661c6414eb1b2d7560f -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImVec1Ptr) a9cd12d7fdcc9af21262d0818017766d45658cb48039076b21b3e0d154b1d7a9 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImVec2Ih@) cba37ad35c495856b7e6e42620f7a999f79829ccf7e5e5f5fdd87389507af9ad -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImVec2IhPtr) b6cdbda8d9d294c89c94f894586596e25157f06179888afe20fbc0a0b8d252cb -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(System.Numerics.Vector2@) 1282b6c1571c94eb06a96094b4119125ac2f07b4baa94c69e05b0f4f23ee7a99 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(System.Numerics.Vector2*) 367923436636eaef53c6d3435579a037f1d1fdc1ae4015bee2be51a271892e32 -->
-<!-- api: M:Inno.Native.ImGui.ImGui.Destroy(System.Numerics.Vector4@) 3a2907dc24e32ad33c8c9c9f45944a76ef55b30befdfb452615c54496d52596d -->
-
-| 声明 | 行为与结果 / ABI 信息 | 所有权与限制 |
-| --- | --- | --- |
-| <a id="api-91136a49358a9966"></a>[`public static void Inno.Native.ImGui.ImGui.DebugLogV(byte* fmt, byte* args)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44616) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3cc5cd88a83e8504"></a>[`public static void Inno.Native.ImGui.ImGui.DebugLogV(string fmt, byte* args)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44622) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ad0488d57e5a489b"></a>[`public static void Inno.Native.ImGui.ImGui.DebugStartItemPicker()`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44586) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b01b3fc0e7e788b1"></a>[`public static void Inno.Native.ImGui.ImGui.DebugTextEncoding(byte* text)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44558) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2ced2bc436a2f164"></a>[`public static void Inno.Native.ImGui.ImGui.DebugTextEncoding(string text)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44564) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2a76fca806df6e8c"></a>[`public static float Inno.Native.ImGui.ImGui.DeclColumns(ref Inno.Native.ImGui.ImGuiMenuColumns self, float wIcon, float wLabel, float wShortcut, float wMark)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50974) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-efed3281a09ba1a0"></a>[`public static float Inno.Native.ImGui.ImGui.DeclColumns(Inno.Native.ImGui.ImGuiMenuColumnsPtr self, float wIcon, float wLabel, float wShortcut, float wMark)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50967) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-716769da7c3a0eef"></a>[`public static void Inno.Native.ImGui.ImGui.DeIndexAllBuffers(ref Inno.Native.ImGui.ImDrawData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48539) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-792f366564f96e75"></a>[`public static void Inno.Native.ImGui.ImGui.DeIndexAllBuffers(Inno.Native.ImGui.ImDrawDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48533) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-81350d4a8c63e473"></a>[`public static void Inno.Native.ImGui.ImGui.DeleteChars(ref Inno.Native.ImGui.ImGuiInputTextCallbackData self, int pos, int bytesCount)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45151) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-939df833e2d0971d"></a>[`public static void Inno.Native.ImGui.ImGui.DeleteChars(Inno.Native.ImGui.ImGuiInputTextCallbackDataPtr self, int pos, int bytesCount)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45145) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d5f2b40a03915656"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImColor self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46416) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-43bb3ca2d5ac5744"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImColorPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46410) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-071ff7fed47b5677"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImDrawCmd self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46715) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-195f5f147726b22f"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawCmdPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46709) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9e789910d07f8efe"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImDrawData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48491) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2d37770e92b6367a"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImDrawDataBuilder self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50875) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2a7aa9e38d4c4f94"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawDataBuilderPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50869) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-609a7f737f3032b9"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48485) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-09a4b4c92360049c"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImDrawList self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46870) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9ca3e6ab1b5ceee2"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46864) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-28a14549034cb09a"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImDrawListSharedData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50845) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fd16e89651886cee"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListSharedDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50839) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-09233d548f78db6b"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImDrawListSplitter self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46754) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-020ff21fb7ec388b"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImDrawListSplitterPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46748) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e99d29b6778e00d9"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFont self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49708) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-eee113585995f81c"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontAtlas self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48992) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3422d38eca667319"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontAtlasBuilder self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52542) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-22b7d61fc3f08fd3"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasBuilderPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52536) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c946d96a9aa3876d"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48986) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d5a23ade3f233c62"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontAtlasRect self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48970) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-dad1cc1133e10426"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontAtlasRectPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48964) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-96cb541d146010d7"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontBaked self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49603) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bd263b4af29cbd70"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontBakedPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49597) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-78aa64d6cdc1f441"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontConfig self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48760) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d9ac12e934343efc"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontConfigPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48754) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9ac66d0df43c47ca"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontGlyph self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48782) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-48e356fb920cd6da"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontGlyphPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48776) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-557a4ca38a15d7cd"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontGlyphRangesBuilder self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48804) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-207642f755c5b694"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontGlyphRangesBuilderPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48798) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5d189c663b262ceb"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImFontLoader self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52527) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1d2570a2cf36678a"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontLoaderPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52521) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5201f4e80ff2ce15"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImFontPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L49702) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f4a99e251cfaf5e2"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiBoxSelectState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51639) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a8a5c080f889770f"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiBoxSelectStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51633) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-688b7c3af1a0436b"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiComboPreviewData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50922) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-dec527cfca096b81"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiComboPreviewDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50916) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0e914a7d6fe10b29"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiContext self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52196) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c34a08496ac2d897"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiContextHook self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52181) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-83daff062322c63a"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiContextHookPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52175) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-eb0887f69ead6317"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiContextPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52190) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ad08fc8d42bc5dd0"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiDebugAllocInfo self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52121) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b814154e91ceed33"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDebugAllocInfoPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52115) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b639a22449ec80ce"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiDebugItemPathQuery self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52151) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4ad07c8d474f7b03"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDebugItemPathQueryPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52145) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a7e3fdaca20643fd"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiDockContext self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51929) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-784dd497e6c50ab0"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDockContextPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51923) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9fbda3b8a7b12544"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiDockNode self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51714) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8ef436ff5df1c120"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiDockNodePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51708) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-abc25d554ee3933d"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiErrorRecoveryState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51396) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-17b4439e5d0216b4"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiErrorRecoveryStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51390) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2ce162753e065810"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiIDStackTool self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52166) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0bdad4a0a4cf4f97"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiIDStackToolPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52160) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bc7d61ce90285493"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiInputEvent self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51441) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-31227db7702ac340"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputEventPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51435) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2d90425c4a442154"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiInputTextCallbackData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45136) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-33a035498a4eba38"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextCallbackDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45130) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fc6d620bcca793d7"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiInputTextDeactivatedState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51011) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-f02b91ee5a3b0a59"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextDeactivatedStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51005) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ca06d160b49ba91d"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiInputTextState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51041) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d132877eba9dbef3"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiInputTextStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51035) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-49329e4c9bc58a40"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiIO self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45114) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-66f6bcb40a56db1d"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiIOPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45108) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e3b77bced4b398c4"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiKeyOwnerData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51501) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d94ff2b454f09777"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyOwnerDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51495) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e6a745593d446291"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiKeyRoutingData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51456) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a5c1b51d4defdbd6"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyRoutingDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51450) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b46a1cfe192d000f"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiKeyRoutingTable self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51471) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b0d18066ddc0eb19"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiKeyRoutingTablePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51465) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e13472eaf877efa7"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiLastItemData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51381) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ad93f09a0d32a2e8"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiLastItemDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51375) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3ab9a1f6591b6d56"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiListClipper self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46294) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-abbcdce92ba87c15"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiListClipperData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51516) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b3d73027cd577381"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiListClipperDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51510) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9aa52c988898b90d"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiListClipperPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46288) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e29932783cb75813"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiMenuColumns self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50937) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-62bd75522306ce81"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMenuColumnsPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50931) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6c1da140cd54c383"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiMultiSelectState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51699) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fc59e73661c3add7"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMultiSelectStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51693) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b9b55d8fd74eaa01"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiMultiSelectTempData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51654) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-3f6b5e5be5e7af30"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiMultiSelectTempDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51648) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-12a2d28a6db3a654"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiNavItemData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51549) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9b1e73aaa4c67f64"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNavItemDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51543) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-abac16b37cec91f2"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiNextItemData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51351) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5c93d95c0bc0d4e2"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNextItemDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51345) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a4d07d5c7ded75bc"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiNextWindowData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51321) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-25274a86ed562196"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiNextWindowDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51315) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-212c2320bdb45c19"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiOldColumnData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51609) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-cf0993b851d8679e"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOldColumnDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51603) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-08306102b97f5a19"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiOldColumns self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51624) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a1230d37fbd188e6"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOldColumnsPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51618) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-aee1fcba82473142"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiOnceUponAFrame self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45405) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1047e3aae12f7adf"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiOnceUponAFramePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45399) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-52a1f55f8e288336"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiPayload self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45300) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8bf7f2f9b5f1b87b"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPayloadPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45294) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d6128aabc47cc1bb"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiPlatformImeData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50170) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-53cd45330a6943da"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformImeDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50164) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e4dabe92d2f00154"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiPlatformIO self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50096) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1ab8076a0d9db25c"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformIOPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50090) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b0b5d7254ccf8b34"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiPlatformMonitor self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50148) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c09b6e441e189968"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPlatformMonitorPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50142) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1df8de1b123ef711"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiPopupData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51426) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6afea2b1cdcf0f5f"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPopupDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51420) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-82a76a9dca199d13"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiPtrOrIndex self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51411) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8fe235e245116364"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiPtrOrIndexPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51405) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0ee0a4f4bad7df54"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiSelectionBasicStorage self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46520) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-87aac601e37cb674"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSelectionBasicStoragePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46514) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-172a6e5670b7b306"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiSelectionExternalStorage self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46675) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c3e1aef67813c60c"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSelectionExternalStoragePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L46669) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a4b6c919e5fcbb96"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiSettingsHandler self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52106) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b9182bc11ee6a49c"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiSettingsHandlerPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52100) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-01f2cc1d35d19976"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiStackLevelInfo self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52136) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b444c72599d43052"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStackLevelInfoPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52130) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-992c70724dc01d26"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiStoragePair self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45942) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6fdacd4e1d416967"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStoragePairPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45936) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-94bcc2edb500c07b"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiStyle self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44783) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d1b8838e319d0ece"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiStyleMod self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50907) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c7502ac161cb8a2d"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStyleModPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50901) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1aa2e5f997259e20"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiStylePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44777) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a3168ba94fe963f9"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTabBar self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52405) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-40bd004101a36039"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTabBarPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52399) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8bbb5b0c073fdd11"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTabItem self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52390) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-da7e8797dd75b236"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTabItemPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52384) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c9945caf1ff942b5"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTable self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52450) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-e3d0a482b990d730"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTableColumn self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52420) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-42aa1bc67723ad7a"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52414) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0b25841e7085153f"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTableColumnSettings self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52480) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d64313f19fd14bf1"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnSettingsPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52474) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-27bd8f7d204f0de4"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTableColumnSortSpecs self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44761) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-996cad205bdcbda1"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableColumnSortSpecsPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44755) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-da0f7f5c9fe06b79"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTableInstanceData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52435) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ca6b90e84a8a93cb"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableInstanceDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52429) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bce4b91685cf2798"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTablePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52444) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-fbc6170d4ca3a32e"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTableSettings self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52495) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-9cc364173361c316"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableSettingsPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52489) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8165e3cc87d378b7"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTableSortSpecs self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44739) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-56386cd826c0d19e"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableSortSpecsPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L44733) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7acceb4c8a435b5f"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTableTempData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52465) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d121dfce94d601fc"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTableTempDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52459) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-228487228cc38a70"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTextBuffer self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45716) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-1fb51f85752c5ecd"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextBufferPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45710) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-246544b8f470617b"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTextFilter self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45452) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8c240cca742ffb1c"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextFilterPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45446) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c672f984cd28cb37"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTextRange self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45625) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-36948b9a75474c3f"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTextRangePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45619) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0eb164ed25dfe511"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiTypingSelectState self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51579) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-a81003081906562d"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiTypingSelectStatePtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51573) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5272ef31280251b7"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiViewport self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50040) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-08c189f5a693dcb9"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiViewportP self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51944) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-4955354a7fcfef15"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiViewportPPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L51938) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-07965705304ec3a3"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiViewportPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50034) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0e8f130a1af41490"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiWindow self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52211) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-ae5b8d895a594241"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiWindowClass self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45278) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-16a7d228bf51d1af"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowClassPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L45272) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5acb46f7ac621508"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52205) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-c3b442cec3e02b00"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImGuiWindowSettings self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52074) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-559a901b265ed9c3"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImGuiWindowSettingsPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L52068) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-7cb1f767adf58a6b"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImRect self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50215) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8c7a0ef100585f35"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImRectPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50209) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-d8a4da0509db44d1"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImTextureData self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48576) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8a8da9efede27d82"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImTextureDataPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L48570) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-2c487b27aa959942"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImTextureRef self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32757) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-0bd3e4d8211fdc95"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImTextureRefPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32751) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-bc9bd5f31c6e0132"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImVec1 self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50185) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-6b07d937b4145c81"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImVec1Ptr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50179) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-b4212c8557347e06"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref Inno.Native.ImGui.ImVec2Ih self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50200) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-346623b47bdd6053"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(Inno.Native.ImGui.ImVec2IhPtr self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L50194) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-86ec7f7ee0ecc2f2"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref System.Numerics.Vector2 self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32699) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-5dd95aec75a5eccf"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(System.Numerics.Vector2* self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32693) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-| <a id="api-8ff9f65dc0837e17"></a>[`public static void Inno.Native.ImGui.ImGui.Destroy(ref System.Numerics.Vector4 self)`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L32728) | 当前生成调用或值操作；参数、返回值及泛型约束见精确声明。 | — |
-
-</details>
+| 声明 | 语义与限制 |
+| --- | --- |
+| <a id="api-193a2cd8184b798f"></a>[`public int Inno.Native.ImGui.ImGuiInputTextState.LineCount`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27083) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-302eddccff819aa0"></a>[`public int Inno.Native.ImGui.ImGuiInputTextState.ReloadSelectionEnd`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27103) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-dc83a2be39e0c88b"></a>[`public int Inno.Native.ImGui.ImGuiInputTextState.ReloadSelectionStart`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27101) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-3b80957c4a18f3f5"></a>[`public Inno.Native.ImGui.ImVec2C Inno.Native.ImGui.ImGuiInputTextState.Scroll`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27081) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-3f4a91c2858cd636"></a>[`public byte Inno.Native.ImGui.ImGuiInputTextState.SelectedAllMouseLock`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27093) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-42227ebc9b7372c9"></a>[`public Inno.Native.ImGui.STBTexteditState* Inno.Native.ImGui.ImGuiInputTextState.Stb`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27063) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-55cece1f443c7f0b"></a>[`public Inno.Native.ImGui.ImVectorChar Inno.Native.ImGui.ImGuiInputTextState.TextA`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27073) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-273c57ebeaa61659"></a>[`public int Inno.Native.ImGui.ImGuiInputTextState.TextLen`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27069) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-7b151c84a5ca37ac"></a>[`public sbyte* Inno.Native.ImGui.ImGuiInputTextState.TextSrc`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27071) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-2431b54e173248ea"></a>[`public Inno.Native.ImGui.ImVectorChar Inno.Native.ImGui.ImGuiInputTextState.TextToRevertTo`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27075) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-5bc66a7a04be61b0"></a>[`public byte Inno.Native.ImGui.ImGuiInputTextState.WantReloadUserBuf`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27097) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-e9d3b40f31ae7229"></a>[`public float Inno.Native.ImGui.ImGuiInputTextState.WrapWidth`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27085) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-fd8f596a6217c5cb"></a>[`Inno.Native.ImGui.ImGuiItemFlags.AllowDuplicateId = 32`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27364) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-6f9e7f588f320d50"></a>[`Inno.Native.ImGui.ImGuiItemFlags.AutoClosePopups = 16`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27363) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-426adf5d44534e32"></a>[`Inno.Native.ImGui.ImGuiItemFlags.ButtonRepeat = 8`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27362) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-5d03c92896ddcc55"></a>[`Inno.Native.ImGui.ImGuiItemFlags.Disabled = 64`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27365) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`64` |
+| <a id="api-59bda85d2cbb73f3"></a>[`Inno.Native.ImGui.ImGuiItemFlags.NoNav = 2`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27360) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-9e20e19ff412ee61"></a>[`Inno.Native.ImGui.ImGuiItemFlags.NoNavDefaultFocus = 4`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27361) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-dde2588c917ae1ca"></a>[`Inno.Native.ImGui.ImGuiItemFlags.NoTabStop = 1`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27359) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-cf78b6930cd62118"></a>[`Inno.Native.ImGui.ImGuiItemFlags.None = 0`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27358) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-1bef239ee3de4c73"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.AllowOverlap = 16384`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27376) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16384` |
+| <a id="api-ce4248f7f11eb108"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.Default = 16`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27383) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-3782ad711838e1c7"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.HasSelectionUserData = 2097152`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27381) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2097152` |
+| <a id="api-e50282328a6b8ac1"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.Inputable = 1048576`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27380) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1048576` |
+| <a id="api-38648899c15bb3d5"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.IsMultiSelect = 4194304`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27382) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4194304` |
+| <a id="api-3f038318182624c9"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.MixedValue = 4096`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27374) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4096` |
+| <a id="api-5900c743dd53f96b"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoFocus = 131072`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27379) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`131072` |
+| <a id="api-08f9a44837a6c13d"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoMarkEdited = 65536`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27378) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`65536` |
+| <a id="api-0872ba6344aa0ed4"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoNavDisableMouseHover = 32768`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27377) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32768` |
+| <a id="api-01703648e58d58bc"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.NoWindowHoverableCheck = 8192`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27375) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8192` |
+| <a id="api-9930d7a1359e2656"></a>[`Inno.Native.ImGui.ImGuiItemFlagsPrivate.ReadOnly = 2048`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27373) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2048` |
+| <a id="api-e25e947a1fceadf4"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.Deactivated = 64`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27398) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`64` |
+| <a id="api-12cbb2baf4b2580a"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.Edited = 4`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27394) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4` |
+| <a id="api-dad0c1570c0495a8"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.HasClipRect = 512`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27401) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`512` |
+| <a id="api-d53323e2d841e0de"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.HasDeactivated = 32`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27397) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32` |
+| <a id="api-e944b45274a2af0c"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.HasDisplayRect = 2`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27393) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`2` |
+| <a id="api-ee6dc035e8a80289"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.HasShortcut = 1024`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27402) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1024` |
+| <a id="api-9e35ba5187d18fe8"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.HoveredRect = 1`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27392) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`1` |
+| <a id="api-1d54a3ff2a76c432"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.HoveredWindow = 128`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27399) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`128` |
+| <a id="api-5c9211fc2c2e96e5"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.None = 0`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27391) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-0eec2aa794300dcd"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.ToggledOpen = 16`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27396) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16` |
+| <a id="api-9a7e18378f5235d1"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.ToggledSelection = 8`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27395) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8` |
+| <a id="api-c046f864b71e8392"></a>[`Inno.Native.ImGui.ImGuiItemStatusFlags.Visible = 256`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27400) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`256` |
+| <a id="api-f33e26dcdb2ff38d"></a>[`Inno.Native.ImGui.ImGuiKey.A = 546`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27446) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`546` |
+| <a id="api-953390fdaaabade2"></a>[`Inno.Native.ImGui.ImGuiKey.Apostrophe = 596`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27496) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`596` |
+| <a id="api-a03dcad1cf94a183"></a>[`Inno.Native.ImGui.ImGuiKey.AppBack = 629`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27529) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`629` |
+| <a id="api-da7a17c49579e710"></a>[`Inno.Native.ImGui.ImGuiKey.AppForward = 630`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27530) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`630` |
+| <a id="api-601b95f6aab0a76b"></a>[`Inno.Native.ImGui.ImGuiKey.B = 547`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27447) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`547` |
+| <a id="api-33882870f3198960"></a>[`Inno.Native.ImGui.ImGuiKey.Backslash = 604`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27504) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`604` |
+| <a id="api-edc2349c6580a4f9"></a>[`Inno.Native.ImGui.ImGuiKey.Backspace = 523`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27423) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`523` |
+| <a id="api-91c08a838255c319"></a>[`Inno.Native.ImGui.ImGuiKey.C = 548`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27448) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`548` |
+| <a id="api-5f9d7fe9f3edd0da"></a>[`Inno.Native.ImGui.ImGuiKey.CapsLock = 607`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27507) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`607` |
+| <a id="api-821d68593a8fdae1"></a>[`Inno.Native.ImGui.ImGuiKey.Comma = 597`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27497) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`597` |
+| <a id="api-90bec75ea870b66e"></a>[`Inno.Native.ImGui.ImGuiKey.D = 549`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27449) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`549` |
+| <a id="api-02dd6c15634c760d"></a>[`Inno.Native.ImGui.ImGuiKey.Delete = 522`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27422) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`522` |
+| <a id="api-c3f03cb97144c736"></a>[`Inno.Native.ImGui.ImGuiKey.DownArrow = 516`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27416) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`516` |
+| <a id="api-e526a88892f3c85d"></a>[`Inno.Native.ImGui.ImGuiKey.E = 550`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27450) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`550` |
+| <a id="api-2dcec79de3a16d62"></a>[`Inno.Native.ImGui.ImGuiKey.End = 520`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27420) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`520` |
+| <a id="api-fa16776f5a649fc6"></a>[`Inno.Native.ImGui.ImGuiKey.Enter = 525`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27425) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`525` |
+| <a id="api-234bcce47e17473b"></a>[`Inno.Native.ImGui.ImGuiKey.Equal = 602`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27502) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`602` |
+| <a id="api-8918f48f4dd2cb7a"></a>[`Inno.Native.ImGui.ImGuiKey.Escape = 526`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27426) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`526` |
+| <a id="api-d4ab540f9fe3d7e2"></a>[`Inno.Native.ImGui.ImGuiKey.F = 551`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27451) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`551` |
+| <a id="api-c319e9f49f5091e9"></a>[`Inno.Native.ImGui.ImGuiKey.F1 = 572`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27472) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`572` |
+| <a id="api-91351c91c7d73859"></a>[`Inno.Native.ImGui.ImGuiKey.F10 = 581`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27481) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`581` |
+| <a id="api-010c9b4ba74f0b68"></a>[`Inno.Native.ImGui.ImGuiKey.F11 = 582`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27482) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`582` |
+| <a id="api-6b21cbd455e6039f"></a>[`Inno.Native.ImGui.ImGuiKey.F12 = 583`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27483) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`583` |
+| <a id="api-a2edd4be0e18c5e6"></a>[`Inno.Native.ImGui.ImGuiKey.F13 = 584`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27484) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`584` |
+| <a id="api-b32d408aaa94a7c9"></a>[`Inno.Native.ImGui.ImGuiKey.F14 = 585`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27485) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`585` |
+| <a id="api-4756cf2b651b889b"></a>[`Inno.Native.ImGui.ImGuiKey.F15 = 586`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27486) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`586` |
+| <a id="api-3e5c228bede88621"></a>[`Inno.Native.ImGui.ImGuiKey.F16 = 587`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27487) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`587` |
+| <a id="api-e986056b33c42efb"></a>[`Inno.Native.ImGui.ImGuiKey.F17 = 588`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27488) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`588` |
+| <a id="api-3bcb308169268c9f"></a>[`Inno.Native.ImGui.ImGuiKey.F18 = 589`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27489) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`589` |
+| <a id="api-435321c816042e2c"></a>[`Inno.Native.ImGui.ImGuiKey.F19 = 590`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27490) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`590` |
+| <a id="api-bc22bf92dd2e8280"></a>[`Inno.Native.ImGui.ImGuiKey.F2 = 573`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27473) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`573` |
+| <a id="api-2bb8e5977b08bd9f"></a>[`Inno.Native.ImGui.ImGuiKey.F20 = 591`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27491) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`591` |
+| <a id="api-af24024b0126d3fa"></a>[`Inno.Native.ImGui.ImGuiKey.F21 = 592`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27492) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`592` |
+| <a id="api-016e6c434ccfc5ef"></a>[`Inno.Native.ImGui.ImGuiKey.F22 = 593`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27493) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`593` |
+| <a id="api-4904ecc26f510429"></a>[`Inno.Native.ImGui.ImGuiKey.F23 = 594`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27494) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`594` |
+| <a id="api-54277127fd285a0a"></a>[`Inno.Native.ImGui.ImGuiKey.F24 = 595`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27495) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`595` |
+| <a id="api-ac144672c74214c5"></a>[`Inno.Native.ImGui.ImGuiKey.F3 = 574`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27474) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`574` |
+| <a id="api-da4d98f51a7bc6a8"></a>[`Inno.Native.ImGui.ImGuiKey.F4 = 575`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27475) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`575` |
+| <a id="api-33335e4018248548"></a>[`Inno.Native.ImGui.ImGuiKey.F5 = 576`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27476) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`576` |
+| <a id="api-329c49325b1ac3ea"></a>[`Inno.Native.ImGui.ImGuiKey.F6 = 577`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27477) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`577` |
+| <a id="api-c6a84beee795911b"></a>[`Inno.Native.ImGui.ImGuiKey.F7 = 578`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27478) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`578` |
+| <a id="api-74e6cada269394d1"></a>[`Inno.Native.ImGui.ImGuiKey.F8 = 579`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27479) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`579` |
+| <a id="api-bda5e995b926388a"></a>[`Inno.Native.ImGui.ImGuiKey.F9 = 580`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27480) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`580` |
+| <a id="api-6eb530291a655a03"></a>[`Inno.Native.ImGui.ImGuiKey.G = 552`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27452) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`552` |
+| <a id="api-078db2a385533c86"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadBack = 633`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27533) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`633` |
+| <a id="api-5d7ffc5a36bbd242"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadDpadDown = 641`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27541) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`641` |
+| <a id="api-d140b7e5096f1689"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadDpadLeft = 638`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27538) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`638` |
+| <a id="api-6962971a73f7a170"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadDpadRight = 639`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27539) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`639` |
+| <a id="api-589ec6955f3729fc"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadDpadUp = 640`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27540) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`640` |
+| <a id="api-7e99782ec383fd81"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadFaceDown = 637`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27537) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`637` |
+| <a id="api-c07f2691e39002f6"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadFaceLeft = 634`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27534) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`634` |
+| <a id="api-03cd2e241efd5e5f"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadFaceRight = 635`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27535) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`635` |
+| <a id="api-e9582358620cf87a"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadFaceUp = 636`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27536) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`636` |
+| <a id="api-0a2e6e2ba6ce4732"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadL1 = 642`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27542) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`642` |
+| <a id="api-7ff079556fe559de"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadL2 = 644`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27544) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`644` |
+| <a id="api-cabf54d0cef0ee56"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadL3 = 646`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27546) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`646` |
+| <a id="api-7c293a2a14d5991d"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadLStickDown = 651`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27551) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`651` |
+| <a id="api-9351524ad818932b"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadLStickLeft = 648`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27548) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`648` |
+| <a id="api-0e8bd7bcecd135a6"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadLStickRight = 649`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27549) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`649` |
+| <a id="api-c5df24f4d65dac4f"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadLStickUp = 650`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27550) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`650` |
+| <a id="api-0966f016b4631afb"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadR1 = 643`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27543) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`643` |
+| <a id="api-8edf966c8f37acc2"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadR2 = 645`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27545) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`645` |
+| <a id="api-6cade7ce592dd5f6"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadR3 = 647`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27547) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`647` |
+| <a id="api-2b1f3afd25e80aa3"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadRStickDown = 655`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27555) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`655` |
+| <a id="api-eba019bbd7beec8e"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadRStickLeft = 652`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27552) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`652` |
+| <a id="api-613b0ea3a414aaf5"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadRStickRight = 653`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27553) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`653` |
+| <a id="api-6313c0463ab8fccd"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadRStickUp = 654`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27554) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`654` |
+| <a id="api-514c89abaec9425b"></a>[`Inno.Native.ImGui.ImGuiKey.GamepadStart = 632`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27532) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`632` |
+| <a id="api-7d4ba782031331ff"></a>[`Inno.Native.ImGui.ImGuiKey.GraveAccent = 606`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27506) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`606` |
+| <a id="api-34a4deeaa5252efb"></a>[`Inno.Native.ImGui.ImGuiKey.H = 553`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27453) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`553` |
+| <a id="api-380651ee1cb7043a"></a>[`Inno.Native.ImGui.ImGuiKey.Home = 519`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27419) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`519` |
+| <a id="api-cceb52fab7114124"></a>[`Inno.Native.ImGui.ImGuiKey.I = 554`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27454) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`554` |
+| <a id="api-6097751af7a9b27e"></a>[`Inno.Native.ImGui.ImGuiKey.ImGuiModAlt = 16384`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27572) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`16384` |
+| <a id="api-e031cfa40d9e4710"></a>[`Inno.Native.ImGui.ImGuiKey.ImGuiModCtrl = 4096`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27570) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`4096` |
+| <a id="api-de3e7b75840e09b6"></a>[`Inno.Native.ImGui.ImGuiKey.ImGuiModMask = 61440`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27574) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`61440` |
+| <a id="api-741e239694d95edd"></a>[`Inno.Native.ImGui.ImGuiKey.ImGuiModNone = 0`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27569) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-9be99bfe0e2ccd37"></a>[`Inno.Native.ImGui.ImGuiKey.ImGuiModShift = 8192`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27571) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`8192` |
+| <a id="api-f1af5b73582d0466"></a>[`Inno.Native.ImGui.ImGuiKey.ImGuiModSuper = 32768`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27573) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`32768` |
+| <a id="api-eac2f7f475dd7247"></a>[`Inno.Native.ImGui.ImGuiKey.Insert = 521`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27421) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`521` |
+| <a id="api-9693328fb0b0571e"></a>[`Inno.Native.ImGui.ImGuiKey.J = 555`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27455) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`555` |
+| <a id="api-cb98fc5d7e001835"></a>[`Inno.Native.ImGui.ImGuiKey.K = 556`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27456) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`556` |
+| <a id="api-d604d0f74cb9555f"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad0 = 612`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27512) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`612` |
+| <a id="api-ddad94b221d624c6"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad1 = 613`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27513) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`613` |
+| <a id="api-3c3e065c90250f9e"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad2 = 614`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27514) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`614` |
+| <a id="api-04b1ea75ec599e2e"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad3 = 615`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27515) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`615` |
+| <a id="api-41ca994bbde8cae9"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad4 = 616`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27516) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`616` |
+| <a id="api-001ea2fb53803550"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad5 = 617`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27517) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`617` |
+| <a id="api-2bac945c103cf082"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad6 = 618`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27518) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`618` |
+| <a id="api-e6adda0c73778644"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad7 = 619`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27519) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`619` |
+| <a id="api-636d3c982f6f1499"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad8 = 620`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27520) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`620` |
+| <a id="api-e552a17e62987ea6"></a>[`Inno.Native.ImGui.ImGuiKey.Keypad9 = 621`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27521) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`621` |
+| <a id="api-2552a0717c911896"></a>[`Inno.Native.ImGui.ImGuiKey.KeypadAdd = 626`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27526) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`626` |
+| <a id="api-2a185c3d12b390f1"></a>[`Inno.Native.ImGui.ImGuiKey.KeypadDecimal = 622`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27522) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`622` |
+| <a id="api-afa4415803f323fd"></a>[`Inno.Native.ImGui.ImGuiKey.KeypadDivide = 623`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27523) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`623` |
+| <a id="api-40809a1af7b171c3"></a>[`Inno.Native.ImGui.ImGuiKey.KeypadEnter = 627`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27527) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`627` |
+| <a id="api-bb790da2ce970976"></a>[`Inno.Native.ImGui.ImGuiKey.KeypadEqual = 628`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27528) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`628` |
+| <a id="api-9a6a7468367f8f51"></a>[`Inno.Native.ImGui.ImGuiKey.KeypadMultiply = 624`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27524) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`624` |
+| <a id="api-0d1c9684b57acb06"></a>[`Inno.Native.ImGui.ImGuiKey.KeypadSubtract = 625`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27525) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`625` |
+| <a id="api-230b4082a899e4b4"></a>[`Inno.Native.ImGui.ImGuiKey.L = 557`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27457) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`557` |
+| <a id="api-6a25cbaab3e99789"></a>[`Inno.Native.ImGui.ImGuiKey.LeftAlt = 529`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27429) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`529` |
+| <a id="api-974389a493a1594b"></a>[`Inno.Native.ImGui.ImGuiKey.LeftArrow = 513`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27413) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`513` |
+| <a id="api-6e7a69ba39f20ac3"></a>[`Inno.Native.ImGui.ImGuiKey.LeftBracket = 603`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27503) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`603` |
+| <a id="api-2ea333a9f57a5678"></a>[`Inno.Native.ImGui.ImGuiKey.LeftCtrl = 527`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27427) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`527` |
+| <a id="api-b6717226617756b4"></a>[`Inno.Native.ImGui.ImGuiKey.LeftShift = 528`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27428) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`528` |
+| <a id="api-cbc84ebdea33825e"></a>[`Inno.Native.ImGui.ImGuiKey.LeftSuper = 530`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27430) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`530` |
+| <a id="api-eeb5babb15479dda"></a>[`Inno.Native.ImGui.ImGuiKey.M = 558`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27458) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`558` |
+| <a id="api-0f9bbdc6635d4224"></a>[`Inno.Native.ImGui.ImGuiKey.Menu = 535`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27435) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`535` |
+| <a id="api-166df92385234c78"></a>[`Inno.Native.ImGui.ImGuiKey.Minus = 598`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27498) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`598` |
+| <a id="api-117557a628321909"></a>[`Inno.Native.ImGui.ImGuiKey.MouseLeft = 656`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27556) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`656` |
+| <a id="api-c8f29ed3e55d68b7"></a>[`Inno.Native.ImGui.ImGuiKey.MouseMiddle = 658`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27558) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`658` |
+| <a id="api-7fbf7b3b704b8b3b"></a>[`Inno.Native.ImGui.ImGuiKey.MouseRight = 657`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27557) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`657` |
+| <a id="api-648b59b246406502"></a>[`Inno.Native.ImGui.ImGuiKey.MouseWheelX = 661`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27561) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`661` |
+| <a id="api-33f74ac31d90e82e"></a>[`Inno.Native.ImGui.ImGuiKey.MouseWheelY = 662`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27562) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`662` |
+| <a id="api-7c7883f239b9ca12"></a>[`Inno.Native.ImGui.ImGuiKey.MouseX1 = 659`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27559) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`659` |
+| <a id="api-10ac453a6a349933"></a>[`Inno.Native.ImGui.ImGuiKey.MouseX2 = 660`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27560) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`660` |
+| <a id="api-bef36525a3b859dd"></a>[`Inno.Native.ImGui.ImGuiKey.N = 559`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27459) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`559` |
+| <a id="api-c3ed264810ddf6c6"></a>[`Inno.Native.ImGui.ImGuiKey.NamedKeyBegin = 512`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27411) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`512` |
+| <a id="api-8b3e6e05b3a815e6"></a>[`Inno.Native.ImGui.ImGuiKey.NamedKeyCount = 155`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27568) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`155` |
+| <a id="api-628cd2453e77094b"></a>[`Inno.Native.ImGui.ImGuiKey.NamedKeyEnd = 667`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27567) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`667` |
+| <a id="api-ddfcb5ab7cbd187c"></a>[`Inno.Native.ImGui.ImGuiKey.None = 0`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27410) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`0` |
+| <a id="api-27d4ff83e9683675"></a>[`Inno.Native.ImGui.ImGuiKey.NumLock = 609`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27509) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`609` |
+| <a id="api-b44b25db4cd7c197"></a>[`Inno.Native.ImGui.ImGuiKey.O = 560`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27460) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`560` |
+| <a id="api-39fdc4b1aad4dd44"></a>[`Inno.Native.ImGui.ImGuiKey.Oem102 = 631`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27531) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`631` |
+| <a id="api-fc8e0194e884b3a8"></a>[`Inno.Native.ImGui.ImGuiKey.P = 561`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27461) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`561` |
+| <a id="api-53cd00b778e50ce5"></a>[`Inno.Native.ImGui.ImGuiKey.PageDown = 518`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27418) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`518` |
+| <a id="api-d4ae52c303dad70e"></a>[`Inno.Native.ImGui.ImGuiKey.PageUp = 517`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27417) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`517` |
+| <a id="api-3def06b2c39d4c8a"></a>[`Inno.Native.ImGui.ImGuiKey.Pause = 611`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27511) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`611` |
+| <a id="api-635e24f6e71d24a6"></a>[`Inno.Native.ImGui.ImGuiKey.Period = 599`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27499) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`599` |
+| <a id="api-2259c456abbfd360"></a>[`Inno.Native.ImGui.ImGuiKey.PrintScreen = 610`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27510) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`610` |
+| <a id="api-b30d0a30bc6bbe57"></a>[`Inno.Native.ImGui.ImGuiKey.Q = 562`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27462) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`562` |
+| <a id="api-13f2fb4d2cd3b8ad"></a>[`Inno.Native.ImGui.ImGuiKey.R = 563`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27463) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`563` |
+| <a id="api-dc0b3a93a732d675"></a>[`Inno.Native.ImGui.ImGuiKey.ReservedForModAlt = 665`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27565) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`665` |
+| <a id="api-34aeb55235c17c05"></a>[`Inno.Native.ImGui.ImGuiKey.ReservedForModCtrl = 663`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27563) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`663` |
+| <a id="api-459da5436fc599eb"></a>[`Inno.Native.ImGui.ImGuiKey.ReservedForModShift = 664`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27564) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`664` |
+| <a id="api-49a143c1a6c17dd0"></a>[`Inno.Native.ImGui.ImGuiKey.ReservedForModSuper = 666`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27566) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`666` |
+| <a id="api-8b3efcc8a28be273"></a>[`Inno.Native.ImGui.ImGuiKey.RightAlt = 533`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27433) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`533` |
+| <a id="api-d5106268c48693ee"></a>[`Inno.Native.ImGui.ImGuiKey.RightArrow = 514`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27414) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`514` |
+| <a id="api-57f560fa0807b864"></a>[`Inno.Native.ImGui.ImGuiKey.RightBracket = 605`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27505) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`605` |
+| <a id="api-bd26af4f5c67df64"></a>[`Inno.Native.ImGui.ImGuiKey.RightCtrl = 531`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27431) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`531` |
+| <a id="api-80e20d8034f7a170"></a>[`Inno.Native.ImGui.ImGuiKey.RightShift = 532`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27432) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`532` |
+| <a id="api-955af3db326cd0f4"></a>[`Inno.Native.ImGui.ImGuiKey.RightSuper = 534`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27434) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`534` |
+| <a id="api-102d2cc82522a29b"></a>[`Inno.Native.ImGui.ImGuiKey.S = 564`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27464) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`564` |
+| <a id="api-8448665c32292018"></a>[`Inno.Native.ImGui.ImGuiKey.ScrollLock = 608`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27508) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`608` |
+| <a id="api-de258b0e4e0dcf7d"></a>[`Inno.Native.ImGui.ImGuiKey.Semicolon = 601`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27501) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`601` |
+| <a id="api-ce8475deb3566aac"></a>[`Inno.Native.ImGui.ImGuiKey.Slash = 600`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27500) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`600` |
+| <a id="api-fee33764f2d7a62b"></a>[`Inno.Native.ImGui.ImGuiKey.Space = 524`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27424) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`524` |
+| <a id="api-0b54a4f9dcb2fbef"></a>[`Inno.Native.ImGui.ImGuiKey.T = 565`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27465) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`565` |
+| <a id="api-7141378a24babaf4"></a>[`Inno.Native.ImGui.ImGuiKey.Tab = 512`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27412) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`512` |
+| <a id="api-88bcb3854a67949a"></a>[`Inno.Native.ImGui.ImGuiKey.U = 566`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27466) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`566` |
+| <a id="api-fda62abb6c0f21c3"></a>[`Inno.Native.ImGui.ImGuiKey.UpArrow = 515`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27415) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`515` |
+| <a id="api-4392201280bc74a6"></a>[`Inno.Native.ImGui.ImGuiKey.V = 567`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27467) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`567` |
+| <a id="api-fab894f472852624"></a>[`Inno.Native.ImGui.ImGuiKey.W = 568`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27468) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`568` |
+| <a id="api-6a84ccf9cbb5845d"></a>[`Inno.Native.ImGui.ImGuiKey.X = 569`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27469) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`569` |
+| <a id="api-74df71cf74c4805c"></a>[`Inno.Native.ImGui.ImGuiKey.Y = 570`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27470) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`570` |
+| <a id="api-6d74ca05f17acffd"></a>[`Inno.Native.ImGui.ImGuiKey.Z = 571`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27471) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`571` |
+| <a id="api-91876c3aac792b1f"></a>[`Inno.Native.ImGui.ImGuiKey._0 = 536`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27436) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`536` |
+| <a id="api-2e04a9b078440fee"></a>[`Inno.Native.ImGui.ImGuiKey._1 = 537`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27437) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`537` |
+| <a id="api-afbc1b6c5856c1cf"></a>[`Inno.Native.ImGui.ImGuiKey._2 = 538`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27438) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`538` |
+| <a id="api-d01f033814e77ed9"></a>[`Inno.Native.ImGui.ImGuiKey._3 = 539`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27439) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`539` |
+| <a id="api-ff6c229dcc12e730"></a>[`Inno.Native.ImGui.ImGuiKey._4 = 540`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27440) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`540` |
+| <a id="api-7ef90d635c45deac"></a>[`Inno.Native.ImGui.ImGuiKey._5 = 541`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27441) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`541` |
+| <a id="api-65f53d0a630dd050"></a>[`Inno.Native.ImGui.ImGuiKey._6 = 542`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27442) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`542` |
+| <a id="api-12283c665a729f59"></a>[`Inno.Native.ImGui.ImGuiKey._7 = 543`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27443) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`543` |
+| <a id="api-a4d3a61651100fe1"></a>[`Inno.Native.ImGui.ImGuiKey._8 = 544`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27444) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`544` |
+| <a id="api-69df2b61405ffc24"></a>[`Inno.Native.ImGui.ImGuiKey._9 = 545`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27445) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。<br>常量：`545` |
+| <a id="api-83cd73503dc6a62e"></a>[`public float Inno.Native.ImGui.ImGuiKeyData.AnalogValue`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27591) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-9b1c51abb0a99dde"></a>[`public byte Inno.Native.ImGui.ImGuiKeyData.Down`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27585) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-a377bd2b37d1b29e"></a>[`public float Inno.Native.ImGui.ImGuiKeyData.DownDuration`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27587) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-512d4fe251d7fb30"></a>[`public float Inno.Native.ImGui.ImGuiKeyData.DownDurationPrev`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27589) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-5ff239fe333a1523"></a>[`public byte Inno.Native.ImGui.ImGuiKeyOwnerData.LockThisFrame`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27613) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-5fb4e67bdbfb20e6"></a>[`public byte Inno.Native.ImGui.ImGuiKeyOwnerData.LockUntilRelease`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27615) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-ba4bdf2906e56941"></a>[`public uint Inno.Native.ImGui.ImGuiKeyOwnerData.OwnerCurr`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27609) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-e75cffb33a1ce644"></a>[`public uint Inno.Native.ImGui.ImGuiKeyOwnerData.OwnerNext`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27611) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-eefeab4fc8d5d63d"></a>[`public ushort Inno.Native.ImGui.ImGuiKeyRoutingData.Mods`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27635) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-9571e065ba9b1de7"></a>[`public short Inno.Native.ImGui.ImGuiKeyRoutingData.NextEntryIndex`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27633) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-39ec5d81b295e33c"></a>[`public uint Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingCurr`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27641) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-0ef40112ff53d662"></a>[`public ushort Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingCurrScore`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27637) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-21fd9cd021790be9"></a>[`public uint Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingNext`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27643) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-b11113e43fee66fc"></a>[`public ushort Inno.Native.ImGui.ImGuiKeyRoutingData.RoutingNextScore`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27639) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-1877f2e45a2d6a35"></a>[`public Inno.Native.ImGui.ImVectorImGuiKeyRoutingData Inno.Native.ImGui.ImGuiKeyRoutingTable.Entries`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27663) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-3277e93f675e0630"></a>[`public Inno.Native.ImGui.ImVectorImGuiKeyRoutingData Inno.Native.ImGui.ImGuiKeyRoutingTable.EntriesNext`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27665) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-954ef8a613a9138c"></a>[`public Inno.Native.ImGui.NativeArray_42c049e3f15c43ec Inno.Native.ImGui.ImGuiKeyRoutingTable.Index`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27661) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-c10b2a037c5849d2"></a>[`public Inno.Native.ImGui.ImRect Inno.Native.ImGui.ImGuiLastItemData.ClipRect`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27695) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |
+| <a id="api-c69faa5a347b0ad1"></a>[`public Inno.Native.ImGui.ImRect Inno.Native.ImGui.ImGuiLastItemData.DisplayRect`](../../../../backends/ImGui/native/Inno.Native.ImGui/Generated/Bindings.cs#L27693) | 当前生成的 ABI 声明；地址、缓冲区及回调的有效期由所属原生 owner 保证。 |

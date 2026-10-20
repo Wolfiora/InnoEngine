@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -33,7 +34,7 @@
 
   <Target Name="CopyDuplicateImporterFixture" AfterTargets="Build">
     <ItemGroup>
-      <DuplicateImporterFixture Include="..\fixtures\Inno.Assets.Pipeline.DuplicateImporterFixture\bin\$(Configuration)\net9.0\Inno.Assets.Pipeline.DuplicateImporterFixture.dll" />
+      <DuplicateImporterFixture Include="..\fixtures\Inno.Assets.Pipeline.DuplicateImporterFixture\bin\$(Configuration)\net10.0\Inno.Assets.Pipeline.DuplicateImporterFixture.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(DuplicateImporterFixture)" DestinationFolder="$(OutDir)Modules/DuplicateAssetImporters" />
   </Target>

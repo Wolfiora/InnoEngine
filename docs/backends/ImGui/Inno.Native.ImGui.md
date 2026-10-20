@@ -2,7 +2,7 @@
 
 [分类索引](README.md) · [Editor ImGui](../../editor/Inno.Editor.ImGui.md) · [Wiki 首页](../../README.md)
 
-该项目提供 cimgui generated bindings。运行时源码只有 `ImGui.cs` 原生库/函数表加载器和 `Generated/Bindings.cs`。配置与 BGCS emitter plugin 均属于本项目的 `Bindings/` 目录；`ImVector<T>`、`ImTextureID` 的显式 ABI 实现由 `Bindings/Extension` 合入生成文件，而非 BGCS 核心中的库名特判。生成方式见 [Native binding generation](../../native/BindingGeneration.md)。完整声明从本页末尾的 ABI 参考进入。
+该项目提供 cimgui generated bindings。运行时源码只有 `ImGui.cs` 原生库/函数表加载器和 `Generated/Bindings.cs`。正式配置属于本项目 `Bindings/`；容器、纹理引用、指针与 DTO 均采用 SDK 的实际生成 ABI，Native 类型不越过适配边界。生成方式见 [Native binding generation](../../native/BindingGeneration.md)。完整声明从本页末尾的 ABI 参考进入。
 
 它只服务 Editor/SDL3-ImGui/BGFX-ImGui adapter。业务脚本与 Runtime 不应直接依赖 Native ImGui。
 
@@ -19,7 +19,7 @@
 | 附加窗口关闭 | 通过 presentation renderer 的退休接口 | 先取消路由和提交，再等待渲染 surface 退休；确认后由 SDL 窗口 owner 销毁。 |
 | 最终释放 | `DestroyContext` | 先排空 renderer 的 viewport 退休并注销 callbacks、字体登记；禁止在故障或 Pending 时提前销毁依赖 owner。 |
 
-`ImGuiContextPtr`、`ImDrawDataPtr`、`ImVector<T>` 等包装值只描述地址或布局，不自动获得内存 owner。访问前必须确认对应 context/frame 仍有效；复制包装值不延长原生对象寿命。字符串转换和 ABI carrier 以当前生成签名为准，不将任何临时转换缓冲区留给长期 callback。
+`ImGuiNativeContext*`、`ImDrawData*` 和专门化 vector 存储只描述地址或布局，不自动获得内存 owner。访问前必须确认对应 context/frame 仍有效；复制包装值不延长原生对象寿命。字符串转换和 ABI carrier 以当前生成签名为准，不将任何临时转换缓冲区留给长期 callback。
 
 所有 Native callbacks 的托管 owner 必须保留到注销和排空完成。异常不得穿过 Native callback 边界。实际 context 创建、失败清理和唯一 renderer owner 位于所属 SDL/ImGui presentation；正常业务不要自己再建立第二个 context 管理器。
 
@@ -31,15 +31,13 @@
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
-
-### `Inno.Native.ImGui.ImGui`
+以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
 
 <!-- api: T:Inno.Native.ImGui.ImGui 8369a021570193ec214d8295c8de5266b53a0c265ab5d24277ee513b907498c0 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-061ca570826da2e3"></a>[`public static class Inno.Native.ImGui.ImGui`](../../../backends/ImGui/native/Inno.Native.ImGui/ImGui.cs#L9) | Initializes generated imports against the component's dynamic native library. | — | — |
+| 声明 | 语义与限制 |
+| --- | --- |
+| <a id="api-061ca570826da2e3"></a>[`public static class Inno.Native.ImGui.ImGui`](../../../backends/ImGui/native/Inno.Native.ImGui/ImGui.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
 
 ## 项目依赖
 

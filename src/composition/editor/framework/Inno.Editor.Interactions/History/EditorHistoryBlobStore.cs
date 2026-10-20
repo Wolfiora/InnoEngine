@@ -26,7 +26,7 @@ internal sealed class EditorHistoryBlobStore : IDisposable
         if (m_sessionDirectory is null)
             throw new InvalidOperationException("The history does not have a disk payload store.");
         Directory.CreateDirectory(m_sessionDirectory);
-        string hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        string hash = Convert.ToHexStringLower(SHA256.HashData(bytes));
         string path = Path.Combine(m_sessionDirectory, hash + ".bin");
         if (!File.Exists(path))
         {

@@ -1,10 +1,22 @@
 # Inno.Build.Toolchains
 
+托管工具使用 .NET 10 SDK。输入快照先读取求值后的工程图，再仅执行 SDK 的编译符号准备 target，捕获包括 `NET10_0` 在内的最终符号集合；该步骤不执行编译、原生准备或产品发布。SDK target 输入与求值器一起参与内容指纹，缺少符号准备能力时明确失败。
+
 托管输入快照包含当前 Restore 实际选择的 NuGet 锁文件及包内容身份。中立源码使用 `packages.lock.json`；明确产品使用 `packages.<target>.<rid>.lock.json`（未声明的维度省略）。不同目标的 Restore 不覆盖同一中立锁文件，固定源码编译也消费相同选定文件。
 
 [分类索引](README.md) · [Wiki 首页](../README.md) · [平台归属与扩展](../architecture/PLATFORM_EXTENSION_GUIDE.md)
 
-## 构建结果的所有权
+## 原生生成输入的中立契约
+
+`NativeBindingCompilation` 描述已选定生成结果的编译要求，不包含 BGCS 类型或平台选择逻辑。`NativeBindingSourceRoot` 标识组件内的根；`NativeBindingSourceFile` 保存相对路径、长度、SHA-256 与是否编译；`NativeBindingIncludeDirectory` 保留 include 顺序、system 与 framework 搜索语义。生成器适配层负责转换，具体平台 provider 负责选择真实 SDK。
+
+`Load` 严格拒绝缺少必需字段、未知字段、无效根身份和越界路径。`GetInputs` 提供冻结输入集合，`VerifyInputs` 在消费前核对实际字节。外部用户头文件与生成源码必须复制进本次操作的冻结树；选定 SDK 的系统头仍由 SDK 提供。`nativeDirectory` 是完整原生产物与编译要求目录。
+
+`defines` 只作用于清单标记的翻译单元；`compilerDefines` 记录解析目标事实，不覆盖消费编译器的内建宏。上游 CMake target 保持自身配置。`requiredExports` 和静态表要求记录实际链接契约，DLL 的符号存在性通过加载实际产物另行验证。
+
+这些 public 类型是生成器和中立构建器之间的可替换边界，不进入游戏脚本导出。生成结果的 lease 继续覆盖冻结复制、编译和链接的完整消费期。
+
+## 构建产物的借用与释放
 
 `ProductNativeBuildResult` 拥有 Native 产物读取 lease 和对应的 `NativeBindingGenerationResult`。需要复制 Native 文件、生成 managed selection、编译或链接的调用方必须在这些操作结束后才释放结果。Context 借用生成描述，不接管结果生命周期。
 
@@ -34,7 +46,7 @@ Native 工作目录中的 `recipe.json` 是内部诊断资料，记录实际有�
 
 `ManagedBuildInputSnapshot` 记录实际 SDK 求值的输入身份。`CreateExecutionAsync` 将操作已声明的仓库输入复制到具有独占 lease 的工作目录；`ManagedBuildExecution.project` 和 `engineRoot` 用于实际编译与源码提取。复制逐文件校验计划哈希，内容相同的文件保留 mtime，移除旧清单中不再需要的 owned 输入。编译后验证源码副本，原输入仍在发布边界 fresh 校验。工作目录复用不代表发布产物有效性；外部 SDK 和包继续使用明确选定的位置。
 
-带平台限定的 TFM（例如 `net9.0-browser`）保留完整编译目标身份；FrameworkReference 根据 SDK 的基础 framework moniker 选择对应 reference pack。解析使用所选 SDK 自带的 NuGet.Frameworks，不能用目录后缀推导或扫描另一套 SDK 补齐引用。
+带平台限定的 TFM（例如 `net10.0-browser`）保留完整编译目标身份；FrameworkReference 根据 SDK 的基础 framework moniker 选择对应 reference pack。解析使用所选 SDK 自带的 NuGet.Frameworks，不能用目录后缀推导或扫描另一套 SDK 补齐引用。
 
 ```csharp
 using System.Collections.Generic;
@@ -505,7 +517,7 @@ BuildCacheOwnerCatalog 由实际发行登记 publisher 根、ID 和生命周期�
 <!-- api: M:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.ValidateSelection(System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,Inno.Build.Toolchains.NativeBindingGenerationDescriptor},System.Collections.Generic.IReadOnlyDictionary{System.String,Inno.Build.Toolchains.NativeLibraryKind}) d264c4d1b36703565bb3e1607d67be607a888887c1487e14ea5f6f8f659a91d1 -->
 <!-- api: P:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.fingerprint 8fa1636cde3318f2f772e67d885026ff9b96f26c62cbcf3762b91d802003179b -->
 <!-- api: P:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bindingsPath d6bfd98bd96860c91c59fcb98bd4b00cfb719497833b042ddfbd0512e3fda9e5 -->
-<!-- api: P:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bridgeDirectory 173d19725457cfb7de9fcbc2305e273f61184b5374a3856c854be3faebbaee26 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.nativeDirectory a4331a52985429468fb98e5946a8f7142a3a5c6f439c9e1581e023d5610c245e -->
 <!-- api: P:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.artifactDirectory edfd6b77b3f0c839b1f42eff943628c3d4cc7922026e00f0819f7f89448e09f4 -->
 <!-- api: M:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.Load(System.String) 59654db817683d030bfe0cd0d15f4d9899a1b6305a123f9295db5e13a0d535d2 -->
 <!-- api: M:Inno.Build.Toolchains.NativeBindingGenerationDescriptor.Write(System.String) 4793545c8bdef63718cef858ec59c1677a65a9231848ea93a614b422262e0fcc -->
@@ -520,7 +532,7 @@ BuildCacheOwnerCatalog 由实际发行登记 publisher 根、ID 和生命周期�
 | <a id="api-4b9c824c94234aa7"></a>[`public static void Inno.Build.Toolchains.NativeBindingGenerationDescriptor.WriteSelection(string path, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeBindingGenerationDescriptor> generations, System.Collections.Generic.IReadOnlyDictionary<string, Inno.Build.Toolchains.NativeLibraryKind> linkage)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L38) | Writes the exact native binding identities for a subsequent managed build without reselecting generations. Identical content preserves the existing import timestamp; changed content is installed atomically.<br>`path`：The MSBuild selection document in an intermediate directory exclusively owned by the caller.<br>`generations`：Explicit checkout-relative native project paths and their complete selected generations.<br>`linkage`：Explicit linkage of each selected component, used by its managed native initialization boundary. | 约束由所属类型与本页生命周期定义。 | `System.ArgumentException`：A project name is unsafe or repeated, or component linkage is invalid or incomplete.<br>`System.ArgumentNullException`：The generation or linkage closure is null.<br>`System.IO.IOException`：The selection cannot be read or its complete replacement cannot be installed. |
 | <a id="api-94bc31d8d580030a"></a>[`public required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.artifactDirectory { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L108) | Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 | <a id="api-9d9ccb1ebc1e5db7"></a>[`public required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bindingsPath { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L98) | Gets the absolute managed source path selected by the component project. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-afaa98d2b303b333"></a>[`public required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.bridgeDirectory { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L103) | Gets the complete native bridge directory, or an empty string for a direct C binding. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| <a id="api-afaa98d2b303b333"></a>[`public required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.nativeDirectory { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L103) | Gets the complete native artifact and compilation-requirement directory, or empty when none is required. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 | <a id="api-3cfbab1bd43ff7f5"></a>[`public required string Inno.Build.Toolchains.NativeBindingGenerationDescriptor.fingerprint { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L93) | Gets the immutable input identity assigned to this target generation. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 | <a id="api-72d324bd4b9b3599"></a>[`public sealed class Inno.Build.Toolchains.NativeBindingGenerationDescriptor`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingGenerationDescriptor.cs#L14) | Describes the complete binding generation selected by one native build request. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
 
@@ -1168,3 +1180,123 @@ BuildCacheOwnerCatalog 由实际发行登记 publisher 根、ID 和生命周期�
 ### 输入路径别名与创作归属
 
 同一校验阶段按最终物理路径去重哈希，但保留每次读取的原路径和 checkout 相对逻辑身份。macOS 的 `/var` 别名、目录链接与 Windows junction 不会把所属源码误记成外部 SDK 输入；固定编译副本仍按所属源码布局准备。独立锁等待、编译及提交后重新校验，不跨阶段复用内容结论。
+
+## 原生生成编译契约 API
+
+<!-- api: T:Inno.Build.Toolchains.NativeBindingCompilation 41474d8fb3c410d67959afaaa0a0e03bce1dfedccef6fc0ccbb5ec66085133a8 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.roots 32502591ef968e64945c8e2db9960f3a3f36fc4b1cf833d059f10e90a827aa7b -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.files 4d8890d75c5fbd99d816750d30f7fb9f7e02fe8f1fb4547ba3b9120cb213a040 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.includeDirectories 0b8503efa23b6d1cf903350d8ee609b3d77dc325814311ed6bf062c69155894e -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.defines 5a92d8c7c3824238be147aca94102f33299b5cad80794a009f76892e37c4a6b1 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.compilerDefines 6fce30e385b94818f5dec6f7ae4e34ec0e85b3447755826db74540634613f579 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.cxxStandard 1017028e0c7e12a790160633ea0fd2d7e9c65a90cd12e880bd23dfca361feecc -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.cStandard 5a77a5b63cae20df6782ba3c5c9dfca3b3d3a83457f3e1f4f3eca8f450490ac5 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.requiredExports 1a9480d6e47e4c485265b13ad5c37b0af219bcbf85b8a696026f8d20e6d6cbc9 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.staticExportSymbols b98e6d03c90c18f504d021118b76a5e04c5e01010a0d28cfe7512bff93e497c9 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.staticExportAbi 1ff77b1da8e927283ce7b4665ff5b794f7fefbdff6f2b8633720ad8fcd4d82d3 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingCompilation.staticExportNames 2b6c8363d2b4723086be2c017a21ddde6b20826bc5a6f6dc95924cc1c436a053 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingCompilation.Load(System.String) 1c7c7291da6b88fc6b7f310578a59432074b656da8af7124859b1fea7ef865ad -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingCompilation.ResolveRoot(System.String,System.String,System.String) 675817642ee13c1052f9a1addc5cffea835e2266c8578142e5d7b9714d96ca93 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingCompilation.VerifyInputs(System.Func{System.String,System.String},System.Threading.CancellationToken) 11c3c2bda073c2d197112e84a8717dca408249de321eada607cf298b34a72e79 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingCompilation.GetInputs(System.String,System.String) f447249eac74c2bdb4afa72cfedefcb3a9442222f44a3a185aa56c529b89d343 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingCompilation.#ctor a5ed398916d6074923d7171fbd32c6ab252752d63a1c5754c10bb0554c2c3a0b -->
+<!-- api: T:Inno.Build.Toolchains.NativeBindingIncludeDirectory 1a72d09557dce75624f018f269dfd5da88d8fffb3ce77cbff8f5f2be3c0fef52 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.#ctor(System.String,System.String,System.Boolean,System.Boolean) d08afa54a5e67676e2338d30cac64c903cd45b3dbd8f0dae3ded5802bdf42750 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingIncludeDirectory.rootId 073be2a8896e71c7cd550dda9153f12cb22496be82eca953969e872dee49da68 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingIncludeDirectory.relativePath dd31a936343e9e473a4d869474a89d09ca1b6d631521e709850ad02f689b8d80 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingIncludeDirectory.system 9703b908c76a5f61ade9ca96c912c5b45a669bea24b8c0c118fb3ff727f7a73c -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingIncludeDirectory.framework 6d8fb8f23fd093a59c9a717cef12977502c28ce483e08baccd57c3d1bf535361 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.ToString f77a056371bf95d1ac95232203d33f019f172d1f332964185c0df7a48f735db6 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.op_Inequality(Inno.Build.Toolchains.NativeBindingIncludeDirectory,Inno.Build.Toolchains.NativeBindingIncludeDirectory) 1fa86ff74cc6f3a529b763a6647f89572ccd506926776a67d5560ac1ccd9cbf7 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.op_Equality(Inno.Build.Toolchains.NativeBindingIncludeDirectory,Inno.Build.Toolchains.NativeBindingIncludeDirectory) 5453401503d418e5261af446112186f960b738d704384b9e70fc1418a121164e -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.GetHashCode d85359342b378c8d6e0bbe18bed61f0e653ecace7d38d18a6761f2c150bc703f -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.Equals(System.Object) d46933f10dcb62d0e757c7d50bf5d2280c118389a32c41839334d954b81bab7a -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.Equals(Inno.Build.Toolchains.NativeBindingIncludeDirectory) 24c8a36d28bacd354aeb43ea5971142b74f37ce69fa4913f4c6e14b19fb426ad -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingIncludeDirectory.Deconstruct(System.String@,System.String@,System.Boolean@,System.Boolean@) 1f1ab7b41b2450c297a1a31952793eed3e27a68fcec0a9d834e38745dae2b5b1 -->
+<!-- api: T:Inno.Build.Toolchains.NativeBindingSourceFile 914a67960cbcfd94e8b7bcbe8566538f457e428e88482df246bbb213a557b143 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.#ctor(System.String,System.String,System.Int64,System.String,System.Boolean) fe749dffd12ffd0d25edf076727c2799e7e068468e0624ef5c84042babadb197 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceFile.rootId f6111adda7f8f904f7077c4f2c0d0a78de280c39704fb5c34c85069a9d02f522 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceFile.relativePath 886e51cf36fb6f623be0c435d4a75917138c6d5c4bd0e2ee74ccf97f652a0b69 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceFile.length 2d3e246fe21fde4e588aaeca9c7efb8d74a32606c692ee5345bb8f0232962608 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceFile.sha256 0e76db777a004dcfe0c1fe19749974348ec60ad1d8227110cec889eef8a4aaf4 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceFile.compile b6de83707955d12c54a2ac183257a1b133b4d9f682b8476e4a364adfebc8fa14 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.ToString 9a778427df2fcb0113dd24c918d33a025118dd735d7af7b61806e195115ffd28 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.op_Inequality(Inno.Build.Toolchains.NativeBindingSourceFile,Inno.Build.Toolchains.NativeBindingSourceFile) e5c6fb21f74c6eaa8a4375ad1e40e8427dad058436516473e4c413f1ccfeecce -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.op_Equality(Inno.Build.Toolchains.NativeBindingSourceFile,Inno.Build.Toolchains.NativeBindingSourceFile) a19c677a793d722ae623ab255a07892ee53c0afc0433a53f1cc2211fd4c2780a -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.GetHashCode c0bfcd4facddb82b98735ef447ca2aba3a9966ab6120a6ab507647280c5e6ee7 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.Equals(System.Object) 4d6c45ef068efc66dea56b683e8d3418fe3f84bb30dc9a1460e8dd5edb8bf10d -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.Equals(Inno.Build.Toolchains.NativeBindingSourceFile) 627e7d26c377b7568615f78489b34b9793cc3ce7c99887e20a99107600d9c770 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceFile.Deconstruct(System.String@,System.String@,System.Int64@,System.String@,System.Boolean@) 747b86baf4c0273f5903f7be4fcc901fcb1e6b87487877e51b2e09cc0e97e836 -->
+<!-- api: T:Inno.Build.Toolchains.NativeBindingSourceRoot 590f9ff139b0f1caf13a58d048baf0393619357b3f8461320298efe6fe35a452 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.#ctor(System.String,System.String,System.Boolean,System.Boolean) a3bcc94e777b65c74e9b75b9525b210b48c9c1cc688fac99bb7ca05f3a34a7dc -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceRoot.id 122ceab8e1594d0f25e5c104ef3d7052c96d9ea7d436a9e8231133f45ad7a04d -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceRoot.directory 07ce781cefac8248b20d7cd62cf33e8972c7374deeab1eb3f106602bd259b4c4 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceRoot.generated 4e8f925ddb7ab4efda2499a079a64701c44fdb8705866ccbd45a7efc3b7b91d5 -->
+<!-- api: P:Inno.Build.Toolchains.NativeBindingSourceRoot.frozen 761cce9a5561bd89461d007051df286be66b9f89d96e0dfbf9606661a3969170 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.ToString 3a8029db56614b08d2219355808972d131873e27fb0b6882013bfbdd9fed3c7a -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.op_Inequality(Inno.Build.Toolchains.NativeBindingSourceRoot,Inno.Build.Toolchains.NativeBindingSourceRoot) a87295fc32ab02d6e291cd183a1c523f37b74ebe1c69a4a676e7ae25fa9f2416 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.op_Equality(Inno.Build.Toolchains.NativeBindingSourceRoot,Inno.Build.Toolchains.NativeBindingSourceRoot) ee2de049643a632db50aad1520ce8678667012adc46f10d73f677695ca2e62d9 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.GetHashCode 9a1188b0d254d2d9d81fcd0f80187f9ef0498bcab3604c4d4afcfb008a0663f9 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.Equals(System.Object) 03f57cec59cac68524284d1f6977c9bacfe48c34fda19ce12585f37fe1761005 -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.Equals(Inno.Build.Toolchains.NativeBindingSourceRoot) 48aae4a62296cb666f6ac405b6b49ca0b0a08e76e762dcd0e4fa8c741f1f11cd -->
+<!-- api: M:Inno.Build.Toolchains.NativeBindingSourceRoot.Deconstruct(System.String@,System.String@,System.Boolean@,System.Boolean@) da81058ec205771bffc659eb1c8a417ab2940a671088e83bd6ecdd8bac368c14 -->
+
+| 当前签名 | 语义 |
+| --- | --- |
+| [`public sealed class Inno.Build.Toolchains.NativeBindingCompilation`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L14) | Describes a selected component's native requirements independently of its source generator. |
+| [`public required Inno.Build.Toolchains.NativeBindingSourceRoot[] Inno.Build.Toolchains.NativeBindingCompilation.roots { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L23) | Gets root bindings whose identities are local to this component. |
+| [`public required Inno.Build.Toolchains.NativeBindingSourceFile[] Inno.Build.Toolchains.NativeBindingCompilation.files { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L26) | Gets all exact input files; only files marked compile are translation units. |
+| [`public required Inno.Build.Toolchains.NativeBindingIncludeDirectory[] Inno.Build.Toolchains.NativeBindingCompilation.includeDirectories { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L29) | Gets include requirements in their original search order. |
+| [`public required string[] Inno.Build.Toolchains.NativeBindingCompilation.defines { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L32) | Gets ordered definitions for manifest translation units; upstream target configuration remains component-owned. |
+| [`public required string[] Inno.Build.Toolchains.NativeBindingCompilation.compilerDefines { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L35) | Gets parser target macro facts; these must not override the consuming compiler's builtins. |
+| [`public required int Inno.Build.Toolchains.NativeBindingCompilation.cxxStandard { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L38) | Gets the minimum C++ standard, or zero when no C++ translation unit is required. |
+| [`public required int Inno.Build.Toolchains.NativeBindingCompilation.cStandard { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L41) | Gets the minimum C standard, or zero when no C translation unit is required. |
+| [`public required string[] Inno.Build.Toolchains.NativeBindingCompilation.requiredExports { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L44) | Gets the exact native symbols that the component must provide. |
+| [`public required string[] Inno.Build.Toolchains.NativeBindingCompilation.staticExportSymbols { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L47) | Gets static table entry points, or an empty array for dynamic-only bindings. |
+| [`public required string Inno.Build.Toolchains.NativeBindingCompilation.staticExportAbi { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L50) | Gets the static table ABI digest, or an empty value when no static table exists. |
+| [`public required string[] Inno.Build.Toolchains.NativeBindingCompilation.staticExportNames { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L53) | Gets static table entries in address-resolution order. |
+| [`public static Inno.Build.Toolchains.NativeBindingCompilation Inno.Build.Toolchains.NativeBindingCompilation.Load(string nativeDirectory)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L61) | Reads the current engine-owned compilation description from a selected native output. |
+| [`public string Inno.Build.Toolchains.NativeBindingCompilation.ResolveRoot(string engineRoot, string nativeDirectory, string rootId)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L76) | Resolves a component-local root using the current checkout and selected output. |
+| [`public void Inno.Build.Toolchains.NativeBindingCompilation.VerifyInputs(System.Func<string, string> resolveRoot, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L92) | Verifies the exact bytes at original or remapped roots before their use. |
+| [`public System.Collections.Generic.IEnumerable<Inno.Build.Toolchains.NativeBuildInput> Inno.Build.Toolchains.NativeBindingCompilation.GetInputs(string engineRoot, string nativeDirectory)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L111) | Enumerates exact file declarations for standalone or aggregate recipe fingerprinting. |
+| [`public Inno.Build.Toolchains.NativeBindingCompilation.NativeBindingCompilation()`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs#L14) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public sealed record Inno.Build.Toolchains.NativeBindingIncludeDirectory : System.IEquatable<Inno.Build.Toolchains.NativeBindingIncludeDirectory>`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | Preserves the order and search semantics of one native include requirement. |
+| [`public Inno.Build.Toolchains.NativeBindingIncludeDirectory.NativeBindingIncludeDirectory(string rootId, string relativePath, bool system, bool framework)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | Preserves the order and search semantics of one native include requirement. |
+| [`public string Inno.Build.Toolchains.NativeBindingIncludeDirectory.rootId { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L9) | The component-local input root. |
+| [`public string Inno.Build.Toolchains.NativeBindingIncludeDirectory.relativePath { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L10) | The root-relative directory, or empty for the root itself. |
+| [`public bool Inno.Build.Toolchains.NativeBindingIncludeDirectory.system { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L11) | Whether this directory contains system headers. |
+| [`public bool Inno.Build.Toolchains.NativeBindingIncludeDirectory.framework { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L12) | Whether the compiler must use framework search semantics. |
+| [`public override string Inno.Build.Toolchains.NativeBindingIncludeDirectory.ToString()`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | Returns a string that represents the current object. |
+| [`public static bool Inno.Build.Toolchains.NativeBindingIncludeDirectory.operator !=(Inno.Build.Toolchains.NativeBindingIncludeDirectory? left, Inno.Build.Toolchains.NativeBindingIncludeDirectory? right)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public static bool Inno.Build.Toolchains.NativeBindingIncludeDirectory.operator ==(Inno.Build.Toolchains.NativeBindingIncludeDirectory? left, Inno.Build.Toolchains.NativeBindingIncludeDirectory? right)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public override int Inno.Build.Toolchains.NativeBindingIncludeDirectory.GetHashCode()`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | Serves as the default hash function. |
+| [`public override bool Inno.Build.Toolchains.NativeBindingIncludeDirectory.Equals(object? obj)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | Determines whether the specified object is equal to the current object. |
+| [`public bool Inno.Build.Toolchains.NativeBindingIncludeDirectory.Equals(Inno.Build.Toolchains.NativeBindingIncludeDirectory? other)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | Indicates whether the current object is equal to another object of the same type. |
+| [`public void Inno.Build.Toolchains.NativeBindingIncludeDirectory.Deconstruct(out string rootId, out string relativePath, out bool system, out bool framework)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs#L8) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public sealed record Inno.Build.Toolchains.NativeBindingSourceFile : System.IEquatable<Inno.Build.Toolchains.NativeBindingSourceFile>`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | Identifies exact generated or external bytes needed by a native compilation. |
+| [`public Inno.Build.Toolchains.NativeBindingSourceFile.NativeBindingSourceFile(string rootId, string relativePath, long length, string sha256, bool compile)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | Identifies exact generated or external bytes needed by a native compilation. |
+| [`public string Inno.Build.Toolchains.NativeBindingSourceFile.rootId { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L10) | The component-local input root. |
+| [`public string Inno.Build.Toolchains.NativeBindingSourceFile.relativePath { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L11) | The portable root-relative filename. |
+| [`public long Inno.Build.Toolchains.NativeBindingSourceFile.length { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L12) | The expected byte length. |
+| [`public string Inno.Build.Toolchains.NativeBindingSourceFile.sha256 { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L13) | The lowercase SHA-256 content identity. |
+| [`public bool Inno.Build.Toolchains.NativeBindingSourceFile.compile { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L14) | Whether this file is a translation unit rather than an include dependency. |
+| [`public override string Inno.Build.Toolchains.NativeBindingSourceFile.ToString()`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | Returns a string that represents the current object. |
+| [`public static bool Inno.Build.Toolchains.NativeBindingSourceFile.operator !=(Inno.Build.Toolchains.NativeBindingSourceFile? left, Inno.Build.Toolchains.NativeBindingSourceFile? right)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public static bool Inno.Build.Toolchains.NativeBindingSourceFile.operator ==(Inno.Build.Toolchains.NativeBindingSourceFile? left, Inno.Build.Toolchains.NativeBindingSourceFile? right)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public override int Inno.Build.Toolchains.NativeBindingSourceFile.GetHashCode()`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | Serves as the default hash function. |
+| [`public override bool Inno.Build.Toolchains.NativeBindingSourceFile.Equals(object? obj)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | Determines whether the specified object is equal to the current object. |
+| [`public bool Inno.Build.Toolchains.NativeBindingSourceFile.Equals(Inno.Build.Toolchains.NativeBindingSourceFile? other)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | Indicates whether the current object is equal to another object of the same type. |
+| [`public void Inno.Build.Toolchains.NativeBindingSourceFile.Deconstruct(out string rootId, out string relativePath, out long length, out string sha256, out bool compile)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs#L9) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public sealed record Inno.Build.Toolchains.NativeBindingSourceRoot : System.IEquatable<Inno.Build.Toolchains.NativeBindingSourceRoot>`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | Identifies one component-local root without exposing a generator-specific contract. |
+| [`public Inno.Build.Toolchains.NativeBindingSourceRoot.NativeBindingSourceRoot(string id, string directory, bool generated, bool frozen)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | Identifies one component-local root without exposing a generator-specific contract. |
+| [`public string Inno.Build.Toolchains.NativeBindingSourceRoot.id { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L9) | An ordinal identity scoped to this component's selected generation. |
+| [`public string Inno.Build.Toolchains.NativeBindingSourceRoot.directory { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L10) | The checkout-relative or absolute external location; empty for generated output. |
+| [`public bool Inno.Build.Toolchains.NativeBindingSourceRoot.generated { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L11) | Whether this root denotes the selected native output directory. |
+| [`public bool Inno.Build.Toolchains.NativeBindingSourceRoot.frozen { get; init; }`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L12) | Whether source files must be copied before compilation. |
+| [`public override string Inno.Build.Toolchains.NativeBindingSourceRoot.ToString()`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | Returns a string that represents the current object. |
+| [`public static bool Inno.Build.Toolchains.NativeBindingSourceRoot.operator !=(Inno.Build.Toolchains.NativeBindingSourceRoot? left, Inno.Build.Toolchains.NativeBindingSourceRoot? right)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public static bool Inno.Build.Toolchains.NativeBindingSourceRoot.operator ==(Inno.Build.Toolchains.NativeBindingSourceRoot? left, Inno.Build.Toolchains.NativeBindingSourceRoot? right)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |
+| [`public override int Inno.Build.Toolchains.NativeBindingSourceRoot.GetHashCode()`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | Serves as the default hash function. |
+| [`public override bool Inno.Build.Toolchains.NativeBindingSourceRoot.Equals(object? obj)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | Determines whether the specified object is equal to the current object. |
+| [`public bool Inno.Build.Toolchains.NativeBindingSourceRoot.Equals(Inno.Build.Toolchains.NativeBindingSourceRoot? other)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | Indicates whether the current object is equal to another object of the same type. |
+| [`public void Inno.Build.Toolchains.NativeBindingSourceRoot.Deconstruct(out string id, out string directory, out bool generated, out bool frozen)`](../../build/toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs#L8) | 该 record 的值比较、复制或格式化成员；不持有生成结果的 lease。 |

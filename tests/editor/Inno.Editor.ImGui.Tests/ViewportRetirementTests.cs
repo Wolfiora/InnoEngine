@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -33,17 +35,17 @@ public sealed unsafe class ViewportRetirementTests
         var context = application.CreateImGuiContext(
             window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
         context.SetIniFile(null);
-        var viewport = new ImGuiViewport { ID = 4221, Size = new Vector2(100, 90) };
-        var io = NativeImGui.GetPlatformIO();
-        io.PlatformCreateWindow(&viewport);
+        var viewport = new ImGuiViewport { ID = 4221, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)) };
+        var io = NativeImGui.Raw.GetPlatformIO();
+        io->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;
-        io.PlatformDestroyWindow(&viewport);
+        io->PlatformDestroyWindow(&viewport);
         renderer.Fail();
 
         Assert.Throws<RetirementPendingException>(() => context.RenderFrame(static () => { }));
         Assert.Throws<RetirementPendingException>(() => application.DestroyImGuiContext(window));
         Assert.Throws<RetirementPendingException>(() => application.Dispose());
-        Assert.False(SDL.GetWindowFromID(id).IsNull);
+        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
         Assert.Equal(0, renderer.disposeCount);
         GC.KeepAlive(context);
         GC.KeepAlive(application);
@@ -64,24 +66,24 @@ public sealed unsafe class ViewportRetirementTests
         using var context = application.CreateImGuiContext(
             window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
         context.SetIniFile(null);
-        var viewport = new ImGuiViewport { ID = 4218, Size = new Vector2(100, 90), Pos = new Vector2(30, 30) };
-        var io = NativeImGui.GetPlatformIO();
-        io.PlatformCreateWindow(&viewport);
+        var viewport = new ImGuiViewport { ID = 4218, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)), Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30)) };
+        var io = NativeImGui.Raw.GetPlatformIO();
+        io->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;
 
-        io.PlatformDestroyWindow(&viewport);
+        io->PlatformDestroyWindow(&viewport);
 
         Assert.Single(application.GetWindows());
         Assert.False(context.TryGetWindowId(viewport.ID, out _));
         Assert.True(viewport.PlatformUserData == null);
-        Assert.False(SDL.GetWindowFromID(id).IsNull);
+        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
         context.RenderFrame(static () => { });
-        Assert.False(SDL.GetWindowFromID(id).IsNull);
+        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
         Assert.Equal(1, renderer.retireCount);
 
         renderer.Complete();
         context.RenderFrame(static () => { });
-        Assert.True(SDL.GetWindowFromID(id).IsNull);
+        Assert.True((SDL.Raw.GetWindowFromId(id) == null));
         context.RenderFrame(static () => { });
         Assert.Equal(1, renderer.retireCount);
     }
@@ -100,12 +102,12 @@ public sealed unsafe class ViewportRetirementTests
         var renderer = new PendingRenderer();
         var context = application.CreateImGuiContext(
             window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
-        var viewport = new ImGuiViewport { ID = 4219, Size = new Vector2(100, 90), Pos = new Vector2(30, 30) };
-        NativeImGui.GetPlatformIO().PlatformCreateWindow(&viewport);
+        var viewport = new ImGuiViewport { ID = 4219, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)), Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30)) };
+        NativeImGui.Raw.GetPlatformIO()->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;
 
         Assert.Throws<RetirementPendingException>(() => application.DestroyImGuiContext(window));
-        Assert.False(SDL.GetWindowFromID(id).IsNull);
+        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
         Assert.Equal(0, renderer.disposeCount);
         var replacement = new PendingRenderer();
         Assert.Throws<InvalidOperationException>(() => application.CreateImGuiContext(
@@ -114,7 +116,7 @@ public sealed unsafe class ViewportRetirementTests
 
         renderer.Complete();
         application.DestroyImGuiContext(window);
-        Assert.True(SDL.GetWindowFromID(id).IsNull);
+        Assert.True((SDL.Raw.GetWindowFromId(id) == null));
         Assert.Equal(1, renderer.disposeCount);
         context.Dispose();
         application.DestroyImGuiContext(window);
@@ -137,15 +139,15 @@ public sealed unsafe class ViewportRetirementTests
         using var context = application.CreateImGuiContext(
             window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
         context.SetIniFile(null);
-        var viewport = new ImGuiViewport { ID = 4220, Size = new Vector2(100, 90) };
-        NativeImGui.GetPlatformIO().PlatformCreateWindow(&viewport);
+        var viewport = new ImGuiViewport { ID = 4220, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)) };
+        NativeImGui.Raw.GetPlatformIO()->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;
         Assert.Single(application.GetWindows());
-        Assert.False(SDL.GetWindowFromID(id).IsNull);
+        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
 
         renderer.Complete();
         Assert.Throws<InvalidOperationException>(() => context.RenderFrame(static () => { }));
-        Assert.True(SDL.GetWindowFromID(id).IsNull);
+        Assert.True((SDL.Raw.GetWindowFromId(id) == null));
         context.RenderFrame(static () => { });
     }
 

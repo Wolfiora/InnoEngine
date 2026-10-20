@@ -8,7 +8,7 @@
 
 ## 本轮构建边界回归
 
-测试程序集按顺序调度用例，避免 SDK fixture 同时写共享 checkout 的 bin/obj。锁、取消、并发 publication 和两次构建的竞争仍由各用例显式创建，顺序调度不减少这些并发契约。Engine CI 使用独立的 .NET 9 安装目录，避免临时项目在 runner 上隐式选到另一主版本 SDK；测试及 Wiki 失败证据始终上传。
+测试程序集按顺序调度用例，避免 SDK fixture 同时写共享 checkout 的 bin/obj。锁、取消、并发 publication 和两次构建的竞争仍由各用例显式创建，顺序调度不减少这些并发契约。Engine CI 使用独立的 .NET 10 安装目录，避免临时项目在 runner 上隐式选到另一主版本 SDK；测试及 Wiki 失败证据始终上传。
 
 
 `ProductNativeCacheLookupTests` 验证完整热命中批次、损坏回退及并发；`NativeVerificationPhaseTests` 验证逻辑输入保留、物理读取去重和阶段隔离。`ProductNativeCostTests` 只有显式设置 `INNO_ACCEPTANCE_NATIVE_COST` 时才执行真实产品串行/批次对照，普通测试运行不能当作该性能验收通过。

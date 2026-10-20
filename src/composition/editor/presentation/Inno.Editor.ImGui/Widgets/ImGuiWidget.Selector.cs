@@ -10,7 +10,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Begins a combo whose popup opens below the control and stays within its containing window.
@@ -47,9 +47,9 @@ public static partial class ImGuiWidget
         if ((flags & ~ImGuiComboFlags.WidthFitPreview) != 0)
             throw new ArgumentOutOfRangeException(nameof(flags), flags, "The combo flag is not supported by the editor selector.");
 
-        ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
+        ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
         float width = (flags & ImGuiComboFlags.WidthFitPreview) != 0
-            ? NativeImGui.CalcTextSize(preview).X + NativeImGui.GetFrameHeight() + nativeStyle.FramePadding.X * 2f
+            ? NativeImGui.CalcTextSize(preview).X + NativeImGui.GetFrameHeight() + nativeStyle->FramePadding.X * 2f
             : NativeImGui.CalcItemWidth();
         return BeginMenuSelector(id, preview, MathF.Max(1f, width), MathF.Max(1f, width));
     }
@@ -118,9 +118,9 @@ public static partial class ImGuiWidget
 
         DrawMenuSelectorFrame(minimum, size, preview, hovered, active || open);
         Vector2 popupOrigin = new(minimum.X, minimum.Y + height);
-        NativeImGui.SetNextWindowPos(popupOrigin, ImGuiCond.Always);
-        ImGuiViewportPtr parentViewport = NativeImGui.GetWindowViewport();
-        NativeImGui.SetNextWindowViewport(parentViewport.ID);
+        NativeImGui.SetNextWindowPos(popupOrigin, (int)ImGuiCond.Always, Vector2.Zero);
+        ImGuiViewport* parentViewport = NativeImGui.Raw.GetWindowViewport();
+        NativeImGui.SetNextWindowViewport(parentViewport->ID);
         SetWorkAreaPopupSize(
             MathF.Max(width, minimumPopupWidth),
             popupOrigin,
@@ -136,13 +136,13 @@ public static partial class ImGuiWidget
     private static void SetWorkAreaPopupSize(
         float requestedWidth,
         Vector2 popupOrigin,
-        ImGuiViewportPtr viewport
+        ImGuiViewport* viewport
     ) {
-        ImGuiWindowPtr containingWindow = ImGuiP.GetCurrentWindow().RootWindow;
-        Vector2 windowMaximum = containingWindow.Pos + containingWindow.Size;
-        Vector2 viewportMaximum = viewport.WorkPos + viewport.WorkSize;
+        ImGuiWindow* containingWindow = NativeImGui.Raw.GetCurrentWindow()->RootWindow;
+        Vector2 windowMaximum = ImGui.FromNative(containingWindow->Pos) + ImGui.FromNative(containingWindow->Size);
+        Vector2 viewportMaximum = ImGui.FromNative(viewport->WorkPos) + ImGui.FromNative(viewport->WorkSize);
         float availableHeight = MathF.Max(1f, MathF.Min(windowMaximum.Y, viewportMaximum.Y) - popupOrigin.Y);
-        float maximumHeight = MathF.Min(availableHeight, containingWindow.Size.Y * 0.45f);
+        float maximumHeight = MathF.Min(availableHeight, containingWindow->Size.Y * 0.45f);
         float availableWidth = MathF.Max(1f, MathF.Min(windowMaximum.X, viewportMaximum.X) - popupOrigin.X);
         float popupWidth = Math.Clamp(requestedWidth, 1f, availableWidth);
         SetMenuPopupSizeConstraints(
@@ -157,41 +157,46 @@ public static partial class ImGuiWidget
         bool hovered,
         bool active
     ) {
-        ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
+        ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
         uint background = NativeImGui.GetColorU32(
-            active ? ImGuiCol.FrameBgActive : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg);
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
+            (int)(active ? ImGuiCol.FrameBgActive : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg));
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         Vector2 maximum = minimum + size;
         float arrowSlot = size.Y;
         float arrowMinimumX = MathF.Max(minimum.X, maximum.X - arrowSlot);
         ImDrawFlags previewRounding = size.X <= arrowSlot
             ? ImDrawFlags.RoundCornersAll
             : ImDrawFlags.RoundCornersLeft;
-        drawList.AddRectFilled(
-            minimum,
-            new Vector2(arrowMinimumX, maximum.Y),
-            background,
-            nativeStyle.FrameRounding,
-            previewRounding);
-        uint arrowBackground = NativeImGui.GetColorU32(
-            active || hovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button);
-        drawList.AddRectFilled(
-            new Vector2(arrowMinimumX, minimum.Y),
-            maximum,
-            arrowBackground,
-            nativeStyle.FrameRounding,
-            size.X <= arrowSlot ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersRight);
-
-        Vector2 textMinimum = minimum + nativeStyle.FramePadding;
-        Vector2 textMaximum = new(arrowMinimumX, maximum.Y);
-        drawList.PushClipRect(textMinimum, textMaximum, true);
-        drawList.AddText(textMinimum, NativeImGui.GetColorU32(ImGuiCol.Text), preview);
-        drawList.PopClipRect();
-        ImGuiP.RenderArrow(
+        NativeImGui.Raw.AddRectFilled(
             drawList,
-            new Vector2(arrowMinimumX + nativeStyle.FramePadding.Y, minimum.Y + nativeStyle.FramePadding.Y),
-            NativeImGui.GetColorU32(ImGuiCol.Text),
-            ImGuiDir.Down);
-        ImGuiP.RenderFrameBorder(minimum, maximum, nativeStyle.FrameRounding);
+            ImGui.ToNative(minimum),
+            ImGui.ToNative(new Vector2(arrowMinimumX, maximum.Y)),
+            background,
+            nativeStyle->FrameRounding,
+            (int)(previewRounding)
+        );
+        uint arrowBackground = NativeImGui.GetColorU32(
+            (int)(active || hovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button));
+        NativeImGui.Raw.AddRectFilled(
+            drawList,
+            ImGui.ToNative(new Vector2(arrowMinimumX, minimum.Y)),
+            ImGui.ToNative(maximum),
+            arrowBackground,
+            nativeStyle->FrameRounding,
+            (int)(size.X <= arrowSlot ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersRight)
+        );
+
+        Vector2 textMinimum = minimum + ImGui.FromNative(nativeStyle->FramePadding);
+        Vector2 textMaximum = new(arrowMinimumX, maximum.Y);
+        NativeImGui.Raw.PushClipRect(drawList, ImGui.ToNative(textMinimum), ImGui.ToNative(textMaximum), 1);
+        ImGui.DrawNativeText(drawList, textMinimum, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), preview);
+        NativeImGui.Raw.PopClipRect(drawList);
+        NativeImGui.Raw.RenderArrow(
+            drawList,
+            ImGui.ToNative(new Vector2(arrowMinimumX + nativeStyle->FramePadding.Y, minimum.Y + nativeStyle->FramePadding.Y)),
+            NativeImGui.GetColorU32((int)(ImGuiCol.Text)),
+            ImGuiDir.Down,
+            1f);
+        NativeImGui.RenderFrameBorder(minimum, maximum, nativeStyle->FrameRounding);
     }
 }

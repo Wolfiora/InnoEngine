@@ -94,8 +94,10 @@ internal sealed class BuildWorkspace : IDisposable
         }
     }
 
-    internal string ExportProjectScripts(string outputDirectory)
-    {
+    internal string ExportProjectScripts(
+        string outputDirectory,
+        bool generateIdeProjects
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
         ScriptCompilationResult result = m_compiler.CompileAuthoringGenerationAsync()
             .GetAwaiter().GetResult();
@@ -103,6 +105,8 @@ internal sealed class BuildWorkspace : IDisposable
             throw new InvalidOperationException("Project script compilation failed:" + Environment.NewLine
                 + string.Join(Environment.NewLine,
                     result.diagnostics.Select(static diagnostic => diagnostic.message)));
+        if (generateIdeProjects)
+            m_compiler.GenerateProjectFiles();
         string[] assemblies = result.moduleDeployments
             .Where(static request => request.domain == Inno.Extensibility.Modules.AssemblyDomain.InnoScripting)
             .SelectMany(static request => new[] { request.mainAssemblyPath }

@@ -3,23 +3,22 @@ using Inno.Native.LibraryLoading;
 namespace Inno.Native.Bgfx;
 
 /// <summary>
-/// bgfx native bindings loader.
+/// Initializes the explicitly deployed module through the generated BGCS API.
 /// </summary>
-public static partial class bgfx
+public static unsafe partial class bgfx
 {
-#if INNO_STATIC_NATIVE
-    internal const string LibName = "bgfxRelease";
-#elif DEBUG
+#if DEBUG
     internal const string LibName = "bgfx-shared-lib-debug";
 #else
     internal const string LibName = "bgfx-shared-lib-release";
 #endif
-#if !INNO_STATIC_NATIVE
-    private const string DLL_NAME = LibName;
-    
+
     static bgfx()
     {
-        NativeDllLoader.LoadNativeDll(LibName, typeof(bgfx).Assembly);
-    }
+#if INNO_STATIC_NATIVE
+        FromStatic();
+#else
+        Load(NativeDllLoader.FindNativeLibrary(LibName));
 #endif
+    }
 }

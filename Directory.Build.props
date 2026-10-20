@@ -3,6 +3,8 @@
   <Import Project="$(InnoProductBuildProperties)" Condition="'$(InnoProductBuildProperties)' != ''" />
 
   <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
     <Deterministic>true</Deterministic>
     <InnoShaderToolSourceRoot Condition="'$(InnoShaderToolSourceRoot)' == ''">$(MSBuildThisFileDirectory)</InnoShaderToolSourceRoot>
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>

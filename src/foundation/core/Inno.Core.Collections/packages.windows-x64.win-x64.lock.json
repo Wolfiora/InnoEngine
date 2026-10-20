@@ -1,11 +1,11 @@
 {
   "version": 1,
   "dependencies": {
-    "net9.0": {
+    "net10.0": {
       "inno.extensibility.catalogs": {
         "type": "Project"
       }
     },
-    "net9.0/win-x64": {}
+    "net10.0/win-x64": {}
   }
 }

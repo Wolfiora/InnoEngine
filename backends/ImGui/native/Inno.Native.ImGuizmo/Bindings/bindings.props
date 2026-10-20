@@ -3,7 +3,6 @@
     <InnoNativeComponentId>cimguizmo</InnoNativeComponentId>
     <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
   </PropertyGroup>
-
   <ItemGroup>
     <InnoBindingTarget Include="linux-arm64">
       <Config>bindgen.linux-arm64.json</Config>

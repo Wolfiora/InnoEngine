@@ -10,7 +10,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Editor.Exporting;
 
 [EditorModal("export.plugin", "Export as Plugin", order: 300)]
-internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
+internal sealed unsafe class PluginExportModal(ExportWindowModule window) : EditorModal
 {
     private const int C_TEXT_CAPACITY = 4096;
 
@@ -45,7 +45,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         try
         {
             NativeImGui.TextUnformatted("Plugin ID");
-            NativeImGui.TextDisabled($"{window.pluginId} (from Project ID)");
+            EditorWidget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, $"{window.pluginId} (from Project ID)");
             DrawText("Display Name", "plugin_name", window.pluginDisplayName, value => window.pluginDisplayName = value);
             DrawText("Destination IPlugin", "plugin_output", window.pluginOutputPath, value => window.pluginOutputPath = value);
             bool includeDependencies = window.includePluginDependencies;
@@ -56,8 +56,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         {
             NativeImGui.EndDisabled();
         }
-        NativeImGui.TextDisabled(
-            "Identity comes from Settings > Project > Identity. Other defaults come from Build > Plugin.");
+        EditorWidget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Identity comes from Settings > Project > Identity. Other defaults come from Build > Plugin.");
         DrawOutcome();
         DrawButtons();
     }
@@ -79,13 +78,13 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     private void DrawButtons()
     {
         NativeImGui.Spacing();
-        ImGuiStylePtr style = NativeImGui.GetStyle();
-        float closeWidth = NativeImGui.CalcTextSize("Close").X + style.FramePadding.X * 2f;
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
+        float closeWidth = NativeImGui.CalcTextSize("Close").X + style->FramePadding.X * 2f;
         string primaryLabel = window.isPluginBusy ? "Cancel" : "Export";
-        float exportWidth = NativeImGui.CalcTextSize(primaryLabel).X + style.FramePadding.X * 2f;
+        float exportWidth = NativeImGui.CalcTextSize(primaryLabel).X + style->FramePadding.X * 2f;
         NativeImGui.SetCursorPosX(
             NativeImGui.GetCursorPosX() +
-            MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - closeWidth - style.ItemSpacing.X - exportWidth));
+            MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - closeWidth - style->ItemSpacing.X - exportWidth));
         NativeImGui.BeginDisabled(window.isPluginBusy);
         try
         {
@@ -96,7 +95,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         {
             NativeImGui.EndDisabled();
         }
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         if (NativeImGui.Button(primaryLabel))
         {
             if (window.isPluginBusy)

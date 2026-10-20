@@ -1,3 +1,4 @@
+using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using System;
 using System.Linq;
 using Inno.Rendering;
@@ -13,7 +14,7 @@ internal sealed partial class ShaderEditorCanvas
     {
         if (!ImGuiApi.CollapsingHeader("Techniques & Roles"))
             return false;
-        ImGuiApi.TextWrapped("Techniques map pipeline-defined roles to this shader's passes. Contract and role identities are supplied by the rendering pipeline.");
+        EditorWidget.WrappedText("Techniques map pipeline-defined roles to this shader's passes. Contract and role identities are supplied by the rendering pipeline.");
         bool changed = false;
         for (int i = 0; i < definition.techniques.Length; i++)
         {
@@ -117,7 +118,7 @@ internal sealed partial class ShaderEditorCanvas
 
     private static bool FeatureControls(ref GraphicsCapability features)
     {
-        if (!ImGuiApi.TreeNode("Required Capabilities"))
+        if (!ImGuiApi.TreeNodeEx("Required Capabilities", 0))
             return false;
         bool changed = false;
         GraphicsCapability updated = features;

@@ -22,7 +22,7 @@ Native 与 .NET 最终链接消费同一次冻结的目标 bindings、archive cl
 
 BrowserWasm32SupportPackValidator 检查完整链接输入和受支持页面资源；source 用隔离 staging、完整校验、指纹与原子发布。浏览器未来替换托管运行时只新增 compiler/link 接入并重验 interop，不改 Rendering/Input/玩法。
 
-Validator 由平台贡献传入同一个不可变 `ProductNativeBuildPlan`，直接使用 backend 声明的 archive/binding 闭包。归档保持 `Native/<component>/browser-wasm/<archive>` 布局；缺失、多余或外国原生二进制均拒绝。静态直接调用绑定不依赖动态加载用的 BGCS.Runtime；Windows/macOS 动态绑定的依赖仍由各自产品保留。
+Validator 由平台贡献传入同一个不可变 `ProductNativeBuildPlan`，直接使用 backend 声明的 archive/binding 闭包。归档保持 `Native/<component>/browser-wasm/<archive>` 布局；缺失、多余或外国原生二进制均拒绝。各目标绑定都使用固定的 `BGCS.Runtime` 包：Browser 从 SDK 静态导出表建立调用会话，动态目标从部署索引中的库建立调用会话。
 
 ## 平台基础与集成
 

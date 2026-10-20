@@ -130,8 +130,9 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
             m_ownedAssemblies.Add(root);
             pending.Enqueue(root);
         }
-        foreach (AssemblyName dependency in HostDependencyManifest.GetInnoRuntimeAssemblies(roots))
-            TryEnqueueHostAssembly(dependency, visited, pending);
+        foreach (KeyValuePair<string, string> dependency in HostDependencyManifest.GetInnoRuntimeAssemblies(roots)
+                     .OrderBy(static dependency => dependency.Key, StringComparer.OrdinalIgnoreCase))
+            TryEnqueueHostAssembly(new AssemblyName(dependency.Key), visited, pending, dependency.Value);
 
         while (pending.Count > 0)
         {
@@ -143,12 +144,15 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
     private void TryEnqueueHostAssembly(
         AssemblyName assemblyName,
         ISet<string> visited,
-        Queue<Assembly> pending
+        Queue<Assembly> pending,
+        string? manifestPath = null
     ) {
         string name = assemblyName.Name ?? string.Empty;
         if (!name.StartsWith("Inno.", StringComparison.Ordinal) || !visited.Add(name))
             return;
-        Assembly assembly = m_hostLoadContext.LoadFromAssemblyName(assemblyName);
+        Assembly assembly = manifestPath is null
+            ? m_hostLoadContext.LoadFromAssemblyName(assemblyName)
+            : m_hostLoadContext.LoadFromAssemblyPath(manifestPath);
         lock (m_ownedAssemblies)
             m_ownedAssemblies.Add(assembly);
         pending.Enqueue(assembly);

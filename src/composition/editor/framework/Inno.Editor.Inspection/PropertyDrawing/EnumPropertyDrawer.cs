@@ -67,7 +67,7 @@ internal sealed class EnumPropertyDrawer : IPropertyDrawer
                 ? currentBits == 0
                 : (currentBits & candidateBits) == candidateBits;
             string name = Enum.GetName(enumType, candidate) ?? candidate.ToString()!;
-            if (!NativeImGui.Selectable(name, selected, ImGuiSelectableFlags.NoAutoClosePopups))
+            if (!NativeImGui.Selectable(name, selected, (int)(ImGuiSelectableFlags.NoAutoClosePopups)))
             {
                 continue;
             }

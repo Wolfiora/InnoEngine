@@ -36,23 +36,23 @@ public static class Sdl3WindowOperations
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(options.height);
         uint properties = SDL.CreateProperties();
         if (properties == 0)
-            throw new InvalidOperationException(SDL.GetError() ?? "SDL_CreateProperties failed.");
+            throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_CreateProperties failed.");
         try
         {
-            if (!SDL.SetStringProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_TITLE_STRING, options.title)
-                || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, options.width)
-                || !SDL.SetNumberProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, options.height)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, requireOpenGl)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, !options.visible)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, options.resizable)
-                || !SDL.SetBooleanProperty(properties, SDL.SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, options.highPixelDensity))
+            if (!SDL.SetStringProperty(properties, SDL.Constants.SDL_PROP_WINDOW_CREATE_TITLE_STRING, options.title)
+                || !SDL.SetNumberProperty(properties, SDL.Constants.SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, options.width)
+                || !SDL.SetNumberProperty(properties, SDL.Constants.SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, options.height)
+                || !SDL.SetBooleanProperty(properties, SDL.Constants.SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, requireOpenGl)
+                || !SDL.SetBooleanProperty(properties, SDL.Constants.SDL_PROP_WINDOW_CREATE_HIDDEN_BOOLEAN, !options.visible)
+                || !SDL.SetBooleanProperty(properties, SDL.Constants.SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, options.resizable)
+                || !SDL.SetBooleanProperty(properties, SDL.Constants.SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, options.highPixelDensity))
             {
-                throw new InvalidOperationException(SDL.GetError() ?? "SDL window properties could not be set.");
+                throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL window properties could not be set.");
             }
-            SDLWindow window = SDL.CreateWindowWithProperties(properties);
-            if (window.IsNull)
-                throw new InvalidOperationException(SDL.GetError() ?? "SDL window creation failed.");
-            return (nint)window.Handle;
+            SDLWindow* window = SDL.Raw.CreateWindowWithProperties(properties);
+            if (window == null)
+                throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL window creation failed.");
+            return (nint)window;
         }
         finally
         {
@@ -72,10 +72,10 @@ public static class Sdl3WindowOperations
     /// <exception cref="ArgumentException">
     /// The handle is zero.
     /// </exception>
-    public static bool ReadFocus(nint windowHandle)
+    public static unsafe bool ReadFocus(nint windowHandle)
     {
         if (windowHandle == 0)
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
-        return (SDL.GetWindowFlags(new SDLWindow(windowHandle)) & SDLWindowFlags.InputFocus) != 0;
+        return ((SDLWindowFlags)SDL.Raw.GetWindowFlags((SDLWindow*)windowHandle) & SDLWindowFlags.InputFocus) != 0;
     }
 }

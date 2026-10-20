@@ -18,9 +18,10 @@ internal static class ProjectBuildWorkflow
         CancellationToken cancellationToken
     ) {
         BuildCommand command = BuildCommand.Parse(arguments);
+        string engineRoot = BuildCommandContext.ResolveEngineRoot(command.engineRoot);
         string application = Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!;
         BuildCompositionContext context = StandardBuildEnvironment.Capture(application, command.toolsTarget, command.dotnetHost);
-        using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, cancellationToken).ConfigureAwait(false);
+        using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, engineRoot, cancellationToken).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
         string extension = context.host.system == "Windows" ? ".exe" : string.Empty;
         var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
@@ -35,7 +36,7 @@ internal static class ProjectBuildWorkflow
         }
         if (command.kind == BuildCommandKind.Scripts)
         {
-            Console.WriteLine(workspace.ExportProjectScripts(command.outputDirectory));
+            Console.WriteLine(workspace.ExportProjectScripts(command.outputDirectory, command.generateIdeProjects));
             return 0;
         }
         var progress = new ConsoleBuildProgress();

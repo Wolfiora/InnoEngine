@@ -56,3 +56,5 @@ dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" -- verify
 ## 实际仓库门禁
 
 RepositoryArchitectureTests 通过公开验证入口检查当前 checkout 的源码、项目、Solution、引用和架构规则。小型正反例与当前仓库必须分别通过；Wiki 的实际 SDK 引用、API 和示例门禁由 Build 测试中的 RepositoryWikiTests 执行。
+
+`RepositoryInputTests` 通过公开 assembly metadata 构造可回收的独立程序集，验证 [Inno.Testing.Source](../testing/Inno.Testing.Source.md) 的所属输入隔离，以及空值、缺失、相对路径、无效目录和重复声明的拒绝。测试只使用公开反射/Emit API，不读取或改写生产私有成员。

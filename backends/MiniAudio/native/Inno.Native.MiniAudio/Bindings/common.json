@@ -1,46 +1,62 @@
 {
-  "includeTransitivelyReferencedHeaders": false,
-  "generateRuntimeSource": false,
-  "mergeGeneratedFilesToSingleFile": true,
-  "singleFileOutputName": "Bindings.cs",
-  "namespace": "Inno.Native.MiniAudio",
-  "apiName": "MiniAudio",
-  "entryFiles": [
-    "../../../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
-  ],
-  "allowedHeaders": [
-    "../../../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
-  ],
-  "marshallingMappings": {
-    "ma_version_string": {
-      "return": {
-        "strategy": "String",
-        "ownership": "Borrowed",
-        "encoding": "Utf8",
-        "nullTerminated": true
-      }
-    },
-    "ma_resource_manager_data_source_init": {
-      "parameters": {
-        "pName": {
-          "strategy": "String",
-          "ownership": "Borrowed",
-          "encoding": "Utf8",
-          "nullTerminated": true
-        },
-        "pDataSource": {
-          "ownership": "Borrowed"
-        }
-      }
+  "schemaVersion": 1,
+  "library": {
+    "id": "inno.miniaudio",
+    "nativeName": "miniaudio"
+  },
+  "source": {
+    "language": "c",
+    "languageStandard": "c17",
+    "headers": [
+      "../../../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
+    ],
+    "includeDirectories": [
+      "../../../../../extern/miniaudio/extras/miniaudio_split"
+    ],
+    "defines": [],
+    "includeTransitivelyReferencedHeaders": false,
+    "parseMacros": true,
+    "selection": {
+      "includeHeaders": [
+        "../../../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
+      ],
+      "excludeDeclarations": [
+        "ma_log_postf"
+      ]
     }
   },
-  "functionPrefixes": [
-    "ma_"
-  ],
-  "typeMappings": {
-    "ma_node": "void"
+  "api": {
+    "namespace": "Inno.Native.MiniAudio",
+    "name": "MiniAudio",
+    "style": "static",
+    "importMode": "functionTable",
+    "framework": "net10.0",
+    "emitNativeMetadata": true,
+    "nestGeneratedTypesInApi": false,
+    "emitCallbackDelegates": true,
+    "emitLibraryNameConstant": true,
+    "usings": [],
+    "naming": {
+      "functions": {
+        "casing": "pascal",
+        "removePrefixes": [
+          "ma_"
+        ]
+      },
+      "fields": {
+        "casing": "pascal"
+      }
+    },
+    "names": {},
+    "functions": [],
+    "records": []
   },
-  "ignoredTypedefs": [
-    "ma_node"
-  ]
+  "runtime": {
+    "mode": "package"
+  },
+  "output": {
+    "layout": "singleFile",
+    "singleFileName": "Bindings.cs",
+    "root": "../obj/bindings/bgcs"
+  }
 }

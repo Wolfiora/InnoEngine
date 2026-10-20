@@ -67,7 +67,7 @@ public static class ImGuizmoToolchain
             context,
             recipe,
             async (
-                scoped,
+                @scoped,
                 output,
                 token
             ) => {

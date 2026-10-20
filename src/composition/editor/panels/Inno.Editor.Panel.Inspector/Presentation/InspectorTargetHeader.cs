@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using System;
 using System.Numerics;
 
@@ -16,7 +20,7 @@ namespace Inno.Editor.Panel.Inspector;
 /// <summary>
 /// Draws the persistent identity header shared by every Inspector target type.
 /// </summary>
-internal sealed class InspectorTargetHeader
+internal sealed unsafe class InspectorTargetHeader
 {
     private const int C_NAME_BUFFER_SIZE = 512;
 
@@ -90,15 +94,15 @@ internal sealed class InspectorTargetHeader
         IInspectionDrawer drawer,
         InspectionDrawContext context
     ) {
-        NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, EditorWidget.style.compactItemSpacing);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.compactFramePadding);
+        NativeImGui.PushStyleVar((int)ImGuiStyleVar.ItemSpacing, EditorWidget.style.compactItemSpacing);
+        NativeImGui.PushStyleVar((int)ImGuiStyleVar.FramePadding, EditorWidget.style.compactFramePadding);
         try
         {
             float rowHeight = NativeImGui.GetFrameHeight();
             float rowSpacing = EditorWidget.style.inspectorTargetHeaderRowSpacing;
             float headerContentHeight = rowHeight * 2f + rowSpacing;
             DrawIcon(drawer.GetIcon(context), headerContentHeight);
-            NativeImGui.SameLine();
+            NativeImGui.SameLine(0f, -1f);
 
             NativeImGui.BeginGroup();
             try
@@ -124,7 +128,7 @@ internal sealed class InspectorTargetHeader
         float rowHeight
     ) {
         Vector2 lockSize = EditorWidget.GetCompactIconSize();
-        float itemSpacing = NativeImGui.GetStyle().ItemSpacing.X;
+        float itemSpacing = NativeImGui.Raw.GetStyle()->ItemSpacing.X;
         float nameWidth = MathF.Max(
             1f,
             NativeImGui.GetContentRegionAvail().X - lockSize.X - itemSpacing);
@@ -146,18 +150,29 @@ internal sealed class InspectorTargetHeader
         {
             NativeImGui.AlignTextToFramePadding();
             Vector2 textOrigin = NativeImGui.GetCursorScreenPos();
-            ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-            drawList.PushClipRect(
-                textOrigin,
-                textOrigin + new Vector2(nameWidth, rowHeight),
-                true);
+            ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+            NativeImGui.Raw.PushClipRect(
+                drawList,
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin),
+                Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin + new Vector2(nameWidth, rowHeight)),
+                (true ? (byte)1 : (byte)0)
+            );
             try
             {
-                drawList.AddText(textOrigin, NativeImGui.GetColorU32(ImGuiCol.Text), name);
+                using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(name, allowsNull: false))
+                {
+                    NativeImGui.Raw.AddText(
+                        drawList,
+                        Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin),
+                        NativeImGui.GetColorU32((int)ImGuiCol.Text),
+                        (sbyte*)nativeText.pointer,
+                        null
+                    );
+                }
             }
             finally
             {
-                drawList.PopClipRect();
+                NativeImGui.Raw.PopClipRect(drawList);
             }
             NativeImGui.Dummy(new Vector2(nameWidth, rowHeight));
             NativeImGui.SameLine(0f, itemSpacing);
@@ -175,12 +190,12 @@ internal sealed class InspectorTargetHeader
     ) {
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         EditorWidget.AddGlyphCentered(
-            NativeImGui.GetWindowDrawList(),
-            NativeImGui.GetFont(),
+            NativeImGui.Raw.GetWindowDrawList(),
+            NativeImGui.Raw.GetFont(),
             NativeImGui.GetFontSize() * EditorWidget.style.inspectorTargetIconScale,
             icon,
             minimum + new Vector2(slotSize * 0.5f),
-            NativeImGui.GetColorU32(ImGuiCol.Text));
+            NativeImGui.GetColorU32((int)ImGuiCol.Text));
         NativeImGui.Dummy(new Vector2(slotSize));
     }
 
@@ -195,8 +210,8 @@ internal sealed class InspectorTargetHeader
         bool visible = NativeImGui.BeginChild(
             $"##inspector_target_custom_{GetTargetId(context.target)}",
             new Vector2(0f, rowHeight),
-            ImGuiChildFlags.None,
-            flags);
+            (int)ImGuiChildFlags.None,
+            (int)flags);
         try
         {
             if (visible)

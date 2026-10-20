@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -29,10 +30,10 @@
       <TestModuleProject Include="../fixtures/Inno.Extensibility.Modules.TestModule.V1/Inno.Extensibility.Modules.TestModule.V1.csproj" />
       <TestModuleProject Include="../fixtures/Inno.Extensibility.Modules.TestModule.V2/Inno.Extensibility.Modules.TestModule.V2.csproj" />
       <TestModuleProject Include="../fixtures/Inno.Extensibility.Modules.TestModule.Invalid/Inno.Extensibility.Modules.TestModule.Invalid.csproj" />
-      <TestModuleV1 Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V1\bin\$(Configuration)\net9.0\Inno.Extensibility.Modules.TestModule.dll" />
-      <TestModuleV2 Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V2\bin\$(Configuration)\net9.0\Inno.Extensibility.Modules.TestModule.dll" />
-      <TestModuleInvalid Include="..\fixtures\Inno.Extensibility.Modules.TestModule.Invalid\bin\$(Configuration)\net9.0\Inno.Extensibility.Modules.TestModule.dll" />
-      <TestModuleDependency Include="..\fixtures\Inno.Extensibility.Modules.TestDependency\bin\$(Configuration)\net9.0\Reloadable.PrivateDependency.dll" />
+      <TestModuleV1 Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V1\bin\$(Configuration)\net10.0\Inno.Extensibility.Modules.TestModule.dll" />
+      <TestModuleV2 Include="..\fixtures\Inno.Extensibility.Modules.TestModule.V2\bin\$(Configuration)\net10.0\Inno.Extensibility.Modules.TestModule.dll" />
+      <TestModuleInvalid Include="..\fixtures\Inno.Extensibility.Modules.TestModule.Invalid\bin\$(Configuration)\net10.0\Inno.Extensibility.Modules.TestModule.dll" />
+      <TestModuleDependency Include="..\fixtures\Inno.Extensibility.Modules.TestDependency\bin\$(Configuration)\net10.0\Reloadable.PrivateDependency.dll" />
     </ItemGroup>
     <MSBuild Projects="@(TestModuleProject)" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)" />
     <Copy SourceFiles="@(TestModuleV1)" DestinationFolder="$(OutDir)Modules\V1" />

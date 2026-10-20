@@ -74,25 +74,25 @@ public override bool useWindowPadding => false;
             | ImGuiTableFlags.NoSavedSettings
             | ImGuiTableFlags.PadOuterX;
         NativeImGui.PushStyleVar(
-            ImGuiStyleVar.CellPadding,
+            (int)(ImGuiStyleVar.CellPadding),
             new System.Numerics.Vector2(
                 padding.X,
                 EditorWidget.style.statisticRowPadding));
-        NativeImGui.PushStyleColor(ImGuiCol.TableRowBg, EditorPalette.collectionRow);
-        NativeImGui.PushStyleColor(ImGuiCol.TableRowBgAlt, EditorPalette.collectionRowAlternate);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.TableRowBg), EditorPalette.collectionRow);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
         try
         {
-            if (!NativeImGui.BeginTable($"##stats_{title}", 2, flags))
+            if (!NativeImGui.BeginTable($"##stats_{title}", 2, (int)(flags), default(System.Numerics.Vector2), 0f))
                 return;
             try
             {
-                NativeImGui.TableSetupColumn("##label", ImGuiTableColumnFlags.WidthStretch, 0.42f);
-                NativeImGui.TableSetupColumn("##value", ImGuiTableColumnFlags.WidthStretch, 0.58f);
+                NativeImGui.TableSetupColumn("##label", (int)(ImGuiTableColumnFlags.WidthStretch), 0.42f);
+                NativeImGui.TableSetupColumn("##value", (int)(ImGuiTableColumnFlags.WidthStretch), 0.58f);
                 foreach ((string label, string value) in values)
                 {
                     NativeImGui.TableNextRow();
                     NativeImGui.TableSetColumnIndex(0);
-                    NativeImGui.TextDisabled(label);
+                    EditorWidget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
                     NativeImGui.TableSetColumnIndex(1);
                     EditorWidget.WrappedText(value);
                 }

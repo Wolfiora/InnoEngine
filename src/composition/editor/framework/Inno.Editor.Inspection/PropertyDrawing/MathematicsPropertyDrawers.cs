@@ -10,11 +10,11 @@ using NumericsVector4 = System.Numerics.Vector4;
 
 namespace Inno.Editor.Inspection;
 
-internal static class ComponentFieldDrawer
+internal static unsafe class ComponentFieldDrawer
 {
     internal static float GetWidth(int count)
     {
-        float spacing = NativeImGui.GetStyle().ItemSpacing.X;
+        float spacing = NativeImGui.Raw.GetStyle()->ItemSpacing.X;
         return MathF.Max(
             1f,
             (NativeImGui.GetContentRegionAvail().X - spacing * (count - 1)) / count);
@@ -38,11 +38,11 @@ internal static class ComponentFieldDrawer
         return EditorWidget.AxisDragInt(path, label, ref value, width);
     }
 
-    internal static void Next() => NativeImGui.SameLine();
+    internal static void Next() => NativeImGui.SameLine(0f, -1f);
 }
 
 [PropertyDrawer(typeof(Vector2))]
-internal sealed class Vector2PropertyDrawer : IPropertyDrawer
+internal sealed unsafe class Vector2PropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -65,7 +65,7 @@ internal sealed class Vector2PropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Vector3))]
-internal sealed class Vector3PropertyDrawer : IPropertyDrawer
+internal sealed unsafe class Vector3PropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -90,7 +90,7 @@ internal sealed class Vector3PropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Vector4))]
-internal sealed class Vector4PropertyDrawer : IPropertyDrawer
+internal sealed unsafe class Vector4PropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -117,7 +117,7 @@ internal sealed class Vector4PropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Vector2Int))]
-internal sealed class Vector2IntPropertyDrawer : IPropertyDrawer
+internal sealed unsafe class Vector2IntPropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -140,7 +140,7 @@ internal sealed class Vector2IntPropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Vector3Int))]
-internal sealed class Vector3IntPropertyDrawer : IPropertyDrawer
+internal sealed unsafe class Vector3IntPropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -165,7 +165,7 @@ internal sealed class Vector3IntPropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Vector4Int))]
-internal sealed class Vector4IntPropertyDrawer : IPropertyDrawer
+internal sealed unsafe class Vector4IntPropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -192,7 +192,7 @@ internal sealed class Vector4IntPropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Rect))]
-internal sealed class RectPropertyDrawer : IPropertyDrawer
+internal sealed unsafe class RectPropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -219,7 +219,7 @@ internal sealed class RectPropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(RectInt))]
-internal sealed class RectIntPropertyDrawer : IPropertyDrawer
+internal sealed unsafe class RectIntPropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -246,7 +246,7 @@ internal sealed class RectIntPropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Color))]
-internal sealed class ColorPropertyDrawer : IPropertyDrawer
+internal sealed unsafe class ColorPropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -270,7 +270,7 @@ internal sealed class ColorPropertyDrawer : IPropertyDrawer
 }
 
 [PropertyDrawer(typeof(Quaternion))]
-internal sealed class QuaternionPropertyDrawer : IPropertyDrawer
+internal sealed unsafe class QuaternionPropertyDrawer : IPropertyDrawer
 {
     /// <summary>
     /// Renders the value presentation for the current editor frame.

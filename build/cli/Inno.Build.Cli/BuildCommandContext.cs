@@ -14,10 +14,7 @@ internal sealed class BuildCommandContext
 {
     internal BuildCommandContext(BuildCommandLine options)
     {
-        string selectedRoot = options.Read("engine-root", string.Empty);
-        root = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
-        if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
-            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
+        root = ResolveEngineRoot(options.Read("engine-root", string.Empty));
         configuration = options.Read("configuration", "Release");
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
         configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
@@ -34,6 +31,14 @@ internal sealed class BuildCommandContext
     internal BuildTargetId toolsTarget { get; }
     internal BuildCompositionContext composition { get; }
     internal BuildDistribution distribution { get; }
+
+    internal static string ResolveEngineRoot(string? selectedRoot)
+    {
+        string root = Path.GetFullPath(string.IsNullOrWhiteSpace(selectedRoot) ? ToolchainEnvironment.FindRepoRoot() : selectedRoot);
+        if (!File.Exists(Path.Combine(root, "InnoEngine.sln")))
+            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
+        return root;
+    }
 
     internal async Task<string> PreflightEditorAsync(CancellationToken cancellationToken)
     {

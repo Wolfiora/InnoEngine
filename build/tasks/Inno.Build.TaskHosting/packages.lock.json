@@ -1,84 +1,69 @@
 {
   "version": 1,
   "dependencies": {
-    "net9.0": {
+    "net10.0": {
       "Microsoft.Build": {
         "type": "Direct",
-        "requested": "[17.12.50, )",
-        "resolved": "17.12.50",
-        "contentHash": "ltg6bznMWHED6sgJBKF9bS88RkMBz1/bfSdBo7d+1MsxtbnICVEh8F8kw6Vvaq3L74ZOCJamyJUa20g38dJQfw==",
+        "requested": "[18.9.6, )",
+        "resolved": "18.9.6",
+        "contentHash": "RBgF5w+fN1FZ1ltQr2FYFLYWP13UjFTZXXG/H30B9FlXgBqdLJl1zTj1X9G03q4hDAQ8K3DUoSBE8Q/5G05F4w==",
         "dependencies": {
-          "Microsoft.Build.Framework": "17.12.50",
-          "Microsoft.NET.StringTools": "17.12.50",
-          "System.Collections.Immutable": "8.0.0",
-          "System.Configuration.ConfigurationManager": "8.0.0",
-          "System.Reflection.Metadata": "8.0.0",
-          "System.Reflection.MetadataLoadContext": "8.0.0"
+          "Microsoft.Build.Framework": "18.9.6",
+          "System.Configuration.ConfigurationManager": "10.0.8",
+          "System.Diagnostics.EventLog": "10.0.8",
+          "System.Reflection.MetadataLoadContext": "10.0.8",
+          "System.Security.Cryptography.ProtectedData": "10.0.8"
         }
       },
       "Microsoft.Build.Framework": {
         "type": "Direct",
-        "requested": "[17.12.50, )",
-        "resolved": "17.12.50",
-        "contentHash": "XTN/hQno3vq5ahhCsQTxvQtFy8zLnl89/uyI78lyU6VCpj09kwTP2VL3xcHND7nriDueUD6MfKh/fJRXayR9kw=="
+        "requested": "[18.9.6, )",
+        "resolved": "18.9.6",
+        "contentHash": "P5y8IAhu6UyN6FtzfN4sCNZEQGyV6S4kSTBYldtzB9bzvgdCBBKjsS6epH5aJVFM0q1yJqa8RaTzr1iEJBwIMA==",
+        "dependencies": {
+          "Microsoft.NET.StringTools": "18.9.6"
+        }
       },
       "Microsoft.Build.Utilities.Core": {
         "type": "Direct",
-        "requested": "[17.12.50, )",
-        "resolved": "17.12.50",
-        "contentHash": "mfMHgi6Tp72xsLwYMM37clD5mEBvsaGQsehSyUcmXNzF63NQPqyRAG9xyC/B/vDjbrRNIX/GHo1mAA0ZLk+uOQ==",
+        "requested": "[18.9.6, )",
+        "resolved": "18.9.6",
+        "contentHash": "BkU2irGHBdkULHzLmEObQCjOz7x+3unHkcmGa+BlTXyEFyj4wupcSAG3E0SlzpeF9s3ViSLbhjNDMHwMxC/Ugg==",
         "dependencies": {
-          "Microsoft.Build.Framework": "17.12.50",
-          "Microsoft.NET.StringTools": "17.12.50",
-          "System.Collections.Immutable": "8.0.0",
-          "System.Configuration.ConfigurationManager": "8.0.0"
+          "Microsoft.Build.Framework": "18.9.6",
+          "System.Configuration.ConfigurationManager": "10.0.8",
+          "System.Diagnostics.EventLog": "10.0.8",
+          "System.Security.Cryptography.ProtectedData": "10.0.8"
         }
       },
       "Microsoft.NET.StringTools": {
         "type": "Transitive",
-        "resolved": "17.12.50",
-        "contentHash": "rhvi40y5yVdsr1YujPrBOD3McCh9gWucUBOSpgqdUZAznkgSnO/f6flpmfP98N8kGnVd317ikHEe2KNukycWxA=="
-      },
-      "System.Collections.Immutable": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "AurL6Y5BA1WotzlEvVaIDpqzpIPvYnnldxru8oXJU2yFxFUy3+pNXjXd1ymO+RA0rq0+590Q8gaz2l3Sr7fmqg=="
+        "resolved": "18.9.6",
+        "contentHash": "CNZfh4P65tHm1Wh/uuIbYfvHlPnb0dJ9SCaIZbXRzOMn+8JEorSqSdXdGRsrDbKBDJfNG6nmgleYhnfL2pd1oQ=="
       },
       "System.Configuration.ConfigurationManager": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "JlYi9XVvIREURRUlGMr1F6vOFLk7YSY4p1vHo4kX3tQ0AGrjqlRWHDi66ImHhy6qwXBG3BJ6Y1QlYQ+Qz6Xgww==",
+        "resolved": "10.0.8",
+        "contentHash": "QG+HHwJjLyUiRuA9axr5pDqHAxboo7FXCTRakxMABE9CUAUij/tsd/MsgQPJUEppkf+YBLT+F/P/wKIVCAIcNg==",
         "dependencies": {
-          "System.Diagnostics.EventLog": "8.0.0",
-          "System.Security.Cryptography.ProtectedData": "8.0.0"
+          "System.Diagnostics.EventLog": "10.0.8",
+          "System.Security.Cryptography.ProtectedData": "10.0.8"
         }
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "fdYxcRjQqTTacKId/2IECojlDSFvp7LP5N78+0z/xH7v/Tuw5ZAxu23Y6PTCRinqyu2ePx+Gn1098NC6jM6d+A=="
-      },
-      "System.Reflection.Metadata": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "ptvgrFh7PvWI8bcVqG5rsA/weWM09EnthFHR5SCnS6IN+P4mj6rE1lBDC4U8HL9/57htKAqy4KQ3bBj84cfYyQ==",
-        "dependencies": {
-          "System.Collections.Immutable": "8.0.0"
-        }
+        "resolved": "10.0.8",
+        "contentHash": "+Ro7WgIom+BDNH+YhTuZKL6QJ0ctfOpTyfUG/h3aU5KwXt3OaNf0wYWrTvoBUj+34Dy5V8dN9yCco1hAJQ4txw=="
       },
       "System.Reflection.MetadataLoadContext": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "SZxrQ4sQYnIcdwiO3G/lHZopbPYQ2lW0ioT4JezgccWUrKaKbHLJbAGZaDfkYjWcta1pWssAo3MOXLsR0ie4tQ==",
-        "dependencies": {
-          "System.Collections.Immutable": "8.0.0",
-          "System.Reflection.Metadata": "8.0.0"
-        }
+        "resolved": "10.0.8",
+        "contentHash": "w9sjhVDe4AKkyswUctVK3oCmZHaA7g+ZUG/xDmzgbsOGxmeRQA6lCQeAh6r75K0lcsLlfBzZXmsNblndyNJhxw=="
       },
       "System.Security.Cryptography.ProtectedData": {
         "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "+TUFINV2q2ifyXauQXRwy4CiBhqvDEDZeVJU7qfxya4aRYOKzVBpN+4acx25VcPB9ywUN6C0n8drWl110PhZEg=="
+        "resolved": "10.0.8",
+        "contentHash": "/ldVgSfImIBp6fLWS7sLH0BnmtFj0ZwGlZo4Xx2q0K3ZhJNDbW45kj2f6zPoC+L+BTINuHdMzTsopuwmkbgcNA=="
       },
       "inno.build.toolchains": {
         "type": "Project",

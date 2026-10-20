@@ -173,18 +173,18 @@ public abstract class RenderCommandEncoder
     private bool m_hasFrameIndex;
 
     /// <summary>
-    /// Binds a graphics pipeline for subsequent draw commands.
+    /// Selects the graphics pipeline for subsequent draw commands.
     /// </summary>
     /// <param name="pipeline">
-    /// Graphics pipeline to bind.
+    /// Graphics pipeline owned by the current device generation.
     /// </param>
     public abstract void BindGraphicsPipeline(GraphicsPipelineHandle pipeline);
 
     /// <summary>
-    /// Binds a compute pipeline for subsequent dispatch commands.
+    /// Selects the compute pipeline for subsequent dispatch commands.
     /// </summary>
     /// <param name="pipeline">
-    /// Compute pipeline to bind.
+    /// Compute pipeline owned by the current device generation.
     /// </param>
     public abstract void BindComputePipeline(ComputePipelineHandle pipeline);
 
@@ -204,16 +204,16 @@ public abstract class RenderCommandEncoder
         => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
-    /// Binds a graph texture and explicit sampler state.
+    /// Binds a sampled texture and its sampler to a shader binding.
     /// </summary>
     /// <param name="binding">
-    /// Stable shader binding identifier.
+    /// Stable shader binding declared by the selected pipeline.
     /// </param>
     /// <param name="texture">
-    /// Graph texture to bind.
+    /// Frame-scoped texture owned by the current graph generation.
     /// </param>
     /// <param name="sampler">
-    /// Backend-neutral sample state.
+    /// Sampling state copied by value.
     /// </param>
     public abstract void BindTexture(
         RenderBindingId binding,
@@ -237,16 +237,16 @@ public abstract class RenderCommandEncoder
         => BindTexture(binding, texture, RenderSamplerState.linearClamp);
 
     /// <summary>
-    /// Binds a persistent texture and explicit sampler state.
+    /// Binds a sampled texture and its sampler to a shader binding.
     /// </summary>
     /// <param name="binding">
-    /// Stable shader binding identifier.
+    /// Stable shader binding declared by the selected pipeline.
     /// </param>
     /// <param name="texture">
-    /// Persistent texture owned by the active device generation.
+    /// Persistent texture owned by the current device generation.
     /// </param>
     /// <param name="sampler">
-    /// Backend-neutral sample state.
+    /// Sampling state copied by value.
     /// </param>
     public abstract void BindTexture(
         RenderBindingId binding,
@@ -255,16 +255,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds a graph texture for shader storage access.
+    /// Binds a texture subresource for shader storage access.
     /// </summary>
     /// <param name="binding">
-    /// Stable storage-image binding identifier.
+    /// Stable shader binding declared by the selected pipeline.
     /// </param>
     /// <param name="texture">
-    /// Graph texture created with storage usage.
+    /// Frame-scoped texture owned by the current graph generation.
     /// </param>
     /// <param name="mipLevel">
-    /// Mip level exposed to the shader.
+    /// Zero-based mip level used for storage access.
     /// </param>
     public abstract void BindStorageTexture(
         RenderBindingId binding,
@@ -273,16 +273,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds a persistent texture for shader storage access.
+    /// Binds a texture subresource for shader storage access.
     /// </summary>
     /// <param name="binding">
-    /// Stable storage-image binding identifier.
+    /// Stable shader binding declared by the selected pipeline.
     /// </param>
     /// <param name="texture">
-    /// Persistent texture created with storage usage.
+    /// Persistent texture owned by the current device generation.
     /// </param>
     /// <param name="mipLevel">
-    /// Mip level exposed to the shader.
+    /// Zero-based mip level used for storage access.
     /// </param>
     public abstract void BindStorageTexture(
         RenderBindingId binding,
@@ -291,13 +291,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds a graph buffer to a shader interface slot.
+    /// Binds a storage buffer to a shader binding.
     /// </summary>
     /// <param name="binding">
-    /// Stable shader binding identifier.
+    /// Stable shader binding declared by the selected pipeline.
     /// </param>
     /// <param name="buffer">
-    /// Graph buffer to bind.
+    /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
     public abstract void BindBuffer(
         RenderBindingId binding,
@@ -305,13 +305,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds a persistent storage buffer to a shader interface slot.
+    /// Binds a storage buffer to a shader binding.
     /// </summary>
     /// <param name="binding">
-    /// Stable shader binding identifier.
+    /// Stable shader binding declared by the selected pipeline.
     /// </param>
     /// <param name="buffer">
-    /// Persistent buffer owned by the active device generation.
+    /// Persistent buffer owned by the current device generation.
     /// </param>
     public abstract void BindBuffer(
         RenderBindingId binding,
@@ -342,13 +342,13 @@ public abstract class RenderCommandEncoder
     }
 
     /// <summary>
-    /// Uploads one uniform value using manifest-validated bytes.
+    /// Sets the byte value of a shader uniform.
     /// </summary>
     /// <param name="binding">
-    /// Stable shader binding identifier.
+    /// Stable shader binding declared by the selected pipeline.
     /// </param>
     /// <param name="value">
-    /// Uniform bytes matching the reflected shader interface.
+    /// Bytes borrowed for this call. An encoder that defers execution must copy them before returning.
     /// </param>
     public abstract void SetUniform(
         RenderBindingId binding,
@@ -356,43 +356,43 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Sets the current object transform from one column-major 4x4 matrix.
+    /// Sets the column-major object transform for subsequent draws.
     /// </summary>
     /// <param name="columnMajorMatrix">
-    /// Exactly sixteen floating-point matrix values.
+    /// Matrix values borrowed for this call. An encoder that defers execution must copy them before returning.
     /// </param>
     public abstract void SetTransform(ReadOnlySpan<float> columnMajorMatrix);
 
     /// <summary>
-    /// Overrides raster state for subsequent draws in the current pass.
+    /// Sets the raster configuration for subsequent draws.
     /// </summary>
     /// <param name="state">
-    /// Complete backend-neutral raster state.
+    /// Immutable raster configuration applied to subsequent draws.
     /// </param>
     public abstract void SetRasterState(RenderRasterState state);
 
     /// <summary>
-    /// Sets two-sided stencil state for subsequent draws.
+    /// Sets the stencil configuration for subsequent draws.
     /// </summary>
     /// <param name="state">
-    /// Complete backend-neutral stencil state.
+    /// Immutable stencil configuration applied to subsequent draws.
     /// </param>
     public abstract void SetStencil(RenderStencilState state);
 
     /// <summary>
-    /// Changes the viewport rectangle for the current pass view.
+    /// Sets the viewport rectangle in render-target pixels.
     /// </summary>
     /// <param name="x">
-    /// Horizontal framebuffer origin.
+    /// Left coordinate in render-target pixels.
     /// </param>
     /// <param name="y">
-    /// Vertical framebuffer origin.
+    /// Top coordinate in render-target pixels.
     /// </param>
     /// <param name="width">
-    /// Positive framebuffer width.
+    /// Rectangle width in render-target pixels.
     /// </param>
     /// <param name="height">
-    /// Positive framebuffer height.
+    /// Rectangle height in render-target pixels.
     /// </param>
     public abstract void SetViewport(
         int x,
@@ -402,19 +402,19 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Restricts subsequent rasterization to a pixel rectangle in the active view.
+    /// Sets the scissor rectangle in render-target pixels.
     /// </summary>
     /// <param name="x">
-    /// Left edge in framebuffer pixels.
+    /// Left coordinate in render-target pixels.
     /// </param>
     /// <param name="y">
-    /// Top edge in framebuffer pixels.
+    /// Top coordinate in render-target pixels.
     /// </param>
     /// <param name="width">
-    /// Positive rectangle width in pixels.
+    /// Rectangle width in render-target pixels.
     /// </param>
     /// <param name="height">
-    /// Positive rectangle height in pixels.
+    /// Rectangle height in render-target pixels.
     /// </param>
     public abstract void SetScissor(
         int x,
@@ -424,13 +424,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds a graph buffer as vertex input.
+    /// Selects a vertex buffer and its first vertex for subsequent draws.
     /// </summary>
     /// <param name="buffer">
-    /// Vertex buffer.
+    /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
     /// <param name="firstVertex">
-    /// First vertex element.
+    /// Zero-based vertex offset in the bound buffer.
     /// </param>
     public abstract void BindVertexBuffer(
         RenderBufferHandle buffer,
@@ -438,13 +438,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds a persistent buffer as vertex input.
+    /// Selects a vertex buffer and its first vertex for subsequent draws.
     /// </summary>
     /// <param name="buffer">
-    /// Persistent vertex buffer.
+    /// Persistent buffer owned by the current device generation.
     /// </param>
     /// <param name="firstVertex">
-    /// First vertex element.
+    /// Zero-based vertex offset in the bound buffer.
     /// </param>
     public abstract void BindVertexBuffer(
         PersistentBufferHandle buffer,
@@ -464,13 +464,13 @@ public abstract class RenderCommandEncoder
     }
 
     /// <summary>
-    /// Binds a graph buffer as index input.
+    /// Selects an index buffer and its first index for subsequent indexed draws.
     /// </summary>
     /// <param name="buffer">
-    /// Index buffer.
+    /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
     /// <param name="firstIndex">
-    /// First index element.
+    /// Zero-based index offset in the bound buffer.
     /// </param>
     public abstract void BindIndexBuffer(
         RenderBufferHandle buffer,
@@ -478,13 +478,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds a persistent buffer as index input.
+    /// Selects an index buffer and its first index for subsequent indexed draws.
     /// </summary>
     /// <param name="buffer">
-    /// Persistent index buffer.
+    /// Persistent buffer owned by the current device generation.
     /// </param>
     /// <param name="firstIndex">
-    /// First index element.
+    /// Zero-based index offset in the bound buffer.
     /// </param>
     public abstract void BindIndexBuffer(
         PersistentBufferHandle buffer,
@@ -504,16 +504,16 @@ public abstract class RenderCommandEncoder
     }
 
     /// <summary>
-    /// Binds graph buffer elements as per-instance input.
+    /// Selects the buffer range supplying per-instance attributes.
     /// </summary>
     /// <param name="buffer">
-    /// Vertex-compatible graph buffer containing instance records.
+    /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
     /// <param name="firstInstance">
-    /// First instance element.
+    /// Zero-based offset in the instance data.
     /// </param>
     /// <param name="instanceCount">
-    /// Positive bound instance count.
+    /// Number of instances to submit.
     /// </param>
     public abstract void BindInstanceBuffer(
         RenderBufferHandle buffer,
@@ -522,16 +522,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Binds persistent buffer elements as per-instance input.
+    /// Selects the buffer range supplying per-instance attributes.
     /// </summary>
     /// <param name="buffer">
-    /// Vertex-compatible persistent buffer containing instance records.
+    /// Persistent buffer owned by the current device generation.
     /// </param>
     /// <param name="firstInstance">
-    /// First instance element.
+    /// Zero-based offset in the instance data.
     /// </param>
     /// <param name="instanceCount">
-    /// Positive bound instance count.
+    /// Number of instances to submit.
     /// </param>
     public abstract void BindInstanceBuffer(
         PersistentBufferHandle buffer,
@@ -552,13 +552,13 @@ public abstract class RenderCommandEncoder
     }
 
     /// <summary>
-    /// Issues a non-indexed draw.
+    /// Submits a draw using the currently bound pipeline and resources.
     /// </summary>
     /// <param name="vertexCount">
-    /// Number of vertices.
+    /// Number of vertices to submit.
     /// </param>
     /// <param name="instanceCount">
-    /// Number of instances.
+    /// Number of instances to submit.
     /// </param>
     public abstract void Draw(
         int vertexCount,
@@ -566,13 +566,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Issues a procedural non-indexed draw that does not consume a vertex buffer.
+    /// Submits a draw whose vertices are produced without a vertex buffer.
     /// </summary>
     /// <param name="vertexCount">
-    /// Number of shader-generated vertices.
+    /// Number of vertices to submit.
     /// </param>
     /// <param name="instanceCount">
-    /// Number of instances.
+    /// Number of instances to submit.
     /// </param>
     public abstract void DrawProcedural(
         int vertexCount,
@@ -580,13 +580,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Issues an indexed draw.
+    /// Submits an indexed draw using the currently bound index buffer.
     /// </summary>
     /// <param name="indexCount">
-    /// Number of indices.
+    /// Number of indices to submit.
     /// </param>
     /// <param name="instanceCount">
-    /// Number of instances.
+    /// Number of instances to submit.
     /// </param>
     public abstract void DrawIndexed(
         int indexCount,
@@ -594,16 +594,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Issues graphics commands stored in an indirect graph buffer.
+    /// Submits draws described by consecutive commands in an indirect buffer.
     /// </summary>
     /// <param name="buffer">
-    /// Indirect graph buffer.
+    /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
     /// <param name="firstCommand">
-    /// First command record.
+    /// Zero-based command offset in the indirect buffer.
     /// </param>
     /// <param name="commandCount">
-    /// Positive command count.
+    /// Number of consecutive indirect commands to submit.
     /// </param>
     public abstract void DrawIndirect(
         RenderBufferHandle buffer,
@@ -612,16 +612,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Issues graphics commands stored in an indirect persistent buffer.
+    /// Submits draws described by consecutive commands in an indirect buffer.
     /// </summary>
     /// <param name="buffer">
-    /// Indirect persistent buffer.
+    /// Persistent buffer owned by the current device generation.
     /// </param>
     /// <param name="firstCommand">
-    /// First command record.
+    /// Zero-based command offset in the indirect buffer.
     /// </param>
     /// <param name="commandCount">
-    /// Positive command count.
+    /// Number of consecutive indirect commands to submit.
     /// </param>
     public abstract void DrawIndirect(
         PersistentBufferHandle buffer,
@@ -630,16 +630,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Dispatches compute workgroups.
+    /// Submits compute work with the specified workgroup counts.
     /// </summary>
     /// <param name="groupCountX">
-    /// Workgroup count on X.
+    /// Number of workgroups along the X axis.
     /// </param>
     /// <param name="groupCountY">
-    /// Workgroup count on Y.
+    /// Number of workgroups along the Y axis.
     /// </param>
     /// <param name="groupCountZ">
-    /// Workgroup count on Z.
+    /// Number of workgroups along the Z axis.
     /// </param>
     public abstract void Dispatch(
         int groupCountX,
@@ -648,16 +648,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Dispatches compute commands stored in an indirect graph buffer.
+    /// Submits compute work described by consecutive commands in an indirect buffer.
     /// </summary>
     /// <param name="buffer">
-    /// Indirect graph buffer.
+    /// Frame-scoped buffer owned by the current graph generation.
     /// </param>
     /// <param name="firstCommand">
-    /// First command record.
+    /// Zero-based command offset in the indirect buffer.
     /// </param>
     /// <param name="commandCount">
-    /// Positive command count.
+    /// Number of consecutive indirect commands to submit.
     /// </param>
     public abstract void DispatchIndirect(
         RenderBufferHandle buffer,
@@ -666,16 +666,16 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Dispatches compute commands stored in an indirect persistent buffer.
+    /// Submits compute work described by consecutive commands in an indirect buffer.
     /// </summary>
     /// <param name="buffer">
-    /// Indirect persistent buffer.
+    /// Persistent buffer owned by the current device generation.
     /// </param>
     /// <param name="firstCommand">
-    /// First command record.
+    /// Zero-based command offset in the indirect buffer.
     /// </param>
     /// <param name="commandCount">
-    /// Positive command count.
+    /// Number of consecutive indirect commands to submit.
     /// </param>
     public abstract void DispatchIndirect(
         PersistentBufferHandle buffer,
@@ -684,13 +684,13 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Copies all compatible subresources between graph textures.
+    /// Copies texture content without transferring resource ownership.
     /// </summary>
     /// <param name="source">
-    /// Copy source texture.
+    /// Frame-scoped source texture.
     /// </param>
     /// <param name="destination">
-    /// Copy destination texture.
+    /// Frame-scoped destination texture.
     /// </param>
     public abstract void CopyTexture(
         RenderTextureHandle source,
@@ -698,19 +698,19 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Blits compatible texture regions without CPU readback.
+    /// Copies a source texture region into a destination texture region.
     /// </summary>
     /// <param name="source">
-    /// Copy source texture.
+    /// Frame-scoped source texture.
     /// </param>
     /// <param name="sourceRegion">
-    /// Source subresource box.
+    /// Source texture subresource and texel box.
     /// </param>
     /// <param name="destination">
-    /// Copy destination texture.
+    /// Frame-scoped destination texture.
     /// </param>
     /// <param name="destinationRegion">
-    /// Destination origin and compatible extent.
+    /// Destination texture subresource and texel box.
     /// </param>
     public abstract void BlitTexture(
         RenderTextureHandle source,
@@ -720,17 +720,14 @@ public abstract class RenderCommandEncoder
     );
 
     /// <summary>
-    /// Copies complete compatible graph buffer ranges.
+    /// Copies buffer content without transferring resource ownership.
     /// </summary>
     /// <param name="source">
-    /// Copy source buffer.
+    /// Frame-scoped source buffer.
     /// </param>
     /// <param name="destination">
-    /// Copy destination buffer.
+    /// Frame-scoped destination buffer.
     /// </param>
-    /// <exception cref="NotSupportedException">
-    /// Thrown when the backend has no safe buffer-copy path.
-    /// </exception>
     public abstract void CopyBuffer(
         RenderBufferHandle source,
         RenderBufferHandle destination

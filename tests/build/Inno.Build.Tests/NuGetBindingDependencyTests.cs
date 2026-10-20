@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,7 @@ public sealed class NuGetBindingDependencyTests
     [InlineData("backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj")]
     public async Task RuntimeConsumptionUsesAnExactPackageWithoutARepositorySourceReference(string project)
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(NuGetBindingDependencyTests).Assembly);
         string host = ToolchainEnvironment.ResolveExecutable("dotnet");
         string output = await ToolchainEnvironment.CaptureOutputAsync(host,
             ["msbuild", Path.Combine(root, project), "-nologo", "-nodeReuse:false", "-p:DesignTimeBuild=true",
@@ -37,14 +38,14 @@ public sealed class NuGetBindingDependencyTests
     [Fact]
     public void RestoredRuntimePackageMatchesItsLockedContentIdentity()
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(NuGetBindingDependencyTests).Assembly);
         using JsonDocument assets = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root,
             "tests", "build", "Inno.Build.Tests", "obj", "project.assets.json")));
         using JsonDocument locked = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root,
             "tests", "build", "Inno.Build.Tests", "packages.lock.json")));
         JsonProperty runtime = assets.RootElement.GetProperty("libraries").EnumerateObject()
             .Single(static library => library.Name.StartsWith("BGCS.Runtime/", StringComparison.Ordinal));
-        JsonElement lockEntry = locked.RootElement.GetProperty("dependencies").GetProperty("net9.0").GetProperty("BGCS.Runtime");
+        JsonElement lockEntry = locked.RootElement.GetProperty("dependencies").GetProperty("net10.0").GetProperty("BGCS.Runtime");
         Assert.Equal(runtime.Name["BGCS.Runtime/".Length..], lockEntry.GetProperty("resolved").GetString());
         Assert.Equal(runtime.Value.GetProperty("sha512").GetString(), lockEntry.GetProperty("contentHash").GetString());
     }
@@ -59,7 +60,7 @@ public sealed class NuGetBindingDependencyTests
         string runtime,
         string expectedFile
     ) {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(NuGetBindingDependencyTests).Assembly);
         string host = ToolchainEnvironment.ResolveExecutable("dotnet");
         string project = Path.Combine(root, "src", "foundation", "core", "Inno.Core.IO", "Inno.Core.IO.csproj");
         string selected = await ToolchainEnvironment.CaptureOutputAsync(host,

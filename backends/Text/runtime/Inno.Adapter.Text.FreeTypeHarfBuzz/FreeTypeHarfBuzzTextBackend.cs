@@ -11,7 +11,7 @@ namespace Inno.Adapter.Text.FreeTypeHarfBuzz;
 /// </summary>
 public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
 {
-    private InnoTextRuntime m_context;
+    private InnoTextFontAdapterRuntime* m_context;
     private bool m_disposed;
 
     /// <summary>
@@ -19,8 +19,8 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     /// </summary>
     public FreeTypeHarfBuzzTextBackend()
     {
-        InnoTextRuntime context = TextNative.Create();
-        if (context.IsNull)
+        InnoTextFontAdapterRuntime* context = TextNativeOperations.CreateSession();
+        if (context == null)
             throw new InvalidOperationException("The native text backend returned a null context.");
         m_context = context;
     }
@@ -46,7 +46,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
             throw new ArgumentException("Font data cannot be empty.", nameof(data));
         ArgumentOutOfRangeException.ThrowIfNegative(faceIndex);
         ulong handle = 0;
-        ThrowIfFailed(TextNative.LoadFont(m_context, data, faceIndex, ref handle), "load font");
+        ThrowIfFailed(TextNativeOperations.LoadFont(m_context, data, faceIndex, ref handle), "load font");
         return new TextFontHandle(handle);
     }
 
@@ -61,7 +61,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         EnsureActive();
         if (!font.isValid)
             return;
-        ThrowIfFailed(TextNative.ReleaseFont(m_context, font.value), "release font");
+        ThrowIfFailed(TextNativeOperations.ReleaseFont(m_context, font.value), "release font");
     }
 
     /// <summary>
@@ -100,30 +100,30 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         fixed (byte* languagePointer = languageBytes)
         fixed (byte* scriptPointer = scriptBytes)
         {
-            ThrowIfFailed(TextNative.ShapeUtf8(
+            ThrowIfFailed(TextNativeOperations.ShapeUtf8(
                 m_context,
                 font.value,
                 textPointer,
                 checked((uint)(textBytes.Length - 1)),
                 style.fontSize,
-                (InnoTextDirection)options.direction,
+                (Direction)options.direction,
                 languagePointer,
                 scriptPointer,
-                (InnoTextGlyph*)null,
+                (InnoTextFontAdapterGlyph*)null,
                 0,
                 &glyphCount), "query shaped glyph count");
-            InnoTextGlyph[] nativeGlyphs = new InnoTextGlyph[checked((int)glyphCount)];
+            InnoTextFontAdapterGlyph[] nativeGlyphs = new InnoTextFontAdapterGlyph[checked((int)glyphCount)];
             if (nativeGlyphs.Length > 0)
             {
-                fixed (InnoTextGlyph* glyphPointer = nativeGlyphs)
+                fixed (InnoTextFontAdapterGlyph* glyphPointer = nativeGlyphs)
                 {
-                    ThrowIfFailed(TextNative.ShapeUtf8(
+                    ThrowIfFailed(TextNativeOperations.ShapeUtf8(
                         m_context,
                         font.value,
                         textPointer,
                         checked((uint)(textBytes.Length - 1)),
                         style.fontSize,
-                        (InnoTextDirection)options.direction,
+                        (Direction)options.direction,
                         languagePointer,
                         scriptPointer,
                         glyphPointer,
@@ -136,7 +136,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
             float width = 0f;
             for (int index = 0; index < nativeGlyphs.Length; index++)
             {
-                InnoTextGlyph glyph = nativeGlyphs[index];
+                InnoTextFontAdapterGlyph glyph = nativeGlyphs[index];
                 float advanceX = glyph.AdvanceX;
                 float advanceY = glyph.AdvanceY;
                 if (options.direction is TextDirection.TopToBottom or TextDirection.BottomToTop)
@@ -152,8 +152,8 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                     glyph.OffsetX,
                     glyph.OffsetY);
             }
-            InnoTextMetrics metrics = default;
-            ThrowIfFailed(TextNative.GetMetrics(m_context, font.value, style.fontSize, ref metrics), "query font metrics");
+            InnoTextFontAdapterMetrics metrics = default;
+            ThrowIfFailed(TextNativeOperations.GetMetrics(m_context, font.value, style.fontSize, ref metrics), "query font metrics");
             var publicMetrics = new TextMetrics(
                 metrics.Ascender,
                 metrics.Descender,
@@ -189,14 +189,14 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
             throw new ArgumentException("A valid font handle is required.", nameof(font));
         if (!float.IsFinite(fontSize) || fontSize <= 0f)
             throw new ArgumentOutOfRangeException(nameof(fontSize));
-        InnoTextBitmap bitmap = default;
-        ThrowIfFailed(TextNative.RasterizeGlyph(
+        InnoTextFontAdapterBitmap bitmap = default;
+        ThrowIfFailed(TextNativeOperations.RasterizeGlyph(
             m_context, font.value, glyphId, fontSize, null, 0, &bitmap), "query glyph bitmap");
         byte[] pixels = new byte[checked((int)bitmap.ByteLength)];
         if (pixels.Length > 0)
         {
             fixed (byte* pixelPointer = pixels)
-                ThrowIfFailed(TextNative.RasterizeGlyph(
+                ThrowIfFailed(TextNativeOperations.RasterizeGlyph(
                     m_context, font.value, glyphId, fontSize, pixelPointer, checked((uint)pixels.Length), &bitmap),
                     "rasterize glyph");
         }
@@ -217,8 +217,8 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
         if (m_disposed)
             return;
         m_disposed = true;
-        TextNative.Destroy(m_context);
-        m_context = InnoTextRuntime.Null;
+        TextNativeOperations.DestroySession(m_context);
+        m_context = null;
     }
 
     private static byte[] Utf8(string value)
@@ -229,11 +229,11 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     }
 
     private static void ThrowIfFailed(
-        InnoTextResult result,
+        Result result,
         string operation
     ) {
-        if (result != InnoTextResult.Success)
-            throw new InvalidOperationException($"Failed to {operation}: {TextNative.ResultMessage(result) ?? result.ToString()}.");
+        if (result != Result.Success)
+            throw new InvalidOperationException($"Failed to {operation}: {TextNativeOperations.ResultMessage(result) ?? result.ToString()}.");
     }
 
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);

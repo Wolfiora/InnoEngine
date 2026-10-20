@@ -1,13 +1,11 @@
 {
-  "baseConfig": {
-    "url": "file://common.json"
-  },
-  "preset": "host-c,c-library,opaque-callbacks",
-  "libName": "bgfx-shared-lib",
-  "includeFolders": [
-    "../../../../../extern/bgfx/include",
-    "../../../../../extern/bx/include",
-    "../../../../../extern/bx/include/compat/osx"
+  "schemaVersion": 1,
+  "extends": [
+    "common.json"
   ],
-  "outputPath": "../Generated"
+  "targets": [
+    {
+      "id": "host"
+    }
+  ]
 }

@@ -13,7 +13,7 @@ namespace Inno.Editor.ImGui;
 /// <summary>
 /// Renders centered editor modals consistently on the main viewport.
 /// </summary>
-internal static class EditorModalRenderer
+internal static unsafe class EditorModalRenderer
 {
     /// <summary>
     /// Draws a modal in the main viewport work area with a caller-provided opacity.
@@ -50,37 +50,37 @@ internal static class EditorModalRenderer
         ArgumentNullException.ThrowIfNull(context);
 
         string popupId = $"{title}##{id}";
-        ImGuiViewportPtr viewport = NativeImGui.GetMainViewport();
-        Vector2 center = viewport.WorkPos + viewport.WorkSize * 0.5f;
+        ImGuiViewport* viewport = NativeImGui.Raw.GetMainViewport();
+        Vector2 center = ImGui.FromNative(viewport->WorkPos) + ImGui.FromNative(viewport->WorkSize) * 0.5f;
         if (presentation.blocksInteraction)
-            NativeImGui.OpenPopup(popupId, ImGuiPopupFlags.NoReopen);
-        NativeImGui.SetNextWindowViewport(viewport.ID);
+            NativeImGui.OpenPopup(popupId, (int)(ImGuiPopupFlags.NoReopen));
+        NativeImGui.SetNextWindowViewport(viewport->ID);
         ImGuiCond placementCondition = presentation.canMove || presentation.canResize
             ? ImGuiCond.Appearing
             : ImGuiCond.Always;
-        NativeImGui.SetNextWindowPos(center, placementCondition, new Vector2(0.5f, 0.5f));
+        NativeImGui.SetNextWindowPos(center, (int)(placementCondition), new Vector2(0.5f, 0.5f));
         Vector2 initialSize = presentation.initialSize;
         if (initialSize.X > 0f && initialSize.Y > 0f)
         {
             NativeImGui.SetNextWindowSize(
                 initialSize * EditorWidget.style.zoom,
-                placementCondition);
+                (int)(placementCondition));
         }
         else if (!presentation.canResize)
         {
             NativeImGui.SetNextWindowSize(
                 new Vector2(EditorWidget.style.modalWidth, 0f),
-                ImGuiCond.Always);
+                (int)(ImGuiCond.Always));
         }
         if (presentation.canResize)
         {
-            Vector2 maximumSize = Vector2.Max(Vector2.One, viewport.WorkSize);
+            Vector2 maximumSize = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize));
             Vector2 minimumSize = Vector2.Min(
                 presentation.minimumSize * EditorWidget.style.zoom,
                 maximumSize);
-            NativeImGui.SetNextWindowSizeConstraints(minimumSize, maximumSize);
+            NativeImGui.Raw.SetNextWindowSizeConstraints(ImGui.ToNative(minimumSize), ImGui.ToNative(maximumSize), null, null);
         }
-        NativeImGui.PushStyleVar(ImGuiStyleVar.Alpha, alpha);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.Alpha), alpha);
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoCollapse;
         if (!presentation.allowScrolling)
             flags |= ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
@@ -96,8 +96,8 @@ internal static class EditorModalRenderer
         try
         {
             bool visible = presentation.blocksInteraction
-                ? NativeImGui.BeginPopupModal(popupId, flags)
-                : NativeImGui.Begin(popupId, flags | ImGuiWindowFlags.NoSavedSettings);
+                ? ImGui.BeginNativeWindow(popupId, flags, modal: true)
+                : ImGui.BeginNativeWindow(popupId, flags | ImGuiWindowFlags.NoSavedSettings, modal: false);
             beganWindow = !presentation.blocksInteraction || visible;
             if (visible)
             {
@@ -131,7 +131,7 @@ internal static class EditorModalRenderer
         string title
     ) {
         string popupId = $"{title}##{id}";
-        if (!NativeImGui.IsPopupOpen(popupId) || !NativeImGui.BeginPopupModal(popupId))
+        if (!NativeImGui.IsPopupOpen(popupId) || !ImGui.BeginNativeWindow(popupId, ImGuiWindowFlags.None, modal: true))
             return;
         try
         {

@@ -82,7 +82,7 @@ protected override void Draw(
             if (documents!.TryOpen(target, out ShaderEditorDocuments.Draft draft))
                 new ShaderEditorCanvas(documents, draft).DrawInspector(context, []);
             else
-                ImGuiApi.TextDisabled("Waiting for Shader asset import…");
+                Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
         }
     }
 }
@@ -182,13 +182,13 @@ protected override void Draw(
         if (!documents.assets.TryGetInfo(target.assetId, out AssetInfo? info) || info is null
             || !documents.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry))
         {
-            ImGuiApi.TextWrapped("Shader source unavailable. Selection identities are retained.");
+            Widget.WrappedText("Shader source unavailable. Selection identities are retained.");
             return;
         }
         if (documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
             new ShaderEditorCanvas(documents, draft).DrawInspector(context, target.nodes);
         else
-            ImGuiApi.TextDisabled("Waiting for Shader asset import…");
+            Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
     }
 }
 
@@ -253,6 +253,6 @@ protected override void Draw(
         if (documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
             new ShaderEditorCanvas(documents, draft).DrawInspector(context, []);
         else
-            ImGuiApi.TextDisabled("Waiting for Shader asset import…");
+            Widget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
     }
 }

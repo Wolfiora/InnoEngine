@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BGCS.Core.IO;
+
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -15,35 +15,22 @@ internal sealed class BindingGenerationOperation : IDisposable
 {
     private readonly NativeBuildContext m_context;
     private readonly NativeBindingGenerationRequest m_request;
-    private readonly string m_dotnetHost;
     private readonly List<FileLease> m_leases = [];
     private readonly List<IDisposable> m_reading = [];
     private readonly List<BindingGenerationPublication> m_publications = [];
 
     internal BindingGenerationOperation(
         NativeBuildContext context,
-        NativeBindingGenerationRequest request,
-        string dotnetHost
+        NativeBindingGenerationRequest request
     ) {
         m_context = context;
         m_request = request;
-        m_dotnetHost = dotnetHost;
     }
 
     internal async ValueTask<NativeBindingGenerationResult> ExecuteAsync(CancellationToken cancellation)
     {
         BindingGenerationConfiguration[] definitions = m_request.components.Select(component =>
             BindingDefinitionReader.Read(m_context, component, m_request)).ToArray();
-        Dictionary<string, string> extensions = new(StringComparer.Ordinal);
-        foreach (string project in definitions.Select(static definition => definition.extensionProject)
-            .OfType<string>().Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
-        {
-            BindingExtensionPreparation.Result extension = await BindingExtensionPreparation.PrepareAsync(m_context, project, m_dotnetHost, cancellation).ConfigureAwait(false);
-            m_reading.Add(extension);
-            extensions.Add(project, extension.assembly);
-        }
-        foreach (BindingGenerationConfiguration definition in definitions)
-            definition.extensionAssembly = definition.extensionProject is null ? null : extensions[definition.extensionProject];
         string[] fingerprints = definitions.Select(definition => Compute(definition, m_context, cancellation)).ToArray();
         for (int index = 0; index < definitions.Length; index++)
             if (m_request.expectedFingerprints.TryGetValue(definitions[index].component.nativeProject, out string? expected)
@@ -80,7 +67,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                     protectedTargets.Add(destination);
                     if (!m_request.checkOnly)
                     {
-                        results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint, loaded.bridge is not null));
+                        results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint));
                         continue;
                     }
                 }
@@ -91,19 +78,18 @@ internal sealed class BindingGenerationOperation : IDisposable
                 var publication = BindingGenerationPublication.CreateTarget(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, cancellation);
                 m_publications.Add(publication);
                 TargetBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
-                results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint, loaded.bridge is not null));
+                results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint));
             }
             else
             {
-                var publication = BindingGenerationPublication.CreateHost(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), output, loaded.bridge is null ? null
-                    : NativeBindingGenerationIdentity.Resolve(loaded.bridge.outputPath, loaded.bridge.configDirectory!), cancellation);
+                var publication = BindingGenerationPublication.CreateHost(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), output, definition.GetHostNativeRoot(m_context), cancellation);
                 m_publications.Add(publication);
                 HostBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
                 results.Add(definition.component.nativeProject, new NativeBindingGenerationDescriptor
                 {
                     fingerprint = fingerprint, bindingsPath = Path.Combine(output, "Bindings.cs"),
                     artifactDirectory = string.Empty,
-                    bridgeDirectory = publication.nativeDestination ?? string.Empty
+                    nativeDirectory = publication.nativeDestination ?? string.Empty
                 });
             }
         }
@@ -204,7 +190,6 @@ internal sealed class BindingGenerationOperation : IDisposable
         for (int index = 0; index < definitions.Count; index++)
         {
             BindingGenerationConfiguration current = BindingDefinitionReader.Read(verification, definitions[index].component, m_request);
-            current.extensionAssembly = definitions[index].extensionAssembly;
             if (Compute(current, verification, cancellation) != fingerprints[index])
                 throw new InvalidOperationException("Binding inputs changed during an ownership wait or generation; the candidate was not published.");
         }
@@ -216,8 +201,6 @@ internal sealed class BindingGenerationOperation : IDisposable
         CancellationToken cancellation
     ) {
         var loaded = definition.Load(context);
-        return NativeBindingGenerationIdentity.Compute(loaded.managed, loaded.bridge, definition,
-            definition.GetOutputRoot(context), context,
-            loaded.hostBridgeRoot, cancellation, m_publications.SelectMany(static publication => publication.stagingPaths).ToArray());
+        return NativeBindingGenerationIdentity.Compute(loaded, definition, context, cancellation);
     }
 }

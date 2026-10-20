@@ -1,3 +1,7 @@
+using System.Runtime.CompilerServices;
+using NumericsVector2 = System.Numerics.Vector2;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,7 +21,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
 
-internal sealed partial class FileBrowserPanel
+internal sealed unsafe partial class FileBrowserPanel
 
 {
 
@@ -25,12 +29,12 @@ internal sealed partial class FileBrowserPanel
         EditorContext context,
         IReadOnlyList<FileBrowserDisplayEntry> entries
     ) {
-        ImGuiStylePtr style = NativeImGui.GetStyle();
-        float sliderHeight = NativeImGui.GetFrameHeight() + style.WindowPadding.Y * 2f + style.ItemSpacing.Y;
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
+        float sliderHeight = NativeImGui.GetFrameHeight() + style->WindowPadding.Y * 2f + style->ItemSpacing.Y;
         bool entriesVisible = NativeImGui.BeginChild(
             "##EntriesScroll",
             new Vector2(0f, -sliderHeight),
-            ImGuiChildFlags.None);
+            (int)ImGuiChildFlags.None);
         try
         {
             if (entriesVisible)
@@ -54,7 +58,7 @@ internal sealed partial class FileBrowserPanel
     {
         if (!NativeImGui.IsWindowHovered() ||
             NativeImGui.IsAnyItemHovered() ||
-            !NativeImGui.IsMouseReleased(ImGuiMouseButton.Left))
+            !NativeImGui.IsMouseReleased((int)ImGuiMouseButton.Left))
         {
             return;
         }
@@ -70,7 +74,7 @@ internal sealed partial class FileBrowserPanel
         float labelOffsetY = MathF.Max(0f, (NativeImGui.GetFrameHeight() - NativeImGui.GetTextLineHeight()) * 0.5f);
         NativeImGui.SetCursorPosY(cursor.Y + labelOffsetY);
         NativeImGui.TextUnformatted("Scale");
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         NativeImGui.SetCursorPosY(cursor.Y);
         NativeImGui.SetNextItemWidth(-1f);
         _ = NativeImGui.SliderFloat("##GridScale", ref m_gridScale, EditorWidget.style.assetGridMinimumScale, EditorWidget.style.assetGridMaximumScale, "%.1f");
@@ -85,12 +89,9 @@ internal sealed partial class FileBrowserPanel
         float available = MathF.Max(cellSize, NativeImGui.GetContentRegionAvail().X);
         int columns = Math.Max(1, (int)(available / cellSize));
 
-        bool tableStarted = NativeImGui.BeginTable(
-            "##FileBrowserGrid",
-            columns,
-            ImGuiTableFlags.SizingFixedFit |
+        bool tableStarted = NativeImGui.BeginTable("##FileBrowserGrid", columns, (int)(ImGuiTableFlags.SizingFixedFit |
             ImGuiTableFlags.NoPadOuterX |
-            ImGuiTableFlags.NoSavedSettings);
+            ImGuiTableFlags.NoSavedSettings), default(System.Numerics.Vector2), 0f);
         if (!tableStarted)
             return;
         try
@@ -120,9 +121,9 @@ internal sealed partial class FileBrowserPanel
         Vector2 itemSize = new(cellSize - EditorWidget.style.assetGridCellPadding, cellSize - EditorWidget.style.assetGridCellPadding);
 
         NativeImGui.PushID(entry.assetPath.ToString());
-        NativeImGui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
-        NativeImGui.PushStyleColor(ImGuiCol.HeaderActive, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.Header, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.HeaderHovered, EditorPalette.transparent);
+        NativeImGui.PushStyleColor((int)ImGuiCol.HeaderActive, EditorPalette.transparent);
         try
         {
             ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.AllowDoubleClick;
@@ -131,7 +132,7 @@ internal sealed partial class FileBrowserPanel
             bool activated = NativeImGui.Selectable(
                 "##GridItem",
                 selected,
-                selectableFlags,
+                (int)selectableFlags,
                 itemSize);
             bool itemHovered = NativeImGui.IsItemHovered();
             bool itemActive = NativeImGui.IsItemActive();
@@ -139,7 +140,7 @@ internal sealed partial class FileBrowserPanel
             Vector2 itemMax = NativeImGui.GetItemRectMax();
             Vector2 layoutCursor = NativeImGui.GetCursorScreenPos();
             bool doubleClicked = itemHovered &&
-                                 NativeImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
+                                 NativeImGui.IsMouseDoubleClicked((int)ImGuiMouseButton.Left);
             if (activated)
             {
                 HandleEntryActivation(
@@ -227,10 +228,17 @@ internal sealed partial class FileBrowserPanel
             bg = EditorPalette.GetHovered(bg);
 
         uint bgColor = NativeImGui.ColorConvertFloat4ToU32(bg);
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-        drawList.AddRectFilled(min, max, bgColor, EditorWidget.style.assetFrameRounding);
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.AddRectFilled(
+            drawList,
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
+            Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
+            bgColor,
+            EditorWidget.style.assetFrameRounding,
+            0
+        );
 
-        ImFontPtr font = NativeImGui.GetFont();
+        ImFont* font = NativeImGui.Raw.GetFont();
         float fontSize = NativeImGui.GetFontSize();
         float iconFontSize = fontSize * scale;
         Vector4 iconBounds = EditorWidget.GetGlyphVisualBounds(font, iconFontSize, icon);
@@ -296,7 +304,8 @@ internal sealed partial class FileBrowserPanel
             Vector2 linePosition = new(
                 horizontalCenter - lineSize.X * 0.5f,
                 labelY + lineAdvance * i);
-            NativeImGui.AddText(drawList, linePosition, textColor, nameLines[i]);
+            using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(nameLines[i], allowsNull: false);
+            NativeImGui.Raw.AddText(drawList, new ImVec2C { X = linePosition.X, Y = linePosition.Y }, textColor, (sbyte*)nativeText.pointer, null);
         }
         NativeImGui.PopClipRect();
     }

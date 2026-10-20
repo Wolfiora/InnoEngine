@@ -1,6 +1,10 @@
+using System.Runtime.CompilerServices;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
+using Inno.Native.ImGui;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -61,7 +65,7 @@ public sealed class InspectionPipelineTests : IDisposable
     }
 
     [Fact]
-    public void InlineChildFailureIsConsumedAndReadonlyDisabledScopeRemainsBalanced()
+    public unsafe void InlineChildFailureIsConsumedAndReadonlyDisabledScopeRemainsBalanced()
     {
         EditorContext editor = m_runtime.context;
         using var drawers = new PropertyDrawerRegistry(
@@ -84,18 +88,19 @@ public sealed class InspectionPipelineTests : IDisposable
         var owner = new InlineOwner();
         SerializedProperty property = Assert.Single(m_serialization.GetProperties(owner));
         InlineParentDrawer.drewAfterFailure = false;
-        var nativeContext = NativeImGui.CreateContext();
+        var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
-            Inno.Native.ImGui.ImGuiIOPtr io = NativeImGui.GetIO();
-            io.DisplaySize = new Vector2(640f, 480f);
-            io.DeltaTime = 1f / 60f;
-            io.BackendFlags |= Inno.Native.ImGui.ImGuiBackendFlags.RendererHasTextures;
-            io.Fonts.RendererHasTextures = true;
-            float originalAlpha = NativeImGui.GetStyle().Alpha;
+            Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            float originalAlpha = NativeImGui.Raw.GetStyle()->Alpha;
 
             NativeImGui.NewFrame();
-            _ = NativeImGui.Begin("Inline Property Test");
+            using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Inline Property Test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
             try
             {
                 renderer.Draw(editor, owner, "owner", property);
@@ -108,18 +113,18 @@ public sealed class InspectionPipelineTests : IDisposable
             NativeImGui.Render();
 
             Assert.True(InlineParentDrawer.drewAfterFailure);
-            Assert.Equal(originalAlpha, NativeImGui.GetStyle().Alpha);
+            Assert.Equal(originalAlpha, NativeImGui.Raw.GetStyle()->Alpha);
         }
         finally
         {
-            NativeImGui.DestroyContext(nativeContext);
+            NativeImGui.Raw.DestroyContext(nativeContext);
         }
     }
 
     [Fact]
-    public void PanelWindowFailureStillEndsTheWindowAndAllowsLaterContent()
+    public unsafe void PanelWindowFailureStillEndsTheWindowAndAllowsLaterContent()
     {
-        var nativeContext = NativeImGui.CreateContext();
+        var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
             PrepareNativeFrame();
@@ -129,19 +134,20 @@ public sealed class InspectionPipelineTests : IDisposable
                 "Throwing Panel",
                 ref isOpen,
                 static () => throw new InvalidOperationException("panel")));
-            _ = NativeImGui.Begin("Content After Panel Failure");
+            using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Content After Panel Failure", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, 0);
             NativeImGui.TextUnformatted("Still drawing.");
             NativeImGui.End();
             NativeImGui.Render();
         }
         finally
         {
-            NativeImGui.DestroyContext(nativeContext);
+            NativeImGui.Raw.DestroyContext(nativeContext);
         }
     }
 
     [Fact]
-    public void TextEditStateIsScopedByRendererOwnerAndPropertyPath()
+    public unsafe void TextEditStateIsScopedByRendererOwnerAndPropertyPath()
     {
         EditorContext editor = m_runtime.context;
         using var drawers = new PropertyDrawerRegistry(
@@ -171,7 +177,7 @@ public sealed class InspectionPipelineTests : IDisposable
         SerializedProperty firstProperty = Assert.Single(m_serialization.GetProperties(firstOwner));
         SerializedProperty secondProperty = Assert.Single(m_serialization.GetProperties(secondOwner));
         TextStateDrawer.observations.Clear();
-        var nativeContext = NativeImGui.CreateContext();
+        var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
             DrawPropertyFrame(firstRenderer, editor, firstOwner, firstProperty);
@@ -181,7 +187,7 @@ public sealed class InspectionPipelineTests : IDisposable
         }
         finally
         {
-            NativeImGui.DestroyContext(nativeContext);
+            NativeImGui.Raw.DestroyContext(nativeContext);
         }
 
         Assert.Equal(
@@ -190,7 +196,7 @@ public sealed class InspectionPipelineTests : IDisposable
     }
 
     [Fact]
-    public void PresentationAttributesComposeAndCustomDrawersRemainExtensible()
+    public unsafe void PresentationAttributesComposeAndCustomDrawersRemainExtensible()
     {
         EditorContext editor = m_runtime.context;
         using var drawers = new PropertyDrawerRegistry(
@@ -215,7 +221,7 @@ public sealed class InspectionPipelineTests : IDisposable
             static candidate => candidate.name == nameof(AttributeOwner.value));
         AttributeValueDrawer.observations.Clear();
         ProbeInspectorAttributeDrawer.observations.Clear();
-        var nativeContext = NativeImGui.CreateContext();
+        var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
             DrawPropertyFrame(renderer, editor, owner, property);
@@ -229,7 +235,7 @@ public sealed class InspectionPipelineTests : IDisposable
         }
         finally
         {
-            NativeImGui.DestroyContext(nativeContext);
+            NativeImGui.Raw.DestroyContext(nativeContext);
         }
 
         Assert.Equal(
@@ -243,24 +249,25 @@ public sealed class InspectionPipelineTests : IDisposable
         Assert.Equal(["Friendly Value:False:2:8"], AttributeValueDrawer.observations);
     }
 
-    private static void PrepareNativeFrame()
+    private static unsafe void PrepareNativeFrame()
     {
-        Inno.Native.ImGui.ImGuiIOPtr io = NativeImGui.GetIO();
-        io.DisplaySize = new Vector2(640f, 480f);
-        io.DeltaTime = 1f / 60f;
-        io.BackendFlags |= Inno.Native.ImGui.ImGuiBackendFlags.RendererHasTextures;
-        io.Fonts.RendererHasTextures = true;
+        Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
+        io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+        io->DeltaTime = 1f / 60f;
+        io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+        io->Fonts->RendererHasTextures = 1;
         NativeImGui.NewFrame();
     }
 
-    private static void DrawPropertyFrame(
+    private static unsafe void DrawPropertyFrame(
         SerializedPropertyRenderer renderer,
         EditorContext editor,
         object owner,
         SerializedProperty property
     ) {
         PrepareNativeFrame();
-        _ = NativeImGui.Begin("Text State Test");
+        using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("Text State Test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText2.pointer, null, 0);
         try
         {
             renderer.Draw(editor, owner, "owner", property);

@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
   <Import Project="../build/msbuild/Inno.Packages.props" />
 
   <PropertyGroup Condition="'$(InnoAssemblyDomain)' == ''">

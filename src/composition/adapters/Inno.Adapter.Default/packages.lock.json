@@ -1,11 +1,11 @@
 {
   "version": 1,
   "dependencies": {
-    "net9.0": {
+    "net10.0": {
       "BGCS.Runtime": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "+FKMO+FW6aH+taP/dclqyPSmHWMqTErJfjsw6aGzq4kyW+/7XJ0wzxiCiIQCt/tBxaShHRucOCRs8t8zfba5Sw=="
+        "resolved": "3.0.1",
+        "contentHash": "sQRfxJieqlKGCEcNr+F1fTuDITDR+csgI2Khe/nv+MyCxpqhMI02Zg2Mz4LxUpNhFhH+Fk6MtV8uVfQszYa0UQ=="
       },
       "inno.adapter": {
         "type": "Project",
@@ -265,21 +265,21 @@
       "inno.native.miniaudio": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.text": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.ui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[2.1.0, 2.1.0]",
+          "BGCS.Runtime": "[3.0.1, 3.0.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },

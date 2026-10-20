@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Native.Sdl3;
 using Inno.Platform;
@@ -28,29 +29,29 @@ public sealed unsafe class Sdl3WindowOperationsTests
             resizable = resizable,
             highPixelDensity = highPixelDensity
         };
-        SDLWindow native = new(Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false));
-        uint id = SDL.GetWindowID(native);
+        SDLWindow* native = (SDLWindow*)Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
+        uint id = SDL.Raw.GetWindowId(native);
         try
         {
             Assert.Empty(application.GetWindows());
-            Assert.Equal(options.title, SDL.GetWindowTitle(native));
+            Assert.Equal(options.title, Marshal.PtrToStringUTF8((nint)SDL.Raw.GetWindowTitle(native)));
             int width;
             int height;
-            Assert.NotEqual((byte)0, SDL.GetWindowSize(native, &width, &height));
+            Assert.NotEqual((byte)0, SDL.Raw.GetWindowSize(native, &width, &height));
             Assert.Equal(options.width, width);
             Assert.Equal(options.height, height);
-            SDLWindowFlags flags = SDL.GetWindowFlags(native);
+            SDLWindowFlags flags = (SDLWindowFlags)SDL.Raw.GetWindowFlags(native);
             Assert.True((flags & SDLWindowFlags.Hidden) != 0);
             Assert.Equal(resizable, (flags & SDLWindowFlags.Resizable) != 0);
             Assert.Equal(highPixelDensity, (flags & SDLWindowFlags.HighPixelDensity) != 0);
             Assert.Equal((flags & SDLWindowFlags.InputFocus) != 0,
-                Sdl3WindowOperations.ReadFocus((nint)native.Handle));
+                Sdl3WindowOperations.ReadFocus((nint)native));
         }
         finally
         {
-            SDL.DestroyWindow(native);
+            SDL.Raw.DestroyWindow(native);
         }
-        Assert.True(SDL.GetWindowFromID(id).IsNull);
+        Assert.True(SDL.Raw.GetWindowFromId(id) == null);
     }
 
     [Fact]

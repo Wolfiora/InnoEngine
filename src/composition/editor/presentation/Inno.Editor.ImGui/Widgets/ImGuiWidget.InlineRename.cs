@@ -9,7 +9,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     private const float C_INLINE_RENAME_FOCUS_OFFSET = 1f;
 
@@ -65,9 +65,9 @@ public static partial class ImGuiWidget
             width < 0f ? NativeImGui.GetContentRegionAvail().X : width);
         string controlId = $"##rename_{id}";
         bool selectAll = requestFocus;
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, style.inlineRenameFramePadding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, style.frameRounding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, style.borderSize);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inlineRenameFramePadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), style.frameRounding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), style.borderSize);
         try
         {
             float fieldHeight = NativeImGui.GetFrameHeight();
@@ -82,7 +82,7 @@ public static partial class ImGuiWidget
             }
 
             bool submitted;
-            NativeImGui.PushStyleColor(ImGuiCol.NavCursor, EditorPalette.transparent);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.NavCursor), EditorPalette.transparent);
             try
             {
                 submitted = ImGuiUtf8Buffer.InputText(
@@ -100,27 +100,29 @@ public static partial class ImGuiWidget
             bool escapePressed = NativeImGui.IsKeyPressed(ImGuiKey.Escape);
             bool active = NativeImGui.IsItemActive();
             bool contextMenuRequested = active &&
-                                        NativeImGui.IsMouseReleased(ImGuiMouseButton.Right);
+                                        NativeImGui.IsMouseReleased((int)(ImGuiMouseButton.Right));
             if (selectAll && active)
             {
                 uint inputId = NativeImGui.GetItemID();
-                ImGuiInputTextStatePtr inputState = ImGuiP.GetInputTextState(inputId);
-                if (!inputState.IsNull)
+                ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputId);
+                if (inputState != null)
                 {
-                    inputState.SelectAll();
+                    NativeImGui.Raw.SelectAll(inputState);
                     requestFocus = false;
                 }
             }
             if (active)
             {
                 Vector2 focusOffset = new(C_INLINE_RENAME_FOCUS_OFFSET);
-                NativeImGui.GetForegroundDrawList().AddRect(
-                    NativeImGui.GetItemRectMin() - focusOffset,
-                    NativeImGui.GetItemRectMax() + focusOffset,
-                    NativeImGui.GetColorU32(ImGuiCol.NavCursor),
+                NativeImGui.Raw.AddRect(
+                    NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
+                    ImGui.ToNative(NativeImGui.GetItemRectMin() - focusOffset),
+                    ImGui.ToNative(NativeImGui.GetItemRectMax() + focusOffset),
+                    NativeImGui.GetColorU32((int)(ImGuiCol.NavCursor)),
                     style.frameRounding + C_INLINE_RENAME_FOCUS_OFFSET,
-                    ImDrawFlags.RoundCornersAll,
-                    style.interactionOverlayThickness);
+                    (int)(ImDrawFlags.RoundCornersAll),
+                    style.interactionOverlayThickness
+                );
             }
 
             if (escapePressed)
@@ -132,7 +134,7 @@ public static partial class ImGuiWidget
                 // A context menu transfers focus into a popup after this item has already been
                 // submitted. Complete the edit in this frame so its active text/navigation state
                 // cannot be inherited by the popup on the following frame.
-                ImGuiP.ClearActiveID();
+                NativeImGui.Raw.ClearActiveID();
                 return InlineRenameResult.FocusLost;
             }
             return deactivated

@@ -78,7 +78,7 @@ public sealed class ProductNativeCacheLookupTests : IDisposable
             dependencies,
             cancellation
         ) => NativeArtifactPublisher.PublishAsync(context, Recipe(context, id), async (
-            scoped,
+            @scoped,
             output,
             token
         ) => {

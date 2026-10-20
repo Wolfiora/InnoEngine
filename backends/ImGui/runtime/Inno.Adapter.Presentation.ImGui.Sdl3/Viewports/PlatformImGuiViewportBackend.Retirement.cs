@@ -58,20 +58,20 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
 
     private static void DestroyRetiredWindow(ViewportWindowData data)
     {
-        if (!data.fontTexture.IsNull)
+        if (data.fontTexture != null)
         {
-            SDL.DestroyTexture(data.fontTexture);
-            data.fontTexture = SDLTexturePtr.Null;
+            SDL.Raw.DestroyTexture(data.fontTexture);
+            data.fontTexture = null;
         }
-        if (!data.renderer.IsNull)
+        if (data.renderer != null)
         {
-            SDL.DestroyRenderer(data.renderer);
-            data.renderer = SDLRenderer.Null;
+            SDL.Raw.DestroyRenderer(data.renderer);
+            data.renderer = null;
         }
-        if (!data.window.IsNull)
+        if (data.window != null)
         {
-            SDL.DestroyWindow(data.window);
-            data.window = SDLWindow.Null;
+            SDL.Raw.DestroyWindow(data.window);
+            data.window = null;
         }
         data.externalRenderer = null;
         data.externalTarget = null;

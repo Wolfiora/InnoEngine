@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -68,7 +67,9 @@ internal static partial class ArchitectureRules
     ) {
         ValidateHostIsolation(repositoryRoot, failures);
         PlatformOwnershipValidator.Validate(repositoryRoot, failures);
-        ValidateBindingTargetOutputs(repositoryRoot, failures);
+        string backendRoot = Path.Combine(repositoryRoot, "backends");
+        if (Directory.Exists(backendRoot))
+            NativeBindingOwnershipValidator.Validate(repositoryRoot, EnumerateFiles(backendRoot, "*.csproj"), failures);
         ValidateRepositorySources(repositoryRoot, failures);
         Dictionary<string, ProjectNode> graph = LoadProjectGraph(repositoryRoot, failures);
         ValidateCycles(repositoryRoot, graph, failures);
@@ -121,48 +122,6 @@ internal static partial class ArchitectureRules
         if (File.Exists(browserProject) &&
             XDocument.Load(browserProject).Descendants("Compile").Any(static item => item.Attribute("Link") is not null))
             failures.Add("Inno.Player.BrowserWasm32: shared Player source must be consumed through Inno.Player.Runtime.");
-    }
-
-    private static void ValidateBindingTargetOutputs(
-        string repositoryRoot,
-        ICollection<string> failures
-    ) {
-        string backendRoot = Path.Combine(repositoryRoot, "backends");
-        if (!Directory.Exists(backendRoot))
-            return;
-        foreach (string owner in EnumerateFiles(backendRoot, "*.csproj")
-            .Where(static path => Path.GetFileName(path).StartsWith("Inno.Native.", StringComparison.Ordinal))
-            .Select(static path => Path.GetDirectoryName(path)!))
-        {
-            string bindings = Path.Combine(owner, "Bindings");
-            if (!Directory.Exists(bindings))
-                continue;
-            foreach (string hostConfig in Directory.EnumerateFiles(bindings, "*.json"))
-            {
-                using JsonDocument host = JsonDocument.Parse(File.ReadAllText(hostConfig));
-                if (host.RootElement.ValueKind != JsonValueKind.Object
-                    || !host.RootElement.TryGetProperty("outputPath", out JsonElement hostOutput))
-                    continue;
-                string hostPath = Path.GetFullPath(Path.Combine(bindings, hostOutput.GetString()!));
-                string profilePattern = Path.GetFileNameWithoutExtension(hostConfig) + ".*.json";
-                foreach (string profileConfig in Directory.EnumerateFiles(bindings, profilePattern))
-                {
-                    using JsonDocument profile = JsonDocument.Parse(File.ReadAllText(profileConfig));
-                    if (!profile.RootElement.TryGetProperty("outputPath", out JsonElement profileOutput))
-                    {
-                        failures.Add($"{Relative(repositoryRoot, profileConfig)}: target profiles must declare an isolated output root.");
-                        continue;
-                    }
-                    string profilePath = Path.GetFullPath(Path.Combine(bindings, profileOutput.GetString()!));
-                    if (!profilePath.StartsWith(owner + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-                        failures.Add($"{Relative(repositoryRoot, profileConfig)}: target output must stay inside its native owner.");
-                    if (string.Equals(hostPath, profilePath, StringComparison.OrdinalIgnoreCase)
-                        || profilePath.StartsWith(hostPath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                        || hostPath.StartsWith(profilePath + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-                        failures.Add($"{Relative(repositoryRoot, profileConfig)}: host and target generated outputs must not overlap.");
-                }
-            }
-        }
     }
 
     private static void ValidateRepositorySources(

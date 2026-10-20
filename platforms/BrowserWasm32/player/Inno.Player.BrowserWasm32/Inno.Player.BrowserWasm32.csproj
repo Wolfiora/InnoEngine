@@ -13,7 +13,8 @@
     <OutputType>Library</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <InnoGeneratePlayerComposition>true</InnoGeneratePlayerComposition>
-    <TargetFramework>net9.0-browser</TargetFramework>
+    <TargetFramework>net10.0-browser</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Inno.Player.BrowserWasm32</AssemblyName>

@@ -16,7 +16,7 @@ internal static class CSharpStyleValidator
         string source,
         ICollection<string> failures
     ) {
-        SyntaxTree tree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Preview));
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp14));
         SourceText text = tree.GetText();
         foreach (ParameterListSyntax parameters in tree.GetRoot().DescendantNodes().OfType<ParameterListSyntax>())
         {

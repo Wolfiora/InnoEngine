@@ -69,8 +69,8 @@ public static class RenderTargetArtifactPath
     }
 
     private static string HashVariant(string value)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+        => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 
-    private static string HashSlot(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+    private static string HashSlot(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
 }
 

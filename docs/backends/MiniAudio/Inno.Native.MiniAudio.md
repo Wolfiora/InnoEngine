@@ -30,20 +30,24 @@ Binding 由当前 BGCS 和本项目配置从 `extern/miniaudio/miniaudio.h` 生�
 
 当前 Adapter 为每个设备分配独立 MaEngine 存储，检查 EngineInit 的明确结果；初始化失败按是否已成功初始化决定 Uninit，再释放存储。无输出设备模式显式提供处理缓冲区，不伪装成已打开硬件设备。这些属于 Adapter 实现；Native API 本身不提供引擎 Asset、Identity 或 Scene 生命周期。
 
-`Ma*Ptr` 是借用地址包装，拷贝不复制底层对象、不延长来源寿命，也不替调用者执行 Uninit。跨调用保存的输入 bytes、解码来源与 callback 状态必须有明确 owner；借用内存不能在处理完成前释放。callback 可能由音频处理线程调用，不能直接操作 Editor 或 Scene owner thread，也不能将异常传回 Native。
+Raw 指针不复制底层对象、不延长来源寿命，也不替调用者执行 Uninit。跨调用保存的输入 bytes、解码来源与 callback 状态必须有明确 owner；借用内存不能在处理完成前释放。callback 可能由音频处理线程调用，不能直接操作 Editor 或 Scene owner thread，也不能将异常传回 Native。
 
 业务使用中立 Audio API；后台解码、encoded content lease、失败 clip 与设备 generation 在 MiniAudio Adapter 收口。退出必须先完成 voice/source 与处理任务，再结束 engine 和设备存储。原生返回错误与设备不可用由 Adapter 转成中立状态和诊断。
 
 ## 基本验证
 
 ```csharp
+using System.Runtime.InteropServices;
 using Inno.Native.MiniAudio;
 
-uint major = 0;
-uint minor = 0;
-uint revision = 0;
-MiniAudio.Version(ref major, ref minor, ref revision);
-string? version = MiniAudio.VersionString();
+unsafe
+{
+    uint major = 0;
+    uint minor = 0;
+    uint revision = 0;
+    MiniAudio.Raw.Version(&major, &minor, &revision);
+    string? version = Marshal.PtrToStringUTF8((nint)MiniAudio.Raw.VersionString());
+}
 ```
 
 生产代码通过 [中立 Audio API](../../audio/Inno.Audio.md) 工作；上述调用仅用于 Native test 与底层 adapter 实现。
@@ -58,15 +62,13 @@ string? version = MiniAudio.VersionString();
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
-
-### `Inno.Native.MiniAudio.MiniAudio`
+以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
 
 <!-- api: T:Inno.Native.MiniAudio.MiniAudio 56fe2dd550a169475ab674592354636c7813ab7d832b9e68f283d94aa0ead451 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-51696dd28a5dbd8b"></a>[`public static class Inno.Native.MiniAudio.MiniAudio`](../../../backends/MiniAudio/native/Inno.Native.MiniAudio/MiniAudio.cs#L13) | Initializes generated imports against the component's dynamic native library. | — | — |
+| 声明 | 语义与限制 |
+| --- | --- |
+| <a id="api-51696dd28a5dbd8b"></a>[`public static class Inno.Native.MiniAudio.MiniAudio`](../../../backends/MiniAudio/native/Inno.Native.MiniAudio/MiniAudio.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
 
 ## 项目依赖
 

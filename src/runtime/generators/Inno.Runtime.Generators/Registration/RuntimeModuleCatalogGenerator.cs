@@ -159,6 +159,8 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
     {
         for (INamedTypeSymbol? current = type; current is not null; current = current.ContainingType)
         {
+            if (current.IsExtension)
+                return false;
             if (current.DeclaredAccessibility is not
                 (Accessibility.Public or Accessibility.Internal or Accessibility.ProtectedOrInternal) || current.IsFileLocal)
                 return false;
@@ -337,7 +339,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
             return "new " + array.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + "[] { " +
                 string.Join(", ", constant.Values.Select(FormatConstant)) + " }";
         string literal = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatPrimitive(constant.Value!, quoteStrings: true,
-            useHexadecimalNumbers: false);
+            useHexadecimalNumbers: false) ?? throw new InvalidOperationException("The attribute constant cannot be represented as a C# literal.");
         return constant.Kind == TypedConstantKind.Enum ? "(" +
             constant.Type!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + ")" + literal : literal;
     }

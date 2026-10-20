@@ -49,7 +49,7 @@ public static class ImGuiToolchain
         NativeBuildRecipe recipe = CreateRecipe(context);
         return await NativeArtifactPublisher.PublishAsync(context, recipe,
             async (
-                scoped,
+                @scoped,
                 output,
                 token
             ) => {

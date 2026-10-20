@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
@@ -55,12 +58,12 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     private EditorInteractionRuntime m_runtime;
     private readonly WorkflowSink m_sink = new();
     private readonly ShaderGraphSourceStore m_source;
-    private readonly ImGuiContextPtr m_imgui;
+    private readonly unsafe ImGuiNativeContext* m_imgui;
     private Vector2 m_canvasMinimum;
     private Vector2 m_canvasMaximum;
     private Vector2 m_probeOffset;
 
-    public ShaderEditorWorkflowTests()
+    public unsafe ShaderEditorWorkflowTests()
     {
         Directory.CreateDirectory(Path.Combine(m_root, "Assets"));
         m_logs.RegisterSink(m_messages);
@@ -79,12 +82,12 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         m_source = new(m_assets, m_serialization);
         m_artifacts = new(m_assets, m_serialization, m_types, new ShaderCompiler(new WorkflowCompiler()), new BgfxTextureTargetCompiler(), m_reporter);
         m_runtime = CreateRuntime();
-        m_imgui = ImGuiApi.CreateContext();
-        ImGuiIOPtr io = ImGuiApi.GetIO();
-        io.DisplaySize = new(1200, 800);
-        io.DeltaTime = 1f / 60;
-        io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
-        io.Fonts.RendererHasTextures = true;
+        m_imgui = ImGuiApi.Raw.CreateContext(null);
+        ImGuiIO* io = ImGuiApi.Raw.GetIO();
+        io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1200, 800));
+        io->DeltaTime = 1f / 60;
+        io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+        io->Fonts->RendererHasTextures = 1;
     }
 
     [Fact]
@@ -128,7 +131,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     }
 
     [Fact]
-    public void DiagnosticCheckUsesTheStandardTransientModalWithoutChangingFileSelectionOrHistory()
+    public unsafe void DiagnosticCheckUsesTheStandardTransientModalWithoutChangingFileSelectionOrHistory()
     {
         AssetFileEntry entry = Create("Diagnostics.ishader");
         SelectAndDraw(entry);
@@ -144,7 +147,8 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
             ImGuiApi.NewFrame();
             ImGuiApi.SetNextWindowPos(new(0, 0));
             ImGuiApi.SetNextWindowSize(new(1200, 800));
-            _ = ImGuiApi.Begin("Shader Check Workflow");
+            using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Shader Check Workflow", allowsNull: false);
+            _ = ImGuiApi.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
             try { Assert.True(modal.Draw(m_runtime.context)); }
             finally { ImGuiApi.End(); ImGuiApi.Render(); }
             Thread.Sleep(5);
@@ -229,7 +233,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     [InlineData(1.25f, true)]
     [InlineData(1.5f, true)]
     [InlineData(2f, true)]
-    public void NativeCanvasResizeCompletesLayoutAtFractionalUiScales(
+    public unsafe void NativeCanvasResizeCompletesLayoutAtFractionalUiScales(
         float scale,
         bool emptyGraph
     ) {
@@ -239,9 +243,9 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         if (emptyGraph) controller.ReplaceDocument(new GraphDocument(), "Prepare Empty Canvas");
         ulong revision = controller.revision;
         byte[] disk = File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath));
-        ImGuiApi.GetStyle().ItemSpacing = new Vector2(6, 4) * scale;
-        ImGuiApi.GetStyle().WindowPadding = new Vector2(8, 7) * scale;
-        ImGuiApi.GetIO().DisplayFramebufferScale = new(scale);
+        ImGuiApi.Raw.GetStyle()->ItemSpacing = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(6, 4) * scale);
+        ImGuiApi.Raw.GetStyle()->WindowPadding = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(8, 7) * scale);
+        ImGuiApi.Raw.GetIO()->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(scale));
 
         Vector2[] sizes = [new(1200, 800), new(640, 400), new(280, 220), new(96, 64), new(32, 32),
             new(1200, 32), new(32, 800), new(1200, 800)];
@@ -362,18 +366,18 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         Assert.Equal(before, GraphDocumentCodec.Encode(controller.document, m_serialization));
     }
 
-    private void DragProbe(Vector2 distance)
+    private unsafe void DragProbe(Vector2 distance)
     {
         // A single framed summary-only node is centered in the canvas (82 px tall).
         Vector2 start = (m_canvasMinimum + m_canvasMaximum) * 0.5f + new Vector2(0, -25) + m_probeOffset;
         Assert.True(start.X > 0 && start.Y > 0);
-        ImGuiApi.GetIO().AddMousePosEvent(start.X, start.Y);
+        ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), start.X, start.Y);
         Draw();
-        ImGuiApi.GetIO().AddMouseButtonEvent(0, true);
+        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (true ? (byte)1 : (byte)0));
         Draw();
-        ImGuiApi.GetIO().AddMousePosEvent(start.X + distance.X, start.Y + distance.Y);
+        ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), start.X + distance.X, start.Y + distance.Y);
         Draw();
-        ImGuiApi.GetIO().AddMouseButtonEvent(0, false);
+        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (false ? (byte)1 : (byte)0));
         Draw();
         Tick();
         m_probeOffset += distance;
@@ -941,7 +945,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     }
 
     [StableTypeId("8c096b6f-92c3-48ed-917e-955858d6a65c")]
-    public sealed class WorkflowPipelineSettings : ISerializable
+    public sealed unsafe class WorkflowPipelineSettings : ISerializable
     {
         [SerializableProperty] public MaterialAsset? material { get; set; }
         [SerializableProperty] public float exposure { get; set; }
@@ -976,14 +980,15 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     }
     private void SelectAndDraw(AssetFileEntry entry) { m_runtime.interactions.SetSelection(entry); Draw(); }
     private void Tick() { m_runtime.Update(new(1f / 60, 0, true)); Draw(); }
-    private void Draw(Vector2? size = null)
+    private unsafe void Draw(Vector2? size = null)
     {
         EditorPanelExtension panel = Assert.Single(m_runtime.panels, panel => panel.id == "rendering.shader-editor");
         panel.isOpen = true;
         ImGuiApi.NewFrame();
         ImGuiApi.SetNextWindowPos(new(0, 0));
         ImGuiApi.SetNextWindowSize(size ?? new(1200, 800));
-        _ = ImGuiApi.Begin("Shader Editor Workflow");
+        using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Shader Editor Workflow", allowsNull: false);
+        _ = ImGuiApi.Raw.Begin((sbyte*)nativeTestText1.pointer, null, 0);
         try
         {
             Assert.True(panel.Draw(m_runtime.context));
@@ -993,10 +998,10 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         finally { ImGuiApi.End(); ImGuiApi.Render(); }
     }
 
-    public void Dispose()
+    public unsafe void Dispose()
     {
         m_runtime.Dispose();
-        ImGuiApi.DestroyContext(m_imgui);
+        ImGuiApi.Raw.DestroyContext(m_imgui);
         m_artifacts.Dispose();
         m_assets.Dispose();
         m_reporter.Dispose();
@@ -1009,7 +1014,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         Directory.Delete(m_root, true);
     }
 
-    public sealed class WorkflowSink
+    public sealed unsafe class WorkflowSink
     {
         public GraphEditorModule? graphs { get; set; }
         public MaterialDocuments? materials { get; set; }
@@ -1023,7 +1028,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     }
 
     [ShaderNodeDrawer("tests.shader-ui-probe", "Probe Node", "Domain/Test Extension", 850, separatorBefore: true)]
-    public sealed class CanvasProbeDrawer : ShaderNodeDrawer
+    public sealed unsafe class CanvasProbeDrawer : ShaderNodeDrawer
     {
         public static Vector2 header;
         public override void Draw(ShaderNodeDrawContext context)
@@ -1034,7 +1039,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         }
     }
 
-    public sealed class CanvasProbeCompiler : IShaderNodeCompiler
+    public sealed unsafe class CanvasProbeCompiler : IShaderNodeCompiler
     {
         public string definitionId => "tests.shader-ui-probe";
         public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context) => [];
@@ -1042,7 +1047,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
             => new Dictionary<string, ShaderIrValue>();
     }
     [EditorModule("tests.shader-workflow", order: 160)]
-    public sealed class WorkflowProbe : EditorModule
+    public sealed unsafe class WorkflowProbe : EditorModule
     {
         public WorkflowProbe(
             GraphEditorModule graphs,

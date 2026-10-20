@@ -8,6 +8,7 @@ using Inno.Native.ImGui;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Adapter.Rendering.Bgfx;
 using Inno.Rendering;
+using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
 
@@ -683,43 +684,43 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             return null;
         }
 
-        var drawData = new ImDrawDataPtr((ImDrawData*)address);
-        if (drawData.IsNull || !drawData.Valid || drawData.TotalVtxCount <= 0 || drawData.TotalIdxCount <= 0)
+        var drawData = (ImDrawData*)address;
+        if (drawData->Valid == 0 || drawData->TotalVtxCount <= 0 || drawData->TotalIdxCount <= 0)
         {
             return null;
         }
 
-        Vector2 clipScale = drawData.FramebufferScale;
-        int pixelWidth = checked((int)MathF.Round(drawData.DisplaySize.X * clipScale.X));
-        int pixelHeight = checked((int)MathF.Round(drawData.DisplaySize.Y * clipScale.Y));
+        Vector2 clipScale = new(drawData->FramebufferScale.X, drawData->FramebufferScale.Y);
+        int pixelWidth = checked((int)MathF.Round(drawData->DisplaySize.X * clipScale.X));
+        int pixelHeight = checked((int)MathF.Round(drawData->DisplaySize.Y * clipScale.Y));
         if (pixelWidth <= 0 || pixelHeight <= 0)
             return null;
         ProcessTextureRequests(drawData);
-        byte[] vertices = new byte[checked(drawData.TotalVtxCount * C_VERTEX_STRIDE)];
-        byte[] indices = new byte[checked(drawData.TotalIdxCount * C_INDEX_STRIDE)];
+        byte[] vertices = new byte[checked(drawData->TotalVtxCount * C_VERTEX_STRIDE)];
+        byte[] indices = new byte[checked(drawData->TotalIdxCount * C_INDEX_STRIDE)];
         List<CapturedDrawCommand> commands = [];
         int vertexBase = 0;
         int indexBase = 0;
-        Vector2 clipOffset = drawData.DisplayPos;
-        for (int listIndex = 0; listIndex < drawData.CmdListsCount; listIndex++)
+        Vector2 clipOffset = new(drawData->DisplayPos.X, drawData->DisplayPos.Y);
+        for (int listIndex = 0; listIndex < drawData->CmdListsCount; listIndex++)
         {
-            ImDrawListPtr drawList = drawData.CmdLists[listIndex];
-            int listVertexCount = drawList.VtxBuffer.Size;
-            int listIndexCount = drawList.IdxBuffer.Size;
-            new ReadOnlySpan<byte>(drawList.VtxBuffer.Data, checked(listVertexCount * C_VERTEX_STRIDE))
+            ImDrawList* drawList = drawData->CmdLists.Data[listIndex];
+            int listVertexCount = drawList->VtxBuffer.Size;
+            int listIndexCount = drawList->IdxBuffer.Size;
+            new ReadOnlySpan<byte>(drawList->VtxBuffer.Data, checked(listVertexCount * C_VERTEX_STRIDE))
                 .CopyTo(vertices.AsSpan(vertexBase * C_VERTEX_STRIDE));
-            new ReadOnlySpan<byte>(drawList.IdxBuffer.Data, checked(listIndexCount * C_INDEX_STRIDE))
+            new ReadOnlySpan<byte>(drawList->IdxBuffer.Data, checked(listIndexCount * C_INDEX_STRIDE))
                 .CopyTo(indices.AsSpan(indexBase * C_INDEX_STRIDE));
 
-            for (int commandIndex = 0; commandIndex < drawList.CmdBuffer.Size; commandIndex++)
+            for (int commandIndex = 0; commandIndex < drawList->CmdBuffer.Size; commandIndex++)
             {
-                ImDrawCmd command = drawList.CmdBuffer[commandIndex];
+                ImDrawCmd command = drawList->CmdBuffer.Data[commandIndex];
                 if (command.UserCallback != null || command.ElemCount == 0)
                 {
                     continue;
                 }
 
-                Vector4 clip = command.ClipRect;
+                ImVec4C clip = command.ClipRect;
                 int clipX = Math.Clamp((int)MathF.Floor((clip.X - clipOffset.X) * clipScale.X), 0, pixelWidth);
                 int clipY = Math.Clamp((int)MathF.Floor((clip.Y - clipOffset.Y) * clipScale.Y), 0, pixelHeight);
                 int clipRight = Math.Clamp((int)MathF.Ceiling((clip.Z - clipOffset.X) * clipScale.X), 0, pixelWidth);
@@ -737,7 +738,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                     checked(vertexBase + (int)command.VtxOffset),
                     checked(indexBase + (int)command.IdxOffset),
                     checked((int)command.ElemCount),
-                    command.GetTexID().Handle));
+                    ImGuiNative.Raw.GetTexID(&command)));
             }
 
             vertexBase += listVertexCount;
@@ -747,8 +748,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         return new DrawPacket(
             viewportId,
             surface,
-            drawData.DisplayPos,
-            drawData.DisplaySize,
+            new Vector2(drawData->DisplayPos.X, drawData->DisplayPos.Y),
+            new Vector2(drawData->DisplaySize.X, drawData->DisplaySize.Y),
             pixelWidth,
             pixelHeight,
             vertices,
@@ -756,9 +757,9 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             commands);
     }
 
-    private void ProcessTextureRequests(ImDrawDataPtr drawData)
+    private void ProcessTextureRequests(ImDrawData* drawData)
     {
-        ImVector<ImTextureDataPtr>* textures = drawData.Handle->Textures;
+        var textures = drawData->Textures;
         if (textures is null)
         {
             return;
@@ -766,72 +767,72 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
         for (int index = 0; index < textures->Size; index++)
         {
-            ImTextureDataPtr textureData = textures->Data[index];
-            if (textureData.IsNull)
+            ImTextureData* textureData = textures->Data[index];
+            if (textureData == null)
             {
                 continue;
             }
 
-            if (textureData.Status == ImTextureStatus.WantDestroy)
+            if (textureData->Status == ImTextureStatus.WantDestroy)
             {
-                ulong destroyedToken = textureData.GetTexID().Handle;
+                ulong destroyedToken = textureData->TexId;
                 if (destroyedToken != 0)
                 {
                     m_pendingTextureUploads.Remove(destroyedToken);
                     m_pendingTextureDestruction.Add(destroyedToken);
                 }
 
-                textureData.SetTexID(ImTextureID.Null);
-                textureData.SetStatus(ImTextureStatus.Destroyed);
+                ImGuiNative.Raw.SetTexID(textureData, 0);
+                ImGuiNative.Raw.SetStatus(textureData, ImTextureStatus.Destroyed);
                 continue;
             }
 
-            if (textureData.Status is not (ImTextureStatus.WantCreate or ImTextureStatus.WantUpdates)
-                || textureData.Pixels is null
-                || textureData.Width <= 0
-                || textureData.Height <= 0)
+            if (textureData->Status is not (ImTextureStatus.WantCreate or ImTextureStatus.WantUpdates)
+                || textureData->Pixels is null
+                || textureData->Width <= 0
+                || textureData->Height <= 0)
             {
                 continue;
             }
 
-            ulong token = textureData.GetTexID().Handle;
+            ulong token = textureData->TexId;
             if (token == 0)
             {
                 token = AllocateTextureToken();
-                textureData.SetTexID(new ImTextureID(token));
+                ImGuiNative.Raw.SetTexID(textureData, token);
             }
 
             m_pendingTextureUploads[token] = new TextureUpload(
-                textureData.Width,
-                textureData.Height,
+                textureData->Width,
+                textureData->Height,
                 CopyTexturePixels(textureData));
-            textureData.SetStatus(ImTextureStatus.Ok);
+            ImGuiNative.Raw.SetStatus(textureData, ImTextureStatus.Ok);
         }
     }
 
-    private static byte[] CopyTexturePixels(ImTextureDataPtr textureData)
+    private static byte[] CopyTexturePixels(ImTextureData* textureData)
     {
-        int sourcePitch = textureData.GetPitch();
-        if (textureData.Format == ImTextureFormat.Rgba32)
+        int sourcePitch = ImGuiNative.Raw.GetPitch(textureData);
+        if (textureData->Format == ImTextureFormat.Rgba32)
         {
-            int rowBytes = checked(textureData.Width * 4);
-            byte[] result = new byte[checked(rowBytes * textureData.Height)];
-            for (int y = 0; y < textureData.Height; y++)
+            int rowBytes = checked(textureData->Width * 4);
+            byte[] result = new byte[checked(rowBytes * textureData->Height)];
+            for (int y = 0; y < textureData->Height; y++)
             {
-                new ReadOnlySpan<byte>(textureData.Pixels + (y * sourcePitch), rowBytes)
+                new ReadOnlySpan<byte>(textureData->Pixels + (y * sourcePitch), rowBytes)
                     .CopyTo(result.AsSpan(y * rowBytes, rowBytes));
             }
 
             return result;
         }
 
-        byte[] expanded = new byte[checked(textureData.Width * textureData.Height * 4)];
-        for (int y = 0; y < textureData.Height; y++)
+        byte[] expanded = new byte[checked(textureData->Width * textureData->Height * 4)];
+        for (int y = 0; y < textureData->Height; y++)
         {
-            byte* source = textureData.Pixels + (y * sourcePitch);
-            for (int x = 0; x < textureData.Width; x++)
+            byte* source = textureData->Pixels + (y * sourcePitch);
+            for (int x = 0; x < textureData->Width; x++)
             {
-                int destination = ((y * textureData.Width) + x) * 4;
+                int destination = ((y * textureData->Width) + x) * 4;
                 expanded[destination] = 255;
                 expanded[destination + 1] = 255;
                 expanded[destination + 2] = 255;

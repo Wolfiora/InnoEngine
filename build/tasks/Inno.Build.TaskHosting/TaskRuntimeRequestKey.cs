@@ -24,8 +24,7 @@ internal static class TaskRuntimeRequestKey
             static entry => (string)entry.Key, static entry => (string)entry.Value!, StringComparer.OrdinalIgnoreCase);
         using var collection = new ProjectCollection();
         var graph = new ProjectGraph(project, globals, collection);
-        bool needsRestore = graph.ProjectNodes.Any(static node => node.ProjectInstance.GetPropertyValue("ProjectAssetsFile") is string assets
-            && assets.Length != 0 && !File.Exists(assets));
+        bool needsRestore = false;
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var inputs = new HashSet<string>(paths);
         var restoreRequests = new List<TaskRuntimeRestoreRequest>();
@@ -61,7 +60,7 @@ internal static class TaskRuntimeRequestKey
             inputs.Add(instance.FullPath);
             foreach (string import in instance.ImportPaths)
                 inputs.Add(import);
-            TaskRuntimePackageInputs.Collect(instance, inputs, cancellation);
+            needsRestore |= !TaskRuntimePackageInputs.Collect(instance, inputs, cancellation);
             declarations.AddRange(instance.GlobalProperties.Where(static entry => IsInputProperty(entry.Key))
                 .OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(entry => instance.FullPath + "|" + entry.Key + "=" + entry.Value));

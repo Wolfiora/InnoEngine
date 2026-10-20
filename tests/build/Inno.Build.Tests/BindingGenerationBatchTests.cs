@@ -10,15 +10,16 @@ using Xunit;
 
 namespace Inno.Build.Tests;
 
+[Trait("ExternalDependency", "BGCS")]
 public sealed class BindingGenerationBatchTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoBindingBatch", Guid.NewGuid().ToString("N"));
 
     public BindingGenerationBatchTests()
     {
-        Directory.CreateDirectory(m_root);
+        Directory.CreateDirectory(Path.Combine(m_root, "Source"));
         File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
-        File.WriteAllText(Path.Combine(m_root, "shared.h"), "int sample(int value);");
+        File.WriteAllText(Path.Combine(m_root, "Source", "shared.h"), "int sample(int value);");
     }
 
     [Fact]
@@ -27,18 +28,18 @@ public sealed class BindingGenerationBatchTests : IDisposable
         NativeComponentDescriptor component = CreateComponent("planned");
         string directory = Path.Combine(m_root, "planned");
         string config = Path.Combine(directory, "bindgen.json");
-        File.WriteAllText(Path.Combine(directory, "common.json"), "{\"apiName\":\"UnusedDefault\"}");
+        File.WriteAllText(Path.Combine(directory, "common.json"), "{\"schemaVersion\":1,\"api\":{\"name\":\"UnusedDefault\"}}");
         string text = File.ReadAllText(config);
-        File.WriteAllText(config, text.Replace("{\"preset\"", "{\"baseConfig\":{\"url\":\"file://common.json\"},\"preset\"", StringComparison.Ordinal));
+        File.WriteAllText(config, text.Replace("\"schemaVersion\":1", "\"schemaVersion\":1,\"extends\":[\"common.json\"]", StringComparison.Ordinal));
         string unselected = Path.Combine(directory, "bindgen.unselected.json");
         File.WriteAllText(unselected, "{}");
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
-        var generator = new NativeBindingGenerator("dotnet");
+        var generator = new NativeBindingGenerator();
         NativeBuildContext initial = new(m_root, "release");
         string identity = await generator.ComputeInputFingerprintAsync(initial, request, CancellationToken.None);
         File.WriteAllText(unselected, "{\"changed\":true}");
         Assert.Equal(identity, await generator.ComputeInputFingerprintAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
-        string shared = Path.Combine(m_root, "shared.h");
+        string shared = Path.Combine(m_root, "Source", "shared.h");
         DateTime timestamp = File.GetLastWriteTimeUtc(shared);
         File.WriteAllText(shared, File.ReadAllText(shared).Replace("sample", "change", StringComparison.Ordinal));
         File.SetLastWriteTimeUtc(shared, timestamp);
@@ -54,7 +55,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     {
         var components = new[] { CreateComponent("first"), CreateComponent("second") };
         var context = new NativeBuildContext(m_root, "release");
-        var generator = new NativeBindingGenerator("dotnet");
+        var generator = new NativeBindingGenerator();
         var request = new NativeBindingGenerationRequest(components, "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var result = await generator.GenerateAsync(context, request, CancellationToken.None);
         Assert.Equal(2, result.Count);
@@ -62,13 +63,13 @@ public sealed class BindingGenerationBatchTests : IDisposable
         Assert.Equal(2, context.statistics.bindingGenerations);
         Assert.Contains(context.statistics.phases, phase => phase.phase == "binding-locks" && phase.reusedReads > 0);
         Assert.Contains(context.statistics.phases, phase => phase.phase == "binding-generation" && phase.reusedReads > 0);
-        long expectedBytes = File.ReadAllBytes(Path.Combine(m_root, "shared.h")).Length;
+        long expectedBytes = File.ReadAllBytes(Path.Combine(m_root, "Source", "shared.h")).Length;
         Assert.All(context.statistics.phases, phase => Assert.True(phase.bytes >= expectedBytes));
         var hot = new NativeBuildContext(m_root, "release");
         using var hotResult = await generator.GenerateAsync(hot, request, CancellationToken.None);
         Assert.Equal(0, hot.statistics.bindingGenerations);
         Assert.Equal(1, hot.statistics.bindingBatches);
-        string header = Path.Combine(m_root, "shared.h");
+        string header = Path.Combine(m_root, "Source", "shared.h");
         DateTime timestamp = File.GetLastWriteTimeUtc(header);
         File.WriteAllText(header, "int change(int value);");
         File.SetLastWriteTimeUtc(header, timestamp);
@@ -80,7 +81,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     public async Task ActiveConsumersBlockReplacementAndReleaseAllowsRepair()
     {
         var component = CreateComponent("reader");
-        var generator = new NativeBindingGenerator("dotnet");
+        var generator = new NativeBindingGenerator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
         var context = new NativeBuildContext(m_root, "release");
         using NativeBindingGenerationResult first = await generator.GenerateAsync(context, request, CancellationToken.None);
@@ -112,14 +113,14 @@ public sealed class BindingGenerationBatchTests : IDisposable
     {
         var first = CreateComponent("first");
         var second = CreateComponent("second");
-        var generator = new NativeBindingGenerator("dotnet");
+        var generator = new NativeBindingGenerator();
         var request = new NativeBindingGenerationRequest([first, second], "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var completed = await generator.GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
         string original = File.ReadAllText(completed[first.nativeProject].bindingsPath);
-        File.WriteAllText(Path.Combine(m_root, "shared.h"), "int different(int value);");
+        File.WriteAllText(Path.Combine(m_root, "Source", "shared.h"), "int different(int value);");
         File.WriteAllText(Path.Combine(m_root, "second", "broken.h"), "invalid C grammar;");
         string config = Path.Combine(m_root, "second", "bindgen.json");
-        File.WriteAllText(config, File.ReadAllText(config).Replace("../shared.h", "broken.h", StringComparison.Ordinal));
+        File.WriteAllText(config, File.ReadAllText(config).Replace("../Source/shared.h", "broken.h", StringComparison.Ordinal));
         await Assert.ThrowsAnyAsync<Exception>(async () => await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
         Assert.Equal(original, File.ReadAllText(completed[first.nativeProject].bindingsPath));
@@ -134,11 +135,11 @@ public sealed class BindingGenerationBatchTests : IDisposable
     public async Task FrozenSdkPathsSelectIndependentHeadersWithoutChangingTheProcessEnvironment()
     {
         string variable = "INNO_BINDING_SDK_" + Guid.NewGuid().ToString("N");
-        var component = CreateSdkComponent(variable);
+        var component = CreateSdkComponent();
         string firstSdk = CreateSdk("sdk-first", "int");
         string secondSdk = CreateSdk("sdk-second", "long long");
         string? original = Environment.GetEnvironmentVariable(variable);
-        var generator = new NativeBindingGenerator("dotnet");
+        var generator = new NativeBindingGenerator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
 
         using var first = await generator.GenerateAsync(SdkContext(variable, firstSdk), request, CancellationToken.None);
@@ -151,20 +152,20 @@ public sealed class BindingGenerationBatchTests : IDisposable
     }
 
     [Fact]
-    public async Task MissingFrozenSdkValueFailsBeforeCreatingCandidatesAndPreservesPublishedBindings()
+    public async Task MissingSelectedSdkFailsBeforeCreatingCandidatesAndPreservesPublishedBindings()
     {
         string variable = "INNO_BINDING_SDK_" + Guid.NewGuid().ToString("N");
-        var component = CreateSdkComponent(variable);
+        var component = CreateSdkComponent();
         string sdk = CreateSdk("sdk", "int");
-        var generator = new NativeBindingGenerator("dotnet");
+        var generator = new NativeBindingGenerator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var result = await generator.GenerateAsync(SdkContext(variable, sdk), request, CancellationToken.None);
         string source = File.ReadAllText(result[component.nativeProject].bindingsPath);
 
-        var failure = await Assert.ThrowsAsync<InvalidOperationException>(async () => await generator.GenerateAsync(
+        var failure = await Assert.ThrowsAsync<InvalidDataException>(async () => await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
 
-        Assert.Contains(variable, failure.Message);
+        Assert.Contains("owned.h", failure.Message);
         Assert.Equal(source, File.ReadAllText(result[component.nativeProject].bindingsPath));
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "artifacts", "bindings", "sdk-component", "fixture")));
         Assert.Empty(Directory.GetDirectories(m_root, ".bgcs-staging-*", SearchOption.AllDirectories));
@@ -172,13 +173,10 @@ public sealed class BindingGenerationBatchTests : IDisposable
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
-    private NativeComponentDescriptor CreateSdkComponent(string variable)
+    private NativeComponentDescriptor CreateSdkComponent()
     {
         var component = CreateComponent("sdk-component");
-        File.WriteAllText(Path.Combine(m_root, "shared.h"), "#include <owned.h>\nOWNED_SDK_TYPE sample(OWNED_SDK_TYPE value);");
-        string config = Path.Combine(m_root, "sdk-component", "bindgen.json");
-        File.WriteAllText(config, File.ReadAllText(config).Replace("\"entryFiles\":",
-            "\"systemIncludeFolders\":[\"%" + variable + "%/include\"],\"entryFiles\":", StringComparison.Ordinal));
+        File.WriteAllText(Path.Combine(m_root, "Source", "shared.h"), "#include <owned.h>\nOWNED_SDK_TYPE sample(OWNED_SDK_TYPE value);");
         return component;
     }
 
@@ -200,7 +198,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         File.WriteAllText(executable, "Selected SDK tool identity; not executed by this C parser fixture.");
         var selection = new NativeToolchainSelection("fixture", new BuildHostDescriptor("Windows", "x64"),
             new Dictionary<string, string> { ["fixture"] = executable },
-            new Dictionary<string, string> { [variable] = sdk }, [sdk], [], ".dll", false);
+            new Dictionary<string, string> { [variable] = sdk, ["INCLUDE"] = Path.Combine(sdk, "include") }, [sdk], [], ".dll", false);
         return new NativeBuildContext(m_root, "release").WithToolchain(selection);
     }
 
@@ -214,9 +212,10 @@ public sealed class BindingGenerationBatchTests : IDisposable
             <ItemGroup><InnoBindingTarget Include="fixture"><Config>bindgen.json</Config></InnoBindingTarget></ItemGroup></Project>
             """);
         File.WriteAllText(Path.Combine(owner, "bindgen.json"), """
-            {"preset":"c-library","namespace":"Fixture.Native","apiName":"Api","libName":"fixture",
-             "targetId":"linux-x64-gnu","entryFiles":["../shared.h"],"allowedHeaders":["../shared.h"],
-             "generateRuntimeSource":false,"mergeGeneratedFilesToSingleFile":true,"singleFileOutputName":"Bindings.cs"}
+            {"schemaVersion":1,"library":{"id":"fixture","nativeName":"fixture"},
+             "source":{"language":"c","headers":["../Source/shared.h"],"includeDirectories":["../Source"]},
+             "api":{"namespace":"Fixture.Native","name":"Api","naming":{"functions":{"casing":"pascal"}}},
+             "output":{"root":"Generated","layout":"singleFile"}}
             """);
         return new NativeComponentDescriptor(name, name + "/" + name + ".csproj", name + "/" + name + ".csproj",
             bindingDefinition: name + "/bindings.props");

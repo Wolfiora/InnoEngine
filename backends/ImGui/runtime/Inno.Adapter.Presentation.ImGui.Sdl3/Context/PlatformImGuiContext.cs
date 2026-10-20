@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text;
 
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Native.Sdl3;
@@ -15,7 +16,7 @@ namespace Inno.Adapter.Presentation.ImGui;
 /// <summary>
 /// Provides operation-scoped platform im gui context services and state without transferring their ownership.
 /// </summary>
-public sealed partial class PlatformImGuiContext
+public sealed unsafe partial class PlatformImGuiContext
 {
     private const float DEFAULT_KEY_REPEAT_DELAY_SECONDS = 0.275f;
     private const float DEFAULT_KEY_REPEAT_RATE_SECONDS = 0.050f;
@@ -29,15 +30,15 @@ public sealed partial class PlatformImGuiContext
 
     private readonly ImGuiInteractionOptions m_interaction;
     private readonly Sdl3PlatformWindow m_window;
-    private readonly ImGuiContextPtr m_context;
+    private readonly ImGuiNativeContext* m_context;
     private readonly PlatformImGuiViewportBackend? m_viewports;
     private readonly IPlatformImGuiRenderer m_renderer;
-    private readonly Dictionary<ImGuiMouseCursor, SDLCursor> m_cursors = [];
+    private readonly Dictionary<ImGuiMouseCursor, nint> m_cursors = [];
     private readonly HashSet<uint> m_pendingLiveResizeWindowIds = [];
     private readonly Stopwatch m_frameTimer = Stopwatch.StartNew();
 
     private ImGuiMouseCursor m_currentCursor = ImGuiMouseCursor.None;
-    private SDLWindow m_textInputWindow = SDLWindow.Null;
+    private SDLWindow* m_textInputWindow = null;
     private TimeSpan m_lastFrameTime;
     private TimeSpan m_lastLiveResizeLockTime;
     private IntPtr m_iniFilename;
@@ -65,36 +66,36 @@ public sealed partial class PlatformImGuiContext
 
         m_interaction = interaction;
         m_window = window;
-        m_context = ImGuiNative.CreateContext();
-        ImGuiNative.SetCurrentContext(m_context);
+        m_context = ImGuiNative.Raw.CreateContext(null);
+        ImGuiNative.Raw.SetCurrentContext(m_context);
 
         try
         {
-            var io = ImGuiNative.GetIO();
+            var io = ImGuiNative.Raw.GetIO();
             // SDL cannot reliably identify the viewport beneath a transient NoInputs viewport while
             // docking, and the official SDL backend disables this capability on macOS. Let Dear ImGui
             // use its viewport heuristic instead of publishing incorrect hovered viewport identities.
-            io.BackendFlags |= ImGuiBackendFlags.HasMouseCursors
-                | ImGuiBackendFlags.HasSetMousePos
-                | ImGuiBackendFlags.RendererHasTextures;
-            io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
+            io->BackendFlags |= (int)ImGuiBackendFlags.HasMouseCursors
+                | (int)ImGuiBackendFlags.HasSetMousePos
+                | (int)ImGuiBackendFlags.RendererHasTextures;
+            io->ConfigFlags |= (int)ImGuiConfigFlags.NavEnableKeyboard;
 
             if (enableDocking)
             {
-                io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
+                io->ConfigFlags |= (int)ImGuiConfigFlags.DockingEnable;
             }
 
             if (enableViewports)
             {
-                io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
-                io.ConfigDpiScaleViewports = true;
-                io.BackendFlags |= ImGuiBackendFlags.PlatformHasViewports | ImGuiBackendFlags.RendererHasViewports;
+                io->ConfigFlags |= (int)ImGuiConfigFlags.ViewportsEnable;
+                io->ConfigDpiScaleViewports = 1;
+                io->BackendFlags |= (int)ImGuiBackendFlags.PlatformHasViewports | (int)ImGuiBackendFlags.RendererHasViewports;
             }
 
-            io.ConfigDpiScaleFonts = true;
-            io.ConfigMacOSXBehaviors = interaction.commandKeyBehavior;
-            io.MouseDrawCursor = false;
-            io.Fonts.RendererHasTextures = true;
+            io->ConfigDpiScaleFonts = 1;
+            io->ConfigMacOsxBehaviors = interaction.commandKeyBehavior ? (byte)1 : (byte)0;
+            io->MouseDrawCursor = 0;
+            io->Fonts->RendererHasTextures = 1;
             ConfigureKeyRepeat(io);
             ConfigureFonts(m_context, io);
             ImGuiPackedColor.EnsureInitialized();
@@ -108,7 +109,7 @@ public sealed partial class PlatformImGuiContext
         {
             m_viewports?.Dispose();
             ImGuiFont.UnregisterContext(m_context);
-            ImGuiNative.DestroyContext(m_context);
+            ImGuiNative.Raw.DestroyContext(m_context);
             if (renderer is null)
                 m_renderer?.Dispose();
             throw;
@@ -135,8 +136,8 @@ public sealed partial class PlatformImGuiContext
         out uint windowId
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        ImGuiNative.SetCurrentContext(m_context);
-        if (viewportId == ImGuiNative.GetMainViewport().ID)
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        if (viewportId == ImGuiNative.Raw.GetMainViewport()->ID)
         {
             windowId = m_window.windowId;
             return true;
@@ -159,8 +160,8 @@ public sealed partial class PlatformImGuiContext
         if (m_hasStartedFrame)
             throw new InvalidOperationException("The ImGui layout file must be configured before the first frame.");
 
-        ImGuiNative.SetCurrentContext(m_context);
-        var io = ImGuiNative.GetIO();
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        var io = ImGuiNative.Raw.GetIO();
         if (m_iniFilename != IntPtr.Zero)
         {
             Marshal.FreeCoTaskMem(m_iniFilename);
@@ -194,8 +195,10 @@ public sealed partial class PlatformImGuiContext
         if (string.IsNullOrEmpty(settings))
             return;
 
-        ImGuiNative.SetCurrentContext(m_context);
-        ImGuiNative.LoadIniSettingsFromMemory(settings);
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        byte[] encoded = Encoding.UTF8.GetBytes(settings);
+        fixed (byte* data = encoded)
+            ImGuiNative.Raw.LoadIniSettingsFromMemory((sbyte*)data, (uint)encoded.Length);
     }
 
     /// <summary>
@@ -231,7 +234,7 @@ public sealed partial class PlatformImGuiContext
         }
 
         ImGuiNative.Image(
-            new ImTextureRef(texID: new ImTextureID(texture.value)),
+            new ImTextureRef { TexID = texture.value },
             size,
             uv0,
             uv1);
@@ -254,23 +257,23 @@ public sealed partial class PlatformImGuiContext
         bool force
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        ImGuiNative.SetCurrentContext(m_context);
-        ImGuiIOPtr io = ImGuiNative.GetIO();
-        if (!force && !io.WantSaveIniSettings)
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        ImGuiIO* io = ImGuiNative.Raw.GetIO();
+        if (!force && io->WantSaveIniSettings == 0)
         {
             settings = string.Empty;
             return false;
         }
 
-        settings = ImGuiNative.SaveIniSettingsToMemory() ?? string.Empty;
-        io.WantSaveIniSettings = false;
+        settings = Marshal.PtrToStringUTF8((nint)ImGuiNative.Raw.SaveIniSettingsToMemory(null)) ?? string.Empty;
+        io->WantSaveIniSettings = 0;
         return true;
     }
 
-    private static void ConfigureKeyRepeat(ImGuiIOPtr io)
+    private static void ConfigureKeyRepeat(ImGuiIO* io)
     {
-        io.KeyRepeatDelay = DEFAULT_KEY_REPEAT_DELAY_SECONDS;
-        io.KeyRepeatRate = DEFAULT_KEY_REPEAT_RATE_SECONDS;
+        io->KeyRepeatDelay = DEFAULT_KEY_REPEAT_DELAY_SECONDS;
+        io->KeyRepeatRate = DEFAULT_KEY_REPEAT_RATE_SECONDS;
     }
 
     /// <summary>
@@ -302,62 +305,62 @@ public sealed partial class PlatformImGuiContext
         if (!File.Exists(fullPath))
             throw new FileNotFoundException("The font file does not exist.", fullPath);
 
-        ImGuiNative.SetCurrentContext(m_context);
-        ImGuiIOPtr io = ImGuiNative.GetIO();
-        ImFontPtr loadedFont = LoadFont(io.Fonts, fullPath, fontSizePixels);
-        if (loadedFont.IsNull)
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        ImGuiIO* io = ImGuiNative.Raw.GetIO();
+        ImFont* loadedFont = LoadFont(io->Fonts, fullPath, fontSizePixels);
+        if (loadedFont == null)
             throw new InvalidOperationException($"Could not load the font '{fullPath}'.");
 
         ResolveFontPaths(out _, out List<string> iconFontPaths);
-        MergeIconFontsIntoCurrentBaseFont(io.Fonts, iconFontPaths);
-        ImGuiFont.RegisterStyle(m_context, style, loadedFont);
+        MergeIconFontsIntoCurrentBaseFont(io->Fonts, iconFontPaths);
+        ImGuiFont.RegisterStyle(m_context, style, (nint)loadedFont);
         if (style == ImGuiFontStyle.Regular)
-            io.FontDefault = loadedFont;
+            io->FontDefault = loadedFont;
     }
 
     private static void ConfigureFonts(
-        ImGuiContextPtr context,
-        ImGuiIOPtr io
+        ImGuiNativeContext* context,
+        ImGuiIO* io
     ) {
-        var fonts = io.Fonts;
-        fonts.Clear();
+        var fonts = io->Fonts;
+        ImGuiNative.Raw.Clear(fonts);
 
         ResolveFontPaths(out var fontPaths, out var iconFontPaths);
-        var styleFonts = new Dictionary<ImGuiFontStyle, ImFontPtr>();
-        ImFontPtr defaultFont = ImFontPtr.Null;
+        var styleFonts = new Dictionary<ImGuiFontStyle, nint>();
+        ImFont* defaultFont = null;
         var preferredIndex = FindPreferredFontIndex(fontPaths);
         for (var i = 0; i < fontPaths.Count; i++)
         {
-            ImFontPtr loadedFont = LoadFont(fonts, fontPaths[i], DEFAULT_FONT_SIZE_PIXELS);
-            if (loadedFont.IsNull)
+            ImFont* loadedFont = LoadFont(fonts, fontPaths[i], DEFAULT_FONT_SIZE_PIXELS);
+            if (loadedFont == null)
             {
                 continue;
             }
 
             MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
-            styleFonts[GetFontStyle(fontPaths[i])] = loadedFont;
+            styleFonts[GetFontStyle(fontPaths[i])] = (nint)loadedFont;
             if (i == preferredIndex)
             {
                 defaultFont = loadedFont;
             }
-            else if (defaultFont.IsNull)
+            else if (defaultFont == null)
             {
                 defaultFont = loadedFont;
             }
         }
 
-        if (defaultFont.IsNull)
+        if (defaultFont == null)
         {
             defaultFont = LoadDefaultFont(fonts);
-            if (!defaultFont.IsNull)
+            if (defaultFont != null)
             {
                 MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
             }
         }
 
-        io.FontDefault = defaultFont;
-        if (!defaultFont.IsNull && !styleFonts.ContainsKey(ImGuiFontStyle.Regular))
-            styleFonts[ImGuiFontStyle.Regular] = defaultFont;
+        io->FontDefault = defaultFont;
+        if (defaultFont != null && !styleFonts.ContainsKey(ImGuiFontStyle.Regular))
+            styleFonts[ImGuiFontStyle.Regular] = (nint)defaultFont;
         ImGuiFont.RegisterContext(context, styleFonts);
     }
 
@@ -464,7 +467,7 @@ public sealed partial class PlatformImGuiContext
     }
 
     private static unsafe void MergeIconFontsIntoCurrentBaseFont(
-        ImFontAtlasPtr fonts,
+        ImFontAtlas* fonts,
         List<string> iconFontPaths
     ) {
         if (iconFontPaths.Count == 0)
@@ -472,22 +475,18 @@ public sealed partial class PlatformImGuiContext
             return;
         }
 
-        Span<ushort> iconGlyphRanges = stackalloc ushort[] { 0xE000, 0xF8FF, 0 };
-        fixed (ushort* pGlyphRanges = iconGlyphRanges)
+        for (var index = 0; index < iconFontPaths.Count; index++)
         {
-            for (var i = 0; i < iconFontPaths.Count; i++)
+            ImFontConfig* mergeConfig = ImGuiNative.Raw.ImFontConfig();
+            mergeConfig->MergeMode = 1;
+            mergeConfig->PixelSnapH = 1;
+            try
             {
-                var mergeConfig = ImGuiNative.ImFontConfig();
-                mergeConfig.MergeMode = true;
-                mergeConfig.PixelSnapH = true;
-                try
-                {
-                    _ = fonts.AddFontFromFileTTF(iconFontPaths[i], DEFAULT_ICON_SIZE_PIXELS, mergeConfig, pGlyphRanges);
-                }
-                finally
-                {
-                    ImGuiNative.Destroy(mergeConfig);
-                }
+                _ = LoadFont(fonts, iconFontPaths[index], DEFAULT_ICON_SIZE_PIXELS, mergeConfig);
+            }
+            finally
+            {
+                ImGuiNative.Raw.Destroy(mergeConfig);
             }
         }
     }
@@ -499,8 +498,8 @@ public sealed partial class PlatformImGuiContext
             return;
         }
 
-        ImGuiNative.SetCurrentContext(m_context);
-        var io = ImGuiNative.GetIO();
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        var io = ImGuiNative.Raw.GetIO();
         var eventType = (SDLEventType)sdlEvent.Type;
 
         if (!TryGetWindowId(ref sdlEvent, out var eventWindowId))
@@ -527,28 +526,25 @@ public sealed partial class PlatformImGuiContext
                 var down = eventType == SDLEventType.KeyDown;
                 if (down && sdlEvent.Key.Repeat != 0)
                 {
-                    // Keep key-repeat timing driven by ImGui (io.KeyRepeatDelay/KeyRepeatRate).
+                    // Keep key-repeat timing driven by ImGui (io->KeyRepeatDelay/KeyRepeatRate).
                     break;
                 }
 
-                UpdateKeyModifiers(io, sdlEvent.Key.Mod);
+                UpdateKeyModifiers(io, (SDLKeymod)sdlEvent.Key.Mod);
 
                 var key = TranslateKey(sdlEvent.Key.Scancode);
                 if (key != ImGuiKey.None)
                 {
-                    io.AddKeyEvent(key, down);
-                    io.SetKeyEventNativeData(key, (int)sdlEvent.Key.Key, (int)sdlEvent.Key.Scancode, (int)sdlEvent.Key.Scancode);
+                    ImGuiNative.Raw.AddKeyEvent(io, key, down ? (byte)1 : (byte)0);
+                    ImGuiNative.Raw.SetKeyEventNativeData(io, key, (int)sdlEvent.Key.Key, (int)sdlEvent.Key.Scancode, (int)sdlEvent.Key.Scancode);
                 }
                 break;
             }
 
             case SDLEventType.TextInput:
             {
-                string? text = GetTextInputText(sdlEvent);
-                if (!string.IsNullOrEmpty(text))
-                {
-                    io.AddInputCharactersUTF8(text);
-                }
+                if (sdlEvent.Text.Text != null)
+                    ImGuiNative.Raw.AddInputCharactersUTF8(io, sdlEvent.Text.Text);
                 break;
             }
 
@@ -562,7 +558,7 @@ public sealed partial class PlatformImGuiContext
                     eventWindowId,
                     sdlEvent.Motion.X,
                     sdlEvent.Motion.Y);
-                io.AddMousePosEvent(mousePosition.X, mousePosition.Y);
+                ImGuiNative.Raw.AddMousePosEvent(io, mousePosition.X, mousePosition.Y);
                 break;
             }
 
@@ -577,7 +573,7 @@ public sealed partial class PlatformImGuiContext
                         m_mouseButtonsDown |= mask;
                     else
                         m_mouseButtonsDown &= ~mask;
-                    io.AddMouseButtonEvent(button, down);
+                    ImGuiNative.Raw.AddMouseButtonEvent(io, button, down ? (byte)1 : (byte)0);
                     // Docking can destroy the source viewport before SDL emits MouseUp. Capturing
                     // the mouse keeps the complete press/release sequence inside this application.
                     _ = SDL.CaptureMouse(m_mouseButtonsDown != 0);
@@ -592,18 +588,18 @@ public sealed partial class PlatformImGuiContext
 
                 wheelX *= m_interaction.horizontalWheelDirection;
 
-                io.AddMouseWheelEvent(
+                ImGuiNative.Raw.AddMouseWheelEvent(io,
                     wheelX * DEFAULT_MOUSE_SCROLLING_UNITS,
                     wheelY * DEFAULT_MOUSE_SCROLLING_UNITS);
                 break;
             }
 
             case SDLEventType.WindowFocusGained:
-                io.AddFocusEvent(true);
+                ImGuiNative.Raw.AddFocusEvent(io, 1);
                 break;
 
             case SDLEventType.WindowFocusLost:
-                io.AddFocusEvent(false);
+                ImGuiNative.Raw.AddFocusEvent(io, 0);
                 break;
 
             case SDLEventType.WindowMouseEnter:
@@ -696,31 +692,31 @@ public sealed partial class PlatformImGuiContext
             throw new ObjectDisposedException(nameof(PlatformImGuiContext));
         }
 
-        ImGuiNative.SetCurrentContext(m_context);
+        ImGuiNative.Raw.SetCurrentContext(m_context);
         m_viewports?.ProcessRetirements();
         m_hasStartedFrame = true;
 
-        var io = ImGuiNative.GetIO();
-        io.MouseDrawCursor = false;
+        var io = ImGuiNative.Raw.GetIO();
+        io->MouseDrawCursor = 0;
         UpdateDisplayMetrics(io);
-        io.DeltaTime = deltaTimeSeconds > 0f ? deltaTimeSeconds : (1f / 60f);
+        io->DeltaTime = deltaTimeSeconds > 0f ? deltaTimeSeconds : (1f / 60f);
         ReconcileMouseButtons(io);
         ReleaseCompletedLiveResizeHoverLock();
         FlushPendingMouseLeave(io);
         UpdateMouseData(io, m_window.GetSdlWindow());
         UpdateTextInputState(io);
-        
+
         m_viewports?.SynchronizeMetrics();
         m_isFrameActive = true;
         ImGuiNative.NewFrame();
-        
+
         // During live resize, prevent the main viewport from hosting other windows.
-        var mainViewport = ImGuiNative.GetMainViewport();
+        var mainViewport = ImGuiNative.Raw.GetMainViewport();
         if (m_liveResizeLockedWindowId != 0
-            && (io.ConfigFlags & ImGuiConfigFlags.ViewportsEnable) != 0
-            && !mainViewport.IsNull)
+            && (io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0
+            && mainViewport != null)
         {
-            mainViewport.Flags &= ~ImGuiViewportFlags.CanHostOtherWindows;
+            mainViewport->Flags &= ~(int)ImGuiViewportFlags.CanHostOtherWindows;
         }
     }
 
@@ -730,24 +726,24 @@ public sealed partial class PlatformImGuiContext
         {
             throw new ObjectDisposedException(nameof(PlatformImGuiContext));
         }
-        
-        var io = ImGuiNative.GetIO();
-        
+
+        var io = ImGuiNative.Raw.GetIO();
+
         try
         {
-            ImGuiNative.SetCurrentContext(m_context);
+            ImGuiNative.Raw.SetCurrentContext(m_context);
             UpdateMouseCursor(io);
-            ImGuiNative.SetMouseCursor(ImGuiMouseCursor.None);
+            ImGuiNative.SetMouseCursor((int)ImGuiMouseCursor.None);
             ImGuiNative.Render();
 
-            io.MouseDrawCursor = false;
-            var drawData = ImGuiNative.GetDrawData();
+            io->MouseDrawCursor = 0;
+            var drawData = ImGuiNative.Raw.GetDrawData();
             m_renderer.RenderMain(GetDrawDataAddress(drawData));
-            if ((io.ConfigFlags & ImGuiConfigFlags.ViewportsEnable) != 0)
+            if ((io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0)
             {
                 ImGuiNative.UpdatePlatformWindows();
-                ImGuiNative.RenderPlatformWindowsDefault();
-                ImGuiNative.SetCurrentContext(m_context);
+                ImGuiNative.Raw.RenderPlatformWindowsDefault(null, null);
+                ImGuiNative.Raw.SetCurrentContext(m_context);
             }
 
             return GetDrawDataAddress(drawData);
@@ -770,7 +766,7 @@ public sealed partial class PlatformImGuiContext
 
         float mouseX = 0f;
         float mouseY = 0f;
-        var mouseButtons = SDL.GetMouseState(ref mouseX, ref mouseY);
+        var mouseButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
         if ((mouseButtons & SDLMouseButtonFlags.Left) == 0)
         {
             m_liveResizeLockedWindowId = 0;
@@ -797,7 +793,7 @@ public sealed partial class PlatformImGuiContext
             return;
         }
 
-        if (eventType == SDLEventType.MouseButtonUp && sdlEvent.Button.Button == SDL.SDL_BUTTON_LEFT)
+        if (eventType == SDLEventType.MouseButtonUp && sdlEvent.Button.Button == SDL.Constants.SDL_BUTTON_LEFT)
         {
             m_liveResizeLockedWindowId = 0;
         }
@@ -813,14 +809,14 @@ public sealed partial class PlatformImGuiContext
             return;
         }
 
-        ImGuiNative.SetCurrentContext(m_context);
-        var io = ImGuiNative.GetIO();
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        var io = ImGuiNative.Raw.GetIO();
         UnregisterClipboardCallbacks();
         if (m_textInputActive)
         {
-            var textInputWindow = m_textInputWindow.IsNull ? m_window.GetSdlWindow() : m_textInputWindow;
-            _ = SDL.StopTextInput(textInputWindow);
-            m_textInputWindow = SDLWindow.Null;
+            var textInputWindow = m_textInputWindow == null ? m_window.GetSdlWindow() : m_textInputWindow;
+            _ = SDL.Raw.StopTextInput(textInputWindow);
+            m_textInputWindow = null;
             m_textInputActive = false;
         }
 
@@ -830,7 +826,7 @@ public sealed partial class PlatformImGuiContext
         m_mousePendingLeaveFrame = 0;
         m_pendingLiveResizeWindowIds.Clear();
 
-        if ((io.ConfigFlags & ImGuiConfigFlags.ViewportsEnable) != 0)
+        if ((io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0)
         {
             ImGuiNative.DestroyPlatformWindows();
         }
@@ -840,16 +836,16 @@ public sealed partial class PlatformImGuiContext
 
         foreach (var cursor in m_cursors.Values)
         {
-            if (!cursor.IsNull)
+            if (cursor != 0)
             {
-                SDL.DestroyCursor(cursor);
+                SDL.Raw.DestroyCursor((SDLCursor*)cursor);
             }
         }
 
         m_cursors.Clear();
         m_renderer.Dispose();
         ImGuiFont.UnregisterContext(m_context);
-        ImGuiNative.DestroyContext(m_context);
+        ImGuiNative.Raw.DestroyContext(m_context);
         if (m_iniFilename != IntPtr.Zero)
         {
             Marshal.FreeCoTaskMem(m_iniFilename);
@@ -858,87 +854,93 @@ public sealed partial class PlatformImGuiContext
         m_disposed = true;
     }
 
-    private void UpdateDisplayMetrics(ImGuiIOPtr io)
+    private void UpdateDisplayMetrics(ImGuiIO* io)
     {
         var windowWidth = 0;
         var windowHeight = 0;
-        SDLWindow sdlWindow = m_window.GetSdlWindow();
-        SDL.GetWindowSize(sdlWindow, ref windowWidth, ref windowHeight);
+        SDLWindow* sdlWindow = m_window.GetSdlWindow();
+        SDL.Raw.GetWindowSize(sdlWindow, &windowWidth, &windowHeight);
 
         var pixelWidth = 0;
         var pixelHeight = 0;
-        SDL.GetWindowSizeInPixels(sdlWindow, ref pixelWidth, ref pixelHeight);
+        SDL.Raw.GetWindowSizeInPixels(sdlWindow, &pixelWidth, &pixelHeight);
 
-        io.DisplaySize = new Vector2(windowWidth, windowHeight);
+        io->DisplaySize = new ImVec2C { X = windowWidth, Y = windowHeight };
 
         if (windowWidth > 0 && windowHeight > 0)
         {
-            io.DisplayFramebufferScale = new Vector2(
-                pixelWidth / (float)windowWidth,
-                pixelHeight / (float)windowHeight);
+            io->DisplayFramebufferScale = new ImVec2C
+            {
+                X = pixelWidth / (float)windowWidth,
+                Y = pixelHeight / (float)windowHeight
+            };
         }
         else
         {
-            io.DisplayFramebufferScale = Vector2.One;
+            io->DisplayFramebufferScale = new ImVec2C { X = 1f, Y = 1f };
         }
     }
 
-    private void UpdateTextInputState(ImGuiIOPtr io)
+    private void UpdateTextInputState(ImGuiIO* io)
     {
         var targetWindow = ResolveTextInputWindow();
-        if (io.WantTextInput)
+        if (io->WantTextInput != 0)
         {
             if (!m_textInputActive || m_textInputWindow != targetWindow)
             {
-                if (m_textInputActive && !m_textInputWindow.IsNull)
+                if (m_textInputActive && m_textInputWindow != null)
                 {
-                    _ = SDL.StopTextInput(m_textInputWindow);
+                    _ = SDL.Raw.StopTextInput(m_textInputWindow);
                 }
 
-                _ = SDL.StartTextInputWithProperties(targetWindow, 0);
+                _ = SDL.Raw.StartTextInputWithProperties(targetWindow, 0);
                 m_textInputWindow = targetWindow;
                 m_textInputActive = true;
             }
         }
         else if (m_textInputActive)
         {
-            var textInputWindow = m_textInputWindow.IsNull ? targetWindow : m_textInputWindow;
-            _ = SDL.StopTextInput(textInputWindow);
-            m_textInputWindow = SDLWindow.Null;
+            var textInputWindow = m_textInputWindow == null ? targetWindow : m_textInputWindow;
+            _ = SDL.Raw.StopTextInput(textInputWindow);
+            m_textInputWindow = null;
             m_textInputActive = false;
         }
     }
 
     private static unsafe void SetIniFilename(
-        ImGuiIOPtr io,
+        ImGuiIO* io,
         IntPtr fileName
     ) {
-        io.IniFilename = (byte*)fileName;
+        io->IniFilename = (sbyte*)fileName;
     }
 
-    private static unsafe ImFontPtr LoadFont(
-        ImFontAtlasPtr fonts,
+    private static unsafe ImFont* LoadFont(
+        ImFontAtlas* fonts,
         string filePath,
-        float fontSizePixels
-    ) =>
-        fonts.AddFontFromFileTTF(filePath, fontSizePixels, ImFontConfigPtr.Null, null);
+        float fontSizePixels,
+        ImFontConfig* config = null
+    ) {
+        int length = Encoding.UTF8.GetByteCount(filePath);
+        Span<byte> encoded = length < 1024 ? stackalloc byte[1024] : new byte[checked(length + 1)];
+        Encoding.UTF8.GetBytes(filePath, encoded);
+        encoded[length] = 0;
+        fixed (byte* filename = encoded)
+            return ImGuiNative.Raw.AddFontFromFileTTF(fonts, (sbyte*)filename, fontSizePixels, config, null);
+    }
 
-    private static unsafe ImFontPtr LoadDefaultFont(ImFontAtlasPtr fonts) => fonts.AddFontDefault();
+    private static unsafe ImFont* LoadDefaultFont(ImFontAtlas* fonts) => ImGuiNative.Raw.AddFontDefault(fonts, null);
 
-    private static unsafe string? GetTextInputText(SDLEvent sdlEvent) =>
-        sdlEvent.Text.Text == null ? null : Marshal.PtrToStringUTF8((IntPtr)sdlEvent.Text.Text);
+    private static unsafe IntPtr GetDrawDataAddress(ImDrawData* drawData) => (nint)drawData;
 
-    private static unsafe IntPtr GetDrawDataAddress(ImDrawDataPtr drawData) => new(drawData);
-
-    private SDLWindow ResolveTextInputWindow()
+    private SDLWindow* ResolveTextInputWindow()
     {
-        var keyboardFocus = SDL.GetKeyboardFocus();
-        if (keyboardFocus.IsNull)
+        var keyboardFocus = SDL.Raw.GetKeyboardFocus();
+        if (keyboardFocus == null)
         {
             return m_window.GetSdlWindow();
         }
 
-        var focusedWindowId = SDL.GetWindowID(keyboardFocus);
+        var focusedWindowId = SDL.Raw.GetWindowId(keyboardFocus);
         if (focusedWindowId == m_window.windowId || (m_viewports != null && m_viewports.OwnsWindow(focusedWindowId)))
         {
             return keyboardFocus;
@@ -948,14 +950,14 @@ public sealed partial class PlatformImGuiContext
     }
 
     private static void UpdateMouseData(
-        ImGuiIOPtr io,
-        SDLWindow window
+        ImGuiIO* io,
+        SDLWindow* window
     ) {
         // Mouse position is fed from SDL mouse events (per-window coordinates).
         // Polling here would overwrite secondary viewport coordinates with the wrong window space.
-        if (io.WantSetMousePos)
+        if (io->WantSetMousePos != 0)
         {
-            SDL.WarpMouseInWindow(window, io.MousePos.X, io.MousePos.Y);
+            SDL.Raw.WarpMouseInWindow(window, io->MousePos.X, io->MousePos.Y);
         }
     }
 
@@ -974,7 +976,7 @@ public sealed partial class PlatformImGuiContext
             {
                 int pixelWidth = 0;
                 int pixelHeight = 0;
-                SDL.GetWindowSizeInPixels(m_window.GetSdlWindow(), ref pixelWidth, ref pixelHeight);
+                SDL.Raw.GetWindowSizeInPixels(m_window.GetSdlWindow(), &pixelWidth, &pixelHeight);
                 m_renderer.SynchronizeMainOutput(pixelWidth, pixelHeight);
             }
             else
@@ -982,21 +984,21 @@ public sealed partial class PlatformImGuiContext
         }
     }
 
-    private void ReconcileMouseButtons(ImGuiIOPtr io)
+    private void ReconcileMouseButtons(ImGuiIO* io)
     {
         if (m_mouseButtonsDown == 0)
             return;
 
         float mouseX = 0f;
         float mouseY = 0f;
-        SDLMouseButtonFlags currentButtons = SDL.GetMouseState(ref mouseX, ref mouseY);
+        SDLMouseButtonFlags currentButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
         ReadOnlySpan<byte> sdlButtons =
         [
-            SDL.SDL_BUTTON_LEFT,
-            SDL.SDL_BUTTON_RIGHT,
-            SDL.SDL_BUTTON_MIDDLE,
-            SDL.SDL_BUTTON_X1,
-            SDL.SDL_BUTTON_X2
+            SDL.Constants.SDL_BUTTON_LEFT,
+            SDL.Constants.SDL_BUTTON_RIGHT,
+            SDL.Constants.SDL_BUTTON_MIDDLE,
+            SDL.Constants.SDL_BUTTON_X1,
+            SDL.Constants.SDL_BUTTON_X2
         ];
         for (int button = 0; button < sdlButtons.Length; button++)
         {
@@ -1011,7 +1013,7 @@ public sealed partial class PlatformImGuiContext
             // Recover when a destroyed viewport prevented the corresponding MouseUp event from
             // reaching the event queue. Without this release ImGui keeps its active drag forever.
             m_mouseButtonsDown &= ~trackedMask;
-            io.AddMouseButtonEvent(button, false);
+            ImGuiNative.Raw.AddMouseButtonEvent(io, button, 0);
         }
 
         if (m_mouseButtonsDown == 0)
@@ -1019,30 +1021,30 @@ public sealed partial class PlatformImGuiContext
     }
 
     private static Vector2 GetEventMousePosition(
-        ImGuiIOPtr io,
+        ImGuiIO* io,
         uint windowId,
         float localX,
         float localY
     ) {
         Vector2 position = new(localX, localY);
-        if ((io.ConfigFlags & ImGuiConfigFlags.ViewportsEnable) == 0)
+        if ((io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) == 0)
         {
             return position;
         }
 
-        SDLWindow window = SDL.GetWindowFromID(windowId);
-        if (window.IsNull)
+        SDLWindow* window = SDL.Raw.GetWindowFromId(windowId);
+        if (window == null)
         {
             return position;
         }
 
         var windowX = 0;
         var windowY = 0;
-        _ = SDL.GetWindowPosition(window, ref windowX, ref windowY);
+        _ = SDL.Raw.GetWindowPosition(window, &windowX, &windowY);
         return position + new Vector2(windowX, windowY);
     }
 
-    private void FlushPendingMouseLeave(ImGuiIOPtr io)
+    private void FlushPendingMouseLeave(ImGuiIO* io)
     {
         if (!ShouldFlushPendingMouseLeave(
                 m_mousePendingLeaveFrame,
@@ -1057,7 +1059,7 @@ public sealed partial class PlatformImGuiContext
         m_mouseWindowId = 0;
         m_mousePendingLeaveFrame = 0;
         m_mousePendingLeaveWindowId = 0;
-        io.AddMousePosEvent(-float.MaxValue, -float.MaxValue);
+        ImGuiNative.Raw.AddMousePosEvent(io, -float.MaxValue, -float.MaxValue);
     }
 
     private void ReleaseCompletedLiveResizeHoverLock()
@@ -1071,7 +1073,7 @@ public sealed partial class PlatformImGuiContext
 
         float mouseX = 0f;
         float mouseY = 0f;
-        SDLMouseButtonFlags mouseButtons = SDL.GetMouseState(ref mouseX, ref mouseY);
+        SDLMouseButtonFlags mouseButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
         if ((mouseButtons & SDLMouseButtonFlags.Left) == 0)
             m_liveResizeLockedWindowId = 0;
     }
@@ -1089,15 +1091,15 @@ public sealed partial class PlatformImGuiContext
         return liveResizeLockedWindowId == 0 || pendingWindowId != liveResizeLockedWindowId;
     }
 
-    private void UpdateMouseCursor(ImGuiIOPtr io)
+    private void UpdateMouseCursor(ImGuiIO* io)
     {
-        if ((io.ConfigFlags & ImGuiConfigFlags.NoMouseCursorChange) != 0)
+        if ((io->ConfigFlags & (int)ImGuiConfigFlags.NoMouseCursorChange) != 0)
         {
             return;
         }
 
-        var imguiCursor = ImGuiNative.GetMouseCursor();
-        if (imguiCursor == ImGuiMouseCursor.None || io.MouseDrawCursor)
+        var imguiCursor = (ImGuiMouseCursor)ImGuiNative.GetMouseCursor();
+        if (imguiCursor == ImGuiMouseCursor.None || io->MouseDrawCursor != 0)
         {
             _ = SDL.HideCursor();
             m_currentCursor = ImGuiMouseCursor.None;
@@ -1105,20 +1107,20 @@ public sealed partial class PlatformImGuiContext
         }
 
         var sdlCursor = GetOrCreateCursor(imguiCursor);
-        if (!sdlCursor.IsNull && m_currentCursor != imguiCursor)
+        if (sdlCursor != null && m_currentCursor != imguiCursor)
         {
-            _ = SDL.SetCursor(sdlCursor);
+            _ = SDL.Raw.SetCursor(sdlCursor);
             m_currentCursor = imguiCursor;
         }
 
         _ = SDL.ShowCursor();
     }
 
-    private SDLCursor GetOrCreateCursor(ImGuiMouseCursor cursor)
+    private SDLCursor* GetOrCreateCursor(ImGuiMouseCursor cursor)
     {
         if (m_cursors.TryGetValue(cursor, out var cachedCursor))
         {
-            return cachedCursor;
+            return (SDLCursor*)cachedCursor;
         }
 
         var sdlCursorType = cursor switch
@@ -1137,8 +1139,8 @@ public sealed partial class PlatformImGuiContext
             _ => SDLSystemCursor.Default
         };
 
-        var createdCursor = SDL.CreateSystemCursor(sdlCursorType);
-        m_cursors[cursor] = createdCursor;
+        var createdCursor = SDL.Raw.CreateSystemCursor(sdlCursorType);
+        m_cursors[cursor] = (nint)createdCursor;
         return createdCursor;
     }
 
@@ -1148,19 +1150,19 @@ public sealed partial class PlatformImGuiContext
     ) {
         switch (sdlButton)
         {
-            case SDL.SDL_BUTTON_LEFT:
+            case SDL.Constants.SDL_BUTTON_LEFT:
                 imguiButton = 0;
                 return true;
-            case SDL.SDL_BUTTON_RIGHT:
+            case SDL.Constants.SDL_BUTTON_RIGHT:
                 imguiButton = 1;
                 return true;
-            case SDL.SDL_BUTTON_MIDDLE:
+            case SDL.Constants.SDL_BUTTON_MIDDLE:
                 imguiButton = 2;
                 return true;
-            case SDL.SDL_BUTTON_X1:
+            case SDL.Constants.SDL_BUTTON_X1:
                 imguiButton = 3;
                 return true;
-            case SDL.SDL_BUTTON_X2:
+            case SDL.Constants.SDL_BUTTON_X2:
                 imguiButton = 4;
                 return true;
             default:
@@ -1170,13 +1172,13 @@ public sealed partial class PlatformImGuiContext
     }
 
     private static void UpdateKeyModifiers(
-        ImGuiIOPtr io,
+        ImGuiIO* io,
         SDLKeymod modifiers
     ) {
-        io.AddKeyEvent(ImGuiKey.ModCtrl, (modifiers & SDLKeymod.Ctrl) != 0);
-        io.AddKeyEvent(ImGuiKey.ModShift, (modifiers & SDLKeymod.Shift) != 0);
-        io.AddKeyEvent(ImGuiKey.ModAlt, (modifiers & SDLKeymod.Alt) != 0);
-        io.AddKeyEvent(ImGuiKey.ModSuper, (modifiers & SDLKeymod.Gui) != 0);
+        ImGuiNative.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModCtrl, (modifiers & SDLKeymod.Ctrl) != 0 ? (byte)1 : (byte)0);
+        ImGuiNative.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModShift, (modifiers & SDLKeymod.Shift) != 0 ? (byte)1 : (byte)0);
+        ImGuiNative.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModAlt, (modifiers & SDLKeymod.Alt) != 0 ? (byte)1 : (byte)0);
+        ImGuiNative.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModSuper, (modifiers & SDLKeymod.Gui) != 0 ? (byte)1 : (byte)0);
     }
 
     private static ImGuiKey TranslateKey(SDLScancode scancode)
@@ -1240,16 +1242,16 @@ public sealed partial class PlatformImGuiContext
             SDLScancode.Ralt => ImGuiKey.RightAlt,
             SDLScancode.Rgui => ImGuiKey.RightSuper,
             SDLScancode.Menu => ImGuiKey.Menu,
-            SDLScancode.Scancode0 => ImGuiKey.Key0,
-            SDLScancode.Scancode1 => ImGuiKey.Key1,
-            SDLScancode.Scancode2 => ImGuiKey.Key2,
-            SDLScancode.Scancode3 => ImGuiKey.Key3,
-            SDLScancode.Scancode4 => ImGuiKey.Key4,
-            SDLScancode.Scancode5 => ImGuiKey.Key5,
-            SDLScancode.Scancode6 => ImGuiKey.Key6,
-            SDLScancode.Scancode7 => ImGuiKey.Key7,
-            SDLScancode.Scancode8 => ImGuiKey.Key8,
-            SDLScancode.Scancode9 => ImGuiKey.Key9,
+            SDLScancode._0 => ImGuiKey._0,
+            SDLScancode._1 => ImGuiKey._1,
+            SDLScancode._2 => ImGuiKey._2,
+            SDLScancode._3 => ImGuiKey._3,
+            SDLScancode._4 => ImGuiKey._4,
+            SDLScancode._5 => ImGuiKey._5,
+            SDLScancode._6 => ImGuiKey._6,
+            SDLScancode._7 => ImGuiKey._7,
+            SDLScancode._8 => ImGuiKey._8,
+            SDLScancode._9 => ImGuiKey._9,
             SDLScancode.A => ImGuiKey.A,
             SDLScancode.B => ImGuiKey.B,
             SDLScancode.C => ImGuiKey.C,

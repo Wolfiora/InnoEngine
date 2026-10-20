@@ -6,12 +6,12 @@
 
 ## 从零开始
 
-开发入口支持 WindowsX64 和 MacOSArm64。先安装下表工具；入口不会自动安装系统 SDK。`global.json` 使用 .NET 9 稳定 SDK，允许同一主版本内滚动到较新的 feature band。
+开发入口支持 WindowsX64 和 MacOSArm64。先安装下表工具；入口不会自动安装系统 SDK。`global.json` 固定 .NET SDK 10.0.402，并允许同一 feature band 的稳定补丁。引擎与项目脚本统一使用 C# 14。
 
 | 宿主 | 首次准备 |
 | --- | --- |
-| WindowsX64 | Git、x64 .NET 9 SDK、Rider 或 Visual Studio 2022。Visual Studio Installer 安装“使用 C++ 的桌面开发”，包含 MSVC v143 x64/x86 工具、Windows SDK 和 C++ CMake 工具。仅安装 Rider 或 .NET SDK 不包含这些原生工具。 |
-| MacOSArm64 | Git、原生 ARM64 .NET 9 SDK、原生 Apple Silicon Rider、Xcode Command Line Tools 或完整 Xcode，以及 PATH 中的 CMake。使用 `xcode-select --install` 安装命令行工具，首次使用接受相应许可；工具链通过 `xcrun` 选择 clang 和 macOS SDK，通过 PATH 查找 make、cmake。 |
+| WindowsX64 | Git、x64 .NET 10 SDK、支持 .NET 10 的 Rider 或 Visual Studio 2026。Visual Studio Installer 安装“使用 C++ 的桌面开发”，包含 MSVC v143 x64/x86 工具、Windows SDK 和 C++ CMake 工具。仅安装 Rider 或 .NET SDK 不包含这些原生工具。 |
+| MacOSArm64 | Git、原生 ARM64 .NET 10 SDK、原生 Apple Silicon Rider、Xcode Command Line Tools 或完整 Xcode，以及 PATH 中的 CMake。使用 `xcode-select --install` 安装命令行工具，首次使用接受相应许可；工具链通过 `xcrun` 选择 clang 和 macOS SDK，通过 PATH 查找 make、cmake。 |
 
 ### WindowsX64
 
@@ -114,7 +114,7 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-p
 dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game --tools-target windows-x64 --project /absolute/MyGame --target windows-x64 --deployment coreclr --startup-scene Scenes/Main.iscene --output artifacts/games
 ```
 
-Pack 是目标编译、链接与运行输入，不包含游戏内容。可单独准备，也可由游戏发布获取。准备前缓存优化尚未完整验收；NativeAOT 和 Web AOT 的最终游戏编译与链接仍需要执行。
+Pack 是目标编译、链接与运行输入，不包含游戏内容。可单独准备，也可由游戏发布获取。Windows 的 CoreCLR / NativeAOT 发布已有实际通过记录；其他目标、完整构建成本及设备检查以[当前验收](../architecture/CURRENT_ACCEPTANCE.md)为准，不能由一个目标推断全部通过。
 
 macOS 产品目标为 `macos-arm64`。Browser 目标为 `browser-wasm`，部署选 `mono-wasm` 或 `mono-wasm-aot`，实际发布需要匹配的 workload 和 Emscripten。网页通过 HTTP 服务运行，不能把 Browser 源码库当作独立网页游戏启动。
 
@@ -127,7 +127,7 @@ macOS 产品目标为 `macos-arm64`。Browser 目标为 `browser-wasm`，部署�
 | 校验后产物 | `artifacts/native/<component>/<target>/<artifactFingerprint>`。 |
 | 生成绑定 | 当前位于 `artifacts/bindings/<component>/<target>/<generationFingerprint>/`；HostSource 位于同项目的 `Generated/`。 |
 | Pack | `artifacts/support-packs/<target>/<contentFingerprint>`。 |
-| Editor 部署 | 平台项目 SDK 输出，再由 ProjectReference 传递到 `entry/InnoEngine.Editor/bin/<Configuration>/net9.0/`；入口直接运行此目录中的程序集和 native 文件。 |
+| Editor 部署 | 平台项目 SDK 输出，再由 ProjectReference 传递到 `entry/InnoEngine.Editor/bin/<Configuration>/net10.0/`；入口直接运行此目录中的程序集和 native 文件。 |
 | Windows 短路径 | Temp/InnoTools 下由工具 owner 建立的工作区别名。 |
 
 短路径 junction 不代表另一份完整 Native 缓存。正常结束删除本次别名，实际工作区继续复用；不能递归删除 junction 来“腾出”对应工作区空间。源码、工作区和成品缓存各有独立职责，不使用混合 .libs 目录。

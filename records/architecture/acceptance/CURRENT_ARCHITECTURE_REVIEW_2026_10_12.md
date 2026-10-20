@@ -76,7 +76,7 @@
 
 ### F05 — P2：Build 命令本身仍有重复准备成本
 
-位置：[DevelopmentEntry.cs](../../../entry/Inno.Entry.Bootstrap/DevelopmentEntry.cs#L147)。
+当时位置：`entry/Inno.Entry.Bootstrap/DevelopmentEntry.cs:147`。这是该次审查的历史源码位置，当前已删除；现行入口见 [InnoEngine.Build](../../../entry/InnoEngine.Build/Program.cs)。
 
 每次 Build 命令都执行依赖准备、CLI 托管 Build 和 TargetPath 求值。Editor 的有效产品直接启动路径已经分离；Build 应用自身的准备尚未达到同等复用程度。
 

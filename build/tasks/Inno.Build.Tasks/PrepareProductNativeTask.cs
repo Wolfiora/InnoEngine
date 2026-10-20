@@ -148,7 +148,7 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
     {
         NativeBindingGenerationDescriptor selected = generations.First();
         if (generations.Any(generation => generation.fingerprint != selected.fingerprint
-            || generation.bindingsPath != selected.bindingsPath || generation.bridgeDirectory != selected.bridgeDirectory))
+            || generation.bindingsPath != selected.bindingsPath || generation.nativeDirectory != selected.nativeDirectory))
             throw new InvalidOperationException("Native products sharing a binding owner must select the same complete generation.");
         return selected;
     }

@@ -9,7 +9,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Gets the layout size of a compact colored label chip using the centralized editor style.
@@ -54,16 +54,16 @@ public static partial class ImGuiWidget
         Vector2 size = GetLabelChipSize(label);
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 textSize = NativeImGui.CalcTextSize(label);
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-        drawList.AddRectFilled(
-            minimum,
-            minimum + size,
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.AddRectFilled(
+            drawList,
+            ImGui.ToNative(minimum),
+            ImGui.ToNative(minimum + size),
             NativeImGui.ColorConvertFloat4ToU32(background),
-            style.labelChipRounding);
-        drawList.AddText(
-            minimum + (size - textSize) * 0.5f,
-            NativeImGui.GetColorU32(ImGuiCol.Text),
-            label);
+            style.labelChipRounding,
+            0
+        );
+        ImGui.DrawNativeText(drawList, minimum + (size - textSize) * 0.5f, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), label);
         NativeImGui.Dummy(size);
     }
 
@@ -110,27 +110,29 @@ public static partial class ImGuiWidget
         Vector2 size = GetTypeBadgeSize(label);
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 textSize = NativeImGui.CalcTextSize(label);
-        ImDrawListPtr draw = NativeImGui.GetWindowDrawList();
+        ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
         Vector4 background = Vector4.Lerp(EditorPalette.windowBackground, accent, 0.14f);
         background.W = EditorPalette.opacityOpaque;
         Vector4 outline = accent;
         outline.W = EditorPalette.opacityStrong;
-        draw.AddRectFilled(
-            minimum,
-            minimum + size,
+        NativeImGui.Raw.AddRectFilled(
+            draw,
+            ImGui.ToNative(minimum),
+            ImGui.ToNative(minimum + size),
             NativeImGui.ColorConvertFloat4ToU32(background),
-            style.typeBadgeRounding);
-        draw.AddRect(
-            minimum,
-            minimum + size,
+            style.typeBadgeRounding,
+            0
+        );
+        NativeImGui.Raw.AddRect(
+            draw,
+            ImGui.ToNative(minimum),
+            ImGui.ToNative(minimum + size),
             NativeImGui.ColorConvertFloat4ToU32(outline),
             style.typeBadgeRounding,
-            ImDrawFlags.None,
-            style.borderSize);
-        draw.AddText(
-            minimum + (size - textSize) * 0.5f,
-            NativeImGui.ColorConvertFloat4ToU32(accent),
-            label);
+            (int)(ImDrawFlags.None),
+            style.borderSize
+        );
+        ImGui.DrawNativeText(draw, minimum + (size - textSize) * 0.5f, NativeImGui.ColorConvertFloat4ToU32(accent), label);
         NativeImGui.Dummy(size);
         DrawItemTooltip(tooltip);
     }
@@ -181,36 +183,43 @@ public static partial class ImGuiWidget
 
         bool hovered = NativeImGui.IsItemHovered();
         Vector2 max = min + new Vector2(size);
-        uint textColor = NativeImGui.GetColorU32(ImGuiCol.Text);
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
+        uint textColor = NativeImGui.GetColorU32((int)(ImGuiCol.Text));
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         if (value)
         {
-            drawList.AddRectFilled(min, max, textColor, 1f);
+            NativeImGui.Raw.AddRectFilled(drawList, ImGui.ToNative(min), ImGui.ToNative(max), textColor, 1f, 0);
             uint checkColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader);
-            drawList.AddLine(
-                min + new Vector2(size * 0.22f, size * 0.52f),
-                min + new Vector2(size * 0.43f, size * 0.72f),
+            NativeImGui.Raw.AddLine(
+                drawList,
+                ImGui.ToNative(min + new Vector2(size * 0.22f, size * 0.52f)),
+                ImGui.ToNative(min + new Vector2(size * 0.43f, size * 0.72f)),
                 checkColor,
-                1.5f);
-            drawList.AddLine(
-                min + new Vector2(size * 0.43f, size * 0.72f),
-                min + new Vector2(size * 0.80f, size * 0.28f),
+                1.5f
+            );
+            NativeImGui.Raw.AddLine(
+                drawList,
+                ImGui.ToNative(min + new Vector2(size * 0.43f, size * 0.72f)),
+                ImGui.ToNative(min + new Vector2(size * 0.80f, size * 0.28f)),
                 checkColor,
-                1.5f);
+                1.5f
+            );
         }
         else
         {
-            drawList.AddRect(min, max, textColor, 1f);
+            NativeImGui.Raw.AddRect(drawList, ImGui.ToNative(min), ImGui.ToNative(max), textColor, 1f, 0, 1f);
         }
 
         if (hovered)
         {
-            drawList.AddRect(
-                min - Vector2.One,
-                max + Vector2.One,
+            NativeImGui.Raw.AddRect(
+                drawList,
+                ImGui.ToNative(min - Vector2.One),
+                ImGui.ToNative(max + Vector2.One),
                 NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered),
                 1f,
-                1.5f);
+                0,
+                1.5f
+            );
         }
 
         DrawItemTooltip(tooltip);
@@ -274,7 +283,7 @@ public static partial class ImGuiWidget
             NativeImGui.SetCursorPosY(NativeImGui.GetCursorPosY() + topPadding);
         }
 
-        float width = NativeImGui.CalcTextSize(label).X + NativeImGui.GetStyle().FramePadding.X * 2f;
+        float width = NativeImGui.CalcTextSize(label).X + NativeImGui.Raw.GetStyle()->FramePadding.X * 2f;
         float offset = MathF.Max(0f, (NativeImGui.GetContentRegionAvail().X - width) * 0.5f);
         NativeImGui.SetCursorPosX(NativeImGui.GetCursorPosX() + offset);
         return NativeImGui.Button(label);
@@ -308,10 +317,7 @@ public static partial class ImGuiWidget
         Vector2 maximum = NativeImGui.GetItemRectMax();
         Vector2 textSize = NativeImGui.CalcTextSize(overlay);
         Vector2 textPosition = minimum + (maximum - minimum - textSize) * 0.5f;
-        NativeImGui.GetWindowDrawList().AddText(
-            textPosition,
-            NativeImGui.GetColorU32(ImGuiCol.Text),
-            overlay);
+        ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), textPosition, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), overlay);
     }
 
 }

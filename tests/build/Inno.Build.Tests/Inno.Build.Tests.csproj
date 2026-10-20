@@ -1,14 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Wiki script references use the same shared feature closure as real Editor products. -->
   <Import Project="../../../src/composition/editor/EditorProduct.props" />
+
+  <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
     <ProjectReference Include="../../../backends/Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj" PrivateAssets="compile" />
@@ -60,10 +64,11 @@
 
   <ItemGroup>
     <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />
+    <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageReference Include="Microsoft.Build" Version="17.12.50" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="17.12.50" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.12.50" />
+    <PackageReference Include="Microsoft.Build" Version="18.9.6" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="18.9.6" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.9.6" />
     <PackageReference Include="xunit" Version="2.6.6" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

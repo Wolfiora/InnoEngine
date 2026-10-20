@@ -10,7 +10,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Reusable editor widgets built on top of <see cref="ImGui"/>.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Opens a standard panel window and executes panel body.
@@ -47,20 +47,20 @@ public static partial class ImGuiWidget
         {
             if (!useWindowPadding)
             {
-                NativeImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+                NativeImGui.PushStyleVar((int)(ImGuiStyleVar.WindowPadding), Vector2.Zero);
                 pushedPadding = true;
             }
             // Dock tabs need their own vertical breathing room. Applying the metric only while
             // Begin builds the window decorations keeps normal inputs compact without clipping
             // the first tab row against the main-menu work rect.
-            NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, style.panelTabFramePadding);
+            NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.panelTabFramePadding);
             // Native title separators use FrameBorderSize, which is intended for inputs in the
             // editor theme. Suppress that extra strip only while window decorations are built.
-            NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0f);
+            NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), 0f);
             bool visible;
             try
             {
-                visible = NativeImGui.Begin(title, flags);
+                visible = ImGui.BeginNativeWindow(title, flags, modal: false);
             }
             finally
             {
@@ -119,7 +119,7 @@ public static partial class ImGuiWidget
 
         float width = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
         Vector2 padding = useWindowPadding
-            ? NativeImGui.GetStyle().WindowPadding
+            ? ImGui.FromNative(NativeImGui.Raw.GetStyle()->WindowPadding)
             : Vector2.Zero;
         float contentWidth = MathF.Max(1f, width - padding.X * 2f);
         ImGuiChildFlags childFlags = ImGuiChildFlags.AutoResizeY |
@@ -130,7 +130,7 @@ public static partial class ImGuiWidget
                                        ImGuiWindowFlags.NoScrollWithMouse |
                                        ImGuiWindowFlags.NoSavedSettings;
         NativeImGui.SetNextWindowContentSize(new Vector2(contentWidth, 0f));
-        bool visible = NativeImGui.BeginChild(id, new Vector2(width, 0f), childFlags, windowFlags);
+        bool visible = NativeImGui.BeginChild(id, new Vector2(width, 0f), (int)(childFlags), (int)(windowFlags));
         try
         {
             if (visible)
@@ -169,10 +169,10 @@ public static partial class ImGuiWidget
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawContent);
 
-        ImGuiWindowPtr parentWindow = ImGuiP.GetCurrentWindow();
+        ImGuiWindow* parentWindow = NativeImGui.Raw.GetCurrentWindow();
         Vector2 contentCursor = NativeImGui.GetCursorScreenPos();
         Vector2 parentPadding = spanWindowPadding
-            ? parentWindow.WindowPadding
+            ? ImGui.FromNative(parentWindow->WindowPadding)
             : Vector2.Zero;
         Vector2 headerOrigin = contentCursor - parentPadding;
         float width = MathF.Max(
@@ -180,18 +180,18 @@ public static partial class ImGuiWidget
             NativeImGui.GetContentRegionAvail().X + parentPadding.X * 2f);
         NativeImGui.SetCursorScreenPos(headerOrigin);
 
-        NativeImGui.PushStyleColor(ImGuiCol.FrameBg, EditorPalette.inspectorTargetHeader);
-        NativeImGui.PushStyleColor(ImGuiCol.Border, EditorPalette.inspectorTargetHeaderBorder);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, style.inspectorTargetHeaderPadding);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, style.borderSize);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0f);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), EditorPalette.inspectorTargetHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.inspectorTargetHeaderBorder);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inspectorTargetHeaderPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), style.borderSize);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), 0f);
         try
         {
             ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY;
             ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar |
                                            ImGuiWindowFlags.NoScrollWithMouse |
                                            ImGuiWindowFlags.NoSavedSettings;
-            bool visible = NativeImGui.BeginChild(id, new Vector2(width, 0f), childFlags, windowFlags);
+            bool visible = NativeImGui.BeginChild(id, new Vector2(width, 0f), (int)(childFlags), (int)(windowFlags));
             // FrameStyle consumed the square outer-container rounding in BeginChild. Restore the
             // normal editor rounding before drawing controls inside the header.
             NativeImGui.PopStyleVar();
@@ -222,16 +222,16 @@ public static partial class ImGuiWidget
             return DrawFloatingPanelCloseButton(title);
 
         uint dockId = NativeImGui.GetWindowDockID();
-        ImGuiDockNodePtr dockNode = ImGuiP.DockBuilderGetNode(dockId);
-        if (dockNode == ImGuiDockNodePtr.Null || !ImGuiP.DockNodeBeginAmendTabBar(dockNode))
+        ImGuiDockNode* dockNode = NativeImGui.Raw.DockBuilderGetNode(dockId);
+        if (dockNode == null || NativeImGui.Raw.DockNodeBeginAmendTabBar(dockNode) == 0)
             return false;
 
         try
         {
-            ImGuiTabBarPtr tabBar = dockNode.TabBar;
-            if (tabBar == ImGuiTabBarPtr.Null)
+            ImGuiTabBar* tabBar = dockNode->TabBar;
+            if (tabBar == null)
                 return false;
-            ImRect tabBarBounds = tabBar.BarRect;
+            ImRect tabBarBounds = tabBar->BarRect;
             float tabBarHeight = MathF.Max(1f, tabBarBounds.Max.Y - tabBarBounds.Min.Y);
             float iconSlotSize = MathF.Min(GetCompactIconSize().X, tabBarHeight);
             Vector2 itemCenter = new(
@@ -241,8 +241,8 @@ public static partial class ImGuiWidget
             Vector2 itemMaximum = itemCenter + new Vector2(iconSlotSize * 0.5f);
             ImRect itemBounds = new()
             {
-                Min = itemMinimum,
-                Max = itemMaximum
+                Min = ImGui.ToNative(itemMinimum),
+                Max = ImGui.ToNative(itemMaximum)
             };
             uint itemId = NativeImGui.GetID($"##panel_close_{dockId}");
             bool hovered = false;
@@ -251,21 +251,21 @@ public static partial class ImGuiWidget
                 (int)ImGuiButtonFlagsPrivate.AllowOverlap |
                 (int)ImGuiButtonFlagsPrivate.NoNavFocus |
                 (int)ImGuiButtonFlagsPrivate.PressedOnClickRelease);
-            ImGuiWindowPtr hoveredWindow = NativeImGui.GetCurrentContext().HoveredWindow;
-            bool hostHovered = hoveredWindow != ImGuiWindowPtr.Null &&
-                               hoveredWindow.RootWindowDockTree == dockNode.HostWindow.RootWindowDockTree;
+            ImGuiWindow* hoveredWindow = NativeImGui.Raw.GetCurrentContext()->HoveredWindow;
+            bool hostHovered = hoveredWindow != null &&
+                               hoveredWindow->RootWindowDockTree == dockNode->HostWindow->RootWindowDockTree;
             bool mouseHovered = hostHovered && NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
-            bool itemAdded = ImGuiP.ItemAdd(itemBounds, itemId);
+            bool itemAdded = NativeImGui.Raw.ItemAdd(itemBounds, itemId, null, 0) != 0;
             bool pressed = hostHovered && itemAdded &&
-                           ImGuiP.ButtonBehavior(itemBounds, itemId, ref hovered, ref held, buttonFlags);
+                           NativeImGui.ButtonBehavior(itemBounds, itemId, out hovered, out held, (int)buttonFlags);
             hovered |= mouseHovered;
-            pressed |= mouseHovered && NativeImGui.IsMouseClicked(ImGuiMouseButton.Left);
+            pressed |= mouseHovered && NativeImGui.IsMouseClicked((int)(ImGuiMouseButton.Left));
 
             uint iconColor = hovered || held
                 ? NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered)
-                : NativeImGui.GetColorU32(ImGuiCol.Text);
+                : NativeImGui.GetColorU32((int)(ImGuiCol.Text));
             DrawPanelCloseMark(
-                NativeImGui.GetWindowDrawList(),
+                NativeImGui.Raw.GetWindowDrawList(),
                 itemCenter,
                 iconSlotSize,
                 iconColor);
@@ -280,35 +280,36 @@ public static partial class ImGuiWidget
         }
         finally
         {
-            ImGuiP.DockNodeEndAmendTabBar();
+            NativeImGui.Raw.DockNodeEndAmendTabBar();
         }
     }
 
     private static bool DrawFloatingPanelCloseButton(string title)
     {
-        ImGuiWindowPtr window = ImGuiP.GetCurrentWindow();
-        if ((window.Flags & ImGuiWindowFlags.NoTitleBar) != 0)
+        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+        if ((window->Flags & (int)ImGuiWindowFlags.NoTitleBar) != 0)
             return false;
-        ImGuiStylePtr nativeStyle = NativeImGui.GetStyle();
+        ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
         float size = GetCompactIconSize().X;
-        Vector2 maximum = new(window.Pos.X + window.Size.X - nativeStyle.WindowBorderSize - nativeStyle.FramePadding.X,
-            window.Pos.Y + (window.TitleBarHeight + size) * 0.5f);
+        Vector2 maximum = new(window->Pos.X + window->Size.X - nativeStyle->WindowBorderSize - nativeStyle->FramePadding.X,
+            window->Pos.Y + (window->TitleBarHeight + size) * 0.5f);
         Vector2 minimum = maximum - new Vector2(size);
-        ImRect bounds = new() { Min = minimum, Max = maximum };
-        ImRect previousClip = window.ClipRect;
-        ImDrawListPtr draw = NativeImGui.GetWindowDrawList();
-        window.ClipRect = new ImRect { Min = window.Pos, Max = window.Pos + window.Size };
-        draw.PushClipRect(window.Pos, window.Pos + window.Size, false);
+        ImRect bounds = new() { Min = ImGui.ToNative(minimum), Max = ImGui.ToNative(maximum) };
+        ImRect previousClip = window->ClipRect;
+        ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
+        Vector2 windowMaximum = ImGui.FromNative(window->Pos) + ImGui.FromNative(window->Size);
+        window->ClipRect = new ImRect { Min = window->Pos, Max = ImGui.ToNative(windowMaximum) };
+        NativeImGui.Raw.PushClipRect(draw, window->Pos, ImGui.ToNative(windowMaximum), 0);
         try
         {
             uint id = NativeImGui.GetID("##floating_panel_close");
             bool hovered = false, held = false;
-            bool pressed = ImGuiP.ItemAdd(bounds, id) && ImGuiP.ButtonBehavior(
-                bounds, id, ref hovered, ref held,
-                (ImGuiButtonFlags)((int)ImGuiButtonFlagsPrivate.NoNavFocus | (int)ImGuiButtonFlagsPrivate.PressedOnClickRelease));
+            bool pressed = NativeImGui.Raw.ItemAdd(bounds, id, null, 0) != 0 && NativeImGui.ButtonBehavior(
+                bounds, id, out hovered, out held,
+                (int)ImGuiButtonFlagsPrivate.NoNavFocus | (int)ImGuiButtonFlagsPrivate.PressedOnClickRelease);
             uint iconColor = hovered || held
                 ? NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered)
-                : NativeImGui.GetColorU32(ImGuiCol.Text);
+                : NativeImGui.GetColorU32((int)(ImGuiCol.Text));
             DrawPanelCloseMark(draw, minimum + new Vector2(size * 0.5f), size, iconColor);
             if (hovered)
                 DrawItemTooltip($"Close {title}");
@@ -316,13 +317,13 @@ public static partial class ImGuiWidget
         }
         finally
         {
-            draw.PopClipRect();
-            window.ClipRect = previousClip;
+            NativeImGui.Raw.PopClipRect(draw);
+            window->ClipRect = previousClip;
         }
     }
 
     private static void DrawPanelCloseMark(
-        ImDrawListPtr drawList,
+        ImDrawList* drawList,
         Vector2 center,
         float slotSize,
         uint color
@@ -332,12 +333,14 @@ public static partial class ImGuiWidget
             thickness,
             slotSize * 0.5f * 0.7071f - thickness);
         var diagonal = new Vector2(extent);
-        drawList.AddLine(center - diagonal, center + diagonal, color, thickness);
-        drawList.AddLine(
-            center + new Vector2(-extent, extent),
-            center + new Vector2(extent, -extent),
+        NativeImGui.Raw.AddLine(drawList, ImGui.ToNative(center - diagonal), ImGui.ToNative(center + diagonal), color, thickness);
+        NativeImGui.Raw.AddLine(
+            drawList,
+            ImGui.ToNative(center + new Vector2(-extent, extent)),
+            ImGui.ToNative(center + new Vector2(extent, -extent)),
             color,
-            thickness);
+            thickness
+        );
     }
 
     /// <summary>

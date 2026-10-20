@@ -48,7 +48,7 @@ internal sealed class CSharpScriptImporter : AssetImporter<ScriptSourceAsset>
         string source = context.ReadUtf8Text();
         SyntaxTree tree = CSharpSyntaxTree.ParseText(
             source,
-            new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.Parse),
+            new CSharpParseOptions(LanguageVersion.CSharp14, DocumentationMode.Parse),
             context.assetPath.ToString(),
             Encoding.UTF8,
             cancellationToken);

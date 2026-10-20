@@ -40,6 +40,12 @@ public sealed class ManagedInputGraphTask : Task
     public bool RestoreContributions { get; set; }
 
     /// <summary>
+    /// Gets or sets the operation-owned SDK symbol preparation target.
+    /// </summary>
+    [Required]
+    public string CompilerInputsTargets { get; set; } = string.Empty;
+
+    /// <summary>
     /// Writes complete source declarations and reports SDK evaluation failures.
     /// </summary>
     /// <returns>
@@ -55,7 +61,8 @@ public sealed class ManagedInputGraphTask : Task
             var result = new XElement("ManagedInputs");
             var paths = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
             var compilerProperties = new[] {
-                "TargetFramework", "TargetFrameworkMoniker", "RuntimeIdentifier", "Configuration", "AssemblyName", "OutputType",
+                "TargetFramework", "TargetFrameworkMoniker", "TargetPlatformMoniker", "TargetPlatformIdentifier", "TargetPlatformVersion",
+                "RuntimeIdentifier", "Configuration", "AssemblyName", "OutputType",
                 "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks", "Optimize", "CheckForOverflowUnderflow",
                 "PlatformTarget", "DebugType", "DebugSymbols", "Deterministic", "PathMap", "TargetType", "RootNamespace",
                 "TreatWarningsAsErrors", "WarningsAsErrors", "WarningsNotAsErrors", "NoWarn", "WarningLevel", "AnalysisLevel",
@@ -119,6 +126,20 @@ public sealed class ManagedInputGraphTask : Task
                         result.Add(new XElement("Declaration", project.FullPath + "|global:" + property.Key + "=" + property.Value));
                     foreach (string name in compilerProperties)
                         result.Add(new XElement("Declaration", project.FullPath + "|" + name + "=" + project.GetPropertyValue(name)));
+                    if (project.Targets.ContainsKey("AddImplicitDefineConstants"))
+                    {
+                        var symbolProperties = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);
+                        foreach (var property in project.GlobalProperties)
+                            symbolProperties[property.Key] = property.Value;
+                        symbolProperties["InnoOriginalCustomAfterMicrosoftCommonTargets"] = project.GetPropertyValue("CustomAfterMicrosoftCommonTargets");
+                        symbolProperties["CustomAfterMicrosoftCommonTargets"] = CompilerInputsTargets;
+                        var outputs = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);
+                        if (!BuildEngine.BuildProjectFile(project.FullPath, new[] { "CaptureInnoCompilerDefines" }, symbolProperties, outputs))
+                            throw new InvalidOperationException("SDK compiler symbol preparation failed: " + project.FullPath);
+                        var symbols = (ITaskItem[])outputs["CaptureInnoCompilerDefines"];
+                        result.Add(new XElement("Declaration", project.FullPath + "|CompilerDefineConstants="
+                            + string.Join(";", symbols.Select(item => item.ItemSpec).Distinct(StringComparer.Ordinal).OrderBy(value => value, StringComparer.Ordinal))));
+                    }
                     foreach (var item in project.Items)
                     {
                         bool source = new[] { "Compile", "EmbeddedResource", "Analyzer", "AdditionalFiles", "EditorConfigFiles",
@@ -178,10 +199,13 @@ public sealed class ManagedInputGraphTask : Task
                     if (assets.Length != 0)
                     {
                         assets = Path.GetFullPath(assets, root);
-                        var selectedFramework = NuGetFramework.ParseComponents(project.GetPropertyValue("TargetFrameworkMoniker"),
-                            project.GetPropertyValue("TargetPlatformMoniker"));
                         string runtime = project.GetPropertyValue("RuntimeIdentifier");
                         using var restored = JsonDocument.Parse(File.ReadAllText(assets));
+                        string alias = project.GetPropertyValue("TargetFramework");
+                        string restoredFramework = restored.RootElement.GetProperty("project").GetProperty("frameworks")
+                            .EnumerateObject().Where(framework => framework.Value.GetProperty("targetAlias").GetString() == alias)
+                            .Select(framework => framework.Name).Single();
+                        var selectedFramework = NuGetFramework.Parse(restoredFramework);
                         string selectedTarget = restored.RootElement.GetProperty("targets").EnumerateObject()
                             .Select(target => target.Name).SingleOrDefault(target =>
                             {

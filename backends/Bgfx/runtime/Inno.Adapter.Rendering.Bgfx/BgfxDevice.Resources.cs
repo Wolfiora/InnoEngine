@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Inno.Native.Bgfx;
 using Inno.Rendering;
@@ -125,13 +126,13 @@ public sealed unsafe partial class BgfxDevice
         switch (resource.kind)
         {
             case BgfxBufferKind.DynamicVertex:
-                bgfx.update_dynamic_vertex_buffer(
+                bgfx.Raw.update_dynamic_vertex_buffer(
                     new bgfx.DynamicVertexBufferHandle { idx = resource.nativeIndex },
                     checked((uint)startElement),
                     memory);
                 break;
             case BgfxBufferKind.DynamicIndex:
-                bgfx.update_dynamic_index_buffer(
+                bgfx.Raw.update_dynamic_index_buffer(
                     new bgfx.DynamicIndexBufferHandle { idx = resource.nativeIndex },
                     checked((uint)startElement),
                     memory);
@@ -390,15 +391,23 @@ public sealed unsafe partial class BgfxDevice
                 EnsureValid(handle.Valid, name);
                 if (!initialData.IsEmpty)
                 {
-                    bgfx.update_dynamic_index_buffer(handle, 0, Copy(initialData));
+                    bgfx.Raw.update_dynamic_index_buffer(handle, 0, Copy(initialData));
                 }
                 return BgfxBufferResource.FromDynamicIndex(buffer, descriptor.indexFormat, handle);
             }
 
             bgfx.Memory* memory = Copy(initialData);
-            bgfx.IndexBufferHandle staticHandle = bgfx.create_index_buffer(memory, flags);
+            bgfx.IndexBufferHandle staticHandle = bgfx.Raw.create_index_buffer(memory, flags);
             EnsureValid(staticHandle.Valid, name);
-            bgfx.set_index_buffer_name(staticHandle, name, Utf8Length(name));
+            int indexBufferNameLength = Encoding.UTF8.GetByteCount(name);
+            Span<byte> indexBufferNameBytes = indexBufferNameLength < 256
+                ? stackalloc byte[256] : new byte[checked(indexBufferNameLength + 1)];
+            Encoding.UTF8.GetBytes(name, indexBufferNameBytes);
+            indexBufferNameBytes[indexBufferNameLength] = 0;
+            fixed (byte* indexBufferNamePointer = indexBufferNameBytes)
+            {
+                bgfx.Raw.set_index_buffer_name(staticHandle, (sbyte*)indexBufferNamePointer, indexBufferNameLength);
+            }
             return BgfxBufferResource.FromIndex(buffer, descriptor.indexFormat, staticHandle);
         }
 
@@ -415,22 +424,30 @@ public sealed unsafe partial class BgfxDevice
             : CreateNativeLayout(descriptor.vertexLayout);
         if (initialData.IsEmpty || dynamic)
         {
-            bgfx.DynamicVertexBufferHandle handle = bgfx.create_dynamic_vertex_buffer(
+            bgfx.DynamicVertexBufferHandle handle = bgfx.Raw.create_dynamic_vertex_buffer(
                 checked((uint)buffer.elementCount),
                 &nativeLayout,
                 flags);
             EnsureValid(handle.Valid, name);
             if (!initialData.IsEmpty)
             {
-                bgfx.update_dynamic_vertex_buffer(handle, 0, Copy(initialData));
+                bgfx.Raw.update_dynamic_vertex_buffer(handle, 0, Copy(initialData));
             }
             return BgfxBufferResource.FromDynamicVertex(buffer, descriptor.vertexLayout, handle);
         }
 
         bgfx.Memory* vertexMemory = Copy(initialData);
-        bgfx.VertexBufferHandle vertexHandle = bgfx.create_vertex_buffer(vertexMemory, &nativeLayout, flags);
+        bgfx.VertexBufferHandle vertexHandle = bgfx.Raw.create_vertex_buffer(vertexMemory, &nativeLayout, flags);
         EnsureValid(vertexHandle.Valid, name);
-        bgfx.set_vertex_buffer_name(vertexHandle, name, Utf8Length(name));
+        int vertexBufferNameLength = Encoding.UTF8.GetByteCount(name);
+        Span<byte> vertexBufferNameBytes = vertexBufferNameLength < 256
+            ? stackalloc byte[256] : new byte[checked(vertexBufferNameLength + 1)];
+        Encoding.UTF8.GetBytes(name, vertexBufferNameBytes);
+        vertexBufferNameBytes[vertexBufferNameLength] = 0;
+        fixed (byte* vertexBufferNamePointer = vertexBufferNameBytes)
+        {
+            bgfx.Raw.set_vertex_buffer_name(vertexHandle, (sbyte*)vertexBufferNamePointer, vertexBufferNameLength);
+        }
         return BgfxBufferResource.FromVertex(buffer, descriptor.vertexLayout, vertexHandle);
     }
 
@@ -473,7 +490,7 @@ public sealed unsafe partial class BgfxDevice
         }
 
         bgfx.VertexLayout layout = CreateSkippedLayout(descriptor.elementStride);
-        bgfx.DynamicVertexBufferHandle vertex = bgfx.create_dynamic_vertex_buffer(
+        bgfx.DynamicVertexBufferHandle vertex = bgfx.Raw.create_dynamic_vertex_buffer(
             checked((uint)descriptor.elementCount),
             &layout,
             BufferFlags(descriptor, RenderIndexFormat.UInt32));
@@ -536,7 +553,7 @@ public sealed unsafe partial class BgfxDevice
             if (descriptor.vertexLayout is not null)
             {
                 bgfx.VertexLayout nativeLayout = CreateNativeLayout(descriptor.vertexLayout);
-                layoutHandle = bgfx.create_vertex_layout(&nativeLayout);
+                layoutHandle = bgfx.Raw.create_vertex_layout(&nativeLayout);
                 EnsureValid(layoutHandle.Valid, $"{name} vertex layout");
             }
             return new BgfxPipelineResource(
@@ -687,7 +704,7 @@ public sealed unsafe partial class BgfxDevice
         Dictionary<string, ReflectedUniform> result = new(StringComparer.Ordinal);
         foreach (bgfx.ShaderHandle shader in shaders)
         {
-            ushort count = bgfx.get_shader_uniforms(shader, null, 0);
+            ushort count = bgfx.Raw.get_shader_uniforms(shader, null, 0);
             if (count == 0)
             {
                 continue;
@@ -696,11 +713,11 @@ public sealed unsafe partial class BgfxDevice
             bgfx.UniformHandle[] uniforms = new bgfx.UniformHandle[count];
             fixed (bgfx.UniformHandle* handles = uniforms)
             {
-                ushort written = bgfx.get_shader_uniforms(shader, handles, count);
+                ushort written = bgfx.Raw.get_shader_uniforms(shader, handles, count);
                 for (int index = 0; index < written; index++)
                 {
                     bgfx.UniformInfo info = default;
-                    bgfx.get_uniform_info(uniforms[index], &info);
+                    bgfx.Raw.get_uniform_info(uniforms[index], &info);
                     string name = UniformName(info);
                     ReflectedUniform reflected = new(uniforms[index], info.type, info.num);
                     if (result.TryGetValue(name, out ReflectedUniform current)
@@ -720,7 +737,8 @@ public sealed unsafe partial class BgfxDevice
 
     private static string UniformName(bgfx.UniformInfo info)
     {
-        ReadOnlySpan<byte> name = info.name;
+        ReadOnlySpan<sbyte> nativeName = info.name;
+        ReadOnlySpan<byte> name = MemoryMarshal.AsBytes(nativeName);
         int terminator = name.IndexOf((byte)0);
         return Encoding.UTF8.GetString(terminator >= 0 ? name[..terminator] : name);
     }
@@ -730,34 +748,42 @@ public sealed unsafe partial class BgfxDevice
         string name
     ) {
         bgfx.Memory* memory = Copy(binary);
-        bgfx.ShaderHandle shader = bgfx.create_shader(memory);
+        bgfx.ShaderHandle shader = bgfx.Raw.create_shader(memory);
         EnsureValid(shader.Valid, name);
-        bgfx.set_shader_name(shader, name, Utf8Length(name));
+        int shaderNameLength = Encoding.UTF8.GetByteCount(name);
+        Span<byte> shaderNameBytes = shaderNameLength < 256
+            ? stackalloc byte[256] : new byte[checked(shaderNameLength + 1)];
+        Encoding.UTF8.GetBytes(name, shaderNameBytes);
+        shaderNameBytes[shaderNameLength] = 0;
+        fixed (byte* shaderNamePointer = shaderNameBytes)
+        {
+            bgfx.Raw.set_shader_name(shader, (sbyte*)shaderNamePointer, shaderNameLength);
+        }
         return shader;
     }
 
     private bgfx.VertexLayout CreateNativeLayout(RenderVertexLayout layout)
     {
         bgfx.VertexLayout native = default;
-        bgfx.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
+        bgfx.Raw.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
         int currentOffset = 0;
         foreach (RenderVertexAttribute attribute in layout.attributes)
         {
             AddVertexLayoutPadding(&native, attribute.byteOffset - currentOffset);
             (byte count, bgfx.AttribType type, bool normalized, bool asInteger) = AttributeFormat(attribute.format);
-            bgfx.vertex_layout_add(
-                ref native,
+            bgfx.Raw.vertex_layout_add(
+                &native,
                 ToNativeAttribute(attribute.semantic),
                 count,
                 type,
-                normalized,
-                asInteger);
+                normalized ? (byte)1 : (byte)0,
+                asInteger ? (byte)1 : (byte)0);
             currentOffset = checked(attribute.byteOffset + attribute.byteSize);
         }
 
         AddVertexLayoutPadding(&native, layout.stride - currentOffset);
 
-        bgfx.vertex_layout_end(&native);
+        bgfx.Raw.vertex_layout_end(&native);
         if (native.stride != layout.stride)
         {
             throw new InvalidOperationException(
@@ -776,7 +802,7 @@ public sealed unsafe partial class BgfxDevice
         while (byteCount != 0)
         {
             byte chunk = checked((byte)Math.Min(byteCount, byte.MaxValue));
-            bgfx.vertex_layout_skip(layout, chunk);
+            bgfx.Raw.vertex_layout_skip(layout, chunk);
             byteCount -= chunk;
         }
     }
@@ -784,16 +810,16 @@ public sealed unsafe partial class BgfxDevice
     private bgfx.VertexLayout CreateSkippedLayout(int stride)
     {
         bgfx.VertexLayout native = default;
-        bgfx.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
+        bgfx.Raw.vertex_layout_begin(&native, BgfxCapabilityMapper.ToNativeRenderer(capabilities.backend));
         int remaining = stride;
         while (remaining != 0)
         {
             byte chunk = checked((byte)Math.Min(remaining, byte.MaxValue));
-            bgfx.vertex_layout_skip(&native, chunk);
+            bgfx.Raw.vertex_layout_skip(&native, chunk);
             remaining -= chunk;
         }
 
-        bgfx.vertex_layout_end(&native);
+        bgfx.Raw.vertex_layout_end(&native);
         return native;
     }
 
@@ -926,7 +952,7 @@ public sealed unsafe partial class BgfxDevice
     {
         fixed (byte* pointer = data)
         {
-            return bgfx.copy(pointer, checked((uint)data.Length));
+            return bgfx.Raw.copy(pointer, checked((uint)data.Length));
         }
     }
 

@@ -39,7 +39,15 @@ sealed unsafe partial class BgfxDevice
         bgfx.TextureHandle texture = CreateNativeTexture(descriptor);
         if (!texture.Valid)
             throw new InvalidOperationException($"BGFX could not allocate transient texture '{name}'.");
-        bgfx.set_texture_name(texture, name, Utf8Length(name));
+        int textureNameLength = Encoding.UTF8.GetByteCount(name);
+        Span<byte> textureNameBytes = textureNameLength < 256
+            ? stackalloc byte[256] : new byte[checked(textureNameLength + 1)];
+        Encoding.UTF8.GetBytes(name, textureNameBytes);
+        textureNameBytes[textureNameLength] = 0;
+        fixed (byte* textureNamePointer = textureNameBytes)
+        {
+            bgfx.Raw.set_texture_name(texture, (sbyte*)textureNamePointer, textureNameLength);
+        }
         m_transientTextureAllocationCount++;
         return texture;
     }

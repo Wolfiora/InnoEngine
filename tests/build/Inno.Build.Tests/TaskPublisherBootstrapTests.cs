@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -15,20 +16,17 @@ public sealed class TaskPublisherBootstrapTests
     [Fact]
     public async Task ProjectGraphSharesCompilationButKeepsPrivateLoadsAndFreshBuildOwnership()
     {
-        DirectoryInfo? repository = new(AppContext.BaseDirectory);
-        while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "InnoEngine.sln")))
-            repository = repository.Parent;
-        Assert.NotNull(repository);
+        string repository = TestRepository.GetRoot(typeof(TaskPublisherBootstrapTests).Assembly);
         string root = Path.Combine(Path.GetTempPath(), "InnoPublisherTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         try
         {
             File.WriteAllText(Path.Combine(root, "Directory.Build.props"),
-                "<Project><Import Project=\"" + SecurityElement.Escape(Path.Combine(repository.FullName, "Directory.Build.props"))
+                "<Project><Import Project=\"" + SecurityElement.Escape(Path.Combine(repository, "Directory.Build.props"))
                 + "\" /></Project>");
             File.WriteAllText(Path.Combine(root, "Directory.Build.targets"), $$"""
                 <Project>
-                  <Import Project="{{SecurityElement.Escape(Path.Combine(repository.FullName, "Directory.Build.targets"))}}" />
+                  <Import Project="{{SecurityElement.Escape(Path.Combine(repository, "Directory.Build.targets"))}}" />
                   <Target Name="ReportPublisher" AfterTargets="Build" DependsOnTargets="PrepareInnoBuildTaskHost">
                     <Message Importance="high" Text="INNO-PUBLISHER-PROBE|$(MSBuildProjectName)|$(InnoTaskBootstrapDirectory)|$(InnoTaskPublisherAssembly)" />
                   </Target>
@@ -47,7 +45,7 @@ public sealed class TaskPublisherBootstrapTests
                 string references = string.Join(string.Empty, dependencies.Select(static name =>
                     $"<ProjectReference Include=\"../{name}/{name}.csproj\" />"));
                 File.WriteAllText(Path.Combine(directory, name + ".csproj"),
-                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net9.0</TargetFramework>"
+                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
                     + "<ImplicitUsings>disable</ImplicitUsings></PropertyGroup><ItemGroup>" + references + "</ItemGroup></Project>");
             }
             string first = await Build(root);

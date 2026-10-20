@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$(InnoOriginalCustomAfterMicrosoftCommonTargets)" Condition="'$(InnoOriginalCustomAfterMicrosoftCommonTargets)' != '' and Exists('$(InnoOriginalCustomAfterMicrosoftCommonTargets)')" />
+
+  <!-- Only SDK symbol preparation runs; compilation and product preparation are not dependencies. -->
+  <Target Name="CaptureInnoCompilerDefines" DependsOnTargets="AddImplicitDefineConstants" Returns="@(_InnoCapturedDefine)">
+    <ItemGroup>
+      <_InnoCapturedDefine Include="$(DefineConstants)" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -10,6 +10,5 @@
 - [Inno.Adapter.Presentation.ImGui.Sdl3](Inno.Adapter.Presentation.ImGui.Sdl3.md)
 - [Inno.Build.Toolchains.ImGui](Inno.Build.Toolchains.ImGui.md)
 - [Inno.Build.Toolchains.ImGuizmo](Inno.Build.Toolchains.ImGuizmo.md)
-- [Inno.Native.ImGui.BindingExtension](Inno.Native.ImGui.BindingExtension.md)
 - [Inno.Native.ImGui](Inno.Native.ImGui.md)
 - [Inno.Native.ImGuizmo](Inno.Native.ImGuizmo.md)

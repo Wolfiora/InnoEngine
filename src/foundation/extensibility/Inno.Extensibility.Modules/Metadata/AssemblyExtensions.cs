@@ -93,8 +93,7 @@ public static class AssemblyExtensions
         AssemblyScope scope
     ) {
         ArgumentNullException.ThrowIfNull(assembly);
-        S_CACHE.Remove(assembly);
-        S_CACHE.Add(assembly, new AssemblyClassification(domain, scope));
+        S_CACHE.AddOrUpdate(assembly, new AssemblyClassification(domain, scope));
     }
 
     private static AssemblyClassification GetClassification(Assembly assembly)

@@ -1,3 +1,4 @@
+using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Threading;
@@ -17,7 +18,7 @@ public sealed class DevelopmentEntrySdkSelectionTests
     [InlineData("--dotnet", "inno-missing-sdk-executable")]
     public async Task InvalidSdkSelectionFailsBeforeCheckoutOwnership(params string[] options)
     {
-        string root = ToolchainEnvironment.FindRepoRoot();
+        string root = TestRepository.GetRoot(typeof(DevelopmentEntrySdkSelectionTests).Assembly);
         string ownership = Path.Combine(root, "artifacts", "entry", "checkout.lock");
         DateTime? original = File.Exists(ownership) ? File.GetLastWriteTimeUtc(ownership) : null;
         Assert.Equal(1, await BuildApplication.Run(["editor", "--tools-target", "windows-x64", .. options], CancellationToken.None));

@@ -122,7 +122,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         {
             m_edits.SetGameObjectActive(target, active);
         }
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         NativeImGui.TextUnformatted("Active");
         NativeImGui.SameLine(0f, EditorWidget.style.inspectorHeaderSectionSpacing);
         float available = NativeImGui.GetContentRegionAvail().X;
@@ -159,7 +159,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
 
         if (!m_layerSelector.IsLayerDefined(gameObject.layer))
         {
-            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.error);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.error);
             ImGuiWidget.WrappedText(
                 $"Layer slot {gameObject.layer.index} is not defined in the current project settings. " +
                 "Choose Default or restore that layer definition.");
@@ -169,7 +169,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
 
         if (!m_tagSelector.IsTagDefined(gameObject.tag))
         {
-            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.error);
+            NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.error);
             ImGuiWidget.WrappedText(
                 $"Tag '{gameObject.tag}' is not defined in the current Project Settings. " +
                 "Choose another tag or restore that tag definition.");
@@ -177,8 +177,8 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
             NativeImGui.Spacing();
         }
 
-        NativeImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, EditorWidget.style.compactItemSpacing);
-        NativeImGui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorWidget.style.compactFramePadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ItemSpacing), EditorWidget.style.compactItemSpacing);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorWidget.style.compactFramePadding);
         try
         {
             DrawComponents(context, gameObject);
@@ -263,7 +263,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
                     {
                         if (missing is not null)
                         {
-                            NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.error);
+                            NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.error);
                             ImGuiWidget.WrappedText(
                                 $"Missing component script ({missing.missingType.stableId:D}). " +
                                 "Its serialized state is preserved and will recover automatically when the type returns.");

@@ -12,7 +12,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Editor.Exporting;
 
 [EditorModal("export.game", "Export as Game", order: 310)]
-internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
+internal sealed unsafe class GameExportModal(ExportWindowModule window) : EditorModal
 {
     private const int C_TEXT_CAPACITY = 4096;
 
@@ -89,12 +89,9 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
 
     private static bool BeginFields(string id)
     {
-        if (!NativeImGui.BeginTable(
-                id,
-                2,
-                ImGuiTableFlags.SizingStretchProp |
+        if (!NativeImGui.BeginTable(id, 2, (int)(ImGuiTableFlags.SizingStretchProp |
                 ImGuiTableFlags.NoSavedSettings |
-                ImGuiTableFlags.NoPadOuterX))
+                ImGuiTableFlags.NoPadOuterX), default(System.Numerics.Vector2), 0f))
         {
             return false;
         }
@@ -115,7 +112,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         string value
     ) {
         BeginField(label);
-        NativeImGui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.textDisabled);
         try
         {
             EditorWidget.WrappedText(value);
@@ -132,11 +129,11 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         int height = window.gameWindowHeight;
         BeginField("Initial Width");
         NativeImGui.SetNextItemWidth(-1f);
-        if (NativeImGui.InputInt("##game_window_width", ref width))
+        if (NativeImGui.InputInt("##game_window_width", ref width, 1, 100, 0))
             window.gameWindowWidth = Math.Max(1, width);
         BeginField("Initial Height");
         NativeImGui.SetNextItemWidth(-1f);
-        if (NativeImGui.InputInt("##game_window_height", ref height))
+        if (NativeImGui.InputInt("##game_window_height", ref height, 1, 100, 0))
             window.gameWindowHeight = Math.Max(1, height);
     }
 
@@ -191,15 +188,15 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     {
         NativeImGui.Spacing();
         string primaryLabel = "Export";
-        ImGuiStylePtr style = NativeImGui.GetStyle();
-        float closeWidth = NativeImGui.CalcTextSize("Close").X + style.FramePadding.X * 2f;
-        float primaryWidth = NativeImGui.CalcTextSize(primaryLabel).X + style.FramePadding.X * 2f;
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
+        float closeWidth = NativeImGui.CalcTextSize("Close").X + style->FramePadding.X * 2f;
+        float primaryWidth = NativeImGui.CalcTextSize(primaryLabel).X + style->FramePadding.X * 2f;
         NativeImGui.SetCursorPosX(
             NativeImGui.GetCursorPosX() +
-            MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - closeWidth - style.ItemSpacing.X - primaryWidth));
+            MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - closeWidth - style->ItemSpacing.X - primaryWidth));
         if (NativeImGui.Button("Close"))
             window.CloseGame();
-        NativeImGui.SameLine();
+        NativeImGui.SameLine(0f, -1f);
         if (NativeImGui.Button(primaryLabel))
             window.BeginGameExport();
     }

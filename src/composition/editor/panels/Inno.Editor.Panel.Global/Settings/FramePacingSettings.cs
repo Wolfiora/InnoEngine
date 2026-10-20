@@ -1,3 +1,4 @@
+using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using System;
 using Inno.Editor.Core;
 using Inno.Editor.Settings;
@@ -84,10 +85,10 @@ internal sealed class MaximumFrameRateSetting : EditorSetting
     protected override void OnDraw(EditorSettingObject setting)
     {
         int rate = setting.GetAsInt32("value", 0);
-        if (NativeImGui.InputInt("##maximum_fps", ref rate))
+        if (NativeImGui.InputInt("##maximum_fps", ref rate, 1, 100, 0))
             setting.SetAsInt32("value", Math.Clamp(rate, 0, 1000));
         if (rate == 0)
-            NativeImGui.TextDisabled("Unlimited");
+            EditorWidget.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Unlimited");
     }
 }
 

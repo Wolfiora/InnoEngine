@@ -1,5 +1,7 @@
 # Inno.Adapter.Modules.DotNet
 
+SDK 依赖清单中的程序集从该显式根的部署目录装载；CLR 引用仍使用所属 Host ALC。库宿主需要部署自身的 SDK 清单与 runtime copy-local 闭包，不能依赖编译引用传递来推断运行时发现。这里不扫描任意目录或进程程序集，也不保存插件代际的额外解析表。
+
 [分类索引](README.md) · [Wiki 首页](../../README.md) · [Modules](../../extensibility/Inno.Extensibility.Modules.md) · [Types](../../extensibility/Inno.Extensibility.Types.md)
 
 ## 职责与允许依赖

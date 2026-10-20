@@ -189,7 +189,7 @@ internal static class PipelineInspector
         {
             if (ImGuiApi.Button("Save"))
                 _ = context.interactions.documents.Save(draft.documentId);
-            ImGuiApi.SameLine();
+            ImGuiApi.SameLine(0f, -1f);
             if (ImGuiApi.Button("Revert"))
                 _ = context.interactions.documents.Revert(draft.documentId);
         }
@@ -256,7 +256,7 @@ internal static class PipelineInspector
                         if (slot + 1 < features.Length)
                         {
                             if (slot > 0)
-                                ImGuiApi.SameLine();
+                                ImGuiApi.SameLine(0f, -1f);
                             if (ImGuiApi.SmallButton("Move Down"))
                             {
                                 (features[slot + 1], features[slot]) = (features[slot], features[slot + 1]);

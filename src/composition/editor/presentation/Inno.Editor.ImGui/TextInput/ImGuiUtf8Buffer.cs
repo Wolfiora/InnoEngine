@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using BGCS.Runtime;
 
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
@@ -30,11 +31,21 @@ internal static unsafe class ImGuiUtf8Buffer
         buffer[bytesUsed] = 0;
 
         bool changed;
+        using NativeStringLease nativeLabel = Utf8Codec.EncodeNullTerminated(label, allowsNull: false);
+        using NativeStringLease nativeHint = Utf8Codec.EncodeNullTerminated(hint, allowsNull: true);
         fixed (byte* nativeBuffer = buffer)
         {
             changed = hint is null
-                ? NativeImGui.InputText(label, nativeBuffer, capacity, flags)
-                : NativeImGui.InputTextWithHint(label, hint, nativeBuffer, capacity, flags);
+                ? NativeImGui.Raw.InputText((sbyte*)nativeLabel.pointer, (sbyte*)nativeBuffer, (uint)capacity, (int)flags, null, null) != 0
+                : NativeImGui.Raw.InputTextWithHint(
+                    (sbyte*)nativeLabel.pointer,
+                    (sbyte*)nativeHint.pointer,
+                    (sbyte*)nativeBuffer,
+                    (uint)capacity,
+                    (int)flags,
+                    null,
+                    null
+                ) != 0;
         }
 
         if (changed)

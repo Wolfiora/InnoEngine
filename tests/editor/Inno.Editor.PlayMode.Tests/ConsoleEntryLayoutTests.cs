@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using BGCS.Runtime;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -9,19 +12,20 @@ using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
-public sealed class ConsoleEntryLayoutTests
+public sealed unsafe class ConsoleEntryLayoutTests
 {
     [Fact]
     public void DistinctEntryDomainsDoNotReuseImGuiCardIdentity()
     {
         Assert.Equal((-2L).GetHashCode(), 1L.GetHashCode());
 
-        ImGuiContextPtr context = NativeImGui.CreateContext();
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
             ConfigureContext();
             NativeImGui.NewFrame();
-            _ = NativeImGui.Begin("Console identity test");
+            using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Console identity test", allowsNull: false);
+            _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
 
             uint logCardId = GetCardId("occurrence/log/1");
             uint diagnosticCardId = GetCardId("occurrence/diagnostic/1");
@@ -32,14 +36,14 @@ public sealed class ConsoleEntryLayoutTests
         }
         finally
         {
-            NativeImGui.DestroyContext(context);
+            NativeImGui.Raw.DestroyContext(context);
         }
     }
 
     [Fact]
     public void CollapsedCardsUseOneUniformNativeItemSpacing()
     {
-        ImGuiContextPtr context = NativeImGui.CreateContext();
+        ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
             ConfigureContext();
@@ -48,7 +52,7 @@ public sealed class ConsoleEntryLayoutTests
         }
         finally
         {
-            NativeImGui.DestroyContext(context);
+            NativeImGui.Raw.DestroyContext(context);
         }
     }
 
@@ -63,8 +67,9 @@ public sealed class ConsoleEntryLayoutTests
     private static void DrawCardFrame(bool assertSpacing)
     {
         NativeImGui.NewFrame();
-        NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), ImGuiCond.Always);
-        _ = NativeImGui.Begin("Console spacing test");
+        NativeImGui.SetNextWindowSize(new Vector2(480f, 320f), (int)(ImGuiCond.Always));
+        using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Console spacing test", allowsNull: false);
+        _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, 0);
 
         string[] identities =
         [
@@ -79,10 +84,10 @@ public sealed class ConsoleEntryLayoutTests
             if (NativeImGui.BeginChild(
                     "##ConsoleEntryCard",
                     Vector2.Zero,
-                    ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY,
-                    ImGuiWindowFlags.NoScrollbar |
+                    (int)(ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY),
+                    (int)(ImGuiWindowFlags.NoScrollbar |
                     ImGuiWindowFlags.NoScrollWithMouse |
-                    ImGuiWindowFlags.NoSavedSettings))
+                    ImGuiWindowFlags.NoSavedSettings)))
             {
                 NativeImGui.TextUnformatted($"Entry {i}");
             }
@@ -93,7 +98,7 @@ public sealed class ConsoleEntryLayoutTests
 
         if (assertSpacing)
         {
-            float expectedSpacing = NativeImGui.GetStyle().ItemSpacing.Y;
+            float expectedSpacing = NativeImGui.Raw.GetStyle()->ItemSpacing.Y;
             float firstGap = bounds[1].minimum.Y - bounds[0].maximum.Y;
             float secondGap = bounds[2].minimum.Y - bounds[1].maximum.Y;
             Assert.Equal(expectedSpacing, firstGap, 3);
@@ -106,10 +111,10 @@ public sealed class ConsoleEntryLayoutTests
 
     private static void ConfigureContext()
     {
-        ImGuiIOPtr io = NativeImGui.GetIO();
-        io.DisplaySize = new Vector2(640f, 480f);
-        io.DeltaTime = 1f / 60f;
-        io.BackendFlags |= ImGuiBackendFlags.RendererHasTextures;
-        io.Fonts.RendererHasTextures = true;
+        ImGuiIO* io = NativeImGui.Raw.GetIO();
+        io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
+        io->DeltaTime = 1f / 60f;
+        io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+        io->Fonts->RendererHasTextures = 1;
     }
 }

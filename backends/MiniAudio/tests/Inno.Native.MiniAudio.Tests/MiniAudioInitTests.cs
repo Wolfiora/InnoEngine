@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,14 +14,14 @@ public sealed class MiniAudioInitTests
     }
 
     [Fact]
-    public void VersionLoadsTheCompleteNativeFunctionTable()
+    public unsafe void VersionLoadsTheCompleteNativeFunctionTable()
     {
         uint major = 0;
         uint minor = 0;
         uint revision = 0;
 
-        MiniAudio.Version(ref major, ref minor, ref revision);
-        string? version = MiniAudio.VersionString();
+        MiniAudio.Raw.Version(&major, &minor, &revision);
+        string? version = Marshal.PtrToStringUTF8((nint)MiniAudio.Raw.VersionString());
 
         m_output.WriteLine($"miniaudio version: {version}");
         Assert.Equal((uint)0, major);
@@ -30,7 +31,7 @@ public sealed class MiniAudioInitTests
     }
 
     [Fact]
-    public void EngineInitializesWithoutAnAudioDevice()
+    public unsafe void EngineInitializesWithoutAnAudioDevice()
     {
         MaEngineConfig config = MiniAudio.EngineConfigInit();
         config.NoDevice = 1;
@@ -38,9 +39,9 @@ public sealed class MiniAudioInitTests
         config.SampleRate = 48_000;
         MaEngine engine = default;
 
-        MaResult result = MiniAudio.EngineInit(ref config, ref engine);
-        Assert.Equal(MaResult.Success, result);
+        MaResult result = MiniAudio.Raw.EngineInit(&config, &engine);
+        Assert.Equal(MaResult.MA_SUCCESS, result);
 
-        MiniAudio.EngineUninit(ref engine);
+        MiniAudio.Raw.EngineUninit(&engine);
     }
 }

@@ -16,6 +16,8 @@
 
 `BeginMutationScope()` 提供 LIFO 事务：失败回滚资源、pass、output、name scope 和此前冻结的验证结果；成功 `Commit()` 验证并冻结新声明。回滚不重用已发放的资源身份，旧 handle 不能误指向新资源。
 
+`AllowParallelRecording()` 只并行执行声明允许录制的 callback；实际命令仍按编译后的 pass 顺序回放。录制会立即复制 uniform 与 transform 的借用数据，普通 handle 和 sampler 按值保存，栅格与 stencil 状态保留当前对象语义。内部录制缓冲仅由本次 `Execute()` 拥有；正常完成、录制失败、回放失败和 backend 退出异常都释放缓冲及记录的引用。没有并行 pass 时直接执行串行 callback，不建立空录制目录。该机制不改变设备线程归属、资源 generation 或 GPU 退休协议。
+
 ## 使用示例
 
 ```csharp

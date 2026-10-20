@@ -69,7 +69,7 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
             var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
             var context = new BuildCompositionContext(ToolchainEnvironment.ResolveExecutable(DotnetHost),
                 AppContext.BaseDirectory, execution.host, execution.toolsTarget,
-                new NativeBindingGenerator(ToolchainEnvironment.ResolveExecutable(DotnetHost)));
+                new NativeBindingGenerator());
             using PlayerSupportPackPublication installed = StandardBuildDistribution.Create(context).build.supportPacks.PublishAsync(
                 EngineRoot, OutputRoot, new BuildTargetId(Target), DotnetHost, cancellation.Token)
                 .AsTask().GetAwaiter().GetResult();

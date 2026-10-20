@@ -181,7 +181,7 @@ internal static class MaterialInspector
         {
             if (NativeImGui.Button("Save"))
                 _ = context.interactions.documents.Save(draft.documentId);
-            NativeImGui.SameLine();
+            NativeImGui.SameLine(0f, -1f);
             if (NativeImGui.Button("Revert"))
                 _ = context.interactions.documents.Revert(draft.documentId);
         });
@@ -232,7 +232,7 @@ internal static class MaterialInspector
             }
             if (materialOpen)
             {
-                NativeImGui.SameLine();
+                NativeImGui.SameLine(0f, -1f);
                 if (NativeImGui.SmallButton("Locate Shader")
                     && documents.assets.TryGetFileSystemEntry(material.shader.assetPath, out AssetFileEntry shaderEntry))
                     context.interactions.SetSelection(shaderEntry);

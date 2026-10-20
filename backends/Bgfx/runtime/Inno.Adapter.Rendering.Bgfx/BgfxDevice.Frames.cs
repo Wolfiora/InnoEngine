@@ -92,7 +92,7 @@ sealed unsafe partial class BgfxDevice
             throw new InvalidOperationException("No BGFX frame is open.");
         }
 
-        if (m_activeGraph is not null || !m_activeEncoder.IsNull)
+        if (m_activeGraph is not null || m_activeEncoder != null)
         {
             throw new InvalidOperationException("All render graphs and encoders must end before BGFX frame submission.");
         }

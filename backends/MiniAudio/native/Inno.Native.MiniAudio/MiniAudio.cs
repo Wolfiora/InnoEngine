@@ -1,27 +1,24 @@
-#if !INNO_STATIC_NATIVE
-using BGCS.Runtime;
 using Inno.Native.LibraryLoading;
-#endif
-
-#if !INNO_STATIC_NATIVE
 
 namespace Inno.Native.MiniAudio;
 
 /// <summary>
-/// Initializes generated imports against the component's dynamic native library.
+/// Initializes the explicitly deployed module through the generated BGCS API.
 /// </summary>
 public static unsafe partial class MiniAudio
 {
 #if DEBUG
-    private const string C_LIBRARY_NAME = "miniaudio-debug";
+    internal const string LibName = "miniaudio-debug";
 #else
-    private const string C_LIBRARY_NAME = "miniaudio-release";
+    internal const string LibName = "miniaudio-release";
 #endif
 
     static MiniAudio()
     {
-        nint handle = NativeDllLoader.LoadNativeDll(C_LIBRARY_NAME, typeof(MiniAudio).Assembly);
-        InitApi(new NativeLibraryContext(handle));
+#if INNO_STATIC_NATIVE
+        FromStatic();
+#else
+        Load(NativeDllLoader.FindNativeLibrary(LibName));
+#endif
     }
 }
-#endif

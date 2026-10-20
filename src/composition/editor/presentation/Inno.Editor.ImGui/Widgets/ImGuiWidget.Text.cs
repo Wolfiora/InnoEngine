@@ -11,7 +11,7 @@ namespace Inno.Editor.ImGui.ImGuiWidget;
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public static unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Gets the visible bounds of the first glyph in a string at a requested font size.
@@ -34,7 +34,7 @@ public static partial class ImGuiWidget
     /// </exception>
     [ScriptingApiIgnore]
     public static Vector4 GetGlyphVisualBounds(
-        ImFontPtr font,
+        ImFont* font,
         float fontSize,
         string text
     ) {
@@ -42,14 +42,14 @@ public static partial class ImGuiWidget
             throw new ArgumentException("Glyph text cannot be empty.", nameof(text));
 
         int codepoint = char.ConvertToUtf32(text, 0);
-        ImFontBakedPtr baked = NativeImGui.GetFontBaked(font, fontSize);
-        ImFontGlyphPtr glyph = codepoint <= ushort.MaxValue
-            ? NativeImGui.FindGlyph(baked, (ushort)codepoint)
-            : ImFontGlyphPtr.Null;
-        if (!glyph.IsNull)
-            return new Vector4(glyph.X0, glyph.Y0, glyph.X1, glyph.Y1);
+        ImFontBaked* baked = NativeImGui.Raw.GetFontBaked(font, fontSize, -1f);
+        ImFontGlyph* glyph = codepoint <= ushort.MaxValue
+            ? NativeImGui.Raw.FindGlyph(baked, (ushort)codepoint)
+            : null;
+        if (glyph != null)
+            return new Vector4(glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
 
-        NativeImGui.PushFont(font, fontSize);
+        NativeImGui.Raw.PushFont(font, fontSize);
         Vector2 fallbackSize = NativeImGui.CalcTextSize(text);
         NativeImGui.PopFont();
         return new Vector4(0f, 0f, fallbackSize.X, fallbackSize.Y);
@@ -78,8 +78,8 @@ public static partial class ImGuiWidget
     /// </param>
     [ScriptingApiIgnore]
     public static void AddGlyphCentered(
-        ImDrawListPtr drawList,
-        ImFontPtr font,
+        ImDrawList* drawList,
+        ImFont* font,
         float fontSize,
         string text,
         Vector2 center,
@@ -89,7 +89,7 @@ public static partial class ImGuiWidget
         Vector2 visibleCenterOffset = new(
             (bounds.X + bounds.Z) * 0.5f,
             (bounds.Y + bounds.W) * 0.5f);
-        NativeImGui.AddText(
+        ImGui.DrawNativeText(
             drawList,
             font,
             fontSize,
@@ -161,15 +161,18 @@ public static partial class ImGuiWidget
                 ? EditorPalette.accentHovered
                 : EditorPalette.accentActive;
         uint packedColor = NativeImGui.ColorConvertFloat4ToU32(color);
-        NativeImGui.GetWindowDrawList().AddText(cursor, packedColor, text);
+        ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), cursor, packedColor, text);
         if (hovered)
         {
-            NativeImGui.SetMouseCursor(ImGuiMouseCursor.Hand);
+            NativeImGui.SetMouseCursor((int)(ImGuiMouseCursor.Hand));
             float underlineY = cursor.Y + size.Y;
-            NativeImGui.GetWindowDrawList().AddLine(
-                new Vector2(cursor.X, underlineY),
-                new Vector2(cursor.X + size.X, underlineY),
-                packedColor);
+            NativeImGui.Raw.AddLine(
+                NativeImGui.Raw.GetWindowDrawList(),
+                ImGui.ToNative(new Vector2(cursor.X, underlineY)),
+                ImGui.ToNative(new Vector2(cursor.X + size.X, underlineY)),
+                packedColor,
+                1f
+            );
         }
         return pressed;
     }
@@ -210,10 +213,10 @@ public static partial class ImGuiWidget
         bool active = NativeImGui.IsItemActive();
         uint color = hovered || active
             ? NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered)
-            : NativeImGui.GetColorU32(ImGuiCol.Text);
+            : NativeImGui.GetColorU32((int)(ImGuiCol.Text));
         AddGlyphCentered(
-            NativeImGui.GetWindowDrawList(),
-            NativeImGui.GetFont(),
+            NativeImGui.Raw.GetWindowDrawList(),
+            NativeImGui.Raw.GetFont(),
             NativeImGui.GetFontSize(),
             icon,
             cursor + controlSize * 0.5f,
@@ -276,7 +279,7 @@ public static partial class ImGuiWidget
         bool hovered = NativeImGui.IsItemHovered();
         bool active = NativeImGui.IsItemActive();
         DrawClickableTextPresentation(
-            NativeImGui.GetWindowDrawList(),
+            NativeImGui.Raw.GetWindowDrawList(),
             cursor,
             controlSize,
             text,
@@ -323,10 +326,7 @@ public static partial class ImGuiWidget
 
         Vector2 cursor = NativeImGui.GetCursorScreenPos();
         Vector2 textSize = NativeImGui.CalcTextSize(text);
-        NativeImGui.GetWindowDrawList().AddText(
-            cursor + (areaSize - textSize) * 0.5f,
-            NativeImGui.GetColorU32(ImGuiCol.Text),
-            text);
+        ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), cursor + (areaSize - textSize) * 0.5f, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), text);
         NativeImGui.Dummy(areaSize);
     }
 
@@ -374,29 +374,26 @@ public static partial class ImGuiWidget
             MathF.Min(padding.X, MathF.Max(0f, (areaSize.X - 1f) * 0.5f)),
             MathF.Min(padding.Y, MathF.Max(0f, (areaSize.Y - 1f) * 0.5f)));
         float wrapWidth = MathF.Max(1f, areaSize.X - effectivePadding.X * 2f);
-        Vector2 textSize = NativeImGui.CalcTextSize(text, hideTextAfterDoubleHash: false, wrapWidth);
+        Vector2 textSize = NativeImGui.CalcTextSize(text, hide_text_after_double_hash: false, wrapWidth);
         Vector2 textPosition = origin + new Vector2(
             MathF.Max(effectivePadding.X, (areaSize.X - textSize.X) * 0.5f),
             MathF.Max(effectivePadding.Y, (areaSize.Y - textSize.Y) * 0.5f));
-        ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
-        drawList.PushClipRect(
-            origin + effectivePadding,
-            origin + areaSize - effectivePadding,
-            intersectWithCurrentClipRect: true);
+        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeImGui.Raw.PushClipRect(drawList, ImGui.ToNative(origin + effectivePadding), ImGui.ToNative(origin + areaSize - effectivePadding), 1);
         try
         {
-            NativeImGui.AddText(
+            ImGui.DrawNativeText(
                 drawList,
-                NativeImGui.GetFont(),
+                NativeImGui.Raw.GetFont(),
                 NativeImGui.GetFontSize(),
                 textPosition,
-                NativeImGui.GetColorU32(ImGuiCol.Text),
+                NativeImGui.GetColorU32((int)(ImGuiCol.Text)),
                 text,
                 wrapWidth);
         }
         finally
         {
-            drawList.PopClipRect();
+            NativeImGui.Raw.PopClipRect(drawList);
         }
         NativeImGui.Dummy(areaSize);
     }
@@ -418,7 +415,7 @@ public static partial class ImGuiWidget
         string text
     ) {
         ArgumentNullException.ThrowIfNull(text);
-        NativeImGui.PushStyleColor(ImGuiCol.Text, color);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), color);
         try
         {
             NativeImGui.TextUnformatted(text);
@@ -514,7 +511,7 @@ public static partial class ImGuiWidget
     }
 
     private static void DrawClickableTextPresentation(
-        ImDrawListPtr drawList,
+        ImDrawList* drawList,
         Vector2 minimum,
         Vector2 controlSize,
         string text,
@@ -524,8 +521,8 @@ public static partial class ImGuiWidget
     ) {
         uint color = hovered || active
             ? NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered)
-            : NativeImGui.GetColorU32(ImGuiCol.Text);
-        drawList.AddText(minimum + (controlSize - textSize) * 0.5f, color, text);
+            : NativeImGui.GetColorU32((int)(ImGuiCol.Text));
+        ImGui.DrawNativeText(drawList, minimum + (controlSize - textSize) * 0.5f, color, text);
     }
 
     /// <summary>
@@ -552,17 +549,17 @@ public static partial class ImGuiWidget
         try
         {
             Vector2 cursor = NativeImGui.GetCursorScreenPos();
-            ImGuiStylePtr style = NativeImGui.GetStyle();
-            ImFontPtr font = NativeImGui.GetFont();
+            ImGuiStyle* style = NativeImGui.Raw.GetStyle();
+            ImFont* font = NativeImGui.Raw.GetFont();
             float fontSize = NativeImGui.GetFontSize();
             float lineHeight = NativeImGui.GetTextLineHeight();
             Vector4 glyphBounds = GetGlyphVisualBounds(font, fontSize, icon);
             float iconSlotWidth = MathF.Max(lineHeight, glyphBounds.Z - glyphBounds.X);
             Vector2 textSize = NativeImGui.CalcTextSize(text);
-            Vector2 textPos = new(cursor.X + iconSlotWidth + style.ItemInnerSpacing.X, cursor.Y);
+            Vector2 textPos = new(cursor.X + iconSlotWidth + style->ItemInnerSpacing.X, cursor.Y);
 
-            uint color = NativeImGui.GetColorU32(ImGuiCol.Text);
-            ImDrawListPtr drawList = NativeImGui.GetWindowDrawList();
+            uint color = NativeImGui.GetColorU32((int)(ImGuiCol.Text));
+            ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
             AddGlyphCentered(
                 drawList,
                 font,
@@ -570,21 +567,23 @@ public static partial class ImGuiWidget
                 icon,
                 new Vector2(cursor.X + iconSlotWidth * 0.5f, cursor.Y + lineHeight * 0.5f),
                 color);
-            drawList.AddText(textPos, color, text);
+            ImGui.DrawNativeText(drawList, textPos, color, text);
 
             if (highlight)
             {
                 float lineY = cursor.Y + NativeImGui.GetTextLineHeight() -
                               ImGuiWidget.style.textDecorationOffset;
-                drawList.AddLine(
-                    new Vector2(cursor.X, lineY),
-                    new Vector2(textPos.X + textSize.X, lineY),
+                NativeImGui.Raw.AddLine(
+                    drawList,
+                    ImGui.ToNative(new Vector2(cursor.X, lineY)),
+                    ImGui.ToNative(new Vector2(textPos.X + textSize.X, lineY)),
                     color,
-                    ImGuiWidget.style.borderSize);
+                    ImGuiWidget.style.borderSize
+                );
             }
 
             NativeImGui.Dummy(new Vector2(
-                iconSlotWidth + style.ItemInnerSpacing.X + textSize.X,
+                iconSlotWidth + style->ItemInnerSpacing.X + textSize.X,
                 lineHeight));
         }
         finally
