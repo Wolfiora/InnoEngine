@@ -825,6 +825,35 @@ public static unsafe class ImGui
     public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsItemClicked((int)(button));
 
     /// <summary>
+    /// Gets whether a mouse button is held in the current Editor UI frame, including input consumed by UI controls.
+    /// </summary>
+    /// <param name="button">
+    /// The UI mouse button to query.
+    /// </param>
+    /// <returns>
+    /// True while the button is held; callers must also check their item's active or hovered state before editing.
+    /// </returns>
+    public static bool IsMouseButtonDown(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsMouseDown((int)button);
+
+    /// <summary>
+    /// Gets accumulated pointer displacement from the current UI drag's starting position for timeline and canvas controls.
+    /// </summary>
+    /// <param name="button">
+    /// The button that owns the drag.
+    /// </param>
+    /// <param name="threshold">
+    /// Movement required to start dragging, or a negative value to use the Editor's configured threshold.
+    /// </param>
+    /// <returns>
+    /// Displacement in UI coordinates, or zero before the drag threshold is crossed or when no drag is available.
+    /// The value is cumulative; it must be applied to a captured starting value, not added again each frame.
+    /// </returns>
+    public static Vector2 GetMouseDragDelta(
+        ImGuiMouseButton button = ImGuiMouseButton.Left,
+        float threshold = -1f
+    ) => RawImGui.GetMouseDragDelta((int)button, threshold);
+
+    /// <summary>
     /// Converts a floating-point RGBA color to Dear ImGui packed color order.
     /// </summary>
     /// <returns>
