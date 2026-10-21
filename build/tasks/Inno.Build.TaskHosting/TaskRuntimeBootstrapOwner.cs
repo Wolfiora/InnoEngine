@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +48,8 @@ public sealed class TaskRuntimeBootstrapOwner : Microsoft.Build.Utilities.Task
         {
             // The SDK inline compiler targets netstandard. Invoke only the public Foundation
             // entry so its current runtime contract does not become a duplicate bootstrap writer.
-            Assembly foundation = Assembly.LoadFrom(FoundationAssembly);
+            // The IDE build host must not keep the normal SDK output file locked between builds.
+            Assembly foundation = Assembly.Load(File.ReadAllBytes(FoundationAssembly));
             Type owner = foundation.GetType("Inno.Core.IO.ProcessOwnedDirectory", throwOnError: true)!;
             MethodInfo create = owner.GetMethod("CreateForProcessAsync", BindingFlags.Public | BindingFlags.Static,
                 null, [typeof(string), typeof(string), typeof(CancellationToken)], null)!;

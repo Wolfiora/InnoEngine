@@ -20,6 +20,7 @@ internal static class NativeWorkspaceIdentity
         return NativeBuildFingerprint.Create(recipe.declarations.Where(static value =>
             !value.StartsWith("bindings=", StringComparison.Ordinal))
             .Select(bindings.NormalizeDeclaration)
+            .Prepend("executionRoot=" + (OperatingSystem.IsWindows() ? ToolchainWorkingDirectory.aliasRoot : context.engineRoot))
             .Prepend(context.configuration).Prepend(recipe.targetId).Prepend("workspace"), configuration);
     }
 }

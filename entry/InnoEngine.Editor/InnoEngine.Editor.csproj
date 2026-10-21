@@ -1,4 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project
+  Sdk="Microsoft.NET.Sdk"
+  TreatAsLocalProperty="BuildProjectReferences;BuildingInsideVisualStudio;OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration">
   <Import Project="../DevelopmentHost.props" />
 
   <PropertyGroup>
@@ -7,6 +9,8 @@
     <RootNamespace>InnoEngine.Editor</RootNamespace>
     <!-- The host product is built through this reference, rather than as a second solution root. -->
     <OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>false</OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>
+    <BuildProjectReferences Condition="'$(DesignTimeBuild)' != 'true'">true</BuildProjectReferences>
+    <BuildingInsideVisualStudio Condition="'$(DesignTimeBuild)' != 'true'">false</BuildingInsideVisualStudio>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +24,12 @@
       PrivateAssets="compile" />
     <ProjectReference Include="../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
+  <ItemDefinitionGroup Condition="'$(DesignTimeBuild)' != 'true'">
+    <ProjectReference>
+      <AdditionalProperties>BuildProjectReferences=true;BuildingInsideVisualStudio=false</AdditionalProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
 
   <ItemGroup>
     <AssemblyMetadata

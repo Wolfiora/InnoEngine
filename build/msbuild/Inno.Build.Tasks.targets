@@ -29,6 +29,79 @@
   <UsingTask TaskName="Inno.Build.TaskHosting.BuildTaskRuntimeTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
   <UsingTask TaskName="Inno.Build.TaskHosting.RestoreOwnedProjectTask" AssemblyFile="$(InnoTaskPublisherAssembly)" />
 
+  <!-- A worker can rebuild the task registry while retaining the IDE's evaluated properties. -->
+  <UsingTask
+    TaskName="InnoTaskRuntimeLoadIdentity"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Identity ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        Identity = "$(InnoTaskLoadId)";
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!-- Private loader copies belong to the operation lifetime, not reusable project outputs. -->
+  <UsingTask
+    TaskName="InnoMaterializePrivateRuntime"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <Task>
+      <Reference Include="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll" />
+      <Code Type="Class" Language="cs"><![CDATA[
+        /// <summary>Prepares loader-owned files using the SDK copy and cancellation protocol.</summary>
+        public sealed class InnoMaterializePrivateRuntime : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask
+        {
+          private readonly Microsoft.Build.Tasks.Copy m_copy = new Microsoft.Build.Tasks.Copy();
+
+          /// <summary>Gets or sets the complete source file selection.</summary>
+          [Microsoft.Build.Framework.Required]
+          public Microsoft.Build.Framework.ITaskItem[] SourceFiles
+          {
+            get => m_copy.SourceFiles;
+            set => m_copy.SourceFiles = value;
+          }
+
+          /// <summary>Gets or sets the corresponding private destination files.</summary>
+          [Microsoft.Build.Framework.Required]
+          public Microsoft.Build.Framework.ITaskItem[] DestinationFiles
+          {
+            get => m_copy.DestinationFiles;
+            set => m_copy.DestinationFiles = value;
+          }
+
+          /// <summary>Gets or sets whether the SDK may create hardlinks.</summary>
+          public bool UseHardlinksIfPossible
+          {
+            get => m_copy.UseHardlinksIfPossible;
+            set => m_copy.UseHardlinksIfPossible = value;
+          }
+
+          /// <summary>Gets or sets whether the SDK may retain unchanged destination files.</summary>
+          public bool SkipUnchangedFiles
+          {
+            get => m_copy.SkipUnchangedFiles;
+            set => m_copy.SkipUnchangedFiles = value;
+          }
+
+          /// <summary>Delegates materialization to the selected SDK implementation.</summary>
+          /// <returns>True after successful copying; false after failure or cancellation.</returns>
+          public override bool Execute()
+          {
+            m_copy.BuildEngine = BuildEngine;
+            return m_copy.Execute();
+          }
+
+          /// <summary>Cancels the same SDK operation used for materialization.</summary>
+          public void Cancel() => m_copy.Cancel();
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
   <!-- This adapter uses the normally built Foundation assembly before private SDK outputs exist. -->
   <UsingTask
     TaskName="Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner"
@@ -39,19 +112,37 @@
     </Task>
   </UsingTask>
 
-  <Target Name="PrepareInnoTaskPublisher" Condition="'$(DesignTimeBuild)' != 'true'">
+  <Target Name="BindInnoTaskLoadIdentity" Condition="'$(DesignTimeBuild)' != 'true'">
+    <InnoTaskRuntimeLoadIdentity>
+      <Output TaskParameter="Identity" PropertyName="InnoTaskLoadId" />
+    </InnoTaskRuntimeLoadIdentity>
+    <PropertyGroup>
+      <InnoTaskLoadDirectory>$(InnoTaskArtifacts)/loads/$(InnoTaskLoadId)/$(Configuration)</InnoTaskLoadDirectory>
+      <InnoTaskHostAssembly>$(InnoTaskLoadDirectory)/Inno.Build.Tasks.dll</InnoTaskHostAssembly>
+      <InnoTaskPublisherDirectory>$(InnoTaskArtifacts)/publishers/$(InnoTaskLoadId)/$(Configuration)</InnoTaskPublisherDirectory>
+      <InnoTaskPublisherAssembly>$(InnoTaskPublisherDirectory)/Inno.Build.TaskHosting.dll</InnoTaskPublisherAssembly>
+    </PropertyGroup>
+  </Target>
+
+  <Target
+    Name="PrepareInnoTaskPublisher"
+    DependsOnTargets="BindInnoTaskLoadIdentity"
+    Condition="'$(DesignTimeBuild)' != 'true'">
     <PropertyGroup>
       <_InnoFoundationExcludedProperties>$([System.String]::Copy('$(InnoTaskExcludedProperties)').Replace(';InnoTaskBootstrapOwner', ''))</_InnoFoundationExcludedProperties>
     </PropertyGroup>
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj"
       Targets="Restore;Build"
-      Properties="Configuration=$(Configuration);ArtifactsPath=;UseArtifactsOutput=false;InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)"
-      RemoveProperties="$(_InnoFoundationExcludedProperties);ArtifactsPath" />
+      Properties="$(InnoTaskHostProperties);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)"
+      RemoveProperties="$(_InnoFoundationExcludedProperties)">
+      <Output TaskParameter="TargetOutputs" ItemName="_InnoFoundationOutput" />
+    </MSBuild>
+    <Error Condition="'@(_InnoFoundationOutput->Count())' != '1'" Text="Foundation bootstrap must return one SDK-selected assembly." />
     <Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner
       Root="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/publishers'))"
       Identity="$(InnoTaskBootstrapOwner)"
-      FoundationAssembly="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../src/foundation/core/Inno.Core.IO/bin/$(Configuration)/net10.0/Inno.Core.IO.dll'))">
+      FoundationAssembly="@(_InnoFoundationOutput)">
       <Output TaskParameter="Directory" PropertyName="_InnoClaimedBootstrap" />
     </Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner>
     <PropertyGroup>
@@ -75,9 +166,10 @@
     <ItemGroup>
       <_InnoPublisherFile Include="$(_InnoPublisherSourceDirectory)/**/*" Exclude="$(_InnoPublisherSourceDirectory)/**/*.pdb;$(_InnoPublisherSourceDirectory)/**/*.xml" />
     </ItemGroup>
-    <Copy
+    <InnoMaterializePrivateRuntime
       SourceFiles="@(_InnoPublisherFile)"
       DestinationFiles="@(_InnoPublisherFile->'$(InnoTaskPublisherDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Error Condition="!Exists('$(InnoTaskPublisherAssembly)')" Text="The private task publisher was not copied to its registered load path: $(InnoTaskPublisherAssembly)" />
     <Inno.Build.TaskHosting.RegisterTaskPublisherTask
       PublisherRoot="$([System.IO.Path]::GetFullPath('$(InnoTaskArtifacts)/publishers'))"
       BootstrapDirectory="$([System.IO.Path]::GetFullPath('$(InnoTaskBootstrapDirectory)'))"
@@ -115,7 +207,7 @@
     <ItemGroup>
       <_InnoPreparedRuntimeFile Include="$(_InnoPreparedTaskDirectory)/**/*" />
     </ItemGroup>
-    <Copy
+    <InnoMaterializePrivateRuntime
       SourceFiles="@(_InnoPreparedRuntimeFile)"
       DestinationFiles="@(_InnoPreparedRuntimeFile->'$(InnoTaskLoadDirectory)/%(RecursiveDir)%(Filename)%(Extension)')"
       UseHardlinksIfPossible="true"

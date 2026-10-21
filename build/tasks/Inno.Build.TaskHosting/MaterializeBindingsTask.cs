@@ -107,6 +107,32 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
         string source,
         CancellationToken cancellation
     ) {
+        IBuildEngine3? engine = BuildEngine as IBuildEngine3;
+        IDisposable? ownership = null;
+        engine?.Yield();
+        try
+        {
+            ownership = AcquirePublication(source, cancellation);
+            return ownership;
+        }
+        finally
+        {
+            try
+            {
+                engine?.Reacquire();
+            }
+            catch
+            {
+                ownership?.Dispose();
+                throw;
+            }
+        }
+    }
+
+    private IDisposable AcquirePublication(
+        string source,
+        CancellationToken cancellation
+    ) {
         if (ArtifactDirectory.Length != 0)
         {
             if (!Path.IsPathFullyQualified(ArtifactDirectory))
@@ -121,7 +147,7 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
         if (!SamePath(source, Path.Combine(owner, "Generated", "Bindings.cs")))
             throw new ArgumentException("Host bindings must belong to their Native project's Generated directory.");
         return FileLease.AcquireAsync(Path.Combine(owner, "obj", "bindings", "generation.lock"),
-            TimeSpan.FromSeconds(30), cancellation).AsTask().GetAwaiter().GetResult();
+            Timeout.InfiniteTimeSpan, cancellation).AsTask().GetAwaiter().GetResult();
     }
 
     private static bool SamePath(

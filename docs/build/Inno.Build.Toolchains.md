@@ -98,6 +98,8 @@ ManagedBuildInputSnapshot.CaptureAsync 使用已选 SDK 的实际 MSBuild 进程
 
 选中的生成绑定输入在复制树中使用 Native 项目 owner 对应的稳定位置。绑定 generation 变化会更新对应输入内容，最终产物仍使用不同指纹；兼容 workspace 的 bridge 路径不会仅因生成缓存目录名变化而改变。workspace 身份只对实际选中的生成根及其 CMake 路径参数做这种规范化，其他 SDK、ABI、工具和配置参数继续区分 workspace。该映射属于内部实现，不是新的公开缓存入口。
 
+Windows 编译工具的短路径遵守宿主选择的临时目录；实际执行根参与 workspace 身份，CMake 不会把另一个执行根生成的绝对路径缓存当作可复用中间态。不同 TEMP 的进程可以复用验证通过的不可变最终产物，但分别维护路径兼容的编译工作区。真实文件仍由组件 `obj/native` 持有，alias 仅在操作期间存在，执行锁与 alias 一起保留在临时根中，不能写入不可变产物。其他宿主直接使用真实目录。该策略由共同工具链处理，IDE 和 CLI 不需要使用相同临时目录。
+
 `NativeBuildRecipe.CreateForComponent` 要求组件通过 `implementationPaths` 声明实际执行源码；共同执行代码由共享机制加入，未选择的平台配置不自动进入闭包。Browser 聚合只包含聚合实现与产物描述，Support Pack、打包和 Target 代码不参与原生归档指纹。共用 executor、组件 recipe、SDK、生成桥与参数继续参与失效；缩小无关范围不削弱发布前稳定性校验。
 
 `ProductNativeDeployment` 从 plan 的明确布局生成 exact deployment；相同内容不替换加载中的 DLL。失败/取消保留旧完整部署，提交后清理失败独立报告。工具工作目录 alias 和文件权限属于内部执行机制，不能决定输出目标。

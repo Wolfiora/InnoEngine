@@ -55,6 +55,8 @@ BGCS 3.0.1 正式包已可用，专项验收正在执行；失败与未执行项
 
 普通工程启动简化已经完成代码整改及既有支持条件下的编译。完整首次 Native/BGCS 准备和普通 Native 热命中未验证；Rider 实机由用户执行。该限制不等于本轮引入了已复现的运行缺陷，详细证据见[入口报告](../../records/architecture/acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md)。上述历史测量和其他未决项仍按其原始范围保留。
 
+2026-10-21 补充：Rider 日志暴露的 Task 注册身份、普通输出锁、entry 产品引用、CMake TEMP 工作区及私有复制生命周期已完成共同构建规则整改；并发消费的固定等待也已修正。最终 SDK 入口完整构建与 92 项相关回归通过，详见 [MSBuild 专项记录](../../records/architecture/acceptance/MSBUILD_IDE_TASK_LOADING_2026_10_21.md)。实际 Rider UI 再次启动尚未执行，不能用 SDK 通过替代这一结论。
+
 ## 本轮已关闭的构建问题（2026-10-18）
 
 发现并修复了嵌套 Project Solution 的还原图被引擎接管、生成 IDE 工程继承无关 MSBuild 配置的问题。根 Solution 规则已限制到明确 owner，生成工程独立声明 SDK 编译输入；新增两个公开边界回归通过。外部插件示例的正式导入、脚本预检及 SDK IDE 构建均已复验通过。

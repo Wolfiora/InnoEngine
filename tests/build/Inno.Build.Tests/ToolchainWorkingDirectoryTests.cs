@@ -42,6 +42,24 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
     }
 
     [Fact]
+    public async Task OpeningExistingToolOutputsPreservesThePublishedArtifactFileSet()
+    {
+        string artifact = Path.Combine(m_root, "Artifact");
+        string outputs = Path.Combine(artifact, "Outputs");
+        Directory.CreateDirectory(outputs);
+        File.WriteAllText(Path.Combine(outputs, "tool.bin"), "immutable");
+        string fingerprint = new('c', 64);
+        BuildArtifactManifest.Write(artifact, fingerprint, ["Outputs"]);
+        Assert.True(BuildArtifactManifest.IsComplete(artifact, fingerprint, ["Outputs"]));
+        using (ToolchainWorkingDirectory owner = await ToolchainWorkingDirectory.OpenAsync(outputs))
+        {
+            Assert.Equal("immutable", File.ReadAllText(Path.Combine(owner.toolPath, "tool.bin")));
+            Assert.True(BuildArtifactManifest.IsComplete(artifact, fingerprint, ["Outputs"]));
+        }
+        Assert.True(BuildArtifactManifest.IsComplete(artifact, fingerprint, ["Outputs"]));
+    }
+
+    [Fact]
     public async Task CanceledWaitDoesNotRemoveAnotherOperationsExecutionPath()
     {
         string physical = Path.Combine(m_root, "Owned");

@@ -10,10 +10,13 @@
 
 本轮环境为 Windows x64。托管构建与真实原生编译、链接、部署和产品运行分别记录；局部通过不能代替最终统一代码状态的整体验收。
 
+Rider 暴露的 Task 注册、产品引用和 CMake 路径问题另见 [MSBuild 专项验收](../../records/architecture/acceptance/MSBUILD_IDE_TASK_LOADING_2026_10_21.md)。该记录区分 SDK 构建、进程外 worker 回归、产品 smoke 与未执行的 Rider UI 验证。
+
 ## 本轮结果
 
 | 范围 | 当前结果 |
 | --- | --- |
+| SDK/IDE 构建协议专项（2026-10-21） | 最终 Editor Debug 完整构建通过，SDK 汇总 0 警告、0 错误；92 项相关回归全部通过。包含预求值进程外 worker、私有加载、入口引用图、CMake TEMP 隔离和可取消绑定消费。Rider UI 及资源取消的跨 TEMP 完整重复构建未计作通过，见专项记录。 |
 | 完整 SourceRelease | 当前 BGCS 3.0.1 调用方及测试源码统一构建通过，0 警告、0 错误；运行结果及后续入口修正另按下表记录。 |
 | 完整 SourceDebug 及入口修正 | SourceDebug 完整项目图构建通过，0 警告、0 错误；随后 CLI 显式源码输入修正在 Debug/Release 的相关四次构建均通过，两配置的预检及开发入口回归各 11/11 通过。 |
 | 仓库架构及 Wiki 门禁 | 233/233 工程有效 MSBuild 归属及整体架构校验通过；191 个当前 Wiki 示例编译通过，0 错误、0 未执行。包含测试输入程序集，macOS 与 Browser 产品 API 编译按所选 Windows 目标明确标为未执行。 |

@@ -87,7 +87,12 @@ public sealed class TaskPublisherBootstrapTests
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-        foreach (string argument in new[] { "build", "Root/Root.csproj", "--disable-build-servers", "--nologo", "-m:2", "-nodeReuse:false" })
+        foreach (string argument in new[]
+        {
+            "build", "Root/Root.csproj", "--disable-build-servers", "--nologo", "-m:2", "-nodeReuse:false",
+            "-p:InnoTaskArtifacts=" + Path.Combine(root, "tasks"),
+            "-p:ArtifactsPath=" + Path.Combine(root, "managed")
+        })
             start.ArgumentList.Add(argument);
         using Process process = Process.Start(start) ?? throw new InvalidOperationException("MSBuild did not start.");
         Task<string> output = process.StandardOutput.ReadToEndAsync();

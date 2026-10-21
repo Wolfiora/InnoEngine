@@ -104,11 +104,15 @@ public sealed class ToolchainWorkingDirectory : IDisposable
         }
     }
 
+    // The selected execution root is part of native workspace identity because compilers retain absolute paths.
+    internal static string aliasRoot => Path.Combine(Path.GetTempPath(), "InnoTools");
+
     internal static string GetAliasPath(string physicalPath)
     {
         string identityPath = OperatingSystem.IsWindows() ? physicalPath.ToUpperInvariant() : physicalPath;
         string identity = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(identityPath)))
             .TrimEnd('=').Replace('+', '-').Replace('/', '_');
-        return Path.Combine(Path.GetTempPath(), "InnoTools", identity);
+        return Path.Combine(aliasRoot, identity);
     }
+
 }

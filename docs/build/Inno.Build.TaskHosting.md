@@ -11,6 +11,8 @@
 
 Solution 命令构建通过 `Directory.Solution.targets` 为同一次构建传递统一 bootstrap owner。单项目构建在项目引用闭包内传递其 owner。共同 targets 为该 owner 分配独立的 publisher 编译目录，并在执行项目引用目标及嵌套 Task runtime 准备时传递同一 owner。相同配置的依赖项目复用这次编译；每个实际加载边界仍复制到自己的私有目录。下一次根项目构建使用新的编译 owner，不依赖上次的可变中间态。
 owner 表示本次执行的所有权，其随机值本身不进入完整 Task runtime 的输入指纹。请求求值仍保留该属性；若导入文件、源码选择或 `DefineConstants` 等实际编译输入由它改变，这些求值结果仍参与指纹，不能误用上次结果。Design-time Build 不准备 publisher。
+IDE 可以把已经求值的 `ProjectInstance` 交给另一个 MSBuild worker。worker 重建 `UsingTask` 注册时可能再次求值，因此不能假设其随机加载身份仍等于传入的普通属性。共同 targets 使用 SDK inline task 捕获任务注册阶段的加载身份，再令 publisher 复制、runtime 发布与后续输入使用该身份。加载路径仍按实际注册隔离，不依赖 IDE 设置、固定机器路径或预先存在的缓存。
+最小 owner 引导消费 SDK Build 实际返回的 Foundation 程序集路径，并保留调用方明确选择的 `ArtifactsPath`，不拼接目标框架或强制写入普通 bin。它从已构建文件读取字节执行公开协议，不让长寿命 IDE 构建宿主锁住 SDK 输出；下一次编译可以正常更新该文件。此阶段只交换 BCL 字符串与 Task，不把 Foundation 类型或委托保存到共享注册表。
 `BuildTaskRuntimeTask` 使用同一 `artifacts/build-tools/tasks/workspaces/shared` 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
 私有 Task 编译明确禁用共享 C# compiler server；可复用源码 workspace 的 SDK 子进程同样使用 `--disable-build-servers`。编译完成后不会让另一个长寿命编译宿主持有 workspace 中的生成器 DLL。普通 IDE 的编译服务器配置不由此改变。
 SDK 与项目构建仍由当前 MSBuild engine 执行，保留明确属性和移除产品属性的机制，不创建第二个 CLI 或通过 PATH 重新选择 SDK。完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。
@@ -21,6 +23,7 @@ BGCS.Runtime 由产品的真实 NuGet Restore 图解析，不存在源码 Runtim
 Analyzer 引用保留 Solution 构建上下文，只移除产品与输出属性；它们属于编译依赖，不采用私有 Task 引导的独立 Solution 策略。
 Publisher 在 fingerprint lease 下验证来源及缓存，发布完整 staging，然后登记当前进程的私有 reader。
 MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主快照按内容身份共享，加载目录按进程保留。
+这些私有目录的复制属于 Task 生命周期准备，而不是可脱离 owner 重放的项目输出。共同 inline adapter 直接复用所选 SDK 的 Copy 实现，保留原有复制、hardlink 和未变化文件策略；不会把私有路径作为独立 Copy task 暴露给项目输出调度器。普通程序集输出仍由 SDK 的标准目标管理。
 
 退出后，后续 publisher 只退休所有 owner 已退出的 reader；只有不存在引用且取得 snapshot lease 时才退休其来源快照。
 无法检查 owner、文件仍被 loader 持有或另一 publisher 持有 lease 时保留缓存，不能影响已经完成的当前发布。
@@ -67,6 +70,7 @@ MSBuild 从已验证的不可变快照准备自己的私有加载目录。宿主
 `tests/build/Inno.Build.Tests/TaskHostPublicationTests.cs` 通过真实 Task 契约验证复用、并发、损坏、取消、路径拒绝及 reader 退休。
 `TaskRuntimeBuildTests.cs` 通过公开 Task/IBuildEngine4/FileLease 验证共享写入、同 Build 复用、附加编译输入失效、取消、失败释放及属性拒绝；并发真实 MSBuild 进程另行验证实际引导闭包。
 `TaskPublisherBootstrapTests.cs` 使用真实 SDK 的并行菱形项目闭包，检查一次构建只编译一个 publisher、四个消费者保留独立加载目录，以及下一次构建使用新的编译 owner。
+`TaskRegistrationBuildTests.cs` 通过公开 `ProjectInstance` / `BuildManager` API 把预求值项目交给进程外 worker，验证普通属性与任务注册重新求值后，实际 publisher 仍在注册路径加载；连续两次构建保留不同的加载身份，并在 worker 仍存活时确认普通 Foundation 输出未被锁定。
 普通产品 Build/Publish 还验证真实引导闭包；Design-time Build 不执行该 Task。
 
 ## Build 生命周期内复用与 restore ownership
@@ -76,6 +80,8 @@ BuildTaskRuntimeTask 在 IBuildEngine4 的 Build registry 注册 BCL string[][] 
 ## 生成绑定消费
 
 `MaterializeBindingsTask` 对目标生成缓存取得 `BuildArtifactReadLease`，验证完整输出后，把唯一 `Bindings.cs` 原子复制到当前 SDK 的中间目录。Host source 使用组件 generation lease。相同内容不重复写入；任务返回后编译器使用自己拥有的副本，不再依赖缓存目录继续存在。
+
+消费端等待 publication owner 时通过 `IBuildEngine3.Yield` 释放节点，完成或取消后 `Reacquire`，不能占着构建节点等待同一构建中的 producer。Host source 的等待由构建取消令牌终止，不以固定 30 秒判断耗时生成失败；取消不写入消费副本，节点重新取得失败也会释放已经取得的 owner。
 
 `RegisterTaskPublisherTask` 在第一次消费前登记实际加载程序集所属的 `PublisherDirectory`，并登记同一操作的 `BootstrapDirectory` 编译目录。它核对受管根和实际程序集位置，不把其他任务的加载目录登记为自己的 owner。只执行绑定复制的构建也会留下可识别的进程所有权记录；编译目录不作为程序集加载位置。
 

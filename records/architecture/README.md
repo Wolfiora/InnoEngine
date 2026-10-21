@@ -17,3 +17,5 @@
 - [普通工程构建与 entry 启动简化验收（2026-10-17）](acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md)：项目配置、直接启动、既有支持条件下的编译及独立的未验收项目。
 
 - [.NET 10 / C# 14 与 BGCS 接入阶段记录（2026-10-20）](acceptance/NET10_BGCS3_PROGRESS_2026_10_20.md)：调用方、分类并发、命令录制、测试证据与正式 SDK 接入边界。
+
+- [MSBuild 任务加载与开发入口验收（2026-10-21）](acceptance/MSBUILD_IDE_TASK_LOADING_2026_10_21.md)：预求值 worker、入口产品引用、私有加载生命周期与 CMake 执行路径。
