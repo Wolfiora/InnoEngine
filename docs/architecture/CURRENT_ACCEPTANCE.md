@@ -20,6 +20,10 @@ BGCS 包族精确固定 **3.0.1**，通过正式 NuGet 包及官方 API 使用�
 - **第三方完整性：** 实际装载 BGCS 3.0.1；129 个包文件哈希不变，第三方源码及三个调用方仓库保持干净。Support Pack staging 与索引退休沿用统一事务和 owner 协议。
 <!-- /current-platform-results -->
 
+## 插件边界后续复验
+
+外部插件事件与跨帧 owner 的 R01/R02 已经正式脚本、生命周期测试和安装态运行复验关闭；详见[插件复验](../../records/architecture/acceptance/PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md)。Browser 使用同一官方包再次确认阻塞，Mac 仍未执行。
+
 ## 外部限制与证据边界
 
 - **Browser：阻塞。** 实际 workload 下，正式 BGFX 生成被 BGCS 3.0.1 的 `BGCS-CSHARP-ABI-PLAN` 拒绝，缺少 aggregate calling profile。Mono Wasm / Wasm AOT 产品不计作通过；没有改包、借用桌面 ABI 或关闭校验。见[SDK 能力记录](../../records/architecture/acceptance/BGCS301_BROWSER_AGGREGATE_ABI.md)。

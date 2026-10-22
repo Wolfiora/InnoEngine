@@ -1,5 +1,7 @@
 # 平台职责、BGCS 3.0.1 与缓存治理验收
 
+后续 R01/R02 的具体插件缺口已由[插件复验](PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md)关闭；本文保留其原 revision 和验收范围，Browser 仍阻塞。
+
 ## 范围与证据边界
 
 实施基线为 `dotnet10` 的 `18f281510daf48968bdd7a60248e17ece9fbe420`。实施前四个测试锁文件已有修改，已保留并逐文件合并。原始状态、完整日志、binlog、TRX、采样与包哈希位于仓库本地 `artifacts/acceptance/platform-build-2026-10-22/`；该目录是可重建的验收产物，不进入 Git。

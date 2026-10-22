@@ -1,5 +1,7 @@
 # BGCS 接入、架构与基础能力复用审计
 
+后续 R01/R02 的具体插件缺口已由[插件复验](PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md)关闭；本文保留其原 revision 和验收范围，Browser 仍阻塞。
+
 日期：2026-10-21。范围为当前四仓库工作区；本页不将架构门禁视为全源码行为证明。
 
 [阶段验收](NET10_BGCS301_FINAL_ACCEPTANCE_2026_10_20.md) · [当前问题](../../../docs/architecture/CURRENT_ISSUES.md) · [Identity 强制标准](../../../docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md)

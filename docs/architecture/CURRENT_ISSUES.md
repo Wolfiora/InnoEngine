@@ -12,8 +12,6 @@
 | O01 | macOS / Metal | 历史 revision 的两条 CI 在单线程 Metal surface 退休用例超时，根因未确认。本轮没有 Mac，不能关闭或直接归责 BGCS。 |
 | O02 | 完整构建性能 | 本轮有当前热构建采样及同 .NET 10 的路径解析实现对照，但没有完整改造前的空闲、同输入五次 Editor 基线。历史高负载耗时不作有效对照，不宣称整体提速或已排除全部回退。 |
 | O06 | XML / Wiki 语义 | 符号、签名和示例门禁不证明全部历史注释足够具体；部分历史参数说明仍需补充实际约束和失败语义。新增构建 API 的所有权、失败与生命周期单独说明。 |
-| R01 | 外部插件事件 | 外部插件仍有公开动画帧 C# delegate 事件，尚未统一 Core Events hub/token 生命周期；没有第二套完整事件总线。修改公开事件超出本轮保持插件签名的范围，见[复用审计](../../records/architecture/acceptance/ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md)。 |
-| R02 | 外部插件 Identity | 外部 UI 插件跨帧状态仍持有 live owner，应在使用边界经原 Identity scope 解析。已有 Collect/Dispose 不替代统一解析要求；未复现泄漏或崩溃，见同一审计。 |
 
 ## 尚未执行或覆盖不足
 
@@ -28,6 +26,8 @@
 
 ## 本轮已处理的边界
 
+- R01/R02 已通过当前插件源码、Core 事件异常回归、弱 Identity 生命周期回归及正式安装态验证关闭；[本次复验](../../records/architecture/acceptance/PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md)明确范围与 Browser 继续条件。
+
 - 组件平台 JSON、共享平台表、共享 Windows junction、CLI Browser 专用分支和 import library 后缀推导，由各 owner 的明确贡献替代。
 - `verify-native` 在生成前校验已注册 Editor runner，Windows 正式验收与 Browser 静态产品能力分开；R03 的产品/runner 范围错误已修正。
 - BGCS 包、源码和实际加载身份分别核对；生成物只经官方生成流程更新。
@@ -41,4 +41,4 @@
 
 检查深入真实执行、依赖、失败和资源生命周期，并以公共边界 fixture 及实际调用方验证。中立层不引用具体平台或 BGCS 类型；平台基础、integration、backend、产品和发行各有职责。所有权及 IO 复用 Core，没有增加事件、Identity 或序列化平行管理器。
 
-此结论不关闭 R01/R02，也不把构建体系整理表述为整个引擎完美。持续自查要求见根 `AGENTS.md` 第 30 节。
+R01/R02 的具体缺口已在后续插件复验中关闭；构建和插件验收仍不等于整个引擎完美。持续自查要求见根 `AGENTS.md` 第 30 节。
