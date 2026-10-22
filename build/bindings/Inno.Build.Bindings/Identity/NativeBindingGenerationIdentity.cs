@@ -1,8 +1,10 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -58,16 +60,18 @@ internal static class NativeBindingGenerationIdentity
                 throw new InvalidDataException("BGCS input analysis failed: " + analysis.GetDiagnosticSummary());
             var declarations = new List<string>
             {
-                JsonSerializer.Serialize(config, S_OPTIONS),
-                JsonSerializer.Serialize(analysis.target, S_OPTIONS),
-                JsonSerializer.Serialize(analysis.snapshot, S_OPTIONS),
-                JsonSerializer.Serialize(analysis.argumentInputs, S_OPTIONS),
+                SerializeIdentity(config),
+                SerializeIdentity(analysis.target),
+                SerializeIdentity(analysis.snapshot),
+                SerializeIdentity(analysis.argumentInputs),
                 definition.component.nativeProject,
                 definition.request.targetId,
                 definition.request.outputMode.ToString()
             };
+            var profileInputs = definition.profile.inputPaths.Select(path => NativeBuildInput.FromPath(context.engineRoot, Path.GetFullPath(path, context.engineRoot)));
             var inputs = request.configurationInputs.Concat(request.pluginInputs).Concat(analysis.snapshot.files)
                 .Concat(analysis.argumentInputs?.files ?? []).Select(input => NativeBuildInput.FromPath(context.engineRoot, input.path)).ToList();
+            inputs.AddRange(profileInputs);
             Assembly implementation = typeof(NativeBindingGenerator).Assembly;
             foreach (Assembly assembly in new[] { implementation, typeof(NativeBindingCompilation).Assembly,
                          typeof(BindingHost).Assembly, typeof(BGCS.Contracts.BindingDiagnostic).Assembly,
@@ -83,5 +87,40 @@ internal static class NativeBindingGenerationIdentity
         {
             host.DisposeAsync().AsTask().GetAwaiter().GetResult();
         }
+    }
+
+    private static string SerializeIdentity<T>(T value)
+    {
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        WriteIdentity(writer, JsonSerializer.SerializeToElement(value, S_OPTIONS));
+        writer.Flush();
+        return Encoding.UTF8.GetString(buffer.WrittenSpan);
+    }
+
+    private static void WriteIdentity(
+        Utf8JsonWriter writer,
+        JsonElement value
+    ) {
+        // Dictionary enumeration is process-dependent; only object keys are unordered.
+        if (value.ValueKind == JsonValueKind.Object)
+        {
+            writer.WriteStartObject();
+            foreach (JsonProperty property in value.EnumerateObject().OrderBy(static property => property.Name, StringComparer.Ordinal))
+            {
+                writer.WritePropertyName(property.Name);
+                WriteIdentity(writer, property.Value);
+            }
+            writer.WriteEndObject();
+        }
+        else if (value.ValueKind == JsonValueKind.Array)
+        {
+            writer.WriteStartArray();
+            foreach (JsonElement element in value.EnumerateArray())
+                WriteIdentity(writer, element);
+            writer.WriteEndArray();
+        }
+        else
+            value.WriteTo(writer);
     }
 }

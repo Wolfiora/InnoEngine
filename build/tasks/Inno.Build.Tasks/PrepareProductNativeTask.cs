@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Inno.Build.Toolchains;
-using Inno.Build;
-using Inno.Build.Distribution.Standard;
 using Microsoft.Build.Framework;
+using Inno.Build;
+using Inno.Build.Composition;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -80,14 +81,15 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             long started = Stopwatch.GetTimestamp();
             var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(TargetId));
             var distribution = StandardBuildDistribution.Create(execution).build;
-            ProductNativeBuildPlan plan = distribution.ResolveNativeProduct(TargetId, ProductId);
+            NativeProductContribution contribution = distribution.ResolveNativeProduct(TargetId, ProductId);
+            ProductNativeBuildPlan plan = contribution.plan;
             var context = new NativeBuildContext(EngineRoot, Configuration.ToLowerInvariant())
-                .WithBindingGenerator(execution.bindingGenerator);
+                .WithBindingGenerator(distribution.ResolveBindingGenerator(TargetId));
             NativeToolchainSelection toolchain = distribution.ResolveNativeToolchain(TargetId)
                 .ResolveAsync(context, execution.host, TargetId, cancellation.Token).AsTask().GetAwaiter().GetResult();
             context = context.WithToolchain(toolchain);
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
-            using var products = plan.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
+            using var products = contribution.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
             var generations = products.Select((
                 product,

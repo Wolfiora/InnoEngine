@@ -1,4 +1,11 @@
 <Project>
+  <Target
+    Name="MaintainInnoRootBuildCaches"
+    AfterTargets="Build;Publish"
+    DependsOnTargets="PrepareInnoBuildTaskHost"
+    Condition="'$(MSBuildProjectName)' == 'InnoEngine.Editor' and '$(DesignTimeBuild)' != 'true' and '$(InnoSuppressBuildMaintenance)' != 'true'">
+    <Inno.Build.Tasks.MaintainBuildCachesTask EngineRoot="$(MSBuildThisFileDirectory)" />
+  </Target>
   <PropertyGroup>
     <!-- Evaluate after product declarations so explicit target restores never overwrite neutral locks. -->
     <_InnoPackageLockScope></_InnoPackageLockScope>
@@ -104,16 +111,12 @@
     <InnoBindingEngineRoot Condition="'$(InnoBindingEngineRoot)' == ''">$(MSBuildThisFileDirectory)</InnoBindingEngineRoot>
     <InnoBindingDefinition Condition="'$(InnoBindingDefinition)' == ''">$(MSBuildProjectDirectory)/Bindings/bindings.props</InnoBindingDefinition>
     <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == '' and '$(InnoNativeTarget)' != ''">$(InnoNativeTarget)</InnoBindingTargetId>
-    <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == ''">host</InnoBindingTargetId>
-    <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == '' and '$(InnoBindingTargetId)' != 'host'">TargetArtifacts</InnoBindingOutputMode>
+    <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == ''">$(InnoDevelopmentTarget)</InnoBindingTargetId>
+    <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == '' and '$(InnoNativeTarget)' != ''">TargetArtifacts</InnoBindingOutputMode>
     <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == ''">HostSource</InnoBindingOutputMode>
     <InnoBindingDotnetHost Condition="'$(InnoBindingDotnetHost)' == ''">$(DOTNET_HOST_PATH)</InnoBindingDotnetHost>
     <InnoBindingDotnetHost Condition="'$(InnoBindingDotnetHost)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildBinPath)/../../dotnet'))</InnoBindingDotnetHost>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoBindingOutputMode)' == 'TargetArtifacts'">
-    <_InnoSelectedBindingTarget Include="@(InnoBindingTarget->WithMetadataValue('Identity', '$(InnoBindingTargetId)'))" />
-  </ItemGroup>
 
   <Target Name="ValidateNativeBindingSelection" BeforeTargets="CoreCompile" Condition="'$(InnoNativeBindingSelection)' != ''">
     <Error Condition="!Exists('$(InnoNativeBindingSelection)')" Text="The selected native binding manifest is missing: $(InnoNativeBindingSelection)" />
@@ -121,8 +124,7 @@
 
   <Target Name="ValidateBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <Error Condition="!Exists('$(InnoBindingDefinition)')" Text="The sole component binding definition is missing: $(InnoBindingDefinition)" />
-    <Error Condition="'$(InnoBindingOutputMode)' == 'TargetArtifacts' and '@(_InnoSelectedBindingTarget->Count())' != '1'" Text="The binding definition must declare exactly one configuration for $(InnoBindingTargetId)." />
-    <Error Condition="'$(InnoBindingHostConfig)' == ''" Text="The component binding definition must declare a host configuration." />
+    <Error Condition="'$(InnoBindingConfig)' == ''" Text="The component binding definition must declare its common configuration." />
   </Target>
 
   <Target Name="BuildBindingGenerator" DependsOnTargets="ValidateBindingGenerator;PrepareInnoBuildTaskHost" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'" />
@@ -142,6 +144,7 @@
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenGenerationFingerprint" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenExpectedFingerprint" />
       <Output TaskParameter="ArtifactDirectory" PropertyName="BindGenArtifactDirectory" />
+      <Output TaskParameter="ArtifactOwnerDirectory" PropertyName="BindGenArtifactOwnerDirectory" />
       <Output TaskParameter="NativeDirectory" PropertyName="BindGenNativeDirectory" />
     </Inno.Build.Tasks.GenerateBindingsTask>
     <PropertyGroup>
@@ -180,6 +183,7 @@
       IntermediateDirectory="$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))"
       ComponentProject="$(MSBuildProjectFullPath)"
       ArtifactDirectory="$(BindGenArtifactDirectory)"
+      ArtifactOwnerDirectory="$(BindGenArtifactOwnerDirectory)"
       Fingerprint="$(BindGenExpectedFingerprint)">
       <Output TaskParameter="MaterializedSource" PropertyName="BindGenCompileSource" />
     </Inno.Build.TaskHosting.MaterializeBindingsTask>

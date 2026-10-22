@@ -38,17 +38,17 @@ var rendering = new RenderingBackendCatalog(
 
 ## 当前源码公开 API 清单
 
-签名来自当前 SDK 求值与语义符号；按类型列出 public/protected 契约。工作流与生命周期见本页前文。
+当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
 
 ### `Inno.Editor.WindowsX64.WindowsX64EditorComposition`
 
 <!-- api: T:Inno.Editor.WindowsX64.WindowsX64EditorComposition a06779fcf6546eb6f91584e929c2b4ae48af1a58dab9df02fafd45d05c635f35 -->
 <!-- api: M:Inno.Editor.WindowsX64.WindowsX64EditorComposition.Run(System.String[],System.Threading.CancellationToken) 16844ebf84914aa7fadb4f3dda674b3005ed81938c05640c4a92edd1ab723ee9 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-68ec0586238a32a7"></a>[`public static int Inno.Editor.WindowsX64.WindowsX64EditorComposition.Run(string[] arguments, System.Threading.CancellationToken cancellationToken)`](../../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/WindowsX64EditorComposition.cs#L54) | Runs the platform Editor on the caller's main thread; no directory opens the native folder dialog.<br>返回：Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.<br>`arguments`：An optional project directory and the shared Editor command-line options.<br>`cancellationToken`：Cancels preparation or requests orderly shutdown of the shared Editor host. An open native folder dialog retains its callback owner until the user completes or closes it. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-f54223242db76a35"></a>[`public static class Inno.Editor.WindowsX64.WindowsX64EditorComposition`](../../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/WindowsX64EditorComposition.cs#L39) | Composes the Windows Editor from explicit platform integrations and shared product hosting. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-68ec0586238a32a7"></a>[`public static int Inno.Editor.WindowsX64.WindowsX64EditorComposition.Run(string[] arguments, System.Threading.CancellationToken cancellationToken)`](../../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/WindowsX64EditorComposition.cs#L54) | Runs the platform Editor on the caller's main thread; no directory opens the native folder dialog.<br>`arguments`：An optional project directory and the shared Editor command-line options.<br>返回：Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.<br>`cancellationToken`：Cancels preparation or requests orderly shutdown of the shared Editor host. An open native folder dialog retains its callback owner until the user completes or closes it. |
+| <a id="api-f54223242db76a35"></a>[`public static class Inno.Editor.WindowsX64.WindowsX64EditorComposition`](../../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/WindowsX64EditorComposition.cs#L39) | Composes the Windows Editor from explicit platform integrations and shared product hosting. |
 
 ## 项目依赖
 

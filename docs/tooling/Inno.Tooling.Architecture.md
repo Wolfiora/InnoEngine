@@ -78,17 +78,17 @@ BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，�
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
 
 ### `Inno.Tooling.Architecture.ArchitectureValidator`
 
 <!-- api: T:Inno.Tooling.Architecture.ArchitectureValidator 3647c06158b3bf9362d2d341a8f2ef9e17b9d60c971a1578b3d17e29334db90a -->
 <!-- api: M:Inno.Tooling.Architecture.ArchitectureValidator.Execute(System.String[],System.Threading.CancellationToken) aafb5a4f0fe7db5e5d8991f1cad9ca334d0d0a12bd11fc30f9da266defaf1e25 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-c7d46d4b90e3ee02"></a>[`public static int Inno.Tooling.Architecture.ArchitectureValidator.Execute(string[] arguments, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L60) | Executes repository validation or an explicitly requested documentation maintenance operation.<br>返回：Zero when validation succeeds, or one when any invariant is violated.<br>`arguments`：The optional repository path, configuration, XML maintenance flag, explicit SDK and evaluated graph output.<br>`cancellationToken`：Cancels owned SDK evaluation processes and drains them before returning. | — | `System.ArgumentException`：An option is unknown or more than one repository path is supplied.<br>`System.IO.DirectoryNotFoundException`：The requested path is not inside an engine checkout.<br>`System.OperationCanceledException`：The caller cancels evaluated SDK project inspection. |
-| <a id="api-9862893de0812526"></a>[`public static class Inno.Tooling.Architecture.ArchitectureValidator`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L16) | Checks repository dependency, API documentation and source ownership invariants. | — | — |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-c7d46d4b90e3ee02"></a>[`public static int Inno.Tooling.Architecture.ArchitectureValidator.Execute(string[] arguments, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L61) | Executes repository validation or an explicitly requested documentation maintenance operation.<br>`arguments`：The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output, and Wiki inventories with explicitly selected runtime and editor script reference assemblies. --wiki-target limits product compilation to that explicit target; shared Wiki checks remain complete.<br>`cancellationToken`：Cancels owned SDK evaluation processes and drains them before returning.<br>返回：Zero when validation succeeds, or one when any invariant is violated.<br>T:System.ArgumentException：An option is unknown or more than one repository path is supplied.<br>T:System.IO.DirectoryNotFoundException：The requested path is not inside an engine checkout.<br>T:System.OperationCanceledException：The caller cancels evaluated SDK project inspection.<br>T:System.IO.InvalidDataException：A selected Wiki script reference is not the declared logical API assembly. |
+| <a id="api-9862893de0812526"></a>[`public static class Inno.Tooling.Architecture.ArchitectureValidator`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L16) | Checks repository dependency, API documentation and source ownership invariants. |
 
 ## 项目依赖
 

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
+    <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" />
   </ItemGroup>
 
   <Target Name="ComputeBindingImplementationIdentity" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveReferences">

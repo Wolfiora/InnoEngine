@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -104,6 +105,9 @@ public static class BuildMaintenanceApplication
     /// <exception cref="InvalidOperationException">
     /// Explicit retirement encountered failures.
     /// </exception>
+    /// <exception cref="TimeoutException">
+    /// Owner discovery or planning exhausts the operation budget before retirement can begin.
+    /// </exception>
     /// <exception cref="IOException">
     /// Ownership metadata or protected input cannot be validated.
     /// </exception>
@@ -118,8 +122,27 @@ public static class BuildMaintenanceApplication
         string? targetId,
         CancellationToken cancellationToken
     ) {
+        ArgumentNullException.ThrowIfNull(policy);
+        Stopwatch elapsed = Stopwatch.StartNew();
+        IReadOnlyList<BuildCacheOwnerDescriptor> owners;
+        using (var inventoryBudget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        {
+            inventoryBudget.CancelAfter(policy.timeBudget);
+            try
+            {
+                owners = BuildCacheOwnerCatalog.ReadOwners(engineRoot, inventoryBudget.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException("Cache owner discovery exceeded its operation budget; no artifact was retired.");
+            }
+        }
+        TimeSpan remaining = policy.timeBudget - elapsed.Elapsed;
+        if (remaining <= TimeSpan.Zero)
+            throw new TimeoutException("Cache owner discovery exhausted its operation budget; no artifact was retired.");
+        var remainingPolicy = new BuildCachePolicy(policy.maximumBytes, policy.minimumFreeBytes, remaining);
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(engineRoot,
-            BuildCacheOwnerCatalog.ReadOwners(engineRoot, cancellationToken), policy, retireAll, targetId, cancellationToken);
+            owners, remainingPolicy, retireAll, targetId, cancellationToken);
         if (dryRun)
             foreach (BuildCacheArtifactDescriptor artifact in plan.candidates)
                 Console.WriteLine($"Would retire {artifact.directory} ({artifact.bytes} bytes)");

@@ -39,7 +39,7 @@ public sealed class EmscriptenNativeToolchainProvider : INativeToolchainProvider
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(host);
         cancellationToken.ThrowIfCancellationRequested();
-        if (targetId != "browser-wasm" || host.system is not ("Windows" or "MacOS" or "Linux"))
+        if (targetId != BrowserWasm32BuildModule.target.id.value || host.system is not ("Windows" or "MacOS"))
             throw new PlatformNotSupportedException($"Emscripten cannot build '{targetId}' on {host.system}/{host.architecture}.");
         string project = Path.Combine(context.engineRoot, "platforms", "BrowserWasm32", "build",
             "Inno.Build.BrowserWasm32", "Templates", "BrowserWasm32Player.project.xml");
@@ -50,8 +50,8 @@ public sealed class EmscriptenNativeToolchainProvider : INativeToolchainProvider
             environment[name] = value;
         var tools = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["clang"] = Path.Combine(sdk["DOTNET_EMSCRIPTEN_LLVM_ROOT"], host.system == "Windows" ? "clang.exe" : "clang"),
-            ["clang++"] = Path.Combine(sdk["DOTNET_EMSCRIPTEN_LLVM_ROOT"], host.system == "Windows" ? "clang++.exe" : "clang++"),
+            ["clang"] = Path.Combine(sdk["DOTNET_EMSCRIPTEN_LLVM_ROOT"], "clang" + host.services.executableExtension),
+            ["clang++"] = Path.Combine(sdk["DOTNET_EMSCRIPTEN_LLVM_ROOT"], "clang++" + host.services.executableExtension),
             ["cmake"] = ToolchainEnvironment.ResolveExecutable("cmake"),
             ["ninja"] = ToolchainEnvironment.ResolveExecutable("ninja"),
             ["dotnet"] = sdk["DOTNET_HOST_PATH"],
@@ -65,6 +65,7 @@ public sealed class EmscriptenNativeToolchainProvider : INativeToolchainProvider
                 Path.GetDirectoryName(sdk["EMSDK_PYTHON"])!,
                 Path.Combine(sdk["EM_CACHE"], "sysroot", "include")],
             ["-G", "Ninja", "-DCMAKE_MAKE_PROGRAM=" + tools["ninja"], "-DCMAKE_TOOLCHAIN_FILE=" + toolchain],
-            ".a", multiConfiguration: false);
+            BrowserWasm32LinkerSettings.Create(), multiConfiguration: false, compilerInputs: new NativeCompilerInputs(
+                tools["clang"], tools["clang++"], Path.Combine(sdk["EM_CACHE"], "sysroot")));
     }
 }

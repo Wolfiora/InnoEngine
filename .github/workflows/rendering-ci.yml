@@ -31,6 +31,7 @@ on:
       - main
       - master
       - kernel
+      - dotnet10
     paths:
       - ".github/workflows/rendering-ci.yml"
       - "build/**"
@@ -99,12 +100,14 @@ jobs:
             architecture: X64
             backend_pattern: "Rendering initialized with Direct3D(11|12)"
             product_properties: platforms/WindowsX64/build/Inno.Build.WindowsX64/EditorProduct.props
+            player_project: platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj
           - os: macos-15
             platform: osx-arm64
             build_target: macos-arm64
             architecture: Arm64
             backend_pattern: "Rendering initialized with Metal"
             product_properties: platforms/MacOSArm64/build/Inno.Build.MacOSArm64/EditorProduct.props
+            player_project: platforms/MacOSArm64/player/Inno.Player.MacOSArm64/Inno.Player.MacOSArm64.csproj
 
     steps:
       - name: Checkout repository and native dependencies
@@ -159,6 +162,20 @@ jobs:
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-release.log'
           if ($LASTEXITCODE -ne 0) { throw "Release host Editor build failed." }
+
+      - name: Verify restored BGCS package and repeated cache reuse
+        shell: pwsh
+        run: |
+          $assets = @(dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
+            -nologo -m:1 -nr:false -getProperty:ProjectAssetsFile)
+          if ($LASTEXITCODE -ne 0 -or $assets.Count -ne 1) { throw 'Cannot resolve BGCS restore ownership.' }
+          $restored = Get-Content -LiteralPath $assets[0] -Raw | ConvertFrom-Json
+          $packages = @($restored.libraries.PSObject.Properties.Name | Where-Object { $_ -match '^BGCS(?:\.[^/]+)?/' })
+          if ($packages.Count -eq 0 -or @($packages | Where-Object { $_ -notmatch '/3\.0\.1$' }).Count -ne 0) {
+            throw 'Every restored BGCS package must use exactly 3.0.1.'
+          }
+          $packages | Set-Content 'artifacts/acceptance/ci-build/bgcs-packages.txt'
+          ./tests/Invoke-BuildCacheChecks.ps1 -ResultsDirectory 'artifacts/acceptance/ci-build/cache'
 
       - name: Build managed solution
         shell: pwsh
@@ -218,6 +235,18 @@ jobs:
           if ((Get-FileHash -LiteralPath $runtimeFiles[0].FullName).Hash -cne (Get-FileHash -LiteralPath $linkFiles[0].FullName).Hash) {
             throw 'The runtime and PlayerLink Native inputs do not match.'
           }
+
+      - name: Validate current Wiki signatures and compiled examples
+        shell: pwsh
+        run: |
+          dotnet build '${{ matrix.player_project }}' --configuration Debug --disable-build-servers -m:1 -nr:false `
+            '-bl:artifacts/acceptance/ci-build/wiki-player.binlog' 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-build/wiki-player.log'
+          if ($LASTEXITCODE -ne 0) { throw 'The current Wiki target reference closure could not be built.' }
+          $project = Join-Path $env:RUNNER_TEMP 'InnoWikiProject'
+          New-Item -ItemType Directory -Force (Join-Path $project 'Assets') | Out-Null
+          'public sealed class WikiProbe { }' | Set-Content (Join-Path $project 'Assets/WikiProbe.cs') -Encoding utf8
+          ./tests/Invoke-WikiChecks.ps1 -ProjectDirectory $project -Target '${{ matrix.build_target }}'
 
       - name: Run real renderer smoke
         shell: pwsh

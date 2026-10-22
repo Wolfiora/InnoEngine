@@ -3,10 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.Products.Standard;
 using Inno.Build.Toolchains;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -24,10 +25,10 @@ public sealed class BrowserSupportPackTests : IDisposable
     [Fact]
     public async Task BrowserPackRequiresItsStaticGameLinkerClosure()
     {
-        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(Inno.Integration.BrowserWasm32.Bgfx.BrowserWasm32BgfxIntegration.nativeOptions);
+        ProductNativeBuildPlan plan = BuildTestProducts.StaticPlayer();
         IPlayerSupportPackValidator validator = StandardBuildDistribution.Create(
-            StandardBuildEnvironment.Capture(AppContext.BaseDirectory, BuildTargetId.windowsX64)).build.platforms
-            .Single(static platform => platform.descriptor.id == BuildTargetId.browserWasm).supportPackSource;
+            StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId("windows-x64"))).build.platforms
+            .Single(static platform => platform.descriptor.id == new BuildTargetId("browser-wasm")).supportPackSource;
         string pack = Path.Combine(m_root, "candidate");
         Write(pack, "References/Inno.Runtime.dll");
         Write(pack, "PlayerLink/Player.csproj");
@@ -53,7 +54,7 @@ public sealed class BrowserSupportPackTests : IDisposable
         }
         Write(pack, "PlayerLink/References/BGCS.Runtime.dll");
         foreach (ProductNativeBuildStep step in plan.steps)
-            foreach (string archive in step.component.staticBuild!.archiveNames)
+            foreach (string archive in step.component.staticBuild!.logicalOutputs.Select(Inno.Build.BrowserWasm32.BrowserWasm32LinkerSettings.Create().GetStaticFileName))
                 Write(pack, $"PlayerLink/Native/{step.id}/browser-wasm/{archive}");
         var catalog = new PlayerSupportPackCatalog(m_root);
 
@@ -70,15 +71,15 @@ public sealed class BrowserSupportPackTests : IDisposable
         Write(pack, "PlayerLink/Native/extra.a");
         Assert.Throws<InvalidDataException>(() => validator.Validate(pack));
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "extra.a"));
-        using PlayerSupportPackLease published = await catalog.PublishAsync(BuildTargetId.browserWasm, pack, validator);
+        using PlayerSupportPackLease published = await catalog.PublishAsync(new BuildTargetId("browser-wasm"), pack, validator);
         pack = published.directory;
         Assert.True(File.Exists(Path.Combine(pack, "PlayerLink", "References", "BGCS.Runtime.dll")));
-        using PlayerSupportPackLease selected = catalog.Acquire(BuildTargetId.browserWasm, validator);
+        using PlayerSupportPackLease selected = catalog.Acquire(new BuildTargetId("browser-wasm"), validator);
         Assert.Equal(pack, selected.directory);
 
         File.Delete(Path.Combine(pack, "PlayerLink", "Native", "sdl3", "browser-wasm", "libSDL3.a"));
         InvalidDataException missingArchive = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(BuildTargetId.browserWasm, validator));
+            () => catalog.Acquire(new BuildTargetId("browser-wasm"), validator));
         Assert.Contains("libSDL3.a", missingArchive.Message, StringComparison.Ordinal);
     }
 

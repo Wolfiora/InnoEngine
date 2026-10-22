@@ -5,10 +5,10 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
-using Inno.Core.IO;
-using Inno.Build.WindowsX64;
 using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Build.WindowsX64;
+using Inno.Core.IO;
 
 namespace Inno.Build.Tests;
 
@@ -179,8 +179,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             string physical = new DirectoryInfo(intermediate).LinkTarget ?? intermediate;
             Assert.Contains(Path.Combine("obj", "native", "fixture-x64"), physical);
             toolDirectory = intermediate;
-            if (OperatingSystem.IsWindows())
-                Assert.Throws<IOException>(() => PathBoundary.EnumerateFiles(intermediate).ToArray());
+            Assert.True(Directory.Exists(intermediate));
             await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
         }
         Task<NativeBuildProduct> Publish() => NativeArtifactPublisher.PublishAsync(context,
@@ -188,8 +187,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
 
         NativeBuildProduct[] products = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Publish()));
         Assert.Equal(1, builds);
-        if (OperatingSystem.IsWindows())
-            Assert.False(Directory.Exists(toolDirectory));
+        Assert.True(Directory.Exists(toolDirectory));
         Assert.All(products, product => Assert.Equal(products[0].directory, product.directory));
         Assert.Throws<NotSupportedException>(() => ((IList<string>)products[0].files).Clear());
         File.WriteAllText(products[0].files[0], "tampered");
@@ -305,16 +303,36 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         Assert.Equal("complete", File.ReadAllText(deployed));
         Assert.Single(Directory.EnumerateFiles(Path.Combine(application, "native"), "*", SearchOption.AllDirectories));
 
+        foreach (string name in new[] { "FirstCandidate", "SecondCandidate" })
+        {
+            string candidate = Path.Combine(m_root, name);
+            Directory.CreateDirectory(candidate);
+            await ProductNativeDeployment.StageAsync([product], plan, candidate);
+            Assert.Equal(new[] { "native" }, Directory.EnumerateDirectories(candidate).Select(Path.GetFileName));
+            Assert.Empty(Directory.EnumerateFiles(candidate));
+            Assert.Equal("complete", File.ReadAllText(Path.Combine(candidate, "native", "fixture", "fixture-x64", "api.native")));
+            Assert.Single(Directory.EnumerateFiles(candidate, "*", SearchOption.AllDirectories));
+            await Assert.ThrowsAsync<IOException>(() => ProductNativeDeployment.StageAsync([product], plan, candidate).AsTask());
+        }
+
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             ProductNativeDeployment.InstallAsync([product], plan, application, cancellation.Token).AsTask());
         Assert.Equal("complete", File.ReadAllText(deployed));
+        string canceledCandidate = Path.Combine(m_root, "CanceledCandidate");
+        Directory.CreateDirectory(canceledCandidate);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            ProductNativeDeployment.StageAsync([product], plan, canceledCandidate, cancellation.Token).AsTask());
+        Assert.Empty(Directory.EnumerateFileSystemEntries(canceledCandidate));
 
         File.WriteAllText(product.files.Single(file => file.EndsWith("api.native", StringComparison.Ordinal)), "tampered");
         await Assert.ThrowsAsync<InvalidDataException>(() =>
             ProductNativeDeployment.InstallAsync([product], plan, application).AsTask());
         Assert.Equal("complete", File.ReadAllText(deployed));
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            ProductNativeDeployment.StageAsync([product], plan, canceledCandidate).AsTask());
+        Assert.Empty(Directory.EnumerateFileSystemEntries(canceledCandidate));
         Assert.Empty(Directory.EnumerateDirectories(application, "*.staging-*"));
 
         static NativeComponentDescriptor productOwner() => new("fixture",
@@ -329,7 +347,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             return;
         NativeBuildContext unresolved = CreateContext();
         NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet")).ResolveAsync(
-            unresolved, new BuildHostDescriptor("Windows", "x64"), "windows-x64", CancellationToken.None);
+            unresolved, BuildTestProducts.WindowsHost(), "windows-x64", CancellationToken.None);
         NativeBuildContext context = unresolved.WithToolchain(tools).WithComponentOptions(
             new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
                 "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"),

@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Inno.Testing.Source;
 
 using Inno.Build.Tasks;
 using Inno.Build.Toolchains;
@@ -37,12 +37,14 @@ public sealed class NativeBindingCompilationTests
                 output = new { root = "Generated", layout = "singleFile" }
             }));
             string engine = TestRepository.GetRoot(typeof(NativeBindingCompilationTests).Assembly);
+            string profile = "platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Build/Bindings/WindowsX64BindingProfile.cs";
+            string profileInput = Path.Combine(root, profile);
+            Directory.CreateDirectory(Path.GetDirectoryName(profileInput)!);
+            File.Copy(Path.Combine(engine, profile), profileInput);
             File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), string.Empty);
             string definition = Path.Combine(root, "bindings.props");
             new XDocument(new XElement("Project",
-                new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingHostConfig", "bindgen.json")),
-                new XElement("ItemGroup", new XElement("InnoBindingTarget", new XAttribute("Include", "fixture-target"),
-                    new XElement("Config", "bindgen.json")))))
+                new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingConfig", "bindgen.json"))))
                 .Save(definition);
             string sources = Path.Combine(root, "compile-sources.txt");
             string project = Path.Combine(root, "Fixture.csproj");
@@ -56,7 +58,7 @@ public sealed class NativeBindingCompilationTests
                     new XElement("Nullable", "enable"),
                     new XElement("IsTestProject", "true"),
                     new XElement("BindGenGeneratedBindings", "true"),
-                    new XElement("InnoBindingTargetId", "fixture-target"),
+                    new XElement("InnoBindingTargetId", "windows-x64"),
                     new XElement("InnoBindingEngineRoot", root),
                     new XElement("InnoBindingDefinition", definition),
                     new XElement("InnoBindingOutputMode", "TargetArtifacts")),
@@ -77,7 +79,7 @@ public sealed class NativeBindingCompilationTests
                 .Where(static path => Path.GetFileName(path) == "Bindings.cs"));
             Assert.Equal(Path.Combine(root, "obj", "Release", "net10.0", "bindings", "Bindings.cs"), selected);
             Assert.True(File.Exists(selected), output);
-            string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "artifacts", "bindings", "fixture", "fixture-target")));
+            string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "artifacts", "bindings", "fixture", "windows-x64")));
             string publishedSource = Path.Combine(artifact, "Generated", "Bindings.cs");
             Assert.Equal(File.ReadAllBytes(publishedSource), File.ReadAllBytes(selected));
             Assert.True(File.Exists(Path.Combine(root, "bin", "Release", "net10.0", "Fixture.dll")), output);
@@ -90,6 +92,7 @@ public sealed class NativeBindingCompilationTests
                     {
                         fingerprint = Path.GetFileName(artifact),
                         artifactDirectory = artifact,
+                        artifactOwnerDirectory = Path.Combine(root, "artifacts", "bindings"),
                         bindingsPath = publishedSource,
                         nativeDirectory = string.Empty
                     }
@@ -101,6 +104,17 @@ public sealed class NativeBindingCompilationTests
             Assert.DoesNotContain("INNO-BINDINGS-PREPARE", reuseOutput);
             Assert.DoesNotContain("INNO-TASK-RUNTIME", reuseOutput);
 
+            string frozen = Path.Combine(root, "FrozenSources");
+            Directory.CreateDirectory(frozen);
+            string frozenProject = Path.Combine(frozen, "Fixture.csproj");
+            XDocument frozenDefinition = XDocument.Load(project);
+            frozenDefinition.Root!.Element("PropertyGroup")!.Element("InnoBindingEngineRoot")!.Value = frozen;
+            frozenDefinition.Save(frozenProject);
+            (int frozenExit, string frozenOutput) = await Build(frozenProject, ["-p:InnoNativeBindingSelection=" + selection]);
+            Assert.True(frozenExit == 0, frozenOutput);
+            Assert.DoesNotContain("INNO-BINDINGS-PREPARE", frozenOutput);
+            Assert.True(File.Exists(Path.Combine(frozen, "obj", "Release", "net10.0", "bindings", "Bindings.cs")));
+
             string staticSelection = Path.Combine(root, "StaticBindings.props");
             NativeBindingGenerationDescriptor.WriteSelection(staticSelection,
                 new Dictionary<string, NativeBindingGenerationDescriptor>
@@ -109,6 +123,7 @@ public sealed class NativeBindingCompilationTests
                     {
                         fingerprint = Path.GetFileName(artifact),
                         artifactDirectory = artifact,
+                        artifactOwnerDirectory = Path.Combine(root, "artifacts", "bindings"),
                         bindingsPath = publishedSource,
                         nativeDirectory = string.Empty
                     }

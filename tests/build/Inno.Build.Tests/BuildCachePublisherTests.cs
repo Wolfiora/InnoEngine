@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -24,7 +24,7 @@ public sealed class BuildCachePublisherTests : IDisposable
             publisher.Record(old, old + ".read.lock", [], "editor", null);
             publisher.Record(current, current + ".read.lock", [], "editor", null);
         }
-        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(old, "old", ["Outputs"]))
+        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(old, Path.Combine(m_root, "artifacts", "native"), "old", ["Outputs"]))
         {
             BuildCacheCleanupResult busy = await Plan().ExecuteAsync();
             Assert.Empty(busy.retired);
@@ -88,7 +88,13 @@ public sealed class BuildCachePublisherTests : IDisposable
         var hosts = new BuildCachePublisher(Path.GetDirectoryName(host)!, BuildCacheArtifactRole.ImmutableArtifact);
         using (await hosts.AcquireUseAsync())
             hosts.Record(host, host + ".lock", [], null, null);
-        new BuildCachePublisher(Path.GetDirectoryName(load)!, BuildCacheArtifactRole.ProcessWorkingDirectory).RecordProcessUse(load, load + ".lock", [host]);
+        string secondHost = Path.Combine(Path.GetDirectoryName(host)!, "second");
+        Directory.CreateDirectory(secondHost);
+        using (await hosts.AcquireUseAsync())
+            hosts.Record(secondHost, secondHost + ".lock", [], null, null);
+        var loads = new BuildCachePublisher(Path.GetDirectoryName(load)!, BuildCacheArtifactRole.ProcessWorkingDirectory);
+        loads.RecordProcessUse(load, load + ".lock", [host]);
+        loads.RecordProcessUse(load, load + ".lock", [secondHost]);
         Assert.Empty(Plan().candidates);
         Assert.Empty((await Plan().ExecuteAsync()).retired);
         string marker = Directory.GetFiles(Path.Combine(load, "owners"), "*.pid").Single();

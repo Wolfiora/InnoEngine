@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Build.Windows.Host;
 using Inno.Build.WindowsX64;
 using Xunit;
 
@@ -35,7 +36,8 @@ public sealed class NativeBindingCMakeTests
             Directory.CreateDirectory(Path.Combine(root, "build"));
             File.WriteAllText(Path.Combine(root, "build", "fixture.csproj"), "<Project />");
             File.WriteAllText(header, "#define INNO_HEADER_VALUE 41\n");
-            string source = Path.Combine(root, "Source");
+            using ToolchainWorkingDirectory sourceAlias = await new WindowsToolchainWorkspaceProvider().OpenAsync(root);
+            string source = Path.Combine(sourceAlias.toolPath, "Source");
             File.WriteAllText(Path.Combine(source, "CMakeLists.txt"), """
                 cmake_minimum_required(VERSION 3.20)
                 project(BindingFixture C)
@@ -81,13 +83,14 @@ public sealed class NativeBindingCMakeTests
                 bindingDefinition: "native/Bindings/bindings.props");
             var descriptor = new NativeBindingGenerationDescriptor
             {
-                fingerprint = new string('a', 64), artifactDirectory = artifact, bindingsPath = managed, nativeDirectory = native
+                fingerprint = new string('a', 64), artifactDirectory = artifact, artifactOwnerDirectory = root,
+                bindingsPath = managed, nativeDirectory = native
             };
             using var bindings = new NativeBindingGenerationResult(
                 new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor }, []);
             var tools = await new WindowsX64NativeToolchainProvider(ToolchainEnvironment.ResolveExecutable("dotnet"))
-                .ResolveAsync(new(root, "release"), new("Windows", "x64"), "windows-x64", CancellationToken.None);
-            NativeBuildContext context = new NativeBuildContext(root, "release").WithToolchain(tools).WithBindings(bindings)
+                .ResolveAsync(new(root, "release"), BuildTestProducts.WindowsHost(), "windows-x64", CancellationToken.None);
+            NativeBuildContext context = new NativeBuildContext(sourceAlias.toolPath, "release").WithToolchain(tools).WithBindings(bindings)
                 .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
             var recipe = new NativeBuildRecipe(owner, "fixture", "windows-x64",
                 new[] { source }.Concat(tools.inputPaths).Select(path => NativeBuildInput.FromPath(root, path)), tools.declarations);

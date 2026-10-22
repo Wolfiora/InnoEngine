@@ -29,7 +29,7 @@ public sealed class WindowsX64SupportPackValidator : IPlayerSupportPackValidator
             if (foreignNativeExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             {
                 throw new InvalidDataException(
-                    $"Player Support Pack '{BuildTargetId.windowsX64}' contains foreign native runtime '{Path.GetFileName(file)}'.");
+                    $"Player Support Pack '{Inno.Build.WindowsX64.WindowsX64BuildModule.target.id}' contains foreign native runtime '{Path.GetFileName(file)}'.");
             }
             if (Path.GetExtension(file).Equals(".dll", StringComparison.OrdinalIgnoreCase))
                 ValidateLibrary(file);

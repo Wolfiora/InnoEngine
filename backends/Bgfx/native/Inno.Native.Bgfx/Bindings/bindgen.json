@@ -1,11 +1,3585 @@
 {
   "schemaVersion": 1,
-  "extends": [
-    "common.json"
-  ],
-  "targets": [
-    {
-      "id": "host"
-    }
-  ]
+  "library": {
+    "id": "inno.bgfx",
+    "nativeName": "bgfx-shared-lib"
+  },
+  "source": {
+    "language": "c",
+    "languageStandard": "c17",
+    "headers": [
+      "../../../../../extern/bgfx/include/bgfx/c99/bgfx.h"
+    ],
+    "includeDirectories": [
+      "../../../../../extern/bgfx/include",
+      "../../../../../extern/bx/include"
+    ],
+    "defines": [],
+    "includeTransitivelyReferencedHeaders": true,
+    "parseMacros": true,
+    "selection": {
+      "includeHeaders": [
+        "../../../../../extern/bgfx/include/bgfx/c99/bgfx.h",
+        "../../../../../extern/bgfx/include/bgfx/defines.h"
+      ],
+      "excludeDeclarations": [
+        "bgfx_dbg_text_printf"
+      ]
+    },
+    "parseComments": false
+  },
+  "api": {
+    "namespace": "Inno.Native.Bgfx",
+    "name": "bgfx",
+    "style": "static",
+    "importMode": "functionTable",
+    "framework": "net10.0",
+    "emitNativeMetadata": true,
+    "nestGeneratedTypesInApi": true,
+    "emitCallbackDelegates": false,
+    "emitLibraryNameConstant": true,
+    "usings": [],
+    "naming": {
+      "functions": {
+        "casing": "preserve",
+        "removePrefixes": [
+          "bgfx_"
+        ]
+      },
+      "fields": {
+        "casing": "preserve"
+      },
+      "types": {
+        "removeSuffixes": [
+          "_s",
+          "_t"
+        ],
+        "casing": "pascal",
+        "removePrefixes": [
+          "bgfx_"
+        ]
+      },
+      "enumerations": {
+        "removeSuffixes": [
+          "_t"
+        ],
+        "casing": "pascal",
+        "removePrefixes": [
+          "bgfx_"
+        ]
+      }
+    },
+    "names": {
+      "bgfx_allocator_interface_s": "AllocatorInterface",
+      "bgfx_allocator_vtbl_s": "AllocatorVtbl",
+      "bgfx_attachment_s": "Attachment",
+      "bgfx_callback_interface_s": "CallbackInterface",
+      "bgfx_callback_vtbl_s": "CallbackVtbl",
+      "bgfx_caps_gpu_s": "CapsGpu",
+      "bgfx_caps_limits_s": "CapsLimits",
+      "bgfx_caps_s": "Caps",
+      "bgfx_dynamic_index_buffer_handle_s": "DynamicIndexBufferHandle",
+      "bgfx_dynamic_vertex_buffer_handle_s": "DynamicVertexBufferHandle",
+      "bgfx_encoder_stats_s": "EncoderStats",
+      "bgfx_frame_buffer_handle_s": "FrameBufferHandle",
+      "bgfx_index_buffer_handle_s": "IndexBufferHandle",
+      "bgfx_indirect_buffer_handle_s": "IndirectBufferHandle",
+      "bgfx_init_limits_s": "InitLimits",
+      "bgfx_init_s": "Init",
+      "bgfx_instance_data_buffer_s": "InstanceDataBuffer",
+      "bgfx_internal_data_s": "InternalData",
+      "bgfx_memory_s": "Memory",
+      "bgfx_occlusion_query_handle_s": "OcclusionQueryHandle",
+      "bgfx_platform_data_s": "PlatformData",
+      "bgfx_program_handle_s": "ProgramHandle",
+      "bgfx_resolution_s": "Resolution",
+      "bgfx_shader_handle_s": "ShaderHandle",
+      "bgfx_stats_s": "Stats",
+      "bgfx_texture_handle_s": "TextureHandle",
+      "bgfx_texture_info_s": "TextureInfo",
+      "bgfx_transform_s": "Transform",
+      "bgfx_transient_index_buffer_s": "TransientIndexBuffer",
+      "bgfx_transient_vertex_buffer_s": "TransientVertexBuffer",
+      "bgfx_uniform_handle_s": "UniformHandle",
+      "bgfx_uniform_info_s": "UniformInfo",
+      "bgfx_vertex_buffer_handle_s": "VertexBufferHandle",
+      "bgfx_vertex_layout_handle_s": "VertexLayoutHandle",
+      "bgfx_vertex_layout_s": "VertexLayout",
+      "bgfx_view_stats_s": "ViewStats",
+      "BGFX_ACCESS_READWRITE": "ReadWrite",
+      "BGFX_ATTRIB_TEXCOORD0": "TexCoord0",
+      "BGFX_ATTRIB_TEXCOORD1": "TexCoord1",
+      "BGFX_ATTRIB_TEXCOORD2": "TexCoord2",
+      "BGFX_ATTRIB_TEXCOORD3": "TexCoord3",
+      "BGFX_ATTRIB_TEXCOORD4": "TexCoord4",
+      "BGFX_ATTRIB_TEXCOORD5": "TexCoord5",
+      "BGFX_ATTRIB_TEXCOORD6": "TexCoord6",
+      "BGFX_ATTRIB_TEXCOORD7": "TexCoord7",
+      "BGFX_OCCLUSION_QUERY_RESULT_NORESULT": "NoResult",
+      "BGFX_RENDERER_TYPE_OPENGLES": "OpenGLES",
+      "BGFX_RENDERER_TYPE_OPENGL": "OpenGL",
+      "BGFX_RENDERER_TYPE_WEBGPU": "WebGPU",
+      "BGFX_SHADING_RATE_RATE_1X_1": "Rate1x1",
+      "BGFX_SHADING_RATE_RATE_1X_2": "Rate1x2",
+      "BGFX_SHADING_RATE_RATE_2X_1": "Rate2x1",
+      "BGFX_SHADING_RATE_RATE_2X_2": "Rate2x2",
+      "BGFX_SHADING_RATE_RATE_2X_4": "Rate2x4",
+      "BGFX_SHADING_RATE_RATE_4X_2": "Rate4x2",
+      "BGFX_SHADING_RATE_RATE_4X_4": "Rate4x4",
+      "BGFX_TEXTURE_FORMAT_BC1": "BC1",
+      "BGFX_TEXTURE_FORMAT_BC2": "BC2",
+      "BGFX_TEXTURE_FORMAT_BC3": "BC3",
+      "BGFX_TEXTURE_FORMAT_BC4": "BC4",
+      "BGFX_TEXTURE_FORMAT_BC5": "BC5",
+      "BGFX_TEXTURE_FORMAT_BC6H": "BC6H",
+      "BGFX_TEXTURE_FORMAT_BC7": "BC7",
+      "BGFX_TEXTURE_FORMAT_ETC1": "ETC1",
+      "BGFX_TEXTURE_FORMAT_ETC2": "ETC2",
+      "BGFX_TEXTURE_FORMAT_ETC2A": "ETC2A",
+      "BGFX_TEXTURE_FORMAT_ETC2A1": "ETC2A1",
+      "BGFX_TEXTURE_FORMAT_EACR11": "EACR11",
+      "BGFX_TEXTURE_FORMAT_EACR11S": "EACR11S",
+      "BGFX_TEXTURE_FORMAT_EACRG11": "EACRG11",
+      "BGFX_TEXTURE_FORMAT_EACRG11S": "EACRG11S",
+      "BGFX_TEXTURE_FORMAT_PTC12": "PTC12",
+      "BGFX_TEXTURE_FORMAT_PTC14": "PTC14",
+      "BGFX_TEXTURE_FORMAT_PTC12A": "PTC12A",
+      "BGFX_TEXTURE_FORMAT_PTC14A": "PTC14A",
+      "BGFX_TEXTURE_FORMAT_PTC22": "PTC22",
+      "BGFX_TEXTURE_FORMAT_PTC24": "PTC24",
+      "BGFX_TEXTURE_FORMAT_ATC": "ATC",
+      "BGFX_TEXTURE_FORMAT_ATCE": "ATCE",
+      "BGFX_TEXTURE_FORMAT_ATCI": "ATCI",
+      "BGFX_TEXTURE_FORMAT_ASTC4X4": "ASTC4x4",
+      "BGFX_TEXTURE_FORMAT_ASTC5X4": "ASTC5x4",
+      "BGFX_TEXTURE_FORMAT_ASTC5X5": "ASTC5x5",
+      "BGFX_TEXTURE_FORMAT_ASTC6X5": "ASTC6x5",
+      "BGFX_TEXTURE_FORMAT_ASTC6X6": "ASTC6x6",
+      "BGFX_TEXTURE_FORMAT_ASTC8X5": "ASTC8x5",
+      "BGFX_TEXTURE_FORMAT_ASTC8X6": "ASTC8x6",
+      "BGFX_TEXTURE_FORMAT_ASTC8X8": "ASTC8x8",
+      "BGFX_TEXTURE_FORMAT_ASTC10X5": "ASTC10x5",
+      "BGFX_TEXTURE_FORMAT_ASTC10X6": "ASTC10x6",
+      "BGFX_TEXTURE_FORMAT_ASTC10X8": "ASTC10x8",
+      "BGFX_TEXTURE_FORMAT_ASTC10X10": "ASTC10x10",
+      "BGFX_TEXTURE_FORMAT_ASTC12X10": "ASTC12x10",
+      "BGFX_TEXTURE_FORMAT_ASTC12X12": "ASTC12x12",
+      "BGFX_TEXTURE_FORMAT_RG8": "RG8",
+      "BGFX_TEXTURE_FORMAT_RG8I": "RG8I",
+      "BGFX_TEXTURE_FORMAT_RG8U": "RG8U",
+      "BGFX_TEXTURE_FORMAT_RG8S": "RG8S",
+      "BGFX_TEXTURE_FORMAT_RG16": "RG16",
+      "BGFX_TEXTURE_FORMAT_RG16I": "RG16I",
+      "BGFX_TEXTURE_FORMAT_RG16U": "RG16U",
+      "BGFX_TEXTURE_FORMAT_RG16F": "RG16F",
+      "BGFX_TEXTURE_FORMAT_RG16S": "RG16S",
+      "BGFX_TEXTURE_FORMAT_RG32I": "RG32I",
+      "BGFX_TEXTURE_FORMAT_RG32U": "RG32U",
+      "BGFX_TEXTURE_FORMAT_RG32F": "RG32F",
+      "BGFX_TEXTURE_FORMAT_RGB8": "RGB8",
+      "BGFX_TEXTURE_FORMAT_RGB8I": "RGB8I",
+      "BGFX_TEXTURE_FORMAT_RGB8U": "RGB8U",
+      "BGFX_TEXTURE_FORMAT_RGB8S": "RGB8S",
+      "BGFX_TEXTURE_FORMAT_RGB9E5F": "RGB9E5F",
+      "BGFX_TEXTURE_FORMAT_BGRA8": "BGRA8",
+      "BGFX_TEXTURE_FORMAT_RGBA8": "RGBA8",
+      "BGFX_TEXTURE_FORMAT_RGBA8I": "RGBA8I",
+      "BGFX_TEXTURE_FORMAT_RGBA8U": "RGBA8U",
+      "BGFX_TEXTURE_FORMAT_RGBA8S": "RGBA8S",
+      "BGFX_TEXTURE_FORMAT_RGBA16": "RGBA16",
+      "BGFX_TEXTURE_FORMAT_RGBA16I": "RGBA16I",
+      "BGFX_TEXTURE_FORMAT_RGBA16U": "RGBA16U",
+      "BGFX_TEXTURE_FORMAT_RGBA16F": "RGBA16F",
+      "BGFX_TEXTURE_FORMAT_RGBA16S": "RGBA16S",
+      "BGFX_TEXTURE_FORMAT_RGBA32I": "RGBA32I",
+      "BGFX_TEXTURE_FORMAT_RGBA32U": "RGBA32U",
+      "BGFX_TEXTURE_FORMAT_RGBA32F": "RGBA32F",
+      "BGFX_TEXTURE_FORMAT_BGRA4": "BGRA4",
+      "BGFX_TEXTURE_FORMAT_RGBA4": "RGBA4",
+      "BGFX_TEXTURE_FORMAT_BGR5A1": "BGR5A1",
+      "BGFX_TEXTURE_FORMAT_RGB5A1": "RGB5A1",
+      "BGFX_TEXTURE_FORMAT_RGB10A2": "RGB10A2",
+      "BGFX_TEXTURE_FORMAT_RG11B10F": "RG11B10F",
+      "BGFX_TEXTURE_FORMAT_UNKNOWNDEPTH": "UnknownDepth"
+    },
+    "functions": [],
+    "records": [
+      {
+        "fields": [],
+        "name": "DynamicIndexBufferHandle",
+        "nativeType": "bgfx_dynamic_index_buffer_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "DynamicVertexBufferHandle",
+        "nativeType": "bgfx_dynamic_vertex_buffer_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "FrameBufferHandle",
+        "nativeType": "bgfx_frame_buffer_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "IndexBufferHandle",
+        "nativeType": "bgfx_index_buffer_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "IndirectBufferHandle",
+        "nativeType": "bgfx_indirect_buffer_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "OcclusionQueryHandle",
+        "nativeType": "bgfx_occlusion_query_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "ProgramHandle",
+        "nativeType": "bgfx_program_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "ShaderHandle",
+        "nativeType": "bgfx_shader_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "TextureHandle",
+        "nativeType": "bgfx_texture_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "UniformHandle",
+        "nativeType": "bgfx_uniform_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "VertexBufferHandle",
+        "nativeType": "bgfx_vertex_buffer_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      },
+      {
+        "fields": [],
+        "name": "VertexLayoutHandle",
+        "nativeType": "bgfx_vertex_layout_handle_s",
+        "constructorFields": [
+          "idx"
+        ],
+        "validity": {
+          "propertyName": "Valid",
+          "invalidValue": {
+            "value": "65535",
+            "kind": "integer"
+          },
+          "field": "idx"
+        }
+      }
+    ],
+    "enums": [
+      {
+        "isFlags": true,
+        "underlyingType": "uint16",
+        "name": "BufferFlags",
+        "values": [
+          {
+            "name": "ComputeFormat8x1",
+            "value": "1"
+          },
+          {
+            "name": "ComputeFormat8x2",
+            "value": "2"
+          },
+          {
+            "name": "ComputeFormat8x4",
+            "value": "3"
+          },
+          {
+            "name": "ComputeFormat16x1",
+            "value": "4"
+          },
+          {
+            "name": "ComputeFormat16x2",
+            "value": "5"
+          },
+          {
+            "name": "ComputeFormat16x4",
+            "value": "6"
+          },
+          {
+            "name": "ComputeFormat32x1",
+            "value": "7"
+          },
+          {
+            "name": "ComputeFormat32x2",
+            "value": "8"
+          },
+          {
+            "name": "ComputeFormat32x4",
+            "value": "9"
+          },
+          {
+            "name": "ComputeFormatShift",
+            "value": "0"
+          },
+          {
+            "name": "ComputeFormatMask",
+            "value": "15"
+          },
+          {
+            "name": "ComputeTypeInt",
+            "value": "16"
+          },
+          {
+            "name": "ComputeTypeUint",
+            "value": "32"
+          },
+          {
+            "name": "ComputeTypeFloat",
+            "value": "48"
+          },
+          {
+            "name": "ComputeTypeShift",
+            "value": "4"
+          },
+          {
+            "name": "ComputeTypeMask",
+            "value": "48"
+          },
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "ComputeRead",
+            "value": "256"
+          },
+          {
+            "name": "ComputeWrite",
+            "value": "512"
+          },
+          {
+            "name": "DrawIndirect",
+            "value": "1024"
+          },
+          {
+            "name": "AllowResize",
+            "value": "2048"
+          },
+          {
+            "name": "Index32",
+            "value": "4096"
+          },
+          {
+            "name": "ComputeReadWrite",
+            "value": "768"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint64",
+        "name": "CapsFlags",
+        "values": [
+          {
+            "name": "AlphaToCoverage",
+            "value": "1"
+          },
+          {
+            "name": "BlendIndependent",
+            "value": "2"
+          },
+          {
+            "name": "Compute",
+            "value": "4"
+          },
+          {
+            "name": "ConservativeRaster",
+            "value": "8"
+          },
+          {
+            "name": "DrawIndirect",
+            "value": "16"
+          },
+          {
+            "name": "DrawIndirectCount",
+            "value": "32"
+          },
+          {
+            "name": "FragmentDepth",
+            "value": "64"
+          },
+          {
+            "name": "FragmentOrdering",
+            "value": "128"
+          },
+          {
+            "name": "GraphicsDebugger",
+            "value": "256"
+          },
+          {
+            "name": "Hdr10",
+            "value": "512"
+          },
+          {
+            "name": "Hidpi",
+            "value": "1024"
+          },
+          {
+            "name": "ImageRw",
+            "value": "2048"
+          },
+          {
+            "name": "Index32",
+            "value": "4096"
+          },
+          {
+            "name": "Instancing",
+            "value": "8192"
+          },
+          {
+            "name": "OcclusionQuery",
+            "value": "16384"
+          },
+          {
+            "name": "PrimitiveId",
+            "value": "32768"
+          },
+          {
+            "name": "RendererMultithreaded",
+            "value": "65536"
+          },
+          {
+            "name": "SwapChain",
+            "value": "131072"
+          },
+          {
+            "name": "TextureBlit",
+            "value": "262144"
+          },
+          {
+            "name": "TextureCompareLequal",
+            "value": "524288"
+          },
+          {
+            "name": "TextureCompareReserved",
+            "value": "1048576"
+          },
+          {
+            "name": "TextureCubeArray",
+            "value": "2097152"
+          },
+          {
+            "name": "TextureDirectAccess",
+            "value": "4194304"
+          },
+          {
+            "name": "TextureExternal",
+            "value": "8388608"
+          },
+          {
+            "name": "TextureExternalShared",
+            "value": "16777216"
+          },
+          {
+            "name": "TextureReadBack",
+            "value": "33554432"
+          },
+          {
+            "name": "Texture2dArray",
+            "value": "67108864"
+          },
+          {
+            "name": "Texture3d",
+            "value": "134217728"
+          },
+          {
+            "name": "TransparentBackbuffer",
+            "value": "268435456"
+          },
+          {
+            "name": "VariableRateShading",
+            "value": "536870912"
+          },
+          {
+            "name": "VertexAttribHalf",
+            "value": "1073741824"
+          },
+          {
+            "name": "VertexAttribUint10",
+            "value": "2147483648"
+          },
+          {
+            "name": "VertexId",
+            "value": "4294967296"
+          },
+          {
+            "name": "ViewportLayerArray",
+            "value": "8589934592"
+          },
+          {
+            "name": "TextureCompareAll",
+            "value": "1572864"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "CapsFormatFlags",
+        "values": [
+          {
+            "name": "TextureNone",
+            "value": "0"
+          },
+          {
+            "name": "Texture2d",
+            "value": "1"
+          },
+          {
+            "name": "Texture2dSrgb",
+            "value": "2"
+          },
+          {
+            "name": "Texture2dEmulated",
+            "value": "4"
+          },
+          {
+            "name": "Texture3d",
+            "value": "8"
+          },
+          {
+            "name": "Texture3dSrgb",
+            "value": "16"
+          },
+          {
+            "name": "Texture3dEmulated",
+            "value": "32"
+          },
+          {
+            "name": "TextureCube",
+            "value": "64"
+          },
+          {
+            "name": "TextureCubeSrgb",
+            "value": "128"
+          },
+          {
+            "name": "TextureCubeEmulated",
+            "value": "256"
+          },
+          {
+            "name": "TextureVertex",
+            "value": "512"
+          },
+          {
+            "name": "TextureImageRead",
+            "value": "1024"
+          },
+          {
+            "name": "TextureImageWrite",
+            "value": "2048"
+          },
+          {
+            "name": "TextureFramebuffer",
+            "value": "4096"
+          },
+          {
+            "name": "TextureFramebufferMsaa",
+            "value": "8192"
+          },
+          {
+            "name": "TextureMsaa",
+            "value": "16384"
+          },
+          {
+            "name": "TextureMipAutogen",
+            "value": "32768"
+          },
+          {
+            "name": "TextureBackbuffer",
+            "value": "65536"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint16",
+        "name": "ClearFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "Color",
+            "value": "1"
+          },
+          {
+            "name": "Depth",
+            "value": "2"
+          },
+          {
+            "name": "Stencil",
+            "value": "4"
+          },
+          {
+            "name": "DiscardColor0",
+            "value": "8"
+          },
+          {
+            "name": "DiscardColor1",
+            "value": "16"
+          },
+          {
+            "name": "DiscardColor2",
+            "value": "32"
+          },
+          {
+            "name": "DiscardColor3",
+            "value": "64"
+          },
+          {
+            "name": "DiscardColor4",
+            "value": "128"
+          },
+          {
+            "name": "DiscardColor5",
+            "value": "256"
+          },
+          {
+            "name": "DiscardColor6",
+            "value": "512"
+          },
+          {
+            "name": "DiscardColor7",
+            "value": "1024"
+          },
+          {
+            "name": "DiscardDepth",
+            "value": "2048"
+          },
+          {
+            "name": "DiscardStencil",
+            "value": "4096"
+          },
+          {
+            "name": "DiscardColorMask",
+            "value": "2040"
+          },
+          {
+            "name": "DiscardMask",
+            "value": "8184"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "CubeMapFlags",
+        "values": [
+          {
+            "name": "PositiveX",
+            "value": "0"
+          },
+          {
+            "name": "NegativeX",
+            "value": "1"
+          },
+          {
+            "name": "PositiveY",
+            "value": "2"
+          },
+          {
+            "name": "NegativeY",
+            "value": "3"
+          },
+          {
+            "name": "PositiveZ",
+            "value": "4"
+          },
+          {
+            "name": "NegativeZ",
+            "value": "5"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "DebugFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "Wireframe",
+            "value": "1"
+          },
+          {
+            "name": "Ifh",
+            "value": "2"
+          },
+          {
+            "name": "Stats",
+            "value": "4"
+          },
+          {
+            "name": "Text",
+            "value": "8"
+          },
+          {
+            "name": "Profiler",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "DiscardFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "Bindings",
+            "value": "1"
+          },
+          {
+            "name": "IndexBuffer",
+            "value": "2"
+          },
+          {
+            "name": "InstanceData",
+            "value": "4"
+          },
+          {
+            "name": "State",
+            "value": "8"
+          },
+          {
+            "name": "Transform",
+            "value": "16"
+          },
+          {
+            "name": "VertexStreams",
+            "value": "32"
+          },
+          {
+            "name": "All",
+            "value": "255"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "FrameFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "DebugCapture",
+            "value": "1"
+          },
+          {
+            "name": "Discard",
+            "value": "2"
+          },
+          {
+            "name": "Flush",
+            "value": "4"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint16",
+        "name": "PciIdFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "SoftwareRasterizer",
+            "value": "1"
+          },
+          {
+            "name": "Amd",
+            "value": "4098"
+          },
+          {
+            "name": "Apple",
+            "value": "4203"
+          },
+          {
+            "name": "Intel",
+            "value": "32902"
+          },
+          {
+            "name": "Nvidia",
+            "value": "4318"
+          },
+          {
+            "name": "Microsoft",
+            "value": "5140"
+          },
+          {
+            "name": "Arm",
+            "value": "5045"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "ResetFlags",
+        "values": [
+          {
+            "name": "MsaaX2",
+            "value": "16"
+          },
+          {
+            "name": "MsaaX4",
+            "value": "32"
+          },
+          {
+            "name": "MsaaX8",
+            "value": "48"
+          },
+          {
+            "name": "MsaaX16",
+            "value": "64"
+          },
+          {
+            "name": "MsaaShift",
+            "value": "4"
+          },
+          {
+            "name": "MsaaMask",
+            "value": "112"
+          },
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "Fullscreen",
+            "value": "1"
+          },
+          {
+            "name": "Vsync",
+            "value": "128"
+          },
+          {
+            "name": "Maxanisotropy",
+            "value": "256"
+          },
+          {
+            "name": "Capture",
+            "value": "512"
+          },
+          {
+            "name": "FlushAfterRender",
+            "value": "8192"
+          },
+          {
+            "name": "FlipAfterRender",
+            "value": "16384"
+          },
+          {
+            "name": "SrgbBackbuffer",
+            "value": "32768"
+          },
+          {
+            "name": "Hdr10",
+            "value": "65536"
+          },
+          {
+            "name": "Hidpi",
+            "value": "131072"
+          },
+          {
+            "name": "DepthClamp",
+            "value": "262144"
+          },
+          {
+            "name": "Suspend",
+            "value": "524288"
+          },
+          {
+            "name": "TransparentBackbuffer",
+            "value": "1048576"
+          },
+          {
+            "name": "FullscreenShift",
+            "value": "0"
+          },
+          {
+            "name": "FullscreenMask",
+            "value": "1"
+          },
+          {
+            "name": "ReservedShift",
+            "value": "31"
+          },
+          {
+            "name": "ReservedMask",
+            "value": "2147483648"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "ResolveFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "AutoGenMips",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "SamplerFlags",
+        "values": [
+          {
+            "name": "UMirror",
+            "value": "1"
+          },
+          {
+            "name": "UClamp",
+            "value": "2"
+          },
+          {
+            "name": "UBorder",
+            "value": "3"
+          },
+          {
+            "name": "UShift",
+            "value": "0"
+          },
+          {
+            "name": "UMask",
+            "value": "3"
+          },
+          {
+            "name": "VMirror",
+            "value": "4"
+          },
+          {
+            "name": "VClamp",
+            "value": "8"
+          },
+          {
+            "name": "VBorder",
+            "value": "12"
+          },
+          {
+            "name": "VShift",
+            "value": "2"
+          },
+          {
+            "name": "VMask",
+            "value": "12"
+          },
+          {
+            "name": "WMirror",
+            "value": "16"
+          },
+          {
+            "name": "WClamp",
+            "value": "32"
+          },
+          {
+            "name": "WBorder",
+            "value": "48"
+          },
+          {
+            "name": "WShift",
+            "value": "4"
+          },
+          {
+            "name": "WMask",
+            "value": "48"
+          },
+          {
+            "name": "MinPoint",
+            "value": "64"
+          },
+          {
+            "name": "MinAnisotropic",
+            "value": "128"
+          },
+          {
+            "name": "MinShift",
+            "value": "6"
+          },
+          {
+            "name": "MinMask",
+            "value": "192"
+          },
+          {
+            "name": "MagPoint",
+            "value": "256"
+          },
+          {
+            "name": "MagAnisotropic",
+            "value": "512"
+          },
+          {
+            "name": "MagShift",
+            "value": "8"
+          },
+          {
+            "name": "MagMask",
+            "value": "768"
+          },
+          {
+            "name": "MipPoint",
+            "value": "1024"
+          },
+          {
+            "name": "MipShift",
+            "value": "10"
+          },
+          {
+            "name": "MipMask",
+            "value": "1024"
+          },
+          {
+            "name": "CompareLess",
+            "value": "65536"
+          },
+          {
+            "name": "CompareLequal",
+            "value": "131072"
+          },
+          {
+            "name": "CompareEqual",
+            "value": "196608"
+          },
+          {
+            "name": "CompareGequal",
+            "value": "262144"
+          },
+          {
+            "name": "CompareGreater",
+            "value": "327680"
+          },
+          {
+            "name": "CompareNotequal",
+            "value": "393216"
+          },
+          {
+            "name": "CompareNever",
+            "value": "458752"
+          },
+          {
+            "name": "CompareAlways",
+            "value": "524288"
+          },
+          {
+            "name": "CompareShift",
+            "value": "16"
+          },
+          {
+            "name": "CompareMask",
+            "value": "983040"
+          },
+          {
+            "name": "BorderColorShift",
+            "value": "24"
+          },
+          {
+            "name": "BorderColorMask",
+            "value": "251658240"
+          },
+          {
+            "name": "ReservedShift",
+            "value": "28"
+          },
+          {
+            "name": "ReservedMask",
+            "value": "4026531840"
+          },
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "SampleStencil",
+            "value": "1048576"
+          },
+          {
+            "name": "Point",
+            "value": "1344"
+          },
+          {
+            "name": "UvwMirror",
+            "value": "21"
+          },
+          {
+            "name": "UvwClamp",
+            "value": "42"
+          },
+          {
+            "name": "UvwBorder",
+            "value": "63"
+          },
+          {
+            "name": "BitsMask",
+            "value": "985087"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint64",
+        "name": "StateFlags",
+        "values": [
+          {
+            "name": "WriteR",
+            "value": "1"
+          },
+          {
+            "name": "WriteG",
+            "value": "2"
+          },
+          {
+            "name": "WriteB",
+            "value": "4"
+          },
+          {
+            "name": "WriteA",
+            "value": "8"
+          },
+          {
+            "name": "WriteZ",
+            "value": "274877906944"
+          },
+          {
+            "name": "WriteRgb",
+            "value": "7"
+          },
+          {
+            "name": "WriteMask",
+            "value": "274877906959"
+          },
+          {
+            "name": "DepthTestLess",
+            "value": "16"
+          },
+          {
+            "name": "DepthTestLequal",
+            "value": "32"
+          },
+          {
+            "name": "DepthTestEqual",
+            "value": "48"
+          },
+          {
+            "name": "DepthTestGequal",
+            "value": "64"
+          },
+          {
+            "name": "DepthTestGreater",
+            "value": "80"
+          },
+          {
+            "name": "DepthTestNotequal",
+            "value": "96"
+          },
+          {
+            "name": "DepthTestNever",
+            "value": "112"
+          },
+          {
+            "name": "DepthTestAlways",
+            "value": "128"
+          },
+          {
+            "name": "DepthTestShift",
+            "value": "4"
+          },
+          {
+            "name": "DepthTestMask",
+            "value": "240"
+          },
+          {
+            "name": "BlendZero",
+            "value": "4096"
+          },
+          {
+            "name": "BlendOne",
+            "value": "8192"
+          },
+          {
+            "name": "BlendSrcColor",
+            "value": "12288"
+          },
+          {
+            "name": "BlendInvSrcColor",
+            "value": "16384"
+          },
+          {
+            "name": "BlendSrcAlpha",
+            "value": "20480"
+          },
+          {
+            "name": "BlendInvSrcAlpha",
+            "value": "24576"
+          },
+          {
+            "name": "BlendDstAlpha",
+            "value": "28672"
+          },
+          {
+            "name": "BlendInvDstAlpha",
+            "value": "32768"
+          },
+          {
+            "name": "BlendDstColor",
+            "value": "36864"
+          },
+          {
+            "name": "BlendInvDstColor",
+            "value": "40960"
+          },
+          {
+            "name": "BlendSrcAlphaSat",
+            "value": "45056"
+          },
+          {
+            "name": "BlendFactor",
+            "value": "49152"
+          },
+          {
+            "name": "BlendInvFactor",
+            "value": "53248"
+          },
+          {
+            "name": "BlendShift",
+            "value": "12"
+          },
+          {
+            "name": "BlendMask",
+            "value": "268431360"
+          },
+          {
+            "name": "BlendEquationAdd",
+            "value": "0"
+          },
+          {
+            "name": "BlendEquationSub",
+            "value": "268435456"
+          },
+          {
+            "name": "BlendEquationRevsub",
+            "value": "536870912"
+          },
+          {
+            "name": "BlendEquationMin",
+            "value": "805306368"
+          },
+          {
+            "name": "BlendEquationMax",
+            "value": "1073741824"
+          },
+          {
+            "name": "BlendEquationShift",
+            "value": "28"
+          },
+          {
+            "name": "BlendEquationMask",
+            "value": "16911433728"
+          },
+          {
+            "name": "CullCw",
+            "value": "68719476736"
+          },
+          {
+            "name": "CullCcw",
+            "value": "137438953472"
+          },
+          {
+            "name": "CullShift",
+            "value": "36"
+          },
+          {
+            "name": "CullMask",
+            "value": "206158430208"
+          },
+          {
+            "name": "AlphaRefShift",
+            "value": "40"
+          },
+          {
+            "name": "AlphaRefMask",
+            "value": "280375465082880"
+          },
+          {
+            "name": "PtTristrip",
+            "value": "281474976710656"
+          },
+          {
+            "name": "PtLines",
+            "value": "562949953421312"
+          },
+          {
+            "name": "PtLinestrip",
+            "value": "844424930131968"
+          },
+          {
+            "name": "PtPoints",
+            "value": "1125899906842624"
+          },
+          {
+            "name": "PtShift",
+            "value": "48"
+          },
+          {
+            "name": "PtMask",
+            "value": "1970324836974592"
+          },
+          {
+            "name": "PointSizeShift",
+            "value": "52"
+          },
+          {
+            "name": "PointSizeMask",
+            "value": "67553994410557440"
+          },
+          {
+            "name": "Msaa",
+            "value": "72057594037927936"
+          },
+          {
+            "name": "Lineaa",
+            "value": "144115188075855872"
+          },
+          {
+            "name": "ConservativeRaster",
+            "value": "288230376151711744"
+          },
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "FrontCcw",
+            "value": "549755813888"
+          },
+          {
+            "name": "BlendIndependent",
+            "value": "17179869184"
+          },
+          {
+            "name": "BlendAlphaToCoverage",
+            "value": "34359738368"
+          },
+          {
+            "name": "Default",
+            "value": "72057937635311647"
+          },
+          {
+            "name": "Mask",
+            "value": "18446744073709551615"
+          },
+          {
+            "name": "ReservedShift",
+            "value": "61"
+          },
+          {
+            "name": "ReservedMask",
+            "value": "16140901064495857664"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "StencilFlags",
+        "values": [
+          {
+            "name": "FuncRefShift",
+            "value": "0"
+          },
+          {
+            "name": "FuncRefMask",
+            "value": "255"
+          },
+          {
+            "name": "FuncRmaskShift",
+            "value": "8"
+          },
+          {
+            "name": "FuncRmaskMask",
+            "value": "65280"
+          },
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "Mask",
+            "value": "4294967295"
+          },
+          {
+            "name": "Default",
+            "value": "0"
+          },
+          {
+            "name": "TestLess",
+            "value": "65536"
+          },
+          {
+            "name": "TestLequal",
+            "value": "131072"
+          },
+          {
+            "name": "TestEqual",
+            "value": "196608"
+          },
+          {
+            "name": "TestGequal",
+            "value": "262144"
+          },
+          {
+            "name": "TestGreater",
+            "value": "327680"
+          },
+          {
+            "name": "TestNotequal",
+            "value": "393216"
+          },
+          {
+            "name": "TestNever",
+            "value": "458752"
+          },
+          {
+            "name": "TestAlways",
+            "value": "524288"
+          },
+          {
+            "name": "TestShift",
+            "value": "16"
+          },
+          {
+            "name": "TestMask",
+            "value": "983040"
+          },
+          {
+            "name": "OpFailSZero",
+            "value": "0"
+          },
+          {
+            "name": "OpFailSKeep",
+            "value": "1048576"
+          },
+          {
+            "name": "OpFailSReplace",
+            "value": "2097152"
+          },
+          {
+            "name": "OpFailSIncr",
+            "value": "3145728"
+          },
+          {
+            "name": "OpFailSIncrsat",
+            "value": "4194304"
+          },
+          {
+            "name": "OpFailSDecr",
+            "value": "5242880"
+          },
+          {
+            "name": "OpFailSDecrsat",
+            "value": "6291456"
+          },
+          {
+            "name": "OpFailSInvert",
+            "value": "7340032"
+          },
+          {
+            "name": "OpFailSShift",
+            "value": "20"
+          },
+          {
+            "name": "OpFailSMask",
+            "value": "15728640"
+          },
+          {
+            "name": "OpFailZZero",
+            "value": "0"
+          },
+          {
+            "name": "OpFailZKeep",
+            "value": "16777216"
+          },
+          {
+            "name": "OpFailZReplace",
+            "value": "33554432"
+          },
+          {
+            "name": "OpFailZIncr",
+            "value": "50331648"
+          },
+          {
+            "name": "OpFailZIncrsat",
+            "value": "67108864"
+          },
+          {
+            "name": "OpFailZDecr",
+            "value": "83886080"
+          },
+          {
+            "name": "OpFailZDecrsat",
+            "value": "100663296"
+          },
+          {
+            "name": "OpFailZInvert",
+            "value": "117440512"
+          },
+          {
+            "name": "OpFailZShift",
+            "value": "24"
+          },
+          {
+            "name": "OpFailZMask",
+            "value": "251658240"
+          },
+          {
+            "name": "OpPassZZero",
+            "value": "0"
+          },
+          {
+            "name": "OpPassZKeep",
+            "value": "268435456"
+          },
+          {
+            "name": "OpPassZReplace",
+            "value": "536870912"
+          },
+          {
+            "name": "OpPassZIncr",
+            "value": "805306368"
+          },
+          {
+            "name": "OpPassZIncrsat",
+            "value": "1073741824"
+          },
+          {
+            "name": "OpPassZDecr",
+            "value": "1342177280"
+          },
+          {
+            "name": "OpPassZDecrsat",
+            "value": "1610612736"
+          },
+          {
+            "name": "OpPassZInvert",
+            "value": "1879048192"
+          },
+          {
+            "name": "OpPassZShift",
+            "value": "28"
+          },
+          {
+            "name": "OpPassZMask",
+            "value": "4026531840"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint64",
+        "name": "TextureFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "MsaaSample",
+            "value": "34359738368"
+          },
+          {
+            "name": "Rt",
+            "value": "68719476736"
+          },
+          {
+            "name": "ComputeWrite",
+            "value": "17592186044416"
+          },
+          {
+            "name": "Srgb",
+            "value": "35184372088832"
+          },
+          {
+            "name": "BlitDst",
+            "value": "70368744177664"
+          },
+          {
+            "name": "ReadBack",
+            "value": "140737488355328"
+          },
+          {
+            "name": "ExternalShared",
+            "value": "281474976710656"
+          },
+          {
+            "name": "RtMsaaX2",
+            "value": "137438953472"
+          },
+          {
+            "name": "RtMsaaX4",
+            "value": "206158430208"
+          },
+          {
+            "name": "RtMsaaX8",
+            "value": "274877906944"
+          },
+          {
+            "name": "RtMsaaX16",
+            "value": "343597383680"
+          },
+          {
+            "name": "RtMsaaShift",
+            "value": "36"
+          },
+          {
+            "name": "RtMsaaMask",
+            "value": "481036337152"
+          },
+          {
+            "name": "RtWriteOnly",
+            "value": "549755813888"
+          },
+          {
+            "name": "RtShift",
+            "value": "36"
+          },
+          {
+            "name": "RtMask",
+            "value": "1030792151040"
+          }
+        ]
+      }
+    ],
+    "enumMappings": {},
+    "nativeEnums": [
+      {
+        "nativeType": "bgfx_attrib",
+        "values": [
+          {
+            "member": "BGFX_ATTRIB_POSITION",
+            "name": "Position"
+          },
+          {
+            "member": "BGFX_ATTRIB_NORMAL",
+            "name": "Normal"
+          },
+          {
+            "member": "BGFX_ATTRIB_TANGENT",
+            "name": "Tangent"
+          },
+          {
+            "member": "BGFX_ATTRIB_BITANGENT",
+            "name": "Bitangent"
+          },
+          {
+            "member": "BGFX_ATTRIB_COLOR0",
+            "name": "Color0"
+          },
+          {
+            "member": "BGFX_ATTRIB_COLOR1",
+            "name": "Color1"
+          },
+          {
+            "member": "BGFX_ATTRIB_COLOR2",
+            "name": "Color2"
+          },
+          {
+            "member": "BGFX_ATTRIB_COLOR3",
+            "name": "Color3"
+          },
+          {
+            "member": "BGFX_ATTRIB_INDICES",
+            "name": "Indices"
+          },
+          {
+            "member": "BGFX_ATTRIB_WEIGHT",
+            "name": "Weight"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD0",
+            "name": "TexCoord0"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD1",
+            "name": "TexCoord1"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD2",
+            "name": "TexCoord2"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD3",
+            "name": "TexCoord3"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD4",
+            "name": "TexCoord4"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD5",
+            "name": "TexCoord5"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD6",
+            "name": "TexCoord6"
+          },
+          {
+            "member": "BGFX_ATTRIB_TEXCOORD7",
+            "name": "TexCoord7"
+          },
+          {
+            "member": "BGFX_ATTRIB_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_fatal",
+        "values": [
+          {
+            "member": "BGFX_FATAL_DEBUG_CHECK",
+            "name": "DebugCheck"
+          },
+          {
+            "member": "BGFX_FATAL_INVALID_SHADER",
+            "name": "InvalidShader"
+          },
+          {
+            "member": "BGFX_FATAL_UNABLE_TO_INITIALIZE",
+            "name": "UnableToInitialize"
+          },
+          {
+            "member": "BGFX_FATAL_UNABLE_TO_CREATE_TEXTURE",
+            "name": "UnableToCreateTexture"
+          },
+          {
+            "member": "BGFX_FATAL_DEVICE_LOST",
+            "name": "DeviceLost"
+          },
+          {
+            "member": "BGFX_FATAL_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_view_mode",
+        "values": [
+          {
+            "member": "BGFX_VIEW_MODE_DEFAULT",
+            "name": "Default"
+          },
+          {
+            "member": "BGFX_VIEW_MODE_SEQUENTIAL",
+            "name": "Sequential"
+          },
+          {
+            "member": "BGFX_VIEW_MODE_DEPTH_ASCENDING",
+            "name": "DepthAscending"
+          },
+          {
+            "member": "BGFX_VIEW_MODE_DEPTH_DESCENDING",
+            "name": "DepthDescending"
+          },
+          {
+            "member": "BGFX_VIEW_MODE_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_shading_rate",
+        "values": [
+          {
+            "member": "BGFX_SHADING_RATE_RATE_1X_1",
+            "name": "Rate1x1"
+          },
+          {
+            "member": "BGFX_SHADING_RATE_RATE_1X_2",
+            "name": "Rate1x2"
+          },
+          {
+            "member": "BGFX_SHADING_RATE_RATE_2X_1",
+            "name": "Rate2x1"
+          },
+          {
+            "member": "BGFX_SHADING_RATE_RATE_2X_2",
+            "name": "Rate2x2"
+          },
+          {
+            "member": "BGFX_SHADING_RATE_RATE_2X_4",
+            "name": "Rate2x4"
+          },
+          {
+            "member": "BGFX_SHADING_RATE_RATE_4X_2",
+            "name": "Rate4x2"
+          },
+          {
+            "member": "BGFX_SHADING_RATE_RATE_4X_4",
+            "name": "Rate4x4"
+          },
+          {
+            "member": "BGFX_SHADING_RATE_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_attrib_type",
+        "values": [
+          {
+            "member": "BGFX_ATTRIB_TYPE_INT8",
+            "name": "Int8"
+          },
+          {
+            "member": "BGFX_ATTRIB_TYPE_UINT8",
+            "name": "Uint8"
+          },
+          {
+            "member": "BGFX_ATTRIB_TYPE_UINT10",
+            "name": "Uint10"
+          },
+          {
+            "member": "BGFX_ATTRIB_TYPE_INT16",
+            "name": "Int16"
+          },
+          {
+            "member": "BGFX_ATTRIB_TYPE_UINT16",
+            "name": "Uint16"
+          },
+          {
+            "member": "BGFX_ATTRIB_TYPE_HALF",
+            "name": "Half"
+          },
+          {
+            "member": "BGFX_ATTRIB_TYPE_FLOAT",
+            "name": "Float"
+          },
+          {
+            "member": "BGFX_ATTRIB_TYPE_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_topology_sort",
+        "values": [
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DIRECTION_FRONT_TO_BACK_MIN",
+            "name": "DirectionFrontToBackMin"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DIRECTION_FRONT_TO_BACK_AVG",
+            "name": "DirectionFrontToBackAvg"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DIRECTION_FRONT_TO_BACK_MAX",
+            "name": "DirectionFrontToBackMax"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DIRECTION_BACK_TO_FRONT_MIN",
+            "name": "DirectionBackToFrontMin"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DIRECTION_BACK_TO_FRONT_AVG",
+            "name": "DirectionBackToFrontAvg"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DIRECTION_BACK_TO_FRONT_MAX",
+            "name": "DirectionBackToFrontMax"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DISTANCE_FRONT_TO_BACK_MIN",
+            "name": "DistanceFrontToBackMin"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DISTANCE_FRONT_TO_BACK_AVG",
+            "name": "DistanceFrontToBackAvg"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DISTANCE_FRONT_TO_BACK_MAX",
+            "name": "DistanceFrontToBackMax"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DISTANCE_BACK_TO_FRONT_MIN",
+            "name": "DistanceBackToFrontMin"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DISTANCE_BACK_TO_FRONT_AVG",
+            "name": "DistanceBackToFrontAvg"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_DISTANCE_BACK_TO_FRONT_MAX",
+            "name": "DistanceBackToFrontMax"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_SORT_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_renderer_type",
+        "values": [
+          {
+            "member": "BGFX_RENDERER_TYPE_NOOP",
+            "name": "Noop"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_AGC",
+            "name": "Agc"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_DIRECT3D11",
+            "name": "Direct3d11"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_DIRECT3D12",
+            "name": "Direct3d12"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_GNM",
+            "name": "Gnm"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_METAL",
+            "name": "Metal"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_NVN",
+            "name": "Nvn"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_OPENGLES",
+            "name": "OpenGLES"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_OPENGL",
+            "name": "OpenGL"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_VULKAN",
+            "name": "Vulkan"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_WEBGPU",
+            "name": "WebGPU"
+          },
+          {
+            "member": "BGFX_RENDERER_TYPE_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_topology",
+        "values": [
+          {
+            "member": "BGFX_TOPOLOGY_TRI_LIST",
+            "name": "TriList"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_TRI_STRIP",
+            "name": "TriStrip"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_LINE_LIST",
+            "name": "LineList"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_LINE_STRIP",
+            "name": "LineStrip"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_POINT_LIST",
+            "name": "PointList"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_uniform_type",
+        "values": [
+          {
+            "member": "BGFX_UNIFORM_TYPE_SAMPLER",
+            "name": "Sampler"
+          },
+          {
+            "member": "BGFX_UNIFORM_TYPE_END",
+            "name": "End"
+          },
+          {
+            "member": "BGFX_UNIFORM_TYPE_VEC4",
+            "name": "Vec4"
+          },
+          {
+            "member": "BGFX_UNIFORM_TYPE_MAT3",
+            "name": "Mat3"
+          },
+          {
+            "member": "BGFX_UNIFORM_TYPE_MAT4",
+            "name": "Mat4"
+          },
+          {
+            "member": "BGFX_UNIFORM_TYPE_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_backbuffer_ratio",
+        "values": [
+          {
+            "member": "BGFX_BACKBUFFER_RATIO_EQUAL",
+            "name": "Equal"
+          },
+          {
+            "member": "BGFX_BACKBUFFER_RATIO_HALF",
+            "name": "Half"
+          },
+          {
+            "member": "BGFX_BACKBUFFER_RATIO_QUARTER",
+            "name": "Quarter"
+          },
+          {
+            "member": "BGFX_BACKBUFFER_RATIO_EIGHTH",
+            "name": "Eighth"
+          },
+          {
+            "member": "BGFX_BACKBUFFER_RATIO_SIXTEENTH",
+            "name": "Sixteenth"
+          },
+          {
+            "member": "BGFX_BACKBUFFER_RATIO_DOUBLE",
+            "name": "Double"
+          },
+          {
+            "member": "BGFX_BACKBUFFER_RATIO_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_render_frame",
+        "values": [
+          {
+            "member": "BGFX_RENDER_FRAME_NO_CONTEXT",
+            "name": "NoContext"
+          },
+          {
+            "member": "BGFX_RENDER_FRAME_RENDER",
+            "name": "Render"
+          },
+          {
+            "member": "BGFX_RENDER_FRAME_TIMEOUT",
+            "name": "Timeout"
+          },
+          {
+            "member": "BGFX_RENDER_FRAME_EXITING",
+            "name": "Exiting"
+          },
+          {
+            "member": "BGFX_RENDER_FRAME_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_function_id",
+        "values": [
+          {
+            "member": "BGFX_FUNCTION_ID_ATTACHMENT_INIT",
+            "name": "AttachmentInit"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_BEGIN",
+            "name": "VertexLayoutBegin"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_ADD",
+            "name": "VertexLayoutAdd"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_DECODE",
+            "name": "VertexLayoutDecode"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_HAS",
+            "name": "VertexLayoutHas"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_SKIP",
+            "name": "VertexLayoutSkip"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_END",
+            "name": "VertexLayoutEnd"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_GET_OFFSET",
+            "name": "VertexLayoutGetOffset"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_GET_STRIDE",
+            "name": "VertexLayoutGetStride"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_LAYOUT_GET_SIZE",
+            "name": "VertexLayoutGetSize"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_PACK",
+            "name": "VertexPack"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_UNPACK",
+            "name": "VertexUnpack"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_VERTEX_CONVERT",
+            "name": "VertexConvert"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_WELD_VERTICES",
+            "name": "WeldVertices"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_TOPOLOGY_CONVERT",
+            "name": "TopologyConvert"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_TOPOLOGY_SORT_TRI_LIST",
+            "name": "TopologySortTriList"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_SUPPORTED_RENDERERS",
+            "name": "GetSupportedRenderers"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_RENDERER_NAME",
+            "name": "GetRendererName"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_INIT_CTOR",
+            "name": "InitCtor"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_INIT",
+            "name": "Init"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SHUTDOWN",
+            "name": "Shutdown"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_RESET",
+            "name": "Reset"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_FRAME",
+            "name": "Frame"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_RENDERER_TYPE",
+            "name": "GetRendererType"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_CAPS",
+            "name": "GetCaps"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_STATS",
+            "name": "GetStats"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ALLOC",
+            "name": "Alloc"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_COPY",
+            "name": "Copy"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_MAKE_REF",
+            "name": "MakeRef"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_MAKE_REF_RELEASE",
+            "name": "MakeRefRelease"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_DEBUG",
+            "name": "SetDebug"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DBG_TEXT_CLEAR",
+            "name": "DbgTextClear"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DBG_TEXT_PRINTF",
+            "name": "DbgTextPrintf"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DBG_TEXT_VPRINTF",
+            "name": "DbgTextVprintf"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DBG_TEXT_IMAGE",
+            "name": "DbgTextImage"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_INDEX_BUFFER",
+            "name": "CreateIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_INDEX_BUFFER_NAME",
+            "name": "SetIndexBufferName"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_INDEX_BUFFER",
+            "name": "DestroyIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_VERTEX_LAYOUT",
+            "name": "CreateVertexLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_VERTEX_LAYOUT",
+            "name": "DestroyVertexLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_VERTEX_BUFFER",
+            "name": "CreateVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VERTEX_BUFFER_NAME",
+            "name": "SetVertexBufferName"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_VERTEX_BUFFER",
+            "name": "DestroyVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_DYNAMIC_INDEX_BUFFER",
+            "name": "CreateDynamicIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_DYNAMIC_INDEX_BUFFER_MEM",
+            "name": "CreateDynamicIndexBufferMem"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_UPDATE_DYNAMIC_INDEX_BUFFER",
+            "name": "UpdateDynamicIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_DYNAMIC_INDEX_BUFFER",
+            "name": "DestroyDynamicIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_DYNAMIC_VERTEX_BUFFER",
+            "name": "CreateDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_DYNAMIC_VERTEX_BUFFER_MEM",
+            "name": "CreateDynamicVertexBufferMem"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_UPDATE_DYNAMIC_VERTEX_BUFFER",
+            "name": "UpdateDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_DYNAMIC_VERTEX_BUFFER",
+            "name": "DestroyDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_AVAIL_TRANSIENT_INDEX_BUFFER",
+            "name": "GetAvailTransientIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_AVAIL_TRANSIENT_VERTEX_BUFFER",
+            "name": "GetAvailTransientVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_AVAIL_INSTANCE_DATA_BUFFER",
+            "name": "GetAvailInstanceDataBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ALLOC_TRANSIENT_INDEX_BUFFER",
+            "name": "AllocTransientIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ALLOC_TRANSIENT_VERTEX_BUFFER",
+            "name": "AllocTransientVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ALLOC_TRANSIENT_BUFFERS",
+            "name": "AllocTransientBuffers"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ALLOC_INSTANCE_DATA_BUFFER",
+            "name": "AllocInstanceDataBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_INDIRECT_BUFFER",
+            "name": "CreateIndirectBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_INDIRECT_BUFFER",
+            "name": "DestroyIndirectBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_SHADER",
+            "name": "CreateShader"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_SHADER_UNIFORMS",
+            "name": "GetShaderUniforms"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_SHADER_NAME",
+            "name": "SetShaderName"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_SHADER",
+            "name": "DestroyShader"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_PROGRAM",
+            "name": "CreateProgram"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_COMPUTE_PROGRAM",
+            "name": "CreateComputeProgram"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_PROGRAM",
+            "name": "DestroyProgram"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_IS_TEXTURE_VALID",
+            "name": "IsTextureValid"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_IS_FRAME_BUFFER_VALID",
+            "name": "IsFrameBufferValid"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CALC_TEXTURE_SIZE",
+            "name": "CalcTextureSize"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_TEXTURE",
+            "name": "CreateTexture"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_TEXTURE_2D",
+            "name": "CreateTexture2d"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_TEXTURE_2D_SCALED",
+            "name": "CreateTexture2dScaled"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_TEXTURE_3D",
+            "name": "CreateTexture3d"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_TEXTURE_CUBE",
+            "name": "CreateTextureCube"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_UPDATE_TEXTURE_2D",
+            "name": "UpdateTexture2d"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_UPDATE_TEXTURE_3D",
+            "name": "UpdateTexture3d"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_UPDATE_TEXTURE_CUBE",
+            "name": "UpdateTextureCube"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_READ_TEXTURE",
+            "name": "ReadTexture"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_TEXTURE_NAME",
+            "name": "SetTextureName"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_DIRECT_ACCESS_PTR",
+            "name": "GetDirectAccessPtr"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_TEXTURE",
+            "name": "DestroyTexture"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_FRAME_BUFFER",
+            "name": "CreateFrameBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_FRAME_BUFFER_SCALED",
+            "name": "CreateFrameBufferScaled"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_FRAME_BUFFER_FROM_HANDLES",
+            "name": "CreateFrameBufferFromHandles"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_FRAME_BUFFER_FROM_ATTACHMENT",
+            "name": "CreateFrameBufferFromAttachment"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_FRAME_BUFFER_FROM_NWH",
+            "name": "CreateFrameBufferFromNwh"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_FRAME_BUFFER_NAME",
+            "name": "SetFrameBufferName"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_TEXTURE",
+            "name": "GetTexture"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_FRAME_BUFFER",
+            "name": "DestroyFrameBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_UNIFORM",
+            "name": "CreateUniform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_UNIFORM_WITH_FREQ",
+            "name": "CreateUniformWithFreq"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_UNIFORM_INFO",
+            "name": "GetUniformInfo"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_UNIFORM",
+            "name": "DestroyUniform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_CREATE_OCCLUSION_QUERY",
+            "name": "CreateOcclusionQuery"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_RESULT",
+            "name": "GetResult"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DESTROY_OCCLUSION_QUERY",
+            "name": "DestroyOcclusionQuery"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_PALETTE_COLOR",
+            "name": "SetPaletteColor"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_PALETTE_COLOR_RGBA32F",
+            "name": "SetPaletteColorRgba32f"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_PALETTE_COLOR_RGBA8",
+            "name": "SetPaletteColorRgba8"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_NAME",
+            "name": "SetViewName"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_RECT",
+            "name": "SetViewRect"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_RECT_RATIO",
+            "name": "SetViewRectRatio"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_SCISSOR",
+            "name": "SetViewScissor"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_CLEAR",
+            "name": "SetViewClear"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_CLEAR_MRT",
+            "name": "SetViewClearMrt"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_MODE",
+            "name": "SetViewMode"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_FRAME_BUFFER",
+            "name": "SetViewFrameBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_TRANSFORM",
+            "name": "SetViewTransform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_ORDER",
+            "name": "SetViewOrder"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_SHADING_RATE",
+            "name": "SetViewShadingRate"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_RESET_VIEW",
+            "name": "ResetView"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_BEGIN",
+            "name": "EncoderBegin"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_END",
+            "name": "EncoderEnd"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_MARKER",
+            "name": "EncoderSetMarker"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_STATE",
+            "name": "EncoderSetState"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_CONDITION",
+            "name": "EncoderSetCondition"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_STENCIL",
+            "name": "EncoderSetStencil"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_SCISSOR",
+            "name": "EncoderSetScissor"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_SCISSOR_CACHED",
+            "name": "EncoderSetScissorCached"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_TRANSFORM",
+            "name": "EncoderSetTransform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_TRANSFORM_CACHED",
+            "name": "EncoderSetTransformCached"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_ALLOC_TRANSFORM",
+            "name": "EncoderAllocTransform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_UNIFORM",
+            "name": "EncoderSetUniform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VIEW_UNIFORM",
+            "name": "SetViewUniform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_FRAME_UNIFORM",
+            "name": "SetFrameUniform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_INDEX_BUFFER",
+            "name": "EncoderSetIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_DYNAMIC_INDEX_BUFFER",
+            "name": "EncoderSetDynamicIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_TRANSIENT_INDEX_BUFFER",
+            "name": "EncoderSetTransientIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_VERTEX_BUFFER",
+            "name": "EncoderSetVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_VERTEX_BUFFER_WITH_LAYOUT",
+            "name": "EncoderSetVertexBufferWithLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_DYNAMIC_VERTEX_BUFFER",
+            "name": "EncoderSetDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_DYNAMIC_VERTEX_BUFFER_WITH_LAYOUT",
+            "name": "EncoderSetDynamicVertexBufferWithLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_TRANSIENT_VERTEX_BUFFER",
+            "name": "EncoderSetTransientVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_TRANSIENT_VERTEX_BUFFER_WITH_LAYOUT",
+            "name": "EncoderSetTransientVertexBufferWithLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_VERTEX_COUNT",
+            "name": "EncoderSetVertexCount"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_INSTANCE_DATA_BUFFER",
+            "name": "EncoderSetInstanceDataBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_INSTANCE_DATA_FROM_VERTEX_BUFFER",
+            "name": "EncoderSetInstanceDataFromVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_INSTANCE_DATA_FROM_DYNAMIC_VERTEX_BUFFER",
+            "name": "EncoderSetInstanceDataFromDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_INSTANCE_COUNT",
+            "name": "EncoderSetInstanceCount"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_TEXTURE",
+            "name": "EncoderSetTexture"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_TOUCH",
+            "name": "EncoderTouch"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SUBMIT",
+            "name": "EncoderSubmit"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SUBMIT_OCCLUSION_QUERY",
+            "name": "EncoderSubmitOcclusionQuery"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SUBMIT_INDIRECT",
+            "name": "EncoderSubmitIndirect"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SUBMIT_INDIRECT_COUNT",
+            "name": "EncoderSubmitIndirectCount"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_COMPUTE_INDEX_BUFFER",
+            "name": "EncoderSetComputeIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_COMPUTE_VERTEX_BUFFER",
+            "name": "EncoderSetComputeVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_COMPUTE_DYNAMIC_INDEX_BUFFER",
+            "name": "EncoderSetComputeDynamicIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_COMPUTE_DYNAMIC_VERTEX_BUFFER",
+            "name": "EncoderSetComputeDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_COMPUTE_INDIRECT_BUFFER",
+            "name": "EncoderSetComputeIndirectBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_SET_IMAGE",
+            "name": "EncoderSetImage"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_DISPATCH",
+            "name": "EncoderDispatch"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_DISPATCH_INDIRECT",
+            "name": "EncoderDispatchIndirect"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_DISCARD",
+            "name": "EncoderDiscard"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ENCODER_BLIT",
+            "name": "EncoderBlit"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_REQUEST_SCREEN_SHOT",
+            "name": "RequestScreenShot"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_RENDER_FRAME",
+            "name": "RenderFrame"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_PLATFORM_DATA",
+            "name": "SetPlatformData"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_GET_INTERNAL_DATA",
+            "name": "GetInternalData"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_OVERRIDE_INTERNAL_TEXTURE_PTR",
+            "name": "OverrideInternalTexturePtr"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_OVERRIDE_INTERNAL_TEXTURE",
+            "name": "OverrideInternalTexture"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_MARKER",
+            "name": "SetMarker"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_STATE",
+            "name": "SetState"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_CONDITION",
+            "name": "SetCondition"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_STENCIL",
+            "name": "SetStencil"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_SCISSOR",
+            "name": "SetScissor"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_SCISSOR_CACHED",
+            "name": "SetScissorCached"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_TRANSFORM",
+            "name": "SetTransform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_TRANSFORM_CACHED",
+            "name": "SetTransformCached"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_ALLOC_TRANSFORM",
+            "name": "AllocTransform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_UNIFORM",
+            "name": "SetUniform"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_INDEX_BUFFER",
+            "name": "SetIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_DYNAMIC_INDEX_BUFFER",
+            "name": "SetDynamicIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_TRANSIENT_INDEX_BUFFER",
+            "name": "SetTransientIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VERTEX_BUFFER",
+            "name": "SetVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VERTEX_BUFFER_WITH_LAYOUT",
+            "name": "SetVertexBufferWithLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_DYNAMIC_VERTEX_BUFFER",
+            "name": "SetDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_DYNAMIC_VERTEX_BUFFER_WITH_LAYOUT",
+            "name": "SetDynamicVertexBufferWithLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_TRANSIENT_VERTEX_BUFFER",
+            "name": "SetTransientVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_TRANSIENT_VERTEX_BUFFER_WITH_LAYOUT",
+            "name": "SetTransientVertexBufferWithLayout"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_VERTEX_COUNT",
+            "name": "SetVertexCount"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_INSTANCE_DATA_BUFFER",
+            "name": "SetInstanceDataBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_INSTANCE_DATA_FROM_VERTEX_BUFFER",
+            "name": "SetInstanceDataFromVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_INSTANCE_DATA_FROM_DYNAMIC_VERTEX_BUFFER",
+            "name": "SetInstanceDataFromDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_INSTANCE_COUNT",
+            "name": "SetInstanceCount"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_TEXTURE",
+            "name": "SetTexture"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_TOUCH",
+            "name": "Touch"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SUBMIT",
+            "name": "Submit"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SUBMIT_OCCLUSION_QUERY",
+            "name": "SubmitOcclusionQuery"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SUBMIT_INDIRECT",
+            "name": "SubmitIndirect"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SUBMIT_INDIRECT_COUNT",
+            "name": "SubmitIndirectCount"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_COMPUTE_INDEX_BUFFER",
+            "name": "SetComputeIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_COMPUTE_VERTEX_BUFFER",
+            "name": "SetComputeVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_COMPUTE_DYNAMIC_INDEX_BUFFER",
+            "name": "SetComputeDynamicIndexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_COMPUTE_DYNAMIC_VERTEX_BUFFER",
+            "name": "SetComputeDynamicVertexBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_COMPUTE_INDIRECT_BUFFER",
+            "name": "SetComputeIndirectBuffer"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_SET_IMAGE",
+            "name": "SetImage"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DISPATCH",
+            "name": "Dispatch"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DISPATCH_INDIRECT",
+            "name": "DispatchIndirect"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_DISCARD",
+            "name": "Discard"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_BLIT",
+            "name": "Blit"
+          },
+          {
+            "member": "BGFX_FUNCTION_ID_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_topology_convert",
+        "values": [
+          {
+            "member": "BGFX_TOPOLOGY_CONVERT_TRI_LIST_FLIP_WINDING",
+            "name": "TriListFlipWinding"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_CONVERT_TRI_STRIP_FLIP_WINDING",
+            "name": "TriStripFlipWinding"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_CONVERT_TRI_LIST_TO_LINE_LIST",
+            "name": "TriListToLineList"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_CONVERT_TRI_STRIP_TO_TRI_LIST",
+            "name": "TriStripToTriList"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_CONVERT_LINE_STRIP_TO_LINE_LIST",
+            "name": "LineStripToLineList"
+          },
+          {
+            "member": "BGFX_TOPOLOGY_CONVERT_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_native_window_handle_type",
+        "values": [
+          {
+            "member": "BGFX_NATIVE_WINDOW_HANDLE_TYPE_DEFAULT",
+            "name": "Default"
+          },
+          {
+            "member": "BGFX_NATIVE_WINDOW_HANDLE_TYPE_WAYLAND",
+            "name": "Wayland"
+          },
+          {
+            "member": "BGFX_NATIVE_WINDOW_HANDLE_TYPE_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_access",
+        "values": [
+          {
+            "member": "BGFX_ACCESS_READ",
+            "name": "Read"
+          },
+          {
+            "member": "BGFX_ACCESS_WRITE",
+            "name": "Write"
+          },
+          {
+            "member": "BGFX_ACCESS_READWRITE",
+            "name": "ReadWrite"
+          },
+          {
+            "member": "BGFX_ACCESS_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_occlusion_query_result",
+        "values": [
+          {
+            "member": "BGFX_OCCLUSION_QUERY_RESULT_INVISIBLE",
+            "name": "Invisible"
+          },
+          {
+            "member": "BGFX_OCCLUSION_QUERY_RESULT_VISIBLE",
+            "name": "Visible"
+          },
+          {
+            "member": "BGFX_OCCLUSION_QUERY_RESULT_NORESULT",
+            "name": "NoResult"
+          },
+          {
+            "member": "BGFX_OCCLUSION_QUERY_RESULT_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_texture_format",
+        "values": [
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BC1",
+            "name": "BC1"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BC2",
+            "name": "BC2"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BC3",
+            "name": "BC3"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BC4",
+            "name": "BC4"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BC5",
+            "name": "BC5"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BC6H",
+            "name": "BC6H"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BC7",
+            "name": "BC7"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ETC1",
+            "name": "ETC1"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ETC2",
+            "name": "ETC2"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ETC2A",
+            "name": "ETC2A"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ETC2A1",
+            "name": "ETC2A1"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_EACR11",
+            "name": "EACR11"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_EACR11S",
+            "name": "EACR11S"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_EACRG11",
+            "name": "EACRG11"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_EACRG11S",
+            "name": "EACRG11S"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_PTC12",
+            "name": "PTC12"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_PTC14",
+            "name": "PTC14"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_PTC12A",
+            "name": "PTC12A"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_PTC14A",
+            "name": "PTC14A"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_PTC22",
+            "name": "PTC22"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_PTC24",
+            "name": "PTC24"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ATC",
+            "name": "ATC"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ATCE",
+            "name": "ATCE"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ATCI",
+            "name": "ATCI"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC4X4",
+            "name": "ASTC4x4"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC5X4",
+            "name": "ASTC5x4"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC5X5",
+            "name": "ASTC5x5"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC6X5",
+            "name": "ASTC6x5"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC6X6",
+            "name": "ASTC6x6"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC8X5",
+            "name": "ASTC8x5"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC8X6",
+            "name": "ASTC8x6"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC8X8",
+            "name": "ASTC8x8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC10X5",
+            "name": "ASTC10x5"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC10X6",
+            "name": "ASTC10x6"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC10X8",
+            "name": "ASTC10x8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC10X10",
+            "name": "ASTC10x10"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC12X10",
+            "name": "ASTC12x10"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_ASTC12X12",
+            "name": "ASTC12x12"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_UNKNOWN",
+            "name": "Unknown"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R1",
+            "name": "R1"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_A8",
+            "name": "A8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R8",
+            "name": "R8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R8I",
+            "name": "R8i"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R8U",
+            "name": "R8u"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R8S",
+            "name": "R8s"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R16",
+            "name": "R16"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R16I",
+            "name": "R16i"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R16U",
+            "name": "R16u"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R16F",
+            "name": "R16f"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R16S",
+            "name": "R16s"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R32I",
+            "name": "R32i"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R32U",
+            "name": "R32u"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R32F",
+            "name": "R32f"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG8",
+            "name": "RG8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG8I",
+            "name": "RG8I"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG8U",
+            "name": "RG8U"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG8S",
+            "name": "RG8S"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG16",
+            "name": "RG16"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG16I",
+            "name": "RG16I"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG16U",
+            "name": "RG16U"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG16F",
+            "name": "RG16F"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG16S",
+            "name": "RG16S"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG32I",
+            "name": "RG32I"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG32U",
+            "name": "RG32U"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG32F",
+            "name": "RG32F"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGB8",
+            "name": "RGB8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGB8I",
+            "name": "RGB8I"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGB8U",
+            "name": "RGB8U"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGB8S",
+            "name": "RGB8S"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGB9E5F",
+            "name": "RGB9E5F"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BGRA8",
+            "name": "BGRA8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA8",
+            "name": "RGBA8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA8I",
+            "name": "RGBA8I"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA8U",
+            "name": "RGBA8U"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA8S",
+            "name": "RGBA8S"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA16",
+            "name": "RGBA16"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA16I",
+            "name": "RGBA16I"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA16U",
+            "name": "RGBA16U"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA16F",
+            "name": "RGBA16F"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA16S",
+            "name": "RGBA16S"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA32I",
+            "name": "RGBA32I"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA32U",
+            "name": "RGBA32U"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA32F",
+            "name": "RGBA32F"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_B5G6R5",
+            "name": "B5g6r5"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_R5G6B5",
+            "name": "R5g6b5"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BGRA4",
+            "name": "BGRA4"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGBA4",
+            "name": "RGBA4"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_BGR5A1",
+            "name": "BGR5A1"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGB5A1",
+            "name": "RGB5A1"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RGB10A2",
+            "name": "RGB10A2"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_RG11B10F",
+            "name": "RG11B10F"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_UNKNOWNDEPTH",
+            "name": "UnknownDepth"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D16",
+            "name": "D16"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D24",
+            "name": "D24"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D24S8",
+            "name": "D24s8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D32",
+            "name": "D32"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D16F",
+            "name": "D16f"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D24F",
+            "name": "D24f"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D32F",
+            "name": "D32f"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_D0S8",
+            "name": "D0s8"
+          },
+          {
+            "member": "BGFX_TEXTURE_FORMAT_COUNT",
+            "name": "Count"
+          }
+        ]
+      },
+      {
+        "nativeType": "bgfx_uniform_freq",
+        "values": [
+          {
+            "member": "BGFX_UNIFORM_FREQ_DRAW",
+            "name": "Draw"
+          },
+          {
+            "member": "BGFX_UNIFORM_FREQ_VIEW",
+            "name": "View"
+          },
+          {
+            "member": "BGFX_UNIFORM_FREQ_FRAME",
+            "name": "Frame"
+          },
+          {
+            "member": "BGFX_UNIFORM_FREQ_COUNT",
+            "name": "Count"
+          }
+        ]
+      }
+    ]
+  },
+  "runtime": {
+    "mode": "package"
+  },
+  "output": {
+    "layout": "singleFile",
+    "singleFileName": "Bindings.cs",
+    "root": "../obj/bindings/bgcs"
+  }
 }

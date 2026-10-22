@@ -1,7 +1,5 @@
-using Inno.Build.Bindings;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Inno.Build.Composition;
 using Inno.Build.Toolchains;
 
@@ -38,19 +36,8 @@ public static class StandardBuildEnvironment
         BuildTargetId toolsTarget,
         string? dotnetHost = null
     ) {
-        string system = OperatingSystem.IsWindows() ? "Windows"
-            : OperatingSystem.IsMacOS() ? "MacOS"
-            : OperatingSystem.IsLinux() ? "Linux"
-            : throw new PlatformNotSupportedException("This system cannot execute the standard build distribution.");
-        string architecture = RuntimeInformation.ProcessArchitecture switch
-        {
-            Architecture.X64 => "x64",
-            Architecture.Arm64 => "arm64",
-            Architecture.X86 => "x86",
-            _ => throw new PlatformNotSupportedException("This processor has no standard build host integration.")
-        };
         string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
         host = ToolchainEnvironment.ResolveExecutable(host);
-        return new BuildCompositionContext(host, applicationDirectory, new BuildHostDescriptor(system, architecture), toolsTarget, new NativeBindingGenerator());
+        return new BuildCompositionContext(host, applicationDirectory, StandardBuildHosts.Capture(), toolsTarget);
     }
 }

@@ -8,21 +8,6 @@ namespace Inno.Build;
 public readonly record struct BuildTargetId
 {
     /// <summary>
-    /// Identifies a native Apple-silicon macOS Player.
-    /// </summary>
-    public static BuildTargetId macOSArm64 { get; } = new("macos-arm64");
-
-    /// <summary>
-    /// Identifies a native 64-bit Windows Player.
-    /// </summary>
-    public static BuildTargetId windowsX64 { get; } = new("windows-x64");
-
-    /// <summary>
-    /// Identifies a browser Player using WebAssembly and WebGL 2.
-    /// </summary>
-    public static BuildTargetId browserWasm { get; } = new("browser-wasm");
-
-    /// <summary>
     /// Creates a stable target identity.
     /// </summary>
     /// <param name="value">

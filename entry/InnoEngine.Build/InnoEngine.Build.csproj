@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyMetadata Include="Inno.Build.DevelopmentTarget" Value="$(InnoDevelopmentTarget)" />
     <ProjectReference Include="../../build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 using Inno.Assets.Pipeline;
 using Inno.Build;
 using Inno.Build.Composition;
-using Inno.Build.Toolchains;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Settings;
 using Inno.Plugins.Authoring;
@@ -27,12 +27,13 @@ internal static class BuildComposition
         string engineRoot,
         CancellationToken cancellationToken
     ) {
-        var nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(context.bindingGenerator);
+        var nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(StandardBuildDistribution.Create(context).build.ResolveBindingGenerator(context.toolsTarget.value));
         var provider = StandardBuildDistribution.Create(context).build.ResolveNativeToolchain(context.toolsTarget.value);
         nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
             nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));
-        ProductNativeBuildPlan plan = StandardBuildDistribution.Create(context).build.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
-        return await plan.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
+        NativeProductContribution contribution = StandardBuildDistribution.Create(context).build.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
+            ProductNativeBuildPlan plan = contribution.plan;
+        return await contribution.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
     }
 
     internal static BuildPipeline CreatePipeline(

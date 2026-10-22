@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
 
@@ -14,7 +15,7 @@ internal sealed class NativeInputReadCache
     private readonly string m_phase;
     private readonly Dictionary<string, IReadOnlyList<(string relative, string physical)>> m_roots;
     private readonly Dictionary<string, byte[]> m_hashes;
-    private readonly Dictionary<string, string> m_physicalPaths;
+    private readonly PhysicalPathResolver m_physicalPaths;
     private readonly Dictionary<string, string> m_readingPaths;
 
     internal NativeInputReadCache(
@@ -32,7 +33,7 @@ internal sealed class NativeInputReadCache
     internal StringComparer pathComparer => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     internal byte[] GetFrozenHash(string path)
-        => m_hashes.TryGetValue(ResolvePhysicalPath(path), out byte[]? hash) ? hash
+        => m_hashes.TryGetValue(m_physicalPaths.Resolve(path), out byte[]? hash) ? hash
             : throw new InvalidOperationException($"Native input '{path}' was not frozen by this operation's recipe.");
 
     internal NativeInputSnapshot CaptureRecordedInputs(string engineRoot)
@@ -62,7 +63,7 @@ internal sealed class NativeInputReadCache
         CancellationToken cancellationToken
     ) {
         string readingPath = Path.GetFullPath(path);
-        path = ResolvePhysicalPath(readingPath);
+        path = m_physicalPaths.Resolve(readingPath);
         m_readingPaths[readingPath] = path;
         if (m_hashes.TryGetValue(path, out byte[]? hash))
         {
@@ -93,24 +94,6 @@ internal sealed class NativeInputReadCache
         }
     }
 
-    private string ResolvePhysicalPath(string path)
-    {
-        string absolute = Path.GetFullPath(path);
-        if (m_physicalPaths.TryGetValue(absolute, out string? resolved))
-            return resolved;
-        string? parent = Path.GetDirectoryName(absolute);
-        if (parent is null)
-            return absolute;
-        string physicalParent = ResolvePhysicalPath(parent);
-        string candidate = Path.Combine(physicalParent, Path.GetFileName(absolute));
-        FileSystemInfo info = Directory.Exists(candidate) ? new DirectoryInfo(candidate) : new FileInfo(candidate);
-        resolved = (info.Attributes & FileAttributes.ReparsePoint) != 0
-            ? ResolvePhysicalPath(info.ResolveLinkTarget(returnFinalTarget: true)?.FullName
-                ?? throw new IOException($"Native input link '{candidate}' has no resolvable target.")) : candidate;
-        m_physicalPaths.Add(absolute, resolved);
-        return resolved;
-    }
-
     private void EnumerateDirectory(
         string directory,
         string relativeRoot,
@@ -119,7 +102,7 @@ internal sealed class NativeInputReadCache
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        string physicalRoot = ResolvePhysicalPath(directory);
+        string physicalRoot = m_physicalPaths.Resolve(directory);
         if (!ancestors.Add(physicalRoot))
             throw new IOException($"A native input contains a directory link cycle at '{directory}'.");
         try

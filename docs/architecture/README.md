@@ -25,3 +25,5 @@
 运行时不引用构建工具。共同 Editor Hosting 不选择命名平台或第三方实现。当前可用实现与未来接入方法分别描述，未实测的平台不标记为已经验收。
 
 日期化计划、阶段报告和旧审查保存于仓库 records 目录；当前 Wiki 不通过历史完成声明解释当前能力。
+
+- [Native 构建平台职责与文件树](NATIVE_BUILD_PLATFORM_OWNERSHIP.md)

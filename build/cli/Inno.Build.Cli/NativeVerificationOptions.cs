@@ -54,7 +54,8 @@ internal sealed class NativeVerificationOptions
         string configuration = values.GetValueOrDefault("configuration", C_DEFAULT_CONFIGURATION);
         if (configuration is not ("Debug" or "Release"))
             throw new ArgumentException("--configuration must be either Debug or Release.");
-        string dotnet = values.GetValueOrDefault("dotnet", ResolveDotnet());
+        string dotnet = ToolchainEnvironment.ResolveExecutable(values.GetValueOrDefault("dotnet")
+            ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet");
 
         if (!values.TryGetValue("target", out string? target) || string.IsNullOrWhiteSpace(target))
             throw new ArgumentException("--target requires an explicit implemented native target.");
@@ -65,22 +66,4 @@ internal sealed class NativeVerificationOptions
         return new NativeVerificationOptions(engineRoot, configuration, dotnet, target);
     }
 
-    private static string ResolveDotnet()
-    {
-        string? hostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
-        if (!string.IsNullOrWhiteSpace(hostPath) && File.Exists(hostPath))
-            return hostPath;
-        string? dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        if (!string.IsNullOrWhiteSpace(dotnetRoot))
-        {
-            string rootedHost = Path.Combine(dotnetRoot, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
-            if (File.Exists(rootedHost))
-                return rootedHost;
-        }
-        string userHost = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            ".dotnet",
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
-        return File.Exists(userHost) ? userHost : "dotnet";
-    }
 }

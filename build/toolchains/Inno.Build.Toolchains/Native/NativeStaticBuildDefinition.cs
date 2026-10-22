@@ -18,10 +18,7 @@ public sealed class NativeStaticBuildDefinition
     /// <param name="inputPaths">
     /// The portable checkout-relative source and build dependencies.
     /// </param>
-    /// <param name="targetIds">
-    /// The exact ABI targets supported by this archive recipe.
-    /// </param>
-    /// <param name="archiveNames">
+    /// <param name="logicalOutputs">
     /// The exact archive file names required after installation.
     /// </param>
     /// <param name="nativeSourceDirectory">
@@ -36,29 +33,23 @@ public sealed class NativeStaticBuildDefinition
     public NativeStaticBuildDefinition(
         string cmakeFile,
         IEnumerable<string> inputPaths,
-        IEnumerable<string> archiveNames,
-        IEnumerable<string> targetIds,
+        IEnumerable<string> logicalOutputs,
         string? nativeSourceDirectory = null
     ) {
         ArgumentNullException.ThrowIfNull(inputPaths);
-        ArgumentNullException.ThrowIfNull(archiveNames);
+        ArgumentNullException.ThrowIfNull(logicalOutputs);
         this.cmakeFile = ValidatePath(cmakeFile);
         this.inputPaths = Array.AsReadOnly(inputPaths.Select(ValidatePath).Distinct(StringComparer.Ordinal).ToArray());
         this.nativeSourceDirectory = nativeSourceDirectory is null ? null : ValidatePath(nativeSourceDirectory);
         if (this.nativeSourceDirectory is not null && !this.inputPaths.Any(path => path == this.nativeSourceDirectory
             || path.StartsWith(this.nativeSourceDirectory + "/", StringComparison.Ordinal)))
             throw new ArgumentException("The native source root must contain declared static recipe inputs.", nameof(nativeSourceDirectory));
-        string[] archives = archiveNames.Select(ValidatePath).ToArray();
-        if (archives.Length == 0 || archives.Any(static name => name.Contains('/') || !name.EndsWith(".a", StringComparison.Ordinal))
+        string[] archives = logicalOutputs.Select(ValidatePath).ToArray();
+        if (archives.Length == 0 || archives.Any(static name => name.Contains('/'))
             || archives.Distinct(StringComparer.OrdinalIgnoreCase).Count() != archives.Length)
-            throw new ArgumentException("A static recipe requires unique portable archive file names.", nameof(archiveNames));
-        this.archiveNames = Array.AsReadOnly(archives);
-        ArgumentNullException.ThrowIfNull(targetIds);
-        string[] targets = targetIds.Select(ValidatePath).ToArray();
-        if (targets.Length == 0 || targets.Any(static id => id.Contains('/'))
-            || targets.Distinct(StringComparer.Ordinal).Count() != targets.Length)
-            throw new ArgumentException("Static recipes require explicit unique target identities.", nameof(targetIds));
-        this.targetIds = Array.AsReadOnly(targets);
+            throw new ArgumentException("A static recipe requires unique portable archive file names.", nameof(logicalOutputs));
+        this.logicalOutputs = Array.AsReadOnly(archives);
+
     }
 
     /// <summary>
@@ -79,12 +70,8 @@ public sealed class NativeStaticBuildDefinition
     /// <summary>
     /// Gets the exact required output closure within this component's target directory.
     /// </summary>
-    public IReadOnlyList<string> archiveNames { get; }
+    public IReadOnlyList<string> logicalOutputs { get; }
 
-    /// <summary>
-    /// Gets the exact supported target identities; other archive formats require a separate recipe.
-    /// </summary>
-    public IReadOnlyList<string> targetIds { get; }
 
     private static string ValidatePath(string path)
     {

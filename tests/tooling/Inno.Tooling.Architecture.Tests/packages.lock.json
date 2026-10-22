@@ -132,6 +132,9 @@
       "inno.extensibility.catalogs": {
         "type": "Project"
       },
+      "inno.testing.source": {
+        "type": "Project"
+      },
       "inno.tooling.architecture": {
         "type": "Project",
         "dependencies": {

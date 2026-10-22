@@ -11,7 +11,6 @@
     <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputPath Condition="'$(InnoBuildToolProject)' == '$(MSBuildProjectName)' and '$(InnoBuildToolOutputPath)' != ''">$(InnoBuildToolOutputPath)</OutputPath>
   </PropertyGroup>
 
   <!-- Build mechanisms and the selected distribution. -->
@@ -32,11 +31,6 @@
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
-  </ItemGroup>
-
-  <!-- Explicit platform build rules. -->
-  <ItemGroup>
-    <ProjectReference Include="../../../platforms/BrowserWasm32/build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <!-- Shared authoring and runtime contracts. -->

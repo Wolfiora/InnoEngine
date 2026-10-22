@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -54,6 +55,37 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         Assert.NotEmpty(snapshot.fingerprint);
         await snapshot.VerifyAsync();
         Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
+    }
+
+    [Fact]
+    public async Task RuntimeInputEvaluationDoesNotShareOrdinaryRestoreOutputs()
+    {
+        string project = Path.Combine(m_root, "App", "App.csproj");
+        File.WriteAllText(project, File.ReadAllText(project).Replace("</Project>",
+            "<ItemGroup><InnoBuildInputProject Include=\"../Tool/Tool.csproj\" GlobalPropertiesToRemove=\"RuntimeIdentifier\" /></ItemGroup></Project>", StringComparison.Ordinal));
+        Write("Tool/Tool.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
+            + "<ImplicitUsings>disable</ImplicitUsings></PropertyGroup><ItemGroup>"
+            + "<ProjectReference Include=\"../Shared/Shared.csproj\" /></ItemGroup></Project>");
+        string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
+        await RestoreOrdinary();
+        string assets = Path.Combine(m_root, "App", "obj", "project.assets.json");
+        byte[] ordinary = File.ReadAllBytes(assets);
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+            new NativeBuildContext(m_root, "release"), sdk, project,
+            new Dictionary<string, string>
+            {
+                ["Configuration"] = "Release",
+                ["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier
+            });
+        Assert.Equal(ordinary, File.ReadAllBytes(assets));
+        await Task.WhenAll(RestoreOrdinary(), snapshot.VerifyAsync().AsTask());
+        Assert.Equal(ordinary, File.ReadAllBytes(assets));
+        Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
+
+        Task RestoreOrdinary() => ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"],
+            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
     }
 
     [Fact]

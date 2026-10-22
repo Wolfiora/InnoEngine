@@ -296,3 +296,10 @@ public void AAA(
 - 冷 CMake producer 通过共同 executor 固定 recipe 声明的工作区输入；Browser 聚合的组件 include、bridge 与参数必须解析到同一复制树。热缓存命中不复制，外部 SDK 与输出保持自己的位置和 owner，不用字符串替换整个仓库根来误重定向输出。
 - Task runtime 只在 IBuildEngine4 Build 生命周期、同一完整请求身份内复用成功不可变 publication；registry 只存 BCL 数据，不持有 SDK owner、lease 或私有 ALC 类型。每个实际载入边界仍有独立 owner；失败/取消不缓存。共享 restore 写入由 Core.IO lease 协调，等待时 Yield/Reacquire，保留锁文件。
 - 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。NuGet Runtime 资产按产品真实 Restore 图选择，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。
+
+## 30. 完成前的深层自查与交付说明
+
+- 每次交付前必须主动自问：当前实现是否达到职责清楚、代码整洁、真实解耦且易于扩展的要求。检查必须深入实际执行链、依赖方向、输入来源、失败处理、并发协议和资源生命周期；不得仅凭目录、类型名或接口数量判断架构质量。
+- 检查新增或修改的基础能力是否能够直接复用 Core IO、Events、Identity、Serialization 等既有契约；在不破坏领域边界的前提下消除重复协议、平行管理器和重复实现。
+- 通过真实调用方、可替换边界及适用验证确认扩展能力。新增 backend 或平台时需要修改哪些 owner，必须能够从实际代码说明；不得用未执行的测试或抽象声明代替证据。
+- 每次最终交付必须简要说明上述自查结果、实际验证证据及尚未解决或无法执行的事项。没有完成验证时明确说明，不得宣称已经达到完美或全部通过。

@@ -30,6 +30,6 @@ internal static class WindowsX64BgfxToolContribution
         return new NativeToolchainSelection(sdk.targetId, sdk.host, tools, sdk.environment,
             sdk.inputPaths.Where(path => path != dotnet && path != cmake)
                 .Concat([Path.Combine(owner, "WindowsX64BgfxToolContribution.cs"), Path.Combine(owner, "WindowsX64BgfxBuildProfile.cs")]),
-            [], sdk.sharedLibraryExtension, sdk.multiConfiguration);
+            [], sdk.linkPlan, sdk.multiConfiguration, sdk.compilerInputs);
     }
 }

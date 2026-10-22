@@ -95,6 +95,7 @@ public sealed class ProductNativeBuildPlan
         var recipes = new List<NativeBuildRecipe>(m_steps.Length);
         foreach (ProductNativeBuildStep step in m_steps)
         {
+            tools.linkPlan.GetFileExtension(step.options.libraryKind);
             NativeBuildContext configured = step.configuration is string configuration ? context.WithConfiguration(configuration) : context;
             NativeBuildContext selected = configured.WithComponentOptions(step.component, step.options);
             NativeBuildRecipe recipe;
@@ -103,11 +104,9 @@ public sealed class ProductNativeBuildPlan
             else
             {
                 NativeStaticBuildDefinition definition = step.component.staticBuild!;
-                if (!definition.targetIds.Contains(tools.targetId, StringComparer.Ordinal))
-                    throw new NotSupportedException($"Component '{step.id}' has no static recipe for '{tools.targetId}'.");
                 recipe = NativeBuildRecipe.CreateForComponent(selected, step.component, step.id, tools.targetId,
                     definition.inputPaths.Append(definition.cmakeFile).Select(path => Path.GetFullPath(path, context.engineRoot)),
-                    definition.archiveNames.Select(static archive => "archive=" + archive).Prepend("static=" + definition.cmakeFile),
+                    definition.logicalOutputs.Select(static archive => "archive=" + archive).Prepend("static=" + definition.cmakeFile),
                     [Path.GetFullPath(definition.cmakeFile, context.engineRoot)]);
             }
             if (recipe is null || recipe.component != step.id || recipe.targetId != tools.targetId
@@ -117,75 +116,6 @@ public sealed class ProductNativeBuildPlan
             recipes.Add(recipe);
         }
         return recipes.AsReadOnly();
-    }
-
-    /// <summary>
-    /// Prepares the declared closure using the context's already resolved target tools.
-    /// </summary>
-    /// <param name="context">
-    /// The operation checkout, configuration and frozen target selection.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels active component work and prevents subsequent steps.
-    /// </param>
-    /// <returns>
-    /// An owned result in declaration order. Dispose it after every deployment or compiler consumer finishes.
-    /// </returns>
-    /// <exception cref="InvalidOperationException">
-    /// Tools are unassigned or a producer returns a foreign component or target.
-    /// </exception>
-    /// <exception cref="NotSupportedException">
-    /// The closure contains components owned by a static aggregate executor.
-    /// </exception>
-    /// <exception cref="OperationCanceledException">
-    /// Preparation was canceled.
-    /// </exception>
-    public async Task<ProductNativeBuildResult> BuildAsync(
-        NativeBuildContext context,
-        CancellationToken cancellationToken
-    ) {
-        ArgumentNullException.ThrowIfNull(context);
-        cancellationToken.ThrowIfCancellationRequested();
-        if (m_steps.Any(static step => step.build is null))
-            throw new NotSupportedException("This closure requires its platform's static aggregate executor.");
-        NativeToolchainSelection toolchain = context.RequireToolchain();
-        NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(context,
-            m_steps.Select(static step => step.component).ToArray(), cancellationToken).ConfigureAwait(false);
-        var completed = new Dictionary<string, NativeBuildProduct>(StringComparer.Ordinal);
-        var borrowed = new ReadOnlyDictionary<string, NativeBuildProduct>(completed);
-        try
-        {
-            context = context.WithBindings(bindings);
-            if (await ProductNativeCacheLookup.TryAcquireAsync(context, m_steps, cancellationToken).ConfigureAwait(false)
-                is IReadOnlyList<NativeBuildProduct> cached)
-                return new ProductNativeBuildResult(cached, bindings);
-            foreach (ProductNativeBuildStep step in m_steps)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                NativeBuildContext configured = step.configuration is string configuration ? context.WithConfiguration(configuration) : context;
-                NativeBuildProduct product = await step.build!(configured.WithComponentOptions(step.component, step.options), borrowed, cancellationToken).ConfigureAwait(false);
-                if (product.component != step.id || product.targetId != toolchain.targetId)
-                {
-                    product.Dispose();
-                    throw new InvalidOperationException($"Native step '{step.id}' returned a foreign component or target.");
-                }
-                completed.Add(step.id, product);
-            }
-            return new ProductNativeBuildResult(m_steps.Select(step => completed[step.id]), bindings);
-        }
-        catch (Exception buildFailure)
-        {
-            try
-            {
-                ProductNativeBuildResult.Release(completed.Values.ToArray(), bindings);
-            }
-            catch (Exception releaseFailure)
-            {
-                throw new AggregateException("Native preparation failed and reading ownership could not be completely released.",
-                    buildFailure, releaseFailure);
-            }
-            throw;
-        }
     }
 
     /// <summary>

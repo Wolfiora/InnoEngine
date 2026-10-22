@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
+using Microsoft.Build.Framework;
 using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
-using Microsoft.Build.Framework;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -90,6 +91,12 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     public string ArtifactDirectory { get; private set; } = string.Empty;
 
     /// <summary>
+    /// Gets the publisher root coordinating the selected immutable artifact, or empty for host sources.
+    /// </summary>
+    [Output]
+    public string ArtifactOwnerDirectory { get; private set; } = string.Empty;
+
+    /// <summary>
     /// Cancels owned work before retiring the task cancellation source.
     /// </summary>
     public void Cancel()
@@ -119,24 +126,31 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             var owner = new NativeComponentDescriptor(ComponentId, project, project,
                 bindingDefinition: definition);
             var context = new NativeBuildContext(root, "release");
-            INativeBindingGenerator generator = new NativeBindingGenerator();
+            BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(TargetId));
+            var execution = new BuildCompositionContext(DotnetHost, captured.applicationDirectory,
+                captured.host, captured.toolsTarget);
+            BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;
+            INativeBindingGenerator generator = distribution.ResolveBindingGenerator(TargetId);
             context = context.WithBindingGenerator(generator);
-            if (mode == NativeBindingOutputMode.TargetArtifacts)
-            {
-                BuildCompositionContext captured = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(TargetId));
-                var execution = new BuildCompositionContext(DotnetHost, captured.applicationDirectory,
-                    captured.host, captured.toolsTarget, generator);
-                BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;
-                if (distribution.TryResolveNativeToolchain(TargetId, out INativeToolchainProvider? provider))
-                {
-                    NativeToolchainSelection toolchain = provider.ResolveAsync(context, execution.host, TargetId, cancellation)
-                        .AsTask().GetAwaiter().GetResult();
-                    context = context.WithToolchain(toolchain);
-                }
-            }
+            NativeToolchainSelection toolchain = distribution.ResolveNativeToolchain(TargetId)
+                .ResolveAsync(context, execution.host, TargetId, cancellation).AsTask().GetAwaiter().GetResult();
+            context = context.WithToolchain(toolchain);
             Dictionary<string, string>? expected = ExpectedFingerprint.Length == 0 ? null
                 : new(StringComparer.Ordinal) { [owner.nativeProject] = ExpectedFingerprint };
-            var request = new NativeBindingGenerationRequest([owner], TargetId, mode, CheckOnly, expected);
+            NativeComponentBuildOptions[] configured = distribution.platforms
+                .Where(platform => platform.descriptor.id.value == TargetId)
+                .SelectMany(static platform => platform.nativeProducts.Values)
+                .SelectMany(static product => product.plan.steps)
+                .Where(step => step.component.nativeProject == owner.nativeProject)
+                .Select(static step => step.options).ToArray();
+            NativeComponentBuildOptions? selectedOptions = configured.FirstOrDefault();
+            if (selectedOptions is not null && configured.Any(options => options.libraryKind != selectedOptions.libraryKind
+                || options.bindingLibraryName != selectedOptions.bindingLibraryName
+                || !options.bindingIncludeDirectories.SequenceEqual(selectedOptions.bindingIncludeDirectories, StringComparer.Ordinal)))
+                throw new InvalidOperationException("The registered products declare ambiguous standalone component binding inputs.");
+            Dictionary<string, NativeComponentBuildOptions>? componentOptions = selectedOptions is null ? null
+                : new(StringComparer.Ordinal) { [owner.nativeProject] = selectedOptions };
+            var request = new NativeBindingGenerationRequest([owner], TargetId, mode, CheckOnly, expected, componentOptions);
             using NativeBindingGenerationResult closure = generator.GenerateAsync(context, request, cancellation)
                 .AsTask().GetAwaiter().GetResult();
             NativeBindingGenerationDescriptor result = closure[owner.nativeProject];
@@ -146,6 +160,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             GenerationFingerprint = result.fingerprint;
             NativeDirectory = result.nativeDirectory;
             ArtifactDirectory = result.artifactDirectory;
+            ArtifactOwnerDirectory = result.artifactOwnerDirectory;
             Log.LogMessage(MessageImportance.High,
                 "INNO-BINDINGS-PREPARE project={0} fingerprint={1} batches={2} generations={3}",
                 project, result.fingerprint, context.statistics.bindingBatches, context.statistics.bindingGenerations);

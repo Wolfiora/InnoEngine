@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Integration.WindowsX64.Bgfx;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -28,11 +28,11 @@ public sealed class ShaderToolSelectionTests
                 File.WriteAllText(tools[name], "frozen executable input");
             }
             var sdk = new NativeToolchainSelection("windows-x64", new BuildHostDescriptor("Windows", "x64"),
-                tools, new Dictionary<string, string>(), [], [], ".dll", true);
+                tools, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".dll"), true);
             NativeToolchainSelection first = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(sdk));
             tools["dotnet"] = Path.Combine(root, "another-dotnet.exe");
             File.WriteAllText(tools["dotnet"], "another managed SDK");
-            var otherSdk = new NativeToolchainSelection("windows-x64", sdk.host, tools, sdk.environment, [], [], ".dll", true);
+            var otherSdk = new NativeToolchainSelection("windows-x64", sdk.host, tools, sdk.environment, [], [], new NativeLinkPlan(".dll"), true);
             NativeToolchainSelection second = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(otherSdk));
 
             Assert.Equal(first.declarations, second.declarations);

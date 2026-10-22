@@ -65,8 +65,6 @@ public sealed class ProductNativeBuildStep
         ArgumentNullException.ThrowIfNull(options);
         if (build is null && options.libraryKind != NativeLibraryKind.Static)
             throw new ArgumentException("Aggregate-only steps require explicit static linkage.", nameof(options));
-        if (build is not null && options.libraryKind != NativeLibraryKind.Shared)
-            throw new ArgumentException("Standalone steps support shared linkage; archive recipes use aggregation.", nameof(options));
         ArgumentNullException.ThrowIfNull(dependencies);
         if (build is null && component.staticBuild is null)
             throw new ArgumentException("Aggregate-only steps require a real static build definition.", nameof(build));

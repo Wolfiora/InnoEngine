@@ -13,6 +13,7 @@ namespace Inno.Build.Bindings;
 
 internal sealed class BindingGenerationOperation : IDisposable
 {
+    private readonly NativeBindingProfile m_profile;
     private readonly NativeBuildContext m_context;
     private readonly NativeBindingGenerationRequest m_request;
     private readonly List<FileLease> m_leases = [];
@@ -21,8 +22,10 @@ internal sealed class BindingGenerationOperation : IDisposable
 
     internal BindingGenerationOperation(
         NativeBuildContext context,
-        NativeBindingGenerationRequest request
+        NativeBindingGenerationRequest request,
+        NativeBindingProfile profile
     ) {
+        m_profile = profile;
         m_context = context;
         m_request = request;
     }
@@ -30,12 +33,14 @@ internal sealed class BindingGenerationOperation : IDisposable
     internal async ValueTask<NativeBindingGenerationResult> ExecuteAsync(CancellationToken cancellation)
     {
         BindingGenerationConfiguration[] definitions = m_request.components.Select(component =>
-            BindingDefinitionReader.Read(m_context, component, m_request)).ToArray();
+            BindingDefinitionReader.Read(m_context, component, m_request, m_profile)).ToArray();
         string[] fingerprints = definitions.Select(definition => Compute(definition, m_context, cancellation)).ToArray();
         for (int index = 0; index < definitions.Length; index++)
             if (m_request.expectedFingerprints.TryGetValue(definitions[index].component.nativeProject, out string? expected)
                 && expected != fingerprints[index])
                 throw new InvalidOperationException("Binding inputs changed after their generation was selected.");
+        BuildCacheOwnerCatalog.Register(m_context.engineRoot, Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
+            "bindings", BuildCacheArtifactRole.ImmutableArtifact, cancellation);
         // Batch leases are acquired in canonical path order. No partial closure is returned on failure.
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         foreach (string path in definitions.Select(definition => Path.Combine(
@@ -62,12 +67,13 @@ internal sealed class BindingGenerationOperation : IDisposable
                 string destination = Path.Combine(output, fingerprint);
                 try
                 {
-                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(destination, fingerprint,
+                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(destination, Path.Combine(m_context.engineRoot, "artifacts", "bindings"), fingerprint,
                         ["Native", "Generated"], cancellation, m_context).ConfigureAwait(false));
                     protectedTargets.Add(destination);
                     if (!m_request.checkOnly)
                     {
-                        results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint));
+                        results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(
+                            Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint));
                         continue;
                     }
                 }
@@ -78,7 +84,8 @@ internal sealed class BindingGenerationOperation : IDisposable
                 var publication = BindingGenerationPublication.CreateTarget(Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, cancellation);
                 m_publications.Add(publication);
                 TargetBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
-                results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(destination, fingerprint));
+                results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(
+                    Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint));
             }
             else
             {
@@ -89,6 +96,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                 {
                     fingerprint = fingerprint, bindingsPath = Path.Combine(output, "Bindings.cs"),
                     artifactDirectory = string.Empty,
+                    artifactOwnerDirectory = string.Empty,
                     nativeDirectory = publication.nativeDestination ?? string.Empty
                 });
             }
@@ -101,7 +109,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                 if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
                 {
                     using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
-                        publication.managedDestination, cancellation).ConfigureAwait(false);
+                        publication.managedDestination, Path.Combine(m_context.engineRoot, "artifacts", "bindings"), cancellation).ConfigureAwait(false);
                     publication.Commit();
                 }
                 else
@@ -113,7 +121,7 @@ internal sealed class BindingGenerationOperation : IDisposable
             {
                 string directory = descriptor.artifactDirectory;
                 if (!protectedTargets.Contains(directory))
-                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(directory, descriptor.fingerprint,
+                    m_reading.Add(await BuildArtifactReadLease.AcquireAsync(directory, Path.Combine(m_context.engineRoot, "artifacts", "bindings"), descriptor.fingerprint,
                         ["Native", "Generated"], cancellation, m_context).ConfigureAwait(false));
             }
         }
@@ -189,7 +197,7 @@ internal sealed class BindingGenerationOperation : IDisposable
     ) {
         for (int index = 0; index < definitions.Count; index++)
         {
-            BindingGenerationConfiguration current = BindingDefinitionReader.Read(verification, definitions[index].component, m_request);
+            BindingGenerationConfiguration current = BindingDefinitionReader.Read(verification, definitions[index].component, m_request, m_profile);
             if (Compute(current, verification, cancellation) != fingerprints[index])
                 throw new InvalidOperationException("Binding inputs changed during an ownership wait or generation; the candidate was not published.");
         }

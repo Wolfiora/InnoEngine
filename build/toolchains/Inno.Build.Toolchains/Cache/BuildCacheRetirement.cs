@@ -24,8 +24,6 @@ internal static class BuildCacheRetirement
         var ownerLeases = new List<FileLease>();
         var artifactLeases = new Dictionary<string, FileLease>(BuildCacheInventory.pathComparer);
         var proposed = candidates.ToDictionary(static entry => entry.directory, BuildCacheInventory.pathComparer);
-        if (proposed.Count == 0)
-            return new([], [], failures, 0, false);
         long reclaimed = 0;
         Stopwatch elapsed = Stopwatch.StartNew();
         bool limited = false;
@@ -117,6 +115,19 @@ internal static class BuildCacheRetirement
                 {
                     failures[path] = failure.Message;
                     protectedPaths.UnionWith(fresh.Protect([path]));
+                }
+            }
+            // Close leaf handles before unlinking them, while every owner gate remains exclusive.
+            foreach (FileLease lease in artifactLeases.Values)
+                lease.Dispose();
+            artifactLeases.Clear();
+            foreach (BuildCacheOwnerDescriptor owner in owners.OrderBy(static owner => owner.coordinationPath, StringComparer.Ordinal))
+            {
+                bounded.Token.ThrowIfCancellationRequested();
+                try { owner.RetireMetadata(bounded.Token); }
+                catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException)
+                {
+                    failures[owner.directory] = failure.Message;
                 }
             }
             skipped.UnionWith(proposed.Keys.Except(retired, BuildCacheInventory.pathComparer));

@@ -35,9 +35,14 @@ internal static class BgfxBuildSession
                     CopyTools(source, output, request.artifactToken, scoped);
                 else
                     BuildArtifactCopier.CopyArtifacts(source, output, scoped.configuration,
-                        new(".build", ["bgfx-shared-lib"], [".dll", ".dylib", ".so"],
+                        new(".build", ["bgfx-shared-lib"], [scoped.RequireToolchain().sharedLibraryExtension],
                             [request.artifactToken], ToolchainEnvironment.NormalizeOutputName));
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken, describeOutputs: (
+                @scoped,
+                output
+            ) => Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories)
+                .Select(file => new NativeArtifact(Path.GetRelativePath(output, file), file,
+                    includeTools ? NativeArtifactRole.SupportFile : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
     }
 
     private static async Task CopySourcesAsync(
@@ -90,7 +95,7 @@ internal static class BgfxBuildSession
     ) {
         string configuration = context.configuration;
         string build = Path.Combine(source, ".build");
-        string extension = context.RequireToolchain().host.system == "Windows" ? ".exe" : string.Empty;
+        string extension = context.RequireToolchain().host.services.executableExtension;
         string suffix = configuration == "debug" ? "Debug" : "Release";
         foreach (string name in new[] { "shaderc", "texturec", "geometryc", "geometryv", "texturev" })
         {

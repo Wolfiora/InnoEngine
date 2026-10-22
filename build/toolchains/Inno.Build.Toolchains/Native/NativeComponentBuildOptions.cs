@@ -40,13 +40,25 @@ public sealed class NativeComponentBuildOptions
     /// <param name="inputPaths">
     /// Portable checkout-relative configuration files included in content hashing and stability checks.
     /// </param>
+    /// <param name="linkPlan">
+    /// Component-specific platform link settings, or null for the selected SDK plan.
+    /// </param>
+    /// <param name="bindingLibraryName">
+    /// The explicit native import identity, or null to retain the component identity.
+    /// </param>
+    /// <param name="bindingIncludeDirectories">
+    /// Additional checkout-relative binding headers owned by an integration.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// Linkage is invalid, definitions are ambiguous or override SDK selection, or an input escapes the checkout.
     /// </exception>
     public NativeComponentBuildOptions(
         NativeLibraryKind libraryKind,
         IEnumerable<string>? cmakeArguments = null,
-        IEnumerable<string>? inputPaths = null
+        IEnumerable<string>? inputPaths = null,
+        string? bindingLibraryName = null,
+        IEnumerable<string>? bindingIncludeDirectories = null,
+        NativeLinkPlan? linkPlan = null
     ) {
         if (!Enum.IsDefined(libraryKind))
             throw new ArgumentException("A supported native library kind is required.", nameof(libraryKind));
@@ -66,6 +78,11 @@ public sealed class NativeComponentBuildOptions
         this.libraryKind = libraryKind;
         this.cmakeArguments = Array.AsReadOnly(arguments);
         this.inputPaths = Array.AsReadOnly(inputs);
+        if (bindingLibraryName is not null && (string.IsNullOrWhiteSpace(bindingLibraryName) || bindingLibraryName.IndexOfAny(['/', '\\', ':']) >= 0))
+            throw new ArgumentException("A binding import identity must be a library name.", nameof(bindingLibraryName));
+        this.bindingLibraryName = bindingLibraryName;
+        this.linkPlan = linkPlan;
+        this.bindingIncludeDirectories = Array.AsReadOnly((bindingIncludeDirectories ?? []).Select(ValidatePath).ToArray());
     }
 
     /// <summary>
@@ -83,8 +100,26 @@ public sealed class NativeComponentBuildOptions
     /// </summary>
     public IReadOnlyList<string> inputPaths { get; }
 
+    /// <summary>
+    /// Gets the explicit native import identity, or null for the component default.
+    /// </summary>
+    public string? bindingLibraryName { get; }
+
+    /// <summary>
+    /// Gets component-specific platform link settings, or null for the target defaults.
+    /// </summary>
+    public NativeLinkPlan? linkPlan { get; }
+
+    /// <summary>
+    /// Gets additional checkout-relative binding header roots.
+    /// </summary>
+    public IReadOnlyList<string> bindingIncludeDirectories { get; }
+
     internal IEnumerable<string> declarations => new[] { "libraryKind=" + libraryKind }
-        .Concat(cmakeArguments.Select(static argument => "componentArgument=" + argument));
+        .Concat(cmakeArguments.Select(static argument => "componentArgument=" + argument))
+        .Concat(linkPlan?.declarations ?? [])
+        .Append("bindingLibrary=" + bindingLibraryName)
+        .Concat(bindingIncludeDirectories.Select(static path => "bindingInclude=" + path));
 
     private static string ValidatePath(string path)
     {

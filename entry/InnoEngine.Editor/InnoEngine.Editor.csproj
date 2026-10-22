@@ -15,12 +15,8 @@
 
   <ItemGroup>
     <ProjectReference
-      Include="../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj"
-      Condition="'$(InnoDevelopmentTarget)' == 'windows-x64'"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj"
-      Condition="'$(InnoDevelopmentTarget)' == 'macos-arm64'"
+      Include="$(InnoDevelopmentEditorProject)"
+      Condition="'$(InnoDevelopmentEditorProject)' != ''"
       PrivateAssets="compile" />
     <ProjectReference Include="../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
   </ItemGroup>

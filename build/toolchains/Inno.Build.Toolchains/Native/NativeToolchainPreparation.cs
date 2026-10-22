@@ -47,11 +47,14 @@ public static class NativeToolchainPreparation
     /// <param name="cmakeArguments">
     /// Ordered target configuration arguments.
     /// </param>
-    /// <param name="sharedLibraryExtension">
-    /// The target's native output suffix.
-    /// </param>
     /// <param name="multiConfiguration">
     /// Whether configuration is chosen during build.
+    /// </param>
+    /// <param name="linkPlan">
+    /// The sole source of target library formats and linker capabilities.
+    /// </param>
+    /// <param name="compilerInputs">
+    /// The selected SDK parser inputs, or null for a selection without parsing capability.
     /// </param>
     /// <returns>
     /// An immutable selection with validated physical tool and SDK inputs.
@@ -66,8 +69,9 @@ public static class NativeToolchainPreparation
         IReadOnlyDictionary<string, string> environment,
         IEnumerable<string> inputs,
         IEnumerable<string> cmakeArguments,
-        string sharedLibraryExtension,
-        bool multiConfiguration
+        NativeLinkPlan linkPlan,
+        bool multiConfiguration,
+        NativeCompilerInputs? compilerInputs = null
     ) {
         var complete = new List<string>(inputs);
         if (tools.TryGetValue("cmake", out string? cmake))
@@ -81,6 +85,6 @@ public static class NativeToolchainPreparation
             if (!File.Exists(input) && !Directory.Exists(input))
                 throw new FileNotFoundException("A selected native toolchain input is unavailable.", input);
         return new(targetId, host, tools, environment, complete, cmakeArguments,
-            sharedLibraryExtension, multiConfiguration);
+            linkPlan, multiConfiguration, compilerInputs);
     }
 }

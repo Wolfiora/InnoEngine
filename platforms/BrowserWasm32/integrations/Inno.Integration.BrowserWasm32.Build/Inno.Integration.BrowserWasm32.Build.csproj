@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../Inno.Integration.BrowserWasm32.Bgfx/Inno.Integration.BrowserWasm32.Bgfx.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
+  </ItemGroup>
+</Project>

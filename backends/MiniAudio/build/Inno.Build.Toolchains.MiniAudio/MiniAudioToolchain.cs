@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -24,8 +25,7 @@ public static class MiniAudioToolchain
         new NativeStaticBuildDefinition(
             "backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio/Native/StaticLibraries.cmake",
             ["extern/miniaudio"],
-            ["libminiaudio.a"],
-            ["browser-wasm"]),
+            ["libminiaudio"]),
         bindingDefinition: "backends/MiniAudio/native/Inno.Native.MiniAudio/Bindings/bindings.props");
 
     /// <summary>
@@ -66,7 +66,14 @@ public static class MiniAudioToolchain
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
 
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken, describeOutputs: static (
+                @scoped,
+                output
+            ) =>
+                Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
+                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                        Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
     }
 
     /// <summary>

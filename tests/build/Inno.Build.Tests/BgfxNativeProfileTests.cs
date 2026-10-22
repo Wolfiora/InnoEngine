@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Bgfx;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -98,7 +98,7 @@ public sealed class BgfxNativeProfileTests : IDisposable
         string compiler = Path.Combine(m_root, "fixture-compiler");
         File.WriteAllText(compiler, "Not executable: this fixture stops before source preparation.");
         var selection = new NativeToolchainSelection(target, new BuildHostDescriptor("FixtureHost", "fixture-cpu"),
-            new Dictionary<string, string> { ["compiler"] = compiler, ["genie"] = compiler }, new Dictionary<string, string>(), [], [], ".fixture", false);
+            new Dictionary<string, string> { ["compiler"] = compiler, ["genie"] = compiler }, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".fixture"), false);
         return new NativeBuildContext(m_root, "debug").WithToolchain(selection).WithComponentOptions(BgfxNativeBuild.componentDescriptor, new(NativeLibraryKind.Shared));
     }
 

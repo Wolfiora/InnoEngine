@@ -108,6 +108,12 @@ public sealed class NativeBindingGenerationDescriptor
     public required string artifactDirectory { get; init; }
 
     /// <summary>
+    /// Gets the publisher root coordinating immutable artifact readers and retirement, or empty for host sources.
+    /// This owner remains unchanged when component sources are copied into a frozen build workspace.
+    /// </summary>
+    public required string artifactOwnerDirectory { get; init; }
+
+    /// <summary>
     /// Reads and validates the result of a completed component generation request.
     /// </summary>
     /// <param name="path">
@@ -122,6 +128,9 @@ public sealed class NativeBindingGenerationDescriptor
     /// <exception cref="JsonException">
     /// The descriptor cannot be read as the current contract.
     /// </exception>
+    /// <exception cref="IOException">
+    /// An immutable artifact escapes its declared publisher or traverses a linked directory.
+    /// </exception>
     public static NativeBindingGenerationDescriptor Load(string path)
     {
         NativeBindingGenerationDescriptor descriptor = JsonSerializer.Deserialize<NativeBindingGenerationDescriptor>(
@@ -129,11 +138,16 @@ public sealed class NativeBindingGenerationDescriptor
         if (string.IsNullOrWhiteSpace(descriptor.fingerprint)
             || string.IsNullOrWhiteSpace(descriptor.bindingsPath) || !Path.IsPathFullyQualified(descriptor.bindingsPath)
             || !File.Exists(descriptor.bindingsPath) || descriptor.nativeDirectory is null || descriptor.artifactDirectory is null
+            || descriptor.artifactOwnerDirectory is null
+            || descriptor.artifactDirectory.Length == 0 && descriptor.artifactOwnerDirectory.Length != 0
+            || descriptor.artifactDirectory.Length > 0 && !Path.IsPathFullyQualified(descriptor.artifactOwnerDirectory)
             || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
                 || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
             || descriptor.nativeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.nativeDirectory)
                 || !Directory.Exists(descriptor.nativeDirectory)))
             throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
+        if (descriptor.artifactDirectory.Length > 0)
+            BuildCacheCleanupPlan.RequireChild(descriptor.artifactOwnerDirectory, descriptor.artifactDirectory);
         return descriptor;
     }
 
@@ -182,6 +196,7 @@ public sealed class NativeBindingGenerationDescriptor
                 new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + name + "'"),
                 new XElement("BindGenExpectedFingerprint", entry.Value.fingerprint),
                 new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
+                new XElement("BindGenArtifactOwnerDirectory", entry.Value.artifactOwnerDirectory),
                 new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
                 new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))));
         }

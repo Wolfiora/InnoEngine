@@ -1,11 +1,591 @@
 {
   "schemaVersion": 1,
-  "extends": [
-    "common.json"
-  ],
-  "targets": [
-    {
-      "id": "host"
+  "library": {
+    "id": "inno.sdl3",
+    "nativeName": "SDL3"
+  },
+  "source": {
+    "language": "c",
+    "languageStandard": "c17",
+    "headers": [
+      "../../../../../extern/SDL/include/SDL3/SDL.h"
+    ],
+    "includeDirectories": [
+      "../../../../../extern/SDL/include"
+    ],
+    "defines": [],
+    "includeTransitivelyReferencedHeaders": true,
+    "parseMacros": true,
+    "selection": {
+      "includeHeaders": [],
+      "excludeDeclarations": [
+        "__debugbreak",
+        "SDL_sscanf",
+        "SDL_snprintf",
+        "SDL_swprintf",
+        "SDL_asprintf",
+        "SDL_SetError",
+        "SDL_IOprintf",
+        "SDL_Log",
+        "SDL_LogTrace",
+        "SDL_LogVerbose",
+        "SDL_LogDebug",
+        "SDL_LogInfo",
+        "SDL_LogWarn",
+        "SDL_LogError",
+        "SDL_LogCritical",
+        "SDL_LogMessage",
+        "SDL_RenderDebugTextFormat"
+      ]
     }
-  ]
+  },
+  "api": {
+    "namespace": "Inno.Native.Sdl3",
+    "name": "SDL",
+    "style": "static",
+    "importMode": "functionTable",
+    "framework": "net10.0",
+    "emitNativeMetadata": true,
+    "nestGeneratedTypesInApi": false,
+    "emitCallbackDelegates": true,
+    "emitLibraryNameConstant": true,
+    "usings": [],
+    "naming": {
+      "functions": {
+        "casing": "pascal",
+        "removePrefixes": [
+          "SDL_"
+        ]
+      },
+      "fields": {
+        "casing": "pascal"
+      },
+      "constants": {
+        "casing": "preserve"
+      },
+      "enumerationValues": {
+        "SDL_MouseWheelDirection": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_"
+          ]
+        },
+        "SDL_EventType": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_EVENT_"
+          ]
+        },
+        "SDL_Scancode": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_SCANCODE_"
+          ]
+        },
+        "SDL_SystemCursor": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_SYSTEM_CURSOR_"
+          ]
+        },
+        "SDL_RendererLogicalPresentation": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_LOGICAL_PRESENTATION_"
+          ]
+        },
+        "SDL_TextureAccess": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_TEXTUREACCESS_"
+          ]
+        },
+        "SDL_ScaleMode": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_SCALEMODE_"
+          ]
+        },
+        "SDL_PixelFormat": {
+          "casing": "pascal",
+          "removePrefixes": [
+            "SDL_PIXELFORMAT_"
+          ]
+        }
+      }
+    },
+    "names": {
+      "SDL_GPUColorComponentFlags": "SDLGPUColorComponentFlags",
+      "SDL_InitFlags": "SDLInitFlags",
+      "SDL_Keymod": "SDLKeymod",
+      "SDL_MessageBoxFlags": "SDLMessageBoxFlags",
+      "SDL_MouseButtonFlags": "SDLMouseButtonFlags",
+      "SDL_WindowFlags": "SDLWindowFlags"
+    },
+    "functions": [],
+    "records": [
+      {
+        "fields": [
+          {
+            "field": "windowID",
+            "name": "WindowID"
+          }
+        ],
+        "name": "SDLWindowEvent",
+        "nativeType": "SDL_WindowEvent"
+      },
+      {
+        "fields": [
+          {
+            "field": "windowID",
+            "name": "WindowID"
+          }
+        ],
+        "name": "SDLKeyboardEvent",
+        "nativeType": "SDL_KeyboardEvent"
+      },
+      {
+        "fields": [
+          {
+            "field": "windowID",
+            "name": "WindowID"
+          }
+        ],
+        "name": "SDLTextInputEvent",
+        "nativeType": "SDL_TextInputEvent"
+      },
+      {
+        "fields": [
+          {
+            "field": "windowID",
+            "name": "WindowID"
+          }
+        ],
+        "name": "SDLMouseMotionEvent",
+        "nativeType": "SDL_MouseMotionEvent"
+      },
+      {
+        "fields": [
+          {
+            "field": "windowID",
+            "name": "WindowID"
+          }
+        ],
+        "name": "SDLMouseButtonEvent",
+        "nativeType": "SDL_MouseButtonEvent"
+      },
+      {
+        "fields": [
+          {
+            "field": "windowID",
+            "name": "WindowID"
+          }
+        ],
+        "name": "SDLMouseWheelEvent",
+        "nativeType": "SDL_MouseWheelEvent"
+      }
+    ],
+    "enums": [
+      {
+        "isFlags": true,
+        "underlyingType": "uint8",
+        "name": "SDLGPUColorComponentFlags",
+        "values": [
+          {
+            "name": "R",
+            "value": "1"
+          },
+          {
+            "name": "G",
+            "value": "2"
+          },
+          {
+            "name": "B",
+            "value": "4"
+          },
+          {
+            "name": "A",
+            "value": "8"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "SDLInitFlags",
+        "values": [
+          {
+            "name": "Timer",
+            "value": "1"
+          },
+          {
+            "name": "Audio",
+            "value": "16"
+          },
+          {
+            "name": "Video",
+            "value": "32"
+          },
+          {
+            "name": "Joystick",
+            "value": "512"
+          },
+          {
+            "name": "Haptic",
+            "value": "4096"
+          },
+          {
+            "name": "Gamepad",
+            "value": "8192"
+          },
+          {
+            "name": "Events",
+            "value": "16384"
+          },
+          {
+            "name": "Sensor",
+            "value": "32768"
+          },
+          {
+            "name": "Camera",
+            "value": "65536"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint16",
+        "name": "SDLKeymod",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "Lshift",
+            "value": "1"
+          },
+          {
+            "name": "Rshift",
+            "value": "2"
+          },
+          {
+            "name": "Level5",
+            "value": "4"
+          },
+          {
+            "name": "Lctrl",
+            "value": "64"
+          },
+          {
+            "name": "Rctrl",
+            "value": "128"
+          },
+          {
+            "name": "Lalt",
+            "value": "256"
+          },
+          {
+            "name": "Ralt",
+            "value": "512"
+          },
+          {
+            "name": "Lgui",
+            "value": "1024"
+          },
+          {
+            "name": "Rgui",
+            "value": "2048"
+          },
+          {
+            "name": "Num",
+            "value": "4096"
+          },
+          {
+            "name": "Caps",
+            "value": "8192"
+          },
+          {
+            "name": "Mode",
+            "value": "16384"
+          },
+          {
+            "name": "Scroll",
+            "value": "32768"
+          },
+          {
+            "name": "Ctrl",
+            "value": "192"
+          },
+          {
+            "name": "Shift",
+            "value": "3"
+          },
+          {
+            "name": "Alt",
+            "value": "768"
+          },
+          {
+            "name": "Gui",
+            "value": "3072"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "SDLMessageBoxFlags",
+        "values": [
+          {
+            "name": "Error",
+            "value": "16"
+          },
+          {
+            "name": "Warning",
+            "value": "32"
+          },
+          {
+            "name": "Information",
+            "value": "64"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint32",
+        "name": "SDLMouseButtonFlags",
+        "values": [
+          {
+            "name": "None",
+            "value": "0"
+          },
+          {
+            "name": "Left",
+            "value": "1"
+          },
+          {
+            "name": "Middle",
+            "value": "2"
+          },
+          {
+            "name": "Right",
+            "value": "4"
+          },
+          {
+            "name": "X1",
+            "value": "8"
+          },
+          {
+            "name": "X2",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "isFlags": true,
+        "underlyingType": "uint64",
+        "name": "SDLWindowFlags",
+        "values": [
+          {
+            "name": "Fullscreen",
+            "value": "1"
+          },
+          {
+            "name": "Opengl",
+            "value": "2"
+          },
+          {
+            "name": "Occluded",
+            "value": "4"
+          },
+          {
+            "name": "Hidden",
+            "value": "8"
+          },
+          {
+            "name": "Borderless",
+            "value": "16"
+          },
+          {
+            "name": "Resizable",
+            "value": "32"
+          },
+          {
+            "name": "Minimized",
+            "value": "64"
+          },
+          {
+            "name": "Maximized",
+            "value": "128"
+          },
+          {
+            "name": "MouseGrabbed",
+            "value": "256"
+          },
+          {
+            "name": "InputFocus",
+            "value": "512"
+          },
+          {
+            "name": "MouseFocus",
+            "value": "1024"
+          },
+          {
+            "name": "External",
+            "value": "2048"
+          },
+          {
+            "name": "Modal",
+            "value": "4096"
+          },
+          {
+            "name": "HighPixelDensity",
+            "value": "8192"
+          },
+          {
+            "name": "MouseCapture",
+            "value": "16384"
+          },
+          {
+            "name": "MouseRelativeMode",
+            "value": "32768"
+          },
+          {
+            "name": "AlwaysOnTop",
+            "value": "65536"
+          },
+          {
+            "name": "Utility",
+            "value": "131072"
+          },
+          {
+            "name": "Tooltip",
+            "value": "262144"
+          },
+          {
+            "name": "PopupMenu",
+            "value": "524288"
+          },
+          {
+            "name": "KeyboardGrabbed",
+            "value": "1048576"
+          },
+          {
+            "name": "Vulkan",
+            "value": "268435456"
+          },
+          {
+            "name": "Metal",
+            "value": "536870912"
+          },
+          {
+            "name": "Transparent",
+            "value": "1073741824"
+          },
+          {
+            "name": "NotFocusable",
+            "value": "2147483648"
+          }
+        ]
+      }
+    ],
+    "enumMappings": {
+      "SDL_GPUColorComponentFlags": "SDLGPUColorComponentFlags",
+      "SDL_InitFlags": "SDLInitFlags",
+      "SDL_Keymod": "SDLKeymod",
+      "SDL_MessageBoxFlags": "SDLMessageBoxFlags",
+      "SDL_MouseButtonFlags": "SDLMouseButtonFlags",
+      "SDL_WindowFlags": "SDLWindowFlags"
+    }
+  },
+  "runtime": {
+    "mode": "package"
+  },
+  "output": {
+    "layout": "singleFile",
+    "singleFileName": "Bindings.cs",
+    "root": "../obj/bindings/bgcs"
+  },
+  "semantics": {
+    "stringParameters": [
+      {
+        "zeroTerminated": true,
+        "lengthUnit": "codeUnits",
+        "lifetime": "call",
+        "encoding": "utf8",
+        "parameter": "name",
+        "retainsPointer": false,
+        "allowsNull": false,
+        "function": "SDL_SetHint",
+        "direction": "input",
+        "byteOrder": "native",
+        "codeUnitWidth": 1
+      },
+      {
+        "zeroTerminated": true,
+        "lengthUnit": "codeUnits",
+        "lifetime": "call",
+        "encoding": "utf8",
+        "parameter": "value",
+        "retainsPointer": false,
+        "allowsNull": true,
+        "function": "SDL_SetHint",
+        "direction": "input",
+        "byteOrder": "native",
+        "codeUnitWidth": 1
+      },
+      {
+        "zeroTerminated": true,
+        "lengthUnit": "codeUnits",
+        "lifetime": "call",
+        "encoding": "utf8",
+        "parameter": "name",
+        "retainsPointer": false,
+        "allowsNull": false,
+        "function": "SDL_SetStringProperty",
+        "direction": "input",
+        "byteOrder": "native",
+        "codeUnitWidth": 1
+      },
+      {
+        "zeroTerminated": true,
+        "lengthUnit": "codeUnits",
+        "lifetime": "call",
+        "encoding": "utf8",
+        "parameter": "value",
+        "retainsPointer": false,
+        "allowsNull": true,
+        "function": "SDL_SetStringProperty",
+        "direction": "input",
+        "byteOrder": "native",
+        "codeUnitWidth": 1
+      },
+      {
+        "zeroTerminated": true,
+        "lengthUnit": "codeUnits",
+        "lifetime": "call",
+        "encoding": "utf8",
+        "parameter": "name",
+        "retainsPointer": false,
+        "allowsNull": false,
+        "function": "SDL_SetNumberProperty",
+        "direction": "input",
+        "byteOrder": "native",
+        "codeUnitWidth": 1
+      },
+      {
+        "zeroTerminated": true,
+        "lengthUnit": "codeUnits",
+        "lifetime": "call",
+        "encoding": "utf8",
+        "parameter": "name",
+        "retainsPointer": false,
+        "allowsNull": false,
+        "function": "SDL_SetBooleanProperty",
+        "direction": "input",
+        "byteOrder": "native",
+        "codeUnitWidth": 1
+      }
+    ]
+  }
 }

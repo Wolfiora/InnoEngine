@@ -1,20 +1,6 @@
 <Project>
   <PropertyGroup>
     <InnoNativeComponentId>cimguizmo</InnoNativeComponentId>
-    <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
+    <InnoBindingConfig>bindgen.json</InnoBindingConfig>
   </PropertyGroup>
-  <ItemGroup>
-    <InnoBindingTarget Include="linux-arm64">
-      <Config>bindgen.linux-arm64.json</Config>
-    </InnoBindingTarget>
-    <InnoBindingTarget Include="linux-x64">
-      <Config>bindgen.linux-x64.json</Config>
-    </InnoBindingTarget>
-    <InnoBindingTarget Include="macos-arm64">
-      <Config>bindgen.macos-arm64.json</Config>
-    </InnoBindingTarget>
-    <InnoBindingTarget Include="windows-x64">
-      <Config>bindgen.windows-x64.json</Config>
-    </InnoBindingTarget>
-  </ItemGroup>
 </Project>

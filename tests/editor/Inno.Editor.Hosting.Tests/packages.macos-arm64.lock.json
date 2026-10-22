@@ -700,23 +700,18 @@
         "type": "Project",
         "dependencies": {
           "Inno.Build.Bindings": "[1.0.0, )",
-          "Inno.Build.BrowserWasm32": "[1.0.0, )",
           "Inno.Build.Composition": "[1.0.0, )",
-          "Inno.Build.MacOSArm64": "[1.0.0, )",
           "Inno.Build.Managed.DotNet": "[1.0.0, )",
           "Inno.Build.Toolchains": "[1.0.0, )",
           "Inno.Build.Toolchains.Bgfx": "[1.0.0, )",
           "Inno.Build.Toolchains.Bgfx.Tools": "[1.0.0, )",
-          "Inno.Build.Toolchains.ImGui": "[1.0.0, )",
-          "Inno.Build.Toolchains.ImGuizmo": "[1.0.0, )",
-          "Inno.Build.Toolchains.MiniAudio": "[1.0.0, )",
-          "Inno.Build.Toolchains.Sdl3": "[1.0.0, )",
-          "Inno.Build.Toolchains.Text": "[1.0.0, )",
-          "Inno.Build.Toolchains.UI": "[1.0.0, )",
-          "Inno.Build.WindowsX64": "[1.0.0, )",
+          "Inno.Build.Windows.Host": "[1.0.0, )",
           "Inno.Integration.BrowserWasm32.Bgfx": "[1.0.0, )",
+          "Inno.Integration.BrowserWasm32.Build": "[1.0.0, )",
           "Inno.Integration.MacOSArm64.Bgfx": "[1.0.0, )",
+          "Inno.Integration.MacOSArm64.Build": "[1.0.0, )",
           "Inno.Integration.WindowsX64.Bgfx": "[1.0.0, )",
+          "Inno.Integration.WindowsX64.Build": "[1.0.0, )",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
@@ -742,6 +737,22 @@
           "Inno.Build.Managed": "[1.0.0, )",
           "Inno.Build.Toolchains": "[1.0.0, )",
           "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.products.standard": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.SupportPacks.Core": "[1.0.0, )",
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Build.Toolchains.Bgfx": "[1.0.0, )",
+          "Inno.Build.Toolchains.Bgfx.Tools": "[1.0.0, )",
+          "Inno.Build.Toolchains.ImGui": "[1.0.0, )",
+          "Inno.Build.Toolchains.ImGuizmo": "[1.0.0, )",
+          "Inno.Build.Toolchains.MiniAudio": "[1.0.0, )",
+          "Inno.Build.Toolchains.Sdl3": "[1.0.0, )",
+          "Inno.Build.Toolchains.Text": "[1.0.0, )",
+          "Inno.Build.Toolchains.UI": "[1.0.0, )",
+          "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.build.supportpacks.core": {
@@ -827,6 +838,13 @@
         "dependencies": {
           "Inno.Build.Toolchains": "[1.0.0, )",
           "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.windows.host": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )"
         }
       },
       "inno.build.windowsx64": {
@@ -1301,12 +1319,34 @@
           "Inno.Build.Toolchains.Bgfx.Tools": "[1.0.0, )"
         }
       },
+      "inno.integration.browserwasm32.build": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS": "[3.0.1, 3.0.1]",
+          "Inno.Build.Bindings": "[1.0.0, )",
+          "Inno.Build.BrowserWasm32": "[1.0.0, )",
+          "Inno.Build.Composition": "[1.0.0, )",
+          "Inno.Build.Products.Standard": "[1.0.0, )",
+          "Inno.Integration.BrowserWasm32.Bgfx": "[1.0.0, )"
+        }
+      },
       "inno.integration.macosarm64.bgfx": {
         "type": "Project",
         "dependencies": {
           "Inno.Build.MacOSArm64": "[1.0.0, )",
           "Inno.Build.Toolchains.Bgfx": "[1.0.0, )",
           "Inno.Build.Toolchains.Bgfx.Tools": "[1.0.0, )"
+        }
+      },
+      "inno.integration.macosarm64.build": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS": "[3.0.1, 3.0.1]",
+          "Inno.Build.Bindings": "[1.0.0, )",
+          "Inno.Build.Composition": "[1.0.0, )",
+          "Inno.Build.MacOSArm64": "[1.0.0, )",
+          "Inno.Build.Products.Standard": "[1.0.0, )",
+          "Inno.Integration.MacOSArm64.Bgfx": "[1.0.0, )"
         }
       },
       "inno.integration.windowsx64.bgfx": {
@@ -1322,6 +1362,17 @@
         "dependencies": {
           "Inno.Adapter.Platform": "[1.0.0, )",
           "Inno.Adapter.Rendering.Bgfx": "[1.0.0, )"
+        }
+      },
+      "inno.integration.windowsx64.build": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS": "[3.0.1, 3.0.1]",
+          "Inno.Build.Bindings": "[1.0.0, )",
+          "Inno.Build.Composition": "[1.0.0, )",
+          "Inno.Build.Products.Standard": "[1.0.0, )",
+          "Inno.Build.WindowsX64": "[1.0.0, )",
+          "Inno.Integration.WindowsX64.Bgfx": "[1.0.0, )"
         }
       },
       "inno.integration.windowsx64.sdl3": {

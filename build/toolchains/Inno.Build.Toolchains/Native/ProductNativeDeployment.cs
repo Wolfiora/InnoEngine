@@ -43,11 +43,60 @@ public static class ProductNativeDeployment
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled before installation; the previous native tree is unchanged.
     /// </exception>
-    public static async ValueTask InstallAsync(
+    public static ValueTask InstallAsync(
         IReadOnlyList<NativeBuildProduct> products,
         ProductNativeBuildPlan plan,
         string applicationDirectory,
         CancellationToken cancellationToken = default
+    ) => MaterializeAsync(products, plan, applicationDirectory, false, cancellationToken);
+
+    /// <summary>
+    /// Writes a new native tree into an unpublished candidate exclusively owned by the caller.
+    /// </summary>
+    /// <param name="products">
+    /// The pinned, validated products to copy into the candidate.
+    /// </param>
+    /// <param name="plan">
+    /// The explicit component layout and neutral deployment metadata.
+    /// </param>
+    /// <param name="applicationDirectory">
+    /// An existing caller-owned candidate with no native subtree.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels copying or final input verification before the caller publishes.
+    /// </param>
+    /// <returns>
+    /// Completion after copying and verifying payload, without creating transaction metadata in the candidate.
+    /// </returns>
+    /// <remarks>
+    /// The caller must retain exclusive ownership and discard the entire candidate on failure or cancellation.
+    /// This operation neither selects a publication nor replaces an existing native tree.
+    /// </remarks>
+    /// <exception cref="ArgumentException">
+    /// The product closure or candidate path is invalid.
+    /// </exception>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The caller has not created its owned candidate.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The native tree already exists, or an input cannot be verified or copied.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Cancellation prevents completing the unpublished candidate.
+    /// </exception>
+    public static ValueTask StageAsync(
+        IReadOnlyList<NativeBuildProduct> products,
+        ProductNativeBuildPlan plan,
+        string applicationDirectory,
+        CancellationToken cancellationToken = default
+    ) => MaterializeAsync(products, plan, applicationDirectory, true, cancellationToken);
+
+    private static async ValueTask MaterializeAsync(
+        IReadOnlyList<NativeBuildProduct> products,
+        ProductNativeBuildPlan plan,
+        string applicationDirectory,
+        bool ownedCandidate,
+        CancellationToken cancellationToken
     ) {
         ArgumentNullException.ThrowIfNull(products);
         ArgumentNullException.ThrowIfNull(plan);
@@ -58,7 +107,15 @@ public static class ProductNativeDeployment
             || closure.Select(static product => product.component).Distinct().Count() != closure.Length)
             throw new ArgumentException("Native deployment requires a nonempty closure of unique components for one target.", nameof(products));
         string destination = Path.Combine(Path.GetFullPath(applicationDirectory), "native");
-        using FileLease ownership = await FileLease.AcquireAsync(destination + ".lock",
+        if (ownedCandidate)
+        {
+            if (!Directory.Exists(applicationDirectory))
+                throw new DirectoryNotFoundException("Native staging requires an existing caller-owned candidate.");
+            PathBoundary.RequireUnlinkedPath(Path.GetFullPath(applicationDirectory), destination);
+            if (Directory.Exists(destination) || File.Exists(destination))
+                throw new IOException("Native staging requires a candidate without a native subtree.");
+        }
+        using FileLease? ownership = ownedCandidate ? null : await FileLease.AcquireAsync(destination + ".lock",
             Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         ValidateProducts(closure, cancellationToken);
@@ -78,14 +135,17 @@ public static class ProductNativeDeployment
                 throw new InvalidDataException("Native deployment metadata cannot replace a payload file.");
             metadata.Add(relative, content?.ToArray() ?? throw new InvalidDataException("Native deployment metadata has no bytes."));
         }
-        if (HasSameFiles(destination, files, metadata, cancellationToken))
+        if (!ownedCandidate && HasSameFiles(destination, files, metadata, cancellationToken))
         {
             ValidateProducts(closure, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             return;
         }
-        using ProcessOwnedDirectory stagingOwner = await ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!, cancellationToken).ConfigureAwait(false);
-        string staging = stagingOwner.directory;
+        using ProcessOwnedDirectory? stagingOwner = ownedCandidate ? null
+            : await ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!, cancellationToken).ConfigureAwait(false);
+        string staging = stagingOwner?.directory ?? destination;
+        if (ownedCandidate)
+            Directory.CreateDirectory(staging);
         try
         {
             foreach ((string relative, string file) in files)
@@ -109,7 +169,8 @@ public static class ProductNativeDeployment
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                AtomicDirectory.Install(staging, destination);
+                if (!ownedCandidate)
+                    AtomicDirectory.Install(staging, destination);
             }
             catch (DirectoryCleanupException cleanupFailure)
             {
@@ -118,7 +179,7 @@ public static class ProductNativeDeployment
         }
         finally
         {
-            stagingOwner.Dispose();
+            stagingOwner?.Dispose();
         }
     }
 
@@ -129,7 +190,7 @@ public static class ProductNativeDeployment
         foreach (NativeBuildProduct product in products)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (!BuildArtifactManifest.IsComplete(product.directory, product.fingerprint, ["Outputs"]))
+            if (!BuildArtifactManifest.IsComplete(product.directory, product.fingerprint, ["Outputs", "Metadata"]))
                 throw new InvalidDataException($"Native product '{product.component}' changed after publication.");
         }
     }

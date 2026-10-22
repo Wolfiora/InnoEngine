@@ -56,21 +56,21 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
         environment["SDKROOT"] = sdk;
         inputs.AddRange([xcrun, Path.Combine(sdk, "usr", "include"), Path.Combine(sdk, "usr", "lib")]);
         cmakeArguments.AddRange(["-DCMAKE_OSX_SYSROOT=" + sdk, "-DCMAKE_OSX_ARCHITECTURES=arm64"]);
-        SelectUnixTools(tools, environment, cmakeArguments);
+        ConfigureTools(tools, environment, cmakeArguments);
 
         return NativeToolchainPreparation.Freeze(targetId, host, tools, environment, inputs,
-            cmakeArguments, ".dylib", false);
+            cmakeArguments, MacOSArm64LinkerSettings.Create(), false, new NativeCompilerInputs(tools["clang"], tools["clang++"], sdk));
     }
 
-    private static void SelectUnixTools(
+    private static void ConfigureTools(
         Dictionary<string, string> tools,
         Dictionary<string, string> environment,
         List<string> cmakeArguments
     ) {
         tools["make"] = ToolchainEnvironment.ResolveExecutable("make");
         tools["cmake"] = ToolchainEnvironment.ResolveExecutable("cmake");
-        environment["CC"] = tools.GetValueOrDefault("gcc", tools["clang"]);
-        environment["CXX"] = tools.GetValueOrDefault("g++", tools["clang++"]);
+        environment["CC"] = tools["clang"];
+        environment["CXX"] = tools["clang++"];
         cmakeArguments.AddRange(["-DCMAKE_C_COMPILER=" + environment["CC"],
             "-DCMAKE_CXX_COMPILER=" + environment["CXX"]]);
     }

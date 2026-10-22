@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
 
@@ -26,7 +27,7 @@ public sealed class NativeBuildContext
     /// Creates a build context without consulting the tool assembly's checkout.
     /// </summary>
     /// <param name="engineRoot">
-    /// The checkout containing InnoEngine.sln and the native source tree.
+    /// The checkout containing InnoEngine.sln and the native source tree; aliases resolve to one physical owner.
     /// </param>
     /// <param name="configuration">
     /// The normalized debug or release configuration.
@@ -37,17 +38,25 @@ public sealed class NativeBuildContext
     /// <exception cref="DirectoryNotFoundException">
     /// The selected checkout has no repository marker.
     /// </exception>
+    /// <exception cref="IOException">
+    /// A checkout alias cannot be resolved to a physical owner.
+    /// </exception>
     public NativeBuildContext(
         string engineRoot,
         string configuration
+    ) : this(ResolveRoot(engineRoot, configuration), configuration, new NativeBuildInputState()) { }
+
+    private NativeBuildContext(
+        string engineRoot,
+        string configuration,
+        NativeBuildInputState inputState
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ToolchainEnvironment.ValidateConfiguration(configuration);
-        this.engineRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(engineRoot));
+        this.engineRoot = engineRoot;
         if (!File.Exists(Path.Combine(this.engineRoot, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
             throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{this.engineRoot}'.");
         this.configuration = configuration;
-        m_inputState = new NativeBuildInputState();
+        m_inputState = inputState;
     }
 
     private NativeBuildContext(
@@ -55,8 +64,7 @@ public sealed class NativeBuildContext
         string buildOwner,
         string targetId,
         string fingerprint
-    ) : this(origin.engineRoot, origin.configuration) {
-        m_inputState = origin.m_inputState;
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
         sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
@@ -72,8 +80,7 @@ public sealed class NativeBuildContext
     private NativeBuildContext(
         NativeBuildContext origin,
         NativeToolchainSelection toolchain
-    ) : this(origin.engineRoot, origin.configuration) {
-        m_inputState = origin.m_inputState;
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
         sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
@@ -91,8 +98,7 @@ public sealed class NativeBuildContext
         NativeBuildContext origin,
         string configuration,
         NativeToolchainSelection? toolchain
-    ) : this(origin.engineRoot, configuration) {
-        m_inputState = origin.m_inputState;
+    ) : this(origin.engineRoot, configuration, origin.m_inputState) {
         sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
@@ -107,8 +113,7 @@ public sealed class NativeBuildContext
         NativeBuildContext origin,
         NativeComponentDescriptor component,
         NativeComponentBuildOptions options
-    ) : this(origin.engineRoot, origin.configuration) {
-        m_inputState = origin.m_inputState;
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
         sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
@@ -125,8 +130,7 @@ public sealed class NativeBuildContext
     private NativeBuildContext(
         NativeBuildContext origin,
         string? toolDirectory
-    ) : this(origin.engineRoot, origin.configuration) {
-        m_inputState = origin.m_inputState;
+    ) : this(origin.engineRoot, origin.configuration, origin.m_inputState) {
         sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
@@ -141,7 +145,7 @@ public sealed class NativeBuildContext
     }
 
     /// <summary>
-    /// Gets the absolute checkout used for every source, intermediate and output path.
+    /// Gets the frozen physical checkout used for every source, intermediate and output path.
     /// </summary>
     public string engineRoot { get; }
 
@@ -415,5 +419,17 @@ public sealed class NativeBuildContext
         var scoped = new NativeBuildContext(this, m_toolDirectory);
         scoped.sourcePreparation = new NativeCMakeSource.Preparation(inputs);
         return scoped;
+    }
+
+    private static string ResolveRoot(
+        string engineRoot,
+        string configuration
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
+        ToolchainEnvironment.ValidateConfiguration(configuration);
+        string root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(engineRoot));
+        if (!File.Exists(Path.Combine(root, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
+            throw new DirectoryNotFoundException($"Engine checkout is unavailable at '{root}'.");
+        return new PhysicalPathResolver().Resolve(root);
     }
 }

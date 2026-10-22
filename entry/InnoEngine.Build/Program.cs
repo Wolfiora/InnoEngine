@@ -49,23 +49,23 @@ internal static class Program
         result.AddRange(implicitSupport ? arguments : arguments[1..]);
         if (result[0] is not ("support" or "editor" or "clean" or "bindings" or "support-pack" or "shader"))
             return result.ToArray();
-#if INNO_HOST_WINDOWS_X64
-        const string C_TARGET = "windows-x64";
-#elif INNO_HOST_MACOS_ARM64
-        const string C_TARGET = "macos-arm64";
-#else
-        throw new PlatformNotSupportedException("No build host is implemented for this SDK host.");
-#endif
-#if INNO_HOST_WINDOWS_X64 || INNO_HOST_MACOS_ARM64
+        string target = ReadDevelopmentTarget();
         int scope = result.IndexOf("--scope");
         bool allCaches = result[0] == "clean" && scope >= 0 && scope + 1 < result.Count && result[scope + 1] == "cache";
         if (!allCaches)
-            AddDefault(result, "--target", C_TARGET);
-        AddDefault(result, "--tools-target", C_TARGET);
+            AddDefault(result, "--target", target);
+        AddDefault(result, "--tools-target", target);
         string configuration = typeof(Program).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
         AddDefault(result, "--configuration", result[0] is "support" or "editor" or "clean" ? configuration : "Release");
         return result.ToArray();
-#endif
+    }
+
+    private static string ReadDevelopmentTarget()
+    {
+        foreach (AssemblyMetadataAttribute metadata in typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+            if (metadata.Key == "Inno.Build.DevelopmentTarget" && !string.IsNullOrWhiteSpace(metadata.Value))
+                return metadata.Value;
+        throw new PlatformNotSupportedException("No build host is registered for the selected SDK.");
     }
 
     private static void AddDefault(

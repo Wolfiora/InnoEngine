@@ -110,8 +110,8 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- clean --s
 ## Support Pack 与游戏发布
 
 ```sh
-dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-pack --target windows-x64
-dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game --tools-target windows-x64 --project /absolute/MyGame --target windows-x64 --deployment coreclr --startup-scene Scenes/Main.iscene --output artifacts/games
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-pack --tools-target windows-x64 --target windows-x64 --output artifacts/support-packs
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game --tools-target windows-x64 --project /absolute/MyGame --support-packs artifacts/support-packs --target windows-x64 --deployment coreclr --startup-scene Scenes/Main.iscene --output artifacts/games
 ```
 
 Pack 是目标编译、链接与运行输入，不包含游戏内容。可单独准备，也可由游戏发布获取。Windows 的 CoreCLR / NativeAOT 发布已有实际通过记录；其他目标、完整构建成本及设备检查以[当前验收](../architecture/CURRENT_ACCEPTANCE.md)为准，不能由一个目标推断全部通过。

@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Build.Framework;
+using Xunit;
 using Inno.Build.TaskHosting;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
-using Microsoft.Build.Framework;
 
 namespace Inno.Build.Tests;
 
@@ -38,7 +38,7 @@ public sealed class BindingMaterializationTests : IDisposable
         MaterializeBindingsTask second = CreateTask();
         Assert.True(second.Execute());
         Assert.Equal(timestamp, File.GetLastWriteTimeUtc(second.MaterializedSource));
-        using (BuildArtifactWriteLease retirement = await BuildArtifactWriteLease.AcquireAsync(first.ArtifactDirectory))
+        using (BuildArtifactWriteLease retirement = await BuildArtifactWriteLease.AcquireAsync(first.ArtifactDirectory, m_root))
             Directory.Delete(first.ArtifactDirectory, recursive: true);
         Assert.Equal(contents, File.ReadAllText(first.MaterializedSource));
     }
@@ -70,7 +70,7 @@ public sealed class BindingMaterializationTests : IDisposable
     public async Task CancellationDoesNotDisturbAnExclusivePublisher()
     {
         MaterializeBindingsTask task = CreateTask();
-        using BuildArtifactWriteLease publisher = await BuildArtifactWriteLease.AcquireAsync(task.ArtifactDirectory);
+        using BuildArtifactWriteLease publisher = await BuildArtifactWriteLease.AcquireAsync(task.ArtifactDirectory, m_root);
         Task<bool> waiting = Task.Run(task.Execute);
         task.Cancel();
         Assert.False(await waiting);
@@ -152,6 +152,7 @@ public sealed class BindingMaterializationTests : IDisposable
     {
         Source = Path.Combine(m_root, "artifact", "Generated", "Bindings.cs"),
         ArtifactDirectory = Path.Combine(m_root, "artifact"),
+        ArtifactOwnerDirectory = m_root,
         Fingerprint = "selected",
         ComponentProject = Path.Combine(m_root, "component", "Component.csproj"),
         IntermediateDirectory = Path.Combine(m_root, "sdk", "obj"),

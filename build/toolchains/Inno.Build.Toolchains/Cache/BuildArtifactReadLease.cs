@@ -12,13 +12,16 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class BuildArtifactReadLease : IDisposable
 {
-    private FileLease? m_lease;
+    private CoordinatedFileLease? m_lease;
 
-    private BuildArtifactReadLease(FileLease lease) => m_lease = lease;
+    private BuildArtifactReadLease(CoordinatedFileLease lease) => m_lease = lease;
 
     /// <summary>
     /// Acquires reading ownership and verifies the complete artifact before exposing it to a consumer.
     /// </summary>
+    /// <param name="ownerDirectory">
+    /// The exact publisher root retaining the persistent owner.lock gate.
+    /// </param>
     /// <param name="directory">
     /// The absolute artifact directory owned by its publisher; its persistent lease is stored alongside it.
     /// </param>
@@ -51,11 +54,12 @@ public sealed class BuildArtifactReadLease : IDisposable
     /// </exception>
     public static async ValueTask<BuildArtifactReadLease> AcquireAsync(
         string directory,
+        string ownerDirectory,
         string fingerprint,
         IReadOnlyList<string> outputDirectories,
         CancellationToken cancellationToken = default,
         NativeBuildContext? statistics = null
-    ) => await TryAcquireAsync(directory, fingerprint, outputDirectories, statistics, cancellationToken).ConfigureAwait(false)
+    ) => await TryAcquireAsync(directory, ownerDirectory, fingerprint, outputDirectories, statistics, cancellationToken).ConfigureAwait(false)
         ?? throw new InvalidDataException($"Build artifact '{directory}' is missing, damaged or has a different identity.");
 
     /// <summary>
@@ -65,6 +69,7 @@ public sealed class BuildArtifactReadLease : IDisposable
 
     internal static async ValueTask<BuildArtifactReadLease?> TryAcquireAsync(
         string directory,
+        string ownerDirectory,
         string fingerprint,
         IReadOnlyList<string> outputDirectories,
         NativeBuildContext? context,
@@ -76,13 +81,9 @@ public sealed class BuildArtifactReadLease : IDisposable
         if (!Path.IsPathFullyQualified(directory))
             throw new ArgumentException("Artifact reading requires an absolute owner path.", nameof(directory));
         string path = GetLeasePath(directory);
-        if (!File.Exists(path))
-        {
-            using FileLease initializer = await FileLease.AcquireAsync(path,
-                TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
-        }
-        FileLease lease = await FileLease.AcquireSharedAsync(path,
-            TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+        BuildCacheCleanupPlan.RequireChild(ownerDirectory, directory);
+        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(Path.Combine(ownerDirectory, "owner.lock"),
+            path, TimeSpan.FromSeconds(30), shared: true, cancellationToken: cancellationToken).ConfigureAwait(false);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();

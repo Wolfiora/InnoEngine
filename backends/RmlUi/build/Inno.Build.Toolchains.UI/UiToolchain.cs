@@ -22,8 +22,7 @@ public static class UiToolchain
         new NativeStaticBuildDefinition(
             "backends/RmlUi/build/Inno.Build.Toolchains.UI/Native/StaticLibraries.cmake",
             ["extern/freetype", "extern/harfbuzz", "extern/RmlUi", "backends/RmlUi/native/Inno.Native.UI/Native/include", "backends/RmlUi/native/Inno.Native.UI/Native/src", "backends/RmlUi/native/Inno.Native.UI/Native/CMakeLists.txt"],
-            ["libinno-ui.a", "librmlui.a"],
-            ["browser-wasm"],
+            ["libinno-ui", "librmlui"],
             nativeSourceDirectory: "backends/RmlUi/native/Inno.Native.UI"),
         bindingDefinition: "backends/RmlUi/native/Inno.Native.UI/Bindings/bindings.props");
 
@@ -65,7 +64,14 @@ public static class UiToolchain
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
 
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken, describeOutputs: static (
+                @scoped,
+                output
+            ) =>
+                Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
+                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                        Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
     }
 
     /// <summary>

@@ -422,6 +422,9 @@
           "Inno.Scripting.Api": "[1.0.0, )",
           "Microsoft.CodeAnalysis.CSharp": "[5.9.0, )"
         }
+      },
+      "inno.testing.source": {
+        "type": "Project"
       }
     }
   }

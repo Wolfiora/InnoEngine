@@ -12,7 +12,8 @@ internal static class BindingDefinitionReader
     internal static BindingGenerationConfiguration Read(
         NativeBuildContext context,
         NativeComponentDescriptor component,
-        NativeBindingGenerationRequest request
+        NativeBindingGenerationRequest request,
+        NativeBindingProfile profile
     ) {
         string definition = Path.GetFullPath(component.bindingDefinition!, context.engineRoot);
         string directory = Path.GetDirectoryName(definition)!;
@@ -21,7 +22,6 @@ internal static class BindingDefinitionReader
         if (project.Name != "Project" || project.Attributes().Any())
             throw new InvalidDataException("Binding definitions must be declarative Project data.");
         Dictionary<string, string> properties = new(StringComparer.Ordinal);
-        Dictionary<string, string> targets = new(StringComparer.Ordinal);
         foreach (XElement group in project.Elements())
         {
             if (group.Attributes().Any())
@@ -30,23 +30,9 @@ internal static class BindingDefinitionReader
             {
                 foreach (XElement property in group.Elements())
                 {
-                    if (property.Name.LocalName is not ("InnoNativeComponentId" or "InnoBindingHostConfig")
+                    if (property.Name.LocalName is not ("InnoNativeComponentId" or "InnoBindingConfig")
                         || property.Attributes().Any() || property.HasElements || !properties.TryAdd(property.Name.LocalName, property.Value))
                         throw new InvalidDataException("A binding definition has an unknown or repeated property.");
-                }
-            }
-            else if (group.Name == "ItemGroup")
-            {
-                foreach (XElement target in group.Elements())
-                {
-                    if (target.Name != "InnoBindingTarget" || target.Attributes().Count() != 1
-                        || target.Attribute("Include") is not XAttribute identity)
-                        throw new InvalidDataException("A binding target requires one explicit identity.");
-                    XElement[] fields = target.Elements().ToArray();
-                    if (fields.Any(field => field.Attributes().Any() || field.HasElements || field.Name != "Config")
-                        || fields.Count(field => field.Name == "Config") != 1
-                        || !targets.TryAdd(identity.Value, target.Element("Config")!.Value))
-                        throw new InvalidDataException("A binding target has invalid or duplicated configuration fields.");
                 }
             }
             else
@@ -54,12 +40,11 @@ internal static class BindingDefinitionReader
         }
         if (!properties.TryGetValue("InnoNativeComponentId", out string? componentId) || componentId != component.id)
             throw new InvalidDataException("The binding definition must declare the requested component identity.");
-        if (!properties.TryGetValue("InnoBindingHostConfig", out string? hostConfig))
-            throw new InvalidDataException("A binding definition requires its explicit host configuration.");
-        string selected = request.outputMode == NativeBindingOutputMode.HostSource
-            ? hostConfig : targets.TryGetValue(request.targetId, out string? selectedTarget)
-                ? selectedTarget : throw new NotSupportedException($"The component has no binding configuration for '{request.targetId}'.");
-        return new(component, definition, Resolve(selected), request);
+        if (!properties.TryGetValue("InnoBindingConfig", out string? hostConfig))
+            throw new InvalidDataException("A binding definition requires its common binding configuration.");
+        if (request.targetId != profile.targetId)
+            throw new NotSupportedException($"The selected binding profile does not serve '{request.targetId}'.");
+        return new(component, definition, Resolve(hostConfig), request, profile);
         string Resolve(string path)
         {
             if (string.IsNullOrWhiteSpace(path) || Path.IsPathFullyQualified(path) || path.Contains('$') || path.Contains('@')

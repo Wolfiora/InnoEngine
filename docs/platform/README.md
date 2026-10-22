@@ -19,3 +19,5 @@
 - [Inno.Adapter.Presentation](Inno.Adapter.Presentation.md)
 
 SDL3 和 ImGui 的共享实现见 backend 索引。NS、iOS 与新增 CPU 的接入结构是未来规划，未建立空项目或 SDK 占位。
+
+- [Windows 构建宿主](Windows/README.md)：OS 工具执行能力，与 WindowsX64 发布目标分别拥有。

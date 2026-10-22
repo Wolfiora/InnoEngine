@@ -19,7 +19,15 @@ internal static class ManagedBuildInputReader
         IReadOnlyDictionary<string, string> properties,
         CancellationToken cancellation
     ) {
-        XElement captured = await EvaluateAsync(context, sdk, project, properties, false, cancellation).ConfigureAwait(false);
+        using ManagedInputEvaluation evaluation = await ManagedInputEvaluation.OpenAsync(context, sdk, project,
+            properties, cancellation).ConfigureAwait(false);
+        context.RecordManagedProcess();
+        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet",
+                .. evaluation.properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)],
+            context.engineRoot, cancellation, DotNetSdkEnvironment.Create(sdk.hostPath, context.toolchain?.environment)).ConfigureAwait(false);
+        _ = await EvaluateAsync(context, sdk, project, evaluation.properties, true, cancellation).ConfigureAwait(false);
+        XElement captured = await EvaluateAsync(context, sdk, project, evaluation.properties, false, cancellation).ConfigureAwait(false);
         var inputs = captured.Elements("Input").Select(element => NativeBuildInput.FromPath(context.engineRoot,
             (string?)element.Attribute("Path") ?? throw new InvalidDataException("A managed input has no physical location."))).ToList();
         foreach (XElement assets in captured.Elements("Assets"))
@@ -31,17 +39,9 @@ internal static class ManagedBuildInputReader
             .Prepend("sdk=" + sdk.sdkIdentity).Prepend("project=" + project).ToArray();
         // Evaluator implementation participates without depending on unrelated tool assembly MVIDs.
         declarations = declarations.Append("evaluator=" + ((string?)captured.Attribute("EvaluatorFingerprint") ?? throw new InvalidDataException("The evaluator identity is absent."))).ToArray();
-        return new ManagedBuildInputCapture(NativeBuildFingerprint.Create(context, declarations, inputs, cancellation), declarations);
-    }
-
-    internal static async ValueTask RestoreContributionsAsync(
-        NativeBuildContext context,
-        DotNetSdkDescriptor sdk,
-        string project,
-        IReadOnlyDictionary<string, string> properties,
-        CancellationToken cancellation
-    ) {
-        _ = await EvaluateAsync(context, sdk, project, properties, true, cancellation).ConfigureAwait(false);
+        string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
+        evaluation.Complete(cancellation);
+        return new ManagedBuildInputCapture(fingerprint, declarations);
     }
 
     private static async ValueTask<XElement> EvaluateAsync(
@@ -53,6 +53,7 @@ internal static class ManagedBuildInputReader
         CancellationToken cancellation
     ) {
         string requests = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "requests");
+        BuildCacheOwnerCatalog.Register(context.engineRoot, requests, "managed-input-requests", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation);
         using ProcessOwnedDirectory requestOwner = await ProcessOwnedDirectory.CreateAsync(requests, cancellation).ConfigureAwait(false);
         string request = requestOwner.directory;
         string manifest = Path.Combine(request, "Inputs.xml");

@@ -104,7 +104,7 @@ public sealed class PlayerSupportPackCatalog
         {
             await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            AtomicFile.WriteAllBytes(Path.Combine(targetRoot, "current"), Encoding.UTF8.GetBytes(fingerprint));
+            SelectCurrent(targetRoot, fingerprint);
             return reading;
         }
         catch
@@ -249,7 +249,7 @@ public sealed class PlayerSupportPackCatalog
             if (verifyInputs is not null)
                 await VerifySelectionInputsAsync(verifyInputs, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            AtomicFile.WriteAllBytes(Path.Combine(targetRoot, "current"), Encoding.UTF8.GetBytes(fingerprint));
+            SelectCurrent(targetRoot, fingerprint);
             return reading;
         }
         catch
@@ -257,6 +257,15 @@ public sealed class PlayerSupportPackCatalog
             reading.Dispose();
             throw;
         }
+    }
+
+    private static void SelectCurrent(
+        string targetRoot,
+        string fingerprint
+    ) {
+        string index = Path.Combine(targetRoot, "current");
+        if (!File.Exists(index) || File.ReadAllText(index) != fingerprint)
+            AtomicFile.WriteAllBytes(index, Encoding.UTF8.GetBytes(fingerprint));
     }
 
     private static async ValueTask VerifySelectionInputsAsync(

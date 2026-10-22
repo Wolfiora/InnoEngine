@@ -11,7 +11,8 @@ internal static class BindingInputPlanning
     internal static ValueTask<string> ComputeAsync(
         NativeBuildContext context,
         NativeBindingGenerationRequest request,
-        CancellationToken cancellation
+        CancellationToken cancellation,
+        NativeBindingProfile profile
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(request);
@@ -19,7 +20,7 @@ internal static class BindingInputPlanning
         var declarations = new List<string> { "binding-source-inputs", request.targetId, request.outputMode.ToString() };
         foreach (NativeComponentDescriptor component in request.components)
         {
-            BindingGenerationConfiguration definition = BindingDefinitionReader.Read(context, component, request);
+            BindingGenerationConfiguration definition = BindingDefinitionReader.Read(context, component, request, profile);
             declarations.Add(NativeBindingGenerationIdentity.Compute(definition.Load(context), definition, context, cancellation));
         }
         return ValueTask.FromResult(NativeBuildFingerprint.Create(context, declarations, [], cancellation));

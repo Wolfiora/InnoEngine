@@ -5,9 +5,9 @@ using System.Linq;
 using Inno.Assets.Pipeline;
 using Inno.Build.Managed;
 using Inno.Build.SupportPacks;
+using Inno.Build.Toolchains;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
-using Inno.Build.Toolchains;
 
 namespace Inno.Build.Composition;
 
@@ -16,11 +16,12 @@ namespace Inno.Build.Composition;
 /// </summary>
 public sealed class BuildDistribution
 {
+    private readonly Dictionary<string, INativeBindingGenerator> m_bindingGenerators = new(StringComparer.Ordinal);
     private readonly GameBuildContribution[] m_games;
     private readonly BuildPlatformContribution[] m_platforms;
     private readonly IReadOnlyList<BuildPlatformContribution> m_platformSnapshot;
     private readonly HashSet<BuildTargetId> m_targetIds;
-    private readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, ProductNativeBuildPlan>> m_nativeProducts;
+    private readonly IReadOnlyDictionary<string, IReadOnlyDictionary<string, NativeProductContribution>> m_nativeProducts;
     private readonly IReadOnlyDictionary<string, INativeToolchainProvider> m_nativeToolchains;
 
     /// <summary>
@@ -53,6 +54,9 @@ public sealed class BuildDistribution
         m_games = games.ToArray();
         m_platforms = m_games.Select(static game => game.platform).ToArray();
         m_platformSnapshot = Array.AsReadOnly(m_platforms);
+        foreach (BuildPlatformContribution platform in m_platforms)
+            if (platform.bindingGenerator is not null)
+                m_bindingGenerators.Add(platform.descriptor.id.value, platform.bindingGenerator);
         m_targetIds = m_platforms.Select(static contribution => contribution.descriptor.id).ToHashSet();
         if (m_targetIds.Count != m_platforms.Length)
             throw new ArgumentException("Platform target identities must be unique.", nameof(games));
@@ -65,9 +69,11 @@ public sealed class BuildDistribution
             if (contribution is null || !native.TryAdd(contribution.descriptor.id.value, contribution.provider))
                 throw new ArgumentException("Native SDK contributions must be complete and have unique target identities.", nameof(nativeOnlyContributions));
             products.Add(contribution.descriptor.id.value, contribution.nativeProducts);
+            if (contribution.bindingGenerator is not null)
+                m_bindingGenerators.Add(contribution.descriptor.id.value, contribution.bindingGenerator);
         }
         m_nativeProducts = new System.Collections.ObjectModel.ReadOnlyDictionary<string,
-            IReadOnlyDictionary<string, ProductNativeBuildPlan>>(products);
+            IReadOnlyDictionary<string, NativeProductContribution>>(products);
         m_nativeToolchains = new System.Collections.ObjectModel.ReadOnlyDictionary<string, INativeToolchainProvider>(native);
         availableTargets = Array.AsReadOnly(m_targetIds.OrderBy(static id => id.value, StringComparer.Ordinal).ToArray());
         managedDeployments = new ManagedDeploymentCatalog(managedCompilers);
@@ -93,6 +99,22 @@ public sealed class BuildDistribution
     /// Gets the publisher containing the same platform input providers.
     /// </summary>
     public PlayerSupportPackPublisher supportPacks { get; }
+
+    /// <summary>
+    /// Resolves the generator explicitly registered by a target integration.
+    /// </summary>
+    /// <param name="targetId">
+    /// The requested native target.
+    /// </param>
+    /// <returns>
+    /// The borrowed target generator.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// The target contributes no binding generator.
+    /// </exception>
+    public INativeBindingGenerator ResolveBindingGenerator(string targetId)
+        => m_bindingGenerators.TryGetValue(targetId, out INativeBindingGenerator? generator) ? generator
+            : throw new NotSupportedException($"No binding generator is registered for '{targetId}'.");
 
     /// <summary>
     /// Resolves the SDK integration bound to an explicitly registered publication target.
@@ -156,14 +178,14 @@ public sealed class BuildDistribution
     /// <exception cref="ArgumentException">
     /// A target or product identity is empty.
     /// </exception>
-    public ProductNativeBuildPlan ResolveNativeProduct(
+    public NativeProductContribution ResolveNativeProduct(
         string targetId,
         string productId
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         ArgumentException.ThrowIfNullOrWhiteSpace(productId);
-        if (m_nativeProducts.TryGetValue(targetId, out IReadOnlyDictionary<string, ProductNativeBuildPlan>? products)
-            && products.TryGetValue(productId, out ProductNativeBuildPlan? plan))
+        if (m_nativeProducts.TryGetValue(targetId, out IReadOnlyDictionary<string, NativeProductContribution>? products)
+            && products.TryGetValue(productId, out NativeProductContribution? plan))
             return plan;
         throw new NotSupportedException($"No ordinary native build is registered for product '{productId}' on target '{targetId}'.");
     }

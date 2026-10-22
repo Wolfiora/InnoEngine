@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup Condition="'$(NETCoreSdkRuntimeIdentifier)' == 'win-x64'">
+    <InnoDevelopmentTarget>windows-x64</InnoDevelopmentTarget>
+    <InnoDevelopmentEditorProject>$(MSBuildThisFileDirectory)../../editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj</InnoDevelopmentEditorProject>
+    <DefineConstants>$(DefineConstants);INNO_HOST_WINDOWS_X64</DefineConstants>
+  </PropertyGroup>
+</Project>

@@ -8,5 +8,6 @@ internal sealed record DotNetPublishRequest(
     DotNetSdkDescriptor sdk,
     ManagedDeploymentId deployment,
     ManagedDeploymentRequest publication,
-    IReadOnlyList<string> properties
+    IReadOnlyList<string> properties,
+    IToolchainWorkspaceProvider workspaces
 );

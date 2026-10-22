@@ -31,6 +31,6 @@ internal static class MacOSArm64BgfxToolContribution
         return new NativeToolchainSelection(sdk.targetId, sdk.host, tools, sdk.environment,
             sdk.inputPaths.Where(path => path != dotnet && path != cmake)
                 .Concat([Path.Combine(owner, "MacOSArm64BgfxToolContribution.cs"), Path.Combine(owner, "MacOSArm64BgfxBuildProfile.cs")]),
-            [], sdk.sharedLibraryExtension, sdk.multiConfiguration);
+            [], sdk.linkPlan, sdk.multiConfiguration, sdk.compilerInputs);
     }
 }

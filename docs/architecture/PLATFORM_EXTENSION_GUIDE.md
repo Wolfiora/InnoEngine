@@ -36,12 +36,14 @@ flowchart TD
 | 事实 | 声明位置 |
 | --- | --- |
 | 平台、CPU、ABI、RID、产品能力 | 平台模块的 `PlatformTargetDescriptor` |
-| 实际执行工具的 OS 与 CPU | `BuildHostDescriptor` |
+| 实际执行工具的 OS、CPU 与工作区能力 | `IBuildHostProvider` / `BuildHostDescriptor` / `BuildHostServices` |
 | 已解析 SDK、工具、环境与参数 | `NativeToolchainSelection` |
 | 组件源码、生成定义与中间目录 | `NativeComponentDescriptor` |
 | 游戏目标、Support Pack、SDK provider | `BuildPlatformContribution` |
 | 平台 packager 与后端内容 compiler 的完整绑定 | `GameBuildContribution` / `GameBuildTargetBinding` |
 | 实际组件闭包 | `ProductNativeBuildPlan` |
+| Native 链接方式、产物角色与执行方式 | `NativeComponentBuildOptions` / `NativeArtifact` / `NativeProductContribution` |
+| 绑定 ABI、managed runtime 与平台额外头目录 | 平台 Build integration 的 `NativeBindingProfile` 和组件选项 |
 | 托管执行与最终链接 | `IManagedDeploymentCompiler` |
 
 Stable target ID 不通过项目名称、CPU 或宿主 OS 拼接。当前完整发布目标是 `windows-x64`、`macos-arm64`、`browser-wasm`；最后一个明确声明 wasm32。
@@ -70,6 +72,7 @@ platforms/NS/
 │  └─ SupportPacks/
 ├─ integrations/                           仅有真实连接代码时建立
 │  ├─ Inno.Integration.NS.<GraphicsBackend>.Runtime/
+│  ├─ Inno.Integration.NS.Build/              Profile、Native 产品贡献与布局
 │  ├─ Inno.Integration.NS.<GraphicsBackend>/   实际 Native/Shader 构建接入
 │  └─ Inno.Integration.NS.<WindowBackend>/
 ├─ editor/Inno.Editor.NS.Tools/       确实有专属工具时添加
@@ -89,7 +92,7 @@ Player 源项目仍是发布输入库，其 `Program.cs` 由完整发布模板�
 4. **选择托管部署**：复用合适 compiler 或增加匹配 SDK 的实现。该实现负责静态注册、interop、回调、异常和最终链接。
 5. **编写薄产品入口**：注入内容来源、Storage namespace、日志、帧驱动与 backend catalog；共同玩法启动留在 Player Runtime。
 6. **实现发布布局**：平台 target、Support Pack、打包、签名和设备部署有明确 owner。
-7. **注册完整贡献**：加入 `StandardBuildDistribution` 或自定义发行组合的唯一入口。贡献的 `nativeProducts` 明确绑定各产品的组件闭包，普通 Task 通过 `ResolveNativeProduct` 取得计划。共同 Build、Editor 和领域不增加 NS 分支。
+7. **注册完整贡献**：加入 `StandardBuildDistribution` 或自定义发行组合的唯一入口。贡献的 `nativeProducts` 将每个产品的组件闭包与 `INativeProductExecutor` 显式绑定，普通 Task 通过 `ResolveNativeProduct` 取得完整贡献。平台 Build integration 同时提供已配置的绑定生成器；公共组件不新增目标 JSON。共同 Build、Editor 和领域不增加 NS 分支。
 8. **验收真实设备**：内容、输入、音频、渲染、暂停恢复、退出、持久化、Native API、失败与取消全部验证后才标记支持。
 
 源码位置只有一个平台包，但实现会分为几个真实项目，因为运行系统接入和 SDK 构建工具的依赖与生命周期不同。项目数量按职责决定，不按每种 CPU 或第三方库机械复制。

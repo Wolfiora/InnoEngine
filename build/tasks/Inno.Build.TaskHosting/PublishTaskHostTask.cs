@@ -6,9 +6,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Inno.Core.IO;
-using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
+using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.TaskHosting;
 
@@ -103,7 +103,6 @@ public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task
                 .AsTask().GetAwaiter().GetResult())
                 publisherCache.Record(destination, destination + ".lock", [], null, null, cancellation);
             RegisterReader(load, PublishedAssembly);
-            RetireReaders(owner, destination);
             Log.LogMessage(MessageImportance.Normal, "INNO-TASK-HOST verified {0}", fingerprint);
             return true;
         }

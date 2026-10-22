@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains.Bgfx.Tools;
+using Inno.Build.Windows.Host;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -22,7 +23,8 @@ public sealed class ToolRunnerPathTests
         {
             File.Copy(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "where.exe"), executable);
             Assert.True(executable.Length > 260);
-            var runner = new ToolRunner(new Dictionary<BgfxTool, string> { [BgfxTool.Shaderc] = executable }, directory);
+            var runner = new ToolRunner(new Dictionary<BgfxTool, string> { [BgfxTool.Shaderc] = executable },
+                directory, new WindowsToolchainWorkspaceProvider());
             ToolRunResult result = await runner.RunAsync(BgfxTool.Shaderc, ["/?"], root);
             Assert.Equal(0, result.exitCode);
             Assert.True(File.Exists(executable));

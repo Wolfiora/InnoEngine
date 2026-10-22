@@ -12,6 +12,7 @@ public sealed class BuildCacheOwnerDescriptor
 {
     private readonly Func<CancellationToken, IReadOnlyList<BuildCacheArtifactDescriptor>> m_readArtifacts;
     private readonly Func<CancellationToken, IReadOnlyList<string>> m_readProtectedArtifacts;
+    private readonly Action<CancellationToken>? m_retireMetadata;
 
     /// <summary>
     /// Borrows publisher callbacks without discovering artifacts from directory names or file extensions.
@@ -34,6 +35,9 @@ public sealed class BuildCacheOwnerDescriptor
     /// Returns current product and Pack roots; retirement follows their complete dependency closure.
     /// Root updates must hold coordinationPath and retain each referenced artifact's reading lease.
     /// </param>
+    /// <param name="retireMetadata">
+    /// Optional owner-specific metadata retirement, called only under exclusive owner coordination.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// An identity is blank or a path is relative.
     /// </exception>
@@ -45,7 +49,8 @@ public sealed class BuildCacheOwnerDescriptor
         string directory,
         string coordinationPath,
         Func<CancellationToken, IReadOnlyList<BuildCacheArtifactDescriptor>> readArtifacts,
-        Func<CancellationToken, IReadOnlyList<string>> readProtectedArtifacts
+        Func<CancellationToken, IReadOnlyList<string>> readProtectedArtifacts,
+        Action<CancellationToken>? retireMetadata = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
@@ -58,6 +63,7 @@ public sealed class BuildCacheOwnerDescriptor
         this.directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         this.coordinationPath = Path.GetFullPath(coordinationPath);
         m_readArtifacts = readArtifacts;
+        m_retireMetadata = retireMetadata;
         m_readProtectedArtifacts = readProtectedArtifacts;
     }
 
@@ -75,6 +81,8 @@ public sealed class BuildCacheOwnerDescriptor
     /// Gets the persistent lease shared with publication and protected-root changes.
     /// </summary>
     public string coordinationPath { get; }
+
+    internal void RetireMetadata(CancellationToken cancellation) => m_retireMetadata?.Invoke(cancellation);
 
     internal IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellation)
         => m_readArtifacts(cancellation) ?? throw new InvalidDataException($"Cache owner '{id}' returned no inventory.");

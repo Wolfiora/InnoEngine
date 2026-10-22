@@ -1,4 +1,3 @@
-using System.Xml.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,9 +5,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -35,6 +35,8 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Assert.Equal(2, groups.Length);
         Assert.Equal("'$(MSBuildProjectName)' == 'Inno.Native.Bgfx'", groups[0].Attribute("Condition")!.Value);
         Assert.Equal("bgfx-fingerprint", groups[0].Element("BindGenExpectedFingerprint")!.Value);
+        Assert.Equal(SelectedGeneration("bgfx-fingerprint").artifactOwnerDirectory,
+            groups[0].Element("BindGenArtifactOwnerDirectory")!.Value);
         Assert.Equal(Path.GetDirectoryName(SelectedGeneration("bgfx-fingerprint").bindingsPath),
             groups[0].Element("BindGenOutputDirectory")!.Value);
         Assert.Equal("text-fingerprint", groups[1].Element("BindGenExpectedFingerprint")!.Value);
@@ -152,7 +154,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
 
     [Fact]
     [Trait("ExternalDependency", "BGCS")]
-    public async Task UnselectedTargetMappingDoesNotInvalidateTheSelectedGeneration()
+    public async Task UnselectedPlatformDoesNotInvalidateTheSelectedGeneration()
     {
         string config = CreateConfig("int sample(int value);");
         var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
@@ -160,12 +162,10 @@ public sealed class NativeBindingGenerationTests : IDisposable
         NativeBindingGenerationDescriptor first = await GenerateAsync();
         string definitionPath = Path.Combine(m_root, "bindings.props");
         XDocument definition = XDocument.Load(definitionPath);
-        definition.Root!.Element("ItemGroup")!.Add(new XElement("InnoBindingTarget",
-            new XAttribute("Include", "unselected-target"), new XElement("Config", "unselected.json")));
-        definition.Save(definitionPath);
+        File.WriteAllText(Path.Combine(m_root, "UnselectedPlatform.cs"), "unrelated target policy");
 
         var unchangedContext = new NativeBuildContext(m_root, "release");
-        using (NativeBindingGenerationResult unchanged = await new NativeBindingGenerator()
+        using (NativeBindingGenerationResult unchanged = await BuildTestProducts.Generator("fixture-target")
             .GenerateAsync(unchangedContext, request, CancellationToken.None))
         {
             Assert.Equal(first.fingerprint, unchanged[owner.nativeProject].fingerprint);
@@ -174,9 +174,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
 
         File.WriteAllText(Path.Combine(m_root, "selected.json"),
             File.ReadAllText(config).Replace("Fixture.Native", "Fixture.Selected", StringComparison.Ordinal));
-        definition.Root.Element("ItemGroup")!.Elements("InnoBindingTarget")
-            .Single(target => target.Attribute("Include")!.Value == "fixture-target")
-            .Element("Config")!.Value = "selected.json";
+        definition.Root!.Element("PropertyGroup")!.Element("InnoBindingConfig")!.Value = "selected.json";
         definition.Save(definitionPath);
         NativeBindingGenerationDescriptor changed = await GenerateAsync();
         Assert.NotEqual(first.fingerprint, changed.fingerprint);
@@ -274,6 +272,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         {
             fingerprint = fingerprint,
             artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
+            artifactOwnerDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration"),
             bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
             nativeDirectory = string.Empty
         };
@@ -305,7 +304,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var fingerprints = expected is null ? null : new Dictionary<string, string> { [owner.nativeProject] = expected };
         var request = new NativeBindingGenerationRequest([owner], "fixture-target", mode, checkOnly, fingerprints);
-        using var result = await new NativeBindingGenerator().GenerateAsync(
+        using var result = await BuildTestProducts.Generator("fixture-target").GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, cancellation);
         return result[owner.nativeProject];
     }
@@ -313,9 +312,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     private void WriteDefinition()
     {
         new XDocument(new XElement("Project",
-            new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingHostConfig", "bindgen.json")),
-            new XElement("ItemGroup", new XElement("InnoBindingTarget", new XAttribute("Include", "fixture-target"),
-                new XElement("Config", "bindgen.json")))))
+            new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingConfig", "bindgen.json"))))
             .Save(Path.Combine(m_root, "bindings.props"));
     }
 

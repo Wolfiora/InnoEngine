@@ -148,7 +148,10 @@ public sealed class PlayerSupportPackPreparationIdentity
             .Where(static component => component.bindingDefinition is not null).DistinctBy(static component => component.nativeProject).ToArray();
         if (generated.Length > 0)
             declarations.Add("bindings=" + await context.RequireBindingGenerator().ComputeInputFingerprintAsync(context,
-                new NativeBindingGenerationRequest(generated, context.RequireToolchain().targetId, NativeBindingOutputMode.TargetArtifacts),
+                new NativeBindingGenerationRequest(generated, context.RequireToolchain().targetId, NativeBindingOutputMode.TargetArtifacts,
+                    componentOptions: m_nativePlan.steps.Where(static step => step.component.bindingDefinition is not null)
+                        .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
+                        .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)),
                 cancellation).ConfigureAwait(false));
         ManagedBuildInputSnapshot managed = await ManagedBuildInputSnapshot.CaptureAsync(context, m_sdk, m_project,
             m_properties, cancellation).ConfigureAwait(false);
@@ -157,7 +160,8 @@ public sealed class PlayerSupportPackPreparationIdentity
         string root = Path.Combine(context.engineRoot, "build", "support", "Inno.Build.SupportPacks.Core");
         IEnumerable<string> inputs = m_inputs.Concat(new[] { "FilePlayerSupportPackPreparation.cs", "PlayerSupportPackFiles.cs",
             "PlayerSupportPackPreparationIdentity.cs", "PlayerSupportPackPublisher.cs", "PlayerSupportPackPreparationIndex.cs",
-            "PlayerSupportPackPlan.cs", "Inno.Build.SupportPacks.Core.csproj" }.Select(file => Path.Combine(root, file)));
+            "PlayerSupportPackPlan.cs", "Inno.Build.SupportPacks.Core.csproj" }.Select(file => Path.Combine(root, file)))
+            .Append(Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "Native", "ProductNativeDeployment.cs"));
         return NativeBuildFingerprint.Create(context, declarations,
             inputs.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)), cancellation);
     }

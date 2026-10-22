@@ -32,8 +32,12 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         string directory;
         using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
             directory = first.directory;
+        string current = Path.Combine(output, S_TARGET.value, "current");
+        File.SetLastWriteTimeUtc(current, DateTime.UtcNow.AddDays(-1));
+        DateTime selectedAt = File.GetLastWriteTimeUtc(current);
         using (PlayerSupportPackPublication repeated = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
             Assert.Equal(directory, repeated.directory);
+        Assert.Equal(selectedAt, File.GetLastWriteTimeUtc(current));
         Assert.Equal(1, m_source.preparations);
         string file = Path.Combine(directory, "References", "Inno.Fixture.dll");
         DateTime timestamp = File.GetLastWriteTimeUtc(file);
@@ -47,6 +51,30 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
             Assert.Single(Directory.EnumerateFiles(Path.Combine(repaired.directory, "References")));
         Assert.Equal(3, m_source.preparations);
         Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
+    }
+
+    [Fact]
+    public async Task RetiringAnOldPackAlsoRetiresItsPreparationIndex()
+    {
+        string output = Path.Combine(m_root, "Packs");
+        var publisher = new PlayerSupportPackPublisher([m_source]);
+        string previous;
+        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+            previous = first.directory;
+        string indexes = Path.Combine(output, S_TARGET.value, ".preparations");
+        string oldIndex = Assert.Single(Directory.GetFiles(indexes));
+        File.WriteAllText(Path.Combine(m_root, "input.txt"), "changed");
+        string current;
+        using (PlayerSupportPackPublication second = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+            current = second.directory;
+
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root,
+            [new BuildCachePublisher(output, BuildCacheArtifactRole.ImmutableArtifact).Describe("packs")], new(), retireAll: true);
+        Assert.Empty((await plan.ExecuteAsync()).failures);
+        Assert.False(Directory.Exists(previous));
+        Assert.False(File.Exists(oldIndex));
+        Assert.True(Directory.Exists(current));
+        Assert.Single(Directory.GetFiles(indexes));
     }
 
     [Fact]

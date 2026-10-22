@@ -8,7 +8,7 @@
 
 构建 profile 选择动态或静态符号解析。BGCS 生成的 `TextNative` 暴露 context 创建/销毁、face 加载/释放、metrics、UTF-8 shaping、glyph rasterization 及结果消息；`InnoText*` 数据结构只为 ABI 使用，不是引擎脚本协议。动态 profile 的类型初始化通过 `NativeDllLoader` 读取应用已部署的 `native/text/<platform>`，缺库即启动失败，不查询仓库构建缓存或提供伪排版结果。
 
-`InnoTextFontAdapterRuntime*` 与 face ID 由 [Text adapter](Inno.Adapter.Text.FreeTypeHarfBuzz.md) 独占。Runtime 复制字体输入并拥有全部 face，在销毁底层字体库之前释放 face；调用方不能跨 session 使用句柄。Shape 和 Rasterize 接收 caller-owned 缓冲区及容量，容量不足返回明确结果；UTF-8 结果说明为 borrowed process-lifetime 文本。绑定映射与 ownership 位于本项目 `Bindings/common.json`。
+`InnoTextFontAdapterRuntime*` 与 face ID 由 [Text adapter](Inno.Adapter.Text.FreeTypeHarfBuzz.md) 独占。Runtime 复制字体输入并拥有全部 face，在销毁底层字体库之前释放 face；调用方不能跨 session 使用句柄。Shape 和 Rasterize 接收 caller-owned 缓冲区及容量，容量不足返回明确结果；UTF-8 结果说明为 borrowed process-lifetime 文本。绑定映射与 ownership 位于本项目 `Bindings/bindgen.json`。
 
 使用[绑定验收工具](../../build/Inno.Build.Cli.md)核对生成文件、实际库和完整部署输入。测试入口与当前环境结果分开记录；实际已执行范围见[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)，单一宿主的通过不能推断其他平台已经通过。
 
@@ -69,7 +69,7 @@ internal static unsafe class FontMeasurement
 
 ## 静态目标
 
-同一项目通过 `Bindings/bindgen.browser-wasm.json` 选择 wasm32 ABI 与静态符号解析，复用共同 facade 和映射。目标编译使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。Host profile 通过类型初始化装载对应配置的库。目标 C 桥和 managed 源属于同一 `artifacts/bindings/text/browser-wasm/<generationFingerprint>`，分别位于 `Native` 和 `Generated/Bindings.cs`，不会覆盖宿主生成物。CMake 中间文件属于 Text 或 Browser toolchain 的目标与指纹目录。
+组件仅维护公共 `Bindings/bindgen.json`。Browser Build integration 提供明确 wasm32 ABI、托管 runtime 和静态库名称；Windows、macOS integration 分别提供自己的 Profile，组件没有平台目标表。静态产品使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。HostSource 输出属于组件的 `Generated/Bindings.cs` 和 `Native/Generated`；TargetArtifacts 的 managed/native 输出共同属于 `artifacts/bindings/text/<target>/<generationFingerprint>`。是否可运行以[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)为准。
 
 ## 源码归属
 

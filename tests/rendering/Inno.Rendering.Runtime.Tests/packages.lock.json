@@ -308,6 +308,9 @@
         "dependencies": {
           "Inno.Extensibility.Catalogs": "[1.0.0, )"
         }
+      },
+      "inno.testing.source": {
+        "type": "Project"
       }
     }
   }

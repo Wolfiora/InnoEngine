@@ -1,10 +1,4 @@
-using Inno.Core.IO;
-using Inno.Content;
-using Inno.Adapter.Content.FileSystem;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
-using Inno.Build.Managed;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -14,6 +8,12 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using BGCS.Runtime;
+using Inno.Adapter.Content.FileSystem;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Build.Managed;
+using Inno.Content;
+using Inno.Core.IO;
 
 using Inno.Assets;
 using Inno.Assets.Pipeline;
@@ -63,8 +63,8 @@ public sealed class BuildPipelineTests : IDisposable
         m_supportPackRoot = Path.Combine(m_root, "SupportPacks");
         Directory.CreateDirectory(assetRoot);
         Directory.CreateDirectory(pluginRoot);
-        CreateSupportPack(BuildTargetId.macOSArm64, "Inno.Player.MacOSArm64");
-        CreateSupportPack(BuildTargetId.windowsX64, "Inno.Player.WindowsX64.exe");
+        CreateSupportPack(new BuildTargetId("macos-arm64"), "Inno.Player.MacOSArm64");
+        CreateSupportPack(new BuildTargetId("windows-x64"), "Inno.Player.WindowsX64.exe");
 
         m_engine = new EngineHostBuilder()
                 .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildPipelineTests).Assembly),
@@ -133,7 +133,7 @@ public sealed class BuildPipelineTests : IDisposable
     [InlineData(false)]
     public void PlatformPackRejectsAMissingContentSource(bool windows)
     {
-        BuildTargetId target = windows ? BuildTargetId.windowsX64 : BuildTargetId.macOSArm64;
+        BuildTargetId target = windows ? new BuildTargetId("windows-x64") : new BuildTargetId("macos-arm64");
         string pack = GetSupportPackDirectory(target);
         string source = windows ? "WindowsX64PlayerContentSource.cs" : "MacOSArm64PlayerContentSource.cs";
         File.Delete(Path.Combine(pack, "PlayerLink", source));
@@ -149,10 +149,10 @@ public sealed class BuildPipelineTests : IDisposable
     public void BuildTargetsAreOpenIdsOwnedByTheRegisteredAdapterCatalog()
     {
         Assert.Equal(
-            [BuildTargetId.macOSArm64, BuildTargetId.windowsX64],
+            [new BuildTargetId("macos-arm64"), new BuildTargetId("windows-x64")],
             m_pipeline.availableGameTargets);
         Assert.True(m_pipeline.TryGetGameTargetDisplayName(
-            BuildTargetId.macOSArm64,
+            new BuildTargetId("macos-arm64"),
             out string macOSDisplayName));
         Assert.Equal("macOS (Apple silicon)", macOSDisplayName);
         Assert.False(m_pipeline.TryGetGameTargetDisplayName(
@@ -177,7 +177,7 @@ public sealed class BuildPipelineTests : IDisposable
 
         Assert.True(targets.IsReadOnly);
         Assert.Throws<NotSupportedException>(() => targets[0] = new BuildTargetId("unknown-target"));
-        Assert.Equal([BuildTargetId.macOSArm64, BuildTargetId.windowsX64], m_pipeline.availableGameTargets);
+        Assert.Equal([new BuildTargetId("macos-arm64"), new BuildTargetId("windows-x64")], m_pipeline.availableGameTargets);
     }
 
     [Theory]
@@ -186,7 +186,7 @@ public sealed class BuildPipelineTests : IDisposable
     [InlineData("studio//game")]
     public void ProfileRejectsPersistentDataPathsOutsidePortableApplicationFolders(string path)
     {
-        BuildProfile profile = CreateProfile(BuildTargetId.windowsX64);
+        BuildProfile profile = CreateProfile(new BuildTargetId("windows-x64"));
         profile.persistentDataPath = path;
         Assert.Throws<InvalidDataException>(profile.Validate);
     }
@@ -212,24 +212,24 @@ public sealed class BuildPipelineTests : IDisposable
         Assert.True(result.succeeded);
         string outputPath = Assert.IsType<string>(result.outputPath);
         string contentHash = Assert.IsType<string>(result.contentHash);
-        string packagedContent = target == BuildTargetId.macOSArm64
+        string packagedContent = target == new BuildTargetId("macos-arm64")
             ? Path.Combine(outputPath, "Contents", "Resources", "Content")
             : Path.Combine(outputPath, "Content");
-        string executable = target == BuildTargetId.macOSArm64
+        string executable = target == new BuildTargetId("macos-arm64")
             ? Path.Combine(outputPath, "Contents", "MacOS", "Test Game")
             : Path.Combine(outputPath, "Test Game.exe");
         Assert.True(File.Exists(executable));
-        string playerRoot = target == BuildTargetId.macOSArm64
+        string playerRoot = target == new BuildTargetId("macos-arm64")
             ? Path.Combine(outputPath, "Contents", "MacOS")
             : outputPath;
         Assert.False(Directory.Exists(Path.Combine(playerRoot, "References")));
-        string deployedNative = target == BuildTargetId.macOSArm64
+        string deployedNative = target == new BuildTargetId("macos-arm64")
             ? Path.Combine(outputPath, "Contents", "MacOS", "native")
             : Path.Combine(outputPath, "native");
-        Assert.True(File.Exists(Path.Combine(deployedNative, target == BuildTargetId.macOSArm64
+        Assert.True(File.Exists(Path.Combine(deployedNative, target == new BuildTargetId("macos-arm64")
             ? "libinno-text-release.dylib"
             : "inno-text-release.dll")));
-        Assert.True(File.Exists(Path.Combine(deployedNative, target == BuildTargetId.macOSArm64
+        Assert.True(File.Exists(Path.Combine(deployedNative, target == new BuildTargetId("macos-arm64")
             ? "libinno-ui-release.dylib"
             : "inno-ui-release.dll")));
         Assert.Equal(
@@ -331,7 +331,7 @@ public sealed class BuildPipelineTests : IDisposable
 
         BuildResult result = await m_pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(BuildTargetId.macOSArm64),
+            profile = CreateProfile(new BuildTargetId("macos-arm64")),
             outputDirectory = Path.Combine(m_root, "Builds", "PendingImport")
         });
 
@@ -386,7 +386,7 @@ public sealed class BuildPipelineTests : IDisposable
 
         Task<BuildResult> build = pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(BuildTargetId.macOSArm64),
+            profile = CreateProfile(new BuildTargetId("macos-arm64")),
             outputDirectory = outputRoot
         }).AsTask();
         Assert.True(SpinWait.SpinUntil(
@@ -413,7 +413,7 @@ public sealed class BuildPipelineTests : IDisposable
 
         BuildResult result = await m_pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(BuildTargetId.macOSArm64),
+            profile = CreateProfile(new BuildTargetId("macos-arm64")),
             outputDirectory = outputRoot
         });
 
@@ -439,7 +439,7 @@ public sealed class BuildPipelineTests : IDisposable
         SaveStartupScene();
         var request = new GameBuildRequest
         {
-            profile = CreateProfile(BuildTargetId.windowsX64),
+            profile = CreateProfile(new BuildTargetId("windows-x64")),
             outputDirectory = Path.Combine(m_root, "Builds", "CleanupFailure")
         };
         string previous = Path.Combine(request.outputDirectory, request.profile.productName + "-Windows-x64");
@@ -470,7 +470,7 @@ public sealed class BuildPipelineTests : IDisposable
         SaveStartupScene();
         BuildResult result = await m_pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(BuildTargetId.windowsX64),
+            profile = CreateProfile(new BuildTargetId("windows-x64")),
             outputDirectory = Path.Combine(m_root, "Builds", "ProgressFailure")
         }, new CommitFailingProgress());
         Assert.True(result.succeeded);
@@ -491,7 +491,7 @@ public sealed class BuildPipelineTests : IDisposable
             m_pipeline.BuildGameAsync(
                 new GameBuildRequest
                 {
-                    profile = CreateProfile(BuildTargetId.macOSArm64),
+                    profile = CreateProfile(new BuildTargetId("macos-arm64")),
                     outputDirectory = outputRoot
                 },
                 cancellationToken: cancellation.Token).AsTask());
@@ -515,7 +515,7 @@ public sealed class BuildPipelineTests : IDisposable
         InvalidOperationException exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             m_pipeline.BuildGameAsync(new GameBuildRequest
             {
-                profile = CreateProfile(BuildTargetId.macOSArm64),
+                profile = CreateProfile(new BuildTargetId("macos-arm64")),
                 outputDirectory = output
             }).AsTask());
 
@@ -531,7 +531,7 @@ public sealed class BuildPipelineTests : IDisposable
     [InlineData("Bad:Name")]
     public void BuildProfileRejectsNamesThatAreInvalidOnEitherTarget(string productName)
     {
-        BuildProfile profile = CreateProfile(BuildTargetId.macOSArm64, productName);
+        BuildProfile profile = CreateProfile(new BuildTargetId("macos-arm64"), productName);
 
         Assert.Throws<InvalidDataException>(profile.Validate);
     }
@@ -541,7 +541,7 @@ public sealed class BuildPipelineTests : IDisposable
     {
         string path = Path.Combine(m_projectRoot, "BuildProfile.inno");
         var store = new BuildProfileStore(path, m_engine.serialization);
-        BuildProfile source = CreateProfile(BuildTargetId.windowsX64, "Stored Game");
+        BuildProfile source = CreateProfile(new BuildTargetId("windows-x64"), "Stored Game");
         source.windowWidth = 1920;
         source.windowHeight = 1080;
 
@@ -552,7 +552,7 @@ public sealed class BuildPipelineTests : IDisposable
         Assert.Equal(source.applicationId, restored.applicationId);
         Assert.Equal(source.productName, restored.productName);
         Assert.Equal(source.startupScene, restored.startupScene);
-        Assert.Equal(BuildTargetId.windowsX64, restored.target);
+        Assert.Equal(new BuildTargetId("windows-x64"), restored.target);
         Assert.Equal(1920, restored.windowWidth);
         Assert.Equal(1080, restored.windowHeight);
     }
@@ -562,10 +562,10 @@ public sealed class BuildPipelineTests : IDisposable
     {
         string path = Path.Combine(m_projectRoot, "BuildProfile.inno");
         var store = new BuildProfileStore(path, m_engine.serialization);
-        BuildProfile committed = CreateProfile(BuildTargetId.macOSArm64, "Committed Game");
+        BuildProfile committed = CreateProfile(new BuildTargetId("macos-arm64"), "Committed Game");
         store.Save(committed);
         byte[] committedBytes = File.ReadAllBytes(path);
-        BuildProfile invalid = CreateProfile(BuildTargetId.windowsX64, "Invalid/Game");
+        BuildProfile invalid = CreateProfile(new BuildTargetId("windows-x64"), "Invalid/Game");
 
         Assert.Throws<InvalidDataException>(() => store.Save(invalid));
 
@@ -588,12 +588,12 @@ public sealed class BuildPipelineTests : IDisposable
     [Fact]
     public void SupportPackRejectsAuthoringAssetPipelineAssemblies()
     {
-        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
+        string supportPack = GetSupportPackDirectory(new BuildTargetId("macos-arm64"));
         File.WriteAllBytes(Path.Combine(supportPack, "Inno.Assets.Pipeline.dll"), [0x49, 0x4E, 0x4E, 0x4F]);
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
 
         Assert.Contains("forbidden build-time file", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -607,7 +607,7 @@ public sealed class BuildPipelineTests : IDisposable
 
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             pipeline.EnsurePlayerSupportPackAsync(
-                BuildTargetId.windowsX64, new ManagedDeploymentId("unregistered")).AsTask());
+                new BuildTargetId("windows-x64"), new ManagedDeploymentId("unregistered")).AsTask());
 
         Assert.Contains("unregistered", failure.Message, StringComparison.Ordinal);
         Assert.Equal(0, provisioner.callCount);
@@ -624,7 +624,7 @@ public sealed class BuildPipelineTests : IDisposable
 
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             pipeline.EnsurePlayerSupportPackAsync(
-                BuildTargetId.windowsX64, ManagedDeploymentId.coreClr).AsTask());
+                new BuildTargetId("windows-x64"), ManagedDeploymentId.coreClr).AsTask());
 
         Assert.Contains("win-x64", failure.Message, StringComparison.Ordinal);
         Assert.Equal(0, provisioner.callCount);
@@ -634,39 +634,39 @@ public sealed class BuildPipelineTests : IDisposable
     public async Task MissingSupportPackIsPreparedBeforeTheOwnerThreadExport()
     {
         SaveStartupScene();
-        Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
+        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value), recursive: true);
         var provisioner = new TestSupportPackProvisioner(target =>
             CreateSupportPack(target, "Inno.Player.MacOSArm64"));
 
         BuildPipeline pipeline = CreatePipeline(provisioner);
-        using PlayerSupportPackLease prepared = await pipeline.EnsurePlayerSupportPackAsync(BuildTargetId.macOSArm64, deployment: null);
+        using PlayerSupportPackLease prepared = await pipeline.EnsurePlayerSupportPackAsync(new BuildTargetId("macos-arm64"), deployment: null);
         BuildResult result = await pipeline.BuildGameAsync(new GameBuildRequest
         {
-            profile = CreateProfile(BuildTargetId.macOSArm64),
+            profile = CreateProfile(new BuildTargetId("macos-arm64")),
             outputDirectory = Path.Combine(m_root, "Builds", "Provisioned")
         });
 
         Assert.True(result.succeeded);
         Assert.Equal(1, provisioner.callCount);
-        Assert.True(Directory.Exists(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value)));
+        Assert.True(Directory.Exists(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value)));
     }
 
     [Fact]
     public async Task MissingPackFailsPromptlyWhileAsynchronousPreparationIsPending()
     {
         SaveStartupScene();
-        Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
+        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value), recursive: true);
         using var cancellation = new CancellationTokenSource();
         var provisioner = new PendingSupportPackProvisioner();
         BuildPipeline pipeline = CreatePipeline(provisioner);
         Task<PlayerSupportPackLease> preparation = pipeline.EnsurePlayerSupportPackAsync(
-            BuildTargetId.macOSArm64, deployment: null, cancellation.Token).AsTask();
+            new BuildTargetId("macos-arm64"), deployment: null, cancellation.Token).AsTask();
         try
         {
             Assert.False(preparation.IsCompleted);
             Task<BuildResult> build = pipeline.BuildGameAsync(new GameBuildRequest
             {
-                profile = CreateProfile(BuildTargetId.macOSArm64),
+                profile = CreateProfile(new BuildTargetId("macos-arm64")),
                 outputDirectory = Path.Combine(m_root, "Builds", "Pending")
             }).AsTask();
 
@@ -687,10 +687,10 @@ public sealed class BuildPipelineTests : IDisposable
     public unsafe void EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices()
     {
         SaveStartupScene();
-        Directory.Delete(Path.Combine(m_supportPackRoot, BuildTargetId.macOSArm64.value), recursive: true);
+        Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value), recursive: true);
         var provisioner = new DrainingSupportPackProvisioner();
         BuildPipeline pipeline = CreatePipeline(provisioner);
-        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", BuildTargetId.macOSArm64);
+        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
         var buildSettings = new BuildSettingsStore(
             Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
         m_engine.modules.Register("Tests.Exporting", [Assembly.Load(new AssemblyName("Inno.Editor.Exporting"))]);
@@ -759,7 +759,7 @@ public sealed class BuildPipelineTests : IDisposable
     public async Task InvalidInstalledSupportPackDoesNotTriggerProvisioning()
     {
         SaveStartupScene();
-        File.Delete(Path.Combine(GetSupportPackDirectory(BuildTargetId.macOSArm64),
+        File.Delete(Path.Combine(GetSupportPackDirectory(new BuildTargetId("macos-arm64")),
             "native", "libminiaudio-release.dylib"));
         var provisioner = new TestSupportPackProvisioner(target =>
             CreateSupportPack(target, "Inno.Player.MacOSArm64"));
@@ -767,7 +767,7 @@ public sealed class BuildPipelineTests : IDisposable
         await Assert.ThrowsAsync<InvalidDataException>(() =>
             CreatePipeline(provisioner).BuildGameAsync(new GameBuildRequest
             {
-                profile = CreateProfile(BuildTargetId.macOSArm64),
+                profile = CreateProfile(new BuildTargetId("macos-arm64")),
                 outputDirectory = Path.Combine(m_root, "Builds", "InvalidPack")
             }).AsTask());
 
@@ -777,12 +777,12 @@ public sealed class BuildPipelineTests : IDisposable
     [Fact]
     public void SupportPackRejectsMissingMiniAudioRuntime()
     {
-        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
+        string supportPack = GetSupportPackDirectory(new BuildTargetId("macos-arm64"));
         File.Delete(Path.Combine(supportPack, "native", "libminiaudio-release.dylib"));
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
 
         Assert.Contains("no longer matches", exception.Message, StringComparison.Ordinal);
     }
@@ -792,11 +792,11 @@ public sealed class BuildPipelineTests : IDisposable
     [InlineData(false)]
     public void PlatformValidatorRejectsForeignAbiDespiteTheExpectedFilename(bool windows)
     {
-        BuildTargetId target = windows ? BuildTargetId.windowsX64 : BuildTargetId.macOSArm64;
+        BuildTargetId target = windows ? new BuildTargetId("windows-x64") : new BuildTargetId("macos-arm64");
         string directory = GetSupportPackDirectory(target);
         string library = windows ? "miniaudio-release.dll" : "libminiaudio-release.dylib";
         File.WriteAllBytes(Path.Combine(directory, "native", library),
-            CreateNativeImage(windows ? BuildTargetId.macOSArm64 : BuildTargetId.windowsX64));
+            CreateNativeImage(windows ? new BuildTargetId("macos-arm64") : new BuildTargetId("windows-x64")));
         IPlayerSupportPackValidator validator = windows
             ? new WindowsX64SupportPackValidator() : new MacOSArm64SupportPackValidator();
         InvalidDataException failure = Assert.Throws<InvalidDataException>(() => validator.Validate(directory));
@@ -806,12 +806,12 @@ public sealed class BuildPipelineTests : IDisposable
     [Fact]
     public void SupportPackRejectsForeignNativeRuntime()
     {
-        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
+        string supportPack = GetSupportPackDirectory(new BuildTargetId("macos-arm64"));
         File.WriteAllBytes(Path.Combine(supportPack, "native", "SDL3-release.so"), [0x49, 0x4E, 0x4E, 0x4F]);
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
 
         Assert.Contains("foreign native runtime", exception.Message, StringComparison.Ordinal);
     }
@@ -821,12 +821,12 @@ public sealed class BuildPipelineTests : IDisposable
     [InlineData("libinno-ui-release.dylib")]
     public void SupportPackRejectsMissingTextOrUiRuntime(string nativeRuntime)
     {
-        string supportPack = GetSupportPackDirectory(BuildTargetId.macOSArm64);
+        string supportPack = GetSupportPackDirectory(new BuildTargetId("macos-arm64"));
         File.Delete(Path.Combine(supportPack, "native", nativeRuntime));
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(BuildTargetId.macOSArm64, new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
 
         Assert.Contains("no longer matches", exception.Message, StringComparison.Ordinal);
     }
@@ -944,7 +944,7 @@ public sealed class BuildPipelineTests : IDisposable
         File.WriteAllBytes(Path.Combine(directory, executable), [0x49, 0x4E, 0x4E, 0x4F]);
         string link = Path.Combine(directory, "PlayerLink");
         Directory.CreateDirectory(link);
-        string platform = target == BuildTargetId.macOSArm64 ? "MacOSArm64" : "WindowsX64";
+        string platform = target == new BuildTargetId("macos-arm64") ? "MacOSArm64" : "WindowsX64";
         File.WriteAllText(Path.Combine(link, "Player.csproj"),
             "<Project><PropertyGroup><AssemblyName>Inno.Player." + platform + "</AssemblyName></PropertyGroup></Project>");
         foreach (string source in new[] { "Program.cs", platform + "PlayerComposition.cs", platform + "PlayerContentSource.cs", "global.json" })
@@ -962,7 +962,7 @@ public sealed class BuildPipelineTests : IDisposable
         File.WriteAllBytes(Path.Combine(link, executable), [0x49, 0x4E, 0x4E, 0x4F]);
         string native = Path.Combine(directory, "native");
         Directory.CreateDirectory(native);
-        string[] required = target == BuildTargetId.macOSArm64
+        string[] required = target == new BuildTargetId("macos-arm64")
             ? ["libbgfx-shared-lib-release.dylib", "SDL3-release.dylib", "libminiaudio-release.dylib",
                 "libinno-text-release.dylib", "libinno-ui-release.dylib"]
             : ["bgfx-shared-lib-release.dll", "SDL3-release.dll", "miniaudio-release.dll",
@@ -974,7 +974,7 @@ public sealed class BuildPipelineTests : IDisposable
             File.WriteAllBytes(Path.Combine(native, file), CreateNativeImage(target));
             File.WriteAllBytes(Path.Combine(linkNative, file), CreateNativeImage(target));
         }
-        IPlayerSupportPackValidator validator = target == BuildTargetId.macOSArm64
+        IPlayerSupportPackValidator validator = target == new BuildTargetId("macos-arm64")
             ? new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()
             : new Inno.Build.WindowsX64.WindowsX64SupportPackValidator();
         using PlayerSupportPackLease published = new PlayerSupportPackCatalog(m_supportPackRoot).PublishAsync(
@@ -991,7 +991,7 @@ public sealed class BuildPipelineTests : IDisposable
     {
         using var output = new MemoryStream();
         using var writer = new BinaryWriter(output);
-        if (target == BuildTargetId.macOSArm64)
+        if (target == new BuildTargetId("macos-arm64"))
         {
             writer.Write(0xfeedfacfu);
             writer.Write(0x0100000cu);
@@ -1149,7 +1149,7 @@ public sealed class BuildPipelineTests : IDisposable
 
         public void Validate(string directory) => new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator().Validate(directory);
 
-        public BuildTargetId id => BuildTargetId.macOSArm64;
+        public BuildTargetId id => new BuildTargetId("macos-arm64");
         public BuildTargetId target => id;
 
         public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;

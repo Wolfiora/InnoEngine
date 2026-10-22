@@ -69,6 +69,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
     /// </returns>
     public override bool Execute()
     {
+        FileLease[] ownerUses = [];
         try
         {
             CancellationToken token = m_cancellation.Token;
@@ -89,6 +90,11 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             // MSBuild's API applies undefinitions to the final request. Explicit task
             // properties must survive removal of identically named parent globals.
             removed = removed.Where(name => !properties.Contains(name)).ToArray();
+            var workspaces = new BuildCachePublisher(Path.GetDirectoryName(artifacts)!, BuildCacheArtifactRole.ReusableWorkspace);
+            ownerUses = AcquireOwnerUses(
+                [new(cache, BuildCacheArtifactRole.ImmutableArtifact),
+                    new(taskRoot, BuildCacheArtifactRole.ProcessWorkingDirectory), workspaces], engine, token);
+            TaskRuntimePreparation.RegisterWorkspaceReader(load, artifacts, token);
             TaskRuntimeRequestSnapshot initial = TaskRuntimeRequestKey.Capture(project, artifacts, targets, properties, token);
             bool restoreRequired = initial.needsRestore;
             bool restoreRequested = targets.Contains("Restore", StringComparer.OrdinalIgnoreCase);
@@ -123,8 +129,6 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             using (ownership)
             {
                 token.ThrowIfCancellationRequested();
-                var workspaces = new BuildCachePublisher(Path.GetDirectoryName(artifacts)!, BuildCacheArtifactRole.ReusableWorkspace);
-                using FileLease workspaceUse = workspaces.AcquireUseAsync(token).AsTask().GetAwaiter().GetResult();
                 workspaces.BeginWorkingDirectory(artifacts, artifacts + ".lock", null, token);
                 if (restoreRequired || restoreRequested)
                 {
@@ -184,8 +188,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                         + locked.DescribeChanges(compiled));
                 TargetOutputs = TaskRuntimePreparation.Publish(cache, TargetOutputs, engine, load, token);
                 TaskRuntimePreparation.RegisterReader(load, TargetOutputs.Single(static item => item.GetMetadata("RelativePath") == "Inno.Build.Tasks.dll").ItemSpec);
-                using (workspaces.AcquireUseAsync(token).AsTask().GetAwaiter().GetResult())
-                    workspaces.Record(artifacts, artifacts + ".lock", [], null, null, token);
+                workspaces.Record(artifacts, artifacts + ".lock", [], null, null, token);
                 TaskRuntimeBuildScope.Register(engine, request, TargetOutputs);
                 TaskRuntimePreparation.RecordRequest(cache, request, TargetOutputs);
                 Log.LogMessage(MessageImportance.High, "INNO-TASK-RUNTIME prepared {0}", request);
@@ -199,6 +202,8 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
         }
         finally
         {
+            foreach (FileLease activity in ownerUses)
+                activity.Dispose();
             lock (m_cancellationGate)
             {
                 m_finished = true;
@@ -215,6 +220,41 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
         lock (m_cancellationGate)
             if (!m_finished)
                 m_cancellation.Cancel();
+    }
+
+    private static FileLease[] AcquireOwnerUses(
+        IReadOnlyList<BuildCachePublisher> publishers,
+        IBuildEngine4 engine,
+        CancellationToken cancellation
+    ) {
+        var activities = new Stack<FileLease>();
+        engine.Yield();
+        try
+        {
+            foreach (BuildCachePublisher publisher in publishers.OrderBy(
+                static entry => entry.Describe("task-runtime").coordinationPath, StringComparer.Ordinal))
+                activities.Push(publisher.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult());
+        }
+        catch
+        {
+            while (activities.TryPop(out FileLease? activity))
+                activity.Dispose();
+            throw;
+        }
+        finally
+        {
+            try
+            {
+                engine.Reacquire();
+            }
+            catch
+            {
+                while (activities.TryPop(out FileLease? activity))
+                    activity.Dispose();
+                throw;
+            }
+        }
+        return activities.ToArray();
     }
 
     private IDictionary FreezeProperties(

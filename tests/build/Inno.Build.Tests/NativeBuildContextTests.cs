@@ -1,11 +1,13 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
-using Inno.Build.Distribution.Standard;
 using Xunit;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Products.Standard;
+using Inno.Build.Toolchains;
+using Inno.Core.IO;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Tests;
 
@@ -29,7 +31,7 @@ public sealed class NativeBuildContextTests : IDisposable
         NativeBuildRecipe second = NativeBuildRecipe.CreateForComponent(separated, owner, "fixture", "fixture-target", [], [], []);
         Assert.Equal(first.declarations, second.declarations);
         Assert.Equal(NativeBuildFingerprint.Create(first.declarations, []), NativeBuildFingerprint.Create(second.declarations, []));
-        Assert.Contains("executionRoot=" + Path.GetFullPath(m_root), first.declarations);
+        Assert.Contains("executionRoot=" + new PhysicalPathResolver().Resolve(m_root), first.declarations);
     }
 
     public void Dispose()
@@ -47,9 +49,10 @@ public sealed class NativeBuildContextTests : IDisposable
         File.WriteAllText(Path.Combine(owner, "Inno.Build.Toolchains.csproj"), "<Project />");
         var context = new NativeBuildContext(m_root, "release");
 
-        Assert.Equal(Path.GetFullPath(m_root), context.engineRoot);
+        Assert.Equal(new PhysicalPathResolver().Resolve(m_root), context.engineRoot);
         Assert.Equal("release", context.configuration);
-        Assert.Equal(Path.Combine(owner, "obj", "native"), context.GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj")));
+        Assert.Equal(Path.Combine(context.engineRoot, "build", "toolchains", "Inno.Build.Toolchains", "obj", "native"),
+            context.GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj")));
         Assert.NotEqual(TestRepository.GetRoot(typeof(NativeBuildContextTests).Assembly), context.engineRoot);
         Assert.False(Directory.Exists(Path.Combine(owner, "obj")));
     }
@@ -75,8 +78,8 @@ public sealed class NativeBuildContextTests : IDisposable
         var context = new NativeBuildContext(m_root, "debug");
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => editor
-            ? StandardNativeBuildPlans.CreateEditor(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token)
-            : StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile).BuildAsync(context, cancellation.Token));
+            ? new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Editor(), cancellation.Token)
+            : new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Player(), cancellation.Token));
 
         Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }
@@ -87,7 +90,7 @@ public sealed class NativeBuildContextTests : IDisposable
         CreateCheckout();
         var context = new NativeBuildContext(m_root, "release");
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile).BuildAsync(context, CancellationToken.None));
+            () => new ComponentNativeProductExecutor().BuildAsync(context, BuildTestProducts.Player(), CancellationToken.None));
         Assert.Contains("explicit target toolchain", failure.Message, StringComparison.Ordinal);
         Assert.Single(Directory.EnumerateFileSystemEntries(m_root));
     }

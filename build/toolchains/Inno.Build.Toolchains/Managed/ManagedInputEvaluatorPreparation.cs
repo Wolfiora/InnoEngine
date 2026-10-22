@@ -47,8 +47,9 @@ internal static class ManagedInputEvaluatorPreparation
         string fingerprint = NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         string directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators", fingerprint);
         var cache = new BuildCachePublisher(Path.GetDirectoryName(directory)!, BuildCacheArtifactRole.ImmutableArtifact);
+        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.GetDirectoryName(directory)!, "managed-evaluators", cache.role, cancellation);
         using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
-        BuildArtifactReadLease? existing = await BuildArtifactReadLease.TryAcquireAsync(directory, fingerprint,
+        BuildArtifactReadLease? existing = await BuildArtifactReadLease.TryAcquireAsync(directory, Path.GetDirectoryName(directory)!, fingerprint,
             ["Outputs"], context, cancellation).ConfigureAwait(false);
         if (existing is not null)
         {
@@ -98,7 +99,7 @@ internal static class ManagedInputEvaluatorPreparation
                     if (Directory.Exists(intermediate))
                         Directory.Delete(intermediate, recursive: true);
                     BuildArtifactManifest.Write(candidate, fingerprint, ["Outputs"], context);
-                    using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(directory, cancellation).ConfigureAwait(false);
+                    using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(directory, Path.GetDirectoryName(directory)!, cancellation).ConfigureAwait(false);
                     try
                     {
                         AtomicDirectory.Install(candidate, directory);
@@ -114,7 +115,7 @@ internal static class ManagedInputEvaluatorPreparation
                 }
             }
         }
-        BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(directory,
+        BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(directory, Path.GetDirectoryName(directory)!,
             fingerprint, ["Outputs"], cancellation, context).ConfigureAwait(false);
         try
         {

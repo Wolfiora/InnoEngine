@@ -1,12 +1,13 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Products.Standard;
 using Inno.Build.Toolchains;
 using Inno.Integration.BrowserWasm32.Bgfx;
-using Inno.Build.Distribution.Standard;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -44,7 +45,7 @@ public sealed class NativeComponentBuildOptionsTests
             File.WriteAllText(tool, "This file must never execute.");
             var owner = new NativeComponentDescriptor("fixture", "Native.csproj", "Build.csproj");
             var selection = new NativeToolchainSelection("fixture-target", new BuildHostDescriptor("Windows", "x64"),
-                new Dictionary<string, string> { ["cmake"] = tool }, new Dictionary<string, string>(), [], [], ".dll", false);
+                new Dictionary<string, string> { ["cmake"] = tool }, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".dll"), false);
             var context = new NativeBuildContext(root, "debug").WithToolchain(selection).WithComponentOptions(
                 owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared, ["-DLINKAGE:BOOL=OFF"]));
             await Assert.ThrowsAsync<ArgumentException>(() => NativeCMakeExecutor.BuildAsync(context, owner, root,
@@ -62,20 +63,20 @@ public sealed class NativeComponentBuildOptionsTests
     public void StaticRecipesDeclareOnlyNativeSourceRootsThatTheyActuallyConsume()
     {
         var source = new NativeStaticBuildDefinition("build/Static.cmake", ["native/include", "native/src"],
-            ["libfixture.a"], ["fixture-target"], "native");
+            ["fixture"], "native");
         Assert.Equal("native", source.nativeSourceDirectory);
-        Assert.Null(new NativeStaticBuildDefinition("build/Static.cmake", ["vendor"], ["libfixture.a"], ["fixture-target"]).nativeSourceDirectory);
+        Assert.Null(new NativeStaticBuildDefinition("build/Static.cmake", ["vendor"], ["fixture"]).nativeSourceDirectory);
         Assert.Throws<ArgumentException>(() => new NativeStaticBuildDefinition("build/Static.cmake", ["vendor"],
-            ["libfixture.a"], ["fixture-target"], "undeclared/native"));
+            ["fixture"], "undeclared/native"));
     }
 
     [Fact]
     public void ProductPlanDeclaresStaticArchivesAndDoesNotGuessLinkageFromTheHost()
     {
-        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(BrowserWasm32BgfxIntegration.nativeOptions);
+        ProductNativeBuildPlan plan = BuildTestProducts.StaticPlayer();
         Assert.All(plan.steps, static step => {
             Assert.Equal(NativeLibraryKind.Static, step.options.libraryKind);
-            Assert.Contains("browser-wasm", step.component.staticBuild!.targetIds);
+            Assert.NotEmpty(step.component.staticBuild!.logicalOutputs);
         });
         Assert.Contains(plan.steps, static step => step.options.cmakeArguments.Count > 0);
     }

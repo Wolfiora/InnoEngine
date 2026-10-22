@@ -23,6 +23,9 @@ public static class NativeBindingPreparation
     /// <param name="cancellationToken">
     /// Cancels generation and drains active work before returning.
     /// </param>
+    /// <param name="componentOptions">
+    /// Exact per-owner component choices, or null for component defaults.
+    /// </param>
     /// <returns>
     /// An owned generation closure, empty for a product without bindings. Retain it through final consumption.
     /// </returns>
@@ -32,7 +35,8 @@ public static class NativeBindingPreparation
     public static async Task<NativeBindingGenerationResult> PrepareAsync(
         NativeBuildContext context,
         IReadOnlyList<NativeComponentDescriptor> components,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(components);
@@ -42,7 +46,7 @@ public static class NativeBindingPreparation
         if (owners.Length == 0)
             return new(new Dictionary<string, NativeBindingGenerationDescriptor>(), []);
         var request = new NativeBindingGenerationRequest(owners, context.RequireToolchain().targetId,
-            NativeBindingOutputMode.TargetArtifacts);
+            NativeBindingOutputMode.TargetArtifacts, componentOptions: componentOptions);
         return await context.RequireBindingGenerator().GenerateAsync(context, request, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -3,12 +3,34 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Managed;
+using Inno.Build.Managed.DotNet;
+using Inno.Build.Toolchains;
 using Xunit;
 
 namespace Inno.Build.Tests;
 
 public sealed class ManagedDeploymentTests
 {
+    [Fact]
+    public void DotNetProvidersConsumeAnOpenFrozenTargetSelection()
+    {
+        string[] targets = ["fixture-runtime"];
+        var workspaces = new PhysicalToolchainWorkspaceProvider();
+        IManagedDeploymentCompiler[] compilers =
+        [
+            new CoreClrDeploymentCompiler("dotnet", targets, workspaces),
+            new NativeAotDeploymentCompiler("dotnet", targets, workspaces),
+            new MonoWasmDeploymentCompiler("dotnet", targets, workspaces, false),
+            new MonoWasmDeploymentCompiler("dotnet", targets, workspaces, true)
+        ];
+        targets[0] = "changed";
+        var catalog = new ManagedDeploymentCatalog(compilers);
+        Assert.Equal(4, catalog.GetSupportedDeployments("fixture-runtime").Count);
+        Assert.Empty(catalog.GetSupportedDeployments("changed"));
+        foreach (IManagedDeploymentCompiler compiler in compilers)
+            Assert.Same(compiler, catalog.Resolve(compiler.id, "fixture-runtime"));
+    }
+
     [Fact]
     public void OpenProviderCatalogDispatchesCustomIdentityWithoutPlatformBranches()
     {

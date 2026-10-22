@@ -6,6 +6,10 @@
 
 构建工具冻结实际输入和工具选择，组件维护自己的 recipe，发布器验证并安装完整产物。缓存身份用于判断当前请求是否可以消费这些产物；工作目录用于保留兼容的编译中间态，两者有不同的生命周期。
 
+绑定 generation 同时携带不可变产物目录与实际发布 owner；selection 将两者一起传入后续 MSBuild。冻结源码树只改变组件源码位置，不改变产物的协调域。生成 Task 也输出同一 owner，materialization 不从源码工作区推测它，并继续校验产物必须属于声明 owner。
+
+托管输入规划使用 `artifacts/managed/evaluations/<request identity>` 下独立的 SDK `ArtifactsPath`，不改写普通 IDE 的 `obj`。还原、声明的输入工程还原、求值与内容读取都在同一 owner/叶锁范围内；不同全局属性的辅助工程拥有独立子布局，避免 RID 图相互覆盖。派生图可以重建，源输入变化仍在 fresh 校验中拒绝。
+
 ## 当前目录归属
 
 缓存登记区分不可变产物、可重用 workspace 与进程工作目录。只有不可变产物的当前选择形成长期保护根；workspace 的偏好不会阻止空闲目录退休。活动编译的独占 lease、活动进程的 PID/启动时间和完整依赖仍优先保护。
@@ -71,7 +75,7 @@ MSBuild 的 `MaterializeBindingsTask` 在保护期间把选定绑定复制到 SD
 
 `BuildCacheArtifactDescriptor` 是只读的目录、真实 producer/reader lease、发布者在写权限下记录的文件大小、最后使用时间及依赖描述。预算读取登记大小，完整性仍独立验证实际文件集合与内容哈希；大小不是缓存有效性的证据。Native 成品可以提供自己的读取保护路径，可复用 workspace 提供既有编译独占 lease；清理不会另猜一个锁。时间仅决定回收顺序，不参与缓存完整性判断。当前根及其全部依赖受保护；无法确认的依赖、重叠所有权、位于待删目录中的锁或循环依赖会在删除前失败。
 
-`BuildCacheCleanupPlan` 冻结预览候选。执行时重新读取 owner 清单和保护根，以零等待取得独占 artifact lease；活动 reader 或正在更新的 owner 会使对应工作跳过。活动父产物即使不在预算候选中，其依赖也会被保护。失败的父产物同样保留依赖。持久锁文件始终留在原位置。
+`BuildCacheCleanupPlan` 冻结预览候选。执行时重新读取 owner 清单和保护根，以零等待取得独占 artifact lease；活动 reader 或正在更新的 owner 会使对应工作跳过。活动父产物即使不在预算候选中，其依赖也会被保护。失败的父产物同样保留依赖。owner 协调文件始终保留。叶锁在参与者全部释放、owner 独占且 payload 与登记已退休后才可删除；普通 FileLease 的释放语义不变。
 
 `BuildCachePolicy` 默认使用 64 GiB 的登记文件预算、20 GiB 的实际磁盘空闲阈值及 5 秒的完整清理操作预算（包含清单读取）。达到时间预算后不开始下一项操作，已经执行的文件系统操作仍须完成。当前保护集合超过预算时，不强制删除。
 
@@ -81,7 +85,9 @@ MSBuild 的 `MaterializeBindingsTask` 在保护期间把选定绑定复制到 SD
 
 Unix 编译器在可复用 workspace 中生成的库名称文件别名由内部缓存清单验证：链条始终位于同一 owned workspace，最终指向普通文件；目录链接、逃逸、循环和悬空链接被拒绝。预算只累计实际文件，退休删除别名本身，不沿链接遍历。不可变发布内容和进程工作目录不允许此例外。Native workspace 的验证在最终 candidate 提交前执行。
 
-Task 的 host、load、publisher 和 shared workspace 分别拥有独立登记根。`RecordProcessUse` 在共享协调权限内记录 PID 与 UTC 启动 ticks 及目录依赖；活动或不可确认的进程保护对应目录，load 同时保护它所用的 host。PID 相同而启动时间不同表示原生命周期已经结束；权限或身份无法确认时延期退休。编译 workspace 使用外部持久 lease，不能把删除协调文件当作清理。
+Task 的 host、load、publisher 和 shared workspace 分别拥有独立登记根。`RecordProcessUse` 在共享协调权限内记录 PID 与 UTC 启动 ticks，并累积同一进程操作实际使用的依赖闭包；后续登记不能抹掉仍被使用的依赖。活动或不可确认的进程保护对应目录，load 同时保护它所用的 host 和 MSBuild 编译 workspace。PID 相同而启动时间不同表示原生命周期已经结束；权限或身份无法确认时延期退休。编译 workspace 使用外部持久 lease，不能把删除协调文件当作清理。
+
+MSBuild 会在同一构建中缓存 Restore 目标结果，Task 方法返回不代表这些中间文件已经不再使用。Task 在首次输入求值、等待叶锁和执行期间按路径顺序持有相关 owner 活动保护，并在既有 load 进程登记中引用 workspace。即使不同项目随后复用 SDK 的 Restore 结果，维护也不会删除该 workspace；宿主进程退出后按同一退休协议回收，不在 Build registry 保存 lease 或私有 SDK 对象。
 
 预算使用完成 writer 登记的 workspace 大小；未完成的零大小登记与进程工作目录逐项读取，并在读取中检查时间预算。这些大小只服务预算，不参与 Native/Pack 完整性命中。真正退休时取得独占权、重新核对依赖与路径，再统计实际文件字节；卷空间变化另行测量，不能把 hardlink 的逻辑字节视为实际回收量。
 
@@ -95,3 +101,11 @@ Task 的 host、load、publisher 和 shared workspace 分别拥有独立登记�
 - [Bindings](../build/Inno.Build.Bindings.md)：生成批次及完整性。
 - [Support Packs](../build/Inno.Build.SupportPacks.Core.md)：准备、发布和消费。
 - [Task Hosting](../build/Inno.Build.TaskHosting.md)：引导、共享运行闭包和私有载入。
+
+## 元数据与成功根操作
+
+`CoordinatedFileLease` 在打开或等待叶锁前取得 owner 共享权，并持有到叶锁释放。所有不可变 reader 明确接收 publisher 根，不推导 owner。ProcessOwnedDirectory 使用同一 root/owner.lock 协议。维护按规范路径取得所有 owner 独占权，fresh 验证 current、依赖、进程及路径，关闭叶锁句柄后退休已证明归属的登记和叶锁。未知文件和无法确认的记录保留并报告。
+
+元数据退休独立于字节压力。已退出且不受依赖保护的进程工作目录也参与每次维护，不等待达到字节预算；不可变产物和可复用 workspace 仍按压力策略选择。内容相同的 `.current` 保持时间戳；过期工作 claim 和已登记 index 随依赖失效收敛。dry-run 不删除 payload、记录或指针。BGCS 缓存按公开配置指定的整个 SDK workspace 登记与退休，不读取或修改其内部缓存协议。
+
+Editor 根 Build/Publish 与 CLI 共用 `BuildMaintenanceApplication`。IDE 普通构建成功后执行一次；CLI editor 的子 MSBuild 被明确抑制，由外层命令执行一次。game、plugin、scripts 和 import-sample 的成功根命令先释放 Workspace 与 Native 读取保护，再维护一次；失败或取消不进入成功维护。Build 入口自身不自动维护，保留 `clean --dry-run` 的只读含义。默认自动预算 5 秒、64 GiB、20 GiB 空闲阈值，显式维护默认 600 秒。自动失败单独报告；显式清理失败返回失败状态。

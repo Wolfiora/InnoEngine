@@ -4,11 +4,12 @@ using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
+using Inno.Build.Windows.Host;
 using Inno.Build.WindowsX64;
 using Inno.Core.IO;
 using Inno.Testing.Source;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -26,7 +27,7 @@ public sealed class ToolchainWorkingDirectoryBuildTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
             string cmake = OperatingSystem.IsWindows()
                 ? (await new WindowsX64NativeToolchainProvider(dotnet).ResolveAsync(new(repository, "debug"),
-                    new BuildHostDescriptor("Windows", "x64"), "windows-x64", timeout.Token)).ResolveExecutable("cmake")
+                    BuildTestProducts.WindowsHost(), "windows-x64", timeout.Token)).ResolveExecutable("cmake")
                 : ToolchainEnvironment.ResolveExecutable("cmake");
             string project = Path.Combine(root, "Runner.csproj");
             await File.WriteAllTextAsync(project, $$"""
@@ -41,6 +42,7 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                   <ItemGroup>
                     <Reference Include="Inno.Build.Toolchains" HintPath="{{SecurityElement.Escape(typeof(ToolchainWorkingDirectory).Assembly.Location)}}" />
                     <Reference Include="Inno.Core.IO" HintPath="{{SecurityElement.Escape(typeof(FileLease).Assembly.Location)}}" />
+                    <Reference Include="Inno.Build.Windows.Host" HintPath="{{SecurityElement.Escape(typeof(WindowsToolchainWorkspaceProvider).Assembly.Location)}}" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -50,6 +52,7 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                 using System.IO;
                 using System.Threading;
                 using Inno.Build.Toolchains;
+                using Inno.Build.Windows.Host;
 
                 Directory.CreateDirectory(args[0]);
                 File.WriteAllText(Path.Combine(args[0], "InnoEngine.sln"), "fixture");
@@ -62,8 +65,10 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                     + "configure_file(input.txt result.txt COPYONLY)\n");
                 File.WriteAllText(Path.Combine(source, "input.txt"), args[3]);
                 var owner = new NativeComponentDescriptor("fixture", "native/fixture.csproj", "build/fixture.csproj");
-                var tools = new NativeToolchainSelection("fixture-x64", new BuildHostDescriptor("Fixture", "x64"),
-                    new Dictionary<string, string> { ["cmake"] = args[1] }, new Dictionary<string, string>(), [], [], ".native", false);
+                IToolchainWorkspaceProvider workspaces = OperatingSystem.IsWindows()
+                    ? new WindowsToolchainWorkspaceProvider() : new PhysicalToolchainWorkspaceProvider();
+                var tools = new NativeToolchainSelection("fixture-x64", new BuildHostDescriptor("Fixture", "x64", new BuildHostServices(workspaces)),
+                    new Dictionary<string, string> { ["cmake"] = args[1] }, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".native"), false);
                 var context = new NativeBuildContext(args[0], "release").WithToolchain(tools)
                     .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
                 var recipe = new NativeBuildRecipe(owner, "fixture", "fixture-x64",
@@ -91,7 +96,7 @@ public sealed class ToolchainWorkingDirectoryBuildTests
             await ToolchainEnvironment.RunAsync(dotnet,
                 ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false"],
                 repository, timeout.Token, environment);
-            string physical = Path.Combine(root, "Workspace");
+            string physical = Path.Combine(root, "Workspace with spaces", new string('x', 70), new string('y', 70), new string('z', 70));
             string? firstExecution = null;
             (string value, string temporary, bool hit)[] calls =
             [

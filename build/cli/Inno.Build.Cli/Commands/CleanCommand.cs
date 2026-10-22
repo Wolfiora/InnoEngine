@@ -1,10 +1,10 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using Inno.Build.Distribution.Standard;
-using Inno.Build.Toolchains;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Cli;
 
@@ -46,8 +46,9 @@ internal static class CleanCommand
             NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture);
         var policy = new BuildCachePolicy(ReadBytes("cache-budget-gib", 64L << 30), ReadBytes("cache-min-free-gib", 20L << 30),
             TimeSpan.FromSeconds(seconds));
-        StandardBuildCaches.CreateOwners(context.root, context.distribution.platforms.SelectMany(static platform => platform.nativeProducts.Values)
-            .SelectMany(static product => product.steps).Select(static step => step.component).ToArray());
+        if (!options.Has("dry-run"))
+            StandardBuildCaches.CreateOwners(context.root, context.distribution.platforms.SelectMany(static platform => platform.nativeProducts.Values)
+                .SelectMany(static product => product.plan.steps).Select(static step => step.component).ToArray());
         await BuildMaintenanceApplication.CleanAsync(context.root, policy, !automatic, options.Has("dry-run"),
             !automatic && options.Has("target") ? options.Require("target") : null, cancellation).ConfigureAwait(false);
     }
