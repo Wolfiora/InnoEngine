@@ -62,6 +62,7 @@ internal sealed class BindingGenerationOperation : IDisposable
             string fingerprint = fingerprints[index];
             string output = definition.GetOutputRoot(m_context);
             var loaded = definition.Load(m_context, cancellation);
+            bool usesRuntimeImports = loaded.configuration.api.importMode != BGCS.Core.BindingImportMode.FunctionTable;
             if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
             {
                 string destination = Path.Combine(output, fingerprint);
@@ -73,7 +74,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                     if (!m_request.checkOnly)
                     {
                         results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(
-                            Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint));
+                            Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint, usesRuntimeImports));
                         continue;
                     }
                 }
@@ -85,7 +86,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                 m_publications.Add(publication);
                 TargetBindingGeneration.Generate(m_context, definition, loaded, publication, fingerprint, cancellation);
                 results.Add(definition.component.nativeProject, TargetBindingGeneration.Describe(
-                    Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint));
+                    Path.Combine(m_context.engineRoot, "artifacts", "bindings"), destination, fingerprint, usesRuntimeImports));
             }
             else
             {
@@ -95,6 +96,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                 results.Add(definition.component.nativeProject, new NativeBindingGenerationDescriptor
                 {
                     fingerprint = fingerprint, bindingsPath = Path.Combine(output, "Bindings.cs"),
+                    usesRuntimeImports = usesRuntimeImports,
                     artifactDirectory = string.Empty,
                     artifactOwnerDirectory = string.Empty,
                     nativeDirectory = publication.nativeDestination ?? string.Empty

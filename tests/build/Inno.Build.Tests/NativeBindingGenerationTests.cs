@@ -44,6 +44,33 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Assert.Equal("Static", groups[1].Element("InnoNativeLibraryKind")!.Value);
     }
 
+    [Theory]
+    [InlineData(NativeLibraryKind.Static, false)]
+    [InlineData(NativeLibraryKind.Static, true)]
+    [InlineData(NativeLibraryKind.Shared, false)]
+    [InlineData(NativeLibraryKind.Shared, true)]
+    public void ManagedSelectionPreservesImportInitializationIndependentlyOfLinkage(
+        NativeLibraryKind linkage,
+        bool runtimeImports
+    ) {
+        string output = Path.Combine(m_root, "ImportSelection.props");
+        var generations = new Dictionary<string, NativeBindingGenerationDescriptor>
+        {
+            ["Inno.Native.Text.csproj"] = SelectedGeneration("selected", runtimeImports)
+        };
+        var links = new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = linkage };
+        NativeBindingGenerationDescriptor.WriteSelection(output, generations, links);
+        XElement group = XDocument.Load(output).Root!.Element("PropertyGroup")!;
+        Assert.Equal(runtimeImports ? "true" : "false", group.Element("InnoNativeRuntimeImports")!.Value);
+        Assert.Equal(linkage.ToString(), group.Element("InnoNativeLibraryKind")!.Value);
+        NativeBindingGenerationDescriptor.ValidateSelection(output, generations, links);
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output,
+            new Dictionary<string, NativeBindingGenerationDescriptor>
+            {
+                ["Inno.Native.Text.csproj"] = SelectedGeneration("selected", !runtimeImports)
+            }, links));
+    }
+
     [Fact]
     public void IdenticalSelectionPreservesTheImportTimestampAndChangedSelectionReplacesIt()
     {
@@ -123,6 +150,29 @@ public sealed class NativeBindingGenerationTests : IDisposable
                 ["Inno'Injected.csproj"] = SelectedGeneration("selected")
             }, new Dictionary<string, NativeLibraryKind> { ["Inno'Injected.csproj"] = NativeLibraryKind.Shared }));
         Assert.False(Directory.Exists(m_root));
+    }
+
+    [Theory]
+    [InlineData(BGCS.Core.BindingImportMode.LibraryImport)]
+    [InlineData(BGCS.Core.BindingImportMode.DllImport)]
+    [Trait("ExternalDependency", "BGCS")]
+    public async Task PlatformImportChoiceChangesOfficialGenerationAndFrozenSelection(BGCS.Core.BindingImportMode importMode)
+    {
+        CreateConfig("unsigned long long sample(void* value);");
+        NativeBindingGenerationDescriptor provider = await GenerateAsync();
+        var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
+        var request = new NativeBindingGenerationRequest([component], "fixture-target", NativeBindingOutputMode.TargetArtifacts);
+        var profile = new NativeBindingProfile("fixture-target",
+            new BGCS.Configuration.TargetConfiguration { id = "windows-x64-msvc" }, importMode: importMode);
+        using NativeBindingGenerationResult result = await new NativeBindingGenerator(profile).GenerateAsync(
+            new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+        NativeBindingGenerationDescriptor imports = result[component.nativeProject];
+        Assert.False(provider.usesRuntimeImports);
+        Assert.True(imports.usesRuntimeImports);
+        Assert.NotEqual(provider.fingerprint, imports.fingerprint);
+        string source = File.ReadAllText(imports.bindingsPath);
+        Assert.Contains(importMode + "(", source);
+        Assert.DoesNotContain("delegate* unmanaged", source);
     }
 
     [Fact]
@@ -267,13 +317,17 @@ public sealed class NativeBindingGenerationTests : IDisposable
             Directory.Delete(m_root, recursive: true);
     }
 
-    private static NativeBindingGenerationDescriptor SelectedGeneration(string fingerprint)
+    private static NativeBindingGenerationDescriptor SelectedGeneration(
+        string fingerprint,
+        bool usesRuntimeImports = false
+    )
         => new()
         {
             fingerprint = fingerprint,
             artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
             artifactOwnerDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration"),
             bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
+            usesRuntimeImports = usesRuntimeImports,
             nativeDirectory = string.Empty
         };
 

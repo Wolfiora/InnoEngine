@@ -79,6 +79,11 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
     [Output]
     public string GenerationFingerprint { get; private set; } = string.Empty;
     /// <summary>
+    /// Gets whether the selected generated context requires runtime-import initialization.
+    /// </summary>
+    [Output]
+    public bool UsesRuntimeImports { get; private set; }
+    /// <summary>
     /// Gets the complete native artifacts and compilation requirements selected by this operation.
     /// </summary>
     [Output]
@@ -158,6 +163,7 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
                 result.Write(DescriptorOutputPath);
             GeneratedBindings = result.bindingsPath;
             GenerationFingerprint = result.fingerprint;
+            UsesRuntimeImports = result.usesRuntimeImports;
             NativeDirectory = result.nativeDirectory;
             ArtifactDirectory = result.artifactDirectory;
             ArtifactOwnerDirectory = result.artifactOwnerDirectory;

@@ -22,10 +22,11 @@ namespace Inno.Player.BrowserWasm32;
 
 internal static class BrowserWasm32PlayerComposition
 {
-    internal static async Task<int> RunAsync()
+    internal static async Task<int> RunAsync(string[] arguments)
     {
         try
         {
+            PlayerCommandLineOptions command = PlayerCommandLineOptions.Parse(arguments);
             BrowserWasm32Bridge.SetStatus("Loading game content…");
             using var client = new HttpClient { BaseAddress = new Uri(BrowserWasm32Bridge.GetBaseUrl()) };
             var storage = new StorageBackendCatalog([new BrowserWasm32StorageBackendProvider()]);
@@ -53,6 +54,9 @@ internal static class BrowserWasm32PlayerComposition
                     new StorageScope(manifest.applicationId)),
                 moduleActivator = Generated.PlayerMetadataComposition.CreateActivator(),
                 frameDriver = new ScheduledShellFrameDriver(NextFrameAsync),
+                graphicsApi = command.graphicsApi,
+                windowVisible = command.windowVisible,
+                smokeFrameLimit = command.smokeFrameLimit,
                 jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                 renderOnCallingThread = true,
                 logDeliveryMode = LogDeliveryMode.Inline

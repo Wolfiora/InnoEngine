@@ -1264,29 +1264,27 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.PlatformNotSupportedException("The native target pointer width differs from this process.");
                 if (global::System.BitConverter.IsLittleEndian != true)
                     throw new global::System.PlatformNotSupportedException("The native target byte order differs from this process.");
-                if (sizeof(MaResourceManagerDataSupply) != 64)
+                if (sizeof(MaRb) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupply>("Type").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("PBuffer").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupply>("Backend").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("SubbufferSizeInBytes").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_703c17494b3fd294>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBpf) != 40)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("SubbufferCount").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("SubbufferStrideInBytes").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("Bpf2Count").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("EncodedReadOffset").ToInt64() != 20)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("PBpf2").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("EncodedWriteOffset").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("PHeap").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("OwnsBuffer").ToInt64() != 28)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("OwnsHeap").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("ClearOnWriteAcquire").ToInt64() != 29)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_268010817d20364c>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("AllocationCallbacks").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_05d300858716c912>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextAnonymousUnion3dfceaecfb81c0d8) != 264)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1302,77 +1300,21 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e60d7a94979ce62e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaJobQueueConfig) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueueConfig>("Flags").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueueConfig>("Capacity").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_46320d78998f9c60>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_3561217d0d8daa30) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaSpatializerConfig) != 80)
+                if (sizeof(MaDecodingBackendVtable) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ChannelsIn").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInit").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ChannelsOut").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInitFile").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("PChannelMapIn").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInitFileW").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("AttenuationModel").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInitMemory").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("Positioning").ToInt64() != 20)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnUninit").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("Handedness").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MinGain").ToInt64() != 28)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MaxGain").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MinDistance").ToInt64() != 36)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MaxDistance").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("Rolloff").ToInt64() != 44)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ConeInnerAngleInRadians").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ConeOuterAngleInRadians").ToInt64() != 52)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ConeOuterGain").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("DopplerFactor").ToInt64() != 60)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("DirectionalAttenuationFactor").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MinSpatializationChannelGain").ToInt64() != 68)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("GainSmoothTimeInFrames").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_92984ab4e838c6b0>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaJobQueueFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaDeviceJobThreadConfig) != 12)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThreadConfig>("NoThread").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThreadConfig>("JobQueueCapacity").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThreadConfig>("JobQueueFlags").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c41e59c81aacf520>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNoiseAnonymousStruct829bbf4dea8396a8) != 24)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct829bbf4dea8396a8>("Bin").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct829bbf4dea8396a8>("Accumulation").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct829bbf4dea8396a8>("Counter").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f63d52879495769d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bf8e8d97a2f5c84f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStruct48b4ba25a7d0b304) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1386,112 +1328,122 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b859c1b0c58ef72a>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceInfoAnonymousStruct0f23fff9bc66642b) != 16)
+                if (sizeof(MaPagedAudioBuffer) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("Ds").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("PData").ToInt64() != 72)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("SampleRate").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("PCurrent").ToInt64() != 80)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("Flags").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("RelativeCursor").ToInt64() != 88)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5322690c3a6bfa8f>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("AbsoluteCursor").ToInt64() != 96)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8cdad1310c3d191e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaPanMode) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaResamplerConfigAnonymousStruct816361d296299c5c) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplerConfigAnonymousStruct816361d296299c5c>("LpfOrder").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f8355b6bab9622dc>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaSlotAllocator) != 40)
+                if (sizeof(MaContextCommandWasapiAnonymousStructB15f1a432c8f1340) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("PGroups").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructB15f1a432c8f1340>("Unused").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("PSlots").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("Count").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("Capacity").ToInt64() != 20)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("OwnsHeap").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("PHeap").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e47cdd0c24760814>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_707522452ac71b29>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBiquadNode) != 424)
+                if (sizeof(MaLinearResamplerAnonymousUnion04e50dfd327cc4be) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNode>("BaseNode").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion04e50dfd327cc4be>("F32").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNode>("Biquad").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion04e50dfd327cc4be>("S16").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_79d0979e05a267b3>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ae6010a5bdc1b4d4>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerDataSourceConfig) != 72)
+                if (sizeof(MaAudioBuffer) != 152)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("PFilePath").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("Ref").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("PFilePathW").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("AllocationCallbacks").ToInt64() != 112)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("PNotifications").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("OwnsData").ToInt64() != 144)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("InitialSeekPointInPcmFrames").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("PExtraData").ToInt64() != 148)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("RangeBegInPcmFrames").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("RangeEndInPcmFrames").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("LoopPointBegInPcmFrames").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("LoopPointEndInPcmFrames").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("Flags").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("IsLooping").ToInt64() != 68)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fd07dcc0366d172d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_589bc0cb8cf31c6e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaWaveformType) != 4)
+                if (sizeof(MaAaudioContentType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaNoiseType) != 4)
+                if (sizeof(MaOpenModeFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaLpf) != 56)
+                if (sizeof(MaNodeGraphConfig) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeGraphConfig>("Channels").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeGraphConfig>("ProcessingSizeInFrames").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("SampleRate").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeGraphConfig>("PreMixStackSizeInBytes").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Lpf1Count").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Lpf2Count").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("PLpf1").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("PLpf2").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("PHeap").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("OwnsHeap").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_80fc1a104d5f0840>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8a98fc0cb0907fd9>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceNotificationAnonymousUnionB52679bbf55e7547) != 4)
+                if (sizeof(MaBiquadConfig) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Started").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Stopped").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Rerouted").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("B0").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Interruption").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("B1").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_66f41a09c57cf093>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("B2").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("A0").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("A1").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("A2").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a40aa04a5162e583>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_5cecd9fb8864fb43) != 144)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaLpf1) != 40)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("A").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("PR1").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("PHeap").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("OwnsHeap").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1ce47d17aee73426>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaHishelf2Config) != 40)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("GainDb").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("ShelfSlope").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("Frequency").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fb946753cc4599ee>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaBackendCallbacks) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBackendCallbacks>("OnContextInit").ToInt64() != 0)
@@ -1522,25 +1474,33 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2263061c375a82f1>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAtomicBool32) != 4)
+                if (sizeof(MaBpf2Config) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicBool32>("Value").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9f1325244e1afdac>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("CutoffFrequency").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("Q").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c4b888ad842885f4>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerDataSourceFlags) != 4)
+                if (sizeof(MaDeviceNotificationAnonymousStruct83e9486864a83a17) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaPagedAudioBufferData) != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStruct83e9486864a83a17>("Unused").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0885f51dc6e23e20>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaLogCallback) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLogCallback>("OnLog").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLogCallback>("PUserData").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("Head").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("PTail").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8438271b827ead3c>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9b9e57f6a7d40979>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaSound) != 1024)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1568,25 +1528,15 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d98bba2644e3f871>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDataSourceNode) != 368)
+                if (sizeof(MaContextCommandWasapiAnonymousUnionE0cefef571787ced) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNode>("Base").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousUnionE0cefef571787ced>("Quit").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNode>("PDataSource").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousUnionE0cefef571787ced>("CreateAudioClient").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8ac8c89bb342a502>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLog) != 112)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("Callbacks").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousUnionE0cefef571787ced>("ReleaseAudioClient").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("CallbackCount").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("AllocationCallbacks").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("Lock").ToInt64() != 104)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fd19826df9a14af9>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_108fa331aceab1fe>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextAnonymousStruct3f09d48453db1e24) != 128)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1628,7 +1578,29 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2>("Bq").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_cbc0085c71719218>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b7aa1c979d18cea0>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDataSourceBase) != 72)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("Vtable").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("RangeBegInFrames").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("RangeEndInFrames").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("LoopBegInFrames").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("LoopEndInFrames").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("PCurrent").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("PNext").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("OnGetNext").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("IsLooping").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b542429712a7c92f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousStruct405cf6900db62736) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1642,10 +1614,28 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_07061e3d5630cb09>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaJobType) != 4)
+                if (sizeof(MaBpfNode) != 400)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaDitherMode) != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNode>("BaseNode").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNode>("Bpf").ToInt64() != 360)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_675236bd2e1b15dd>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaNotchNode) != 424)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNode>("BaseNode").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNode>("Notch").ToInt64() != 360)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d1d2226fd4327400>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaLoshelf2) != 64)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2>("Bq").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3807f1dad0fe33a6>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextConfigAnonymousStruct0a3d2e36aff1fcc4) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextConfigAnonymousStruct0a3d2e36aff1fcc4>("PClientName").ToInt64() != 0)
@@ -1654,29 +1644,73 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_88bc3cacb7d11ab7>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceNotification) != 16)
+                if (sizeof(MaChannelMixMode) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotification>("PDevice").ToInt64() != 0)
+                if (sizeof(MaLog) != 112)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("Callbacks").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotification>("Type").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("CallbackCount").ToInt64() != 64)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotification>("Data").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("AllocationCallbacks").ToInt64() != 72)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_27953033c6b59e94>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLog>("Lock").ToInt64() != 104)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7902eb55cc90e212>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNoiseAnonymousStruct150b5b8daffaf7dd) != 8)
+                if (sizeof(MaSpatializerConfig) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct150b5b8daffaf7dd>("Accumulation").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ChannelsIn").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1de186f0168063fd>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ChannelsOut").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("PChannelMapIn").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("AttenuationModel").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("Positioning").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("Handedness").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MinGain").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MaxGain").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MinDistance").ToInt64() != 36)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MaxDistance").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("Rolloff").ToInt64() != 44)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ConeInnerAngleInRadians").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ConeOuterAngleInRadians").ToInt64() != 52)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("ConeOuterGain").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("DopplerFactor").ToInt64() != 60)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("DirectionalAttenuationFactor").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("MinSpatializationChannelGain").ToInt64() != 68)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerConfig>("GainSmoothTimeInFrames").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f1f3bef3d65e00ca>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_5f1329750a7569d7) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaSlotAllocatorGroup) != 4)
+                if (sizeof(MaWaveform) != 120)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocatorGroup>("Bitfield").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Ds").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ce105e470bf4f616>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Config").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Advance").ToInt64() != 104)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Time").ToInt64() != 112)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b57b076a979e4f5e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousStruct5331c172aa9f713e) != 96)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1728,26 +1762,64 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2ea76c093d079ddd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNoiseAnonymousUnionDdcc25dc73447b3c) != 24)
+                if (sizeof(MaEngineNodeConfig) != 88)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousUnionDdcc25dc73447b3c>("Pink").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("PEngine").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousUnionDdcc25dc73447b3c>("Brownian").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("Type").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2629bbf266b51524>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("ChannelsIn").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("ChannelsOut").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("SampleRate").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("VolumeSmoothTimeInPcmFrames").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("MonoExpansionMode").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("IsPitchDisabled").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("IsSpatializationDisabled").ToInt64() != 33)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("PinnedListenerIndex").ToInt64() != 34)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("Resampling").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ed3a33a6b4a6df2a>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013) != 56)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013>("Data").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013>("DecodedFrameCount").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013>("SampleRate").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_48bbdf2ba84b26c8>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_d8db4ca1d386799a) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaThreadPriority) != 4)
+                if (sizeof(MaChannelConversionPath) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaContextCommandWasapiAnonymousStructA42a8003a53c4cf6) != 16)
+                if (sizeof(MaAudioBufferConfig) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructA42a8003a53c4cf6>("PDevice").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructA42a8003a53c4cf6>("DeviceType").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1e91ef748665ff15>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("SizeInFrames").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("PData").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("AllocationCallbacks").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2cdf6aacab1354e5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaWasapiUsage) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaContextAnonymousStructBd4a9a2e72e58718) != 144)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextAnonymousStructBd4a9a2e72e58718>("HWinMm").ToInt64() != 0)
@@ -1794,13 +1866,61 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8ef84aa13a9ba693>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBpfNodeConfig) != 72)
+                if (sizeof(MaDataConverterConfig) != 120)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("FormatIn").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNodeConfig>("Bpf").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("FormatOut").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d129c39a243cbf2c>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("ChannelsIn").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("ChannelsOut").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("SampleRateIn").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("SampleRateOut").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("PChannelMapIn").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("PChannelMapOut").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("DitherMode").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("ChannelMixMode").ToInt64() != 44)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("CalculateLfeFromSpatialChannels").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("PpChannelWeights").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("AllowDynamicSampleRate").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("Resampling").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0a069854e90b7dee>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResamplingBackendVtable) != 80)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetHeapSize").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnInit").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnUninit").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnProcess").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnSetRate").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetInputLatency").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetOutputLatency").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetRequiredInputFrameCount").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetExpectedOutputFrameCount").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnReset").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7b7cf139a51730c9>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDecoder) != 552)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1844,53 +1964,43 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ef6d3a28d9020d15>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaSoundFlags) != 4)
+                if (sizeof(MaContextCommandWasapiAnonymousStructA42a8003a53c4cf6) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaAtomicVec3f) != 16)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicVec3f>("V").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructA42a8003a53c4cf6>("PDevice").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicVec3f>("Lock").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructA42a8003a53c4cf6>("DeviceType").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_603e70c21a2567a1>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_32a1f2eead3c6ea5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDataConverter) != 312)
+                if (sizeof(MaDecoderConfig) != 144)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("FormatIn").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("FormatOut").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ChannelsIn").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("SampleRate").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ChannelsOut").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("PChannelMap").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("SampleRateIn").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("ChannelMixMode").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("SampleRateOut").ToInt64() != 20)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("DitherMode").ToInt64() != 28)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("DitherMode").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("Resampling").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ExecutionPath").ToInt64() != 28)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("AllocationCallbacks").ToInt64() != 80)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ChannelConverter").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("EncodingFormat").ToInt64() != 112)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("Resampler").ToInt64() != 104)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("SeekPointCount").ToInt64() != 116)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasPreFormatConversion").ToInt64() != 296)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("PpCustomBackendVTables").ToInt64() != 120)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasPostFormatConversion").ToInt64() != 297)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("CustomBackendCount").ToInt64() != 128)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasChannelConverter").ToInt64() != 298)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("PCustomBackendUserData").ToInt64() != 136)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasResampler").ToInt64() != 299)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("IsPassthrough").ToInt64() != 300)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("OwnsHeap").ToInt64() != 301)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("PHeap").ToInt64() != 304)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_63d048d786a3e188>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1729b762e17203f7>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaResamplerConfig) != 48)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1912,44 +2022,6 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_96914a40de2f007e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaSplitterNode) != 360)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNode>("Base").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f8fd7917d629ddd7>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerConfig) != 152)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("AllocationCallbacks").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PLog").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("DecodedFormat").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("DecodedChannels").ToInt64() != 44)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("DecodedSampleRate").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("JobThreadCount").ToInt64() != 52)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("JobThreadStackSize").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("JobQueueCapacity").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("Flags").ToInt64() != 68)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PVfs").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PpCustomDecodingBackendVTables").ToInt64() != 80)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("CustomDecodingBackendCount").ToInt64() != 88)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PCustomDecodingBackendUserData").ToInt64() != 96)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("Resampling").ToInt64() != 104)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dd2f3ced9a7391ac>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextAnonymousUnionBedbc270a69d8c34) != 128)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextAnonymousUnionBedbc270a69d8c34>("Win32").ToInt64() != 0)
@@ -1958,22 +2030,26 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9b36672fad7d2a16>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAaudioAllowedCapturePolicy) != 4)
+                if (sizeof(MaStandardSampleRate) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaPagedAudioBuffer) != 104)
+                if (sizeof(MaSeekOrigin) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("Ds").ToInt64() != 0)
+                if (sizeof(MaDeviceNotificationAnonymousUnionB52679bbf55e7547) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Started").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("PData").ToInt64() != 72)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Stopped").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("PCurrent").ToInt64() != 80)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Rerouted").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("RelativeCursor").ToInt64() != 88)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousUnionB52679bbf55e7547>("Interruption").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBuffer>("AbsoluteCursor").ToInt64() != 96)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d5e0cad2a454e8c2>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_60593b9bf4af54cf>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResourceManagerDataSourceFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaNoiseType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaJobAnonymousStruct36d3c431f4e90735) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStruct36d3c431f4e90735>("PDataStream").ToInt64() != 0)
@@ -1984,6 +2060,12 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d8be9695ee30869d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResamplerAnonymousUnion67c9af061924ab62) != 136)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplerAnonymousUnion67c9af061924ab62>("Linear").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_eeec9b24e999fc95>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDecoderAnonymousUnionA916b61357319dbc) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderAnonymousUnionA916b61357319dbc>("Vfs").ToInt64() != 0)
@@ -1992,30 +2074,26 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_75baf63825d513f6>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPanner) != 16)
+                if (sizeof(MaAaudioAllowedCapturePolicy) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Format").ToInt64() != 0)
+                if (sizeof(MaDelayConfig) != 28)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Channels").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("SampleRate").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Mode").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("DelayInFrames").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Pan").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("DelayStart").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2faaa6fb7d6996aa>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Wet").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Dry").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Decay").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f966d2509bad97b9>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLpfNodeConfig) != 72)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNodeConfig>("NodeConfig").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNodeConfig>("Lpf").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5fdf0c1081543f8d>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHandedness) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaPerformanceProfile) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_89fe77cdd9158c23) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaDeviceAnonymousStruct833ebe1501c12fa1) != 40)
@@ -2032,42 +2110,26 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bb1a52677c98771d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLogLevel) != 4)
+                if (sizeof(MaWaveformType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaDelay) != 48)
+                if (sizeof(MaNodeVtable) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("Config").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("OnProcess").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("Cursor").ToInt64() != 28)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("OnGetRequiredInputFrameCount").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("BufferSizeInFrames").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("InputBusCount").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("PBuffer").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("OutputBusCount").ToInt64() != 17)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_75d9b87b8e4ab298>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("Flags").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_206589d9d6a16852>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaSeekOrigin) != 4)
+                if (sizeof(MaPerformanceProfile) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaResourceManagerPipelineNotifications) != 32)
+                if (sizeof(MaIosSessionCategoryOption) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineNotifications>("Init").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineNotifications>("Done").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bc4ab444e4069c21>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLcg) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLcg>("State").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3380390c4fd9c4cd>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPagedAudioBufferConfig) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferConfig>("PData").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7e6f2b6d6cebbd7b>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContext) != 720)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContext>("Callbacks").ToInt64() != 0)
@@ -2104,22 +2166,6 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_cc0e0ea230de1718>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDecodingBackendConfig) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendConfig>("PreferredFormat").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendConfig>("SeekPointCount").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_70f73f9fca016e9b>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLinearResamplerAnonymousUnion04e50dfd327cc4be) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion04e50dfd327cc4be>("F32").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion04e50dfd327cc4be>("S16").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4293dbdabd88a043>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousStructAe6fc2fcd4157e5b) != 48)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStructAe6fc2fcd4157e5b>("PDataStream").ToInt64() != 0)
@@ -2136,20 +2182,40 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e554cb78b8cc9478>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaFileInfo) != 8)
+                if (sizeof(MaDataConverterExecutionPath) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFileInfo>("SizeInBytes").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_417e7fca351e68b5>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextConfigAnonymousStructF1f40026491482be) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextConfigAnonymousStructF1f40026491482be>("UseVerboseDeviceEnumeration").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2f89ed25490ad40f>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaIosSessionCategory) != 4)
+                if (sizeof(MaPanner) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Mode").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPanner>("Pan").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c03c92e032db7cd9>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDeviceNotificationAnonymousStructCf0eebc2b8eb1a40) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStructCf0eebc2b8eb1a40>("Unused").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_150113ad5d26a72a>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaBpfNodeConfig) != 72)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNodeConfig>("NodeConfig").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNodeConfig>("Bpf").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3af48102f8ab18dd>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousStructA0b0de7a870d2f7a) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStructA0b0de7a870d2f7a>("PDataBuffer").ToInt64() != 0)
@@ -2174,40 +2240,16 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6383e6c2585c1200>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaFence) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFence>("E").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFence>("Counter").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fb3f2a06cac2ef29>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_513b8c6685130cf6) != 1024)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaLinearResampler) != 136)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("Config").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InAdvanceInt").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InAdvanceFrac").ToInt64() != 36)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InTimeInt").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InTimeFrac").ToInt64() != 44)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("X0").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("X1").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("Lpf").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("PHeap").ToInt64() != 120)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("OwnsHeap").ToInt64() != 128)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2d3a13635d870042>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLoshelfNodeConfig) != 80)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNodeConfig>("NodeConfig").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNodeConfig>("Loshelf").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1654c6b92517324c>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDecoderAnonymousStruct246ed079cb62d150) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderAnonymousStruct246ed079cb62d150>("PData").ToInt64() != 0)
@@ -2218,47 +2260,73 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_87bc12bbe52a3bc9>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaFader) != 40)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("Config").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("VolumeBeg").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("VolumeEnd").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("LengthInFrames").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("CursorInFrames").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_01fdef28acc8e4b1>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaLpf) != 56)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Lpf1Count").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("Lpf2Count").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("PLpf1").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("PLpf2").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("PHeap").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf>("OwnsHeap").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ce01285fdbcfd3b8>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStructD49a53f210d254b2) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceConfigAnonymousStructD49a53f210d254b2>("AllowNominalSampleRateChange").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8ba1a2b77bcfb3dc>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLpfNode) != 416)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNode>("BaseNode").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNode>("Lpf").ToInt64() != 360)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a527d53bd05d2483>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_50ae7efedbdc618e) != 448)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaChannelConverterAnonymousUnion7025e92e25c444e2) != 8)
+                if (sizeof(MaBpf) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterAnonymousUnion7025e92e25c444e2>("F32").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterAnonymousUnion7025e92e25c444e2>("S16").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b5ae4e9b91cba2f3>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("Bpf2Count").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("PBpf2").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("PHeap").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf>("OwnsHeap").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8239c50169e1140a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResult) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaLpf2) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf2>("Bq").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_aec5d0655a59b008>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaEngineNodeAnonymousStruct1275eef82a5471ac) != 24)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("VolumeBeg").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("VolumeEnd").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("FadeLengthInFrames").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("AbsoluteGlobalTimeInFrames").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5e0ffecaa44cf0e6>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bf96c6697281754d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStructD748817f3e1ac316) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2270,39 +2338,47 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bd84e2ef68d23e2c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaShareMode) != 4)
+                if (sizeof(MaAsyncNotificationCallbacks) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaDataConverterConfig) != 120)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationCallbacks>("OnSignal").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4108a384c84ecc24>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaNoiseConfig) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("FormatIn").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("FormatOut").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("ChannelsIn").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Type").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("ChannelsOut").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Seed").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("SampleRateIn").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Amplitude").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("SampleRateOut").ToInt64() != 20)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("DuplicateChannels").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("PChannelMapIn").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7cb2461ef0fc7fc8>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDeviceNotificationAnonymousStruct25bec240b919447d) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStruct25bec240b919447d>("Unused").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("PChannelMapOut").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c2cfad5735bf31a0>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaNotch2Config) != 32)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("DitherMode").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("ChannelMixMode").ToInt64() != 44)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("SampleRate").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("CalculateLfeFromSpatialChannels").ToInt64() != 48)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Q").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("PpChannelWeights").ToInt64() != 56)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Frequency").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("AllowDynamicSampleRate").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverterConfig>("Resampling").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f923d60fdcbc4b69>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_73d2689935f59a9a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaResourceManagerDataSource) != 744)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2316,26 +2392,28 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0b84ad345ecdf60c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDataSourceVtable) != 56)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnRead").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnSeek").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnGetDataFormat").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnGetCursor").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnGetLength").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnSetLooping").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("Flags").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_58761f317f0288aa>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_95a1f650075f892e) != 512)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaSpatializerListenerConfig) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ChannelsOut").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("PChannelMapOut").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("Handedness").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ConeInnerAngleInRadians").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ConeOuterAngleInRadians").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ConeOuterGain").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("SpeedOfSound").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("WorldUp").ToInt64() != 36)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_cccd99a715d1e60b>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextConfigAnonymousStruct08a33c5ec23b1778) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextConfigAnonymousStruct08a33c5ec23b1778>("SessionCategory").ToInt64() != 0)
@@ -2348,24 +2426,62 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5a5d4b6f52551233>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNodeConfig) != 40)
+                if (sizeof(MaResourceManagerConfig) != 152)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("Vtable").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("AllocationCallbacks").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("InitialState").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PLog").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("InputBusCount").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("DecodedFormat").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("OutputBusCount").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("DecodedChannels").ToInt64() != 44)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("PInputChannels").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("DecodedSampleRate").ToInt64() != 48)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("POutputChannels").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("JobThreadCount").ToInt64() != 52)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ae4753ee5c21a18c>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("JobThreadStackSize").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("JobQueueCapacity").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("Flags").ToInt64() != 68)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PVfs").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PpCustomDecodingBackendVTables").ToInt64() != 80)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("CustomDecodingBackendCount").ToInt64() != 88)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("PCustomDecodingBackendUserData").ToInt64() != 96)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerConfig>("Resampling").ToInt64() != 104)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_58c26db9ed95fefc>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResult) != 4)
+                if (sizeof(MaAtomicUint64) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicUint64>("Value").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c181c97f6294d6db>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaOpenslStreamType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaPulsewaveConfig) != 40)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("DutyCycle").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Amplitude").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Frequency").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7b85a03c39cca50a>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStruct1a945a4ef0e54b15) != 28)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceConfigAnonymousStruct1a945a4ef0e54b15>("Usage").ToInt64() != 0)
@@ -2384,25 +2500,43 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_110a518a71ca5809>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaSplitterNodeConfig) != 48)
+                if (sizeof(MaChannelConverter) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNodeConfig>("Channels").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("ChannelsIn").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNodeConfig>("OutputBusCount").ToInt64() != 44)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("ChannelsOut").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_714e4559874699c6>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("MixingMode").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("ConversionPath").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PChannelMapIn").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PChannelMapOut").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PShuffleTable").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("Weights").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PHeap").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("OwnsHeap").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d359f249dbef2ebe>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAaudioInputPreset) != 4)
+                if (sizeof(MaDelay) != 48)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaTimer) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaTimer>("Counter").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("Config").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaTimer>("CounterD").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("Cursor").ToInt64() != 28)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e6c26fe54027f3fa>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("BufferSizeInFrames").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelay>("PBuffer").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0fe686612cf387a3>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStruct0565c2863d098d59) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2422,25 +2556,7 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4478d28fb78d5386>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNoise) != 152)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("Ds").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("Config").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("Lcg").ToInt64() != 104)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("State").ToInt64() != 112)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("PHeap").ToInt64() != 136)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("OwnsHeap").ToInt64() != 144)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5a35d758b641ceb3>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_f4284eefd115ca43) != 64)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaResourceManagerDataSupplyType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaJobAnonymousUnion85cb70704396c9bd) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2448,6 +2564,8 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f5a2229ef404cf23>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaSoundFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaJobAnonymousStructEee8605d2045b5ba) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStructEee8605d2045b5ba>("Proc").ToInt64() != 0)
@@ -2466,19 +2584,11 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dc590ebddb5caa88>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerDataSupplyAnonymousStruct86905fc328b96f21) != 16)
+                if (sizeof(MaAtomicDeviceState) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStruct86905fc328b96f21>("PData").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicDeviceState>("Value").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStruct86905fc328b96f21>("SizeInBytes").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_448f23b042d58ed2>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAtomicInt32) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicInt32>("Value").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a474016b6eb38c1d>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4ac9b9fc54a4a1df>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousStructAae8d31472e99150) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2502,109 +2612,95 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_907319292b908fef>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDelayNode) != 408)
+                if (sizeof(MaHpf) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNode>("BaseNode").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNode>("Delay").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_32a415b58dc139a4>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Hpf1Count").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Hpf2Count").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("PHpf1").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("PHpf2").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("PHeap").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("OwnsHeap").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a973b69aef81e25a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaSlotAllocatorConfig) != 4)
+                if (sizeof(MaEngineNodeType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocatorConfig>("Capacity").ToInt64() != 0)
+                if (sizeof(MaChannelConverterConfig) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bcf6b52d7ba33c68>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("ChannelsIn").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("ChannelsOut").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("PChannelMapIn").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("PChannelMapOut").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("MixingMode").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("CalculateLfeFromSpatialChannels").ToInt64() != 36)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("PpWeights").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ed03d972b8a7677f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceDescriptor) != 296)
+                if (sizeof(MaSoundConfig) != 208)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PDeviceId").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PFilePath").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("ShareMode").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PFilePathW").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("Format").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PDataSource").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("Channels").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PInitialAttachment").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("SampleRate").ToInt64() != 20)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("InitialAttachmentInputBusIndex").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("ChannelMap").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("ChannelsIn").ToInt64() != 36)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PeriodSizeInFrames").ToInt64() != 280)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("ChannelsOut").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PeriodSizeInMilliseconds").ToInt64() != 284)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("MonoExpansionMode").ToInt64() != 44)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PeriodCount").ToInt64() != 288)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("Flags").ToInt64() != 48)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3febef8274af7aaa>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLoshelfNode) != 424)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNode>("BaseNode").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("VolumeSmoothTimeInPcmFrames").ToInt64() != 52)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNode>("Loshelf").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("InitialSeekPointInPcmFrames").ToInt64() != 56)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a17de881ad65f236>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPulsewaveConfig) != 40)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("RangeBegInPcmFrames").ToInt64() != 64)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("RangeEndInPcmFrames").ToInt64() != 72)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("SampleRate").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("LoopPointBegInPcmFrames").ToInt64() != 80)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("DutyCycle").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("LoopPointEndInPcmFrames").ToInt64() != 88)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Amplitude").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("EndCallback").ToInt64() != 96)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewaveConfig>("Frequency").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PEndCallbackUserData").ToInt64() != 104)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f6f8e5b226f6b7eb>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAtomicUint64) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicUint64>("Value").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PitchResampling").ToInt64() != 112)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_392f24e5c1df841f>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBiquad) != 64)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("InitNotifications").ToInt64() != 160)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PDoneFence").ToInt64() != 192)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("B0").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("IsLooping").ToInt64() != 200)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("B1").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("B2").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("A1").ToInt64() != 20)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("A2").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("PR1").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("PR2").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("PHeap").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("OwnsHeap").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3100330be706f7aa>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHpf2) != 64)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf2>("Bq").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9322b0f90fe09d75>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResamplerAnonymousUnion67c9af061924ab62) != 136)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplerAnonymousUnion67c9af061924ab62>("Linear").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f834cd5841fc7b35>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9a39b2442b3ae3d6>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDecoderAnonymousStruct7302f72d96561168) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2664,140 +2760,106 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ece3438e8faf955b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaEngineConfig) != 264)
+                if (sizeof(MaPcmRb) != 152)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PResourceManager").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Ds").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PContext").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Rb").ToInt64() != 72)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PDevice").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Format").ToInt64() != 136)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PPlaybackDeviceId").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Channels").ToInt64() != 140)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("DataCallback").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("SampleRate").ToInt64() != 144)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("NotificationCallback").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PLog").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("ListenerCount").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("Channels").ToInt64() != 60)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("SampleRate").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PeriodSizeInFrames").ToInt64() != 68)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PeriodSizeInMilliseconds").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("GainSmoothTimeInFrames").ToInt64() != 76)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("GainSmoothTimeInMilliseconds").ToInt64() != 80)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("DefaultVolumeSmoothTimeInPcmFrames").ToInt64() != 84)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PreMixStackSizeInBytes").ToInt64() != 88)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("AllocationCallbacks").ToInt64() != 96)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("NoAutoStart").ToInt64() != 128)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("NoDevice").ToInt64() != 132)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("MonoExpansionMode").ToInt64() != 136)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PResourceManagerVfs").ToInt64() != 144)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("OnProcess").ToInt64() != 152)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PProcessUserData").ToInt64() != 160)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("ResourceManagerResampling").ToInt64() != 168)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PitchResampling").ToInt64() != 216)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3865b4a6c90fcb0e>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b5a626a58869724c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaChannelConverter) != 72)
+                if (sizeof(MaSlotAllocatorConfig) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocatorConfig>("Capacity").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("ChannelsIn").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("ChannelsOut").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("MixingMode").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("ConversionPath").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PChannelMapIn").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PChannelMapOut").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PShuffleTable").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("Weights").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("PHeap").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverter>("OwnsHeap").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3fa0a5eed0b6c2fb>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3580d13f8d8271c5>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNotch2Config) != 32)
+                if (sizeof(MaNoiseAnonymousUnionDdcc25dc73447b3c) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousUnionDdcc25dc73447b3c>("Pink").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousUnionDdcc25dc73447b3c>("Brownian").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Q").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2Config>("Frequency").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2e8aa99818931b75>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_683e65f5f462c89f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaChannelPosition) != 4)
+                if (sizeof(MaContextCommandWasapi) != 48)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaSpatializerListener) != 112)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Config").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapi>("Code").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Position").ToInt64() != 48)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapi>("PEvent").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Direction").ToInt64() != 64)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapi>("Data").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Velocity").ToInt64() != 80)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("IsEnabled").ToInt64() != 96)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("OwnsHeap").ToInt64() != 100)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("PHeap").ToInt64() != 104)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7ca379793af0d86c>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bdba4948b21d39b0>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaStack) != 24)
+                if (sizeof(MaLpfNode) != 416)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaStack>("Offset").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNode>("BaseNode").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaStack>("SizeInBytes").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNode>("Lpf").ToInt64() != 360)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaStack>("Data").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fa3fcbaa2347a1f8>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5d2f7ff59abcd5da>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPeakNodeConfig) != 80)
+                if (sizeof(MaDeviceJobThreadConfig) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThreadConfig>("NoThread").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNodeConfig>("Peak").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThreadConfig>("JobQueueCapacity").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4830830971bd5585>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThreadConfig>("JobQueueFlags").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_955717461e8a8f5a>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDataSourceNodeConfig) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNodeConfig>("NodeConfig").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNodeConfig>("PDataSource").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b7d07a1e910ded22>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaBiquadNode) != 424)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNode>("BaseNode").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNode>("Biquad").ToInt64() != 360)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1d7f50786223ade6>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaSplitterNodeConfig) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNodeConfig>("NodeConfig").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNodeConfig>("Channels").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNodeConfig>("OutputBusCount").ToInt64() != 44)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6b9a60295d846e1f>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaFileInfo) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFileInfo>("SizeInBytes").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ff982b4961f912e5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_5631104b5a38a871) != 1)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaNoiseAnonymousStruct829bbf4dea8396a8) != 24)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct829bbf4dea8396a8>("Bin").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct829bbf4dea8396a8>("Accumulation").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct829bbf4dea8396a8>("Counter").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_88b1bedd8f14c59d>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaResourceManagerDataSourceAnonymousUnion88c267d2dde03905) != 728)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceAnonymousUnion88c267d2dde03905>("Buffer").ToInt64() != 0)
@@ -2806,21 +2868,41 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f3607e49330745a5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResampleAlgorithm) != 4)
+                if (sizeof(MaLinearResamplerAnonymousUnion6e85c913901ac588) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaDecodingBackendVtable) != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion6e85c913901ac588>("F32").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion6e85c913901ac588>("S16").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3ed16c2437662fe0>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaStreamLayout) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInit").ToInt64() != 0)
+                if (sizeof(MaJobQueueConfig) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueueConfig>("Flags").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInitFile").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueueConfig>("Capacity").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInitFileW").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ff352ca5f1878c40>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaGainer) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("Config").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnInitMemory").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("T").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendVtable>("OnUninit").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("MasterVolume").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_45884d4273c673bc>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("POldGains").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("PNewGains").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("PHeap").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("OwnsHeap").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4e2a05a8946b2c54>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaSoundInlined) != 1040)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2832,37 +2914,51 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7482280271ae01e2>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceState) != 4)
+                if (sizeof(MaLinearResamplerConfig) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaDeviceInfo) != 1544)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("Id").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("Name").ToInt64() != 256)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("IsDefault").ToInt64() != 512)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("SampleRateIn").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("NativeDataFormatCount").ToInt64() != 516)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("SampleRateOut").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("NativeDataFormats").ToInt64() != 520)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("LpfOrder").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_14b2f089a99afcda>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("LpfNyquistFactor").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b9bdb4ddee392031>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLpf1) != 40)
+                if (sizeof(MaAtomicFloat) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicFloat>("Value").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ed9564120240c537>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResourceManagerDataSupply) != 64)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupply>("Type").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("A").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupply>("Backend").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("PR1").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b134219bc0c732bb>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaAtomicBool32) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicBool32>("Value").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("PHeap").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c6625981d7f86420>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaStack) != 24)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaStack>("Offset").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1>("OwnsHeap").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaStack>("SizeInBytes").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_da4af8400a58f0d4>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaStack>("Data").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_34260630986618a2>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDevice) != 3312)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2918,22 +3014,6 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_57cf48681a94c7fd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d) != 40)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("PData").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("TotalFrameCount").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("DecodedFrameCount").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("Format").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("Channels").ToInt64() != 28)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("SampleRate").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_aa49cbab62b4673c>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousStructA841964e7abf2f30) != 1400)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceAnonymousStructA841964e7abf2f30>("PId").ToInt64() != 0)
@@ -2976,52 +3056,96 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6d6833f3b967b556>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResampler) != 192)
+                if (sizeof(MaLoshelf2Config) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PBackend").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PBackendVTable").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PBackendUserData").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("SampleRate").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("Format").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("GainDb").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("Channels").ToInt64() != 28)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("ShelfSlope").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("SampleRateIn").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("Frequency").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("SampleRateOut").ToInt64() != 36)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("State").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PHeap").ToInt64() != 176)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("OwnsHeap").ToInt64() != 184)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_42c786d67365fa11>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_61c1506870e1dfc4>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_d14c56c076b259b5) != 112)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaHishelfNode) != 424)
+                if (sizeof(MaPagedAudioBufferData) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNode>("BaseNode").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNode>("Hishelf").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_574a1d81bfd4b87d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("Head").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferData>("PTail").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ef1e661f6290d52b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAttenuationModel) != 4)
+                if (sizeof(MaResourceManagerPipelineStageNotification) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaOpenslStreamType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaHishelfNodeConfig) != 80)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineStageNotification>("PNotification").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNodeConfig>("Hishelf").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineStageNotification>("PFence").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_16349850bf22a1f0>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_029db4b3180b8a9d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaAudioBufferRef) != 112)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Ds").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Format").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Channels").ToInt64() != 76)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("SampleRate").ToInt64() != 80)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Cursor").ToInt64() != 88)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("SizeInFrames").ToInt64() != 96)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("PData").ToInt64() != 104)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_25fbbc059b77c93a>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaChannelConverterAnonymousUnion7025e92e25c444e2) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterAnonymousUnion7025e92e25c444e2>("F32").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterAnonymousUnion7025e92e25c444e2>("S16").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2d8ea77a777b400a>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaLinearResampler) != 136)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("Config").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InAdvanceInt").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InAdvanceFrac").ToInt64() != 36)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InTimeInt").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("InTimeFrac").ToInt64() != 44)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("X0").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("X1").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("Lpf").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("PHeap").ToInt64() != 120)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResampler>("OwnsHeap").ToInt64() != 128)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c5377995f55e333e>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaFormat) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaNodeOutputBus) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeOutputBus>("PNode").ToInt64() != 0)
@@ -3050,29 +3174,55 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_eac352fce3ea0a48>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLpf1Config) != 32)
+                if (sizeof(MaResourceManagerDataSourceConfig) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("PFilePath").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("PFilePathW").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("SampleRate").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("PNotifications").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("CutoffFrequency").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("InitialSeekPointInPcmFrames").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("Q").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("RangeBegInPcmFrames").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8356cd94287f5a4d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("RangeEndInPcmFrames").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("LoopPointBegInPcmFrames").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("LoopPointEndInPcmFrames").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("Flags").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSourceConfig>("IsLooping").ToInt64() != 68)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a1e5b4b548640f86>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPositioning) != 4)
+                if (sizeof(MaResourceManagerFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaResourceManagerPipelineStageNotification) != 16)
+                if (sizeof(MaResampler) != 192)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineStageNotification>("PNotification").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PBackend").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineStageNotification>("PFence").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PBackendVTable").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_17ab32e7067fb193>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PBackendUserData").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("Format").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("Channels").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("SampleRateIn").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("SampleRateOut").ToInt64() != 36)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("State").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("PHeap").ToInt64() != 176)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResampler>("OwnsHeap").ToInt64() != 184)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_84431954b936f17a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaResourceManagerDataBufferAnonymousUnion9072cdd7c6d42b32) != 552)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3084,62 +3234,6 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0d0c05973c4948d8>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceNotificationAnonymousStructCf0eebc2b8eb1a40) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStructCf0eebc2b8eb1a40>("Unused").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_481f3269fe2f7750>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDecoderConfig) != 144)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("Format").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("PChannelMap").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("ChannelMixMode").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("DitherMode").ToInt64() != 28)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("Resampling").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("AllocationCallbacks").ToInt64() != 80)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("EncodingFormat").ToInt64() != 112)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("SeekPointCount").ToInt64() != 116)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("PpCustomBackendVTables").ToInt64() != 120)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("CustomBackendCount").ToInt64() != 128)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecoderConfig>("PCustomBackendUserData").ToInt64() != 136)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d1e2753bd4e34c97>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaGainer) != 48)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("Config").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("T").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("MasterVolume").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("POldGains").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("PNewGains").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("PHeap").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainer>("OwnsHeap").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dc650c9d2f703255>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaJobAnonymousStruct21c26594439b048b) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStruct21c26594439b048b>("PDataBuffer").ToInt64() != 0)
@@ -3150,8 +3244,32 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a8edbb27632eb3f6>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaWasapiUsage) != 4)
+                if (sizeof(MaBiquad) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("B0").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("B1").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("B2").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("A1").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("A2").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("PR1").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("PR2").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("PHeap").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquad>("OwnsHeap").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_92c726c8d7748638>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextAnonymousStructB881a4e52b12eb7e) != 48)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextAnonymousStructB881a4e52b12eb7e>("HWnd").ToInt64() != 0)
@@ -3168,45 +3286,51 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e75c54f2802669c5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaIMMNotificationClient) != 24)
+                if (sizeof(MaPannerConfig) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaIMMNotificationClient>("LpVtbl").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaIMMNotificationClient>("Counter").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaIMMNotificationClient>("PDevice").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Mode").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_93aef146f7388bd2>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Pan").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e1b313736dbb2571>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaStreamLayout) != 4)
+                if (sizeof(MaLcg) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaContextCommandWasapiAnonymousStructD896deee76583455) != 32)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("DeviceType").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLcg>("State").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("PAudioClient").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("PpAudioClientService").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("PResult").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_675dae1f06d52f0c>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_063ce8354b8e3c0e>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAudioBufferConfig) != 64)
+                if (sizeof(MaNoise) != 152)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("Ds").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("Config").ToInt64() != 72)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("SampleRate").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("Lcg").ToInt64() != 104)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("SizeInFrames").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("State").ToInt64() != 112)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("PData").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("PHeap").ToInt64() != 136)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferConfig>("AllocationCallbacks").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoise>("OwnsHeap").ToInt64() != 144)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1e9c55dd2d9428a9>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_09747b911ef30691>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaHpf2) != 64)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf2>("Bq").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_736719a4506003c1>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaNoiseAnonymousStruct150b5b8daffaf7dd) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseAnonymousStruct150b5b8daffaf7dd>("Accumulation").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_634d368c075db17b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStruct82c1cf4d27d7314d) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3218,14 +3342,94 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_665a350db3ff1d80>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNotchNodeConfig) != 72)
+                if (sizeof(MaLpfNodeConfig) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNodeConfig>("NodeConfig").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNodeConfig>("Notch").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfNodeConfig>("Lpf").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b7d7be5e9a46207b>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0d8dba7c963c4cac>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaEngineConfig) != 264)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PResourceManager").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PContext").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PDevice").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PPlaybackDeviceId").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("DataCallback").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("NotificationCallback").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PLog").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("ListenerCount").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("Channels").ToInt64() != 60)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("SampleRate").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PeriodSizeInFrames").ToInt64() != 68)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PeriodSizeInMilliseconds").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("GainSmoothTimeInFrames").ToInt64() != 76)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("GainSmoothTimeInMilliseconds").ToInt64() != 80)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("DefaultVolumeSmoothTimeInPcmFrames").ToInt64() != 84)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PreMixStackSizeInBytes").ToInt64() != 88)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("AllocationCallbacks").ToInt64() != 96)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("NoAutoStart").ToInt64() != 128)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("NoDevice").ToInt64() != 132)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("MonoExpansionMode").ToInt64() != 136)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PResourceManagerVfs").ToInt64() != 144)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("OnProcess").ToInt64() != 152)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PProcessUserData").ToInt64() != 160)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("ResourceManagerResampling").ToInt64() != 168)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineConfig>("PitchResampling").ToInt64() != 216)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1ce7f3dbcfa188c4>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d) != 40)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("PData").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("TotalFrameCount").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("DecodedFrameCount").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("Format").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("Channels").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d>("SampleRate").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e4c72306525dd9fd>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDefaultVfs) != 96)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDefaultVfs>("Cb").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDefaultVfs>("AllocationCallbacks").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_383b6d6194c1cf2b>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaStandardChannelMap) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaDeviceConfig) != 296)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceConfig>("DeviceType").ToInt64() != 0)
@@ -3276,35 +3480,33 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8af62f7546cc3e1b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBiquadCoefficient) != 4)
+                if (sizeof(MaBackend) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadCoefficient>("F32").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadCoefficient>("S32").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b53415a10dcc111f>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousUnion73ca8060d9820b4c) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousUnion73ca8060d9820b4c>("Reroute").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_59dd129fbdd43fa6>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceNotificationType) != 4)
+                if (sizeof(MaVfsCallbacks) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaAtomicFloat) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicFloat>("Value").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnOpen").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_96f2733ed31d0292>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAsyncNotificationEvent) != 16)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationEvent>("Cb").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnOpenW").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationEvent>("E").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnClose").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_44d928b7cef995a7>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnRead").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnWrite").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnSeek").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnTell").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnInfo").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_56e3df9f0829389b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaNodeInputBus) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3318,71 +3520,55 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_286c6fa4693242ef>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDelayNodeConfig) != 72)
+                if (sizeof(MaAllocationCallbacks) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("PUserData").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNodeConfig>("Delay").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("OnMalloc").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_82f642e6baa1420a>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("OnRealloc").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("OnFree").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7c4dab29ef8b6ba6>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_dba04c537bb532b7) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaNodeGraphConfig) != 16)
+                if (sizeof(MaPagedAudioBufferConfig) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeGraphConfig>("Channels").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferConfig>("PData").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeGraphConfig>("ProcessingSizeInFrames").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeGraphConfig>("PreMixStackSizeInBytes").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e5cae25bc8aba7ea>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_939857c79b8d53b8>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaStreamFormat) != 4)
+                if (sizeof(MaWaveformConfig) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaLinearResamplerAnonymousUnion6e85c913901ac588) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion6e85c913901ac588>("F32").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerAnonymousUnion6e85c913901ac588>("S16").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_16746e541335407d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Type").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Amplitude").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Frequency").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1d05702778f62ecf>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaFence) != 16)
+                if (sizeof(MaBpf2) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFence>("E").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2>("Bq").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFence>("Counter").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_11b23ce913159696>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9b9575a12716090b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBpf2Config) != 32)
+                if (sizeof(MaLoshelfNodeConfig) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNodeConfig>("NodeConfig").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNodeConfig>("Loshelf").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("CutoffFrequency").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2Config>("Q").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e76279aabc911fa2>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceNotificationAnonymousStruct756f706356a0ac65) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStruct756f706356a0ac65>("Unused").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_93962ae11e642bcb>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHpfNode) != 416)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNode>("BaseNode").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNode>("Hpf").ToInt64() != 360)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_04a210b1ab8c1678>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_833457214b7eed14>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousUnion68909ef0547c8fe7) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3392,74 +3578,42 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4ca8e88bb367822d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHpf1Config) != 32)
+                if (sizeof(MaSplitterNode) != 360)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSplitterNode>("Base").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("CutoffFrequency").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("Q").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_777ed5309cf271e4>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4b0a7bea43cb64a2>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaContextCommandWasapiAnonymousStructB15f1a432c8f1340) != 4)
+                if (sizeof(MaDuplexRb) != 152)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructB15f1a432c8f1340>("Unused").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDuplexRb>("Rb").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_23f8dba53096ebbe>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9bef600c3c786527>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResamplingBackendVtable) != 80)
+                if (sizeof(MaNotch2) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetHeapSize").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2>("Bq").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnInit").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnUninit").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnProcess").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnSetRate").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetInputLatency").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetOutputLatency").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetRequiredInputFrameCount").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnGetExpectedOutputFrameCount").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResamplingBackendVtable>("OnReset").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d04cf25df07ef60e>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_21f9860dfd5c43c9>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPcmRb) != 152)
+                if (sizeof(MaNodeConfig) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Ds").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("Vtable").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Rb").ToInt64() != 72)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("InitialState").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Format").ToInt64() != 136)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("InputBusCount").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("Channels").ToInt64() != 140)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("OutputBusCount").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPcmRb>("SampleRate").ToInt64() != 144)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("PInputChannels").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_06edc972379e9792>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeConfig>("POutputChannels").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_809a57c717cfd386>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5) != 56)
+                if (sizeof(MaDeviceNotificationType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5>("Encoded").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5>("Decoded").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5>("DecodedPaged").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_804005d85f19d1ed>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousUnion449ffa5266c92352) != 184)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceAnonymousUnion449ffa5266c92352>("Wasapi").ToInt64() != 0)
@@ -3480,108 +3634,22 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_996bcf462ac7ba34>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNodeVtable) != 24)
+                if (sizeof(MaAsyncNotificationEvent) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("OnProcess").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationEvent>("Cb").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("OnGetRequiredInputFrameCount").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationEvent>("E").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("InputBusCount").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("OutputBusCount").ToInt64() != 17)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeVtable>("Flags").ToInt64() != 20)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e2954367328c053d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6b2d6d678c8680c4>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAudioBufferRef) != 112)
+                if (sizeof(MaDataSourceConfig) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Ds").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceConfig>("Vtable").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Format").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Channels").ToInt64() != 76)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("SampleRate").ToInt64() != 80)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("Cursor").ToInt64() != 88)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("SizeInFrames").ToInt64() != 96)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBufferRef>("PData").ToInt64() != 104)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_aea29208cc018119>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHishelf2Config) != 40)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("Format").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("GainDb").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("ShelfSlope").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2Config>("Frequency").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_14489d41f433218d>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAtomicDeviceState) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicDeviceState>("Value").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_39f6cdd03424d39d>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_df2d808fe29712db>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_a4f71ca2b114fa9f) != 256)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaSoundConfig) != 208)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PFilePath").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PFilePathW").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PDataSource").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PInitialAttachment").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("InitialAttachmentInputBusIndex").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("ChannelsIn").ToInt64() != 36)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("ChannelsOut").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("MonoExpansionMode").ToInt64() != 44)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("Flags").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("VolumeSmoothTimeInPcmFrames").ToInt64() != 52)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("InitialSeekPointInPcmFrames").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("RangeBegInPcmFrames").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("RangeEndInPcmFrames").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("LoopPointBegInPcmFrames").ToInt64() != 80)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("LoopPointEndInPcmFrames").ToInt64() != 88)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("EndCallback").ToInt64() != 96)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PEndCallbackUserData").ToInt64() != 104)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PitchResampling").ToInt64() != 112)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("InitNotifications").ToInt64() != 160)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("PDoneFence").ToInt64() != 192)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSoundConfig>("IsLooping").ToInt64() != 200)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5fa8a48920ec1796>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_ded1899ba091cc15) != 1)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_84d2a1a3ae107f27) != 254)
@@ -3594,31 +3662,23 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_234f41ccd54d96b7>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaVfsCallbacks) != 64)
+                if (sizeof(MaDataSourceVtable) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnOpen").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnRead").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnOpenW").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnSeek").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnClose").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnGetDataFormat").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnRead").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnGetCursor").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnWrite").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnGetLength").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnSeek").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("OnSetLooping").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnTell").ToInt64() != 48)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceVtable>("Flags").ToInt64() != 48)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVfsCallbacks>("OnInfo").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3e07088af236c099>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHishelf2) != 64)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2>("Bq").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2b87fbe5ad7495c1>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_be2630f52257cb26>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStruct84db77115cd2b80e) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3637,12 +3697,6 @@ namespace Inno.Native.MiniAudio
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceConfigAnonymousStruct84db77115cd2b80e>("ShareMode").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_56fe7109c403c095>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceNotificationAnonymousStruct25bec240b919447d) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStruct25bec240b919447d>("Unused").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_997b6ea2d024a6b3>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousStruct68a5ba979e18360d) != 1432)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3694,6 +3748,16 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7e9d752eaa3f1c63>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaOpenslRecordingPreset) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaDataSourceNode) != 368)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNode>("Base").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNode>("PDataSource").ToInt64() != 360)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fd275edb5a5922d4>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_282e8fc7b0cbe4ce) != 128)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaJobAnonymousStructFb99d8299aee1e8c) != 16)
@@ -3704,55 +3768,35 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_27109309a81560ac>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaChannelMixMode) != 4)
+                if (sizeof(MaDecodingBackendConfig) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaDeviceJobThread) != 120)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThread>("Thread").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendConfig>("PreferredFormat").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThread>("JobQueue").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDecodingBackendConfig>("SeekPointCount").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThread>("HasThread").ToInt64() != 112)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a80eb36d5c9054bc>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_143f0613f03231f4>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDataSourceNodeConfig) != 48)
+                if (sizeof(MaDeviceInfo) != 1544)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("Id").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceNodeConfig>("PDataSource").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("Name").ToInt64() != 256)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_cc87fa5c728f1a81>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("IsDefault").ToInt64() != 512)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("NativeDataFormatCount").ToInt64() != 516)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfo>("NativeDataFormats").ToInt64() != 520)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1ad867f33aeaaa96>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPulsewave) != 160)
+                if (sizeof(MaPeakNode) != 424)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewave>("Waveform").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNode>("BaseNode").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewave>("Config").ToInt64() != 120)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNode>("Peak").ToInt64() != 360)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dbc77ee99a57a5e8>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDataSourceBase) != 72)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("Vtable").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("RangeBegInFrames").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("RangeEndInFrames").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("LoopBegInFrames").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("LoopEndInFrames").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("PCurrent").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("PNext").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("OnGetNext").ToInt64() != 56)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceBase>("IsLooping").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5b53fa00d5db9c76>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_edec03fd2bdc2bf1>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextAnonymousStruct5fae19458e2803d4) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3760,16 +3804,38 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4896abb6c1c15295>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNotchNode) != 424)
+                if (sizeof(MaResampleAlgorithm) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNode>("BaseNode").ToInt64() != 0)
+                if (sizeof(MaHishelfNode) != 424)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNode>("BaseNode").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNode>("Notch").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNode>("Hishelf").ToInt64() != 360)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_773df691d56deffd>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ec714de947690e72>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaEngineNodeType) != 4)
+                if (sizeof(MaAtomicInt32) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicInt32>("Value").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_828ce351ed4f845f>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaPeak2Config) != 40)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("GainDb").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Q").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Frequency").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e647bf5a005df0fc>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousStruct2cf07962c1f5b681) != 184)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceAnonymousStruct2cf07962c1f5b681>("PAudioClientPlayback").ToInt64() != 0)
@@ -3846,125 +3912,205 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_96c0e9d07aa949ec>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaMonoExpansionMode) != 4)
+                if (sizeof(MaPulsewave) != 160)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaOpenslRecordingPreset) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaFaderConfig) != 12)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFaderConfig>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewave>("Waveform").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFaderConfig>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPulsewave>("Config").ToInt64() != 120)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFaderConfig>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_968791e9f53b7d9b>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_59716d2801dbe23f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDataSourceConfig) != 8)
+                if (sizeof(MaNodeState) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataSourceConfig>("Vtable").ToInt64() != 0)
+                if (sizeof(MaBpfConfig) != 32)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9dc8465934113633>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("CutoffFrequency").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("Order").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b255a7ee5c01e606>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLoshelf2) != 64)
+                if (sizeof(MaThreadPriority) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2>("Bq").ToInt64() != 0)
+                if (sizeof(MaEngineNode) != 952)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("BaseNode").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_955f5df022d2ef2e>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("PEngine").ToInt64() != 360)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("SampleRate").ToInt64() != 368)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("VolumeSmoothTimeInPcmFrames").ToInt64() != 372)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("MonoExpansionMode").ToInt64() != 376)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Fader").ToInt64() != 384)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Resampler").ToInt64() != 424)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Spatializer").ToInt64() != 616)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Panner").ToInt64() != 816)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("VolumeGainer").ToInt64() != 832)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Volume").ToInt64() != 880)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Pitch").ToInt64() != 884)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("OldPitch").ToInt64() != 888)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("OldDopplerPitch").ToInt64() != 892)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("IsPitchDisabled").ToInt64() != 896)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("IsSpatializationDisabled").ToInt64() != 900)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("PinnedListenerIndex").ToInt64() != 904)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("FadeSettings").ToInt64() != 912)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("OwnsHeap").ToInt64() != 936)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("PHeap").ToInt64() != 944)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9cec7d011fa8f2ba>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaVec3f) != 12)
+                if (sizeof(MaResourceManagerPipelineNotifications) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVec3f>("X").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineNotifications>("Init").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVec3f>("Y").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerPipelineNotifications>("Done").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVec3f>("Z").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6062290a6a9943f8>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_300d923dc01111e2>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaContextCommandWasapi) != 48)
+                if (sizeof(MaDeviceIdAnonymousUnion7fd2690c42fc00cd) != 256)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapi>("Code").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceIdAnonymousUnion7fd2690c42fc00cd>("I").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapi>("PEvent").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceIdAnonymousUnion7fd2690c42fc00cd>("S").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapi>("Data").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceIdAnonymousUnion7fd2690c42fc00cd>("P").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e7fee451c874c056>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e11e06d3f32db977>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaIosSessionCategoryOption) != 4)
+                if (sizeof(MaHpf1Config) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaNoiseConfig) != 32)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Type").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("SampleRate").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Seed").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("CutoffFrequency").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("Amplitude").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1Config>("Q").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNoiseConfig>("DuplicateChannels").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_12e2ce0fec81093e>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8fcc620c3c55accd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPeakNode) != 424)
+                if (sizeof(MaChannelPosition) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNode>("BaseNode").ToInt64() != 0)
+                if (sizeof(MaDeviceDescriptor) != 296)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PDeviceId").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNode>("Peak").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("ShareMode").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4ede6514c1a47dd0>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("Format").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("Channels").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("SampleRate").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("ChannelMap").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PeriodSizeInFrames").ToInt64() != 280)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PeriodSizeInMilliseconds").ToInt64() != 284)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceDescriptor>("PeriodCount").ToInt64() != 288)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4ab1eee483b17b3a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaFormat) != 4)
+                if (sizeof(MaLogLevel) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaLogCallback) != 16)
+                if (sizeof(MaAaudioInputPreset) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLogCallback>("OnLog").ToInt64() != 0)
+                if (sizeof(MaHishelfNodeConfig) != 80)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNodeConfig>("NodeConfig").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLogCallback>("PUserData").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelfNodeConfig>("Hishelf").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_69bdfc545e6335b5>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_842cfcae19521f40>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaEncodingFormat) != 4)
+                if (sizeof(MaDataConverter) != 312)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaFader) != 40)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("Config").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("FormatIn").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("VolumeBeg").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("FormatOut").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("VolumeEnd").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ChannelsIn").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("LengthInFrames").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ChannelsOut").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFader>("CursorInFrames").ToInt64() != 32)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("SampleRateIn").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a145d94eae233321>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("SampleRateOut").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("DitherMode").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ExecutionPath").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("ChannelConverter").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("Resampler").ToInt64() != 104)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasPreFormatConversion").ToInt64() != 296)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasPostFormatConversion").ToInt64() != 297)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasChannelConverter").ToInt64() != 298)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("HasResampler").ToInt64() != 299)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("IsPassthrough").ToInt64() != 300)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("OwnsHeap").ToInt64() != 301)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDataConverter>("PHeap").ToInt64() != 304)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_bcc05fcad1fb6b17>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHpf) != 56)
+                if (sizeof(MaDeviceType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Format").ToInt64() != 0)
+                if (sizeof(MaEngineNodeAnonymousStruct1275eef82a5471ac) != 24)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("VolumeBeg").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("VolumeEnd").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("SampleRate").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("FadeLengthInFrames").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Hpf1Count").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeAnonymousStruct1275eef82a5471ac>("AbsoluteGlobalTimeInFrames").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("Hpf2Count").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5ac2ef5ffae12886>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaJobQueueFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaAtomicVec3f) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicVec3f>("V").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("PHpf1").ToInt64() != 24)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicVec3f>("Lock").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("PHpf2").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("PHeap").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf>("OwnsHeap").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_da637bc942b3f80f>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3fcdc007657e3a4f>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaHpfConfig) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3978,13 +4124,69 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfConfig>("Order").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6b26ee75db1ae04d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f4cb644f8507e961>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDuplexRb) != 152)
+                if (sizeof(MaSpatializerListener) != 112)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDuplexRb>("Rb").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Config").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9ea6e54686f999fe>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Position").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Direction").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("Velocity").ToInt64() != 80)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("IsEnabled").ToInt64() != 96)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("OwnsHeap").ToInt64() != 100)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListener>("PHeap").ToInt64() != 104)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fd4b7b4205b02483>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDeviceJobThread) != 120)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThread>("Thread").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThread>("JobQueue").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceJobThread>("HasThread").ToInt64() != 112)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3f6d00fb0d8bcbed>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDeviceInfoAnonymousStruct0f23fff9bc66642b) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceInfoAnonymousStruct0f23fff9bc66642b>("Flags").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_328afc7f90056c05>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaSlotAllocator) != 40)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("PGroups").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("PSlots").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("Count").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("Capacity").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("OwnsHeap").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocator>("PHeap").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_220d86f9a170f099>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDeviceNotificationAnonymousStruct756f706356a0ac65) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStruct756f706356a0ac65>("Unused").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_df9480788edc8586>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextConfigAnonymousStruct19d6b955fc41f1eb) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3996,56 +4198,52 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_312fe46fa56dde70>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaChannelConverterConfig) != 48)
+                if (sizeof(MaDitherMode) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("Format").ToInt64() != 0)
+                if (sizeof(MaHishelf2) != 64)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHishelf2>("Bq").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("ChannelsIn").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("ChannelsOut").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("PChannelMapIn").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("PChannelMapOut").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("MixingMode").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("CalculateLfeFromSpatialChannels").ToInt64() != 36)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaChannelConverterConfig>("PpWeights").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_416f95cafb799744>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8f2f2574cf9409a4>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBiquadNodeConfig) != 96)
+                if (sizeof(MaVec3f) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVec3f>("X").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNodeConfig>("Biquad").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVec3f>("Y").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7455dfe755af50eb>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaVec3f>("Z").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_213ce6983c2cc4c7>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaHpfNodeConfig) != 72)
+                if (sizeof(MaMonoExpansionMode) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNodeConfig>("NodeConfig").ToInt64() != 0)
+                if (sizeof(MaFaderConfig) != 12)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFaderConfig>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNodeConfig>("Hpf").ToInt64() != 40)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFaderConfig>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_67561099f005e706>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaFaderConfig>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_52329a048b1ed33c>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPannerConfig) != 16)
+                if (sizeof(MaHpf1) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Mode").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("A").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPannerConfig>("Pan").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("PR1").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_74465ab3f1d3da1d>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("PHeap").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("OwnsHeap").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_968e983abf70dbb1>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBackend) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaContextAnonymousStruct37d23b63c3c13156) != 152)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextAnonymousStruct37d23b63c3c13156>("JackSo").ToInt64() != 0)
@@ -4088,6 +4286,48 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9d0548284cfc2ddd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDelayNodeConfig) != 72)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNodeConfig>("NodeConfig").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNodeConfig>("Delay").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f5387d9e62e018bc>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaDeviceId) != 256)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Wasapi").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Dsound").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Winmm").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Alsa").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Pulse").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Jack").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Coreaudio").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Sndio").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Audio4").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Oss").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Aaudio").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Opensl").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Webaudio").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Custom").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Nullbackend").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c3e0c55ab9feb85b>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousStruct20149c7d719fbcae) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStruct20149c7d719fbcae>("Code").ToInt64() != 0)
@@ -4097,6 +4337,14 @@ namespace Inno.Native.MiniAudio
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStruct20149c7d719fbcae>("Refcount").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4ff90bf91d21c525>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaBiquadCoefficient) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadCoefficient>("F32").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadCoefficient>("S32").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_496eda97a1fea053>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousStruct1a42695c3dd28710) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4111,16 +4359,6 @@ namespace Inno.Native.MiniAudio
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceAnonymousStruct1a42695c3dd28710>("PCaptureBuffer").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ee5d7293593e0751>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013) != 56)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013>("Data").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013>("DecodedFrameCount").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013>("SampleRate").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8bcd2c69e4f48570>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaEncoder) != 120)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4144,22 +4382,6 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7c6a01488a6baa28>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLinearResamplerConfig) != 32)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("Format").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("SampleRateIn").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("SampleRateOut").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("LpfOrder").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLinearResamplerConfig>("LpfNyquistFactor").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_53960112397309c6>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJob) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJob>("Toc").ToInt64() != 0)
@@ -4172,87 +4394,27 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fd86506081058baf>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaPeak2Config) != 40)
+                if (sizeof(MaShareMode) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Format").ToInt64() != 0)
+                if (sizeof(MaAttenuationModel) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaAsyncNotificationPoll) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationPoll>("Cb").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationPoll>("Signalled").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("GainDb").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Q").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeak2Config>("Frequency").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d60de72a55b7ae5a>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5180db4c36c88319>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDelayConfig) != 28)
+                if (sizeof(MaNodeFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Channels").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("SampleRate").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("DelayInFrames").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("DelayStart").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Wet").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Dry").ToInt64() != 20)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayConfig>("Decay").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2014414c8e8929c5>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaEncoderConfig) != 48)
+                if (sizeof(MaDelayNode) != 408)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("EncodingFormat").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNode>("BaseNode").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("Format").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDelayNode>("Delay").ToInt64() != 360)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("Channels").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("SampleRate").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("AllocationCallbacks").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_776f4d9529090a0d>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaWaveform) != 120)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Ds").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Config").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Advance").ToInt64() != 104)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveform>("Time").ToInt64() != 112)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_897807f4fe9dc203>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaRb) != 64)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("PBuffer").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("SubbufferSizeInBytes").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("SubbufferCount").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("SubbufferStrideInBytes").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("EncodedReadOffset").ToInt64() != 20)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("EncodedWriteOffset").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("OwnsBuffer").ToInt64() != 28)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("ClearOnWriteAcquire").ToInt64() != 29)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaRb>("AllocationCallbacks").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4e19743357f9014d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2325754eb86228d6>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceConfigAnonymousStruct79f44ea843b7392f) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4302,8 +4464,12 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b7a3c6236f1c4257>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaOpenModeFlags) != 4)
+                if (sizeof(MaSlotAllocatorGroup) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSlotAllocatorGroup>("Bitfield").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_412dfc3750511fb4>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaNodeGraph) != 752)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeGraph>("Base").ToInt64() != 0)
@@ -4322,40 +4488,96 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dff75482ac9745db>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAtomicUint32) != 4)
+                if (sizeof(MaJobType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicUint32>("Value").ToInt64() != 0)
+                if (sizeof(MaDeviceState) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(MaGainerConfig) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainerConfig>("Channels").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6e6f7e85f2475f35>("value").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainerConfig>("SmoothTimeInFrames").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7fd0997a1358a423>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDefaultVfs) != 96)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDefaultVfs>("Cb").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDefaultVfs>("AllocationCallbacks").ToInt64() != 64)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b53b00d4d243ceae>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDataConverterExecutionPath) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_bfed4867daabc092) != 192)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaWaveformConfig) != 32)
+                if (sizeof(MaHandedness) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Format").ToInt64() != 0)
+                if (sizeof(MaLpf1Config) != 32)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("Format").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Channels").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("Channels").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("SampleRate").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("SampleRate").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Type").ToInt64() != 12)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("CutoffFrequency").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Amplitude").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpf1Config>("Q").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaWaveformConfig>("Frequency").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a93bf49959c6bec6>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9049de3401af759f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaContextCommandWasapiAnonymousStructD896deee76583455) != 32)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("DeviceType").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("PAudioClient").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("PpAudioClientService").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousStructD896deee76583455>("PResult").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_598a9197747561a1>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaPeakNodeConfig) != 80)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNodeConfig>("NodeConfig").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPeakNodeConfig>("Peak").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_55f1f76eebee3082>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaLpfConfig) != 32)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("Format").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("Channels").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("SampleRate").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("CutoffFrequency").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("Order").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8451673f5bdb824b>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaJobQueue) != 104)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Flags").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Capacity").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Head").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Tail").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Sem").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Allocator").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("PJobs").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Lock").ToInt64() != 80)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("PHeap").ToInt64() != 88)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("OwnsHeap").ToInt64() != 96)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b285b503c5bfbff3>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResourceManagerDataSupplyType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaJobAnonymousStructE3c4fc217309ab00) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStructE3c4fc217309ab00>("PResourceManager").ToInt64() != 0)
@@ -4368,27 +4590,7 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fffc8c74dc3e9944>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBiquadConfig) != 56)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("Format").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("B0").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("B1").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("B2").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("A0").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("A1").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadConfig>("A2").ToInt64() != 48)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3221ebb56ed2bbc7>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNodeFlags) != 4)
+                if (sizeof(MaPositioning) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaEncoderAnonymousStruct6c55a6e3033013ed) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4397,12 +4599,6 @@ namespace Inno.Native.MiniAudio
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderAnonymousStruct6c55a6e3033013ed>("File").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_97a306c70d9a703a>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceNotificationAnonymousStruct83e9486864a83a17) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotificationAnonymousStruct83e9486864a83a17>("Unused").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1ff087b74d144ec0>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaEngine) != 1360)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4474,30 +4670,6 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_13beb3b40945fb21>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaJobQueue) != 104)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Flags").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Capacity").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Head").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Tail").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Sem").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Allocator").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("PJobs").ToInt64() != 72)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("Lock").ToInt64() != 80)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("PHeap").ToInt64() != 88)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobQueue>("OwnsHeap").ToInt64() != 96)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7e7ec4d08f431c36>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaNodeBase) != 360)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNodeBase>("PNodeGraph").ToInt64() != 0)
@@ -4538,56 +4710,30 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e06f189ac9b50f6e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResourceManagerDataSupplyAnonymousStruct86905fc328b96f21) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStruct86905fc328b96f21>("PData").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousStruct86905fc328b96f21>("SizeInBytes").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_03332d8d116003b2>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5) != 56)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5>("Encoded").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5>("Decoded").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5>("DecodedPaged").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3fceede09f5eef6a>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaStreamFormat) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaAaudioUsage) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaBpfConfig) != 32)
+                if (sizeof(MaIosSessionCategory) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("Format").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("CutoffFrequency").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfConfig>("Order").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_802e487ac9f12eb0>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNotch2) != 64)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotch2>("Bq").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9174dc900840d80b>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaNodeState) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaHpf1) != 40)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("Format").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("A").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("PR1").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("PHeap").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpf1>("OwnsHeap").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_092b6d857f152fc9>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceIdAnonymousUnion7fd2690c42fc00cd) != 256)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceIdAnonymousUnion7fd2690c42fc00cd>("I").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceIdAnonymousUnion7fd2690c42fc00cd>("S").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceIdAnonymousUnion7fd2690c42fc00cd>("P").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f1cede11988819a1>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousUnion0c22262d5e21db83) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousUnion0c22262d5e21db83>("Custom").ToInt64() != 0)
@@ -4652,36 +4798,8 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializer>("OwnsHeap").ToInt64() != 192)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fe83e005e893a555>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5b36cb2b93d714c7>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAsyncNotificationPoll) != 16)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationPoll>("Cb").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationPoll>("Signalled").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0c633821afa69b69>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBpf2) != 64)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpf2>("Bq").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_f0524f38aa3674f7>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaChannelConversionPath) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaContextCommandWasapiAnonymousUnionE0cefef571787ced) != 32)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousUnionE0cefef571787ced>("Quit").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousUnionE0cefef571787ced>("CreateAudioClient").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaContextCommandWasapiAnonymousUnionE0cefef571787ced>("ReleaseAudioClient").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5f31789f6cf0278b>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(MaJobAnonymousStruct74269070ad2e966f) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaJobAnonymousStruct74269070ad2e966f>("PResourceManager").ToInt64() != 0)
@@ -4696,39 +4814,23 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_31cdbe690c670a44>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaHpfNode) != 416)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNode>("BaseNode").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNode>("Hpf").ToInt64() != 360)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6a1af63b17305401>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_8666bb8f69608bb0) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaAsyncNotificationCallbacks) != 8)
+                if (sizeof(MaHpfNodeConfig) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAsyncNotificationCallbacks>("OnSignal").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNodeConfig>("NodeConfig").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9ac48228a53c1778>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLpfConfig) != 32)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("Format").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaHpfNodeConfig>("Hpf").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("CutoffFrequency").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLpfConfig>("Order").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9010b2806024225e>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaAudioBuffer) != 152)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("Ref").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("AllocationCallbacks").ToInt64() != 112)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("OwnsData").ToInt64() != 144)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAudioBuffer>("PExtraData").ToInt64() != 148)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fece1fe532e2ec11>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5504835534b69a9d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaContextConfig) != 240)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4756,53 +4858,21 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e6a0317d5d784ebe>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaEngineNodeConfig) != 88)
+                if (sizeof(MaLoshelfNode) != 424)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("PEngine").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNode>("BaseNode").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("Type").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelfNode>("Loshelf").ToInt64() != 360)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("ChannelsIn").ToInt64() != 12)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("ChannelsOut").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("SampleRate").ToInt64() != 20)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("VolumeSmoothTimeInPcmFrames").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("MonoExpansionMode").ToInt64() != 28)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("IsPitchDisabled").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("IsSpatializationDisabled").ToInt64() != 33)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("PinnedListenerIndex").ToInt64() != 34)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNodeConfig>("Resampling").ToInt64() != 40)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_daecbe42dc91823a>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fb0d2f3b67dab26a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaGainerConfig) != 8)
+                if (sizeof(MaBiquadNodeConfig) != 96)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainerConfig>("Channels").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNodeConfig>("NodeConfig").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaGainerConfig>("SmoothTimeInFrames").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBiquadNodeConfig>("Biquad").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_afafa6649df6d62f>("value").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaStandardSampleRate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaAllocationCallbacks) != 32)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("PUserData").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("OnMalloc").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("OnRealloc").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAllocationCallbacks>("OnFree").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_99dbfc7a3f4bda9d>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_41bd99a09eb3a810>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaPagedAudioBufferPage) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4813,14 +4883,6 @@ namespace Inno.Native.MiniAudio
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaPagedAudioBufferPage>("PAudioData").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2d5283c320375a42>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaBpfNode) != 400)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNode>("BaseNode").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaBpfNode>("Bpf").ToInt64() != 360)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_00c0e154df8e9e08>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaJobAnonymousUnion71082220c439abb0) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4884,131 +4946,69 @@ namespace Inno.Native.MiniAudio
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a17a4ff9917ffde5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaNotchNodeConfig) != 72)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNodeConfig>("NodeConfig").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaNotchNodeConfig>("Notch").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_92dcb1e698f4eef9>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaTimer) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaTimer>("Counter").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaTimer>("CounterD").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c6732b96ad0e8b06>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(MaIMMNotificationClient) != 24)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaIMMNotificationClient>("LpVtbl").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaIMMNotificationClient>("Counter").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaIMMNotificationClient>("PDevice").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b4fb9348e0cd7f5e>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(MaDeviceAnonymousStruct063e89bc3825577a) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceAnonymousStruct063e89bc3825577a>("LpfOrder").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8d3dcbc575766087>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaLoshelf2Config) != 40)
+                if (sizeof(MaEncodingFormat) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("Format").ToInt64() != 0)
+                if (sizeof(MaAtomicUint32) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaAtomicUint32>("Value").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("Channels").ToInt64() != 4)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("SampleRate").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("GainDb").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("ShelfSlope").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaLoshelf2Config>("Frequency").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_76b70c856f45dd8f>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_903758bf5a2ef6db>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaEngineNode) != 952)
+                if (sizeof(MaEncoderConfig) != 48)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("BaseNode").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("EncodingFormat").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("PEngine").ToInt64() != 360)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("Format").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("SampleRate").ToInt64() != 368)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("Channels").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("VolumeSmoothTimeInPcmFrames").ToInt64() != 372)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("SampleRate").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("MonoExpansionMode").ToInt64() != 376)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEncoderConfig>("AllocationCallbacks").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Fader").ToInt64() != 384)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Resampler").ToInt64() != 424)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Spatializer").ToInt64() != 616)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Panner").ToInt64() != 816)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("VolumeGainer").ToInt64() != 832)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Volume").ToInt64() != 880)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("Pitch").ToInt64() != 884)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("OldPitch").ToInt64() != 888)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("OldDopplerPitch").ToInt64() != 892)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("IsPitchDisabled").ToInt64() != 896)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("IsSpatializationDisabled").ToInt64() != 900)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("PinnedListenerIndex").ToInt64() != 904)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("FadeSettings").ToInt64() != 912)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("OwnsHeap").ToInt64() != 936)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaEngineNode>("PHeap").ToInt64() != 944)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a69d51862b94ab68>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9dcf1aca22ab0559>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaDeviceId) != 256)
+                if (sizeof(MaDeviceNotification) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Wasapi").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotification>("PDevice").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Dsound").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotification>("Type").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Winmm").ToInt64() != 0)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceNotification>("Data").ToInt64() != 12)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Alsa").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Pulse").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Jack").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Coreaudio").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Sndio").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Audio4").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Oss").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Aaudio").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Opensl").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Webaudio").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Custom").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaDeviceId>("Nullbackend").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_587dacd8f308206c>("value").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(MaStandardChannelMap) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaPanMode) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaAaudioContentType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(MaSpatializerListenerConfig) != 48)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ChannelsOut").ToInt64() != 0)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("PChannelMapOut").ToInt64() != 8)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("Handedness").ToInt64() != 16)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ConeInnerAngleInRadians").ToInt64() != 20)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ConeOuterAngleInRadians").ToInt64() != 24)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("ConeOuterGain").ToInt64() != 28)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("SpeedOfSound").ToInt64() != 32)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<MaSpatializerListenerConfig>("WorldUp").ToInt64() != 36)
-                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4de9fde799bb1d8f>("value").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_be9a757d8cc2cbeb>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 var symbols = m_session.ResolveRequiredSymbols(new string[] { "bgcs_inno_miniaudio_call_1827dde0bcb4948f2072", "bgcs_inno_miniaudio_call_ed881b060824a99c9b93", "bgcs_inno_miniaudio_call_15f5d2f5bcd62e881c1d", "bgcs_inno_miniaudio_call_65671f4f1c955b1f2637", "bgcs_inno_miniaudio_call_d39cbe8584e208e2c636", "bgcs_inno_miniaudio_call_9e2a45f7f5ec68a3564a", "bgcs_inno_miniaudio_call_74aa1f2fc20e76e08698", "bgcs_inno_miniaudio_call_768fac1ac23928bf04d8", "bgcs_inno_miniaudio_call_eadb3e225b7b26045e8c", "bgcs_inno_miniaudio_call_dfe0c4534e07443a8ec7", "bgcs_inno_miniaudio_call_36bb5300b6a4b410b630", "bgcs_inno_miniaudio_call_3d601dded4bb173275ef", "bgcs_inno_miniaudio_call_040fe0f67cff5c0d174b", "bgcs_inno_miniaudio_call_3316c9fc842d6c8b74ac", "bgcs_inno_miniaudio_call_ed67e1f1f8a6157cec9b", "bgcs_inno_miniaudio_call_a628f3e025a4b53dbfd5", "bgcs_inno_miniaudio_call_c521ba15c9cab5921d26", "bgcs_inno_miniaudio_call_c6cfb6249fc5d5fbc8c6", "bgcs_inno_miniaudio_call_1882f381be3218d1bcda", "bgcs_inno_miniaudio_call_c0ff59bebf4538bc0fec", "bgcs_inno_miniaudio_call_d55ffe63c1f82692c426", "bgcs_inno_miniaudio_call_b0db47e618d588a6d8a1", "bgcs_inno_miniaudio_call_31aa69b45809019e6321", "bgcs_inno_miniaudio_call_d3245a1501ae11c6cb59", "bgcs_inno_miniaudio_call_f93acd277214bb3b874c", "bgcs_inno_miniaudio_call_f62d88b8a36ffb57f4d6", "bgcs_inno_miniaudio_call_0ac0f1fdf1e48d292da7", "bgcs_inno_miniaudio_call_07b1ccf0e297716f706f", "bgcs_inno_miniaudio_call_fb751cdef602afe27e42", "bgcs_inno_miniaudio_call_1884c95fa632fb8170bf", "bgcs_inno_miniaudio_call_343a2ee63e163975723c", "bgcs_inno_miniaudio_call_d3c50bf061d428899685", "bgcs_inno_miniaudio_call_fa9112d3712b8111b2a4", "bgcs_inno_miniaudio_call_5d4cfe935c7af7db51b8", "bgcs_inno_miniaudio_call_54bfe16773c055d74ef5", "bgcs_inno_miniaudio_call_d3900a8754bd3860e969", "bgcs_inno_miniaudio_call_34b32665b9ac9b588479", "bgcs_inno_miniaudio_call_b61ae935e746fec69882", "bgcs_inno_miniaudio_call_2ae304ab9dda58e95456", "bgcs_inno_miniaudio_call_a06b99efbf81e5846228", "bgcs_inno_miniaudio_call_d262616360ad3d5f7c39", "bgcs_inno_miniaudio_call_33d91ac0d639c92b1656", "bgcs_inno_miniaudio_call_51e085ebea93e6a4d59c", "bgcs_inno_miniaudio_call_7a98f3872678a478606e", "bgcs_inno_miniaudio_call_c8751ba3640e219088fb", "bgcs_inno_miniaudio_call_8e3f8c523199f39ecb06", "bgcs_inno_miniaudio_call_525cabe666774b660c9b", "bgcs_inno_miniaudio_call_5dcf748d21a574eeb91b", "bgcs_inno_miniaudio_call_d1c996cd47dff7f96163", "bgcs_inno_miniaudio_call_920b4b516aabaaae6c08", "bgcs_inno_miniaudio_call_13b81af8c892809a4873", "bgcs_inno_miniaudio_call_5f09d45bb2d891359d7c", "bgcs_inno_miniaudio_call_903a3b5a0ada963fe18d", "bgcs_inno_miniaudio_call_4e78b7e66da2260ee5b2", "bgcs_inno_miniaudio_call_378a7e1b80632b03d021", "bgcs_inno_miniaudio_call_a13718c1ae2188b308ec", "bgcs_inno_miniaudio_call_51752434d13c8ffe9754", "bgcs_inno_miniaudio_call_17408db6d4e57dbe88fc", "bgcs_inno_miniaudio_call_bd9ddb089dfd26377f8a", "bgcs_inno_miniaudio_call_08a88438d97b1e3b8f25", "bgcs_inno_miniaudio_call_2a65c09cc267e6dcada9", "bgcs_inno_miniaudio_call_0feb1c3dea9e1b07f8cd", "bgcs_inno_miniaudio_call_6261c52578f269f2724c", "bgcs_inno_miniaudio_call_bf9147afbb4d840679e0", "bgcs_inno_miniaudio_call_d637a067edb56b4484a8", "bgcs_inno_miniaudio_call_a19e6378128ffdf64582", "bgcs_inno_miniaudio_call_89c8f49bd6db42cd2dca", "bgcs_inno_miniaudio_call_97ca64fd707146d74ff3", "bgcs_inno_miniaudio_call_2dfef35f553fc0e3e907", "bgcs_inno_miniaudio_call_06f1e7a7fa5bda5cb882", "bgcs_inno_miniaudio_call_50f8ecf9456093e9a04b", "bgcs_inno_miniaudio_call_f88c0b4a7c7f9ae39fe8", "bgcs_inno_miniaudio_call_ff2732ed3a5e54d3e190", "bgcs_inno_miniaudio_call_83dc1b95b80f8cfbe851", "bgcs_inno_miniaudio_call_403ecc25bc5acc2023d1", "bgcs_inno_miniaudio_call_8cdbdaddafbe6db9ae1f", "bgcs_inno_miniaudio_call_af6c6070249a750f9b2a", "bgcs_inno_miniaudio_call_a670736e6ae0377e1400", "bgcs_inno_miniaudio_call_04a28286740412ce84e8", "bgcs_inno_miniaudio_call_26eaa5add05a62addfbe", "bgcs_inno_miniaudio_call_3ce2c133ec2eac05e457", "bgcs_inno_miniaudio_call_ed61c47b47d6d5ecf0a4", "bgcs_inno_miniaudio_call_98237b6681604b4d9627", "bgcs_inno_miniaudio_call_f1698ae4228e50020369", "bgcs_inno_miniaudio_call_6d5e079f65699563374a", "bgcs_inno_miniaudio_call_9b81935ac4011c3cfdc6", "bgcs_inno_miniaudio_call_060b18a7b54a61127d3f", "bgcs_inno_miniaudio_call_cbc5bbc817468489a9af", "bgcs_inno_miniaudio_call_82dbc29afbc2fb3f9991", "bgcs_inno_miniaudio_call_efd3c8339867403068ed", "bgcs_inno_miniaudio_call_dd84e8b6620b66d26b7b", "bgcs_inno_miniaudio_call_b67cbcfbaf3f1219f6f9", "bgcs_inno_miniaudio_call_7e5e4f6c0382f1becbe3", "bgcs_inno_miniaudio_call_cd2320168127ff5671e1", "bgcs_inno_miniaudio_call_9258a4402a0d5bfa5a65", "bgcs_inno_miniaudio_call_ede4dca6c67c2f55861a", "bgcs_inno_miniaudio_call_14d86c07e8625c8ac5f3", "bgcs_inno_miniaudio_call_047a1d4f9631616efbe8", "bgcs_inno_miniaudio_call_3737626632ca36773f70", "bgcs_inno_miniaudio_call_4e064c579bab11e4fa9d", "bgcs_inno_miniaudio_call_a5df31492f9cf54aa056", "bgcs_inno_miniaudio_call_5cd843b34cb285dc6b06", "bgcs_inno_miniaudio_call_998e5f7089410497670c", "bgcs_inno_miniaudio_call_2fde5f9f2e6fcfc4787a", "bgcs_inno_miniaudio_call_8c35de8e9c9cd3094762", "bgcs_inno_miniaudio_call_2ebd22e1e1d01a12f9b4", "bgcs_inno_miniaudio_call_75f42d65237ab6d4c201", "bgcs_inno_miniaudio_call_79a30918fdce2a872746", "bgcs_inno_miniaudio_call_1e334ed5faede2f5b79b", "bgcs_inno_miniaudio_call_76a2e9dd249331e9caa2", "bgcs_inno_miniaudio_call_b14188bf4ad9656dd40f", "bgcs_inno_miniaudio_call_50915d13513602c5fe07", "bgcs_inno_miniaudio_call_607ec4b65b74c4ece949", "bgcs_inno_miniaudio_call_b055eea93b4714961250", "bgcs_inno_miniaudio_call_eca10c024cecd517118e", "bgcs_inno_miniaudio_call_c8530b332628f73d6359", "bgcs_inno_miniaudio_call_8876658478705bb9cc3c", "bgcs_inno_miniaudio_call_687101d18d14817d91a0", "bgcs_inno_miniaudio_call_7f9ab87f7af7154e0fcb", "bgcs_inno_miniaudio_call_7385345db59597b39f3e", "bgcs_inno_miniaudio_call_0f48b53706f9cca907df", "bgcs_inno_miniaudio_call_9864a1c8018519574df9", "bgcs_inno_miniaudio_call_099a6aeb732ae5fab6fe", "bgcs_inno_miniaudio_call_9f520e490c769e010da6", "bgcs_inno_miniaudio_call_186e2835213a6b90f0fe", "bgcs_inno_miniaudio_call_62bea774af95273b8201", "bgcs_inno_miniaudio_call_aca52c0f065568b41928", "bgcs_inno_miniaudio_call_96e9e90ce6ee5972004c", "bgcs_inno_miniaudio_call_77319aba40218f3e1958", "bgcs_inno_miniaudio_call_0da3125085c366f75ac6", "bgcs_inno_miniaudio_call_2a66619b593107d5c67a", "bgcs_inno_miniaudio_call_b9d2222c9dd17f993d30", "bgcs_inno_miniaudio_call_0b2e9645a249df63a5c6", "bgcs_inno_miniaudio_call_575f06bf993539ae6d85", "bgcs_inno_miniaudio_call_72faf719cead2b41a684", "bgcs_inno_miniaudio_call_2ac1f895ba4a1cef2123", "bgcs_inno_miniaudio_call_6e458d5c2172ee64d6eb", "bgcs_inno_miniaudio_call_2b277d5249ec53dadc48", "bgcs_inno_miniaudio_call_221b261e5d03cd322193", "bgcs_inno_miniaudio_call_4e37c3958df808da955f", "bgcs_inno_miniaudio_call_ae394b376e456b911696", "bgcs_inno_miniaudio_call_a7a48e8da4655d1ab4cf", "bgcs_inno_miniaudio_call_122f42b5ac00ad3b4663", "bgcs_inno_miniaudio_call_46042289711a05a48a1e", "bgcs_inno_miniaudio_call_baa308bb7d30b561180d", "bgcs_inno_miniaudio_call_c069558eb7ddd374c7a2", "bgcs_inno_miniaudio_call_1d072eae188f4269b55d", "bgcs_inno_miniaudio_call_b5f16219249578efd5ee", "bgcs_inno_miniaudio_call_09af30d80bcf5c0d42bb", "bgcs_inno_miniaudio_call_2087d1e8bced537852af", "bgcs_inno_miniaudio_call_c0f6f728b3f3b14f83e3", "bgcs_inno_miniaudio_call_52fb3d2f3e2db64762d6", "bgcs_inno_miniaudio_call_bd142490f67d2bbbb901", "bgcs_inno_miniaudio_call_1179cb256997e40aac04", "bgcs_inno_miniaudio_call_31a0ba6fc18f28a8b506", "bgcs_inno_miniaudio_call_76ff358c0732381747bb", "bgcs_inno_miniaudio_call_bd1efed2ff19091fb4be", "bgcs_inno_miniaudio_call_4551a5b080f4e2aa3663", "bgcs_inno_miniaudio_call_f6a21bc042f475e401dc", "bgcs_inno_miniaudio_call_37d8f8bce3212a5697d6", "bgcs_inno_miniaudio_call_5c2e12e3c46244c28dcd", "bgcs_inno_miniaudio_call_2b329cf9b63e520e7eba", "bgcs_inno_miniaudio_call_c62450557b7a3c916aca", "bgcs_inno_miniaudio_call_16ee2a6589a03d1988fc", "bgcs_inno_miniaudio_call_f469bb1ca28308823c03", "bgcs_inno_miniaudio_call_dc3fa688a63a5bb4d664", "bgcs_inno_miniaudio_call_ceafcca57c097704c560", "bgcs_inno_miniaudio_call_2c7043dc44500b8ab77c", "bgcs_inno_miniaudio_call_9a5085cf10b65c5513c2", "bgcs_inno_miniaudio_call_5148447f076308fa9746", "bgcs_inno_miniaudio_call_8aef294dd4fcf1356b62", "bgcs_inno_miniaudio_call_da77de1fbe25c1d0c8a3", "bgcs_inno_miniaudio_call_b8fc63f126fca1dfda52", "bgcs_inno_miniaudio_call_3ed436c808df6094b361", "bgcs_inno_miniaudio_call_c4c8e85ae3753f3e8813", "bgcs_inno_miniaudio_call_65d033461dbf23574e06", "bgcs_inno_miniaudio_call_bcb48737a4e9eb86ef24", "bgcs_inno_miniaudio_call_4138beec04d6ce714b02", "bgcs_inno_miniaudio_call_bf610e6a5228522310bc", "bgcs_inno_miniaudio_call_6325b608e152a43b447a", "bgcs_inno_miniaudio_call_4af73e0ade82b3122218", "bgcs_inno_miniaudio_call_9a4d2848b4c2d869f7fe", "bgcs_inno_miniaudio_call_00cc55f1516f1105c11e", "bgcs_inno_miniaudio_call_c4a0e25a7e463dc77c20", "bgcs_inno_miniaudio_call_86996d5880ab6702bf10", "bgcs_inno_miniaudio_call_03222165fc828e53a31a", "bgcs_inno_miniaudio_call_97b6603a625d293f0acc", "bgcs_inno_miniaudio_call_0d36af25c93475954048", "bgcs_inno_miniaudio_call_ad301875fcd3ae77c8b6", "bgcs_inno_miniaudio_call_caa08e4e7e53c8c69714", "bgcs_inno_miniaudio_call_d2ad36ae8b12b8d4a1b1", "bgcs_inno_miniaudio_call_3532cee7964cd58cd067", "bgcs_inno_miniaudio_call_54694605c7f1ffad930d", "bgcs_inno_miniaudio_call_eb59044eff28ed837be2", "bgcs_inno_miniaudio_call_0fbfc5dd4423b036bce8", "bgcs_inno_miniaudio_call_d5f6453336ee9e4ea058", "bgcs_inno_miniaudio_call_2260a3e9b95693ca3b2d", "bgcs_inno_miniaudio_call_b655036810248132b8ce", "bgcs_inno_miniaudio_call_c09169ab4807a22ed840", "bgcs_inno_miniaudio_call_11fc9a417338f73c3604", "bgcs_inno_miniaudio_call_d2231e99c4b8c65da5f1", "bgcs_inno_miniaudio_call_cffeb48e8f8877070212", "bgcs_inno_miniaudio_call_5c4654c72a38783770b3", "bgcs_inno_miniaudio_call_82a1395ed7da899b407c", "bgcs_inno_miniaudio_call_fc5811666978bf15c32d", "bgcs_inno_miniaudio_call_bd12d1dc3ecb5a1c6e5e", "bgcs_inno_miniaudio_call_305e9385d39b4fb2dc34", "bgcs_inno_miniaudio_call_fa54ba1224c950f72dd3", "bgcs_inno_miniaudio_call_8a5e2caa2184b4ea24c5", "bgcs_inno_miniaudio_call_486c39c8be20caa9cfd6", "bgcs_inno_miniaudio_call_e6596e13d5f45c35a6dc", "bgcs_inno_miniaudio_call_e2507b742f5abbd311ef", "bgcs_inno_miniaudio_call_ba60d062568d1afd2e09", "bgcs_inno_miniaudio_call_d32d87ec36edb6075149", "bgcs_inno_miniaudio_call_def6be5e7784b4f1292a", "bgcs_inno_miniaudio_call_248bda1ec02e057f326e", "bgcs_inno_miniaudio_call_ab80e55338a8833e0723", "bgcs_inno_miniaudio_call_1d0df60e225bc069ef5d", "bgcs_inno_miniaudio_call_7588bdc7f10d8efc048d", "bgcs_inno_miniaudio_call_1c47a35c765f4fb5e979", "bgcs_inno_miniaudio_call_6e328260517e09fc6cca", "bgcs_inno_miniaudio_call_2ecbba838ffa788706db", "bgcs_inno_miniaudio_call_034baaef38e3d450d34f", "bgcs_inno_miniaudio_call_ab332862f64a63fe391b", "bgcs_inno_miniaudio_call_828a4b82ee3c0505da61", "bgcs_inno_miniaudio_call_f8aab0f6fdb9b1bb2dc9", "bgcs_inno_miniaudio_call_aa4f40c0f3e0bcb31787", "bgcs_inno_miniaudio_call_44b1b6bc7a324c01298e", "bgcs_inno_miniaudio_call_35f24c8154f73071e2c9", "bgcs_inno_miniaudio_call_d3e9c9325f608488f44f", "bgcs_inno_miniaudio_call_8d5084843305213ca4ad", "bgcs_inno_miniaudio_call_3284c86cfa4fb88f605a", "bgcs_inno_miniaudio_call_defc8dec10b50364c7c1", "bgcs_inno_miniaudio_call_bf0c8c0c25278a16e6da", "bgcs_inno_miniaudio_call_38c80d424b5faef32975", "bgcs_inno_miniaudio_call_d1e45dfcd111a6a098c2", "bgcs_inno_miniaudio_call_eedd1e3ea5d3bc80bfc7", "bgcs_inno_miniaudio_call_a86ce551d26e4935cf0f", "bgcs_inno_miniaudio_call_eb6501a5141cade52c05", "bgcs_inno_miniaudio_call_185315589c2f2211d100", "bgcs_inno_miniaudio_call_05a246a71343d1807bf8", "bgcs_inno_miniaudio_call_5e52aae2d41beb5f1b89", "bgcs_inno_miniaudio_call_f4c983282ce97224833e", "bgcs_inno_miniaudio_call_f118fe57f8eff8368162", "bgcs_inno_miniaudio_call_ac05c6b2729318935053", "bgcs_inno_miniaudio_call_05b374d3f24795efeacc", "bgcs_inno_miniaudio_call_bc9c9f52f0008858ebd8", "bgcs_inno_miniaudio_call_981b84e79940c4a2c537", "bgcs_inno_miniaudio_call_a69102527fadba2e19a6", "bgcs_inno_miniaudio_call_05b21ea6e69aae192931", "bgcs_inno_miniaudio_call_7c41fef040de7fff7786", "bgcs_inno_miniaudio_call_771ab2aeccbe8de270da", "bgcs_inno_miniaudio_call_362bb7392c357ee5b80a", "bgcs_inno_miniaudio_call_c8049ea6687a0374a045", "bgcs_inno_miniaudio_call_4abb82f43bc722a934c6", "bgcs_inno_miniaudio_call_3c3d4592f2fdff644e83", "bgcs_inno_miniaudio_call_c8efa5671cb70063953e", "bgcs_inno_miniaudio_call_c479fd57070a3ee7613d", "bgcs_inno_miniaudio_call_199c06131b58bb747926", "bgcs_inno_miniaudio_call_9a56e0e1a7675206fbfa", "bgcs_inno_miniaudio_call_d39334a76b1e8e172be4", "bgcs_inno_miniaudio_call_5dbee4785d5d9314a12b", "bgcs_inno_miniaudio_call_27db38eebe4e9e519a82", "bgcs_inno_miniaudio_call_2d5484f00fb6976a8d20", "bgcs_inno_miniaudio_call_cbdd2955ceae489ea022", "bgcs_inno_miniaudio_call_3ec8fea8876f2fdd9251", "bgcs_inno_miniaudio_call_dd7ddbf4d35741dc7adc", "bgcs_inno_miniaudio_call_6934a19049264f8e421b", "bgcs_inno_miniaudio_call_447e00455031c5e40160", "bgcs_inno_miniaudio_call_712bed74d3cc90937763", "bgcs_inno_miniaudio_call_838f2d346e07b3bbaa51", "bgcs_inno_miniaudio_call_d5642be67b7850e16ce6", "bgcs_inno_miniaudio_call_49f3881b9e63adc6cf26", "bgcs_inno_miniaudio_call_76ccd27f0d1abbc8bc9a", "bgcs_inno_miniaudio_call_ad1d2141e009a7e8726f", "bgcs_inno_miniaudio_call_e38f78d6addb1d65a39b", "bgcs_inno_miniaudio_call_a73d2586c545833fc185", "bgcs_inno_miniaudio_call_bf98bcafff837ba8b872", "bgcs_inno_miniaudio_call_a4a8618396f9c24e8c14", "bgcs_inno_miniaudio_call_2a85709d6e4c72498098", "bgcs_inno_miniaudio_call_a8fdcfb78295654a8207", "bgcs_inno_miniaudio_call_417e84f105598a90ca43", "bgcs_inno_miniaudio_call_24895e34663d3f1946f3", "bgcs_inno_miniaudio_call_3737ca05b637a152cbad", "bgcs_inno_miniaudio_call_9dd38cf7eb9c04be288f", "bgcs_inno_miniaudio_call_3d1c8e767fdf160638af", "bgcs_inno_miniaudio_call_18e7d417e4905c6c5b37", "bgcs_inno_miniaudio_call_a49238dfbac82891c8a0", "bgcs_inno_miniaudio_call_eb9281e8cbf35e7cef8e", "bgcs_inno_miniaudio_call_eedf540487de5231c91f", "bgcs_inno_miniaudio_call_6ef72036bb0e365bd2fb", "bgcs_inno_miniaudio_call_4e6108b5a637aa367a0c", "bgcs_inno_miniaudio_call_a194219b8a9e7eb71aef", "bgcs_inno_miniaudio_call_95612d65e2475723a181", "bgcs_inno_miniaudio_call_d66d11f9261b776b4ace", "bgcs_inno_miniaudio_call_0e6db0fb3511df024d16", "bgcs_inno_miniaudio_call_b43a9355b63df2c277d4", "bgcs_inno_miniaudio_call_49f1659180408e8dd88d", "bgcs_inno_miniaudio_call_1f463bd14d5af3af440d", "bgcs_inno_miniaudio_call_07c0d47b0fc4300ddcd4", "bgcs_inno_miniaudio_call_5cb396dd1fc6b5b986f7", "bgcs_inno_miniaudio_call_a96715c55f04f73b45d6", "bgcs_inno_miniaudio_call_4d10f6dbca62820df854", "bgcs_inno_miniaudio_call_26db99730c710493eb48", "bgcs_inno_miniaudio_call_9e12c06a7e392d2e9892", "bgcs_inno_miniaudio_call_1e38ce9e551c17535c8e", "bgcs_inno_miniaudio_call_8363f243dd3909a77c52", "bgcs_inno_miniaudio_call_656780d4648a9dfc795f", "bgcs_inno_miniaudio_call_ee0a5b0485d59b845778", "bgcs_inno_miniaudio_call_a7d499b05236ca8a5aa7", "bgcs_inno_miniaudio_call_a1518e91aee51667029f", "bgcs_inno_miniaudio_call_19def886921b2b857027", "bgcs_inno_miniaudio_call_e1f5518b2520e4630a2d", "bgcs_inno_miniaudio_call_ca1f3a95d3ae7c0e50d6", "bgcs_inno_miniaudio_call_82a448b5e8dba34f98b8", "bgcs_inno_miniaudio_call_f0e97b0b46f5fa019e93", "bgcs_inno_miniaudio_call_adce9d87b1c7656a3a35", "bgcs_inno_miniaudio_call_40cd90c85c3b0c9ae6fe", "bgcs_inno_miniaudio_call_7eab942973dbe4b00bd3", "bgcs_inno_miniaudio_call_6ba409231bfef95405e6", "bgcs_inno_miniaudio_call_cde73936eb60b12881dd", "bgcs_inno_miniaudio_call_a5194bdca27b086fa9e2", "bgcs_inno_miniaudio_call_64a1d4040687086fa8cd", "bgcs_inno_miniaudio_call_30cf2b53da1f8fe57a2b", "bgcs_inno_miniaudio_call_b2fb08ebb56c322449e8", "bgcs_inno_miniaudio_call_e698b06ca33df3cf9e97", "bgcs_inno_miniaudio_call_8d43845aaa5fe126c595", "bgcs_inno_miniaudio_call_300b2fde4dc554520e7d", "bgcs_inno_miniaudio_call_81e10fc1e23f6c018a07", "bgcs_inno_miniaudio_call_a03e0f4264e3c5395946", "bgcs_inno_miniaudio_call_e58fa9490f7815daa3c7", "bgcs_inno_miniaudio_call_458c4af3a58a4d780c1f", "bgcs_inno_miniaudio_call_241870a17bdc7a5b57b4", "bgcs_inno_miniaudio_call_27df3ab74c40a8c0f9f4", "bgcs_inno_miniaudio_call_c5326d52a82e1c0317c0", "bgcs_inno_miniaudio_call_f8fbbea226cbf61731c3", "bgcs_inno_miniaudio_call_52ead8eac367f8645c18", "bgcs_inno_miniaudio_call_025bd6ee8233cb49de0f", "bgcs_inno_miniaudio_call_4bed9de52d727c58bac3", "bgcs_inno_miniaudio_call_80a7bc43438e9ce3507d", "bgcs_inno_miniaudio_call_4e51264b500e5790319b", "bgcs_inno_miniaudio_call_041f7e93365150c69b58", "bgcs_inno_miniaudio_call_107dee7db2c4972ff4fd", "bgcs_inno_miniaudio_call_c930d0ed48570d606e49", "bgcs_inno_miniaudio_call_0b12dae204fe8d77badf", "bgcs_inno_miniaudio_call_49d1f762c2f0e4f6b110", "bgcs_inno_miniaudio_call_7d216b068fde571555f2", "bgcs_inno_miniaudio_call_eee212b6fbf839ce65d0", "bgcs_inno_miniaudio_call_08062e14e2380495b263", "bgcs_inno_miniaudio_call_f3dde71810b0a6596280", "bgcs_inno_miniaudio_call_9c2b0882f3cdc70e4d18", "bgcs_inno_miniaudio_call_b95f8f8e88a5b660e10b", "bgcs_inno_miniaudio_call_63f4ac0e2ae79a280cb2", "bgcs_inno_miniaudio_call_0c77e177a367527f1e17", "bgcs_inno_miniaudio_call_8454d6963f767155e837", "bgcs_inno_miniaudio_call_bf6d688dca3d686580b4", "bgcs_inno_miniaudio_call_1b102479efa2f39f9f3f", "bgcs_inno_miniaudio_call_ad3c0589c222b4895c07", "bgcs_inno_miniaudio_call_16bb8b0dc59720b65e29", "bgcs_inno_miniaudio_call_89509c38088e202cf003", "bgcs_inno_miniaudio_call_21c9b0867ad15c747efc", "bgcs_inno_miniaudio_call_8fe41231ed276c3280be", "bgcs_inno_miniaudio_call_e930d0ae58cc388fafb9", "bgcs_inno_miniaudio_call_9d0464caa2689ae3c10f", "bgcs_inno_miniaudio_call_d5b6d7b1222a6deb8103", "bgcs_inno_miniaudio_call_f255c7aa9fd12feecaec", "bgcs_inno_miniaudio_call_e74e190504fe2ac3b4e7", "bgcs_inno_miniaudio_call_c54861d93203c541b609", "bgcs_inno_miniaudio_call_2e2f1e4673fe739c3b82", "bgcs_inno_miniaudio_call_cdb2cf77c1bc34a2d5e8", "bgcs_inno_miniaudio_call_724398850e8ae853c91a", "bgcs_inno_miniaudio_call_723766d0f81315e93874", "bgcs_inno_miniaudio_call_5949fcb3bbe75ff87ca2", "bgcs_inno_miniaudio_call_cbd2d124fdd8f08f5d17", "bgcs_inno_miniaudio_call_822ed4dd87ea117e4102", "bgcs_inno_miniaudio_call_ff3d925ecdf8ef7c0144", "bgcs_inno_miniaudio_call_340b7b6de9f57d6ece6b", "bgcs_inno_miniaudio_call_5c6a75f4e8888c420bd2", "bgcs_inno_miniaudio_call_2968b173d4cff3167170", "bgcs_inno_miniaudio_call_74d7edd9a1cbd3356a3c", "bgcs_inno_miniaudio_call_62d4209ea2b120dbb6f5", "bgcs_inno_miniaudio_call_48cf6ec1af14ea16f815", "bgcs_inno_miniaudio_call_f50248a0570313939aed", "bgcs_inno_miniaudio_call_d49023dbeb51ec4047f5", "bgcs_inno_miniaudio_call_c0dce51f153ac9297b0c", "bgcs_inno_miniaudio_call_6475f49c65d60c8703c0", "bgcs_inno_miniaudio_call_bf891b748d2b6a0bc6ab", "bgcs_inno_miniaudio_call_5f9be77478d5aaf667a2", "bgcs_inno_miniaudio_call_6ddb89ad92e5e7ce2977", "bgcs_inno_miniaudio_call_3ee117c343b5d8a4f18c", "bgcs_inno_miniaudio_call_63a8d82a54f461d18232", "bgcs_inno_miniaudio_call_791cb0283705ca66666c", "bgcs_inno_miniaudio_call_cc8f42fbff5299a5f667", "bgcs_inno_miniaudio_call_df3a622c2e93a8f34cd9", "bgcs_inno_miniaudio_call_b8e1f71310919251e8ad", "bgcs_inno_miniaudio_call_e28c2ac39a998e70ed00", "bgcs_inno_miniaudio_call_d82c25ba5e88b1a22727", "bgcs_inno_miniaudio_call_238dc3e6433e7cfc6573", "bgcs_inno_miniaudio_call_609c105551ff6de32c93", "bgcs_inno_miniaudio_call_f35875363102a0ab296a", "bgcs_inno_miniaudio_call_02b8e44156fb1eff1df9", "bgcs_inno_miniaudio_call_ae314fc559a43c9f3981", "bgcs_inno_miniaudio_call_863d13439902f873262e", "bgcs_inno_miniaudio_call_ac994b00f31b8b1cf1ff", "bgcs_inno_miniaudio_call_6e36f17346e4cd674174", "bgcs_inno_miniaudio_call_e2339b17d6b38d28d019", "bgcs_inno_miniaudio_call_18609185fcda5d60030a", "bgcs_inno_miniaudio_call_47535860f4dd9938206a", "bgcs_inno_miniaudio_call_40cf60018b86dcc047c0", "bgcs_inno_miniaudio_call_bcf1f90045824a92de61", "bgcs_inno_miniaudio_call_25e6f605a2ea2b569c78", "bgcs_inno_miniaudio_call_4a8c8de8f73a1904ee99", "bgcs_inno_miniaudio_call_95b536819570686f5b7e", "bgcs_inno_miniaudio_call_203b776c27a95270f5c3", "bgcs_inno_miniaudio_call_3e04afea97139d5cd7c2", "bgcs_inno_miniaudio_call_345d57fcdd51ee62308d", "bgcs_inno_miniaudio_call_5e9011399acfef22071a", "bgcs_inno_miniaudio_call_6a263962fbe53e5288b1", "bgcs_inno_miniaudio_call_0a666fde27be236c1160", "bgcs_inno_miniaudio_call_7895768704b5f7d711f0", "bgcs_inno_miniaudio_call_adfc1926b0dabe48528c", "bgcs_inno_miniaudio_call_56368f4822f533ca2b6d", "bgcs_inno_miniaudio_call_c4fdd68c9c824a565c26", "bgcs_inno_miniaudio_call_0e42c6b7cfd265d727aa", "bgcs_inno_miniaudio_call_5d41d36fd26f1c4fc3b1", "bgcs_inno_miniaudio_call_cfb87e9a5a5b24c3cc14", "bgcs_inno_miniaudio_call_18b331702f8bf6d79235", "bgcs_inno_miniaudio_call_90b51217c95822cd66ff", "bgcs_inno_miniaudio_call_f9da4020d7fba60764d5", "bgcs_inno_miniaudio_call_c812920b171dc8799e89", "bgcs_inno_miniaudio_call_c5d89f05c0e46a47f8da", "bgcs_inno_miniaudio_call_f618b14526ead1daca45", "bgcs_inno_miniaudio_call_88af2c332828d773269f", "bgcs_inno_miniaudio_call_2920045eb26796bd3bd2", "bgcs_inno_miniaudio_call_376623d756d5eda3aeba", "bgcs_inno_miniaudio_call_917bfb0f914b26ae86e3", "bgcs_inno_miniaudio_call_ecacfbf3ead3e722c7c0", "bgcs_inno_miniaudio_call_e86ea8080a1619536972", "bgcs_inno_miniaudio_call_547ce1ced6adeb93a173", "bgcs_inno_miniaudio_call_5b6b1599db1069bfcd2e", "bgcs_inno_miniaudio_call_49b2e83bced2d3a6f29a", "bgcs_inno_miniaudio_call_2802422a731e08071576", "bgcs_inno_miniaudio_call_8b88499bed58d0d7b657", "bgcs_inno_miniaudio_call_ff40d8736077dc294670", "bgcs_inno_miniaudio_call_9b063fc7e04149928b9e", "bgcs_inno_miniaudio_call_3ddb349cc1686fb2cf67", "bgcs_inno_miniaudio_call_b60ab4d20062e4654ba3", "bgcs_inno_miniaudio_call_b1ab36c5a424b73e5c6d", "bgcs_inno_miniaudio_call_64c3fbd735ec002ce688", "bgcs_inno_miniaudio_call_e77a5771aadb6661213e", "bgcs_inno_miniaudio_call_48f948ccf76530ced1d2", "bgcs_inno_miniaudio_call_60e5828642ba30c24559", "bgcs_inno_miniaudio_call_58dbed498deddecc946c", "bgcs_inno_miniaudio_call_aa8d9fe04128a1fdcdaa", "bgcs_inno_miniaudio_call_ec4c131c40e367b5b859", "bgcs_inno_miniaudio_call_a41d5edf1737441745a8", "bgcs_inno_miniaudio_call_63928362a28a99158cfc", "bgcs_inno_miniaudio_call_d525d4ac332634435033", "bgcs_inno_miniaudio_call_521e51ac0ddcbfba1158", "bgcs_inno_miniaudio_call_651a658f65707242e40e", "bgcs_inno_miniaudio_call_d62a771bc6e89100c7f1", "bgcs_inno_miniaudio_call_0757b304a6ceb152f61c", "bgcs_inno_miniaudio_call_5690ef86bc10c3838e97", "bgcs_inno_miniaudio_call_632ea120b83c143e4665", "bgcs_inno_miniaudio_call_bb1ae530756ba517191d", "bgcs_inno_miniaudio_call_d49aaaa60dfc4e747eb3", "bgcs_inno_miniaudio_call_6d176255858d53bf8060", "bgcs_inno_miniaudio_call_aa9b4070bdb859e97494", "bgcs_inno_miniaudio_call_d2c2fc9dda0e9b88b428", "bgcs_inno_miniaudio_call_eadbc0f54a503dc2202d", "bgcs_inno_miniaudio_call_b070a062b369f417d524", "bgcs_inno_miniaudio_call_1b64c85c36979161b0f3", "bgcs_inno_miniaudio_call_bdf09d0fd60448a91de7", "bgcs_inno_miniaudio_call_7168f0cc7b21a7357167", "bgcs_inno_miniaudio_call_af5134beb0c3e8ff6ae5", "bgcs_inno_miniaudio_call_c441d8f4767ddb2cc9f2", "bgcs_inno_miniaudio_call_b543608da172d70decc6", "bgcs_inno_miniaudio_call_06655a386047c65db84c", "bgcs_inno_miniaudio_call_aab23d5fab2ee53feb41", "bgcs_inno_miniaudio_call_61b3f6a2016122fd75f4", "bgcs_inno_miniaudio_call_5ebc1dc0a45322bfbafd", "bgcs_inno_miniaudio_call_30091ee65a78072fd4f1", "bgcs_inno_miniaudio_call_72987247aad5006e675f", "bgcs_inno_miniaudio_call_ca82df27564b6b9fa834", "bgcs_inno_miniaudio_call_3ac447cd3432b3d0a0df", "bgcs_inno_miniaudio_call_36db2cac4047ea8a2dfb", "bgcs_inno_miniaudio_call_5c2ea038b11fa057f2b1", "bgcs_inno_miniaudio_call_7c412de6d7908b295f14", "bgcs_inno_miniaudio_call_70cba1d57e82c2826d75", "bgcs_inno_miniaudio_call_8c4eb5fbc9d20693cc61", "bgcs_inno_miniaudio_call_ab57248f8f785648f6e5", "bgcs_inno_miniaudio_call_14168f1099b8a96fd960", "bgcs_inno_miniaudio_call_94f45dd25c8ce6e7501e", "bgcs_inno_miniaudio_call_06b5c25c6b17016d9265", "bgcs_inno_miniaudio_call_0973152816f61bc18b81", "bgcs_inno_miniaudio_call_c4d722ddebf0cc060067", "bgcs_inno_miniaudio_call_432b57339a84003eb1f1", "bgcs_inno_miniaudio_call_a5066aa0728a46ad1441", "bgcs_inno_miniaudio_call_dba934c0980a7a8fdc9c", "bgcs_inno_miniaudio_call_9c0213776989fb2d519e", "bgcs_inno_miniaudio_call_ddc312cc64bd6aabd246", "bgcs_inno_miniaudio_call_a491541ac10b4ccb4b15", "bgcs_inno_miniaudio_call_76bc231d5b8a6d827c54", "bgcs_inno_miniaudio_call_0c6203872ebc8c0c00b5", "bgcs_inno_miniaudio_call_28c4f674ab3dcb543ff1", "bgcs_inno_miniaudio_call_aea07eaa805c413a5920", "bgcs_inno_miniaudio_call_dad265f60da1c580efe1", "bgcs_inno_miniaudio_call_fd0f0963bccefcff8aff", "bgcs_inno_miniaudio_call_2ee7b4f59e0b6e6db783", "bgcs_inno_miniaudio_call_e791141374dc9441c116", "bgcs_inno_miniaudio_call_0d004127da8393321568", "bgcs_inno_miniaudio_call_f04d4943e907a7870b5c", "bgcs_inno_miniaudio_call_78e520f82a2c6b00d2f2", "bgcs_inno_miniaudio_call_8d09a98d5a4a2a988545", "bgcs_inno_miniaudio_call_c335e58d2305d75dd1b4", "bgcs_inno_miniaudio_call_5ccbb685bea3294cc6bd", "bgcs_inno_miniaudio_call_ce1c0614fdaa8b903972", "bgcs_inno_miniaudio_call_4bff761a528ce30984db", "bgcs_inno_miniaudio_call_2ea2c899d6a9eeb6cab5", "bgcs_inno_miniaudio_call_25240a378ddb52d91deb", "bgcs_inno_miniaudio_call_c343cb0eaa24287d4a6a", "bgcs_inno_miniaudio_call_410f282bb6bcd49c1f73", "bgcs_inno_miniaudio_call_65383e24c470d85e6ef4", "bgcs_inno_miniaudio_call_7c7d4be9fa64c37f3882", "bgcs_inno_miniaudio_call_fa6d5e5c8456736ff0ae", "bgcs_inno_miniaudio_call_0ef126da6adc35ffd286", "bgcs_inno_miniaudio_call_f525423980154b9361ff", "bgcs_inno_miniaudio_call_b9f4d61fb4c501522afc", "bgcs_inno_miniaudio_call_79741d013828039a4440", "bgcs_inno_miniaudio_call_542578919cac488f5567", "bgcs_inno_miniaudio_call_8f7315b3f329170563eb", "bgcs_inno_miniaudio_call_e79f07810e4b1153d345", "bgcs_inno_miniaudio_call_64a683d64d9e4b4e2dcc", "bgcs_inno_miniaudio_call_a31d29fd16872112307b", "bgcs_inno_miniaudio_call_a3491203240ed68bb16d", "bgcs_inno_miniaudio_call_04fcff848cd2f7167305", "bgcs_inno_miniaudio_call_fcb2699e1f313a0a989f", "bgcs_inno_miniaudio_call_e17b8d5f216db1045eaa", "bgcs_inno_miniaudio_call_6f372b03b2e2c62db992", "bgcs_inno_miniaudio_call_21878b11330c789c7500", "bgcs_inno_miniaudio_call_b3aaab5bb1eb7a49a94f", "bgcs_inno_miniaudio_call_037f0042960147f1b8ec", "bgcs_inno_miniaudio_call_cdbe4bd43392cc65b21c", "bgcs_inno_miniaudio_call_7095f2ec52e53609b42a", "bgcs_inno_miniaudio_call_5ee93206b4cfc3debeba", "bgcs_inno_miniaudio_call_bc620e0f89ad70dd0fd8", "bgcs_inno_miniaudio_call_f578e566b373adfae0f8", "bgcs_inno_miniaudio_call_1c8defb9c5dc04c30a8e", "bgcs_inno_miniaudio_call_5b347a475a12bb92df93", "bgcs_inno_miniaudio_call_3f32f5ca5ed26ee8fc6f", "bgcs_inno_miniaudio_call_3064a96a8c5873e86134", "bgcs_inno_miniaudio_call_7f4df6bbd0576471ff94", "bgcs_inno_miniaudio_call_e9f53da58a502fb45e11", "bgcs_inno_miniaudio_call_bc8b660e68aad5ab632d", "bgcs_inno_miniaudio_call_def93a0f2be210acf560", "bgcs_inno_miniaudio_call_24e633bd867cbe2149cd", "bgcs_inno_miniaudio_call_f8a0581aa1dc30c93736", "bgcs_inno_miniaudio_call_2ad49f6367afac49ad25", "bgcs_inno_miniaudio_call_68fde5defef3287f43aa", "bgcs_inno_miniaudio_call_1eda9183c2f8fc1a94be", "bgcs_inno_miniaudio_call_df1bbaf28f3eeac6f2c1", "bgcs_inno_miniaudio_call_1b9ef26ff69afd28fc80", "bgcs_inno_miniaudio_call_d4c83bc6f5c0a7f01a60", "bgcs_inno_miniaudio_call_e8eaedaaf57677e93c36", "bgcs_inno_miniaudio_call_0d9a71019675f8fc4ed2", "bgcs_inno_miniaudio_call_973ead3e374cf3ae0134", "bgcs_inno_miniaudio_call_6fba0aec2620fa8af37b", "bgcs_inno_miniaudio_call_5124c5522163cb0a981b", "bgcs_inno_miniaudio_call_37994f81b1b3b595e594", "bgcs_inno_miniaudio_call_8712e426b2013c4b57f2", "bgcs_inno_miniaudio_call_5b50f5db12e9c8a1e2b4", "bgcs_inno_miniaudio_call_d37e5197ef4fbe615f65", "bgcs_inno_miniaudio_call_de7329745eaf3de1e6ba", "bgcs_inno_miniaudio_call_64c6097b448a61632ffc", "bgcs_inno_miniaudio_call_82e3e451390db8e2211e", "bgcs_inno_miniaudio_call_21e3850198b634c8a546", "bgcs_inno_miniaudio_call_483409a0e55fe8dac735", "bgcs_inno_miniaudio_call_6b84c6d66da913a264c8", "bgcs_inno_miniaudio_call_8fc3049ca5cc7ebd437c", "bgcs_inno_miniaudio_call_0758c64eb598edcb44f5", "bgcs_inno_miniaudio_call_9b049ea504a74d3f5a7f", "bgcs_inno_miniaudio_call_a43a366d7eff024e3746", "bgcs_inno_miniaudio_call_fc5bef9758205c307d92", "bgcs_inno_miniaudio_call_7e690f2ec4019c5d13dc", "bgcs_inno_miniaudio_call_2ffb7606051acdccb40d", "bgcs_inno_miniaudio_call_0cefc2a180f01e49d659", "bgcs_inno_miniaudio_call_6c1e942f39992aed42fc", "bgcs_inno_miniaudio_call_7fd3a33c8a837011f7a3", "bgcs_inno_miniaudio_call_c2a1a8f652be9a99c1f0", "bgcs_inno_miniaudio_call_8fa60432faac188094d3", "bgcs_inno_miniaudio_call_688cce5f9f1901d75366", "bgcs_inno_miniaudio_call_0e41ad428ceeb4e2b543", "bgcs_inno_miniaudio_call_4acfd959687711ba947a", "bgcs_inno_miniaudio_call_f43478735f6f4230de15", "bgcs_inno_miniaudio_call_b30dc780bd41385cec1f", "bgcs_inno_miniaudio_call_39141be3d09dbb3eb2f1", "bgcs_inno_miniaudio_call_6bd361030cb112e2cff4", "bgcs_inno_miniaudio_call_4bf0c6227ba0c700fe6b", "bgcs_inno_miniaudio_call_9620d9b30f44a71420dc", "bgcs_inno_miniaudio_call_06715e193db6bb7300b4", "bgcs_inno_miniaudio_call_9f38379a1df600a7aca0", "bgcs_inno_miniaudio_call_08f9bea45feecc7f11e2", "bgcs_inno_miniaudio_call_96c6b6ebe86b1ecb76ce", "bgcs_inno_miniaudio_call_17f188858522d2845fc1", "bgcs_inno_miniaudio_call_95c656e8f744c05b5e50", "bgcs_inno_miniaudio_call_8ea45e53c132ae7eae19", "bgcs_inno_miniaudio_call_ec09d3ec5026a965254f", "bgcs_inno_miniaudio_call_dfdd41757d92f1e12e33", "bgcs_inno_miniaudio_call_abbd6c817c8aaafdab3a", "bgcs_inno_miniaudio_call_861b9d1f0924fe7eb2cf", "bgcs_inno_miniaudio_call_f79d4fedec198b0dda17", "bgcs_inno_miniaudio_call_8e0f27e429dd1068775b", "bgcs_inno_miniaudio_call_342504b2cdef884f5c88", "bgcs_inno_miniaudio_call_c337af29cc4497834908", "bgcs_inno_miniaudio_call_ce15752bd1c765f9e573", "bgcs_inno_miniaudio_call_85b2440a7a29c7e17e69", "bgcs_inno_miniaudio_call_87fc19fc1067d3903ac3", "bgcs_inno_miniaudio_call_d229878cfb8864ff7bb7", "bgcs_inno_miniaudio_call_ef14f1f24eee83d48ef7", "bgcs_inno_miniaudio_call_6bb62eb52e2c699905be", "bgcs_inno_miniaudio_call_5a87552ee6ae7e1aff3d", "bgcs_inno_miniaudio_call_b9bb17ae2c6e7629371c", "bgcs_inno_miniaudio_call_505fa8d4b765db5b8d06", "bgcs_inno_miniaudio_call_500131255417f90a1233", "bgcs_inno_miniaudio_call_7bc7141e53cca646f7b6", "bgcs_inno_miniaudio_call_643b17d4889569c3f69b", "bgcs_inno_miniaudio_call_1456047237c43c345472", "bgcs_inno_miniaudio_call_42c504827d2ad700b866", "bgcs_inno_miniaudio_call_a39d10f9908f303a1eb4", "bgcs_inno_miniaudio_call_4372ba46a165d1e45dfd", "bgcs_inno_miniaudio_call_adf5909724b3526e30a7", "bgcs_inno_miniaudio_call_881107675997e994264c", "bgcs_inno_miniaudio_call_0fdfa82310055eda81d9", "bgcs_inno_miniaudio_call_b60ff22619821e87c97a", "bgcs_inno_miniaudio_call_3b5c8be961ff05d6fb1f", "bgcs_inno_miniaudio_call_61400df0a5dd5f271fba", "bgcs_inno_miniaudio_call_dd846f05f13eabc6c702", "bgcs_inno_miniaudio_call_a734c448f9edd07cf7e0", "bgcs_inno_miniaudio_call_6bdec450196d872460ab", "bgcs_inno_miniaudio_call_075768e1d05b0b826d8d", "bgcs_inno_miniaudio_call_31ea5ae0483d9259611f", "bgcs_inno_miniaudio_call_beea3b7c26ee2bc4ce53", "bgcs_inno_miniaudio_call_967a9f61466cbc8f2850", "bgcs_inno_miniaudio_call_0265ce20dc5a5093f647", "bgcs_inno_miniaudio_call_afee5acfc8e015257229", "bgcs_inno_miniaudio_call_f091721839738df1a459", "bgcs_inno_miniaudio_call_5b07d33dd122e51d3c17", "bgcs_inno_miniaudio_call_469e457175fcf3e5c95d", "bgcs_inno_miniaudio_call_60a47991ed3663f34900", "bgcs_inno_miniaudio_call_2c805cdd959b358070f3", "bgcs_inno_miniaudio_call_e919ec3a900a3af200a0", "bgcs_inno_miniaudio_call_df693af0666ef4344269", "bgcs_inno_miniaudio_call_f76a4909ad1d86f34b7b", "bgcs_inno_miniaudio_call_1f6d7f78744c0fd3f4da", "bgcs_inno_miniaudio_call_b3030aefb66f86895d73", "bgcs_inno_miniaudio_call_55ca5bc296e640a541f0", "bgcs_inno_miniaudio_call_7961b8e3ada45c3fd4f8", "bgcs_inno_miniaudio_call_ed5f688bedba424cd999", "bgcs_inno_miniaudio_call_5c795ec857de026c943f", "bgcs_inno_miniaudio_call_efc829a9f04e14428835", "bgcs_inno_miniaudio_call_5e0d0e2a3c27c8cc7180", "bgcs_inno_miniaudio_call_e3c917a47349c282e4af", "bgcs_inno_miniaudio_call_631285afde5925446b77", "bgcs_inno_miniaudio_call_aa3f4dd0f8a26dc31504", "bgcs_inno_miniaudio_call_9c9a11add0d6b0cf6ba4", "bgcs_inno_miniaudio_call_31852e02267171f52f12", "bgcs_inno_miniaudio_call_728e76e82d01842fe8ba", "bgcs_inno_miniaudio_call_f84a328f7c91606b71be", "bgcs_inno_miniaudio_call_0b2f36e3a15886c49cc4", "bgcs_inno_miniaudio_call_56935dc7b7b615698a38", "bgcs_inno_miniaudio_call_e006545f1d1483d125c8", "bgcs_inno_miniaudio_call_29e8a94d3d446e66b9f1", "bgcs_inno_miniaudio_call_5d99a2e631abfbb0f01f", "bgcs_inno_miniaudio_call_6fc4beba71bc22aa2f08", "bgcs_inno_miniaudio_call_11be78990f2a7f55240e", "bgcs_inno_miniaudio_call_8a09473c0305d0dfd57f", "bgcs_inno_miniaudio_call_80f6a8784148da1c57a6", "bgcs_inno_miniaudio_call_a77fb28bf8215e843095", "bgcs_inno_miniaudio_call_9b807a1d3fb7558cc359", "bgcs_inno_miniaudio_call_7cf823364127bab575dc", "bgcs_inno_miniaudio_call_0a9ea55b99f1f355826a", "bgcs_inno_miniaudio_call_f31e09851fe4bdcedc73", "bgcs_inno_miniaudio_call_18b864c5407e77961e3c", "bgcs_inno_miniaudio_call_4380305dd36fd5f8547e", "bgcs_inno_miniaudio_call_0bbdf8bf15785f2d303d", "bgcs_inno_miniaudio_call_9623a5a92d8461d73ede", "bgcs_inno_miniaudio_call_1a49c8da3f22c8e06db4", "bgcs_inno_miniaudio_call_ccbb79d59b794e1f42f1", "bgcs_inno_miniaudio_call_afc2490af895dda7e270", "bgcs_inno_miniaudio_call_3ede04cca19d6bc5107b", "bgcs_inno_miniaudio_call_22656c7f7a9c0264fef1", "bgcs_inno_miniaudio_call_09afe7054a038128490f", "bgcs_inno_miniaudio_call_fcb6e45ab9af0959d56f", "bgcs_inno_miniaudio_call_4b31376d7e125b390aca", "bgcs_inno_miniaudio_call_b37645a404d51d7d5c2b", "bgcs_inno_miniaudio_call_d0de8f1aea235b7f4fb0", "bgcs_inno_miniaudio_call_7b3503bd60fe6233a38a", "bgcs_inno_miniaudio_call_e195a1b82d3fc41c3184", "bgcs_inno_miniaudio_call_2c1396ee17309b65220f", "bgcs_inno_miniaudio_call_84dab71ec27c560cd8b7", "bgcs_inno_miniaudio_call_dea61447daf3357e0b05", "bgcs_inno_miniaudio_call_ca677aa60249ce9e7355", "bgcs_inno_miniaudio_call_190cf62d3326c0570d26", "bgcs_inno_miniaudio_call_344638493f664b04acc4", "bgcs_inno_miniaudio_call_c688b596ac06edbd3283", "bgcs_inno_miniaudio_call_1d15371b97f225bd288d", "bgcs_inno_miniaudio_call_728cf3b397fce7e2a8e0", "bgcs_inno_miniaudio_call_b8480d155174c84b9e99", "bgcs_inno_miniaudio_call_b6d10a5d93aa0f449c1f", "bgcs_inno_miniaudio_call_812a8163523152f66b55", "bgcs_inno_miniaudio_call_a61064aff055c8ffa79e", "bgcs_inno_miniaudio_call_a2e3b3e77904c56e67d7", "bgcs_inno_miniaudio_call_81bb9584d0f023f5fa5b", "bgcs_inno_miniaudio_call_d6a28f7a1865e60bdf3d", "bgcs_inno_miniaudio_call_cbe4aa92ebd2d127f7d5", "bgcs_inno_miniaudio_call_3ebc65c2f7c96c952ac3", "bgcs_inno_miniaudio_call_e5d861ab72efc1335d33", "bgcs_inno_miniaudio_call_4f27bb0ecd01fbf26b8c", "bgcs_inno_miniaudio_call_f6a69ab32d56fa88a24a", "bgcs_inno_miniaudio_call_7026407490a1c9c8e0ed", "bgcs_inno_miniaudio_call_5b69f071d4f5b35b0d61", "bgcs_inno_miniaudio_call_9b16e7f74aac6f0f9955", "bgcs_inno_miniaudio_call_b592bb6f89c2ca20458d", "bgcs_inno_miniaudio_call_775a5b12f16c26683553", "bgcs_inno_miniaudio_call_2b918c1f985a53c23f26", "bgcs_inno_miniaudio_call_05e14ca49fc83274396c", "bgcs_inno_miniaudio_call_f05a31f107b8b71c12e1", "bgcs_inno_miniaudio_call_a413368edcd269903fd2", "bgcs_inno_miniaudio_call_080d817cbb31febd127a", "bgcs_inno_miniaudio_call_f7d1a698dca5d281ede7", "bgcs_inno_miniaudio_call_596285567c30f89fa134", "bgcs_inno_miniaudio_call_25fe2da6c929275044be", "bgcs_inno_miniaudio_call_4798485e8e29b2bac9ac", "bgcs_inno_miniaudio_call_57a7eee07f982c4e130c", "bgcs_inno_miniaudio_call_c1c751cb8ba2bc232700", "bgcs_inno_miniaudio_call_70c9c1763e6500d57de1", "bgcs_inno_miniaudio_call_0d8e35381167c13e0cf1", "bgcs_inno_miniaudio_call_017a5177f1605247922b", "bgcs_inno_miniaudio_call_fb57d4bb8a1b3579b983", "bgcs_inno_miniaudio_call_67fafcbe3a6bfd61b414", "bgcs_inno_miniaudio_call_97237c8202eadfa6ff3c", "bgcs_inno_miniaudio_call_0800e173513f3e54749a", "bgcs_inno_miniaudio_call_ff5d714f8d3be373cc94", "bgcs_inno_miniaudio_call_ea30a736baa025687572", "bgcs_inno_miniaudio_call_2b5b8b7e82376a1bb3e6", "bgcs_inno_miniaudio_call_1f7f76610f0377a26a66", "bgcs_inno_miniaudio_call_59711bbf1ebf0c64cf7d", "bgcs_inno_miniaudio_call_c392da7642e0b37dae8f", "bgcs_inno_miniaudio_call_9ff9fd6434cba3400cdc", "bgcs_inno_miniaudio_call_5e0468850b7f0c5dc37e", "bgcs_inno_miniaudio_call_f7067f48f21020b311d1", "bgcs_inno_miniaudio_call_d4100a00c87af0673830", "bgcs_inno_miniaudio_call_ab0005a4cdeb2a09b180", "bgcs_inno_miniaudio_call_e801ac245176e1646b4f", "bgcs_inno_miniaudio_call_92e43676542ab7bba2cd", "bgcs_inno_miniaudio_call_aff53cb09e3d9e19a2b9", "bgcs_inno_miniaudio_call_c4c381b60e58368572af", "bgcs_inno_miniaudio_call_cb0f422b20541b66c0d2", "bgcs_inno_miniaudio_call_cae7ae1923f7c56f4f10", "bgcs_inno_miniaudio_call_96b71aa5487e0f5d256d", "bgcs_inno_miniaudio_call_a940883250a6401c84f3", "bgcs_inno_miniaudio_call_fbbf10b1d797649e38cb", "bgcs_inno_miniaudio_call_1ce87344286997b52ba2", "bgcs_inno_miniaudio_call_0cb6a19b186d419158f4", "bgcs_inno_miniaudio_call_37c29f43d6ca90e6c517", "bgcs_inno_miniaudio_call_d6d9628a5db215ff1370", "bgcs_inno_miniaudio_call_0fbfeea6cb6abd503354", "bgcs_inno_miniaudio_call_0b79db7b5858626c62b6", "bgcs_inno_miniaudio_call_0949ff3bdea6080d01c8", "bgcs_inno_miniaudio_call_2951360a998759a882de", "bgcs_inno_miniaudio_call_7a4f3d9b82d7b1508d27", "bgcs_inno_miniaudio_call_640fcf2dff25506f64e2", "bgcs_inno_miniaudio_call_3d044820971e3cc8cfde", "bgcs_inno_miniaudio_call_5b53220cc2473b638564", "bgcs_inno_miniaudio_call_21858fae71de9e27b338", "bgcs_inno_miniaudio_call_70c12b67854751b51d7a", "bgcs_inno_miniaudio_call_c6a6db61574e0bc76f0a", "bgcs_inno_miniaudio_call_dc3947cd0fbfe29e9f91", "bgcs_inno_miniaudio_call_86b0bc1aeaf46a0ecd68", "bgcs_inno_miniaudio_call_11394417cafc8663ae3f", "bgcs_inno_miniaudio_call_ec788e6518b8ce1ad560", "bgcs_inno_miniaudio_call_bcf40f40a51d17d8054f", "bgcs_inno_miniaudio_call_a953dcb9158141a6dc9b", "bgcs_inno_miniaudio_call_1c827174897a6da5a009", "bgcs_inno_miniaudio_call_656a5043d82fa56ad645", "bgcs_inno_miniaudio_call_a9daf4b39207b6b44fba", "bgcs_inno_miniaudio_call_f8a7ab155915fa62203c", "bgcs_inno_miniaudio_call_11351b042690dba86707", "bgcs_inno_miniaudio_call_d04e7f39a636bb442e6c", "bgcs_inno_miniaudio_call_42b4559f5b0ea6bdb77d", "bgcs_inno_miniaudio_call_eb3708851db7e14cd36d", "bgcs_inno_miniaudio_call_c65a606964336327cca8", "bgcs_inno_miniaudio_call_4e6509ba637a7fd17dcb", "bgcs_inno_miniaudio_call_8bc9bcd049b3b7776a86", "bgcs_inno_miniaudio_call_9d4a86b1fe73d20da31d", "bgcs_inno_miniaudio_call_08f869569962853d15a5", "bgcs_inno_miniaudio_call_b17d56ebacbe732e27db", "bgcs_inno_miniaudio_call_4ed5da01c3ae7fc0c20c", "bgcs_inno_miniaudio_call_b863dbff195d7d6e31f5", "bgcs_inno_miniaudio_call_6cedefc69f4f4c2b23ef", "bgcs_inno_miniaudio_call_ed03bf7d2b4c26c68ea6", "bgcs_inno_miniaudio_call_15e99ee8982f55fa2764", "bgcs_inno_miniaudio_call_a46825598368a8e7a9de", "bgcs_inno_miniaudio_call_216640e5e2f617c30084", "bgcs_inno_miniaudio_call_cf392bfe9c968807e96f", "bgcs_inno_miniaudio_call_f66b94bab37b86fd24d2", "bgcs_inno_miniaudio_call_18711355ac2295711852", "bgcs_inno_miniaudio_call_0895481d1ece5b1d9a0e", "bgcs_inno_miniaudio_call_99b85d182a39500b8c93", "bgcs_inno_miniaudio_call_9d2809eb22631824e585", "bgcs_inno_miniaudio_call_8e56885340c1dcde04ad", "bgcs_inno_miniaudio_call_b393f6d62ebe99b85a20", "bgcs_inno_miniaudio_call_94bd57b0ca1a5a67e264", "bgcs_inno_miniaudio_call_bd7041e66df3cc49b283", "bgcs_inno_miniaudio_call_965ac60da4aa0c61d376", "bgcs_inno_miniaudio_call_b7d7a7aa68ad9de034e2", "bgcs_inno_miniaudio_call_4ed121430890000ccbc5", "bgcs_inno_miniaudio_call_24fa43257e17530f5c1e", "bgcs_inno_miniaudio_call_80cdff371aa58aaf53be", "bgcs_inno_miniaudio_call_c8b000ba13eb5d58e0e8", "bgcs_inno_miniaudio_call_7af2c726b9d0a355b4f8", "bgcs_inno_miniaudio_call_cd0c94c6da4b8280b144", "bgcs_inno_miniaudio_call_72ccb26c60fd0643d624", "bgcs_inno_miniaudio_call_4738b10d682f736d39f6", "bgcs_inno_miniaudio_call_b7c862826f2fda3e34e1", "bgcs_inno_miniaudio_call_556ca5dd3817707971e5", "bgcs_inno_miniaudio_call_d1d3b78b56e3012b56e2", "bgcs_inno_miniaudio_call_15a9dc4462470b41cdd7", "bgcs_inno_miniaudio_call_c7616ddedd691f761c24", "bgcs_inno_miniaudio_call_f5147c27400952341d4e", "bgcs_inno_miniaudio_call_862f07468ce1947cb418", "bgcs_inno_miniaudio_call_d35b7552018077ad66b2", "bgcs_inno_miniaudio_call_b00197296f8b9c13a74f", "bgcs_inno_miniaudio_call_fe94f47581f1bb29ca0b", "bgcs_inno_miniaudio_call_a876f46bbb486a0c9114", "bgcs_inno_miniaudio_call_f1a6b7eb50590a7049fd", "bgcs_inno_miniaudio_call_28c2f63edb44a7c61511", "bgcs_inno_miniaudio_call_3e5fc3b5fecec8a9c708", "bgcs_inno_miniaudio_call_f0c7c5cd3cf11fa96b57", "bgcs_inno_miniaudio_call_9577dbd362c32c3de0f0", "bgcs_inno_miniaudio_call_ab7d1d0060ffad69fbe0", "bgcs_inno_miniaudio_call_4f9f9e7445a12bdf135b", "bgcs_inno_miniaudio_call_f3625e5a604c36f57a11", "bgcs_inno_miniaudio_call_a3abcc2b4213a9782162", "bgcs_inno_miniaudio_call_281c8f3db98ffbbc7c93", "bgcs_inno_miniaudio_call_fe0308f741961fac2a2b", "bgcs_inno_miniaudio_call_d494c7c6c984bc498d4c", "bgcs_inno_miniaudio_call_890d75930e86abbcae80", "bgcs_inno_miniaudio_call_04ecbe43a45d9c705ae2", "bgcs_inno_miniaudio_call_f2ed6f1866dd01bbcee4", "bgcs_inno_miniaudio_call_fcb0335cf43b94ec9eae", "bgcs_inno_miniaudio_call_42d79b15a270a9e3e144", "bgcs_inno_miniaudio_call_2e64c348942289eaa334", "bgcs_inno_miniaudio_call_a1b7aea31d2dcf8071d0", "bgcs_inno_miniaudio_call_c79738c996806fc09649", "bgcs_inno_miniaudio_call_d161b2306736d6f45de4", "bgcs_inno_miniaudio_call_37696a794ae81ab1ed67", "bgcs_inno_miniaudio_call_e1f0d21435fab0152a45", "bgcs_inno_miniaudio_call_f844dc39149ef6545201", "bgcs_inno_miniaudio_call_77ed28046d43713027bf", "bgcs_inno_miniaudio_call_90f0542da83ce34b5ebf", "bgcs_inno_miniaudio_call_ac96ce720f6b6e0aea1a", "bgcs_inno_miniaudio_call_7f3635f045ede34e2438", "bgcs_inno_miniaudio_call_f08a68f8e427fd55e1f1", "bgcs_inno_miniaudio_call_df170d677c3af55c16a9", "bgcs_inno_miniaudio_call_3ad1cf0824dd64c87e01", "bgcs_inno_miniaudio_call_b5e050d711b5db5f6d2a", "bgcs_inno_miniaudio_call_4306c8ba2e0c186afb81", "bgcs_inno_miniaudio_call_9a2c1b5542c1bf92b0d9", "bgcs_inno_miniaudio_call_9193f811f0f58e0a35c5", "bgcs_inno_miniaudio_call_b5b4dd987d0597e6e176", "bgcs_inno_miniaudio_call_93c8785431638013955d", "bgcs_inno_miniaudio_call_8dbf533b3c214f599077", "bgcs_inno_miniaudio_call_de3df18a45cfa35383e8", "bgcs_inno_miniaudio_call_c10bde4b1cda79095436", "bgcs_inno_miniaudio_call_775807477a7c16c597f0", "bgcs_inno_miniaudio_call_db82ef99a4e20d9f55a8", "bgcs_inno_miniaudio_call_60c2a6aeebd9e2114d12", "bgcs_inno_miniaudio_call_58c8f714717f103cb8b6", "bgcs_inno_miniaudio_call_314ed7f4a8bdb4a9c278", "bgcs_inno_miniaudio_call_f5f992f08a729c77f02c", "bgcs_inno_miniaudio_call_8cbfd00dd71ec7515e9f", "bgcs_inno_miniaudio_call_3ce97c4c9796920d7f18", "bgcs_inno_miniaudio_call_9f29674764841cc71051", "bgcs_inno_miniaudio_call_da2a7346e49b678d7c49", "bgcs_inno_miniaudio_call_9494664ef630f7ee3c46", "bgcs_inno_miniaudio_call_3e98e1e9789196c92fd8", "bgcs_inno_miniaudio_call_1b60ee07f549d14fa85d", "bgcs_inno_miniaudio_call_a1c6eae71b490fd27a5d", "bgcs_inno_miniaudio_call_b5cb15f2bbc7200d9105", "bgcs_inno_miniaudio_call_c19e4e6325369ee36f80", "bgcs_inno_miniaudio_call_8a25c58874f22ffcf5c7", "bgcs_inno_miniaudio_call_8bbec65d61bdcfd17be7", "bgcs_inno_miniaudio_call_b681afca6188283b1b70", "bgcs_inno_miniaudio_call_4b9e14ec48d659726d97", "bgcs_inno_miniaudio_call_695869836032404b7e76", "bgcs_inno_miniaudio_call_0b8879ec4e7bb430cae5", "bgcs_inno_miniaudio_call_f43b59d481bc9d3c00be", "bgcs_inno_miniaudio_call_b13748e53f07ed141673", "bgcs_inno_miniaudio_call_b75945ecbf40ec4bd155", "bgcs_inno_miniaudio_call_8c271555360fd2f499ce", "bgcs_inno_miniaudio_call_b1bdf4acfbddc4914469", "bgcs_inno_miniaudio_call_0a781076449c0bbf40b2", "bgcs_inno_miniaudio_call_683f02e0432d6e4f2c63", "bgcs_inno_miniaudio_call_1e369255375b3ab4c269", "bgcs_inno_miniaudio_call_0ce0d2892d0a507fcd5b", "bgcs_inno_miniaudio_call_d12ceef313483f6d277a", "bgcs_inno_miniaudio_call_088e87dd71f6d9ca8131", "bgcs_inno_miniaudio_call_bcd54abfc2a12b639073", "bgcs_inno_miniaudio_call_c442a8a41e60f2255522", "bgcs_inno_miniaudio_call_6e5db75e523744f45a4c", "bgcs_inno_miniaudio_call_fc8e686d101bd598f2f4", "bgcs_inno_miniaudio_call_8960eb1cb2e7fbc7e3c1", "bgcs_inno_miniaudio_call_767318525e9e06c13c93", "bgcs_inno_miniaudio_call_5039aad4ddab35c471bb", "bgcs_inno_miniaudio_call_5518065eaf67b058fae1", "bgcs_inno_miniaudio_call_89273fa883076f059025", "bgcs_inno_miniaudio_call_56746fcf7ce81c3ca85a", "bgcs_inno_miniaudio_call_d2b24f31290e46a469fe", "bgcs_inno_miniaudio_call_fb10e595e84a6aae563c", "bgcs_inno_miniaudio_call_2746580892c8663dc7ce", "bgcs_inno_miniaudio_call_363ba01c2e2268b1ab58", "bgcs_inno_miniaudio_call_a9a5102dc6a037defab0", "bgcs_inno_miniaudio_call_6fab7139e7894aac2779", "bgcs_inno_miniaudio_call_ca5724b15c719f0563d9", "bgcs_inno_miniaudio_call_430b7912719b340109f8", "bgcs_inno_miniaudio_call_a51f71486e32a1986ebc", "bgcs_inno_miniaudio_call_e290faba8b03282ba5b9", "bgcs_inno_miniaudio_call_8a80a961cb3b55816602", "bgcs_inno_miniaudio_call_088c3b50b0735613c06c" });
                 m_function0 = (delegate* unmanaged[Cdecl]<MaSound*, uint> )symbols["bgcs_inno_miniaudio_call_1827dde0bcb4948f2072"];
@@ -16701,7 +16701,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_99dbfc7a3f4bda9d
+    internal unsafe struct __BgcsAlignment_7c4dab29ef8b6ba6
     {
         public byte prefix;
         public MaAllocationCallbacks value;
@@ -16722,7 +16722,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_9ac48228a53c1778
+    internal unsafe struct __BgcsAlignment_4108a384c84ecc24
     {
         public byte prefix;
         public MaAsyncNotificationCallbacks value;
@@ -16745,7 +16745,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_44d928b7cef995a7
+    internal unsafe struct __BgcsAlignment_6b2d6d678c8680c4
     {
         public byte prefix;
         public MaAsyncNotificationEvent value;
@@ -16768,7 +16768,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_0c633821afa69b69
+    internal unsafe struct __BgcsAlignment_5180db4c36c88319
     {
         public byte prefix;
         public MaAsyncNotificationPoll value;
@@ -16789,7 +16789,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_9f1325244e1afdac
+    internal unsafe struct __BgcsAlignment_c6625981d7f86420
     {
         public byte prefix;
         public MaAtomicBool32 value;
@@ -16810,7 +16810,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_39f6cdd03424d39d
+    internal unsafe struct __BgcsAlignment_4ac9b9fc54a4a1df
     {
         public byte prefix;
         public MaAtomicDeviceState value;
@@ -16831,7 +16831,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_96f2733ed31d0292
+    internal unsafe struct __BgcsAlignment_ed9564120240c537
     {
         public byte prefix;
         public MaAtomicFloat value;
@@ -16852,7 +16852,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_a474016b6eb38c1d
+    internal unsafe struct __BgcsAlignment_828ce351ed4f845f
     {
         public byte prefix;
         public MaAtomicInt32 value;
@@ -16873,7 +16873,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_6e6f7e85f2475f35
+    internal unsafe struct __BgcsAlignment_903758bf5a2ef6db
     {
         public byte prefix;
         public MaAtomicUint32 value;
@@ -16894,7 +16894,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_392f24e5c1df841f
+    internal unsafe struct __BgcsAlignment_c181c97f6294d6db
     {
         public byte prefix;
         public MaAtomicUint64 value;
@@ -16917,7 +16917,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_603e70c21a2567a1
+    internal unsafe struct __BgcsAlignment_3fcdc007657e3a4f
     {
         public byte prefix;
         public MaAtomicVec3f value;
@@ -16958,7 +16958,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_fece1fe532e2ec11
+    internal unsafe struct __BgcsAlignment_589bc0cb8cf31c6e
     {
         public byte prefix;
         public MaAudioBuffer value;
@@ -16989,7 +16989,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_1e9c55dd2d9428a9
+    internal unsafe struct __BgcsAlignment_2cdf6aacab1354e5
     {
         public byte prefix;
         public MaAudioBufferConfig value;
@@ -17022,7 +17022,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_aea29208cc018119
+    internal unsafe struct __BgcsAlignment_25fbbc059b77c93a
     {
         public byte prefix;
         public MaAudioBufferRef value;
@@ -17133,7 +17133,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_3100330be706f7aa
+    internal unsafe struct __BgcsAlignment_92c726c8d7748638
     {
         public byte prefix;
         public MaBiquad value;
@@ -17156,7 +17156,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_b53415a10dcc111f
+    internal unsafe struct __BgcsAlignment_496eda97a1fea053
     {
         public byte prefix;
         public MaBiquadCoefficient value;
@@ -17191,7 +17191,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_3221ebb56ed2bbc7
+    internal unsafe struct __BgcsAlignment_a40aa04a5162e583
     {
         public byte prefix;
         public MaBiquadConfig value;
@@ -17214,7 +17214,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_79d0979e05a267b3
+    internal unsafe struct __BgcsAlignment_1d7f50786223ade6
     {
         public byte prefix;
         public MaBiquadNode value;
@@ -17237,7 +17237,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_7455dfe755af50eb
+    internal unsafe struct __BgcsAlignment_41bd99a09eb3a810
     {
         public byte prefix;
         public MaBiquadNodeConfig value;
@@ -17268,7 +17268,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_268010817d20364c
+    internal unsafe struct __BgcsAlignment_8239c50169e1140a
     {
         public byte prefix;
         public MaBpf value;
@@ -17289,7 +17289,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_f0524f38aa3674f7
+    internal unsafe struct __BgcsAlignment_9b9575a12716090b
     {
         public byte prefix;
         public MaBpf2 value;
@@ -17318,7 +17318,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_e76279aabc911fa2
+    internal unsafe struct __BgcsAlignment_c4b888ad842885f4
     {
         public byte prefix;
         public MaBpf2Config value;
@@ -17347,7 +17347,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_802e487ac9f12eb0
+    internal unsafe struct __BgcsAlignment_b255a7ee5c01e606
     {
         public byte prefix;
         public MaBpfConfig value;
@@ -17370,7 +17370,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_00c0e154df8e9e08
+    internal unsafe struct __BgcsAlignment_675236bd2e1b15dd
     {
         public byte prefix;
         public MaBpfNode value;
@@ -17393,7 +17393,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_d129c39a243cbf2c
+    internal unsafe struct __BgcsAlignment_3af48102f8ab18dd
     {
         public byte prefix;
         public MaBpfNodeConfig value;
@@ -17450,7 +17450,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_3fa0a5eed0b6c2fb
+    internal unsafe struct __BgcsAlignment_d359f249dbef2ebe
     {
         public byte prefix;
         public MaChannelConverter value;
@@ -17473,7 +17473,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_b5ae4e9b91cba2f3
+    internal unsafe struct __BgcsAlignment_2d8ea77a777b400a
     {
         public byte prefix;
         public MaChannelConverterAnonymousUnion7025e92e25c444e2 value;
@@ -17508,7 +17508,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_416f95cafb799744
+    internal unsafe struct __BgcsAlignment_ed03d972b8a7677f
     {
         public byte prefix;
         public MaChannelConverterConfig value;
@@ -17971,7 +17971,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_e7fee451c874c056
+    internal unsafe struct __BgcsAlignment_bdba4948b21d39b0
     {
         public byte prefix;
         public MaContextCommandWasapi value;
@@ -17994,7 +17994,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_1e91ef748665ff15
+    internal unsafe struct __BgcsAlignment_32a1f2eead3c6ea5
     {
         public byte prefix;
         public MaContextCommandWasapiAnonymousStructA42a8003a53c4cf6 value;
@@ -18015,7 +18015,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_23f8dba53096ebbe
+    internal unsafe struct __BgcsAlignment_707522452ac71b29
     {
         public byte prefix;
         public MaContextCommandWasapiAnonymousStructB15f1a432c8f1340 value;
@@ -18042,7 +18042,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_675dae1f06d52f0c
+    internal unsafe struct __BgcsAlignment_598a9197747561a1
     {
         public byte prefix;
         public MaContextCommandWasapiAnonymousStructD896deee76583455 value;
@@ -18067,7 +18067,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_5f31789f6cf0278b
+    internal unsafe struct __BgcsAlignment_108fa331aceab1fe
     {
         public byte prefix;
         public MaContextCommandWasapiAnonymousUnionE0cefef571787ced value;
@@ -18278,7 +18278,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_63d048d786a3e188
+    internal unsafe struct __BgcsAlignment_bcc05fcad1fb6b17
     {
         public byte prefix;
         public MaDataConverter value;
@@ -18325,7 +18325,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_f923d60fdcbc4b69
+    internal unsafe struct __BgcsAlignment_0a069854e90b7dee
     {
         public byte prefix;
         public MaDataConverterConfig value;
@@ -18378,7 +18378,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_5b53fa00d5db9c76
+    internal unsafe struct __BgcsAlignment_b542429712a7c92f
     {
         public byte prefix;
         public MaDataSourceBase value;
@@ -18399,7 +18399,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_9dc8465934113633
+    internal unsafe struct __BgcsAlignment_df2d808fe29712db
     {
         public byte prefix;
         public MaDataSourceConfig value;
@@ -18431,7 +18431,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_8ac8c89bb342a502
+    internal unsafe struct __BgcsAlignment_fd275edb5a5922d4
     {
         public byte prefix;
         public MaDataSourceNode value;
@@ -18454,7 +18454,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_cc87fa5c728f1a81
+    internal unsafe struct __BgcsAlignment_b7d07a1e910ded22
     {
         public byte prefix;
         public MaDataSourceNodeConfig value;
@@ -18487,7 +18487,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_58761f317f0288aa
+    internal unsafe struct __BgcsAlignment_be2630f52257cb26
     {
         public byte prefix;
         public MaDataSourceVtable value;
@@ -18660,7 +18660,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_d1e2753bd4e34c97
+    internal unsafe struct __BgcsAlignment_1729b762e17203f7
     {
         public byte prefix;
         public MaDecoderConfig value;
@@ -18710,7 +18710,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_70f73f9fca016e9b
+    internal unsafe struct __BgcsAlignment_143f0613f03231f4
     {
         public byte prefix;
         public MaDecodingBackendConfig value;
@@ -18739,7 +18739,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_45884d4273c673bc
+    internal unsafe struct __BgcsAlignment_bf8e8d97a2f5c84f
     {
         public byte prefix;
         public MaDecodingBackendVtable value;
@@ -18762,7 +18762,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_b53b00d4d243ceae
+    internal unsafe struct __BgcsAlignment_383b6d6194c1cf2b
     {
         public byte prefix;
         public MaDefaultVfs value;
@@ -18789,7 +18789,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_75d9b87b8e4ab298
+    internal unsafe struct __BgcsAlignment_0fe686612cf387a3
     {
         public byte prefix;
         public MaDelay value;
@@ -18822,7 +18822,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_2014414c8e8929c5
+    internal unsafe struct __BgcsAlignment_f966d2509bad97b9
     {
         public byte prefix;
         public MaDelayConfig value;
@@ -18845,7 +18845,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_32a415b58dc139a4
+    internal unsafe struct __BgcsAlignment_2325754eb86228d6
     {
         public byte prefix;
         public MaDelayNode value;
@@ -18868,7 +18868,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_82f642e6baa1420a
+    internal unsafe struct __BgcsAlignment_f5387d9e62e018bc
     {
         public byte prefix;
         public MaDelayNodeConfig value;
@@ -19718,7 +19718,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_3febef8274af7aaa
+    internal unsafe struct __BgcsAlignment_4ab1eee483b17b3a
     {
         public byte prefix;
         public MaDeviceDescriptor value;
@@ -19767,7 +19767,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_587dacd8f308206c
+    internal unsafe struct __BgcsAlignment_c3e0c55ab9feb85b
     {
         public byte prefix;
         public MaDeviceId value;
@@ -19792,7 +19792,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_f1cede11988819a1
+    internal unsafe struct __BgcsAlignment_e11e06d3f32db977
     {
         public byte prefix;
         public MaDeviceIdAnonymousUnion7fd2690c42fc00cd value;
@@ -19821,7 +19821,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_14b2f089a99afcda
+    internal unsafe struct __BgcsAlignment_1ad867f33aeaaa96
     {
         public byte prefix;
         public MaDeviceInfo value;
@@ -19848,7 +19848,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_5322690c3a6bfa8f
+    internal unsafe struct __BgcsAlignment_328afc7f90056c05
     {
         public byte prefix;
         public MaDeviceInfoAnonymousStruct0f23fff9bc66642b value;
@@ -19873,7 +19873,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_a80eb36d5c9054bc
+    internal unsafe struct __BgcsAlignment_3f6d00fb0d8bcbed
     {
         public byte prefix;
         public MaDeviceJobThread value;
@@ -19898,7 +19898,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_c41e59c81aacf520
+    internal unsafe struct __BgcsAlignment_955717461e8a8f5a
     {
         public byte prefix;
         public MaDeviceJobThreadConfig value;
@@ -19923,7 +19923,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_27953033c6b59e94
+    internal unsafe struct __BgcsAlignment_be9a757d8cc2cbeb
     {
         public byte prefix;
         public MaDeviceNotification value;
@@ -19944,7 +19944,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_997b6ea2d024a6b3
+    internal unsafe struct __BgcsAlignment_c2cfad5735bf31a0
     {
         public byte prefix;
         public MaDeviceNotificationAnonymousStruct25bec240b919447d value;
@@ -19965,7 +19965,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_93962ae11e642bcb
+    internal unsafe struct __BgcsAlignment_df9480788edc8586
     {
         public byte prefix;
         public MaDeviceNotificationAnonymousStruct756f706356a0ac65 value;
@@ -19986,7 +19986,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_1ff087b74d144ec0
+    internal unsafe struct __BgcsAlignment_0885f51dc6e23e20
     {
         public byte prefix;
         public MaDeviceNotificationAnonymousStruct83e9486864a83a17 value;
@@ -20007,7 +20007,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_481f3269fe2f7750
+    internal unsafe struct __BgcsAlignment_150113ad5d26a72a
     {
         public byte prefix;
         public MaDeviceNotificationAnonymousStructCf0eebc2b8eb1a40 value;
@@ -20034,7 +20034,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_66f41a09c57cf093
+    internal unsafe struct __BgcsAlignment_60593b9bf4af54cf
     {
         public byte prefix;
         public MaDeviceNotificationAnonymousUnionB52679bbf55e7547 value;
@@ -20122,7 +20122,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_9ea6e54686f999fe
+    internal unsafe struct __BgcsAlignment_9bef600c3c786527
     {
         public byte prefix;
         public MaDuplexRb value;
@@ -20232,7 +20232,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_776f4d9529090a0d
+    internal unsafe struct __BgcsAlignment_9dcf1aca22ab0559
     {
         public byte prefix;
         public MaEncoderConfig value;
@@ -20418,7 +20418,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_3865b4a6c90fcb0e
+    internal unsafe struct __BgcsAlignment_1ce7f3dbcfa188c4
     {
         public byte prefix;
         public MaEngineConfig value;
@@ -20477,7 +20477,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_a69d51862b94ab68
+    internal unsafe struct __BgcsAlignment_9cec7d011fa8f2ba
     {
         public byte prefix;
         public MaEngineNode value;
@@ -20504,7 +20504,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_5e0ffecaa44cf0e6
+    internal unsafe struct __BgcsAlignment_5ac2ef5ffae12886
     {
         public byte prefix;
         public MaEngineNodeAnonymousStruct1275eef82a5471ac value;
@@ -20545,7 +20545,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_daecbe42dc91823a
+    internal unsafe struct __BgcsAlignment_ed3a33a6b4a6df2a
     {
         public byte prefix;
         public MaEngineNodeConfig value;
@@ -20604,7 +20604,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_a145d94eae233321
+    internal unsafe struct __BgcsAlignment_01fdef28acc8e4b1
     {
         public byte prefix;
         public MaFader value;
@@ -20629,7 +20629,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_968791e9f53b7d9b
+    internal unsafe struct __BgcsAlignment_52329a048b1ed33c
     {
         public byte prefix;
         public MaFaderConfig value;
@@ -20652,7 +20652,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_11b23ce913159696
+    internal unsafe struct __BgcsAlignment_fb3f2a06cac2ef29
     {
         public byte prefix;
         public MaFence value;
@@ -20673,7 +20673,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_417e7fca351e68b5
+    internal unsafe struct __BgcsAlignment_ff982b4961f912e5
     {
         public byte prefix;
         public MaFileInfo value;
@@ -20723,7 +20723,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_dc650c9d2f703255
+    internal unsafe struct __BgcsAlignment_4e2a05a8946b2c54
     {
         public byte prefix;
         public MaGainer value;
@@ -20746,7 +20746,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_afafa6649df6d62f
+    internal unsafe struct __BgcsAlignment_7fd0997a1358a423
     {
         public byte prefix;
         public MaGainerConfig value;
@@ -20779,7 +20779,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_2b87fbe5ad7495c1
+    internal unsafe struct __BgcsAlignment_8f2f2574cf9409a4
     {
         public byte prefix;
         public MaHishelf2 value;
@@ -20810,7 +20810,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_14489d41f433218d
+    internal unsafe struct __BgcsAlignment_fb946753cc4599ee
     {
         public byte prefix;
         public MaHishelf2Config value;
@@ -20833,7 +20833,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_574a1d81bfd4b87d
+    internal unsafe struct __BgcsAlignment_ec714de947690e72
     {
         public byte prefix;
         public MaHishelfNode value;
@@ -20856,7 +20856,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_16349850bf22a1f0
+    internal unsafe struct __BgcsAlignment_842cfcae19521f40
     {
         public byte prefix;
         public MaHishelfNodeConfig value;
@@ -20893,7 +20893,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_da637bc942b3f80f
+    internal unsafe struct __BgcsAlignment_a973b69aef81e25a
     {
         public byte prefix;
         public MaHpf value;
@@ -20924,7 +20924,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_092b6d857f152fc9
+    internal unsafe struct __BgcsAlignment_968e983abf70dbb1
     {
         public byte prefix;
         public MaHpf1 value;
@@ -20953,7 +20953,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_777ed5309cf271e4
+    internal unsafe struct __BgcsAlignment_8fcc620c3c55accd
     {
         public byte prefix;
         public MaHpf1Config value;
@@ -20974,7 +20974,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_9322b0f90fe09d75
+    internal unsafe struct __BgcsAlignment_736719a4506003c1
     {
         public byte prefix;
         public MaHpf2 value;
@@ -21003,7 +21003,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_6b26ee75db1ae04d
+    internal unsafe struct __BgcsAlignment_f4cb644f8507e961
     {
         public byte prefix;
         public MaHpfConfig value;
@@ -21026,7 +21026,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_04a210b1ab8c1678
+    internal unsafe struct __BgcsAlignment_6a1af63b17305401
     {
         public byte prefix;
         public MaHpfNode value;
@@ -21049,7 +21049,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_67561099f005e706
+    internal unsafe struct __BgcsAlignment_5504835534b69a9d
     {
         public byte prefix;
         public MaHpfNodeConfig value;
@@ -21074,7 +21074,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_93aef146f7388bd2
+    internal unsafe struct __BgcsAlignment_b4fb9348e0cd7f5e
     {
         public byte prefix;
         public MaIMMNotificationClient value;
@@ -21643,7 +21643,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_7e7ec4d08f431c36
+    internal unsafe struct __BgcsAlignment_b285b503c5bfbff3
     {
         public byte prefix;
         public MaJobQueue value;
@@ -21666,7 +21666,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_46320d78998f9c60
+    internal unsafe struct __BgcsAlignment_ff352ca5f1878c40
     {
         public byte prefix;
         public MaJobQueueConfig value;
@@ -21721,7 +21721,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_3380390c4fd9c4cd
+    internal unsafe struct __BgcsAlignment_063ce8354b8e3c0e
     {
         public byte prefix;
         public MaLcg value;
@@ -21760,7 +21760,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_2d3a13635d870042
+    internal unsafe struct __BgcsAlignment_c5377995f55e333e
     {
         public byte prefix;
         public MaLinearResampler value;
@@ -21783,7 +21783,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_4293dbdabd88a043
+    internal unsafe struct __BgcsAlignment_ae6010a5bdc1b4d4
     {
         public byte prefix;
         public MaLinearResamplerAnonymousUnion04e50dfd327cc4be value;
@@ -21806,7 +21806,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_16746e541335407d
+    internal unsafe struct __BgcsAlignment_3ed16c2437662fe0
     {
         public byte prefix;
         public MaLinearResamplerAnonymousUnion6e85c913901ac588 value;
@@ -21837,7 +21837,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_53960112397309c6
+    internal unsafe struct __BgcsAlignment_b9bdb4ddee392031
     {
         public byte prefix;
         public MaLinearResamplerConfig value;
@@ -21864,7 +21864,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_fd19826df9a14af9
+    internal unsafe struct __BgcsAlignment_7902eb55cc90e212
     {
         public byte prefix;
         public MaLog value;
@@ -21887,7 +21887,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_69bdfc545e6335b5
+    internal unsafe struct __BgcsAlignment_9b9e57f6a7d40979
     {
         public byte prefix;
         public MaLogCallback value;
@@ -21931,7 +21931,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_955f5df022d2ef2e
+    internal unsafe struct __BgcsAlignment_3807f1dad0fe33a6
     {
         public byte prefix;
         public MaLoshelf2 value;
@@ -21962,7 +21962,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_76b70c856f45dd8f
+    internal unsafe struct __BgcsAlignment_61c1506870e1dfc4
     {
         public byte prefix;
         public MaLoshelf2Config value;
@@ -21985,7 +21985,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_a17de881ad65f236
+    internal unsafe struct __BgcsAlignment_fb0d2f3b67dab26a
     {
         public byte prefix;
         public MaLoshelfNode value;
@@ -22008,7 +22008,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_1654c6b92517324c
+    internal unsafe struct __BgcsAlignment_833457214b7eed14
     {
         public byte prefix;
         public MaLoshelfNodeConfig value;
@@ -22045,7 +22045,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_80fc1a104d5f0840
+    internal unsafe struct __BgcsAlignment_ce01285fdbcfd3b8
     {
         public byte prefix;
         public MaLpf value;
@@ -22076,7 +22076,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_da4af8400a58f0d4
+    internal unsafe struct __BgcsAlignment_1ce47d17aee73426
     {
         public byte prefix;
         public MaLpf1 value;
@@ -22105,7 +22105,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_8356cd94287f5a4d
+    internal unsafe struct __BgcsAlignment_9049de3401af759f
     {
         public byte prefix;
         public MaLpf1Config value;
@@ -22126,7 +22126,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_aec5d0655a59b008
+    internal unsafe struct __BgcsAlignment_bf96c6697281754d
     {
         public byte prefix;
         public MaLpf2 value;
@@ -22155,7 +22155,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_9010b2806024225e
+    internal unsafe struct __BgcsAlignment_8451673f5bdb824b
     {
         public byte prefix;
         public MaLpfConfig value;
@@ -22178,7 +22178,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_a527d53bd05d2483
+    internal unsafe struct __BgcsAlignment_5d2f7ff59abcd5da
     {
         public byte prefix;
         public MaLpfNode value;
@@ -22201,7 +22201,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_5fdf0c1081543f8d
+    internal unsafe struct __BgcsAlignment_0d8dba7c963c4cac
     {
         public byte prefix;
         public MaLpfNodeConfig value;
@@ -22301,7 +22301,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_ae4753ee5c21a18c
+    internal unsafe struct __BgcsAlignment_809a57c717cfd386
     {
         public byte prefix;
         public MaNodeConfig value;
@@ -22374,7 +22374,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_e5cae25bc8aba7ea
+    internal unsafe struct __BgcsAlignment_8a98fc0cb0907fd9
     {
         public byte prefix;
         public MaNodeGraphConfig value;
@@ -22485,7 +22485,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_e2954367328c053d
+    internal unsafe struct __BgcsAlignment_206589d9d6a16852
     {
         public byte prefix;
         public MaNodeVtable value;
@@ -22516,7 +22516,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_5a35d758b641ceb3
+    internal unsafe struct __BgcsAlignment_09747b911ef30691
     {
         public byte prefix;
         public MaNoise value;
@@ -22537,7 +22537,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_1de186f0168063fd
+    internal unsafe struct __BgcsAlignment_634d368c075db17b
     {
         public byte prefix;
         public MaNoiseAnonymousStruct150b5b8daffaf7dd value;
@@ -22562,7 +22562,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_f63d52879495769d
+    internal unsafe struct __BgcsAlignment_88b1bedd8f14c59d
     {
         public byte prefix;
         public MaNoiseAnonymousStruct829bbf4dea8396a8 value;
@@ -22585,7 +22585,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_2629bbf266b51524
+    internal unsafe struct __BgcsAlignment_683e65f5f462c89f
     {
         public byte prefix;
         public MaNoiseAnonymousUnionDdcc25dc73447b3c value;
@@ -22616,7 +22616,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_12e2ce0fec81093e
+    internal unsafe struct __BgcsAlignment_7cb2461ef0fc7fc8
     {
         public byte prefix;
         public MaNoiseConfig value;
@@ -22650,7 +22650,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_9174dc900840d80b
+    internal unsafe struct __BgcsAlignment_21f9860dfd5c43c9
     {
         public byte prefix;
         public MaNotch2 value;
@@ -22679,7 +22679,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_2e8aa99818931b75
+    internal unsafe struct __BgcsAlignment_73d2689935f59a9a
     {
         public byte prefix;
         public MaNotch2Config value;
@@ -22702,7 +22702,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_773df691d56deffd
+    internal unsafe struct __BgcsAlignment_d1d2226fd4327400
     {
         public byte prefix;
         public MaNotchNode value;
@@ -22725,7 +22725,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_b7d7be5e9a46207b
+    internal unsafe struct __BgcsAlignment_92dcb1e698f4eef9
     {
         public byte prefix;
         public MaNotchNodeConfig value;
@@ -22799,7 +22799,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_d5e0cad2a454e8c2
+    internal unsafe struct __BgcsAlignment_8cdad1310c3d191e
     {
         public byte prefix;
         public MaPagedAudioBuffer value;
@@ -22820,7 +22820,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_7e6f2b6d6cebbd7b
+    internal unsafe struct __BgcsAlignment_939857c79b8d53b8
     {
         public byte prefix;
         public MaPagedAudioBufferConfig value;
@@ -22847,7 +22847,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_8438271b827ead3c
+    internal unsafe struct __BgcsAlignment_ef1e661f6290d52b
     {
         public byte prefix;
         public MaPagedAudioBufferData value;
@@ -22911,7 +22911,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_2faaa6fb7d6996aa
+    internal unsafe struct __BgcsAlignment_c03c92e032db7cd9
     {
         public byte prefix;
         public MaPanner value;
@@ -22938,7 +22938,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_74465ab3f1d3da1d
+    internal unsafe struct __BgcsAlignment_e1b313736dbb2571
     {
         public byte prefix;
         public MaPannerConfig value;
@@ -22967,7 +22967,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_06edc972379e9792
+    internal unsafe struct __BgcsAlignment_b5a626a58869724c
     {
         public byte prefix;
         public MaPcmRb value;
@@ -22988,7 +22988,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_cbc0085c71719218
+    internal unsafe struct __BgcsAlignment_b7aa1c979d18cea0
     {
         public byte prefix;
         public MaPeak2 value;
@@ -23019,7 +23019,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_d60de72a55b7ae5a
+    internal unsafe struct __BgcsAlignment_e647bf5a005df0fc
     {
         public byte prefix;
         public MaPeak2Config value;
@@ -23042,7 +23042,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_4ede6514c1a47dd0
+    internal unsafe struct __BgcsAlignment_edec03fd2bdc2bf1
     {
         public byte prefix;
         public MaPeakNode value;
@@ -23065,7 +23065,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_4830830971bd5585
+    internal unsafe struct __BgcsAlignment_55f1f76eebee3082
     {
         public byte prefix;
         public MaPeakNodeConfig value;
@@ -23112,7 +23112,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_dbc77ee99a57a5e8
+    internal unsafe struct __BgcsAlignment_59716d2801dbe23f
     {
         public byte prefix;
         public MaPulsewave value;
@@ -23143,7 +23143,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_f6f8e5b226f6b7eb
+    internal unsafe struct __BgcsAlignment_7b85a03c39cca50a
     {
         public byte prefix;
         public MaPulsewaveConfig value;
@@ -23180,7 +23180,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_4e19743357f9014d
+    internal unsafe struct __BgcsAlignment_05d300858716c912
     {
         public byte prefix;
         public MaRb value;
@@ -23240,7 +23240,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_42c786d67365fa11
+    internal unsafe struct __BgcsAlignment_84431954b936f17a
     {
         public byte prefix;
         public MaResampler value;
@@ -23261,7 +23261,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_f834cd5841fc7b35
+    internal unsafe struct __BgcsAlignment_eeec9b24e999fc95
     {
         public byte prefix;
         public MaResamplerAnonymousUnion67c9af061924ab62 value;
@@ -23356,7 +23356,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_d04cf25df07ef60e
+    internal unsafe struct __BgcsAlignment_7b7cf139a51730c9
     {
         public byte prefix;
         public MaResamplingBackendVtable value;
@@ -23436,7 +23436,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_dd2f3ced9a7391ac
+    internal unsafe struct __BgcsAlignment_58c26db9ed95fefc
     {
         public byte prefix;
         public MaResourceManagerConfig value;
@@ -23632,7 +23632,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_fd07dcc0366d172d
+    internal unsafe struct __BgcsAlignment_a1e5b4b548640f86
     {
         public byte prefix;
         public MaResourceManagerDataSourceConfig value;
@@ -23726,7 +23726,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_703c17494b3fd294
+    internal unsafe struct __BgcsAlignment_b134219bc0c732bb
     {
         public byte prefix;
         public MaResourceManagerDataSupply value;
@@ -23749,7 +23749,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_448f23b042d58ed2
+    internal unsafe struct __BgcsAlignment_03332d8d116003b2
     {
         public byte prefix;
         public MaResourceManagerDataSupplyAnonymousStruct86905fc328b96f21 value;
@@ -23774,7 +23774,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_8bcd2c69e4f48570
+    internal unsafe struct __BgcsAlignment_48bbdf2ba84b26c8
     {
         public byte prefix;
         public MaResourceManagerDataSupplyAnonymousStructB49f272bd36a3013 value;
@@ -23805,7 +23805,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_aa49cbab62b4673c
+    internal unsafe struct __BgcsAlignment_e4c72306525dd9fd
     {
         public byte prefix;
         public MaResourceManagerDataSupplyAnonymousStructE4f5f54148be4e4d value;
@@ -23830,7 +23830,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_804005d85f19d1ed
+    internal unsafe struct __BgcsAlignment_3fceede09f5eef6a
     {
         public byte prefix;
         public MaResourceManagerDataSupplyAnonymousUnion7b7c4bd0caacafb5 value;
@@ -23879,7 +23879,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_bc4ab444e4069c21
+    internal unsafe struct __BgcsAlignment_300d923dc01111e2
     {
         public byte prefix;
         public MaResourceManagerPipelineNotifications value;
@@ -23902,7 +23902,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_17ab32e7067fb193
+    internal unsafe struct __BgcsAlignment_029db4b3180b8a9d
     {
         public byte prefix;
         public MaResourceManagerPipelineStageNotification value;
@@ -24048,7 +24048,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_e47cdd0c24760814
+    internal unsafe struct __BgcsAlignment_220d86f9a170f099
     {
         public byte prefix;
         public MaSlotAllocator value;
@@ -24069,7 +24069,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_bcf6b52d7ba33c68
+    internal unsafe struct __BgcsAlignment_3580d13f8d8271c5
     {
         public byte prefix;
         public MaSlotAllocatorConfig value;
@@ -24090,7 +24090,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_ce105e470bf4f616
+    internal unsafe struct __BgcsAlignment_412dfc3750511fb4
     {
         public byte prefix;
         public MaSlotAllocatorGroup value;
@@ -24192,7 +24192,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_5fa8a48920ec1796
+    internal unsafe struct __BgcsAlignment_9a39b2442b3ae3d6
     {
         public byte prefix;
         public MaSoundConfig value;
@@ -24316,7 +24316,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_fe83e005e893a555
+    internal unsafe struct __BgcsAlignment_5b36cb2b93d714c7
     {
         public byte prefix;
         public MaSpatializer value;
@@ -24371,7 +24371,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_92984ab4e838c6b0
+    internal unsafe struct __BgcsAlignment_f1f3bef3d65e00ca
     {
         public byte prefix;
         public MaSpatializerConfig value;
@@ -24404,7 +24404,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_7ca379793af0d86c
+    internal unsafe struct __BgcsAlignment_fd4b7b4205b02483
     {
         public byte prefix;
         public MaSpatializerListener value;
@@ -24439,7 +24439,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_4de9fde799bb1d8f
+    internal unsafe struct __BgcsAlignment_cccd99a715d1e60b
     {
         public byte prefix;
         public MaSpatializerListenerConfig value;
@@ -24460,7 +24460,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_f8fd7917d629ddd7
+    internal unsafe struct __BgcsAlignment_4b0a7bea43cb64a2
     {
         public byte prefix;
         public MaSplitterNode value;
@@ -24485,7 +24485,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_714e4559874699c6
+    internal unsafe struct __BgcsAlignment_6b9a60295d846e1f
     {
         public byte prefix;
         public MaSplitterNodeConfig value;
@@ -24510,7 +24510,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_fa3fcbaa2347a1f8
+    internal unsafe struct __BgcsAlignment_34260630986618a2
     {
         public byte prefix;
         public MaStack value;
@@ -24638,7 +24638,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_e6c26fe54027f3fa
+    internal unsafe struct __BgcsAlignment_c6732b96ad0e8b06
     {
         public byte prefix;
         public MaTimer value;
@@ -24663,7 +24663,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_6062290a6a9943f8
+    internal unsafe struct __BgcsAlignment_213ce6983c2cc4c7
     {
         public byte prefix;
         public MaVec3f value;
@@ -24698,7 +24698,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_3e07088af236c099
+    internal unsafe struct __BgcsAlignment_56e3df9f0829389b
     {
         public byte prefix;
         public MaVfsCallbacks value;
@@ -24738,7 +24738,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_897807f4fe9dc203
+    internal unsafe struct __BgcsAlignment_b57b076a979e4f5e
     {
         public byte prefix;
         public MaWaveform value;
@@ -24769,7 +24769,7 @@ namespace Inno.Native.MiniAudio
     }
 
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
-    internal unsafe struct __BgcsAlignment_a93bf49959c6bec6
+    internal unsafe struct __BgcsAlignment_1d05702778f62ecf
     {
         public byte prefix;
         public MaWaveformConfig value;

@@ -91,7 +91,8 @@ public sealed class NativeBindingCMakeTests
             var descriptor = new NativeBindingGenerationDescriptor
             {
                 fingerprint = new string('a', 64), artifactDirectory = artifact, artifactOwnerDirectory = root,
-                bindingsPath = managed, nativeDirectory = native
+                bindingsPath = managed, nativeDirectory = native,
+                usesRuntimeImports = false,
             };
             using var bindings = new NativeBindingGenerationResult(
                 new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor }, []);

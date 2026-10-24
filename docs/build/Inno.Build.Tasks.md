@@ -156,10 +156,10 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 | 声明 | 行为、参数与结果 |
 | --- | --- |
 | <a id="api-ff3d6b09600f6748"></a>[`public Inno.Build.Tasks.GenerateBindingsTask.GenerateBindingsTask()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L18) | 由 C# 生成，遵循所属类型的值语义与本页的生命周期约束。 |
-| <a id="api-0e2f3cc8eb4f48dd"></a>[`public void Inno.Build.Tasks.GenerateBindingsTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L102) | Cancels owned work before retiring the task cancellation source. |
-| <a id="api-5781726cd5c70adf"></a>[`public override bool Inno.Build.Tasks.GenerateBindingsTask.Execute()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L115) | Executes one explicit component request and publishes task outputs only after success.<br>返回：True after generation or comparison; false after a logged failure and complete cleanup. |
-| <a id="api-1a480d62e4caeaba"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ArtifactDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L91) | Gets the protected immutable artifact root, or an empty value for host-source generation. |
-| <a id="api-66ed8053f6f55f55"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ArtifactOwnerDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L97) | Gets the publisher root coordinating the selected immutable artifact, or empty for host sources. |
+| <a id="api-0e2f3cc8eb4f48dd"></a>[`public void Inno.Build.Tasks.GenerateBindingsTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L107) | Cancels owned work before retiring the task cancellation source. |
+| <a id="api-5781726cd5c70adf"></a>[`public override bool Inno.Build.Tasks.GenerateBindingsTask.Execute()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L120) | Executes one explicit component request and publishes task outputs only after success.<br>返回：True after generation or comparison; false after a logged failure and complete cleanup. |
+| <a id="api-1a480d62e4caeaba"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ArtifactDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L96) | Gets the protected immutable artifact root, or an empty value for host-source generation. |
+| <a id="api-66ed8053f6f55f55"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ArtifactOwnerDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L102) | Gets the publisher root coordinating the selected immutable artifact, or empty for host sources. |
 | <a id="api-575a1911eea02136"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.BindingDefinition { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L43) | Gets or sets the sole literal definition consumed by both the project and direct generation. |
 | <a id="api-a6f2d71733c80c5a"></a>[`public bool Inno.Build.Tasks.GenerateBindingsTask.CheckOnly { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L62) | Gets or sets comparison without publication. |
 | <a id="api-c71184f5383ef80c"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ComponentId { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L33) | Gets or sets the stable component identity declared by the sole binding definition. |
@@ -170,7 +170,7 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 | <a id="api-9264f16119860a61"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ExpectedFingerprint { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L70) | Gets or sets an optional expected identity; stale requests fail before generation. |
 | <a id="api-47ecc7e873a694fd"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GeneratedBindings { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L75) | Gets the single source selected after complete publication or successful comparison. |
 | <a id="api-aade4e3b794412b5"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GenerationFingerprint { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L80) | Gets the complete validated input identity. |
-| <a id="api-470866008b43e628"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.NativeDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L85) | Gets the complete native artifacts and compilation requirements selected by this operation. |
+| <a id="api-470866008b43e628"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.NativeDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L90) | Gets the complete native artifacts and compilation requirements selected by this operation. |
 | <a id="api-af714cac5c42448a"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.OutputMode { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L53) | Gets or sets HostSource or TargetArtifacts without deriving publication from a path. |
 | <a id="api-2e58c35aa575bcc7"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.TargetId { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L48) | Gets or sets the explicit configuration identity selected from the definition. |
 | <a id="api-56d9cd602fa62564"></a>[`public sealed class Inno.Build.Tasks.GenerateBindingsTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L18) | Maps an explicit MSBuild request to the shared binding application without owning generation policy. |
@@ -252,3 +252,9 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 - [Inno.Build.Distribution.Standard](Inno.Build.Distribution.Standard.md)：实现依赖，PrivateAssets="compile"。
 
 Native 产品与离线 Shader 工具完成 SDK 预检后，按已选择计划登记 publisher roots，复用标准发行的唯一缓存 owner 定义。登记不认领未记录的历史目录，也不创建第二份后端闭包。
+
+<!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.UsesRuntimeImports f11504af6db8afaf30461a0086da0387a73167f0a8580b46eb0cf6b6344638bb -->
+
+| 声明 | 行为与约束 |
+| --- | --- |
+| <a id="api-3021459b17db2638"></a>[`public bool Inno.Build.Tasks.GenerateBindingsTask.UsesRuntimeImports { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L85) | Gets whether the selected generated context requires runtime-import initialization. |

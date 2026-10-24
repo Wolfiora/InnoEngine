@@ -131,6 +131,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             {
                 fingerprint = generation,
                 bindingsPath = managed,
+                usesRuntimeImports = false,
                 nativeDirectory = bridge,
                 artifactDirectory = artifact,
                 artifactOwnerDirectory = externalBindings ? m_bindingRoot : m_root

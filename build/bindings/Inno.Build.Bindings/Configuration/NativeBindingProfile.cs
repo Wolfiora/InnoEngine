@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using BGCS;
 using BGCS.Configuration;
+using BGCS.Core;
 using BGCS.Core.Targets;
 using Inno.Build.Toolchains;
 
@@ -36,6 +37,9 @@ public sealed class NativeBindingProfile
     /// An immutable platform-owned registration action for official BGCS extensions, or null for the standard SDK.
     /// The action must not capture mutable state; its implementation and extension assemblies participate in input identity.
     /// </param>
+    /// <param name="importMode">
+    /// The platform's official import mechanism, or null to preserve the component choice.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// An identity is empty, uses implicit host selection, or a path escapes the checkout.
     /// </exception>
@@ -44,7 +48,8 @@ public sealed class NativeBindingProfile
         TargetConfiguration target,
         ManagedRuntimeId? runtime = null,
         IEnumerable<string>? inputPaths = null,
-        Action<BindingHostBuilder>? configureGenerator = null
+        Action<BindingHostBuilder>? configureGenerator = null,
+        BindingImportMode? importMode = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         if (targetId == "host")
@@ -54,7 +59,10 @@ public sealed class NativeBindingProfile
             throw new ArgumentException("Binding profiles require an explicit native ABI.", nameof(target));
         this.targetId = targetId;
         this.target = target;
+        if (importMode is { } selectedImport && !Enum.IsDefined(selectedImport))
+            throw new ArgumentOutOfRangeException(nameof(importMode));
         this.runtime = runtime;
+        this.importMode = importMode;
         this.inputPaths = Array.AsReadOnly((inputPaths ?? []).Select(ValidatePath).ToArray());
         m_configureGenerator = configureGenerator;
     }
@@ -71,6 +79,10 @@ public sealed class NativeBindingProfile
     /// Gets the managed projection runtime, or null for the component's portable default.
     /// </summary>
     public ManagedRuntimeId? runtime { get; }
+    /// <summary>
+    /// Gets the explicit platform import mechanism, or null for the component's mechanism.
+    /// </summary>
+    public BindingImportMode? importMode { get; }
     /// <summary>
     /// Gets the profile's exact checkout implementation inputs.
     /// </summary>
@@ -106,7 +118,11 @@ public sealed class NativeBindingProfile
         return request.WithConfiguration(config with
         {
             targets = [selected],
-            api = config.api with { runtime = runtime ?? config.api.runtime },
+            api = config.api with
+            {
+                runtime = runtime ?? config.api.runtime,
+                importMode = importMode ?? config.api.importMode
+            },
             library = config.library with { nativeName = options?.bindingLibraryName ?? config.library.nativeName },
             source = config.source with
             {

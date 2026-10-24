@@ -31,12 +31,12 @@
       },
       "BGCS": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "RySIZGiGk9f5Sht1rytBJiEVKjS+37sGvAssq/2Q/Da8EwQFqU6O2dYV0nVt+WzVCP3cLd73AOPhQrl3LmwCxA==",
+        "resolved": "4.1.1",
+        "contentHash": "TrTsdSEFL0p7wQsRl0PabvFDu3MirkS3xLE45if5wGs5AIAdeXlEnosprglksdCIdq5a4aYXPdYVLwcr8h5GIA==",
         "dependencies": {
-          "BGCS.Core": "[4.1.0]",
-          "BGCS.ParserRuntime.osx-x64": "[4.1.0]",
-          "BGCS.Runtime": "[4.1.0]",
+          "BGCS.Core": "[4.1.1]",
+          "BGCS.ParserRuntime.osx-x64": "[4.1.1]",
+          "BGCS.Runtime": "[4.1.1]",
           "ClangSharp": "[20.1.2.4]",
           "ClangSharp.Interop": "[20.1.2.4]",
           "Humanizer.Core": "[3.0.10]",
@@ -69,26 +69,26 @@
       },
       "BGCS.Core": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "SULfWpGFDB05tNUeu5XkC/+Wjy2wW3xT2t1n+Ugr7fVx4dLML5tQOB5FmYUZwJasdml6gp7AWfqVX3wtEEVKrg=="
+        "resolved": "4.1.1",
+        "contentHash": "ZzEDG8cnZ/yfi75Q6bMmKy3R29H4zQqwtKKNaEzRV2ANWN4qbzg0iNbuNin3wknph9s2j5dcmYMANGJOThYNJQ=="
       },
       "BGCS.Extension.BrowserWasm": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "GdhMI5pYIhEblFMl4u8hpidbSYgWwhYD+gQGtKfHus/3ZbbDb//sNJqRmHdM6BmjlOtJpq0cRYfqZPnwm0GqkQ==",
+        "resolved": "4.1.1",
+        "contentHash": "9DwjUuuRQo81/VsspLy2BKU8vbU3+0j9nox5EoJHJsGaY/wOoWL1qIqLoU7na3j8c8IE6UC9XiHZPq52EUDS8g==",
         "dependencies": {
-          "BGCS.Core": "[4.1.0]"
+          "BGCS.Core": "[4.1.1]"
         }
       },
       "BGCS.ParserRuntime.osx-x64": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "cOigP/0UD2I1hxPRGGV97bLASXMjqoBAMfUc5DPVu8Hz0a2vz6IRNWjErINmzsKPAkFnlnQcHmkZBE34d/zLIQ=="
+        "resolved": "4.1.1",
+        "contentHash": "EdHnuFytJRHWSwz1/r5ou9Der9AC42A6ZQGBjw98SUPMiKypFBUxamL+gpC5iRHIWRlYjVYSAZqLQWP4nSjUag=="
       },
       "BGCS.Runtime": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "HafLCBRJ/hSswHA6ZFxZmBPXT08p7fGLdFAb+LtyDDHGFvW9NgVod1pOksJU+V+kF87ZN6eL7THvVnB0bY15zw=="
+        "resolved": "4.1.1",
+        "contentHash": "gKmmf3sou1EE8wV8ugJRmF6BH0ja3RjIqGfDIyPR786JZGo7ZAk1/Q+ZYNoJ1OdsSAOyriRWmt8Edm1BYIrapQ=="
       },
       "ClangSharp": {
         "type": "Transitive",
@@ -444,7 +444,7 @@
       "inno.adapter.presentation.imgui.sdl3": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Adapter.Platform": "[1.0.0, )",
           "Inno.Adapter.Platform.Sdl3": "[1.0.0, )",
           "Inno.Adapter.Presentation": "[1.0.0, )",
@@ -671,7 +671,7 @@
       "inno.build.bindings": {
         "type": "Project",
         "dependencies": {
-          "BGCS": "[4.1.0, 4.1.0]",
+          "BGCS": "[4.1.1, 4.1.1]",
           "Inno.Build.Toolchains": "[1.0.0, )",
           "Inno.Core.IO": "[1.0.0, )"
         }
@@ -1330,8 +1330,8 @@
       "inno.integration.browserwasm32.build": {
         "type": "Project",
         "dependencies": {
-          "BGCS": "[4.1.0, 4.1.0]",
-          "BGCS.Extension.BrowserWasm": "[4.1.0, 4.1.0]",
+          "BGCS": "[4.1.1, 4.1.1]",
+          "BGCS.Extension.BrowserWasm": "[4.1.1, 4.1.1]",
           "Inno.Build.Bindings": "[1.0.0, )",
           "Inno.Build.BrowserWasm32": "[1.0.0, )",
           "Inno.Build.Composition": "[1.0.0, )",
@@ -1350,7 +1350,7 @@
       "inno.integration.macosarm64.build": {
         "type": "Project",
         "dependencies": {
-          "BGCS": "[4.1.0, 4.1.0]",
+          "BGCS": "[4.1.1, 4.1.1]",
           "Inno.Build.Bindings": "[1.0.0, )",
           "Inno.Build.Composition": "[1.0.0, )",
           "Inno.Build.MacOSArm64": "[1.0.0, )",
@@ -1376,7 +1376,7 @@
       "inno.integration.windowsx64.build": {
         "type": "Project",
         "dependencies": {
-          "BGCS": "[4.1.0, 4.1.0]",
+          "BGCS": "[4.1.1, 4.1.1]",
           "Inno.Build.Bindings": "[1.0.0, )",
           "Inno.Build.Composition": "[1.0.0, )",
           "Inno.Build.Products.Standard": "[1.0.0, )",
@@ -1394,14 +1394,14 @@
       "inno.native.bgfx": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.imgui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
@@ -1414,28 +1414,28 @@
       "inno.native.miniaudio": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.sdl3": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.text": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.ui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },

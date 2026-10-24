@@ -117,6 +117,7 @@ public sealed class NativeArtifactIdentityTests : IDisposable
         string descriptor = Path.Combine(m_root, "request.json");
         new NativeBindingGenerationDescriptor {
             fingerprint = "identity", bindingsPath = bindings, nativeDirectory = string.Empty,
+            usesRuntimeImports = false,
             artifactDirectory = string.Empty, artifactOwnerDirectory = string.Empty
         }.Write(descriptor);
         Assert.Equal(bindings, NativeBindingGenerationDescriptor.Load(descriptor).bindingsPath);

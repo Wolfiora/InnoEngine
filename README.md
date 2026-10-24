@@ -32,7 +32,7 @@ The same commands work from a terminal:
 dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
 ```
 
-Use the branch containing these changes; the command above selects `dotnet10`. BGCS 4.1.0 is restored from exact pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
+Use the branch containing these changes; the command above selects `dotnet10`. BGCS 4.1.1 is restored from exact pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
 
 Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder.
 

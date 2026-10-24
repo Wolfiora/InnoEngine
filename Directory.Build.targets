@@ -143,12 +143,17 @@
       <Output TaskParameter="GeneratedBindings" PropertyName="BindGenGeneratedSource" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenGenerationFingerprint" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenExpectedFingerprint" />
+      <Output TaskParameter="UsesRuntimeImports" PropertyName="_BindGenUsesRuntimeImports" />
       <Output TaskParameter="ArtifactDirectory" PropertyName="BindGenArtifactDirectory" />
       <Output TaskParameter="ArtifactOwnerDirectory" PropertyName="BindGenArtifactOwnerDirectory" />
       <Output TaskParameter="NativeDirectory" PropertyName="BindGenNativeDirectory" />
     </Inno.Build.Tasks.GenerateBindingsTask>
+    <Error
+      Condition="'$(InnoNativeBindingSelection)' != '' and '$(_BindGenUsesRuntimeImports)' != '$(InnoNativeRuntimeImports)'"
+      Text="The selected native import initialization differs from the generated binding contract." />
     <PropertyGroup>
       <BindGenOutputDirectory>$([System.IO.Path]::GetDirectoryName('$(BindGenGeneratedSource)'))</BindGenOutputDirectory>
+      <InnoNativeRuntimeImports Condition="'$(InnoNativeBindingSelection)' == ''">$(_BindGenUsesRuntimeImports)</InnoNativeRuntimeImports>
     </PropertyGroup>
     <ItemGroup>
       <Compile Remove="@(Compile)" Condition="'%(Compile.Filename)%(Compile.Extension)' == 'Bindings.cs'" />
@@ -194,6 +199,12 @@
   </Target>
 
   <Target Name="ValidateBindGenBindings" BeforeTargets="CoreCompile" DependsOnTargets="EnsureBindGenBindings;MaterializeBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
+    <Error
+      Condition="'$(InnoNativeBindingSelection)' != '' and '$(InnoNativeRuntimeImports)' != 'true' and '$(InnoNativeRuntimeImports)' != 'false'"
+      Text="The selected native component must declare its generated import initialization." />
+    <PropertyGroup>
+      <DefineConstants Condition="'$(InnoNativeRuntimeImports)' == 'true'">$(DefineConstants);INNO_RUNTIME_IMPORTS</DefineConstants>
+    </PropertyGroup>
     <Error
       Condition="'$(InnoNativeBindingSelection)' != '' and '$(InnoNativeLibraryKind)' != 'Static' and '$(InnoNativeLibraryKind)' != 'Shared'"
       Text="The selected native component must declare its exact Static or Shared linkage." />

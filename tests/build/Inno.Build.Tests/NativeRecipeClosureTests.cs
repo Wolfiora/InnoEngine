@@ -233,6 +233,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
             [m_owner.nativeProject] = new()
             {
                 fingerprint = fingerprint, bindingsPath = generated, nativeDirectory = bridge,
+                usesRuntimeImports = false,
                 artifactDirectory = string.Empty, artifactOwnerDirectory = string.Empty
             }
         }, []);

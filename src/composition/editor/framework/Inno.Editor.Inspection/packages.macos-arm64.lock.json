@@ -4,8 +4,8 @@
     "net10.0": {
       "BGCS.Runtime": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "HafLCBRJ/hSswHA6ZFxZmBPXT08p7fGLdFAb+LtyDDHGFvW9NgVod1pOksJU+V+kF87ZN6eL7THvVnB0bY15zw=="
+        "resolved": "4.1.1",
+        "contentHash": "gKmmf3sou1EE8wV8ugJRmF6BH0ja3RjIqGfDIyPR786JZGo7ZAk1/Q+ZYNoJ1OdsSAOyriRWmt8Edm1BYIrapQ=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Transitive",
@@ -91,7 +91,7 @@
       "inno.adapter.presentation.imgui.sdl3": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Adapter.Platform": "[1.0.0, )",
           "Inno.Adapter.Platform.Sdl3": "[1.0.0, )",
           "Inno.Adapter.Presentation": "[1.0.0, )",
@@ -390,7 +390,7 @@
       "inno.native.imgui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
@@ -403,7 +403,7 @@
       "inno.native.sdl3": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },

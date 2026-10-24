@@ -30,10 +30,12 @@ internal static class TargetBindingGeneration
     internal static NativeBindingGenerationDescriptor Describe(
         string ownerDirectory,
         string destination,
-        string fingerprint
+        string fingerprint,
+        bool usesRuntimeImports
     ) => new()
     {
         fingerprint = fingerprint,
+        usesRuntimeImports = usesRuntimeImports,
         artifactDirectory = destination,
         artifactOwnerDirectory = ownerDirectory,
         bindingsPath = Path.Combine(destination, "Generated", "Bindings.cs"),

@@ -108,7 +108,11 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.PlatformNotSupportedException("The native target pointer width differs from this process.");
                 if (global::System.BitConverter.IsLittleEndian != true)
                     throw new global::System.PlatformNotSupportedException("The native target byte order differs from this process.");
-                if (sizeof(ImGuiSelectableFlags) != 4)
+                if (sizeof(ImGuiDockNodeFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuizmoColor) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiViewportFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEvent) != 28)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -130,8 +134,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ee85466b1fa59048>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiFocusRequestFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVec2ih) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVec2ih>("X").ToInt64() != 0)
@@ -170,9 +172,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_279a101f49905080>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiMultiSelectFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiHoveredFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDataAuthority) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImTextureDataPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -224,6 +226,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_da33994b5a1f938e>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTypingSelectFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImTextureFormat) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImDrawListFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableHeaderData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableHeaderData>("Index").ToInt64() != 0)
@@ -236,8 +244,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7262ca78f01acb8e>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTableFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImChunkStreamImGuiWindowSettings) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImChunkStreamImGuiWindowSettings>("Buf").ToInt64() != 0)
@@ -294,9 +300,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_055e9ee907510830>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTreeNodeFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiComboFlags) != 4)
+                if (sizeof(ImGuiDataType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawListSharedDataPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -320,9 +324,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_e60e879954c840fa) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiInputTextFlagsPrivate) != 4)
+                if (sizeof(ImGuiAxis) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiTabItemFlags) != 4)
+                if (sizeof(ImGuiInputTextFlagsPrivate) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_42c049e3f15c43ec) != 310)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -342,8 +346,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1f9c76435ff5ec9c>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuizmoOperation) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiBoxSelectState) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiBoxSelectState>("Id").ToInt64() != 0)
@@ -374,7 +376,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiBoxSelectState>("BoxSelectRectCurr").ToInt64() != 84)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (sizeof(ImGuiColorEditFlags) != 4)
+                if (sizeof(ImGuiTabBarFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTooltipFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiSelectionRequest) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -390,13 +394,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c11ca0d1bd85d97d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiMouseButton) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_c34fe7f9f3db1a4e) != 8)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiCond) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiTableRowFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_afa9ec5b5680f876) != 992)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -422,9 +420,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_492e2175db0bd218>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTableBgTarget) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiMouseSource) != 4)
+                if (sizeof(ImGuiInputSource) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiDebugItemPathQuery) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -490,8 +486,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e15127654779231d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDockNodeState) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiShrinkWidthItem) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiShrinkWidthItem>("Size").ToInt64() != 0)
@@ -502,7 +496,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e4d47d8ae9a0d86c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiViewportFlags) != 4)
+                if (sizeof(ImGuiActivateFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuizmoOperation) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiViewportPPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -642,6 +638,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_de8b29afef1afcc3>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTreeNodeFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPayload) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiPayload>("Data").ToInt64() != 0)
@@ -662,8 +660,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2b0369c55e7de1fd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiContextHookType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTabBar) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTabBar>("Size").ToInt64() != 0)
@@ -686,6 +682,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_27c4f65797813a9b>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiChildFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableTempData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTableTempData>("Size").ToInt64() != 0)
@@ -704,8 +702,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5bc9b63fb9b9f6f4>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiLogFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventMousePos) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEventMousePos>("PosX").ToInt64() != 0)
@@ -724,6 +720,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_43db0ce246f18b3f) != 528)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImWcharClass) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableColumnSortSpecs) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumnSortSpecs>("ColumnUserId").ToInt64() != 0)
@@ -736,6 +734,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b55bae10dc4a8032>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSelectionRequestType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPtrOrIndex) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiPtrOrIndex>("Ptr").ToInt64() != 0)
@@ -792,7 +792,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d98945cd0d2891de>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTextFlags) != 4)
+                if (sizeof(ImGuiTableRowFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiWindowBgClickFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiFocusScopeData) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -880,6 +882,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_63c446369210a871>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiKey) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiID) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiID>("Size").ToInt64() != 0)
@@ -890,8 +894,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4b6908cbcd67796b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiSliderFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPopupData) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiPopupData>("PopupId").ToInt64() != 0)
@@ -1226,10 +1228,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_8da6be2ffdb0de05) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiTabItemFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiNextItemDataFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiOldColumnData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiOldColumnData>("Size").ToInt64() != 0)
@@ -1392,10 +1390,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_28c661a98e5af838>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiWindowBgClickFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiComboFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawCmdHeader) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawCmdHeader>("ClipRect").ToInt64() != 0)
@@ -1442,6 +1436,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9f4e92355cf8e0c7>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiLayoutType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiConfigFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiStoragePair) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiStoragePair>("Size").ToInt64() != 0)
@@ -1460,6 +1458,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_687f5838bf2c9e22>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiInputTextFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImFontAtlas) != 736)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlas>("Flags").ToInt64() != 0)
@@ -1568,8 +1568,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_eb45834f8fd09909>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiPlotType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_b726fff0e8801db7) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImFontAtlasBuilder) != 248)
@@ -1616,8 +1614,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dad6cd1298b363ad>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiLayoutType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImPoolImGuiTabBar) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImPoolImGuiTabBar>("Buf").ToInt64() != 0)
@@ -1630,7 +1626,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_690869ab01019328>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDataTypePrivate) != 4)
+                if (sizeof(ImGuiDockNodeState) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiListClipperRange) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1664,6 +1660,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c0ab5b12ed260301>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSortDirection) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiPopupPositionPolicy) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawIdx) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawIdx>("Size").ToInt64() != 0)
@@ -1674,7 +1674,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_eea79217ec30272f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImFontFlags) != 4)
+                if (sizeof(ImGuiBackendFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiSelectionExternalStorage) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1742,6 +1742,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_68e25b300381a6fc) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDockNodeFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiPlatformMonitor) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiPlatformMonitor>("Size").ToInt64() != 0)
@@ -1800,8 +1802,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b5250b4d9b8dbcc1>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImTextureFormat) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawDataBuilder) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawDataBuilder>("Layers").ToInt64() != 0)
@@ -1822,9 +1822,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_ec6e6e3c26b88eb8) != 1860)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiWindowFlags) != 4)
+                if (sizeof(ImDrawTextFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiDebugLogFlags) != 4)
+                if (sizeof(ImGuiWindowRefreshFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiWindowSettings) != 36)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1854,6 +1854,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6318f49b3fe5ae53>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiMultiSelectFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiStyleMod) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiStyleMod>("Size").ToInt64() != 0)
@@ -2126,9 +2128,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_73f44d727035e855>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(NativeArray_d36642d3104a6c6f) != 40)
+                if (sizeof(ImGuiMouseSource) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImDrawListFlags) != 4)
+                if (sizeof(NativeArray_d36642d3104a6c6f) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableColumn) != 116)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2210,7 +2212,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumn>("SortDirectionsAvailList").ToInt64() != 114)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (sizeof(ImGuiInputTextFlags) != 4)
+                if (sizeof(ImGuiButtonFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventMouseViewport) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2278,9 +2280,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_47ae323e1e0c96b9>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTreeNodeFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_df98efe8482c9a26) != 104)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiStyleVar) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImFontBaked) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2313,6 +2315,8 @@ namespace Inno.Native.ImGuizmo
                 if (sizeof(NativeArray_1eccc798bd000925) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_f9c2e11bc01cc26a) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiSliderFlagsPrivate) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiIDStackTool) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2388,7 +2392,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c6d3427c9947c071>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiScrollFlags) != 4)
+                if (sizeof(ImGuiLogFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPlatformIO) != 328)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2496,6 +2500,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c04ab340c4ea8aa0>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuizmoMode) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiNavItemData) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiNavItemData>("Window").ToInt64() != 0)
@@ -2528,6 +2534,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7fc57f6c1fc902c9>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiNavRenderCursorFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImVec2) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImVec2>("Size").ToInt64() != 0)
@@ -2538,8 +2546,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1d5e4d44e31c9036>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiSelectionRequestType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawListPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawListPtr>("Size").ToInt64() != 0)
@@ -2550,12 +2556,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fa511b7d646f4b35>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTooltipFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiNavLayer) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiDragDropFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVec2iC) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVec2iC>("X").ToInt64() != 0)
@@ -2564,6 +2564,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b8d3d39a62b8131b>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiScrollFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiLocKey) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_fcecdbb15210e44b) != 36)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawVert) != 20)
@@ -2586,6 +2590,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1d85b397ae7c7bfd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiCond) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawVert) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawVert>("Size").ToInt64() != 0)
@@ -2596,8 +2602,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d2569426ac8c585a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTableColumnFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiStorage) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiStorage>("Data").ToInt64() != 0)
@@ -2636,6 +2640,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImFontAtlasRectEntry) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiItemStatusFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiListClipperData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiListClipperData>("Size").ToInt64() != 0)
@@ -2646,14 +2652,20 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_68bb2c6be458c207>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiItemFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiInputFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiStoragePair) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiStoragePair>("Key").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiStoragePair>("AnonymousField1").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiStoragePair>("AnonymousField1").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fcc857681382e880>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiCol) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableHeaderData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTableHeaderData>("Size").ToInt64() != 0)
@@ -2684,6 +2696,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_cc61a26bc67d5ec8>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTableFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableSettings) != 20)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableSettings>("Id").ToInt64() != 0)
@@ -2758,8 +2772,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDockNode>("RefViewportId").ToInt64() != 196)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (sizeof(ImGuiItemFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_7b9f5e5665cb58c5) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImFontConfig) != 16)
@@ -2772,7 +2784,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5f31e296b685802c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTabBarFlags) != 4)
+                if (sizeof(ImGuiTabItemFlagsPrivate) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableColumnSortSpecs) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2784,10 +2796,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d03d5ed96af1cce7>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDockNodeFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiInputFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawChannel) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawChannel>("CmdBuffer").ToInt64() != 0)
@@ -2796,8 +2804,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1cbfa6f70afd6d50>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiKey) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiInputEvent) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiInputEvent>("Size").ToInt64() != 0)
@@ -2808,8 +2814,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2a517e5b2a137949>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiChildFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiMultiSelectIO) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiMultiSelectIO>("Requests").ToInt64() != 0)
@@ -2826,8 +2830,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0f562b64ab1c8b3a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImDrawFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiShrinkWidthItem) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiShrinkWidthItem>("Index").ToInt64() != 0)
@@ -2838,7 +2840,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dd3ec98222baa6c7>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiInputEventType) != 4)
+                if (sizeof(ImGuiTableColumnFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiColorMod) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2850,8 +2852,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_be1e63a94feca287>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiOldColumnFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImPoolImGuiTable) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImPoolImGuiTable>("Buf").ToInt64() != 0)
@@ -2866,8 +2866,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_5dde4d9494a49aa0) != 5)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiActivateFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiOldColumns) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiOldColumns>("Size").ToInt64() != 0)
@@ -2878,7 +2876,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4e17beb59a3a594d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiFocusedFlags) != 4)
+                if (sizeof(ImGuiNextWindowDataFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableInstanceData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2910,6 +2908,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fe973fe7354cae15>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiListClipperFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiNavMoveFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(Style) != 272)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<Style>("TranslationLineThickness").ToInt64() != 0)
@@ -2938,8 +2940,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_13563fc02b9609da>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiInputSource) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventMouseButton) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEventMouseButton>("Button").ToInt64() != 0)
@@ -2984,6 +2984,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1b2f935e48096834>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTextFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiMultiSelectState) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiMultiSelectState>("Window").ToInt64() != 0)
@@ -3006,9 +3008,15 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_a4f71ca2b114fa9f) != 256)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiSeparatorFlags) != 4)
+                if (sizeof(ImGuiDebugLogFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiNextItemDataFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTabItemFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_9be1bbaad6627fe8) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImFontFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawListSharedData) != 568)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3048,7 +3056,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6e6addad886901ca>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiWindowRefreshFlags) != 4)
+                if (sizeof(ImGuiPlotType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiViewportPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3092,8 +3100,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontGlyph>("PackId").ToInt64() != 40)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (sizeof(ImGuiItemStatusFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiWindowPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiWindowPtr>("Size").ToInt64() != 0)
@@ -3146,10 +3152,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_05957f16cc35ea91>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiStyleVar) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiDockNodeFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImBitArrayImGuiKeyNamedKeyCOUNTLessImGuiKeyNamedKeyBEGIN) != 20)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImBitArrayImGuiKeyNamedKeyCOUNTLessImGuiKeyNamedKeyBEGIN>("Data").ToInt64() != 0)
@@ -3330,6 +3332,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0b2c33dcd82edc92>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiMouseButton) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawList) != 224)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawList>("CmdBuffer").ToInt64() != 0)
@@ -3614,6 +3618,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindow>("DockId").ToInt64() != 1224)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (sizeof(ImGuiSelectableFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiFocusScopeData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiFocusScopeData>("Size").ToInt64() != 0)
@@ -3662,9 +3668,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_adc560577e46b572>("value").ToInt64() != 2)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImDrawTextFlags) != 4)
+                if (sizeof(ImTextureStatus) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiItemFlagsPrivate) != 4)
+                if (sizeof(ImGuiContextHookType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_332d40ffc044d296) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -3704,8 +3710,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c761199aaa43b03b>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImWcharClass) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTable) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTable>("Size").ToInt64() != 0)
@@ -3726,6 +3730,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_232991a8c7c09f5c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSeparatorFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableCellData) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableCellData>("BgColor").ToInt64() != 0)
@@ -3734,6 +3740,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_224e1457abf520e8>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiInputFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiSliderFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTableBgTarget) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImStableVectorImFontBaked32) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImStableVectorImFontBaked32>("Size").ToInt64() != 0)
@@ -3744,6 +3756,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d4cf06f57eea5fd5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiHoveredFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiKeyData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiKeyData>("Down").ToInt64() != 0)
@@ -3756,6 +3770,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3a3a18181d0c5078>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiDataTypePrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiDataTypeInfo) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDataTypeInfo>("Size").ToInt64() != 0)
@@ -3768,9 +3784,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2999ad4cf401b5f3>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiCol) != 4)
+                if (sizeof(ImGuiSelectableFlagsPrivate) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiListClipperFlags) != 4)
+                if (sizeof(ImGuiWindowDockStyleCol) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiSizeCallbackData) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4434,10 +4450,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiContext>("TempKeychordName").ToInt64() != 11344)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (sizeof(ImGuiPopupFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiNavMoveFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiComboPreviewData) != 48)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiComboPreviewData>("PreviewRect").ToInt64() != 0)
@@ -4454,6 +4466,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4ef13966a7d35145>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiPopupFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImDrawFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiButtonFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiStyleVarInfo) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_bae28ecfe547f5d7) != 8)
@@ -4468,13 +4486,13 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5929f2b5f1d4ad86>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTreeNodeFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiFocusRequestFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_5caf1d5dfc8a2e78) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiLocKey) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_41ea187b8e0849de) != 1)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiAxis) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_704527fa6c941baa) != 33)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4546,8 +4564,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ea198812155c6e9e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiInputFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImFontLoader) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontLoader>("Name").ToInt64() != 0)
@@ -4572,10 +4588,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_a20c4e8f0d7d3632>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiPopupPositionPolicy) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiHoveredFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_4a44fb190803b3be) != 240)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImFontBakedPtr) != 16)
@@ -4588,15 +4600,15 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e02d87c8fe8605c5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDir) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventAppFocused) != 1)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEventAppFocused>("Focused").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fbcd319c23daf0d1>("value").ToInt64() != 1)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuizmoColor) != 4)
+                if (sizeof(ImGuiColorEditFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiWindowFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImU32) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4622,9 +4634,11 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_303e5e7a89f5945a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTabBarFlagsPrivate) != 4)
+                if (sizeof(ImFontAtlasFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiBackendFlags) != 4)
+                if (sizeof(ImGuiComboFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDir) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImTextureRefC) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4646,6 +4660,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_f3ea9f13691638c5) != 384)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDragDropFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiMouseCursor) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiItemFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImFontAtlasRect) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasRect>("X").ToInt64() != 0)
@@ -4662,8 +4682,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ed1e326ae8477220>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiConfigFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawCmd) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawCmd>("Size").ToInt64() != 0)
@@ -4688,12 +4706,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ef271d5391e075ed>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiNavRenderCursorFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiWindowDockStyleCol) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImTextureStatus) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImFontGlyph) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImFontGlyph>("Size").ToInt64() != 0)
@@ -4736,8 +4748,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c641152355d04b4c>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDataAuthority) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiDockContext) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDockContext>("Nodes").ToInt64() != 0)
@@ -4766,8 +4776,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e19203b18d0b025c>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiSortDirection) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputTextCallbackData) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("Ctx").ToInt64() != 0)
@@ -4814,10 +4822,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9440e9773be81c5a>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuizmoMode) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiMouseCursor) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiNextWindowData) != 160)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiNextWindowData>("HasFlags").ToInt64() != 0)
@@ -4868,6 +4872,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c00e1426606ac45f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiOldColumnFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiColorMod) != 20)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiColorMod>("Col").ToInt64() != 0)
@@ -4888,7 +4894,9 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8ef70ca9bded13f9>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiTypingSelectFlags) != 4)
+                if (sizeof(ImGuiTabBarFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiComboFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPlatformImeData) != 20)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4946,10 +4954,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1e3ac1c7f45d8441>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiSelectableFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiSliderFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiLocEntry) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiLocEntry>("Key").ToInt64() != 0)
@@ -4992,8 +4996,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_01fbbb00dc8c706c>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiButtonFlagsPrivate) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiStackLevelInfo) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiStackLevelInfo>("Size").ToInt64() != 0)
@@ -5004,9 +5006,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8eaa4b8f7233699e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiNextWindowDataFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImFontAtlasFlags) != 4)
+                if (sizeof(ImGuiInputEventType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventText) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -5014,6 +5014,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2acffaa2d3fde262>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiNavLayer) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorUnsignedChar) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorUnsignedChar>("Size").ToInt64() != 0)
@@ -5024,7 +5026,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3d3d602898fedb75>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDataType) != 4)
+                if (sizeof(ImGuiFocusedFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTextRange) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -5034,8 +5036,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b2cab8916364f6d3>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiButtonFlags) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiKeyRoutingTable) != 344)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiKeyRoutingTable>("Index").ToInt64() != 0)
@@ -11298,7 +11298,7 @@ namespace Inno.Native.ImGuizmo
     {
         [global::System.Runtime.InteropServices.FieldOffset(0)]
         public uint Key;
-        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
         public ImGuiStoragePairAnonymousUnionAd9ee15fe77a7ef0 AnonymousField1;
     }
 

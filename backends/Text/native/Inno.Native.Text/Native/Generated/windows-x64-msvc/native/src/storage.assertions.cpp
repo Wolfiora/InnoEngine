@@ -86,6 +86,12 @@
 #if defined(is_same)
 #error BGCS native storage proof token is shadowed by a macro
 #endif
+#if defined(is_const)
+#error BGCS native storage proof token is shadowed by a macro
+#endif
+#if defined(is_volatile)
+#error BGCS native storage proof token is shadowed by a macro
+#endif
 #if defined(is_signed)
 #error BGCS native storage proof token is shadowed by a macro
 #endif

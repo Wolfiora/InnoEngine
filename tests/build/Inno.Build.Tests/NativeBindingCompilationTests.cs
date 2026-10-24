@@ -94,6 +94,7 @@ public sealed class NativeBindingCompilationTests
                         artifactDirectory = artifact,
                         artifactOwnerDirectory = Path.Combine(root, "artifacts", "bindings"),
                         bindingsPath = publishedSource,
+                        usesRuntimeImports = false,
                         nativeDirectory = string.Empty
                     }
                 }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Shared });
@@ -125,6 +126,7 @@ public sealed class NativeBindingCompilationTests
                         artifactDirectory = artifact,
                         artifactOwnerDirectory = Path.Combine(root, "artifacts", "bindings"),
                         bindingsPath = publishedSource,
+                        usesRuntimeImports = false,
                         nativeDirectory = string.Empty
                     }
                 }, new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Static });

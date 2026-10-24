@@ -93,6 +93,12 @@ public sealed class NativeBindingGenerationDescriptor
     public required string fingerprint { get; init; }
 
     /// <summary>
+    /// Gets whether the generated context uses runtime-resolved imports instead of a module provider.
+    /// This initialization choice is independent of static or shared native linkage.
+    /// </summary>
+    public required bool usesRuntimeImports { get; init; }
+
+    /// <summary>
     /// Gets the absolute managed source path selected by the component project.
     /// </summary>
     public required string bindingsPath { get; init; }
@@ -198,6 +204,7 @@ public sealed class NativeBindingGenerationDescriptor
                 new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
                 new XElement("BindGenArtifactOwnerDirectory", entry.Value.artifactOwnerDirectory),
                 new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
+                new XElement("InnoNativeRuntimeImports", entry.Value.usesRuntimeImports ? "true" : "false"),
                 new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))));
         }
         return new XDocument(document);

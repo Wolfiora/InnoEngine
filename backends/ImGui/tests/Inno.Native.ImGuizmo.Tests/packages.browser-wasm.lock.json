@@ -31,8 +31,8 @@
       },
       "BGCS.Runtime": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "HafLCBRJ/hSswHA6ZFxZmBPXT08p7fGLdFAb+LtyDDHGFvW9NgVod1pOksJU+V+kF87ZN6eL7THvVnB0bY15zw=="
+        "resolved": "4.1.1",
+        "contentHash": "gKmmf3sou1EE8wV8ugJRmF6BH0ja3RjIqGfDIyPR786JZGo7ZAk1/Q+ZYNoJ1OdsSAOyriRWmt8Edm1BYIrapQ=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -110,14 +110,14 @@
       "inno.native.imgui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
       "inno.native.imguizmo": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "BGCS.Runtime": "[4.1.1, 4.1.1]",
           "Inno.Native.ImGui": "[1.0.0, )",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }

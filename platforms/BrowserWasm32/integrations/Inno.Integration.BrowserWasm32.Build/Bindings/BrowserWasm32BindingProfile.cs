@@ -1,4 +1,5 @@
 using BGCS.Configuration;
+using BGCS.Core;
 using BGCS.Core.Targets;
 using BGCS.Extension.BrowserWasm;
 using Inno.Build.Bindings;
@@ -13,5 +14,6 @@ internal static class BrowserWasm32BindingProfile
         new TargetConfiguration { id = "emscripten-wasm32-emscripten" },
         new ManagedRuntimeId("dotnet.mono-wasm"),
         ["platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Build/Bindings/BrowserWasm32BindingProfile.cs"],
-        static builder => builder.AddPlugin<BrowserWasmPlugin>());
+        static builder => builder.AddPlugin<BrowserWasmPlugin>(),
+        BindingImportMode.LibraryImport);
 }

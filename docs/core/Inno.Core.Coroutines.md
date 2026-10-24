@@ -2,7 +2,7 @@
 
 [上一页：Events](Inno.Core.Events.md) · [Core 索引](README.md) · [下一页：Job](Inno.Core.Jobs.md)
 
-`CoroutineScheduler` 执行 `IEnumerator` 协程，支持嵌套 enumerator、帧/时间/Task/条件等待以及 owner 级批量停止。普通 Start/Stop 请求通过线程安全命令队列进入 Scheduler，实际状态变化在 `Tick` 安全点应用；owner 级停止会取得 Tick gate，并在返回前立即移除匹配状态。
+`CoroutineScheduler` 执行 `IEnumerator` 协程，支持嵌套 enumerator、帧/时间/Task/条件等待以及 owner 级批量停止。成功 Start 后，Scheduler 独占枚举器的推进和释放责任；调用者不得复用或自行释放该枚举器。普通 Start/Stop 请求通过线程安全命令队列进入 Scheduler，实际状态变化在 `Tick` 安全点应用；owner 级停止会取得 Tick gate 并处理匹配状态。
 
 ## CoroutineScheduler
 
@@ -11,10 +11,10 @@
 | `StartCoroutine(IEnumerator)` | 启动无 owner 协程，返回 handle。 |
 | `StartCoroutine(object? owner, IEnumerator)` | 用引用身份保存 owner，便于批量停止。 |
 | `StopCoroutine(CoroutineHandle)` | 请求停止；handle 不属于当前 scheduler 或已失效时返回 `false`。 |
-| `StopAllCoroutines(object owner)` | 同步停止与该 owner `ReferenceEquals` 的全部协程；返回时 handle 已失效，Scheduler 不再持有 owner/enumerator。 |
+| `StopAllCoroutines(object owner)` | 停止与 owner `ReferenceEquals` 的协程并清理嵌套栈；从执行回调中停止自己时，当前枚举器在回调返回后清理。 |
 | `StopAllCoroutines()` | 请求停止全部协程。 |
 | `Tick(float deltaTime)` | 推进一帧；负 delta 当作 0。 |
-| `Dispose()` | 清空全部 active/pending 状态并永久关闭。 |
+| `Dispose()` | 关闭 admission，释放 active/pending 枚举器；执行中的回调在返回安全点释放。重复调用无操作。 |
 
 `CoroutineHandle.isValid` 表示 handle 仍指向一个存活 scheduler 中的 live coroutine。Handle 是 opaque readonly struct，不公开内部 ID。
 
@@ -63,13 +63,16 @@ static CoroutineHandle StartFade(
 
 ## Owner 与热重载
 
-Owner 和 IEnumerator 都会强引用脚本实例及其程序集。脚本代际退出时，应在迁移前调用 `StopAllCoroutines(oldInstance)`；该调用返回时 Scheduler 已释放匹配的 owner/enumerator，因此不依赖下一帧 Tick 才允许旧 collectible ALC 回收。不要用值相等但引用不同的对象去停止 owner 协程。
+Owner 和 IEnumerator 都会强引用脚本实例及其程序集。脚本代际退出时，应在 owner 安全点调用 `StopAllCoroutines(oldInstance)`；非重入调用返回时已释放匹配的 owner、waiter 和枚举器，因此不依赖下一帧 Tick。不要用值相等但引用不同的对象去停止 owner 协程。回调内停止自己会立即失效 handle，在该回调返回后释放当前栈；不能在当前脚本仍执行时报告 ALC 已退休。
+
+嵌套栈按子到父顺序调用 `IDisposable.Dispose()`；正常完成、停止、执行失败和 Scheduler 退出共用同一释放流程。未推进过的 pending 枚举器也会被 Dispose，但 C# iterator 尚未进入的 `try/finally` 不会因此执行。清理时先弹出枚举器，确保重入或异常不会重复释放；一个清理失败仍会继续尝试其余 eligible 清理。
 
 ## 线程与异常
 
 - Start/Stop API 可从其他线程提交；`Tick` 自身由 gate 串行化。
 - Scheduler 设计为由主循环每帧推进，不会自行创建更新线程。
-- Enumerator/predicate 抛出的异常会从 `Tick` 传播；调用层应决定日志与故障策略。
+- `MoveNext`、`Current`、predicate 和清理异常在本次最外层 Tick/owner stop/Dispose 完成 eligible 清理后，以 `AggregateException` 传播；异常对象不会滞留在 Scheduler。失败协程退休，其他协程仍可推进。Task 等待仍只表示 `IsCompleted`，不替调用者观察 Task 结果。
+- 回调中可请求开始/停止协程；正在 drain 命令的清理回调新增命令在返回后继续 drain。禁止从回调递归 `Tick`，也禁止枚举器 yield 栈中的自身或祖先。
 - Dispose 后 `StartCoroutine`、owner stop 和 `Tick` 会抛 `ObjectDisposedException`；无参 stop-all 安全返回。
 
 ## 当前源码公开 API 清单
@@ -100,15 +103,15 @@ Owner 和 IEnumerator 都会强引用脚本实例及其程序集。脚本代际�
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-9153c4e9ba02858d"></a>[`public Inno.Core.Coroutines.CoroutineScheduler.CoroutineScheduler()`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L29) | Creates an empty scheduler whose lifetime is owned by the caller. | — | — |
-| <a id="api-d6149e4c9e5598b9"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.Dispose()`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L131) | Disposes the scheduler and clears all active/pending coroutines. | — | — |
-| <a id="api-40d0b77365ef11bd"></a>[`public Inno.Core.Coroutines.CoroutineHandle Inno.Core.Coroutines.CoroutineScheduler.StartCoroutine(System.Collections.IEnumerator routine)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L43) | Starts a coroutine.<br>返回：Coroutine handle.<br>`routine`：Coroutine enumerator. | — | — |
-| <a id="api-6be63970b2fcdd84"></a>[`public Inno.Core.Coroutines.CoroutineHandle Inno.Core.Coroutines.CoroutineScheduler.StartCoroutine(object? owner, System.Collections.IEnumerator routine)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L60) | Starts a coroutine with an owner token.<br>返回：Coroutine handle.<br>`owner`：Owner key used by Inno.Core.Coroutines.CoroutineScheduler.StopAllCoroutines(System.Object).<br>`routine`：Coroutine enumerator. | — | — |
-| <a id="api-5a1ef857eb528486"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.StopAllCoroutines()`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L118) | Requests stopping all active coroutines. | — | — |
-| <a id="api-e3ae0402198b5654"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.StopAllCoroutines(object owner)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L103) | Stops all coroutines owned by the specified owner token before this method returns.<br>`owner`：Owner key used when starting coroutines. | — | — |
-| <a id="api-c0115c95f7a3d703"></a>[`public bool Inno.Core.Coroutines.CoroutineScheduler.StopCoroutine(Inno.Core.Coroutines.CoroutineHandle handle)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L86) | Requests stopping a coroutine by handle.<br>返回：true if the handle is valid.<br>`handle`：Target coroutine handle. | — | — |
-| <a id="api-6949bb654af677e7"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.Tick(float deltaTime)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L159) | Advances coroutine execution by one frame.<br>`deltaTime`：Frame delta time in seconds. | — | — |
-| <a id="api-44f36c50a6bd55b2"></a>[`public sealed class Inno.Core.Coroutines.CoroutineScheduler : System.IDisposable`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L13) | Thread-safe coroutine scheduler with start/stop APIs. | — | — |
+| <a id="api-9153c4e9ba02858d"></a>[`public Inno.Core.Coroutines.CoroutineScheduler.CoroutineScheduler()`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L33) | Creates an empty scheduler whose lifetime is owned by the caller. | — | — |
+| <a id="api-d6149e4c9e5598b9"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.Dispose()`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L154) | Disposes the scheduler and clears all active/pending coroutines. | — | — |
+| <a id="api-40d0b77365ef11bd"></a>[`public Inno.Core.Coroutines.CoroutineHandle Inno.Core.Coroutines.CoroutineScheduler.StartCoroutine(System.Collections.IEnumerator routine)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L47) | Starts a coroutine.<br>返回：Coroutine handle.<br>`routine`：Coroutine enumerator. | — | — |
+| <a id="api-6be63970b2fcdd84"></a>[`public Inno.Core.Coroutines.CoroutineHandle Inno.Core.Coroutines.CoroutineScheduler.StartCoroutine(object? owner, System.Collections.IEnumerator routine)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L64) | Starts a coroutine with an owner token.<br>返回：Coroutine handle.<br>`owner`：Owner key used by Inno.Core.Coroutines.CoroutineScheduler.StopAllCoroutines(System.Object).<br>`routine`：Coroutine enumerator. | — | — |
+| <a id="api-5a1ef857eb528486"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.StopAllCoroutines()`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L137) | Requests stopping all active coroutines. | — | — |
+| <a id="api-e3ae0402198b5654"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.StopAllCoroutines(object owner)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L114) | Stops all coroutines owned by the specified owner token before this method returns.<br>`owner`：Owner key used when starting coroutines. | — | — |
+| <a id="api-c0115c95f7a3d703"></a>[`public bool Inno.Core.Coroutines.CoroutineScheduler.StopCoroutine(Inno.Core.Coroutines.CoroutineHandle handle)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L90) | Requests stopping a coroutine by handle.<br>返回：true if the handle is valid.<br>`handle`：Target coroutine handle. | — | — |
+| <a id="api-6949bb654af677e7"></a>[`public void Inno.Core.Coroutines.CoroutineScheduler.Tick(float deltaTime)`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L193) | Advances coroutine execution by one frame.<br>`deltaTime`：Frame delta time in seconds. | — | — |
+| <a id="api-44f36c50a6bd55b2"></a>[`public sealed class Inno.Core.Coroutines.CoroutineScheduler : System.IDisposable`](../../src/foundation/core/Inno.Core.Coroutines/CoroutineScheduler.cs#L13) | Serializes coroutine execution and owns reverse-order retirement of admitted enumerators. | — | — |
 
 ### `Inno.Core.Coroutines.WaitForFrames`
 
