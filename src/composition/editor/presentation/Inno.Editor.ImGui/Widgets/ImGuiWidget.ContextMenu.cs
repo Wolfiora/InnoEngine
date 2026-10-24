@@ -231,7 +231,7 @@ public static unsafe partial class ImGuiWidget
         Vector2 pixelMinimum = Vector2.Min(pixelMaximum, new Vector2(
             MathF.Ceiling(minimum.X),
             MathF.Ceiling(minimum.Y)));
-        NativeImGui.Raw.SetNextWindowSizeConstraints(ImGui.ToNative(pixelMinimum), ImGui.ToNative(pixelMaximum), &RoundMenuPopupSize, null);
+        ImGui.ConstrainNativeWindowSize(pixelMinimum, pixelMaximum, &RoundMenuPopupSize, null);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]

@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Inno.References;
 using Inno.Core.Identity;
 using System;
@@ -323,17 +321,15 @@ internal sealed unsafe class SceneViewPanel : EditorPanel
         {
             if (!TryProject(line.start, out Vector2 start) || !TryProject(line.end, out Vector2 end))
                 continue;
-            NativeImGui.Raw.AddLine(
-                draw,
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(start + Vector2.One),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(end + Vector2.One),
+            EditorImGui.DrawLine(
+                start + Vector2.One,
+                end + Vector2.One,
                 outline,
                 3.5f
             );
-            NativeImGui.Raw.AddLine(
-                draw,
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(start),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(end),
+            EditorImGui.DrawLine(
+                start,
+                end,
                 white,
                 2.5f
             );
@@ -348,14 +344,17 @@ internal sealed unsafe class SceneViewPanel : EditorPanel
             displayIcons.Add((center, icon));
             string glyph = GizmoIconGlyph(icon.iconId);
             using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(glyph, allowsNull: false);
-            ImVec2C measured = NativeImGui.Raw.CalcTextSizeA(font, iconSize, float.MaxValue, 0f, (sbyte*)nativeText.pointer, null, null);
+            ImVec2C measured = default;
+            NativeImGui.Raw.CalcTextSizeA(font, iconSize, float.MaxValue, 0f, (sbyte*)nativeText.pointer, null, null, &measured);
             Vector2 size = new(measured.X, measured.Y);
             Vector2 origin = center - size * 0.5f;
+            ImVec2C outlinePosition = new() { X = origin.X + 1f, Y = origin.Y + 1f };
+            ImVec2C textPosition = new() { X = origin.X, Y = origin.Y };
             NativeImGui.Raw.AddText(
                 draw,
                 font,
                 iconSize,
-                new ImVec2C { X = origin.X + 1f, Y = origin.Y + 1f },
+                &outlinePosition,
                 outline,
                 (sbyte*)nativeText.pointer,
                 null,
@@ -366,7 +365,7 @@ internal sealed unsafe class SceneViewPanel : EditorPanel
                 draw,
                 font,
                 iconSize,
-                new ImVec2C { X = origin.X, Y = origin.Y },
+                &textPosition,
                 white,
                 (sbyte*)nativeText.pointer,
                 null,
@@ -772,12 +771,10 @@ internal sealed unsafe class SceneViewPanel : EditorPanel
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 maximum = minimum + size;
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        NativeImGui.Raw.AddRectFilled(
-            drawList,
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(maximum),
+        EditorImGui.DrawFilledRectangle(
+            minimum,
+            maximum,
             NativeImGui.ColorConvertFloat4ToU32(m_backgroundColor),
-            0,
             0
         );
         NativeImGui.PushStyleColor((int)ImGuiCol.Text, EditorPalette.textDisabled);
@@ -798,13 +795,11 @@ internal sealed unsafe class SceneViewPanel : EditorPanel
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         Vector4 background = EditorPalette.inspectorTargetHeader;
         background.W = EditorPalette.opacityMedium;
-        NativeImGui.Raw.AddRectFilled(
-            drawList,
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.minimum),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.maximum),
+        EditorImGui.DrawFilledRectangle(
+            layout.minimum,
+            layout.maximum,
             NativeImGui.ColorConvertFloat4ToU32(background),
-            EditorWidget.style.frameRounding,
-            0
+            EditorWidget.style.frameRounding
         );
 
         float itemX = layout.minimum.X + layout.padding;
@@ -848,10 +843,9 @@ internal sealed unsafe class SceneViewPanel : EditorPanel
             itemY += layout.itemSize.Y + layout.sectionSpacing;
 
             float separatorY = itemY - layout.sectionSpacing * 0.5f;
-            NativeImGui.Raw.AddLine(
-                drawList,
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(layout.minimum.X + layout.padding, separatorY)),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(layout.maximum.X - layout.padding, separatorY)),
+            EditorImGui.DrawLine(
+                new Vector2(layout.minimum.X + layout.padding, separatorY),
+                new Vector2(layout.maximum.X - layout.padding, separatorY),
                 NativeImGui.ColorConvertFloat4ToU32(Vector4.One),
                 EditorWidget.style.borderSize
             );
@@ -936,12 +930,10 @@ internal sealed unsafe class SceneViewPanel : EditorPanel
             Vector2 minimum = NativeImGui.GetItemRectMin();
             Vector2 maximum = NativeImGui.GetItemRectMax();
             float thickness = EditorWidget.style.interactionOverlayThickness;
-            NativeImGui.Raw.AddRectFilled(
-                NativeImGui.Raw.GetWindowDrawList(),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(minimum.X + thickness, maximum.Y)),
+            EditorImGui.DrawFilledRectangle(
+                minimum,
+                new Vector2(minimum.X + thickness, maximum.Y),
                 NativeImGui.ColorConvertFloat4ToU32(Vector4.One),
-                0,
                 0
             );
         }

@@ -45,6 +45,7 @@ public sealed class NativeBindingCMakeTests
                 """);
             File.WriteAllText(Path.Combine(source, "upstream", "CMakeLists.txt"), $$"""
                 add_library(fixture SHARED original.c)
+                target_compile_definitions(fixture PRIVATE INNO_UPSTREAM_ONLY=1)
                 add_custom_command(TARGET fixture PRE_BUILD
                     COMMAND "${CMAKE_COMMAND}" -E rename "{{cmakeHeader}}" "{{cmakeHidden}}")
                 add_custom_command(TARGET fixture POST_BUILD
@@ -53,6 +54,9 @@ public sealed class NativeBindingCMakeTests
             File.WriteAllText(Path.Combine(source, "upstream", "original.c"), """
                 #ifdef INNO_BINDING_ONLY
                 #error Binding definitions escaped into the upstream translation unit.
+                #endif
+                #ifndef INNO_UPSTREAM_ONLY
+                #error The producer lost its private compilation contract.
                 #endif
                 __declspec(dllexport) int upstream(void) { return 37; }
                 """);
@@ -66,6 +70,9 @@ public sealed class NativeBindingCMakeTests
             File.WriteAllText(unit, """
                 #ifndef INNO_BINDING_ONLY
                 #error The binding translation unit lost its required definitions.
+                #endif
+                #ifdef INNO_UPSTREAM_ONLY
+                #error Upstream private definitions escaped into the public-header consumer.
                 #endif
                 #include "api.h"
                 __declspec(dllexport) int value(void) { return INNO_HEADER_VALUE; }

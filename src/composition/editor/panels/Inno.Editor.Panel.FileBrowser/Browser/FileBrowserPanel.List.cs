@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -215,10 +213,9 @@ internal sealed unsafe partial class FileBrowserPanel
             : hovered
                 ? EditorPalette.assetBorder
                 : EditorPalette.assetBorderSoft;
-        NativeImGui.Raw.AddLine(
-            NativeImGui.Raw.GetWindowDrawList(),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(x, top)),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(x, bottom)),
+        EditorImGui.DrawLine(
+            new Vector2(x, top),
+            new Vector2(x, bottom),
             NativeImGui.ColorConvertFloat4ToU32(color),
             EditorWidget.style.borderSize
         );

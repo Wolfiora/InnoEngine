@@ -114,10 +114,10 @@ public static unsafe partial class ImGuiWidget
             if (active)
             {
                 Vector2 focusOffset = new(C_INLINE_RENAME_FOCUS_OFFSET);
-                NativeImGui.Raw.AddRect(
+                ImGui.DrawNativeRectangle(
                     NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
-                    ImGui.ToNative(NativeImGui.GetItemRectMin() - focusOffset),
-                    ImGui.ToNative(NativeImGui.GetItemRectMax() + focusOffset),
+                    NativeImGui.GetItemRectMin() - focusOffset,
+                    NativeImGui.GetItemRectMax() + focusOffset,
                     NativeImGui.GetColorU32((int)(ImGuiCol.NavCursor)),
                     style.frameRounding + C_INLINE_RENAME_FOCUS_OFFSET,
                     (int)(ImDrawFlags.RoundCornersAll),

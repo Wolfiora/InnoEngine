@@ -45,7 +45,7 @@ sealed unsafe partial class BgfxDevice
         textureNameBytes[textureNameLength] = 0;
         fixed (byte* textureNamePointer = textureNameBytes)
         {
-            bgfx.Raw.set_texture_name(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
+            BgfxNativeCalls.SetTextureName(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
         }
         ulong id = m_nextPersistentId++;
         m_persistentTextures.Add(id, nativeTexture);
@@ -96,7 +96,7 @@ sealed unsafe partial class BgfxDevice
         }
 
         bgfx.TextureInfo info = default;
-        bgfx.TextureHandle nativeTexture = bgfx.Raw.create_texture(
+        bgfx.TextureHandle nativeTexture = BgfxNativeCalls.CreateTexture(
             memory,
             sRgb ? (ulong)bgfx.TextureFlags.Srgb : 0,
             0,
@@ -113,7 +113,7 @@ sealed unsafe partial class BgfxDevice
         textureNameBytes[textureNameLength] = 0;
         fixed (byte* textureNamePointer = textureNameBytes)
         {
-            bgfx.Raw.set_texture_name(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
+            BgfxNativeCalls.SetTextureName(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
         }
         ulong id = m_nextPersistentId++;
         m_persistentTextures.Add(id, nativeTexture);
@@ -176,7 +176,7 @@ sealed unsafe partial class BgfxDevice
         switch (descriptor.dimension)
         {
             case RenderTextureDimension.Texture2D:
-                bgfx.Raw.update_texture_2d(
+                BgfxNativeCalls.UpdateTexture2d(
                     nativeTexture,
                     checked((ushort)arrayLayer),
                     checked((byte)mipLevel),
@@ -188,7 +188,7 @@ sealed unsafe partial class BgfxDevice
                     ushort.MaxValue);
                 break;
             case RenderTextureDimension.Texture3D:
-                bgfx.Raw.update_texture_3d(
+                BgfxNativeCalls.UpdateTexture3d(
                     nativeTexture,
                     checked((byte)mipLevel),
                     0,
@@ -200,7 +200,7 @@ sealed unsafe partial class BgfxDevice
                     memory);
                 break;
             case RenderTextureDimension.Cube:
-                bgfx.Raw.update_texture_cube(
+                BgfxNativeCalls.UpdateTextureCube(
                     nativeTexture,
                     checked((ushort)(arrayLayer / 6)),
                     checked((byte)(arrayLayer % 6)),
@@ -273,7 +273,7 @@ sealed unsafe partial class BgfxDevice
         switch (descriptor.dimension)
         {
             case RenderTextureDimension.Texture2D:
-                bgfx.Raw.update_texture_2d(
+                BgfxNativeCalls.UpdateTexture2d(
                     nativeTexture,
                     checked((ushort)region.layer),
                     checked((byte)region.mip),
@@ -285,7 +285,7 @@ sealed unsafe partial class BgfxDevice
                     checked((ushort)rowPitch));
                 break;
             case RenderTextureDimension.Texture3D:
-                bgfx.Raw.update_texture_3d(
+                BgfxNativeCalls.UpdateTexture3d(
                     nativeTexture,
                     checked((byte)region.mip),
                     checked((ushort)region.x),
@@ -297,7 +297,7 @@ sealed unsafe partial class BgfxDevice
                     memory);
                 break;
             case RenderTextureDimension.Cube:
-                bgfx.Raw.update_texture_cube(
+                BgfxNativeCalls.UpdateTextureCube(
                     nativeTexture,
                     checked((ushort)(region.layer / 6)),
                     checked((byte)(region.layer % 6)),
@@ -476,7 +476,7 @@ sealed unsafe partial class BgfxDevice
 
         return descriptor.dimension switch
         {
-            RenderTextureDimension.Texture2D => bgfx.Raw.create_texture_2d(
+            RenderTextureDimension.Texture2D => BgfxNativeCalls.CreateTexture2d(
                 checked((ushort)descriptor.width),
                 checked((ushort)descriptor.height),
                 descriptor.mipCount > 1 ? (byte)1 : (byte)0,
@@ -485,7 +485,7 @@ sealed unsafe partial class BgfxDevice
                 (ulong)flags,
                 null,
                 0),
-            RenderTextureDimension.Texture3D => bgfx.Raw.create_texture_3d(
+            RenderTextureDimension.Texture3D => BgfxNativeCalls.CreateTexture3d(
                 checked((ushort)descriptor.width),
                 checked((ushort)descriptor.height),
                 checked((ushort)descriptor.depth),
@@ -494,7 +494,7 @@ sealed unsafe partial class BgfxDevice
                 (ulong)flags,
                 null,
                 0),
-            RenderTextureDimension.Cube => bgfx.Raw.create_texture_cube(
+            RenderTextureDimension.Cube => BgfxNativeCalls.CreateTextureCube(
                 checked((ushort)descriptor.width),
                 descriptor.mipCount > 1 ? (byte)1 : (byte)0,
                 checked((ushort)descriptor.arrayLayers),

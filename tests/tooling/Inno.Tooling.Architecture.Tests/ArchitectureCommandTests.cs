@@ -24,7 +24,7 @@ public sealed class ArchitectureCommandTests
             Directory.CreateDirectory(project);
             File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
                 "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>"
-                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[3.0.1]\" /></ItemGroup></Project>");
+                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[4.1.0]\" /></ItemGroup></Project>");
             (_, string output) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(rejected, output.Contains("the interop runtime dependency belongs", StringComparison.Ordinal));
             Assert.DoesNotContain("does not resolve to a repository project", output, StringComparison.Ordinal);

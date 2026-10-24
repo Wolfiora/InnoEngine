@@ -61,7 +61,7 @@ internal sealed class BindingGenerationOperation : IDisposable
             BindingGenerationConfiguration definition = definitions[index];
             string fingerprint = fingerprints[index];
             string output = definition.GetOutputRoot(m_context);
-            var loaded = definition.Load(m_context);
+            var loaded = definition.Load(m_context, cancellation);
             if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
             {
                 string destination = Path.Combine(output, fingerprint);
@@ -208,7 +208,7 @@ internal sealed class BindingGenerationOperation : IDisposable
         NativeBuildContext context,
         CancellationToken cancellation
     ) {
-        var loaded = definition.Load(context);
+        var loaded = definition.Load(context, cancellation);
         return NativeBindingGenerationIdentity.Compute(loaded, definition, context, cancellation);
     }
 }

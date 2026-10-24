@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -136,13 +134,12 @@ internal sealed unsafe partial class FileBrowserPanel
         Vector2 min = NativeImGui.GetItemRectMin();
         Vector2 max = NativeImGui.GetItemRectMax();
         Vector4 color = active ? EditorPalette.assetAccent : hovered ? EditorPalette.assetBorder : EditorPalette.assetBorderSoft;
-        NativeImGui.Raw.AddRectFilled(
-            NativeImGui.Raw.GetWindowDrawList(),
-            new ImVec2C { X = min.X, Y = min.Y },
-            new ImVec2C { X = max.X, Y = max.Y },
+        EditorImGui.DrawFilledRectangle(
+            min,
+            max,
             NativeImGui.ColorConvertFloat4ToU32(color),
-            0f,
-            0);
+            0f
+        );
     }
 
     private static float ClampTreeWidth(
@@ -322,10 +319,9 @@ internal sealed unsafe partial class FileBrowserPanel
         float width = NativeImGui.GetContentRegionAvail().X;
         float lineY = cursor.Y + style->WindowPadding.Y;
         uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.assetBorder);
-        NativeImGui.Raw.AddLine(
-            NativeImGui.Raw.GetWindowDrawList(),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(cursor.X, lineY)),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(cursor.X + width, lineY)),
+        EditorImGui.DrawLine(
+            new Vector2(cursor.X, lineY),
+            new Vector2(cursor.X + width, lineY),
             color,
             EditorWidget.style.borderSize
         );
@@ -337,10 +333,9 @@ internal sealed unsafe partial class FileBrowserPanel
         Vector2 min = NativeImGui.GetWindowPos();
         Vector2 size = NativeImGui.GetWindowSize();
         uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.assetBorder);
-        NativeImGui.Raw.AddLine(
-            NativeImGui.Raw.GetWindowDrawList(),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(min.X + size.X, min.Y)),
+        EditorImGui.DrawLine(
+            min,
+            new Vector2(min.X + size.X, min.Y),
             color,
             EditorWidget.style.borderSize
         );

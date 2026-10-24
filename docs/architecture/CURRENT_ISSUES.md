@@ -2,13 +2,13 @@
 
 [架构索引](README.md) · [当前验收](CURRENT_ACCEPTANCE.md) · [Wiki 首页](../README.md)
 
-当前事实以[平台职责与缓存验收](../../records/architecture/acceptance/PLATFORM_OWNERSHIP_CACHE_ACCEPTANCE_2026_10_22.md)为准。未执行不等于已确认缺陷，契约通过不等于所有设备已验收。
+当前复验见[BGCS 4.1.0 消费验收](../../records/architecture/acceptance/BGCS410_CONSUMER_ACCEPTANCE_2026_10_24.md)；前序平台和缓存结果按其原记录范围保留。未执行不等于已确认缺陷，契约通过不等于所有设备已验收。
 
 ## 仍开放的问题
 
 | ID | 范围 | 事实、影响与处理边界 |
 | --- | --- | --- |
-| G03 | BGCS / Browser | 正式 BGCS 3.0.1 以 `BGCS-CSHARP-ABI-PLAN` 拒绝 BGFX 按值结构体调用，缺少 aggregate calling profile，阻塞 Mono Wasm / Wasm AOT。由 SDK 实现目标 ABI 后，通过原正式链复验，不补丁、不伪造、不借用宿主 ABI。见[专项记录](../../records/architecture/acceptance/BGCS301_BROWSER_AGGREGATE_ABI.md)。 |
+| G03 | Browser 产品闭合 | 正式 BGCS 4.1.0 的 Browser 扩展与 aggregate pointer bridge 已通过五组件生成，原生成能力阻塞解除。实际 native 编译发现 SDK 将系统头匿名 union 的诊断名称写成非法 C 类型；不引用引擎的精简 pthread 工程已独立复现。见[完整复现与验收条件](../../records/architecture/acceptance/BGCS410_ANONYMOUS_SYSTEM_RECORD_REPRO.md)。未修改 SDK、生成代码或关闭断言；Browser 产品暂缓。 |
 | O01 | macOS / Metal | 历史 revision 的两条 CI 在单线程 Metal surface 退休用例超时，根因未确认。本轮没有 Mac，不能关闭或直接归责 BGCS。 |
 | O02 | 完整构建性能 | 本轮有当前热构建采样及同 .NET 10 的路径解析实现对照，但没有完整改造前的空闲、同输入五次 Editor 基线。历史高负载耗时不作有效对照，不宣称整体提速或已排除全部回退。 |
 | O06 | XML / Wiki 语义 | 符号、签名和示例门禁不证明全部历史注释足够具体；部分历史参数说明仍需补充实际约束和失败语义。新增构建 API 的所有权、失败与生命周期单独说明。 |
@@ -18,7 +18,7 @@
 | 范围 | 验收边界 |
 | --- | --- |
 | macOS ARM64 / Unix | 本轮无实机；Metal、Editor Debug/Release、示例产品、CoreCLR、NativeAOT 和不同卷格式未执行。历史 CI 与 fixture 仅保留原范围。 |
-| Browser 产品 | 已解析实际 workload；G03 阻塞正式生成和后续产品，不能从 Windows 推断成功。 |
+| Browser 产品 | 使用实际 workload 与正式 4.1.0 扩展生成成功；native 编译受 G03 阻塞，Mono Wasm / Wasm AOT 未通过，不能从 Windows 推断成功。 |
 | Rider 交互 | SDK 入口及 Task worker 回归不等于本轮操作过 Rider Run；没有单独的 Rider 生产分支。 |
 | GUI / 设备 | Play、昼夜切换、返回 Edit、窗口变化和退出按报告列出；完整 DPI/焦点、所有输入、音频听感及长期运行不计作通过。 |
 | 特殊文件系统 U07 | Native 输入比较策略仍需在 Windows 大小写敏感目录及 macOS 两种卷上实测。独立探针启用属性曾被拒绝，没有有效复现；物理路径 resolver 不代表全部卷语义已解决。 |

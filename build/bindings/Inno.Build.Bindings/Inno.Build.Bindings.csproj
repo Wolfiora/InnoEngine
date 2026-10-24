@@ -22,15 +22,31 @@
     <ItemGroup>
       <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/**/*.cs" Exclude="$(MSBuildProjectDirectory)/bin/**;$(MSBuildProjectDirectory)/obj/**" />
       <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/Inno.Build.Bindings.csproj" />
-      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildFingerprint.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInput.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputSnapshot.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputReadCache.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInputState.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputVerificationScope.cs;$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs" />
+      <_BindingImplementationInput Include="$(RoslynTargetsPath)/bincore/csc.dll" />
+      <_BindingImplementationInput Include="$(RoslynTargetsPath)/bincore/Microsoft.CodeAnalysis.dll" />
+      <_BindingImplementationInput Include="$(RoslynTargetsPath)/bincore/Microsoft.CodeAnalysis.CSharp.dll" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBindingCompilation.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceRoot.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBindingSourceFile.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBindingIncludeDirectory.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildFingerprint.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInput.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputSnapshot.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputReadCache.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeBuildInputState.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/Native/NativeInputVerificationScope.cs" />
+      <_BindingImplementationInput Include="$(MSBuildProjectDirectory)/../../toolchains/Inno.Build.Toolchains/BuildArtifactManifest.cs" />
       <_BindingImplementationInput Include="@(ReferencePath)" Condition="'%(ReferencePath.NuGetPackageId)' == 'BGCS' or $([System.String]::Copy('%(ReferencePath.NuGetPackageId)').StartsWith('BGCS.'))" />
       <_BindingImplementationInput Include="@(NativeCopyLocalItems)" />
-      <_BindingImplementationInput Include="$(NuGetPackageRoot)bgcs/$(InnoBgcsPackageVersion)/bgcs.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.contracts/$(InnoBgcsPackageVersion)/bgcs.contracts.$(InnoBgcsPackageVersion).nupkg.sha512" />
+      <_BindingImplementationInput Include="$(NuGetPackageRoot)bgcs/$(InnoBgcsPackageVersion)/bgcs.$(InnoBgcsPackageVersion).nupkg.sha512;$(NuGetPackageRoot)bgcs.core/$(InnoBgcsPackageVersion)/bgcs.core.$(InnoBgcsPackageVersion).nupkg.sha512" />
     </ItemGroup>
     <GetFileHash Files="@(_BindingImplementationInput)">
       <Output TaskParameter="Items" ItemName="_BindingImplementationHash" />
     </GetFileHash>
-    <WriteLinesToFile File="$(IntermediateOutputPath)binding-implementation.inputs" Lines="@(_BindingImplementationHash-&gt;'%(Filename)%(Extension)|%(FileHash)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(IntermediateOutputPath)binding-implementation.inputs"
+                      Lines="@(_BindingImplementationHash-&gt;'%(Filename)%(Extension)|%(FileHash)');sdk=$(NETCoreSdkVersion);framework=$(TargetFramework);language=$(LangVersion);defines=$(DefineConstants);nullable=$(Nullable);checked=$(CheckForOverflowUnderflow);unsafe=$(AllowUnsafeBlocks);optimize=$(Optimize);features=$(Features)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
     <GetFileHash Files="$(IntermediateOutputPath)binding-implementation.inputs">
       <Output TaskParameter="Hash" PropertyName="_BindingImplementationFingerprint" />
     </GetFileHash>

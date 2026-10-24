@@ -286,7 +286,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         WriteDefinition();
         string config = Path.Combine(m_root, "bindgen.json");
         File.WriteAllText(config, JsonSerializer.Serialize(new {
-            schemaVersion = 1,
+            schemaVersion = 2,
             library = new { id = "fixture", nativeName = "fixture" },
             source = new { language = "c", headers = new[] { "Source/api.h" } },
             api = new { @namespace = "Fixture.Native", name = "Api" },
@@ -320,7 +320,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     {
         File.WriteAllText(path, JsonSerializer.Serialize(new
         {
-            schemaVersion = 1,
+            schemaVersion = 2,
             library = new { id = "fixture", nativeName = "fixture" },
             source = new { language = "cpp", languageStandard = "c++20", headers = new[] { "Source/facade.hpp" } },
             api = new { @namespace = "Fixture.Native", name = "Api" },

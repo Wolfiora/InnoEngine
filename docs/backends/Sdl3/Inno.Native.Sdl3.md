@@ -12,7 +12,7 @@
 
 ## 声明与实际导出
 
-共同定义排除 SDL 头文件中声明的编译器内建函数 `__debugbreak`。它属于 MSVC 的断言实现，不是 SDL DLL 的导出。该规则属于 SDL 的绑定定义，BGCS 不包含 SDL 专用识别逻辑。动态函数表初始化要求全部已选择符号存在；Native 测试通过实际初始化和调用检查部署闭包。
+共同定义不将 `SDL_assert.h` 作为公开绑定根；引擎不消费 SDL 的 assertion API，也不绑定该头文件中声明的编译器内建函数。这个组件语义边界适用于全部目标，不保存平台内建符号名单。动态函数表初始化要求全部已选择符号存在；Native 测试通过实际初始化和调用检查部署闭包。
 
 ## 源码归属
 
@@ -20,13 +20,13 @@
 
 ## 当前源码公开 API 清单
 
-以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
+当前签名由正式源码语义清单核对；生命周期与错误约束见前文及对应 XML。
 
 <!-- api: T:Inno.Native.Sdl3.SDL 75f9ea5744d371e26cd438217c5f4020f8be05b1e992b1a0a022671c99672036 -->
 
-| 声明 | 语义与限制 |
+| 声明 | 行为与约束 |
 | --- | --- |
-| <a id="api-e67f3d5045477c09"></a>[`public static class Inno.Native.Sdl3.SDL`](../../../backends/Sdl3/native/Inno.Native.Sdl3/SDL.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
+| <a id="api-e67f3d5045477c09"></a>[`public static class Inno.Native.Sdl3.SDL`](../../../backends/Sdl3/native/Inno.Native.Sdl3/SDL.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API.<br>Owns one explicitly shared context. Replacement closes the previous context; existing resource leases retain its native cleanup capability. |
 
 ## 项目依赖
 

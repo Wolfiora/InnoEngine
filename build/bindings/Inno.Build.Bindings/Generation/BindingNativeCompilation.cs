@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using BGCS;
-using BGCS.Contracts.Artifacts;
-using BGCS.Contracts.Inputs;
+using BGCS.Core.Artifacts;
+using BGCS.Core.Inputs;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Bindings;
@@ -56,7 +56,7 @@ internal static class BindingNativeCompilation
             cxxStandard = Math.Max(manifest.language == SourceLanguage.Cpp ? ParseStandard(manifest.languageStandard, "c++") : 0,
                 manifest.languageRequirements.Select(static requirement => requirement.minimumStandard).DefaultIfEmpty().Max()),
             cStandard = manifest.language == SourceLanguage.C ? ParseStandard(manifest.languageStandard, "c") : 0,
-            requiredExports = manifest.requiredExports.ToArray(),
+            requiredExports = manifest.exportBindings.Select(static binding => binding.exportName).Distinct(StringComparer.Ordinal).ToArray(),
             staticExportSymbols = table is null ? [] : [table.getExportSymbol, table.getRevisionSymbol, table.getCountSymbol,
                 table.getAbiIdentitySymbol, table.getPointerSizeSymbol],
             staticExportAbi = table?.abiIdentity ?? string.Empty,

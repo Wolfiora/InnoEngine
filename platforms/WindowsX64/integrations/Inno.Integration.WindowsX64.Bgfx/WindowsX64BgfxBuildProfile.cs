@@ -1,6 +1,7 @@
 using System;
 using Inno.Build.WindowsX64;
 using System.Collections.Generic;
+using System.IO;
 using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Bgfx;
 
@@ -9,7 +10,10 @@ namespace Inno.Integration.WindowsX64.Bgfx;
 internal sealed class WindowsX64BgfxBuildProfile : BgfxNativeBuildProfile
 {
     /// <inheritdoc />
-    public override NativeToolchainSelection SelectTools(NativeBuildContext context) => WindowsX64BgfxToolContribution.Select(context);
+    public override NativeToolchainSelection SelectTools(
+        NativeBuildContext context,
+        bool includeTools
+    ) => WindowsX64BgfxToolContribution.Select(context, includeTools);
 
     /// <inheritdoc />
     public override string targetId => WindowsX64BuildModule.target.id.value;
@@ -17,6 +21,18 @@ internal sealed class WindowsX64BgfxBuildProfile : BgfxNativeBuildProfile
     public override IReadOnlyList<string> generatorArguments => ["vs2022"];
     /// <inheritdoc />
     public override string artifactPathToken => "/win64_vs2022/bin/";
+
+    /// <inheritdoc />
+    public override IReadOnlyList<string> bindingCmakeArguments =>
+        ["-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>"];
+
+    /// <inheritdoc />
+    public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
+        // The Visual Studio generator appends the target's archive suffix to library references.
+        return (Path.ChangeExtension(archivePath, null), ["/WHOLEARCHIVE:\"" + archivePath + "\""]);
+    }
 
     /// <inheritdoc />
     public override BgfxBuildInvocation CreateBuildInvocation(

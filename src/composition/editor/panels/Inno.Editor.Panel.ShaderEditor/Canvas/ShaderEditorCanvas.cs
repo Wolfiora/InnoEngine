@@ -88,7 +88,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
         }
         Navigate(hovered && !miniMapHovered);
         ImDrawList* draw = ImGuiApi.Raw.GetWindowDrawList();
-        ImGuiApi.Raw.PushClipRect(
+        PushNativeClipRectangle(
             draw,
             Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin),
             Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + m_size),
@@ -96,7 +96,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
         );
         try
         {
-            ImGuiApi.Raw.AddRectFilled(
+            DrawNativeFilledRectangle(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + m_size),
@@ -113,7 +113,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             if (draft.boxSelecting)
             {
                 Vector2 min = Vector2.Min(draft.pointerStart, mouse), max = Vector2.Max(draft.pointerStart, mouse);
-                ImGuiApi.Raw.AddRectFilled(
+                DrawNativeFilledRectangle(
                     draw,
                     Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
                     Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
@@ -121,7 +121,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
                     0,
                     0
                 );
-                ImGuiApi.Raw.AddRect(
+                DrawNativeRectangle(
                     draw,
                     Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
                     Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
@@ -135,7 +135,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             status += " · Saved asset: " + draft.compilationStatus;
             using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(status, allowsNull: false))
             {
-                ImGuiApi.Raw.AddText(
+                DrawNativeText(
                     draw,
                     Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(12, 10)),
                     ImGuiApi.GetColorU32((int)ImGuiCol.TextDisabled),
@@ -148,7 +148,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             if (draft.error.Length != 0)
                 using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(draft.error, allowsNull: false))
                 {
-                    ImGuiApi.Raw.AddText(
+                    DrawNativeText(
                         draw,
                         Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(12, 34)),
                         Color(1f, 0.47f, 0.44f),
@@ -614,7 +614,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             return;
         float zoom = Canvas.zoom;
         bool selected = Canvas.selectedNodes.Contains(node.id);
-        ImGuiApi.Raw.AddRectFilled(
+        DrawNativeFilledRectangle(
             draw,
             Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min + new Vector2(3, 5)),
             Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max + new Vector2(3, 5)),
@@ -622,7 +622,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             6 * zoom,
             0
         );
-        ImGuiApi.Raw.AddRectFilled(
+        DrawNativeFilledRectangle(
             draw,
             Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min),
             Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max),
@@ -631,7 +631,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             0
         );
         Vector4 headerColor = NodeHeaderColor(node);
-        ImGuiApi.Raw.AddRectFilled(
+        DrawNativeFilledRectangle(
             draw,
             Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min),
             Unsafe.BitCast<NumericsVector2, NativeVector2>(new(rect.max.X, rect.min.Y + C_HEADER * zoom)),
@@ -639,7 +639,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             6 * zoom,
             (int)ImDrawFlags.RoundCornersTop
         );
-        ImGuiApi.Raw.AddRect(
+        DrawNativeRectangle(
             draw,
             Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.min),
             Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max),
@@ -650,7 +650,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
         );
         using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(Title(node), allowsNull: false))
         {
-            ImGuiApi.Raw.AddText(
+            DrawNativeText(
                 draw,
                 ImGuiApi.Raw.GetFont(),
                 ImGuiApi.GetFontSize() * zoom,
@@ -669,7 +669,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
         if (splitPorts)
         {
             float bodyPadding = 7f * zoom;
-            ImGuiApi.Raw.AddLine(
+            DrawNativeLine(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(divider, bodyTop + bodyPadding)),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(divider, rect.max.Y - bodyPadding)),
@@ -685,11 +685,11 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             bool optional = port.direction == GraphPortDirection.Input && !port.required;
             uint portColor = missing ? Color(0.95f, 0.35f, 0.3f) : Color(0.60f, 0.48f, 0.84f);
             if (missing || !optional)
-                ImGuiApi.Raw.AddCircleFilled(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(point), 5 * zoom, portColor, 0);
+                DrawNativeFilledCircle(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(point), 5 * zoom, portColor, 0);
             else
             {
-                ImGuiApi.Raw.AddCircleFilled(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(point), 5 * zoom, portColor, 0);
-                ImGuiApi.Raw.AddCircleFilled(
+                DrawNativeFilledCircle(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(point), 5 * zoom, portColor, 0);
+                DrawNativeFilledCircle(
                     draw,
                     Unsafe.BitCast<NumericsVector2, NativeVector2>(point),
                     2.75f * zoom,
@@ -710,7 +710,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             float clipRight = splitPorts && input ? divider - 1f : rect.max.X - 1f;
             Vector2 clipMin = new(clipLeft, bodyTop);
             Vector2 clipMax = new(clipRight, rect.max.Y);
-            ImGuiApi.Raw.PushClipRect(
+            PushNativeClipRectangle(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(clipMin),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(clipMax),
@@ -718,7 +718,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             );
             using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(label, allowsNull: false))
             {
-                ImGuiApi.Raw.AddText(
+                DrawNativeText(
                     draw,
                     ImGuiApi.Raw.GetFont(),
                     ImGuiApi.GetFontSize() * zoom,
@@ -747,14 +747,14 @@ internal sealed unsafe partial class ShaderEditorCanvas(
                     ? EditorPalette.opacityEmphasized
                     : EditorPalette.opacityMedium);
             const float inset = 4f;
-            ImGuiApi.Raw.AddLine(
+            DrawNativeLine(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(C_RESIZE_HANDLE, inset) * zoom),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(inset, C_RESIZE_HANDLE) * zoom),
                 gripColor,
                 1f
             );
-            ImGuiApi.Raw.AddLine(
+            DrawNativeLine(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(C_RESIZE_HANDLE * 0.62f, inset) * zoom),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(rect.max - new Vector2(inset, C_RESIZE_HANDLE * 0.62f) * zoom),
@@ -765,7 +765,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
         if (draft.ports[node.id].Length == 0 && node.definitionId == ShaderGraphNodes.inputDefinitionId)
             using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated("No caller inputs", allowsNull: false))
             {
-                ImGuiApi.Raw.AddText(
+                DrawNativeText(
                     draw,
                     ImGuiApi.Raw.GetFont(),
                     ImGuiApi.GetFontSize() * zoom,
@@ -779,7 +779,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             }
         if (draft.nodeErrors.TryGetValue(node.id, out string? error))
         {
-            ImGuiApi.Raw.AddCircleFilled(
+            DrawNativeFilledCircle(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(new(rect.max.X - 14 * zoom, rect.min.Y + 16 * zoom)),
                 4 * zoom,
@@ -795,7 +795,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
     {
         float spacing = 32 * Canvas.zoom;
         for (float x = ((Canvas.pan.x % spacing) + spacing) % spacing; x < m_size.X; x += spacing)
-            ImGuiApi.Raw.AddLine(
+            DrawNativeLine(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(x, 0)),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(x, m_size.Y)),
@@ -803,7 +803,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
                 1f
             );
         for (float y = ((Canvas.pan.y % spacing) + spacing) % spacing; y < m_size.Y; y += spacing)
-            ImGuiApi.Raw.AddLine(
+            DrawNativeLine(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(0, y)),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(m_origin + new Vector2(m_size.X, y)),
@@ -829,7 +829,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
                     MathF.Min(1f, headerColor.Z * 1.22f),
                     EditorPalette.opacityEmphasized);
             float headerHeight = C_HEADER * Canvas.zoom;
-            ImGuiApi.Raw.AddRectFilled(
+            DrawNativeFilledRectangle(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
@@ -837,7 +837,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
                 8 * Canvas.zoom,
                 0
             );
-            ImGuiApi.Raw.AddRectFilled(
+            DrawNativeFilledRectangle(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(new(max.X, min.Y + headerHeight)),
@@ -845,14 +845,14 @@ internal sealed unsafe partial class ShaderEditorCanvas(
                 8 * Canvas.zoom,
                 (int)ImDrawFlags.RoundCornersTop
             );
-            ImGuiApi.Raw.AddLine(
+            DrawNativeLine(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(new(min.X, min.Y + headerHeight)),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(new(max.X, min.Y + headerHeight)),
                 ImGuiApi.ColorConvertFloat4ToU32(borderColor),
                 1f
             );
-            ImGuiApi.Raw.AddRect(
+            DrawNativeRectangle(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
@@ -863,7 +863,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             );
             using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(group.title, allowsNull: false))
             {
-                ImGuiApi.Raw.AddText(
+                DrawNativeText(
                     draw,
                     ImGuiApi.Raw.GetFont(),
                     ImGuiApi.GetFontSize() * Canvas.zoom,
@@ -939,7 +939,7 @@ internal sealed unsafe partial class ShaderEditorCanvas(
             bool selected = false
         ) {
             float tangent = MathF.Max(36, MathF.Abs(b.X - a.X) * 0.45f);
-            ImGuiApi.Raw.AddBezierCubic(
+            DrawNativeCurve(
                 draw,
                 new ImVec2C { X = a.X, Y = a.Y },
                 new ImVec2C { X = a.X + tangent, Y = a.Y },

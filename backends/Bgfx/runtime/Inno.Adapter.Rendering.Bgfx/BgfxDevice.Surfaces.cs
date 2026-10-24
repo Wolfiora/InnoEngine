@@ -263,7 +263,7 @@ public sealed unsafe partial class BgfxDevice
         int width,
         int height
     )
-        => bgfx.Raw.create_frame_buffer_from_nwh(
+        => BgfxNativeCalls.CreateFrameBufferFromNwh(
             descriptor.windowHandle.ToPointer(),
             checked((ushort)width),
             checked((ushort)height),

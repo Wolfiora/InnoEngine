@@ -14,6 +14,7 @@
 
 #include "TextRuntime.hpp"
 
+
 #if defined(__builtin_offsetof)
 #error BGCS DTO storage proof token is macro-defined: __builtin_offsetof
 #endif

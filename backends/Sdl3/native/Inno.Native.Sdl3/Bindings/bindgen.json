@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "library": {
     "id": "inno.sdl3",
     "nativeName": "SDL3"
@@ -18,8 +18,10 @@
     "parseMacros": true,
     "selection": {
       "includeHeaders": [],
+      "excludeHeaders": [
+        "../../../../../extern/SDL/include/SDL3/SDL_assert.h"
+      ],
       "excludeDeclarations": [
-        "__debugbreak",
         "SDL_sscanf",
         "SDL_snprintf",
         "SDL_swprintf",

@@ -16,7 +16,7 @@ internal sealed class BgfxBuildRequest
         ArgumentNullException.ThrowIfNull(profile);
         if (profile.targetId != initial.targetId)
             throw new ArgumentException("The BGFX profile does not match the frozen toolchain target.", nameof(profile));
-        context = operation.WithToolchain(profile.SelectTools(operation));
+        context = operation.WithToolchain(profile.SelectTools(operation, includeTools));
         component = includeTools ? BgfxToolsBuild.componentDescriptor : BgfxNativeBuild.componentDescriptor;
         NativeComponentBuildOptions options = context.RequireComponentOptions(component);
         if (options.libraryKind != NativeLibraryKind.Shared || options.cmakeArguments.Count != 0)
@@ -29,6 +29,7 @@ internal sealed class BgfxBuildRequest
             throw new ArgumentException("The BGFX profile requires assigned generator arguments.", nameof(profile));
         generatorArguments = includeTools ? ["--with-shared-lib", "--with-tools", .. arguments]
             : ["--with-shared-lib", .. arguments];
+        bindingCmakeArguments = includeTools ? [] : profile.bindingCmakeArguments.ToArray();
         invocation = profile.CreateBuildInvocation(context, includeTools)
             ?? throw new ArgumentException("The BGFX profile returned no SDK invocation.", nameof(profile));
         NativeToolchainSelection tools = context.RequireToolchain();
@@ -41,12 +42,16 @@ internal sealed class BgfxBuildRequest
         genie = tools.ResolveExecutable("genie");
         string[] declarations = ["artifact=" + artifactToken,
             .. generatorArguments.Select(static value => "generate=" + value),
+            .. bindingCmakeArguments.Select(static value => "bridge=" + value),
             "compiler=" + compiler, .. invocation.arguments.Select(static value => "compile=" + value)];
         string implementation = component.GetToolchainRoot(context.engineRoot);
         recipe = NativeBuildRecipe.CreateForComponent(context, component,
-            includeTools ? "bgfx-tools" : "bgfx", tools.targetId, [bgfx, bx, bimg, genie], declarations,
+            includeTools ? "bgfx-tools" : "bgfx", tools.targetId,
+            new[] { bgfx, bx, bimg, genie }.Concat(includeTools ? [] :
+                [Path.Combine(implementation, "Native", "SharedBindings", "CMakeLists.txt")]), declarations,
             new[] { "BgfxBuildConstants.cs", "BgfxBuildInvocation.cs", "BgfxBuildRequest.cs", "BgfxBuildSession.cs",
                 "BgfxBuildUtils.cs", "BgfxNativeBuild.cs", "BgfxNativeBuildProfile.cs", "BgfxToolsBuild.cs" }
+                .Concat(includeTools ? [] : ["BgfxBindingProject.cs"])
                 .Select(file => Path.Combine(implementation, file)));
     }
 
@@ -54,6 +59,7 @@ internal sealed class BgfxBuildRequest
     internal NativeComponentDescriptor component { get; }
     internal NativeBuildRecipe recipe { get; }
     internal string[] generatorArguments { get; }
+    internal string[] bindingCmakeArguments { get; }
     internal BgfxBuildInvocation invocation { get; }
     internal string compiler { get; }
     internal string genie { get; }

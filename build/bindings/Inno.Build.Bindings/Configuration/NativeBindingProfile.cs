@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using BGCS;
 using BGCS.Configuration;
-using BGCS.Contracts.Targets;
+using BGCS.Core.Targets;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Bindings;
@@ -15,6 +15,8 @@ namespace Inno.Build.Bindings;
 /// </summary>
 public sealed class NativeBindingProfile
 {
+    private readonly Action<BindingHostBuilder>? m_configureGenerator;
+
     /// <summary>
     /// Creates a target profile without discovering an SDK or executing a generator.
     /// </summary>
@@ -30,14 +32,19 @@ public sealed class NativeBindingProfile
     /// <param name="inputPaths">
     /// Checkout-relative implementation inputs owned by this profile.
     /// </param>
+    /// <param name="configureGenerator">
+    /// An immutable platform-owned registration action for official BGCS extensions, or null for the standard SDK.
+    /// The action must not capture mutable state; its implementation and extension assemblies participate in input identity.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// An identity is empty, uses implicit host selection, or a path escapes the checkout.
     /// </exception>
     public NativeBindingProfile(
         string targetId,
         TargetConfiguration target,
-        ManagedRuntimeKind? runtime = null,
-        IEnumerable<string>? inputPaths = null
+        ManagedRuntimeId? runtime = null,
+        IEnumerable<string>? inputPaths = null,
+        Action<BindingHostBuilder>? configureGenerator = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         if (targetId == "host")
@@ -49,6 +56,7 @@ public sealed class NativeBindingProfile
         this.target = target;
         this.runtime = runtime;
         this.inputPaths = Array.AsReadOnly((inputPaths ?? []).Select(ValidatePath).ToArray());
+        m_configureGenerator = configureGenerator;
     }
 
     /// <summary>
@@ -62,11 +70,16 @@ public sealed class NativeBindingProfile
     /// <summary>
     /// Gets the managed projection runtime, or null for the component's portable default.
     /// </summary>
-    public ManagedRuntimeKind? runtime { get; }
+    public ManagedRuntimeId? runtime { get; }
     /// <summary>
     /// Gets the profile's exact checkout implementation inputs.
     /// </summary>
     public IReadOnlyList<string> inputPaths { get; }
+
+    internal void Configure(BindingHostBuilder builder) => m_configureGenerator?.Invoke(builder);
+
+    internal IEnumerable<System.Reflection.Assembly> GetExtensionAssemblies() =>
+        m_configureGenerator?.GetInvocationList().Select(static action => action.Method.Module.Assembly) ?? [];
 
     internal GenerationRequest Apply(
         GenerationRequest request,
@@ -80,7 +93,7 @@ public sealed class NativeBindingProfile
             {
                 settings = selected.settings with
                 {
-                    compilerPath = request.configuration.source.language == BGCS.Contracts.Inputs.SourceLanguage.Cpp
+                    compilerPath = request.configuration.source.language == BGCS.Core.Inputs.SourceLanguage.Cpp
                         ? compiler.cppCompiler : compiler.cCompiler,
                     sysRoot = compiler.sysRoot,
                     systemIncludeDirectories = compiler.systemIncludeDirectories.ToImmutableArray(),

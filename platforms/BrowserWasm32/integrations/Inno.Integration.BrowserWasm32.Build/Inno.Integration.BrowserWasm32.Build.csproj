@@ -21,5 +21,6 @@
 
   <ItemGroup>
     <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
+    <PackageReference Include="BGCS.Extension.BrowserWasm" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

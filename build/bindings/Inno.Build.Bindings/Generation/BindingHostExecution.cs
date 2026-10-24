@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BGCS;
-using BGCS.Contracts.Artifacts;
+using BGCS.Core.Artifacts;
+using BGCS.Core.Hosting;
 
 namespace Inno.Build.Bindings;
 
@@ -12,37 +13,43 @@ internal static class BindingHostExecution
 {
     internal static void Generate(
         GenerationRequest request,
+        NativeBindingProfile profile,
         string engineRoot,
         string nativeOutput,
         string managedOutput,
         CancellationToken cancellation
-    ) => GenerateAsync(request, engineRoot, nativeOutput, managedOutput, cancellation).GetAwaiter().GetResult();
+    ) => GenerateAsync(request, profile, engineRoot, nativeOutput, managedOutput, cancellation).GetAwaiter().GetResult();
 
     private static async Task GenerateAsync(
         GenerationRequest request,
+        NativeBindingProfile profile,
         string engineRoot,
         string nativeOutput,
         string managedOutput,
         CancellationToken cancellation
     ) {
-        await using BindingHost host = BindingHostFactory.CreateBuilder(cancellation).Build();
+        await using BindingHost host = BindingHostFactory.CreateBuilder(profile, cancellation).Build();
+        await using HostServices services = BindingHostFactory.CreateHostServices(engineRoot);
         GenerationResult result = await host.GenerateAsync(request, cancellation).ConfigureAwait(false);
         foreach (var diagnostic in result.diagnostics)
         {
-            Console.WriteLine($"BGCS {diagnostic.code}: {diagnostic.message}");
+            Console.WriteLine($"BGCS {diagnostic.severity} {diagnostic.code}: {diagnostic.message}");
             if (diagnostic.details is not null)
                 Console.WriteLine(diagnostic.details);
         }
         if (!result.success)
-            throw new InvalidDataException("BGCS generation failed: " + result.GetDiagnosticSummary());
+            throw new InvalidDataException("BGCS generation failed: " + string.Join(Environment.NewLine,
+                result.diagnostics.Where(static diagnostic => diagnostic.severity is BGCS.Core.BindingDiagnosticSeverity.Error
+                    or BGCS.Core.BindingDiagnosticSeverity.Critical)
+                    .Select(static diagnostic => diagnostic.code + ": " + diagnostic.message)));
         foreach (var stage in result.cacheStages)
             Console.WriteLine($"BGCS cache {stage.targetId}/{stage.stage}: {stage.status}; {stage.reason}");
-        var artifacts = BindingArtifactManifest.Read(result.outputRoot, request.configuration.library.id, cancellation);
+        var artifacts = BindingArtifactManifest.Read(result.outputRoot, request.configuration.library.id, services.paths, cancellation);
         ArtifactDescriptor[] managed = artifacts.Where(static artifact => artifact.relativePath.EndsWith("/managed/Bindings.cs", StringComparison.Ordinal)).ToArray();
         if (managed.Length != 1)
             throw new InvalidDataException("BGCS must publish exactly one selected target's managed Bindings.cs.");
         NativeSourceManifest[] manifests = BindingArtifactManifest.ReadNativeSources(
-            result.outputRoot, request.configuration.library.id, cancellation).ToArray();
+            result.outputRoot, request.configuration.library.id, services.paths, cancellation).ToArray();
         if (manifests.Length != 1)
             throw new InvalidDataException("A component generation requires exactly one native source manifest.");
         NativeSourceManifest manifest = manifests[0];

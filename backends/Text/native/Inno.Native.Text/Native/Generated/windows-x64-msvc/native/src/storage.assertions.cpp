@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "TextRuntime.hpp"
 
+
 #if defined(sizeof)
 #error BGCS native storage proof token is shadowed by a macro
 #endif
@@ -176,29 +177,23 @@ static_assert(BGCS_NATIVE_FIELD_OFFSET(Inno::Text::FontAdapter::Glyph, advance_y
 static_assert(BGCS_NATIVE_FIELD_OFFSET(Inno::Text::FontAdapter::Glyph, offset_x) == 16, "BGCS native field offset differs from parsed facts");
 static_assert(BGCS_NATIVE_FIELD_OFFSET(Inno::Text::FontAdapter::Glyph, offset_y) == 20, "BGCS native field offset differs from parsed facts");
 #if defined(_MSC_VER)
-#define BGCS_VERIFY_CC_C __cdecl
+#define BGCS_VERIFY_CC_Win64 __cdecl
 #elif defined(__GNUC__) || defined(__clang__)
-#if defined(__i386__)
-#define BGCS_VERIFY_CC_C __attribute__((cdecl))
-#elif defined(__x86_64__)
-#define BGCS_VERIFY_CC_C __attribute__((ms_abi))
-#else
-#define BGCS_VERIFY_CC_C
-#endif
+#define BGCS_VERIFY_CC_Win64 __attribute__((ms_abi))
 #else
 #error BGCS native compiler cannot independently verify callable conventions
 #endif
-typedef Result (BGCS_VERIFY_CC_C Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_0)(unsigned long long, unsigned int, float, unsigned char *, unsigned int, Inno::Text::FontAdapter::Bitmap *);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_0)(unsigned long long, unsigned int, float, unsigned char *, unsigned int, Inno::Text::FontAdapter::Bitmap *);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_0>(&Inno::Text::FontAdapter::Runtime::RasterizeGlyph)), bgcs_verified_callable_0>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_1)(unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_1)(unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_1>(&Inno::Text::FontAdapter::Runtime::ReleaseFont)), bgcs_verified_callable_1>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_2)(const unsigned char *, unsigned int, int, unsigned long long *);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_2)(const unsigned char *, unsigned int, int, unsigned long long *);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_2>(&Inno::Text::FontAdapter::Runtime::LoadFont)), bgcs_verified_callable_2>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_3)(unsigned long long, const char *, unsigned int, float, Direction, const char *, const char *, Inno::Text::FontAdapter::Glyph *, unsigned int, unsigned int *);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_3)(unsigned long long, const char *, unsigned int, float, Direction, const char *, const char *, Inno::Text::FontAdapter::Glyph *, unsigned int, unsigned int *);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_3>(&Inno::Text::FontAdapter::Runtime::ShapeUtf8)), bgcs_verified_callable_3>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_4)(unsigned long long, float, Inno::Text::FontAdapter::Metrics *);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::Text::FontAdapter::Runtime::*bgcs_verified_callable_4)(unsigned long long, float, Inno::Text::FontAdapter::Metrics *);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_4>(&Inno::Text::FontAdapter::Runtime::GetMetrics)), bgcs_verified_callable_4>::value, "BGCS native callable signature differs from parsed facts");
-typedef const char * (BGCS_VERIFY_CC_C *bgcs_verified_callable_5)(Result);
+typedef const char * (BGCS_VERIFY_CC_Win64 *bgcs_verified_callable_5)(Result);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_5>(&Inno::Text::FontAdapter::Runtime::ResultMessage)), bgcs_verified_callable_5>::value, "BGCS native callable signature differs from parsed facts");
 typedef float bgcs_verified_field_0;
 static_assert(std::is_same<decltype(((Inno::Text::FontAdapter::Metrics*)nullptr)->ascender), bgcs_verified_field_0>::value, "BGCS native field type differs from parsed facts");

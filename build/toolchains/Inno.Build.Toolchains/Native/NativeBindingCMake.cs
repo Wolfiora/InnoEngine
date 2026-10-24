@@ -28,31 +28,40 @@ internal static class NativeBindingCMake
             string ResolveRoot(string id) => sources.ResolvePath(compilation.ResolveRoot(context.engineRoot, generation.nativeDirectory, id));
             compilation.VerifyInputs(ResolveRoot, cancellationToken);
             text.AppendLine("if(owner STREQUAL " + Literal(Path.GetFileNameWithoutExtension(entry.Key)) + ")");
-            foreach (NativeBindingSourceFile file in compilation.files.Where(static file => file.compile))
+            NativeBindingSourceFile[] units = compilation.files.Where(static file => file.compile).ToArray();
+            if (units.Length > 0)
             {
-                string source = Literal(PathBoundary.Resolve(ResolveRoot(file.rootId), file.relativePath));
-                text.AppendLine("target_sources(${target} PRIVATE " + source + ")");
+                // Generated sources consume the public header contract, never the producer's private build macros.
+                text.AppendLine("set(binding_target \"${target}_inno_binding\")");
+                text.AppendLine("add_library(${binding_target} OBJECT)");
+                text.AppendLine("set_property(TARGET ${binding_target} PROPERTY POSITION_INDEPENDENT_CODE ON)");
+                foreach (NativeBindingSourceFile file in units)
+                {
+                    string source = Literal(PathBoundary.Resolve(ResolveRoot(file.rootId), file.relativePath));
+                    text.AppendLine("target_sources(${binding_target} PRIVATE " + source + ")");
+                }
                 foreach (string define in compilation.defines)
-                    text.AppendLine("set_property(SOURCE " + source + " TARGET_DIRECTORY ${target} APPEND PROPERTY COMPILE_DEFINITIONS " + Literal(define) + ")");
+                    text.AppendLine("target_compile_definitions(${binding_target} PRIVATE " + Literal(define) + ")");
+                foreach (NativeBindingIncludeDirectory include in compilation.includeDirectories)
+                {
+                    NativeBindingSourceRoot root = compilation.roots.Single(root => root.id == include.rootId);
+                    // SDK search roots are requirements of the selected compiler, not duplicate -isystem flags.
+                    if (!root.frozen && include.system && !include.framework)
+                        continue;
+                    string directory = include.relativePath.Length == 0 ? ResolveRoot(include.rootId)
+                        : sources.ResolvePath(PathBoundary.Resolve(compilation.ResolveRoot(context.engineRoot, generation.nativeDirectory, include.rootId), include.relativePath));
+                    if (include.framework)
+                        text.AppendLine("target_compile_options(${binding_target} PRIVATE " + Literal("SHELL:-iframework \"" + directory.Replace('\\', '/') + "\"") + ")");
+                    else
+                        text.AppendLine("target_include_directories(${binding_target} " + (include.system ? "SYSTEM " : string.Empty)
+                            + "PRIVATE " + Literal(directory) + ")");
+                }
+                if (compilation.cxxStandard > 0)
+                    text.AppendLine("target_compile_features(${binding_target} PRIVATE cxx_std_" + compilation.cxxStandard + ")");
+                if (compilation.cStandard > 0)
+                    text.AppendLine("target_compile_features(${binding_target} PRIVATE c_std_" + compilation.cStandard + ")");
+                text.AppendLine("target_sources(${target} PRIVATE $<TARGET_OBJECTS:${binding_target}>)");
             }
-            foreach (NativeBindingIncludeDirectory include in compilation.includeDirectories)
-            {
-                NativeBindingSourceRoot root = compilation.roots.Single(root => root.id == include.rootId);
-                // SDK search roots are requirements of the selected compiler, not duplicate -isystem flags.
-                if (!root.frozen && include.system && !include.framework)
-                    continue;
-                string directory = include.relativePath.Length == 0 ? ResolveRoot(include.rootId)
-                    : sources.ResolvePath(PathBoundary.Resolve(compilation.ResolveRoot(context.engineRoot, generation.nativeDirectory, include.rootId), include.relativePath));
-                if (include.framework)
-                    text.AppendLine("target_compile_options(${target} PRIVATE " + Literal("SHELL:-iframework \"" + directory.Replace('\\', '/') + "\"") + ")");
-                else
-                    text.AppendLine("target_include_directories(${target} " + (include.system ? "SYSTEM " : string.Empty)
-                        + "PRIVATE " + Literal(directory) + ")");
-            }
-            if (compilation.cxxStandard > 0)
-                text.AppendLine("target_compile_features(${target} PRIVATE cxx_std_" + compilation.cxxStandard + ")");
-            if (compilation.cStandard > 0)
-                text.AppendLine("target_compile_features(${target} PRIVATE c_std_" + compilation.cStandard + ")");
             text.Append("set_property(TARGET ${target} PROPERTY INNO_REQUIRED_EXPORTS");
             foreach (string symbol in compilation.requiredExports.Concat(compilation.staticExportSymbols).Distinct(StringComparer.Ordinal))
                 text.Append(' ').Append(Literal(symbol));

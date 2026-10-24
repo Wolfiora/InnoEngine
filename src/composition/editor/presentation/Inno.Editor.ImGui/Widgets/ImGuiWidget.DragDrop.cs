@@ -264,7 +264,7 @@ public static unsafe partial class ImGuiWidget
         if (maximum.X <= minimum.X || maximum.Y <= minimum.Y)
             return false;
         ImRect bounds = new() { Min = ImGui.ToNative(minimum), Max = ImGui.ToNative(maximum) };
-        if (NativeImGui.Raw.BeginDragDropTargetCustom(bounds, targetId) == 0)
+        if (NativeImGui.Raw.BeginDragDropTargetCustom(&bounds, targetId) == 0)
             return false;
         try
         {

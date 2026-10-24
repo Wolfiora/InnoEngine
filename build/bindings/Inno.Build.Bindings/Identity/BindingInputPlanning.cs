@@ -21,7 +21,7 @@ internal static class BindingInputPlanning
         foreach (NativeComponentDescriptor component in request.components)
         {
             BindingGenerationConfiguration definition = BindingDefinitionReader.Read(context, component, request, profile);
-            declarations.Add(NativeBindingGenerationIdentity.Compute(definition.Load(context), definition, context, cancellation));
+            declarations.Add(NativeBindingGenerationIdentity.Compute(definition.Load(context, cancellation), definition, context, cancellation));
         }
         return ValueTask.FromResult(NativeBuildFingerprint.Create(context, declarations, [], cancellation));
     }

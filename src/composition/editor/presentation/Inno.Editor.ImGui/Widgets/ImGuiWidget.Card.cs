@@ -82,10 +82,10 @@ public static unsafe partial class ImGuiWidget
             (float cardLeft, float cardRight) = GetFullWidthCardBounds(headerCursor);
             Vector2 persistentHeaderMin = new(cardLeft, headerCursor.Y);
             Vector2 persistentHeaderMax = new(cardRight, headerCursor.Y + NativeImGui.GetFrameHeight());
-            NativeImGui.Raw.AddRectFilled(
+            ImGui.DrawNativeFilledRectangle(
                 NativeImGui.Raw.GetWindowDrawList(),
-                ImGui.ToNative(persistentHeaderMin),
-                ImGui.ToNative(persistentHeaderMax),
+                persistentHeaderMin,
+                persistentHeaderMax,
                 NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader),
                 0f,
                 0
@@ -96,10 +96,10 @@ public static unsafe partial class ImGuiWidget
             headerMax = new Vector2(cardRight, persistentHeaderMax.Y);
             contentCursor = NativeImGui.GetCursorScreenPos();
             contentCursor.Y = headerMax.Y;
-            NativeImGui.Raw.AddRect(
+            ImGui.DrawNativeRectangle(
                 NativeImGui.Raw.GetWindowDrawList(),
-                ImGui.ToNative(headerMin),
-                ImGui.ToNative(headerMax),
+                headerMin,
+                headerMax,
                 NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardBodyBorder),
                 0f,
                 (int)(ImDrawFlags.RoundCornersNone),
@@ -153,10 +153,10 @@ public static unsafe partial class ImGuiWidget
                 Vector2 titleCursor = NativeImGui.GetCursorScreenPos();
                 float titleWidth = MathF.Max(1f, titleRight - titleCursor.X);
                 ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-                NativeImGui.Raw.PushClipRect(
+                ImGui.PushNativeClipRectangle(
                     drawList,
-                    ImGui.ToNative(titleCursor),
-                    ImGui.ToNative(new Vector2(titleCursor.X + titleWidth, headerMax.Y)),
+                    titleCursor,
+                    new Vector2(titleCursor.X + titleWidth, headerMax.Y),
                     1
                 );
                 try
@@ -228,10 +228,10 @@ public static unsafe partial class ImGuiWidget
         if (!IsPopupBlockingInteraction() &&
             NativeImGui.IsMouseHoveringRect(buttonMin, buttonMax))
         {
-            NativeImGui.Raw.AddRectFilled(
+            ImGui.DrawNativeFilledRectangle(
                 drawList,
-                ImGui.ToNative(buttonMin),
-                ImGui.ToNative(buttonMax),
+                buttonMin,
+                buttonMax,
                 NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardDisclosureHovered),
                 NativeImGui.Raw.GetStyle()->FrameRounding,
                 0

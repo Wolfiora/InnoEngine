@@ -62,13 +62,13 @@ unsafe
 
 ## 当前源码公开 API 清单
 
-以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
+当前签名由正式源码语义清单核对；生命周期与错误约束见前文及对应 XML。
 
 <!-- api: T:Inno.Native.MiniAudio.MiniAudio 56fe2dd550a169475ab674592354636c7813ab7d832b9e68f283d94aa0ead451 -->
 
-| 声明 | 语义与限制 |
+| 声明 | 行为与约束 |
 | --- | --- |
-| <a id="api-51696dd28a5dbd8b"></a>[`public static class Inno.Native.MiniAudio.MiniAudio`](../../../backends/MiniAudio/native/Inno.Native.MiniAudio/MiniAudio.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
+| <a id="api-51696dd28a5dbd8b"></a>[`public static class Inno.Native.MiniAudio.MiniAudio`](../../../backends/MiniAudio/native/Inno.Native.MiniAudio/MiniAudio.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API.<br>Owns one explicitly shared context. Replacement closes the previous context; existing resource leases retain its native cleanup capability. |
 
 ## 项目依赖
 

@@ -14,6 +14,8 @@ MSBuild 在读取保护期间把唯一的 `Bindings.cs` 复制到本次 SDK 构�
 
 输入指纹对配置及官方分析证据中的 JSON 对象键使用 ordinal 稳定顺序，避免不可变字典的进程随机枚举顺序改变身份；数组仍保留原顺序，定义、参数、搜索优先级和全部实际输入继续参与验证。此规范化只用于引擎缓存身份，不重写 BGCS 配置、生成结果或 SDK 内部缓存。
 
+引擎绑定实现使用构建时生成的内容身份，包含明确源码闭包、实际 Roslyn 编译器、目标框架、语言、条件符号及相关编译选项。独立 `ArtifactsPath` 引起的引擎 DLL/PDB 布局差异不构成生成输入变化；SDK、扩展、worker 资源和配置来源仍按实际内容核验。配置相同不代表可以跳过锁后及发布前的 fresh 输入验证。
+
 ```csharp
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +49,7 @@ static async ValueTask PrepareAsync(
 生成身份使用本次选择的配置、目标、输出模式、扩展和实际输入。修改无关平台文件不会使当前生成失效；修改当前配置、facade、include、SDK、工具或生成实现仍会失效。每个验证阶段重新解析定义，不能借此跳过当前选择变化的检查。
 
 1. 冻结组件、目标、HostSource/TargetArtifacts、CheckOnly 与预期指纹。
-2. 通过 BGCS 的 GenerationRequest 解析选中配置、继承链和插件输入，取得全部 generation lease（规范路径排序）。
+2. 使用 SDK 公开 HostServices 路径服务，通过 GenerationRequest.MaterializeAsync 冻结选中配置、继承链和插件输入，取得全部 generation lease（规范路径排序）。
 3. 在 fresh binding-locks 阶段校验完整输入；批次内物理读取去重。
 4. 通过 BindingHost 执行正式生成流程：C++ facade 经 SDK 的 Cpp2C 和 managed 生成链输出，纯 C 从 header 开始。消费经过 BindingArtifactManifest 验证的实际产物，完整目标缓存可复用。
 5. fresh binding-generation 校验，取消检查，再发布全部完整结果；失败不返回部分闭包。
@@ -57,7 +59,11 @@ CLI 和 MSBuild 的 TargetArtifacts 请求先通过同一发行解析明确目�
 独立绑定定义不必注册游戏发布目标；MSBuild 仅取得发行明确贡献的 SDK。
 直接库调用可以提供完整的显式 Profile；MSBuild 使用发行注册的目标，缺少目标时失败。
 
-嵌入 MSBuild 时，生成器通过 SDK 的 `WorkerAssetProvisioner` 验证和准备自身部署闭包，并经 `WithWorkerAssetRoot` 交给 Host。定位基于已加载 BGCS 程序集所在的部署目录，不依赖 MSBuild 宿主的 application base，也不自行解包或实现 worker 查找。
+BGCS 包族固定为正式 4.1.0。接入使用 `BindingGenerator.CreateBuilder()`，通过公开 frontend factory 替换点将 `WorkerAssetLocator` 的 applicationBase 固定到已加载 SDK 的部署目录。标准 SDK 定位器负责验证和准备 worker；私有 MSBuild Task 不借用 MSBuild 宿主的 application base，不自行解包或复制 SDK 内部实现。
+
+Profile 使用开放的 `ManagedRuntimeId`。平台可通过 `configureGenerator` 注册官方扩展；Browser integration 显式注册 `BrowserWasmPlugin`，仅安装包不会激活能力。注册 action 只描述不可变组合，不捕获操作状态；其实现程序集及引用的 BGCS 扩展参与缓存身份。共享构建执行器和组件配置不识别 Browser 名称。
+
+公共配置使用 BGCS 当前严格格式。SDK 格式标记只属于外部生成协议，不增加引擎持久化格式的兼容读取。生成结果由 SDK 的 verified artifact/native-source manifest 读取，逻辑输入根由引擎映射到冻结复制树；编译、链接、部署、缓存 owner 与 lease 仍由引擎负责。
 
 ## 输出与所有权
 
@@ -106,39 +112,31 @@ static async ValueTask InspectBindingsAsync(
 
 ## 当前源码公开 API 清单
 
-当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
+当前签名由正式源码语义清单核对；生命周期与错误约束见前文及对应 XML。
 
-### `Inno.Build.Bindings.NativeBindingProfile`
-
-<!-- api: T:Inno.Build.Bindings.NativeBindingProfile 54fcaf54f2c720efad4f8e258567666026881bc8213fa9fbc111f3d4ef1800af -->
-<!-- api: M:Inno.Build.Bindings.NativeBindingProfile.#ctor(System.String,BGCS.Configuration.TargetConfiguration,System.Nullable{BGCS.Contracts.Targets.ManagedRuntimeKind},System.Collections.Generic.IEnumerable{System.String}) 44cce2682c15a4187905ef386f06996fc54be966219c2ae870adba45b2bc0673 -->
-<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.targetId 7284e5f7207883962134f0b64c72c0d36726cc738a7fc0fb5f0f02130a01db74 -->
-<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.target 3a3a6f06a994dbe8ddd2613744f9d636af4d7b1c899d9b1a252cf2ccd333d5df -->
-<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.runtime d75612d5734d225a8b88cfbe8030549ffe14313952875e651b6b33118f059fea -->
-<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.inputPaths 6bece7ed193b007f003560c741c94a0992ecd8d47749a870ddd1a4a6ee1198c6 -->
-
-| 声明 | 行为、参数与结果 |
-| --- | --- |
-| <a id="api-e4e97dcf5a55eb51"></a>[`public Inno.Build.Bindings.NativeBindingProfile.NativeBindingProfile(string targetId, BGCS.Configuration.TargetConfiguration target, BGCS.Contracts.Targets.ManagedRuntimeKind? runtime = null, System.Collections.Generic.IEnumerable<string>? inputPaths = null)`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L36) | Creates a target profile without discovering an SDK or executing a generator.<br>`targetId`：The engine target identity that may consume this profile.<br>`target`：The official BGCS native target selection.<br>`runtime`：The official BGCS managed runtime selection.<br>`inputPaths`：Checkout-relative implementation inputs owned by this profile.<br>T:System.ArgumentException：An identity is empty, uses implicit host selection, or a path escapes the checkout. |
-| <a id="api-f29bc469b5f12a92"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.Build.Bindings.NativeBindingProfile.inputPaths { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L69) | Gets the profile's exact checkout implementation inputs. |
-| <a id="api-dc275bfe6affcbdb"></a>[`public BGCS.Contracts.Targets.ManagedRuntimeKind? Inno.Build.Bindings.NativeBindingProfile.runtime { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L65) | Gets the managed projection runtime, or null for the component's portable default. |
-| <a id="api-425e0e5b6913867f"></a>[`public BGCS.Configuration.TargetConfiguration Inno.Build.Bindings.NativeBindingProfile.target { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L61) | Gets the immutable official BGCS target configuration. |
-| <a id="api-8a722321463b942a"></a>[`public string Inno.Build.Bindings.NativeBindingProfile.targetId { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L57) | Gets the engine target authorized to consume this profile. |
-| <a id="api-503652649b30b0db"></a>[`public sealed class Inno.Build.Bindings.NativeBindingProfile`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L16) | Captures one platform's official BGCS target and managed projection choices. |
-
-### `Inno.Build.Bindings.NativeBindingGenerator`
-
-<!-- api: T:Inno.Build.Bindings.NativeBindingGenerator ed761625983dcc7ca08f22a1852393bcfb68053a389526618ce30b3118fc7c10 -->
 <!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.#ctor(Inno.Build.Bindings.NativeBindingProfile) 78c941b2cdfe38aec973d075c405ed38d0a3a2c0ee03cef57d655facbb278de3 -->
-<!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.GenerateAsync(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.NativeBindingGenerationRequest,System.Threading.CancellationToken) 82521de32f3f4f1a83373536efc6b9f158d28e80579bc7f9ca648e87d6d0d70a -->
 <!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.ComputeInputFingerprintAsync(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.NativeBindingGenerationRequest,System.Threading.CancellationToken) 725170f81c1190e69bebe9aac0632962a242124c9621e27f115c3791dfce006d -->
+<!-- api: M:Inno.Build.Bindings.NativeBindingGenerator.GenerateAsync(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.NativeBindingGenerationRequest,System.Threading.CancellationToken) 82521de32f3f4f1a83373536efc6b9f158d28e80579bc7f9ca648e87d6d0d70a -->
+<!-- api: M:Inno.Build.Bindings.NativeBindingProfile.#ctor(System.String,BGCS.Configuration.TargetConfiguration,System.Nullable{BGCS.Core.Targets.ManagedRuntimeId},System.Collections.Generic.IEnumerable{System.String},System.Action{BGCS.BindingHostBuilder}) 5fa8787d263041e95a4d6474f8ab7ec53bd3f590099620e9ad73afc1bb80e77d -->
+<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.inputPaths 6bece7ed193b007f003560c741c94a0992ecd8d47749a870ddd1a4a6ee1198c6 -->
+<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.runtime 8e1a0f3862da7a5708b37617860bb0f79deb5faa2230c3cc5cfe8f486e5ecaf7 -->
+<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.target 3a3a6f06a994dbe8ddd2613744f9d636af4d7b1c899d9b1a252cf2ccd333d5df -->
+<!-- api: P:Inno.Build.Bindings.NativeBindingProfile.targetId 7284e5f7207883962134f0b64c72c0d36726cc738a7fc0fb5f0f02130a01db74 -->
+<!-- api: T:Inno.Build.Bindings.NativeBindingGenerator ed761625983dcc7ca08f22a1852393bcfb68053a389526618ce30b3118fc7c10 -->
+<!-- api: T:Inno.Build.Bindings.NativeBindingProfile 54fcaf54f2c720efad4f8e258567666026881bc8213fa9fbc111f3d4ef1800af -->
 
-| 声明 | 行为、参数与结果 |
+| 声明 | 行为与约束 |
 | --- | --- |
 | <a id="api-7d1ced719f2cb6f9"></a>[`public Inno.Build.Bindings.NativeBindingGenerator.NativeBindingGenerator(Inno.Build.Bindings.NativeBindingProfile profile)`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.cs#L22) | Creates a generator that obtains target tools and input ownership from each build operation.<br>`profile`：The explicitly registered target profile. |
 | <a id="api-b68756500cefb4ae"></a>[`public System.Threading.Tasks.ValueTask<string> Inno.Build.Bindings.NativeBindingGenerator.ComputeInputFingerprintAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBindingGenerationRequest request, System.Threading.CancellationToken cancellationToken)`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.Inputs.cs#L16) | Computes the selected generator source input identity without producing bindings or compiling a product.<br>`context`：The borrowed operation with frozen target tools and phase-local input reads.<br>`request`：The exact component, configuration target and output mode whose source closure is planned.<br>`cancellationToken`：Cancels configuration loading, dependency evaluation and content hashing.<br>返回：The complete source preparation identity, distinct from any generated artifact fingerprint. It remains computable when reconstructible generation outputs have been retired.<br>T:System.InvalidOperationException：The selected tools, configuration, generator or extension inputs cannot be resolved.<br>T:System.OperationCanceledException：Input planning was canceled.<br>T:System.NotSupportedException：Configuration inheritance uses a remote input without local build ownership. |
 | <a id="api-bdc543b7cd9f7e86"></a>[`public System.Threading.Tasks.ValueTask<Inno.Build.Toolchains.NativeBindingGenerationResult> Inno.Build.Bindings.NativeBindingGenerator.GenerateAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBindingGenerationRequest request, System.Threading.CancellationToken cancellationToken)`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.cs#L28) | Generates or verifies the requested closure under publication ownership.<br>`context`：The borrowed operation owning frozen inputs, tool selection and statistics. Configuration path variables must resolve from its selected toolchain without changing process state.<br>`request`：The immutable target, component closure and publication policy.<br>`cancellationToken`：Cancels preparation; active work must drain before returning.<br>返回：An owned complete immutable map indexed by Native owner project, never a partial closure. Dispose the result only after all generated-source and native-bridge consumers finish.<br>T:System.InvalidOperationException：Inputs change during preparation, a required frozen SDK value is absent, or required generator capabilities are unavailable.<br>T:System.IO.InvalidDataException：A definition or generated output fails its declared contract.<br>T:System.OperationCanceledException：The request was canceled and its active work has completed cleanup. |
+| <a id="api-61224ee53ed30ea0"></a>[`public Inno.Build.Bindings.NativeBindingProfile.NativeBindingProfile(string targetId, BGCS.Configuration.TargetConfiguration target, BGCS.Core.Targets.ManagedRuntimeId? runtime = null, System.Collections.Generic.IEnumerable<string>? inputPaths = null, System.Action<BGCS.BindingHostBuilder>? configureGenerator = null)`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L42) | Creates a target profile without discovering an SDK or executing a generator.<br>`targetId`：The engine target identity that may consume this profile.<br>`target`：The official BGCS native target selection.<br>`runtime`：The official BGCS managed runtime selection.<br>`inputPaths`：Checkout-relative implementation inputs owned by this profile.<br>`configureGenerator`：An immutable platform-owned registration action for official BGCS extensions, or null for the standard SDK. The action must not capture mutable state; its implementation and extension assemblies participate in input identity.<br>T:System.ArgumentException：An identity is empty, uses implicit host selection, or a path escapes the checkout. |
+| <a id="api-f29bc469b5f12a92"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.Build.Bindings.NativeBindingProfile.inputPaths { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L77) | Gets the profile's exact checkout implementation inputs. |
+| <a id="api-dc275bfe6affcbdb"></a>[`public BGCS.Core.Targets.ManagedRuntimeId? Inno.Build.Bindings.NativeBindingProfile.runtime { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L73) | Gets the managed projection runtime, or null for the component's portable default. |
+| <a id="api-425e0e5b6913867f"></a>[`public BGCS.Configuration.TargetConfiguration Inno.Build.Bindings.NativeBindingProfile.target { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L69) | Gets the immutable official BGCS target configuration. |
+| <a id="api-8a722321463b942a"></a>[`public string Inno.Build.Bindings.NativeBindingProfile.targetId { get; }`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L65) | Gets the engine target authorized to consume this profile. |
 | <a id="api-f9f1859591826b8a"></a>[`public sealed class Inno.Build.Bindings.NativeBindingGenerator : Inno.Build.Toolchains.INativeBindingGenerator`](../../build/bindings/Inno.Build.Bindings/NativeBindingGenerator.cs#L12) | Executes the shared facade-to-C-to-managed binding workflow independently of MSBuild.<br>Provides preparation input planning for the shared binding generator without producing generated artifacts. |
+| <a id="api-503652649b30b0db"></a>[`public sealed class Inno.Build.Bindings.NativeBindingProfile`](../../build/bindings/Inno.Build.Bindings/Configuration/NativeBindingProfile.cs#L16) | Captures one platform's official BGCS target and managed projection choices. |
 
 ## 项目依赖
 

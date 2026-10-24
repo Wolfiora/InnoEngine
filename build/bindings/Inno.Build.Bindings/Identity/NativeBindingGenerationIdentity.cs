@@ -9,8 +9,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using BGCS;
-using BGCS.Contracts.Inputs;
-using BGCS.Contracts.Targets;
+using BGCS.Core.Hosting;
+using BGCS.Core.Inputs;
+using BGCS.Core.Targets;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Bindings;
@@ -28,9 +29,10 @@ internal static class NativeBindingGenerationIdentity
         NativeBuildContext context,
         CancellationToken cancellation
     ) {
-        var builder = BindingHostFactory.CreateBuilder(cancellation);
+        using HostServices services = BindingHostFactory.CreateHostServices(context.engineRoot);
+        var builder = BindingHostFactory.CreateBuilder(definition.profile, cancellation);
         foreach (string plugin in request.configuration.extensions.plugins)
-            builder.AddPluginManifest(plugin);
+            builder.AddPluginManifest(plugin, services.paths);
         BindingHost host = builder.Build();
         try
         {
@@ -64,18 +66,28 @@ internal static class NativeBindingGenerationIdentity
                 SerializeIdentity(analysis.target),
                 SerializeIdentity(analysis.snapshot),
                 SerializeIdentity(analysis.argumentInputs),
+                SerializeIdentity(request.configurationSnapshot),
+                SerializeIdentity(request.pluginSnapshots),
                 definition.component.nativeProject,
                 definition.request.targetId,
                 definition.request.outputMode.ToString()
             };
             var profileInputs = definition.profile.inputPaths.Select(path => NativeBuildInput.FromPath(context.engineRoot, Path.GetFullPath(path, context.engineRoot)));
-            var inputs = request.configurationInputs.Concat(request.pluginInputs).Concat(analysis.snapshot.files)
+            var inputs = request.configurationSnapshot.files.Concat(request.pluginSnapshots.SelectMany(static snapshot => snapshot.files)).Concat(analysis.snapshot.files)
                 .Concat(analysis.argumentInputs?.files ?? []).Select(input => NativeBuildInput.FromPath(context.engineRoot, input.path)).ToList();
             inputs.AddRange(profileInputs);
             Assembly implementation = typeof(NativeBindingGenerator).Assembly;
-            foreach (Assembly assembly in new[] { implementation, typeof(NativeBindingCompilation).Assembly,
-                         typeof(BindingHost).Assembly, typeof(BGCS.Contracts.BindingDiagnostic).Assembly,
-                         typeof(BGCS.Runtime.NativeModuleSession).Assembly }.Distinct())
+            string implementationIdentity = implementation.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Single(attribute => attribute.Key == "Inno.BindingImplementation").Value
+                ?? throw new InvalidDataException("The binding implementation must declare its content identity.");
+            declarations.Add("bindingImplementation=" + implementationIdentity);
+            var assemblies = new[] { typeof(BindingHost).Assembly, typeof(BGCS.Core.BindingDiagnostic).Assembly,
+                typeof(BGCS.Runtime.NativeModuleSession).Assembly }.Concat(definition.profile.GetExtensionAssemblies()).ToList();
+            foreach (AssemblyName reference in assemblies.Prepend(implementation).SelectMany(static assembly => assembly.GetReferencedAssemblies())
+                         .Where(static reference => reference.Name == "BGCS" || reference.Name!.StartsWith("BGCS.", StringComparison.Ordinal))
+                         .DistinctBy(static reference => reference.FullName).ToArray())
+                assemblies.Add(Assembly.Load(reference));
+            foreach (Assembly assembly in assemblies.Distinct())
                 inputs.Add(new NativeBuildInput("binding-implementation/" + Path.GetFileName(assembly.Location), assembly.Location));
             string resources = Path.Combine(Path.GetDirectoryName(typeof(BindingHost).Assembly.Location)!, "bgcs", "worker-assets");
             if (!Directory.Exists(resources))

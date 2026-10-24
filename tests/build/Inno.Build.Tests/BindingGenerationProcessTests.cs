@@ -66,7 +66,7 @@ public sealed class BindingGenerationProcessTests
         Dictionary<string, string> names
     ) => File.WriteAllText(Path.Combine(root, "bindgen.json"), JsonSerializer.Serialize(new
     {
-        schemaVersion = 1,
+        schemaVersion = 2,
         library = new { id = "fixture", nativeName = "fixture" },
         source = new { language = "c", headers = new[] { "Native/fixture.h" }, includeDirectories = new[] { "Native" } },
         api = new { @namespace = "Fixture.Native", name = "Api", names },

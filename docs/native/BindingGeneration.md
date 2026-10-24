@@ -2,7 +2,7 @@
 
 [Native 索引](README.md) · [构建入口](../build/Inno.Build.Cli.md) · [Wiki 首页](../README.md)
 
-每个 Native 组件通过自己的 `Bindings/bindings.props` 声明唯一组件身份和公共配置。组件拥有命名、类型及生命周期语义；平台 Build integration 拥有 ABI 与托管 runtime Profile，平台 provider 冻结 SDK 输入。包族由 `build/msbuild/Inno.Packages.props` 精确固定为 3.0.1。
+每个 Native 组件通过自己的 `Bindings/bindings.props` 声明唯一组件身份和公共配置。组件拥有命名、类型及生命周期语义；平台 Build integration 拥有 ABI 与托管 runtime Profile，平台 provider 冻结 SDK 输入。包族由 `build/msbuild/Inno.Packages.props` 精确固定为 4.1.0。
 
 ## 生成与检查
 

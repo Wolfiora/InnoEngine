@@ -150,7 +150,7 @@ internal sealed unsafe partial class ShaderEditorCanvas
             if (!m_miniMapGeometry.TryGetValue(edge.output.nodeId, out MiniMapNodeGeometry source) ||
                 !m_miniMapGeometry.TryGetValue(edge.input.nodeId, out MiniMapNodeGeometry target))
                 continue;
-            ImGuiApi.Raw.AddLine(
+            DrawNativeLine(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(source.center)),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(target.center)),
@@ -165,7 +165,7 @@ internal sealed unsafe partial class ShaderEditorCanvas
             uint fill = Canvas.selectedNodes.Contains(node.id)
                 ? Color(0.60f, 0.44f, 0.83f)
                 : Color(0.34f, 0.37f, 0.44f);
-            ImGuiApi.Raw.AddRectFilled(
+            DrawNativeFilledRectangle(
                 draw,
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(geometry.minimum)),
                 Unsafe.BitCast<NumericsVector2, NativeVector2>(layout.ToScreen(geometry.maximum)),
@@ -179,7 +179,7 @@ internal sealed unsafe partial class ShaderEditorCanvas
         Vector2 viewMaximum = viewMinimum + m_size / Canvas.zoom;
         Vector2 screenMinimum = layout.ToScreen(viewMinimum);
         Vector2 screenMaximum = layout.ToScreen(viewMaximum);
-        ImGuiApi.Raw.AddRectFilled(
+        DrawNativeFilledRectangle(
             draw,
             Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMinimum),
             Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMaximum),
@@ -187,7 +187,7 @@ internal sealed unsafe partial class ShaderEditorCanvas
             0,
             0
         );
-        ImGuiApi.Raw.AddRect(
+        DrawNativeRectangle(
             draw,
             Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMinimum),
             Unsafe.BitCast<NumericsVector2, NativeVector2>(screenMaximum),

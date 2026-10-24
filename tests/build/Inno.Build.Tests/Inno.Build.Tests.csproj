@@ -70,6 +70,7 @@
   <ItemGroup>
     <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />
     <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="all" />
+    <PackageReference Include="BGCS.Extension.BrowserWasm" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Microsoft.Build" Version="18.9.6" />
     <PackageReference Include="Microsoft.Build.Framework" Version="18.9.6" />

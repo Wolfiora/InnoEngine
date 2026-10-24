@@ -46,7 +46,7 @@ sealed unsafe partial class BgfxDevice
         textureNameBytes[textureNameLength] = 0;
         fixed (byte* textureNamePointer = textureNameBytes)
         {
-            bgfx.Raw.set_texture_name(texture, (sbyte*)textureNamePointer, textureNameLength);
+            BgfxNativeCalls.SetTextureName(texture, (sbyte*)textureNamePointer, textureNameLength);
         }
         m_transientTextureAllocationCount++;
         return texture;

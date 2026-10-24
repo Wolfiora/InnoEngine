@@ -30,7 +30,7 @@ public sealed class NativeBindingCompilationTests
             string config = Path.Combine(root, "bindgen.json");
             File.WriteAllText(config, JsonSerializer.Serialize(new
             {
-                schemaVersion = 1,
+                schemaVersion = 2,
                 library = new { id = "fixture", nativeName = "fixture" },
                 source = new { language = "c", headers = new[] { "Source/api.h" } },
                 api = new { @namespace = "Fixture.Native", name = "Api" },

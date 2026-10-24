@@ -21,13 +21,13 @@ Native 项目只持有绑定和库加载边界，不引用离线进程执行、S
 
 ## 当前源码公开 API 清单
 
-以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
+当前签名由正式源码语义清单核对；生命周期与错误约束见前文及对应 XML。
 
 <!-- api: T:Inno.Native.Bgfx.bgfx b565d3fb16c45cb493209a0c0900ec59bee9b046223c4cc8aaaa14e084abf33e -->
 
-| 声明 | 语义与限制 |
+| 声明 | 行为与约束 |
 | --- | --- |
-| <a id="api-6653f12dad3194b1"></a>[`public static class Inno.Native.Bgfx.bgfx`](../../../backends/Bgfx/native/Inno.Native.Bgfx/bgfx.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
+| <a id="api-6653f12dad3194b1"></a>[`public static class Inno.Native.Bgfx.bgfx`](../../../backends/Bgfx/native/Inno.Native.Bgfx/bgfx.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API.<br>Owns one explicitly shared context. Replacement closes the previous context; existing resource leases retain its native cleanup capability. |
 
 ## 项目依赖
 

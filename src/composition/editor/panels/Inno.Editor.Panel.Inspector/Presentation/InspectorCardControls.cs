@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Numerics;
 using BGCS.Runtime;
@@ -257,31 +255,20 @@ internal sealed unsafe class InspectorCardControls
             padding.X * 2f + gripSize.X + EditorWidget.style.inspectorHeaderControlSpacing + titleSize.X,
             MathF.Max(gripSize.Y, titleSize.Y) + padding.Y * 2f);
         ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
-        NativeImGui.Raw.AddRectFilled(
-            draw,
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(origin),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(origin + size),
+        EditorImGui.DrawFilledRectangle(
+            origin,
+            origin + size,
             NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader),
-            EditorWidget.style.frameRounding,
-            0
+            EditorWidget.style.frameRounding
         );
         uint color = NativeImGui.ColorConvertFloat4ToU32(
             dimmed ? EditorPalette.inspectorCardDisabledText : EditorPalette.text);
         Vector2 textOrigin = origin + padding;
-        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(ImGuiIcon.GripVertical, allowsNull: false))
-        {
-            NativeImGui.Raw.AddText(draw, Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin), color, (sbyte*)nativeText.pointer, null);
-        }
-        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(title, allowsNull: false))
-        {
-            NativeImGui.Raw.AddText(
-                draw,
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(textOrigin.X + gripSize.X + EditorWidget.style.inspectorHeaderControlSpacing, textOrigin.Y)),
-                color,
-                (sbyte*)nativeText.pointer,
-                null
-            );
-        }
+        EditorImGui.DrawText(textOrigin, color, ImGuiIcon.GripVertical);
+        EditorImGui.DrawText(
+            new Vector2(textOrigin.X + gripSize.X + EditorWidget.style.inspectorHeaderControlSpacing, textOrigin.Y),
+            color,
+            title);
         NativeImGui.Dummy(size);
     }
 

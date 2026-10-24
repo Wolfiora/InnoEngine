@@ -28,9 +28,9 @@ public sealed class BindingGenerationBatchTests : IDisposable
         NativeComponentDescriptor component = CreateComponent("planned");
         string directory = Path.Combine(m_root, "planned");
         string config = Path.Combine(directory, "bindgen.json");
-        File.WriteAllText(Path.Combine(directory, "common.json"), "{\"schemaVersion\":1,\"api\":{\"name\":\"UnusedDefault\"}}");
+        File.WriteAllText(Path.Combine(directory, "common.json"), "{\"schemaVersion\":2,\"api\":{\"name\":\"UnusedDefault\"}}");
         string text = File.ReadAllText(config);
-        File.WriteAllText(config, text.Replace("\"schemaVersion\":1", "\"schemaVersion\":1,\"extends\":[\"common.json\"]", StringComparison.Ordinal));
+        File.WriteAllText(config, text.Replace("\"schemaVersion\":2", "\"schemaVersion\":2,\"extends\":[\"common.json\"]", StringComparison.Ordinal));
         string unselected = Path.Combine(directory, "bindgen.unselected.json");
         File.WriteAllText(unselected, "{}");
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
@@ -211,7 +211,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
             <Project><PropertyGroup><InnoNativeComponentId>{name}</InnoNativeComponentId><InnoBindingConfig>bindgen.json</InnoBindingConfig></PropertyGroup></Project>
             """);
         File.WriteAllText(Path.Combine(owner, "bindgen.json"), """
-            {"schemaVersion":1,"library":{"id":"fixture","nativeName":"fixture"},
+            {"schemaVersion":2,"library":{"id":"fixture","nativeName":"fixture"},
              "source":{"language":"c","headers":["../Source/shared.h"],"includeDirectories":["../Source"]},
              "api":{"namespace":"Fixture.Native","name":"Api","naming":{"functions":{"casing":"pascal"}}},
              "output":{"root":"Generated","layout":"singleFile"}}

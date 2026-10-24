@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using BGCS;
-using BGCS.Contracts.Artifacts;
+using BGCS.Core.Artifacts;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -33,7 +33,7 @@ internal static class BindingGenerationDiagnostics
         using FileLease ownership = FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellation)
             .AsTask().GetAwaiter().GetResult();
         cache.BeginWorkingDirectory(workspace, workspace + ".lock", definition.request.targetId, cancellation);
-        BindingHostExecution.Generate(selected, context.engineRoot, nativeOutput, managedOutput, cancellation);
+        BindingHostExecution.Generate(selected, definition.profile, context.engineRoot, nativeOutput, managedOutput, cancellation);
         cache.Record(workspace, workspace + ".lock", [], null, definition.request.targetId, cancellation);
     }
 

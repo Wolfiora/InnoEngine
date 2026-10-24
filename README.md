@@ -32,7 +32,7 @@ The same commands work from a terminal:
 dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
 ```
 
-Use the branch containing these changes; the command above selects `dotnet10`. BGCS 3.0.1 is restored from exact pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
+Use the branch containing these changes; the command above selects `dotnet10`. BGCS 4.1.0 is restored from exact pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
 
 Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder.
 
@@ -46,7 +46,7 @@ Have a project already? Pass its directory after `--`. To try FlappyBird, clone 
 | macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
 | Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
 
-Windows x64 has current Editor, Support Pack, CoreCLR, and NativeAOT acceptance evidence. Browser publication is blocked by the pinned BGCS package's aggregate ABI capability; macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
+Windows x64 acceptance covers the Editor and published players separately. Browser binding generation succeeds with the official extension; native compilation is blocked by invalid C type names in the pinned BGCS package's generated storage assertions for anonymous system records. macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
 
 ## Built to compose
 

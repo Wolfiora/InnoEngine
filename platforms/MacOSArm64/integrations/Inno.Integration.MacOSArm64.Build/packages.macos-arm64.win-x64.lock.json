@@ -1,0 +1,880 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "BGCS": {
+        "type": "Direct",
+        "requested": "[4.1.0, 4.1.0]",
+        "resolved": "4.1.0",
+        "contentHash": "RySIZGiGk9f5Sht1rytBJiEVKjS+37sGvAssq/2Q/Da8EwQFqU6O2dYV0nVt+WzVCP3cLd73AOPhQrl3LmwCxA==",
+        "dependencies": {
+          "BGCS.Core": "[4.1.0]",
+          "BGCS.ParserRuntime.osx-x64": "[4.1.0]",
+          "BGCS.Runtime": "[4.1.0]",
+          "ClangSharp": "[20.1.2.4]",
+          "ClangSharp.Interop": "[20.1.2.4]",
+          "Humanizer.Core": "[3.0.10]",
+          "Irony": "[1.5.3]",
+          "Json.More.Net": "[3.0.1]",
+          "JsonPointer.Net": "[7.0.3]",
+          "JsonSchema.Net": "[9.4.1]",
+          "Microsoft.CodeAnalysis.Analyzers": "[5.9.0-1.26328.17]",
+          "Microsoft.CodeAnalysis.CSharp": "[5.9.0]",
+          "Microsoft.CodeAnalysis.Common": "[5.9.0]",
+          "Microsoft.Extensions.DependencyInjection": "[10.0.12]",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[10.0.12]",
+          "Microsoft.Extensions.Logging": "[10.0.12]",
+          "Microsoft.Extensions.Logging.Abstractions": "[10.0.12]",
+          "Microsoft.Extensions.Options": "[10.0.12]",
+          "Microsoft.Extensions.Primitives": "[10.0.12]",
+          "libClangSharp": "[20.1.2]",
+          "libClangSharp.runtime.linux-arm64": "[20.1.2]",
+          "libClangSharp.runtime.linux-x64": "[20.1.2]",
+          "libClangSharp.runtime.osx-arm64": "[20.1.2]",
+          "libClangSharp.runtime.win-arm64": "[20.1.2]",
+          "libClangSharp.runtime.win-x64": "[20.1.2]",
+          "libclang": "[20.1.2]",
+          "libclang.runtime.linux-arm64": "[20.1.2]",
+          "libclang.runtime.linux-x64": "[20.1.2]",
+          "libclang.runtime.osx-arm64": "[20.1.2]",
+          "libclang.runtime.win-arm64": "[20.1.2]",
+          "libclang.runtime.win-x64": "[20.1.2]"
+        }
+      },
+      "BGCS.Core": {
+        "type": "Transitive",
+        "resolved": "4.1.0",
+        "contentHash": "SULfWpGFDB05tNUeu5XkC/+Wjy2wW3xT2t1n+Ugr7fVx4dLML5tQOB5FmYUZwJasdml6gp7AWfqVX3wtEEVKrg=="
+      },
+      "BGCS.ParserRuntime.osx-x64": {
+        "type": "Transitive",
+        "resolved": "4.1.0",
+        "contentHash": "cOigP/0UD2I1hxPRGGV97bLASXMjqoBAMfUc5DPVu8Hz0a2vz6IRNWjErINmzsKPAkFnlnQcHmkZBE34d/zLIQ=="
+      },
+      "BGCS.Runtime": {
+        "type": "Transitive",
+        "resolved": "4.1.0",
+        "contentHash": "HafLCBRJ/hSswHA6ZFxZmBPXT08p7fGLdFAb+LtyDDHGFvW9NgVod1pOksJU+V+kF87ZN6eL7THvVnB0bY15zw=="
+      },
+      "ClangSharp": {
+        "type": "Transitive",
+        "resolved": "20.1.2.4",
+        "contentHash": "XtObZyqqU26yazgoUCxQLw8AFjiZLY/mc10FtEHIY/Go+pvgSFGx+Ai5IlpxolIvxlQ+WWcPA2wLvULL+L7mVA==",
+        "dependencies": {
+          "ClangSharp.Interop": "20.1.2.4"
+        }
+      },
+      "ClangSharp.Interop": {
+        "type": "Transitive",
+        "resolved": "20.1.2.4",
+        "contentHash": "OxvJ9rxNM8Uq3WNLfUh/rq+8LBnK5GVrPJsQ9kR41upX3kWhIiKgoZC3XFQzhu2HTUp86jOu9RlnAaO82s9bWg==",
+        "dependencies": {
+          "libClang": "20.1.2",
+          "libClangSharp": "20.1.2"
+        }
+      },
+      "Humanizer.Core": {
+        "type": "Transitive",
+        "resolved": "3.0.10",
+        "contentHash": "yZIhtw8sYuvsONzQbZxWpR60tMWYHXoo0DL6nyOqSFiU5POjBTSEyWFpTQtJEZuy+oqiYTXKXY/Mjx7KnqIQFw=="
+      },
+      "Irony": {
+        "type": "Transitive",
+        "resolved": "1.5.3",
+        "contentHash": "wy0LlNq9Bhqy2C9O5burGCJPB9CyWuWf/JHwcnaxnM5wapPEc7uW6MBBzkymrV/pS2UwETK/0nJXzhh5Y6wv4Q=="
+      },
+      "Json.More.Net": {
+        "type": "Transitive",
+        "resolved": "3.0.1",
+        "contentHash": "fRctF2J2SILYG6wqP21drmeEODmCVkVQ/b3MndDu2fT1swfySyUgq7ePCk+aENGlDcIm05fyfjh9vcuqDEfv3w=="
+      },
+      "JsonPointer.Net": {
+        "type": "Transitive",
+        "resolved": "7.0.3",
+        "contentHash": "It/10weZ3oA+BGL+Gqyw9M6wsi4Tc16vWwU+u7x6LBwty57Y3aUh7bfcn2VWAzgVTAfGuCPb5KUpsH6IFjR08A==",
+        "dependencies": {
+          "Humanizer.Core": "3.0.10",
+          "Json.More.Net": "3.0.1"
+        }
+      },
+      "JsonSchema.Net": {
+        "type": "Transitive",
+        "resolved": "9.4.1",
+        "contentHash": "7Nh0XyIse3a5nsc1nJJTECZVjxqHVE5jANGEPpQc2H+/M7u2sLueL93X6ZUuJLkLYy/pYzFmJhKYEpVIctaUZw==",
+        "dependencies": {
+          "JsonPointer.Net": "7.0.3"
+        }
+      },
+      "libclang": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "1A3NeS7Ko3KOZG14BuZv0ajii1y7yBEozKgYwZSG4xzGUc8kyKyVaX0KkzVHY+/jSPKvOgUuLONGDuJn0lGfsA=="
+      },
+      "libclang.runtime.linux-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "vkH+IYU5YAJli5/W/sOL9DqUH6CIrlg5zUQJUrJ9pqC5+bCp91DCNQcA+pxlxDsnliCeCiDlaSj3PAFBs9ogmA=="
+      },
+      "libclang.runtime.linux-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "TslnqZKmXE17oqUSG70eJdRlI18MgxlYCu0VUTbklHJfS/WZ5PZqi3T5UlrBM/Wdavq6UpY/uN+cQc1Z0KRuHw=="
+      },
+      "libclang.runtime.osx-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "rwxuSQtoxWejatmqjprV63dGZwzEsrA8UxCSeYeryZpncNvSjFo7gfoN9MaePGaUbuqrXnw21v1WQWiB1Upjsg=="
+      },
+      "libclang.runtime.win-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "bF4Ziyuzk5o9v6hn636sdYtz2OA0Bsi7IsWln38ku3QdPLo6Qm9ZliQo63EvM8FoRL8aKh1uFjTI9RA7RgTq8g=="
+      },
+      "libclang.runtime.win-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "aGk3iDW9nAMDb3PftNX8+j7q8QmBoa0w3RK662RzNALTCAZKtrB6LcC8qYXVXZbcYgwelJYthtAlOJR0PBHLwA=="
+      },
+      "libClangSharp": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "/716OBKj0Pg3RVh9D1gTggCF0fvTJy3KtmommelcEtycqJ9tOkMKSVwHh57tADMFrxKA/b2fxXIDyoKknjhh2w=="
+      },
+      "libClangSharp.runtime.linux-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "6/AlP+iaDXgpg1ZizN/gL89FuOlYJ2dWD/9ZttgTP99C31KhMuKQ0fTJpl0A6uUsNAQaWQWIbwSAVvtHfYwOZA=="
+      },
+      "libClangSharp.runtime.linux-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "oxucHzVToB46VtOS9VzWrhBbFzChc28EgK+68nQNP+gxJyuyf4ccte9FNe6E+qmdUFvtATYLt004ZDQXuTuksw=="
+      },
+      "libClangSharp.runtime.osx-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "Ag4DUZXbYanLin51oN+SCG3JJ//+Wfp5aS8oPTGuJSPwIYeIBI3zqASIPoaxarG5hHCDG3h4lTAf1LYcnDQZoQ=="
+      },
+      "libClangSharp.runtime.win-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "uOke32KST6sO1oRazsA7ZeOoSnO6DuPpT5+TTDyK7Y0fvh1yBaMRQlhbd5M7nsAsbUk/uP8ctHack7/TgmMDQQ=="
+      },
+      "libClangSharp.runtime.win-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "osf1ilTVVN4B19zs4ovT5yPKrYX9eAqMl+CNQGAZDaq6F0hN4fWQLi/wi0pVP9+mKPaaUtd7PC8iW/3ySDCgzg=="
+      },
+      "Microsoft.CodeAnalysis.Analyzers": {
+        "type": "Transitive",
+        "resolved": "5.9.0-1.26328.17",
+        "contentHash": "HP9NNk8ZjOSI2hgOyXnQg+kv7/X837Vr2nAlXiGAtqtYnYKjRRa1UmQFr8KFs5ynGYKqfbb8zB9APoWjiAGdMg=="
+      },
+      "Microsoft.CodeAnalysis.Common": {
+        "type": "Transitive",
+        "resolved": "5.9.0",
+        "contentHash": "IYaIaUWdIx539AReKZOBEqTskFusZfCh/wFSPilDvCn5Say8MegLw2LONcSIcVy+v3Gzv53qYBspgvBGSErfbQ==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "5.9.0-1.26328.17"
+        }
+      },
+      "Microsoft.CodeAnalysis.CSharp": {
+        "type": "Transitive",
+        "resolved": "5.9.0",
+        "contentHash": "7JGDA0UT1+h7k9ZcA3rF4eFC8+QPq1xyYaXxag4p8r/zzPurEJxvdi7aM+MRL/SfP7XADXpWF/pl/eUYXOq/ww==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "5.9.0-1.26328.17",
+          "Microsoft.CodeAnalysis.Common": "[5.9.0]"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "lXyK2O5GoYvfxW8eCFcD16JFbcoSTM1sJkAM0UHS1jZyl9NYMW64Tqm6OQFT0IDBjZi+xHt95/Zg+nxZhGFhZg==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "9/qymSh7hVDMGTGwrLz8MRp5zRyXy9adGDOs4HwRdnLil3oZGYuWeZjbmHgCQ9BL1qBroVfgUK3U/nb61617Cw=="
+      },
+      "Microsoft.Extensions.Logging": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "6I46fTPfgYkrjRYfRXbho9WOvOelTnNjWuZws/hzGHDASH1LEJeA4VKK9k3wJvido8o7jJSB5WkMTonX7HM1bA==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "10.0.12",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+          "Microsoft.Extensions.Options": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "+24lC4plfbEDNfLAdTV/SWKS7dW+16X4HdydO3R++134kSNTzcbYA4KpR1Hdh6uWisB8Za3AzwyOn+K+NxWIug==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.Options": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "TDYD33TSRpXKZWlmTXNlj5kCihxatmv2Ec1u6C+bMYLphCS7PoSLE9Pjd/nunDoE7yETk+LLKjVJX78HYtWjpA==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+          "Microsoft.Extensions.Primitives": "10.0.12"
+        }
+      },
+      "Microsoft.Extensions.Primitives": {
+        "type": "Transitive",
+        "resolved": "10.0.12",
+        "contentHash": "dYfCLR52UA+3DL7C4I/pvSaRPkNqxrUAQmbFL2u0zvYKKzqgrFCJl08Df+F1aYc8leu9JvpC9bsURUdpExcBXQ=="
+      },
+      "inno.adapter.rendering": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Platform": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )"
+        }
+      },
+      "inno.adapter.rendering.authoring": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Rendering": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Rendering.Assets.Authoring": "[1.0.0, )"
+        }
+      },
+      "inno.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Content": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.assets.pipeline": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.build": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Build.Managed": "[1.0.0, )",
+          "Inno.Content": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Plugins": "[1.0.0, )",
+          "Inno.Plugins.Authoring": "[1.0.0, )",
+          "Inno.Runtime": "[1.0.0, )",
+          "Inno.Scene.Assets": "[1.0.0, )",
+          "Inno.Scripting.Compiler": "[1.0.0, )"
+        }
+      },
+      "inno.build.bindings": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS": "[4.1.0, 4.1.0]",
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )"
+        }
+      },
+      "inno.build.composition": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Build": "[1.0.0, )",
+          "Inno.Build.Managed": "[1.0.0, )",
+          "Inno.Build.SupportPacks.Core": "[1.0.0, )",
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Plugins.Authoring": "[1.0.0, )",
+          "Inno.Runtime": "[1.0.0, )",
+          "Inno.Scripting.Compiler": "[1.0.0, )"
+        }
+      },
+      "inno.build.macosarm64": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build": "[1.0.0, )",
+          "Inno.Build.Composition": "[1.0.0, )",
+          "Inno.Build.Managed": "[1.0.0, )",
+          "Inno.Build.SupportPacks.Core": "[1.0.0, )",
+          "Inno.Build.Toolchains": "[1.0.0, )"
+        }
+      },
+      "inno.build.managed": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.products.standard": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.SupportPacks.Core": "[1.0.0, )",
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Build.Toolchains.Bgfx": "[1.0.0, )",
+          "Inno.Build.Toolchains.Bgfx.Tools": "[1.0.0, )",
+          "Inno.Build.Toolchains.ImGui": "[1.0.0, )",
+          "Inno.Build.Toolchains.ImGuizmo": "[1.0.0, )",
+          "Inno.Build.Toolchains.MiniAudio": "[1.0.0, )",
+          "Inno.Build.Toolchains.Sdl3": "[1.0.0, )",
+          "Inno.Build.Toolchains.Text": "[1.0.0, )",
+          "Inno.Build.Toolchains.UI": "[1.0.0, )",
+          "Inno.Native.LibraryLoading": "[1.0.0, )"
+        }
+      },
+      "inno.build.supportpacks.core": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build": "[1.0.0, )",
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.bgfx": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.bgfx.tools": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Adapter.Rendering.Authoring": "[1.0.0, )",
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Build": "[1.0.0, )",
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Native.Bgfx": "[1.0.0, )",
+          "Inno.Native.LibraryLoading": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Rendering.Assets.Authoring": "[1.0.0, )",
+          "Inno.Rendering.Shaders": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.imgui": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.imguizmo": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.miniaudio": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.sdl3": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.text": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.build.toolchains.ui": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.Toolchains": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.content": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Serialization": "[1.0.0, )"
+        }
+      },
+      "inno.core.collections": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.coroutines": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.diagnostics": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.events": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.execution": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.graphs": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.identity": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.input": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.io": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.jobs": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.logging": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.mathematics": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.serialization": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.serialization.generators": {
+        "type": "Project"
+      },
+      "inno.core.settings": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.catalogs": {
+        "type": "Project"
+      },
+      "inno.extensibility.modules": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.reload": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.types": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.integration.macosarm64.bgfx": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Build.MacOSArm64": "[1.0.0, )",
+          "Inno.Build.Toolchains.Bgfx": "[1.0.0, )",
+          "Inno.Build.Toolchains.Bgfx.Tools": "[1.0.0, )"
+        }
+      },
+      "inno.native.bgfx": {
+        "type": "Project",
+        "dependencies": {
+          "BGCS.Runtime": "[4.1.0, 4.1.0]",
+          "Inno.Native.LibraryLoading": "[1.0.0, )"
+        }
+      },
+      "inno.native.libraryloading": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.IO": "[1.0.0, )"
+        }
+      },
+      "inno.platform": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.plugins": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.plugins.authoring": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Plugins": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.references": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering.assets.authoring": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.IO": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Rendering.Shaders": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.rendering.shaders": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Graphs": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.Rendering": "[1.0.0, )",
+          "Inno.Rendering.Assets": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.runtime": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Content": "[1.0.0, )",
+          "Inno.Core.Coroutines": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Jobs": "[1.0.0, )",
+          "Inno.Core.Logging": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Runtime.Contracts": "[1.0.0, )",
+          "Inno.Scene": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.runtime.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )"
+        }
+      },
+      "inno.runtime.generators": {
+        "type": "Project"
+      },
+      "inno.scene": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Core.Settings": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )",
+          "Inno.References": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.scene.assets": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Serialization": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scene": "[1.0.0, )"
+        }
+      },
+      "inno.scripting.api": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.scripting.compiler": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Assets": "[1.0.0, )",
+          "Inno.Assets.Pipeline": "[1.0.0, )",
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Serialization.Generators": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Plugins.Authoring": "[1.0.0, )",
+          "Inno.Runtime.Generators": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )",
+          "Microsoft.CodeAnalysis.CSharp": "[5.9.0, )"
+        }
+      }
+    },
+    "net10.0/win-x64": {
+      "BGCS.ParserRuntime.osx-x64": {
+        "type": "Transitive",
+        "resolved": "4.1.0",
+        "contentHash": "cOigP/0UD2I1hxPRGGV97bLASXMjqoBAMfUc5DPVu8Hz0a2vz6IRNWjErINmzsKPAkFnlnQcHmkZBE34d/zLIQ=="
+      },
+      "libclang": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "1A3NeS7Ko3KOZG14BuZv0ajii1y7yBEozKgYwZSG4xzGUc8kyKyVaX0KkzVHY+/jSPKvOgUuLONGDuJn0lGfsA==",
+        "dependencies": {
+          "libclang.runtime.win-x64": "20.1.2"
+        }
+      },
+      "libclang.runtime.linux-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "vkH+IYU5YAJli5/W/sOL9DqUH6CIrlg5zUQJUrJ9pqC5+bCp91DCNQcA+pxlxDsnliCeCiDlaSj3PAFBs9ogmA=="
+      },
+      "libclang.runtime.linux-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "TslnqZKmXE17oqUSG70eJdRlI18MgxlYCu0VUTbklHJfS/WZ5PZqi3T5UlrBM/Wdavq6UpY/uN+cQc1Z0KRuHw=="
+      },
+      "libclang.runtime.osx-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "rwxuSQtoxWejatmqjprV63dGZwzEsrA8UxCSeYeryZpncNvSjFo7gfoN9MaePGaUbuqrXnw21v1WQWiB1Upjsg=="
+      },
+      "libclang.runtime.win-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "bF4Ziyuzk5o9v6hn636sdYtz2OA0Bsi7IsWln38ku3QdPLo6Qm9ZliQo63EvM8FoRL8aKh1uFjTI9RA7RgTq8g=="
+      },
+      "libclang.runtime.win-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "aGk3iDW9nAMDb3PftNX8+j7q8QmBoa0w3RK662RzNALTCAZKtrB6LcC8qYXVXZbcYgwelJYthtAlOJR0PBHLwA=="
+      },
+      "libClangSharp": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "/716OBKj0Pg3RVh9D1gTggCF0fvTJy3KtmommelcEtycqJ9tOkMKSVwHh57tADMFrxKA/b2fxXIDyoKknjhh2w==",
+        "dependencies": {
+          "libClangSharp.runtime.win-x64": "20.1.2"
+        }
+      },
+      "libClangSharp.runtime.linux-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "6/AlP+iaDXgpg1ZizN/gL89FuOlYJ2dWD/9ZttgTP99C31KhMuKQ0fTJpl0A6uUsNAQaWQWIbwSAVvtHfYwOZA=="
+      },
+      "libClangSharp.runtime.linux-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "oxucHzVToB46VtOS9VzWrhBbFzChc28EgK+68nQNP+gxJyuyf4ccte9FNe6E+qmdUFvtATYLt004ZDQXuTuksw=="
+      },
+      "libClangSharp.runtime.osx-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "Ag4DUZXbYanLin51oN+SCG3JJ//+Wfp5aS8oPTGuJSPwIYeIBI3zqASIPoaxarG5hHCDG3h4lTAf1LYcnDQZoQ=="
+      },
+      "libClangSharp.runtime.win-arm64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "uOke32KST6sO1oRazsA7ZeOoSnO6DuPpT5+TTDyK7Y0fvh1yBaMRQlhbd5M7nsAsbUk/uP8ctHack7/TgmMDQQ=="
+      },
+      "libClangSharp.runtime.win-x64": {
+        "type": "Transitive",
+        "resolved": "20.1.2",
+        "contentHash": "osf1ilTVVN4B19zs4ovT5yPKrYX9eAqMl+CNQGAZDaq6F0hN4fWQLi/wi0pVP9+mKPaaUtd7PC8iW/3ySDCgzg=="
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- The generator and generated-runtime contracts use one exact published package family. -->
-    <InnoBgcsPackageVersion>3.0.1</InnoBgcsPackageVersion>
+    <InnoBgcsPackageVersion>4.1.0</InnoBgcsPackageVersion>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 </Project>
