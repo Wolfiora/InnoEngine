@@ -299,6 +299,8 @@ public void AAA(
 - Owned NuGet Restore 必须使用标准 `ExcludeRestorePackageImports=true`，编译使用包含已恢复 imports 的独立求值配置。不得让同一缓存 ProjectInstance 把旧 package content items 带入新程序集输出，也不得通过包名特例、补写 NuGet imports 或删除缓存掩盖混装。
 - NuGet 锁文件由 `Inno.NuGetLockFiles.targets` 唯一声明：中立工程、实际 SDK RID 和入口显式声明的宿主引用图上下文各有归属；不得按产品 Native target 扩散重复清单，也不得剥除 SDK 属性来缩减文件数。消费者读取实际求值的锁和 assets 路径，保留清单全部提交；CI 同时验证 locked restore、文件稳定性和 untracked 文件。不得用 ignore 规则隐藏冗余或过期依赖清单。
 
+- 引擎管理的构建 SDK 工作缓存与协调锁必须位于对应的 `artifacts` / `obj` 或显式输出 owner 内，不为源码目录中的已退出缓存位置保留全局 ignore 或验证豁免。清理旧工程目录前，核对当前工程/还原图、Git 归属、符号链接、活动进程和完整文件清单；普通运行锁仍遵守现有 owner 退休协议。远端旧分支的历史配置不是当前分支的游离文件，不得跨分支只删清单或改写历史来制造已清理的结果。
+
 ## 30. 完成前的深层自查与交付说明
 
 - 不得在 `BindGen-CS` 仓库创建或保留 `Agent.md`、`AGENTS.md` 及其大小写变体；引擎的代理工作约束只记录在引擎自己的规范中。

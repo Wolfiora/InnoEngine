@@ -183,8 +183,6 @@ internal static partial class NativeBindingsVerification
         {
             string relativePath = Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
             if (relativePath.Contains("/Generated/", StringComparison.OrdinalIgnoreCase)
-                || relativePath.Contains("/generated/", StringComparison.OrdinalIgnoreCase)
-                || relativePath.Contains("/.bindgen-cache/", StringComparison.Ordinal)
                 || relativePath.Contains("/bin/", StringComparison.OrdinalIgnoreCase)
                 || relativePath.Contains("/obj/", StringComparison.OrdinalIgnoreCase))
             {
