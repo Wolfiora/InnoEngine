@@ -9,6 +9,7 @@
     <!-- Direct and product references must share one restore/output context. -->
     <InnoNativeTarget Condition="'$(InnoNativeTarget)' == ''">$(InnoDevelopmentTarget)</InnoNativeTarget>
     <InnoToolTarget Condition="'$(InnoToolTarget)' == ''">$(InnoDevelopmentTarget)</InnoToolTarget>
+    <InnoProductBuildProperties Condition="'$(InnoProductBuildProperties)' == ''">$(InnoDevelopmentEditorBuildProperties)</InnoProductBuildProperties>
     <OutputType>Exe</OutputType>
     <AssemblyName>InnoEngine.Editor</AssemblyName>
     <RootNamespace>InnoEngine.Editor</RootNamespace>

@@ -2,6 +2,7 @@
   <PropertyGroup Condition="'$(NETCoreSdkRuntimeIdentifier)' == 'osx-arm64'">
     <InnoDevelopmentTarget>macos-arm64</InnoDevelopmentTarget>
     <InnoDevelopmentEditorProject>$(MSBuildThisFileDirectory)../../editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj</InnoDevelopmentEditorProject>
+    <InnoDevelopmentEditorBuildProperties>$(MSBuildThisFileDirectory)EditorProduct.props</InnoDevelopmentEditorBuildProperties>
     <DefineConstants>$(DefineConstants);INNO_HOST_MACOS_ARM64</DefineConstants>
   </PropertyGroup>
 </Project>

@@ -46,11 +46,13 @@ cmake --version
 dotnet run --project entry/InnoEngine.Editor/InnoEngine.Editor.csproj
 ```
 
-以上 `--branch kernel` 用于取得当前整改代码；合并后使用实际包含这些改动的分支。已经 clone 但未初始化子模块时，在仓库根目录执行 `git submodule update --init --recursive`。
+已经 clone 但未初始化子模块时，在仓库根目录执行 `git submodule update --init --recursive`。
 
 ### 两个日常入口
 
 日常启动项目只有：
+
+平台自己的 `DevelopmentProduct.props` 声明宿主 target、Editor 工程和产品 props。Editor 开发入口消费这些声明，将相同的 target 与产品属性传给直接引用及产品引用；Restore 和编译不会为同一个共享工程混用中立与目标输出目录。
 
 | 项目 | 操作 |
 | --- | --- |

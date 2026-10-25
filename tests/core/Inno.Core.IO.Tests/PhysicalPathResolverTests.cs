@@ -15,9 +15,16 @@ public sealed class PhysicalPathResolverTests : IDisposable
         string file = Path.Combine(m_root, "input.bin");
         File.WriteAllText(file, "input");
         var resolver = new PhysicalPathResolver();
-        Assert.Equal(file, resolver.Resolve(file));
-        Assert.Equal(file, resolver.Resolve(file));
-        Assert.Throws<IOException>(() => PathBoundary.RequireContained(Path.Combine(m_root, "Owned"), resolver.Resolve(file)));
+        string resolved = resolver.Resolve(file);
+        Assert.True(Path.IsPathFullyQualified(resolved));
+        Assert.Equal("input", File.ReadAllText(resolved));
+        Assert.Equal(resolved, resolver.Resolve(file));
+        Assert.Equal(resolved, new PhysicalPathResolver().Resolve(resolved));
+        for (string? entry = resolved; entry is not null; entry = Path.GetDirectoryName(entry))
+            Assert.False(File.GetAttributes(entry).HasFlag(FileAttributes.ReparsePoint), entry);
+        string owner = Path.Combine(Path.GetDirectoryName(resolved)!, "Owned");
+        Assert.Throws<IOException>(() => PathBoundary.RequireContained(owner, resolved));
+        Assert.False(Directory.Exists(owner));
         string missing = Path.Combine(m_root, "missing.bin");
         Assert.Throws<FileNotFoundException>(() => resolver.Resolve(missing));
         Assert.False(File.Exists(missing));

@@ -2,12 +2,18 @@ param(
     [string]$Dotnet = 'dotnet',
     [string]$Configuration = 'SourceDebug',
     [string]$ResultsDirectory = 'artifacts/acceptance/managed',
+    [string]$ArtifactsPath = '',
     [switch]$InventoryOnly
 )
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $resultsRoot = [IO.Path]::GetFullPath($ResultsDirectory, $repositoryRoot)
+$outputProperties = @()
+if ($ArtifactsPath) {
+    $ArtifactsPath = [IO.Path]::GetFullPath($ArtifactsPath, $repositoryRoot)
+    $outputProperties += '-p:ArtifactsPath=' + $ArtifactsPath
+}
 New-Item -ItemType Directory -Force -Path $resultsRoot | Out-Null
 $projects = @{}
 $deferred = @{}
@@ -16,7 +22,7 @@ foreach ($line in Get-Content (Join-Path $repositoryRoot 'InnoEngine.sln')) {
     $relative = $Matches[1]
     $path = [IO.Path]::GetFullPath($relative.Replace([char]92, [IO.Path]::DirectorySeparatorChar), $repositoryRoot)
     $output = & $Dotnet msbuild $path -nologo -p:DesignTimeBuild=true -p:Configuration=Debug `
-        -getProperty:BindGenGeneratedBindings,InnoProductId,NETCoreSdkVersion,RoslynTargetsPath,MSBuildVersion -getItem:ProjectReference
+        -getProperty:BindGenGeneratedBindings,InnoProductId,NETCoreSdkVersion,RoslynTargetsPath,MSBuildVersion -getItem:ProjectReference @outputProperties
     if ($LASTEXITCODE -ne 0) { throw "Project inventory failed: $relative" }
     $evaluated = ($output -join [Environment]::NewLine) | ConvertFrom-Json
     if ($projects.Count -eq 0) {
@@ -66,9 +72,9 @@ $filterPath = Join-Path $resultsRoot 'Managed.slnf'
 Write-Host "Selected $($selected.Count) managed projects; deferred $($deferred.Count) native-dependent projects."
 Write-Host 'Tests requiring BuildGraph=Complete run after the full SourceDebug build in product CI.'
 if ($InventoryOnly) { return }
-& $Dotnet build $filterPath --configuration $Configuration --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false 2>&1 |
+& $Dotnet build $filterPath --configuration $Configuration --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false @outputProperties 2>&1 |
     Tee-Object -FilePath (Join-Path $resultsRoot 'build.log')
 if ($LASTEXITCODE -ne 0) { throw 'The independent managed build failed.' }
 & (Join-Path $PSScriptRoot 'Invoke-IsolatedTests.ps1') -Dotnet $Dotnet -Configuration $Configuration `
-    -Solution $filterPath -Filter 'BuildGraph!=Complete' -ResultsDirectory $resultsRoot *>&1 |
+    -Solution $filterPath -Filter 'BuildGraph!=Complete' -ArtifactsPath $ArtifactsPath -ResultsDirectory $resultsRoot *>&1 |
     Tee-Object -FilePath (Join-Path $resultsRoot 'tests.log')

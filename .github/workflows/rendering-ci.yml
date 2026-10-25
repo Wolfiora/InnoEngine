@@ -51,6 +51,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: engine-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
@@ -75,7 +79,7 @@ jobs:
         shell: pwsh
         run: |
           ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-before
-          ./tests/Invoke-ManagedChecks.ps1
+          ./tests/Invoke-ManagedChecks.ps1 -ArtifactsPath (Join-Path $env:RUNNER_TEMP 'InnoManaged')
           ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-after
       - name: Upload managed results and deferred dependencies
         if: always()
