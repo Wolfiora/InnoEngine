@@ -8,6 +8,8 @@ owned Restore 使用 NuGet 标准属性 `ExcludeRestorePackageImports=true`；Ta
 
 完整编译请求身份包含该阶段属性，并继续校验冻结输入、lease 与原子 publication。它也使错误的既有请求缓存不被当作当前完整请求复用。公开边界的真实 MSBuild 回归同时覆盖私有 runtime 准备与独立 owned Restore。
 
+锁文件路径由工程的统一规则求值：工具保留实际 SDK RID，产品标签不自动扩展文件名。输入快照读取实际选定的清单和包内容，不回查另一配置的默认 obj；独立 ArtifactsPath 只改变所属 assets / 编译输出，不制造第二套源码清单。规则与更新方式见[依赖锁定](DEPENDENCY_SUBMISSION.md)。
+
 ## 职责与边界
 
 这是 MSBuild 引导边界的库，负责协调 Task 运行闭包的编译、发布及退休，并在读取保护期间复制生成绑定。它依赖 Core IO、中立 Toolchains 与 MSBuild 契约，

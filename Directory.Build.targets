@@ -7,13 +7,8 @@
     <Inno.Build.Tasks.MaintainBuildCachesTask EngineRoot="$(MSBuildThisFileDirectory)" />
   </Target>
   <PropertyGroup>
-    <!-- Evaluate after product declarations so explicit target restores never overwrite neutral locks. -->
-    <_InnoPackageLockScope></_InnoPackageLockScope>
-    <_InnoPackageLockScope Condition="'$(IsRoslynComponent)' != 'true'">$(InnoNativeTarget)</_InnoPackageLockScope>
-    <_InnoPackageLockScope Condition="'$(IsRoslynComponent)' != 'true' and '$(RuntimeIdentifier)' != ''">$(_InnoPackageLockScope).$(RuntimeIdentifier)</_InnoPackageLockScope>
-    <_InnoPackageLockScope>$([System.String]::Copy('$(_InnoPackageLockScope)').Trim('.'))</_InnoPackageLockScope>
-    <NuGetLockFilePath Condition="'$(NuGetLockFilePath)' == ''">$(MSBuildProjectDirectory)/packages.lock.json</NuGetLockFilePath>
-    <NuGetLockFilePath Condition="'$(_InnoPackageLockScope)' != ''">$(MSBuildProjectDirectory)/packages.$(_InnoPackageLockScope).lock.json</NuGetLockFilePath>
+    <!-- SDK-inferred publish analyzers can change the restore graph. -->
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)build/msbuild/Inno.NuGetLockFiles.targets</AfterMicrosoftNETSdkTargets>
   </PropertyGroup>
 
   <!-- Only the binding owner consumes its selection as a compilation input. -->

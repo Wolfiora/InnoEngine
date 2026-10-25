@@ -12,11 +12,13 @@ on:
       - ".gitmodules"
       - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
+      - "tests/Invoke-NuGetLockChecks.ps1"
   push:
     branches:
       - master
       - main
       - kernel
+      - dotnet10
     paths:
       - "**/*.csproj"
       - "**/*.props"
@@ -26,6 +28,7 @@ on:
       - ".gitmodules"
       - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
+      - "tests/Invoke-NuGetLockChecks.ps1"
 
 permissions:
   contents: read
@@ -61,7 +64,8 @@ jobs:
           global-json-file: InnoEngine/global.json
 
       - name: Restore the complete solution
-        run: dotnet restore InnoEngine.sln --locked-mode --disable-parallel -p:Configuration=SourceDebug
+        shell: pwsh
+        run: ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/nuget-locks
 
       - name: Submit resolved NuGet dependencies
         if: github.event_name != 'pull_request'
@@ -71,3 +75,11 @@ jobs:
           directoryExclusionList: extern
           detectorsCategories: NuGet
           correlator: inno-nuget
+
+      - name: Upload lock ownership and restore evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-lock-evidence
+          path: InnoEngine/artifacts/acceptance/nuget-locks/**
+          if-no-files-found: error

@@ -297,6 +297,7 @@ public void AAA(
 - Task runtime 只在 IBuildEngine4 Build 生命周期、同一完整请求身份内复用成功不可变 publication；registry 只存 BCL 数据，不持有 SDK owner、lease 或私有 ALC 类型。每个实际载入边界仍有独立 owner；失败/取消不缓存。共享 restore 写入由 Core.IO lease 协调，等待时 Yield/Reacquire，保留锁文件。
 - 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。NuGet Runtime 资产按产品真实 Restore 图选择，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。
 - Owned NuGet Restore 必须使用标准 `ExcludeRestorePackageImports=true`，编译使用包含已恢复 imports 的独立求值配置。不得让同一缓存 ProjectInstance 把旧 package content items 带入新程序集输出，也不得通过包名特例、补写 NuGet imports 或删除缓存掩盖混装。
+- NuGet 锁文件由 `Inno.NuGetLockFiles.targets` 唯一声明：中立工程、实际 SDK RID 和入口显式声明的宿主引用图上下文各有归属；不得按产品 Native target 扩散重复清单，也不得剥除 SDK 属性来缩减文件数。消费者读取实际求值的锁和 assets 路径，保留清单全部提交；CI 同时验证 locked restore、文件稳定性和 untracked 文件。不得用 ignore 规则隐藏冗余或过期依赖清单。
 
 ## 30. 完成前的深层自查与交付说明
 

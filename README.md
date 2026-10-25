@@ -38,6 +38,8 @@ Have a project already? Pass its directory after `--`. To try FlappyBird, clone 
 
 [Startup, advanced commands, and game exports →](docs/platform/PRODUCT_STARTUP.md) · [Current acceptance](docs/architecture/CURRENT_ACCEPTANCE.md)
 
+NuGet dependency locks are tracked source inputs. Their names distinguish actual .NET runtime identifiers and the Editor entry host; native product labels do not create extra copies. See [dependency updates and locked restore checks](docs/build/DEPENDENCY_SUBMISSION.md).
+
 ## Product targets
 
 | Target | Products | Managed deployment |
@@ -46,7 +48,7 @@ Have a project already? Pass its directory after `--`. To try FlappyBird, clone 
 | macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
 | Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
 
-Windows x64 acceptance covers the Editor and published players separately. Browser binding generation succeeds with the official extension; native compilation is blocked by invalid C type names in the pinned BGCS package's generated storage assertions for anonymous system records. macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
+Windows x64 acceptance covers the Editor and published players separately. Browser Mono and AOT products have passed bounded runtime checks with the official BGCS extension. macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
 
 ## Built to compose
 

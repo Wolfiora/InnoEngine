@@ -76,7 +76,10 @@ jobs:
           global-json-file: global.json
       - name: Build and test the independent managed graph
         shell: pwsh
-        run: ./tests/Invoke-ManagedChecks.ps1
+        run: |
+          ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-before
+          ./tests/Invoke-ManagedChecks.ps1
+          ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-after
       - name: Upload managed results and deferred dependencies
         if: always()
         uses: actions/upload-artifact@v4
@@ -152,6 +155,13 @@ jobs:
       - name: Build host Editor in Debug and Release
         shell: pwsh
         run: |
+          ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Debug `
+            -ResultsDirectory artifacts/acceptance/ci-build/nuget-editor-debug
+          ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Release `
+            -ResultsDirectory artifacts/acceptance/ci-build/nuget-editor-release
+          ./tests/Invoke-NuGetLockChecks.ps1 -Project '${{ matrix.player_project }}' -Configuration Release `
+            -RuntimeIdentifier '${{ matrix.platform }}' -PublishAot `
+            -ResultsDirectory artifacts/acceptance/ci-build/nuget-player-aot
           dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false `
             -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/entry.binlog' 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/entry.log'
@@ -167,12 +177,14 @@ jobs:
         shell: pwsh
         run: |
           $assets = @(dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
-            -nologo -m:1 -nr:false -getProperty:ProjectAssetsFile)
-          if ($LASTEXITCODE -ne 0 -or $assets.Count -ne 1) { throw 'Cannot resolve BGCS restore ownership.' }
-          $restored = Get-Content -LiteralPath $assets[0] -Raw | ConvertFrom-Json
+            -nologo -m:1 -nr:false -getProperty:ProjectAssetsFile,InnoBgcsPackageVersion)
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve BGCS restore ownership.' }
+          $evaluation = ($assets -join [Environment]::NewLine) | ConvertFrom-Json
+          $expectedVersion = $evaluation.Properties.InnoBgcsPackageVersion
+          $restored = Get-Content -LiteralPath $evaluation.Properties.ProjectAssetsFile -Raw | ConvertFrom-Json
           $packages = @($restored.libraries.PSObject.Properties.Name | Where-Object { $_ -match '^BGCS(?:\.[^/]+)?/' })
-          if ($packages.Count -eq 0 -or @($packages | Where-Object { $_ -notmatch '/3\.0\.1$' }).Count -ne 0) {
-            throw 'Every restored BGCS package must use exactly 3.0.1.'
+          if ($packages.Count -eq 0 -or @($packages | Where-Object { ($_ -split '/')[-1] -ne $expectedVersion }).Count -ne 0) {
+            throw ('Every restored BGCS package must use exactly '+$expectedVersion+'.')
           }
           $packages | Set-Content 'artifacts/acceptance/ci-build/bgcs-packages.txt'
           ./tests/Invoke-BuildCacheChecks.ps1 -ResultsDirectory 'artifacts/acceptance/ci-build/cache'

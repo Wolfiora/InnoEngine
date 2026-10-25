@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <!-- Product compilation labels do not define a NuGet dependency graph. -->
+    <_InnoNuGetLockScope></_InnoNuGetLockScope>
+    <_InnoNuGetLockScope Condition="'$(InnoNuGetHostContext)' != ''">.host-$(InnoNuGetHostContext)</_InnoNuGetLockScope>
+    <_InnoNuGetLockScope Condition="'$(RuntimeIdentifier)' != ''">$(_InnoNuGetLockScope).rid-$(RuntimeIdentifier)</_InnoNuGetLockScope>
+    <!-- These public SDK capabilities request different implicit NuGet tool packages. -->
+    <_InnoNuGetToolScope></_InnoNuGetToolScope>
+    <_InnoNuGetToolScope Condition="'$(PublishAot)' == 'true'">aot</_InnoNuGetToolScope>
+    <_InnoNuGetToolScope Condition="'$(_InnoNuGetToolScope)' == '' and ('$(PublishTrimmed)' == 'true' or '$(IsAotCompatible)' == 'true' or '$(IsTrimmable)' == 'true' or '$(EnableAotAnalyzer)' == 'true' or '$(EnableTrimAnalyzer)' == 'true' or '$(EnableSingleFileAnalyzer)' == 'true')">link</_InnoNuGetToolScope>
+    <_InnoNuGetLockScope Condition="'$(_InnoNuGetToolScope)' != ''">$(_InnoNuGetLockScope).$(_InnoNuGetToolScope)</_InnoNuGetLockScope>
+    <NuGetLockFilePath Condition="'$(NuGetLockFilePath)' == ''">$(MSBuildProjectDirectory)/packages$(_InnoNuGetLockScope).lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+</Project>

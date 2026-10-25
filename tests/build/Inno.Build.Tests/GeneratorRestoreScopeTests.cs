@@ -15,7 +15,7 @@ public sealed class GeneratorRestoreScopeTests
     [Theory]
     [InlineData("src/runtime/generators/Inno.Runtime.Generators/Inno.Runtime.Generators.csproj")]
     [InlineData("src/foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj")]
-    public async Task ProductTargetDoesNotChangeTheSharedCompilerToolRestoreOwner(string relative)
+    public async Task ExplicitRuntimeIdentityDoesNotOverwriteTheNeutralCompilerLock(string relative)
     {
         string root = TestRepository.GetRoot(typeof(GeneratorRestoreScopeTests).Assembly);
         string project = Path.Combine(root, relative);
@@ -51,7 +51,7 @@ public sealed class GeneratorRestoreScopeTests
         JsonElement properties = document.RootElement.GetProperty("Properties");
         Assert.Equal("true", properties.GetProperty("IsRoslynComponent").GetString());
         Assert.Equal("obj/", properties.GetProperty("BaseIntermediateOutputPath").GetString()!.Replace('\\', '/'));
-        Assert.Equal(Path.Combine(Path.GetDirectoryName(project)!, "packages.lock.json"),
+        Assert.Equal(Path.Combine(Path.GetDirectoryName(project)!, "packages.rid-win-x64.lock.json"),
             Path.GetFullPath(properties.GetProperty("NuGetLockFilePath").GetString()!));
     }
 }

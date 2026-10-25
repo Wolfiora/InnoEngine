@@ -14,6 +14,8 @@ F01 的引擎路径也已闭合：Browser 平台选择官方 LibraryImport，解
 
 本次消费升级另外修复 Task Restore 与 compilation 的求值隔离；不再把新 DLL 与旧 package content items 混入同一 publication。修复位于中立 MSBuild 边界，真实公共 Task 回归和七个正式生成 owner 已通过；没有修改 SDK 或添加包名特例。
 
+B02 / F09 已在 [Issue #23 锁文件验收](../../records/architecture/acceptance/ISSUE23_NUGET_LOCK_ACCEPTANCE.md)中修复：清单按实际 SDK RID、入口宿主上下文及隐式工具包划分；包身份用例读取自己还原得到的 assets / lock。19 个正式 locked restore、59 项回归、固定输入 10 次热构建及独立 Editor Debug / Release 已通过。同目录各五次规则对照未触发 10% 回退门槛；不因此关闭下表中的热构建成本问题。关闭范围以专项报告为准。
+
 完整证据与全部英文 issues 见[本轮专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。以下未关闭项目仍需按 issue 验收。
 
 ## 仍开放的问题
@@ -22,11 +24,10 @@ F01 的引擎路径也已闭合：Browser 平台选择官方 LibraryImport，解
 | --- | --- | --- |
 | R02 | Runtime coroutine 接入 | 私有 scheduler 只有创建、Tick、stop 和 Dispose，当前没有 admission 路径；需落地最小真实契约或删除未使用状态，不能宣称已集成。 |
 | T01/T02 | Browser 验收覆盖 | 非致命 console 404 尚未归因；最高分跨启动写入没有在有界游戏运行中触发，已各自提交 issue。 |
-| B01/B02 | 工具与仓库卫生 | Windows native 源码编码告警、额外 target/RID 锁 scope 的归属与收敛需要继续处理。 |
+| B01 | Native 构建诊断 | Windows native 源码编码告警仍需按组件 owner 处理；锁 scope 的 B02 已单独修复并验收。 |
 | F03 | History 拒绝操作的原子性 | 非 LIFO Commit 在校验 ID 前弹栈，public handler 反例确认内层修改无法随后回滚/Undo。不能用正常顺序用例通过关闭此项。 |
 | F04/F05 | 插件 UI / 2D 热路径 | UI 插件在纹理 GPU 命中前按 draw 完整复制像素；2D 模型的非空 viewContent 使完整帧缓存持续绕过。见全仓报告的分配实测和调用链，尚未修复。 |
 | F06/F07 | 热构建与缓存维护成本 | 暖 Native 准备反复读取约 4.5 GB；当前 5 秒 inventory 超时，30 秒 dry-run 可完成。内容/owner 正确性协议已存在，但没有以此证明日常维护必然收敛或性能足够。 |
-| F09 | 测试产物作用域 | 包身份用例写死默认 obj，隔离 ArtifactsPath 下误读另一还原的旧包身份。实际隔离 assets 与锁文件均为当前版本；不能通过删除缓存或额外还原掩盖测试输入错误。 |
 | O01 | macOS / Metal | 历史 revision 的两条 CI 在单线程 Metal surface 退休用例超时，根因未确认。本轮没有 Mac，不能关闭或直接归责 BGCS。 |
 | O02 | 完整构建性能 | 本轮有当前热构建采样及同 .NET 10 的路径解析实现对照，但没有完整改造前的空闲、同输入五次 Editor 基线。历史高负载耗时不作有效对照，不宣称整体提速或已排除全部回退。 |
 | O06 | XML / Wiki 语义 | 符号、签名和示例门禁不证明全部历史注释足够具体；部分历史参数说明仍需补充实际约束和失败语义。新增构建 API 的所有权、失败与生命周期单独说明。 |

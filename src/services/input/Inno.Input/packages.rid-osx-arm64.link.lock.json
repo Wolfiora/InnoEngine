@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[10.0.13, )",
+        "resolved": "10.0.13",
+        "contentHash": "40yrBMsLEcjixBR4G+FiUaBPvxXIPSKJ2OgSrbOZcmSDBda4Sb0k7BWrfDpIvn3IvvDzwOL/tEPa6gDQfh6aRw=="
+      },
+      "inno.core.execution": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.input": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.mathematics": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.catalogs": {
+        "type": "Project"
+      },
+      "inno.scripting.api": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      }
+    },
+    "net10.0/osx-arm64": {}
+  }
+}

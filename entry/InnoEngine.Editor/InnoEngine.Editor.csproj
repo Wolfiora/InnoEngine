@@ -4,6 +4,8 @@
   <Import Project="../DevelopmentHost.props" />
 
   <PropertyGroup>
+    <!-- This entry selects a different project closure for each SDK host. -->
+    <InnoNuGetHostContext>$(NETCoreSdkRuntimeIdentifier)</InnoNuGetHostContext>
     <OutputType>Exe</OutputType>
     <AssemblyName>InnoEngine.Editor</AssemblyName>
     <RootNamespace>InnoEngine.Editor</RootNamespace>
