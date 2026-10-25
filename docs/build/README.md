@@ -38,6 +38,8 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 `Invoke-IsolatedTests.ps1` 同时执行普通套件、隔离用例发现和逐进程执行；`-Filter` 作用于三个阶段。真实 Native 测试使用明确的 `-Target` 与 `-ProductProperties`，不以中立 fixture 代替 ABI 验收。
 
+`Invoke-ManagedChecks.ps1` 从实际引用图选择不依赖 Native 生成及产品准备的工程。标记 `BuildGraph=Complete` 的仓库集成测试要求完整 `SourceDebug` 输出，在产品 CI 的完整套件中执行；独立托管阶段将其前置条件写入 `deferred-test-context.json`，其余架构 fixture 测试继续执行。引擎 target 与 .NET `RuntimeIdentifier` 分别传递，Editor 入口的直接引用与宿主产品引用共用同一目标上下文。
+
 `Invoke-BuildCacheChecks.ps1` 准备一次 Editor 后连续执行十次热构建，要求 Native 进程数与 binding generation 数均为零，并核对 current 内容及时间戳稳定。
 
 `Invoke-WikiChecks.ps1` 在已构建的 Build entry 和所选 Player 引用闭包上运行，先通过正式脚本工作流更新 IDE 投影，再从该投影读取准确的裁剪 reference。它检查 Wiki 链接、项目覆盖、源码签名及可编译示例，不按缓存目录时间猜测 reference。

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -48,9 +49,19 @@ public sealed class NuGetLockPolicyTests
         string selected = await ToolchainEnvironment.CaptureOutputAsync(host,
             ["msbuild", Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj"),
                 "-p:NETCoreSdkRuntimeIdentifier=" + sdkHost, "-p:RuntimeIdentifier=" + runtime,
-                "-getProperty:NuGetLockFilePath", "-nologo", "-nr:false"],
+                "-getProperty:NuGetLockFilePath,InnoNativeTarget", "-getItem:ProjectReference", "-nologo", "-nr:false"],
             root, cancellation.Token, DotNetSdkEnvironment.Create(host));
-        Assert.Equal(expectedFile, Path.GetFileName(selected.Trim()));
+        using JsonDocument evaluation = JsonDocument.Parse(selected);
+        JsonElement properties = evaluation.RootElement.GetProperty("Properties");
+        Assert.Equal(expectedFile, Path.GetFileName(properties.GetProperty("NuGetLockFilePath").GetString()));
+        string target = properties.GetProperty("InnoNativeTarget").GetString()!;
+        Assert.False(string.IsNullOrWhiteSpace(target));
+        foreach (JsonElement reference in evaluation.RootElement.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray())
+        {
+            if (reference.TryGetProperty("OutputItemType", out JsonElement role) && role.GetString() == "Analyzer")
+                continue;
+            Assert.Contains("InnoNativeTarget=" + target, reference.GetProperty("AdditionalProperties").GetString());
+        }
     }
 
     [Fact]

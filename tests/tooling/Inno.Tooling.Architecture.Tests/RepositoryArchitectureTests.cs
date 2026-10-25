@@ -8,6 +8,7 @@ namespace Inno.Tooling.Architecture.Tests;
 public sealed class RepositoryArchitectureTests
 {
     [Fact]
+    [Trait("BuildGraph", "Complete")]
     public void CurrentRepositoryPassesArchitectureRules()
     {
         string root = TestRepository.GetRoot(typeof(RepositoryArchitectureTests).Assembly);

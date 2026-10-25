@@ -28,10 +28,7 @@ on:
       - "InnoEngine.sln"
   push:
     branches:
-      - main
       - master
-      - kernel
-      - dotnet10
     paths:
       - ".github/workflows/rendering-ci.yml"
       - "build/**"
@@ -100,6 +97,7 @@ jobs:
           - os: windows-2022
             platform: windows-x64
             build_target: windows-x64
+            runtime_identifier: win-x64
             architecture: X64
             backend_pattern: "Rendering initialized with Direct3D(11|12)"
             product_properties: platforms/WindowsX64/build/Inno.Build.WindowsX64/EditorProduct.props
@@ -107,6 +105,7 @@ jobs:
           - os: macos-15
             platform: osx-arm64
             build_target: macos-arm64
+            runtime_identifier: osx-arm64
             architecture: Arm64
             backend_pattern: "Rendering initialized with Metal"
             product_properties: platforms/MacOSArm64/build/Inno.Build.MacOSArm64/EditorProduct.props
@@ -160,7 +159,7 @@ jobs:
           ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Release `
             -ResultsDirectory artifacts/acceptance/ci-build/nuget-editor-release
           ./tests/Invoke-NuGetLockChecks.ps1 -Project '${{ matrix.player_project }}' -Configuration Release `
-            -RuntimeIdentifier '${{ matrix.platform }}' -PublishAot `
+            -RuntimeIdentifier '${{ matrix.runtime_identifier }}' -PublishAot `
             -ResultsDirectory artifacts/acceptance/ci-build/nuget-player-aot
           dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false `
             -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/entry.binlog' 2>&1 |

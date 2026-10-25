@@ -33,9 +33,13 @@
   </ItemGroup>
 
   <Target Name="CopyDuplicateImporterFixture" AfterTargets="Build">
-    <ItemGroup>
-      <DuplicateImporterFixture Include="..\fixtures\Inno.Assets.Pipeline.DuplicateImporterFixture\bin\$(Configuration)\net10.0\Inno.Assets.Pipeline.DuplicateImporterFixture.dll" />
-    </ItemGroup>
+    <MSBuild
+      Projects="@(ProjectReference)"
+      Targets="GetTargetPath"
+      Condition="'%(ProjectReference.Filename)' == 'Inno.Assets.Pipeline.DuplicateImporterFixture'"
+      BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="DuplicateImporterFixture" />
+    </MSBuild>
     <Copy SourceFiles="@(DuplicateImporterFixture)" DestinationFolder="$(OutDir)Modules/DuplicateAssetImporters" />
   </Target>
 

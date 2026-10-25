@@ -16,9 +16,6 @@ on:
   push:
     branches:
       - master
-      - main
-      - kernel
-      - dotnet10
     paths:
       - "**/*.csproj"
       - "**/*.props"

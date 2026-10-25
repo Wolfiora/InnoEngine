@@ -57,12 +57,18 @@ $filterPath = Join-Path $resultsRoot 'Managed.slnf'
 @($deferred.Keys | Sort-Object | ForEach-Object {
     [pscustomobject]@{ project = $projects[$_].relative; status = 'Deferred'; reason = $deferred[$_] }
 }) | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $resultsRoot 'deferred-projects.json') -Encoding utf8
+@{
+    trait = 'BuildGraph=Complete'
+    status = 'Deferred'
+    reason = 'Requires the complete SourceDebug solution outputs; executed by the native product CI test suite.'
+} | ConvertTo-Json | Set-Content (Join-Path $resultsRoot 'deferred-test-context.json') -Encoding utf8
 & $Dotnet --info | Set-Content (Join-Path $resultsRoot 'dotnet-info.txt')
 Write-Host "Selected $($selected.Count) managed projects; deferred $($deferred.Count) native-dependent projects."
+Write-Host 'Tests requiring BuildGraph=Complete run after the full SourceDebug build in product CI.'
 if ($InventoryOnly) { return }
 & $Dotnet build $filterPath --configuration $Configuration --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false 2>&1 |
     Tee-Object -FilePath (Join-Path $resultsRoot 'build.log')
 if ($LASTEXITCODE -ne 0) { throw 'The independent managed build failed.' }
 & (Join-Path $PSScriptRoot 'Invoke-IsolatedTests.ps1') -Dotnet $Dotnet -Configuration $Configuration `
-    -Solution $filterPath -ResultsDirectory $resultsRoot *>&1 |
+    -Solution $filterPath -Filter 'BuildGraph!=Complete' -ResultsDirectory $resultsRoot *>&1 |
     Tee-Object -FilePath (Join-Path $resultsRoot 'tests.log')
