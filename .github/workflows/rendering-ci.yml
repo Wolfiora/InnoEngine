@@ -76,11 +76,17 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-      - name: Build and test the independent managed graph
+      - name: Validate managed locked restore
         shell: pwsh
         run: |
           ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-before
+      - name: Build and test the independent managed graph
+        shell: pwsh
+        run: |
           ./tests/Invoke-ManagedChecks.ps1 -ArtifactsPath (Join-Path $env:RUNNER_TEMP 'InnoManaged')
+      - name: Verify source locks after managed tests
+        shell: pwsh
+        run: |
           ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-after
       - name: Upload managed results and deferred dependencies
         if: always()
@@ -156,7 +162,7 @@ jobs:
             Set-Content 'artifacts/acceptance/ci-build/compiler-version.txt'
           if ($LASTEXITCODE -ne 0) { throw 'The selected compiler could not report its version.' }
 
-      - name: Build host Editor in Debug and Release
+      - name: Validate Editor and NativeAOT locked restores
         shell: pwsh
         run: |
           ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Debug `
@@ -166,13 +172,25 @@ jobs:
           ./tests/Invoke-NuGetLockChecks.ps1 -Project '${{ matrix.player_project }}' -Configuration Release `
             -RuntimeIdentifier '${{ matrix.runtime_identifier }}' -PublishAot `
             -ResultsDirectory artifacts/acceptance/ci-build/nuget-player-aot
+
+      - name: Build development Build entry
+        shell: pwsh
+        run: |
           dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false `
             -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/entry.binlog' 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/entry.log'
           if ($LASTEXITCODE -ne 0) { throw "Build entry preparation failed." }
+
+      - name: Build host Editor Debug
+        shell: pwsh
+        run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Debug 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-debug.log'
           if ($LASTEXITCODE -ne 0) { throw "Debug host Editor build failed." }
+
+      - name: Build host Editor Release
+        shell: pwsh
+        run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-release.log'
           if ($LASTEXITCODE -ne 0) { throw "Release host Editor build failed." }
