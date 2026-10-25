@@ -44,6 +44,8 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 Reload fixture 使用普通 `ProjectReference` 声明构建依赖，通过 SDK 的 `OutputItemType` 接收实际产物，再部署到测试宿主的 Modules 目录；不拼接 `bin/<configuration>/<tfm>`，也不从另一输出 owner 借用 fixture。
 
+Wiki 脚本 fixture 从测试工程实际求值的 framework `ReferencePath` 编译，并在所属输出目录保存构建清单；运行测试的 runtime 补丁与 SDK reference pack 可以不同，不按 runtime 补丁号推导 reference pack 路径。
+
 Task fixture 通过官方 binlog replay 的 `Csc` 事件核对实际编译次数，并验证每次根构建的 owner、私有加载位置和完整请求身份复用。RID 命名 fixture 显式请求 untrimmed 图，工具包 scope 由独立用例验证 SDK 推导的能力，避免让是否安装 Wasm workload 改变测试输入。Browser 绑定 fixture 使用正式 `LibraryImport` Profile，并验证 `FunctionTable` 被 SDK 拒绝后 last-good 产物仍可校验和复用。
 
 `Invoke-BuildCacheChecks.ps1` 准备一次 Editor 后连续执行十次热构建，要求 Native 进程数与 binding generation 数均为零，并核对 current 内容及时间戳稳定。
