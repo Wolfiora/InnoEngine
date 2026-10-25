@@ -171,6 +171,7 @@ jobs:
             -ResultsDirectory artifacts/acceptance/ci-build/nuget-player-aot
 
       - name: Build development Build entry
+        id: build_entry
         shell: pwsh
         run: |
           dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false `
@@ -179,6 +180,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Build entry preparation failed." }
 
       - name: Build host Editor Debug
+        id: native_debug
         shell: pwsh
         run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Debug 2>&1 |
@@ -186,6 +188,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Debug host Editor build failed." }
 
       - name: Build host Editor Release
+        id: native_release
         shell: pwsh
         run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
@@ -209,6 +212,7 @@ jobs:
           ./tests/Invoke-BuildCacheChecks.ps1 -ResultsDirectory 'artifacts/acceptance/ci-build/cache'
 
       - name: Build managed solution
+        id: source
         shell: pwsh
         run: |
           dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
@@ -221,6 +225,7 @@ jobs:
         run: dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- verify .
 
       - name: Run complete test suite
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         shell: pwsh
         run: |
           $properties = Join-Path $PWD '${{ matrix.product_properties }}'
@@ -242,6 +247,7 @@ jobs:
           ./tests/Invoke-IsolatedTests.ps1 -Configuration SourceDebug -Target '${{ matrix.build_target }}' -ProductProperties $properties
 
       - name: Generate source-independent Player Support Pack
+        if: ${{ !cancelled() && steps.native_release.outcome == 'success' }}
         shell: pwsh
         run: |
           $supportPacks = Join-Path $env:RUNNER_TEMP "InnoSupportPacks"
@@ -268,6 +274,7 @@ jobs:
           }
 
       - name: Validate current Wiki signatures and compiled examples
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         shell: pwsh
         run: |
           dotnet build '${{ matrix.player_project }}' --configuration Debug --disable-build-servers -m:1 -nr:false `
@@ -280,6 +287,7 @@ jobs:
           ./tests/Invoke-WikiChecks.ps1 -ProjectDirectory $project -Target '${{ matrix.build_target }}'
 
       - name: Run real renderer smoke
+        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
         shell: pwsh
         run: |
           $smokeProject = Join-Path $env:RUNNER_TEMP "InnoRenderingSmoke"

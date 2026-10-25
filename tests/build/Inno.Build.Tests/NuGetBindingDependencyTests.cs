@@ -73,8 +73,8 @@ public sealed class NuGetBindingDependencyTests
     [InlineData("browser-wasm", "", "packages.lock.json")]
     [InlineData("macos-arm64", "", "packages.lock.json")]
     [InlineData("windows-x64", "win-x64", "packages.rid-win-x64.lock.json")]
-    [InlineData("browser-wasm", "browser-wasm", "packages.rid-browser-wasm.link.lock.json")]
-    public async Task OnlyActualRuntimeIdentitySeparatesOrdinaryLockFiles(
+    [InlineData("browser-wasm", "browser-wasm", "packages.rid-browser-wasm.lock.json")]
+    public async Task ExplicitUntrimmedRestoreUsesOnlyActualRuntimeIdentity(
         string target,
         string runtime,
         string expectedFile
@@ -84,6 +84,8 @@ public sealed class NuGetBindingDependencyTests
         string project = Path.Combine(root, "src", "foundation", "core", "Inno.Core.IO", "Inno.Core.IO.csproj");
         string selected = await ToolchainEnvironment.CaptureOutputAsync(host,
             ["msbuild", project, "-nologo", "-nodeReuse:false", "-p:DesignTimeBuild=true",
+                // This tests the untrimmed graph independently of installed Wasm workload defaults.
+                "-p:PublishTrimmed=false", "-p:EnableTrimAnalyzer=false",
                 "-p:InnoNativeTarget=" + target, "-p:RuntimeIdentifier=" + runtime, "-getProperty:NuGetLockFilePath"],
             root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
         Assert.Equal(expectedFile, Path.GetFileName(selected.Trim()));

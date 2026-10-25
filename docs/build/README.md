@@ -44,6 +44,8 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 Reload fixture 使用普通 `ProjectReference` 声明构建依赖，通过 SDK 的 `OutputItemType` 接收实际产物，再部署到测试宿主的 Modules 目录；不拼接 `bin/<configuration>/<tfm>`，也不从另一输出 owner 借用 fixture。
 
+Task fixture 通过官方 binlog replay 的 `Csc` 事件核对实际编译次数，并验证每次根构建的 owner、私有加载位置和完整请求身份复用。RID 命名 fixture 显式请求 untrimmed 图，工具包 scope 由独立用例验证 SDK 推导的能力，避免让是否安装 Wasm workload 改变测试输入。Browser 绑定 fixture 使用正式 `LibraryImport` Profile，并验证 `FunctionTable` 被 SDK 拒绝后 last-good 产物仍可校验和复用。
+
 `Invoke-BuildCacheChecks.ps1` 准备一次 Editor 后连续执行十次热构建，要求 Native 进程数与 binding generation 数均为零，并核对 current 内容及时间戳稳定。
 
 `Invoke-WikiChecks.ps1` 在已构建的 Build entry 和所选 Player 引用闭包上运行，先通过正式脚本工作流更新 IDE 投影，再从该投影读取准确的裁剪 reference。它检查 Wiki 链接、项目覆盖、源码签名及可编译示例，不按缓存目录时间猜测 reference。
@@ -57,5 +59,7 @@ Reload fixture 使用普通 `ProjectReference` 声明构建依赖，通过 SDK �
 ## CI 依赖图
 
 构建与依赖 CI 共用 `.github/actions/setup-dotnet`。它从提交的 `global.json` 读取 SDK 基线，交给固定官方 action 显式安装到 runner 的独立临时目录。安装不把 `latestPatch` 展开为下载通道；CLI 仍按原声明执行已安装 SDK 的补丁选择，运行日志记录实际 SDK 和编译器。
+
+完整测试、Support Pack、Wiki 与 renderer 门禁按各自成功的构建前置条件执行，独立验证失败后仍收集其他适用门禁的结果。任一门禁失败都会使 job 失败；取消或构建前置条件失败时不执行依赖检查。
 
 - [NuGet 依赖图提交](DEPENDENCY_SUBMISSION.md)：固定包版本、锁文件还原与 CI snapshot 提交。
