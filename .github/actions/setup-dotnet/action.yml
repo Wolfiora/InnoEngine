@@ -1,0 +1,46 @@
+name: Install repository .NET SDK
+description: Install the declared SDK baseline into an isolated runner directory.
+
+inputs:
+  global-json-file:
+    description: SDK declaration relative to the workflow workspace.
+    required: false
+    default: global.json
+
+outputs:
+  dotnet-version:
+    description: SDK version installed by the official setup action.
+    value: ${{ steps.install.outputs.dotnet-version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Read SDK baseline
+      id: declaration
+      shell: pwsh
+      env:
+        INNO_SDK_DECLARATION: ${{ inputs.global-json-file }}
+      run: |
+        $path = [IO.Path]::GetFullPath($env:INNO_SDK_DECLARATION, $env:GITHUB_WORKSPACE)
+        $version = (Get-Content -LiteralPath $path -Raw | ConvertFrom-Json).sdk.version
+        if ([string]::IsNullOrWhiteSpace($version)) { throw 'The repository must declare its SDK baseline.' }
+        "version=$version" >> $env:GITHUB_OUTPUT
+
+    - name: Install declared SDK
+      id: install
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+      env:
+        DOTNET_INSTALL_DIR: ${{ runner.temp }}/inno-dotnet
+      with:
+        dotnet-version: ${{ steps.declaration.outputs.version }}
+
+    - name: Verify selected SDK
+      shell: pwsh
+      env:
+        INNO_EXPECTED_SDK: ${{ steps.declaration.outputs.version }}
+      run: |
+        $actual = & dotnet --version
+        if ($LASTEXITCODE -ne 0 -or $actual -ne $env:INNO_EXPECTED_SDK) {
+          throw "Selected SDK '$actual' does not match the installed baseline '$env:INNO_EXPECTED_SDK'."
+        }
+        Write-Host "Selected repository SDK: $actual"

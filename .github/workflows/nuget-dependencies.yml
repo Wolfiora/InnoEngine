@@ -12,6 +12,7 @@ on:
       - ".gitmodules"
       - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
+      - ".github/actions/setup-dotnet/**"
       - "tests/Invoke-NuGetLockChecks.ps1"
   push:
     branches:
@@ -25,6 +26,7 @@ on:
       - ".gitmodules"
       - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
+      - ".github/actions/setup-dotnet/**"
       - "tests/Invoke-NuGetLockChecks.ps1"
 
 permissions:
@@ -56,7 +58,7 @@ jobs:
           persist-credentials: false
 
       - name: Install engine SDK
-        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        uses: ./InnoEngine/.github/actions/setup-dotnet
         with:
           global-json-file: InnoEngine/global.json
 

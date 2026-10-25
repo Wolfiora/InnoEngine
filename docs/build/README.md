@@ -56,4 +56,6 @@ Reload fixture 使用普通 `ProjectReference` 声明构建依赖，通过 SDK �
 
 ## CI 依赖图
 
+构建与依赖 CI 共用 `.github/actions/setup-dotnet`。它从提交的 `global.json` 读取 SDK 基线，交给固定官方 action 显式安装到 runner 的独立临时目录。安装不把 `latestPatch` 展开为下载通道；CLI 仍按原声明执行已安装 SDK 的补丁选择，运行日志记录实际 SDK 和编译器。
+
 - [NuGet 依赖图提交](DEPENDENCY_SUBMISSION.md)：固定包版本、锁文件还原与 CI snapshot 提交。
