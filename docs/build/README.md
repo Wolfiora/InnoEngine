@@ -42,6 +42,8 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 需要验证全新托管输出或并行验收时，可对 `Invoke-ManagedChecks.ps1` 指定独立的 `-ArtifactsPath`；构建、普通测试、隔离发现和隔离执行共用该 SDK 输出 owner。
 
+Reload fixture 使用普通 `ProjectReference` 声明构建依赖，通过 SDK 的 `OutputItemType` 接收实际产物，再部署到测试宿主的 Modules 目录；不拼接 `bin/<configuration>/<tfm>`，也不从另一输出 owner 借用 fixture。
+
 `Invoke-BuildCacheChecks.ps1` 准备一次 Editor 后连续执行十次热构建，要求 Native 进程数与 binding generation 数均为零，并核对 current 内容及时间戳稳定。
 
 `Invoke-WikiChecks.ps1` 在已构建的 Build entry 和所选 Player 引用闭包上运行，先通过正式脚本工作流更新 IDE 投影，再从该投影读取准确的裁剪 reference。它检查 Wiki 链接、项目覆盖、源码签名及可编译示例，不按缓存目录时间猜测 reference。
