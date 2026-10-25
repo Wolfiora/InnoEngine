@@ -4,13 +4,13 @@
     "net10.0": {
       "BGCS": {
         "type": "Direct",
-        "requested": "[4.1.1, 4.1.1]",
-        "resolved": "4.1.1",
-        "contentHash": "TrTsdSEFL0p7wQsRl0PabvFDu3MirkS3xLE45if5wGs5AIAdeXlEnosprglksdCIdq5a4aYXPdYVLwcr8h5GIA==",
+        "requested": "[4.1.2, 4.1.2]",
+        "resolved": "4.1.2",
+        "contentHash": "QTTDnbehNoJYXOQkMzz+X1C1ChLFzoP8vI8SHAh1iT15RZIPJPcQdU21oeeNAC7vnUwSJWBhTfTelxGitquo6w==",
         "dependencies": {
-          "BGCS.Core": "[4.1.1]",
-          "BGCS.ParserRuntime.osx-x64": "[4.1.1]",
-          "BGCS.Runtime": "[4.1.1]",
+          "BGCS.Core": "[4.1.2]",
+          "BGCS.ParserRuntime.osx-x64": "[4.1.2]",
+          "BGCS.Runtime": "[4.1.2]",
           "ClangSharp": "[20.1.2.4]",
           "ClangSharp.Interop": "[20.1.2.4]",
           "Humanizer.Core": "[3.0.10]",
@@ -43,18 +43,18 @@
       },
       "BGCS.Core": {
         "type": "Transitive",
-        "resolved": "4.1.1",
-        "contentHash": "ZzEDG8cnZ/yfi75Q6bMmKy3R29H4zQqwtKKNaEzRV2ANWN4qbzg0iNbuNin3wknph9s2j5dcmYMANGJOThYNJQ=="
+        "resolved": "4.1.2",
+        "contentHash": "IvXE7bB/PPgF1gkDOF8t8HyCa/cFpNLk7EGI0T5SjByXuAxRQ1rlZjd7ZEldzKXzqWSbXJC2Q9SnmZax0mr2MQ=="
       },
       "BGCS.ParserRuntime.osx-x64": {
         "type": "Transitive",
-        "resolved": "4.1.1",
-        "contentHash": "EdHnuFytJRHWSwz1/r5ou9Der9AC42A6ZQGBjw98SUPMiKypFBUxamL+gpC5iRHIWRlYjVYSAZqLQWP4nSjUag=="
+        "resolved": "4.1.2",
+        "contentHash": "BsCeDJGNp2kp/h7dpnqz6+loZbYwVcROj2EqvJcwg6djj5JFdou6tTZZPxlkDytTXivG94ivB3KEmKTuq92hnA=="
       },
       "BGCS.Runtime": {
         "type": "Transitive",
-        "resolved": "4.1.1",
-        "contentHash": "gKmmf3sou1EE8wV8ugJRmF6BH0ja3RjIqGfDIyPR786JZGo7ZAk1/Q+ZYNoJ1OdsSAOyriRWmt8Edm1BYIrapQ=="
+        "resolved": "4.1.2",
+        "contentHash": "VR0fxNhsvFQRw6W+1Igk0vp7dnAijav5lHDvG010GmP268imzyCyUY1uBfhrytMmAhaDUCRBog5hV3mYx4HaOA=="
       },
       "ClangSharp": {
         "type": "Transitive",
@@ -307,7 +307,7 @@
       "inno.build.bindings": {
         "type": "Project",
         "dependencies": {
-          "BGCS": "[4.1.1, 4.1.1]",
+          "BGCS": "[4.1.2, 4.1.2]",
           "Inno.Build.Toolchains": "[1.0.0, )",
           "Inno.Core.IO": "[1.0.0, )"
         }
@@ -604,7 +604,7 @@
       "inno.native.bgfx": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.1, 4.1.1]",
+          "BGCS.Runtime": "[4.1.2, 4.1.2]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },

@@ -2,6 +2,12 @@
 
 [Build 索引](README.md) · [Wiki 首页](../README.md) · [Task 集成](Inno.Build.Tasks.md)
 
+## Restore 与编译的求值边界
+
+owned Restore 使用 NuGet 标准属性 `ExcludeRestorePackageImports=true`；Task runtime 编译显式使用 `false`。两个阶段因此拥有不同的 MSBuild 配置身份，编译读取已经恢复的 package imports，不能复用 Restore 开始前缓存的 content items。没有通过改写生成的 NuGet imports、删除缓存或按某个包名特殊复制资源来修复。
+
+完整编译请求身份包含该阶段属性，并继续校验冻结输入、lease 与原子 publication。它也使错误的既有请求缓存不被当作当前完整请求复用。公开边界的真实 MSBuild 回归同时覆盖私有 runtime 准备与独立 owned Restore。
+
 ## 职责与边界
 
 这是 MSBuild 引导边界的库，负责协调 Task 运行闭包的编译、发布及退休，并在读取保护期间复制生成绑定。它依赖 Core IO、中立 Toolchains 与 MSBuild 契约，

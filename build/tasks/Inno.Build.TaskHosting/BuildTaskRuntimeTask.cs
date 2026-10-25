@@ -47,6 +47,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
     /// Gets or sets explicit name=value properties after product-specific global properties are removed.
     /// Explicit values override removal of inherited properties with the same name.
     /// ArtifactsPath is owned by this task and cannot be overridden.
+    /// Restore excludes package imports; compilation includes the restored imports in a distinct evaluation.
     /// </summary>
     public string[] Properties { get; set; } = [];
 
@@ -133,7 +134,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                 if (restoreRequired || restoreRequested)
                 {
                     BuildEngineResult restored = engine.BuildProjectFilesInParallel([project], ["Restore"],
-                        [properties], [removed], [null!], returnTargetOutputs: false);
+                        [RestoreProperties(properties)], [removed], [null!], returnTargetOutputs: false);
                     token.ThrowIfCancellationRequested();
                     if (!restored.Result)
                         return false;
@@ -150,7 +151,8 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                     foreach (var property in inputRestore.properties)
                         inputProperties[property.Key] = property.Value;
                     BuildEngineResult restored = engine.BuildProjectFilesInParallel([inputRestore.project], ["Restore"],
-                        [inputProperties], [inputRestore.removedProperties.ToArray()], [null!], returnTargetOutputs: false);
+                        [RestoreProperties(inputProperties)], [inputRestore.removedProperties
+                            .Where(static name => !name.Equals("ExcludeRestorePackageImports", StringComparison.OrdinalIgnoreCase)).ToArray()], [null!], returnTargetOutputs: false);
                     token.ThrowIfCancellationRequested();
                     if (!restored.Result)
                         return false;
@@ -280,6 +282,16 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
         properties["ArtifactsPath"] = artifacts;
         // The private compiler workspace must not outlive this request in a shared server.
         properties["UseSharedCompilation"] = "false";
+        properties["ExcludeRestorePackageImports"] = "false";
+        return properties;
+    }
+
+    private static IDictionary RestoreProperties(IDictionary compilationProperties)
+    {
+        var properties = new Hashtable(compilationProperties, StringComparer.OrdinalIgnoreCase);
+        // NuGet restore must not populate the build engine's compilation evaluation cache
+        // with package content items from the imports it is about to replace.
+        properties["ExcludeRestorePackageImports"] = "true";
         return properties;
     }
 

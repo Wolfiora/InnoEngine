@@ -64,6 +64,7 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
                 var properties = new Hashtable(StringComparer.OrdinalIgnoreCase);
                 Apply(project.GetMetadata("AdditionalProperties").Split(';', StringSplitOptions.RemoveEmptyEntries), properties);
                 Apply(Properties, properties);
+                properties["ExcludeRestorePackageImports"] = "true";
                 projects.Add(path);
                 globals.Add(properties);
             }
@@ -90,6 +91,7 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
                     "RestoreGraphProjectInput", "_RestoreSolutionFileUsed"
                 }.Concat(Projects[index].GetMetadata("GlobalPropertiesToRemove")
                     .Split(';', StringSplitOptions.RemoveEmptyEntries))
+                    .Where(static name => !name.Equals("ExcludeRestorePackageImports", StringComparison.OrdinalIgnoreCase))
                     .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
             }
             BuildEngineResult result = engine.BuildProjectFilesInParallel(projects.ToArray(), ["Restore"],

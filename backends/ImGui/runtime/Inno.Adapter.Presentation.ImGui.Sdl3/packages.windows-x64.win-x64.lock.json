@@ -4,9 +4,9 @@
     "net10.0": {
       "BGCS.Runtime": {
         "type": "Direct",
-        "requested": "[4.1.1, 4.1.1]",
-        "resolved": "4.1.1",
-        "contentHash": "gKmmf3sou1EE8wV8ugJRmF6BH0ja3RjIqGfDIyPR786JZGo7ZAk1/Q+ZYNoJ1OdsSAOyriRWmt8Edm1BYIrapQ=="
+        "requested": "[4.1.2, 4.1.2]",
+        "resolved": "4.1.2",
+        "contentHash": "VR0fxNhsvFQRw6W+1Igk0vp7dnAijav5lHDvG010GmP268imzyCyUY1uBfhrytMmAhaDUCRBog5hV3mYx4HaOA=="
       },
       "inno.adapter": {
         "type": "Project",
@@ -298,7 +298,7 @@
       "inno.native.imgui": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.1, 4.1.1]",
+          "BGCS.Runtime": "[4.1.2, 4.1.2]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },
@@ -311,7 +311,7 @@
       "inno.native.sdl3": {
         "type": "Project",
         "dependencies": {
-          "BGCS.Runtime": "[4.1.1, 4.1.1]",
+          "BGCS.Runtime": "[4.1.2, 4.1.2]",
           "Inno.Native.LibraryLoading": "[1.0.0, )"
         }
       },

@@ -22,7 +22,7 @@ static BuildPlatformContribution Compose(BuildCompositionContext context)
 
 ## 执行与导入契约
 
-Browser Profile 显式选择 BGCS 4.1.1 官方 `LibraryImport`，让当前 Mono 解释执行和 AOT 使用运行时可发现的真实 P/Invoke 签名。目标 ABI、aggregate pointer adapter、callback 和生成会话仍由官方 Browser 扩展处理。共享 backend 不判断 Browser，也不针对某个返回类型添加 shim。
+Browser Profile 显式选择 BGCS 4.1.2 官方 `LibraryImport`，让当前 Mono 解释执行和 AOT 使用运行时可发现的真实 P/Invoke 签名。目标 ABI、aggregate pointer adapter、callback 和生成会话仍由官方 Browser 扩展处理。共享 backend 不判断 Browser，也不针对某个返回类型添加 shim。
 
 导入机制与 Static/Shared 链接分别冻结。生成结果把实际初始化方式传入 managed selection，编译调用相应的官方生成入口；发布校验身份和完整引用闭包。该策略不修改 SDK、第三方源码或生成结果，也不插入无关 import 来凑齐调用签名。
 

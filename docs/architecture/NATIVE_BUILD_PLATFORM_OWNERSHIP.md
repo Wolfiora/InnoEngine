@@ -23,7 +23,7 @@
 
 ## 绑定协议
 
-使用精确固定的 BGCS **4.1.1** 正式 NuGet 包。每个组件只有 `Bindings/bindings.props` 和公共 `bindgen.json`；前者只声明 `InnoNativeComponentId`、`InnoBindingConfig`。公共配置保存头文件、命名、选择、封送与输出格式，不保存平台 target 或 SDK 搜索表。
+使用精确固定的 BGCS **4.1.2** 正式 NuGet 包。每个组件只有 `Bindings/bindings.props` 和公共 `bindgen.json`；前者只声明 `InnoNativeComponentId`、`InnoBindingConfig`。公共配置保存头文件、命名、选择、封送与输出格式，不保存平台 target 或 SDK 搜索表。
 
 平台通过官方 `TargetConfiguration` 构造 `NativeBindingProfile`，再贡献 `INativeBindingGenerator`。生成器仅使用官方 `GenerationRequest.FromFile`、`WithConfiguration`、分析与生成 API。`NativeCompilerInputs` 已包含绝对编译器、sysroot、有序系统头、宏和参数；BGCS 接入不解释 INCLUDE、SDKROOT 或 EM_CACHE。
 

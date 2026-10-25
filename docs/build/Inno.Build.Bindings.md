@@ -63,7 +63,7 @@ CLI 和 MSBuild 的 TargetArtifacts 请求先通过同一发行解析明确目�
 独立绑定定义不必注册游戏发布目标；MSBuild 仅取得发行明确贡献的 SDK。
 直接库调用可以提供完整的显式 Profile；MSBuild 使用发行注册的目标，缺少目标时失败。
 
-BGCS 包族固定为正式 4.1.1。接入使用 `BindingGenerator.CreateBuilder()`，通过公开 frontend factory 替换点将 `WorkerAssetLocator` 的 applicationBase 固定到已加载 SDK 的部署目录。标准 SDK 定位器负责验证和准备 worker；私有 MSBuild Task 不借用 MSBuild 宿主的 application base，不自行解包或复制 SDK 内部实现。
+BGCS 包族固定为正式 4.1.2。接入使用 `BindingGenerator.CreateBuilder()`，通过公开 frontend factory 替换点将 `WorkerAssetLocator` 的 applicationBase 固定到已加载 SDK 的部署目录。标准 SDK 定位器负责验证和准备 worker；私有 MSBuild Task 不借用 MSBuild 宿主的 application base，不自行解包或复制 SDK 内部实现。
 
 Profile 使用开放的 `ManagedRuntimeId`。平台可通过 `configureGenerator` 注册官方扩展；Browser integration 显式注册 `BrowserWasmPlugin`，仅安装包不会激活能力。注册 action 只描述不可变组合，不捕获操作状态；其实现程序集及引用的 BGCS 扩展参与缓存身份。共享构建执行器和组件配置不识别 Browser 名称。
 
