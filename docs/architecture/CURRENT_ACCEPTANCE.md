@@ -4,7 +4,7 @@
 
 最新结果见[BGCS 4.1.2 消费验收](../../records/architecture/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)。当前基线为 .NET SDK 10.0.402、C# 14、BGCS 4.1.2；本轮平台为 Windows x64。此前三项优先修复及其独立测试记录见[专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。
 
-锁文件治理的后续结果见 [Issue #23 专项验收](../../records/architecture/acceptance/ISSUE23_NUGET_LOCK_ACCEPTANCE.md)：最终有用途的清单 725 份、untracked 清单 0；19 个正式 locked restore、59 项相关回归、238 工程架构门禁、33,567 API symbols 和 196 示例通过。最终清单集合连续 10 次 Editor 热构建不改写，Native 编译／绑定生成均为 0；独立干净检出及候选更新后的 Editor Debug / Release 均构建通过。四种 FlappyBird 部署再次完成 Windows 各 300 帧、Browser 各 3,000 帧和 exit 0。
+锁文件治理的后续结果见 [Issue #23 专项验收](../../records/architecture/acceptance/ISSUE23_NUGET_LOCK_ACCEPTANCE.md)：该次验收有用途的清单 725 份、untracked 清单 0；19 个正式 locked restore、59 项相关回归、238 工程架构门禁、33,567 API symbols 和 196 示例通过。最终清单集合连续 10 次 Editor 热构建不改写，Native 编译／绑定生成均为 0；独立干净检出及候选更新后的 Editor Debug / Release 均构建通过。外部消费项目的四种部署再次完成 Windows 各 300 帧、Browser 各 3,000 帧和 exit 0；项目内容及详细命令归专项报告。
 
 同目录各五次规则对照的中位数为基线 157.809 秒、当前 156.422 秒，比例 0.9912，未触发 10% 回退门槛；不宣称提速。完整证据及关闭范围以专项报告为准。以下表格保留此前 BGCS 消费验收的独立范围和数量，不与 Issue #23 重复累计。
 

@@ -1,5 +1,7 @@
 # Inno.Adapter.Presentation.ImGui.Sdl3
 
+Viewport 位置与尺寸 setter 经共享 Native ImGui 的标量 callback adapter 注册。聚合参数 ABI 留在 C++ 编译器；托管侧不强转 BGCS 的不透明 callback 地址。注册归当前 context 和 owner thread，附加窗口与 renderer 退休完成后再检查原生 callback quiescence 并注销。失败保留依赖 owner，不能提前销毁 context；详见 [Native ImGui 生命周期](Inno.Native.ImGui.md#viewport-callback-abi-适配)。
+
 [分类索引](README.md) · [Editor ImGui](../../editor/Inno.Editor.ImGui.md) · [BGFX ImGui](Inno.Adapter.Presentation.ImGui.Bgfx.md) · [Wiki 首页](../../README.md)
 
 ## 公开 API

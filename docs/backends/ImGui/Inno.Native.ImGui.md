@@ -23,6 +23,16 @@
 
 所有 Native callbacks 的托管 owner 必须保留到注销和排空完成。异常不得穿过 Native callback 边界。实际 context 创建、失败清理和唯一 renderer owner 位于所属 SDL/ImGui presentation；正常业务不要自己再建立第二个 context 管理器。
 
+## Viewport callback ABI 适配
+
+BGCS 4.1.2 对无法安全表达的聚合参数 callback 保留不透明地址；它不保证这些地址可以强转成托管函数指针。`ImVec2` 按值传递的窗口位置、尺寸 callback 因目标 ABI 而具有不同的寄存器分类。`Native/ImGuiPlatformCallbacks.*` 是此限制所需的窄 C ABI adapter：C++ 使用真实 ImGui callback 签名，再以 `viewport, float, float` 调用托管侧。所有目标共用此实现，不维护 CPU 分支，不修改 BGCS、cimgui 或生成输出。
+
+`Raw.InnoCreatePlatformWindowCallbacks` 只在当前 context、owner thread 和未占用的 `BackendPlatformUserData` 上注册；空结果不保留 callback。返回 handle 同时拥有两个 callback，其寿命必须短于 context。两个 callback 的目标是宿主静态方法，不保存插件实例、delegate 或 collectible 类型。SDK 配置显式声明 registration lifetime、event-loop threading、空结果和注销 quiescence；这里不使用自动 owning wrapper，因为两个 callback 共同属于一个需要 owner-thread 检查的 handle。
+
+`Raw.InnoCanDestroyPlatformWindowCallbacks` 检查 owner thread、current context、userdata 归属和原生 callback frame 是否退出。只有它成功且同线程没有介入其他原生调用时，才能执行 `Raw.InnoDestroyPlatformWindowCallbacks`；注销清空两个槽与 userdata，再释放 handle。callback 内或错误 context/thread 不能退休，presentation 保留 owner 并报告 `RetirementPendingException`。注销后 handle 失效，不能再次查询或释放。
+
+原生回归通过真实 `NewFrame`、窗口布局和 `UpdatePlatformWindows` 触发两个 callback，核对位置与尺寸标量、callback 内禁止退休、独立 context 与错误线程拒绝；不通过强转不透明地址或测试专用导出来证明 ABI。
+
 加载时依据产品 `Deployment.index` 选定库；缺失索引/映射或 required export 必须失败。宿主 ABI 参考不能证明其他目标、DPI 或设备已经实测。
 
 ## 源码归属
@@ -75,3 +85,5 @@
 <!-- api-include: Inno.Native.ImGui.Api/ABI-25.md -->
 <!-- api-include: Inno.Native.ImGui.Api/ABI-26.md -->
 <!-- api-include: Inno.Native.ImGui.Api/ABI-27.md -->
+
+<!-- api-include: Inno.Native.ImGui.Api/ABI-28.md -->

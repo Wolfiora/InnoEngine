@@ -850,6 +850,9 @@ __declspec(dllexport) _Bool __cdecl bgcs_inno_imgui_call_5e0efd2e53a62158f8bd(ch
     _Bool bgcs_native_value = igInputScalarN((char const *)arg0, (ImGuiDataType)arg1, (void *)arg2, (int)arg3, (void const *)arg4, (void const *)arg5, (char const *)arg6, (ImGuiInputTextFlags)arg7);
     return bgcs_native_value;
 }
+__declspec(dllexport) void __cdecl bgcs_inno_imgui_call_c01205302ea83a243a07(void * arg0) {
+    igInnoDestroyPlatformWindowCallbacks((void *)arg0);
+}
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_00e1b119592536c471b0(ImGuiTableColumnSettings * arg0) {
     ImGuiTableColumnSettings_destroy((ImGuiTableColumnSettings *)arg0);
 }
@@ -1363,6 +1366,10 @@ __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_aa20497174bdb756d571(ImV
 }
 __declspec(dllexport) char const * __cdecl bgcs_inno_imgui_call_eae6b3da170acbfc62be(ImFont * arg0, float arg1, char const * arg2, char const * arg3, float arg4, ImDrawTextFlags arg5) {
     char const * bgcs_native_value = igImFontCalcWordWrapPositionEx((ImFont *)arg0, (float)arg1, (char const *)arg2, (char const *)arg3, (float)arg4, (ImDrawTextFlags)arg5);
+    return bgcs_native_value;
+}
+__declspec(dllexport) int __cdecl bgcs_inno_imgui_call_aa7a6897faf786341ce1(void * arg0) {
+    int bgcs_native_value = igInnoCanDestroyPlatformWindowCallbacks((void *)arg0);
     return bgcs_native_value;
 }
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_b69043729031bfc38a69(float arg0) {
@@ -3719,6 +3726,10 @@ __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_a7f3f8fc6eb46894f290(cha
 }
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_c57ebf916da99cf32aa8(void) {
     igShutdown();
+}
+__declspec(dllexport) void * __cdecl bgcs_inno_imgui_call_734ce41f24c74b739b3f(ImGuiContext * arg0, InnoImGuiWindowCallback arg1, InnoImGuiWindowCallback arg2) {
+    void * bgcs_native_value = igInnoCreatePlatformWindowCallbacks((ImGuiContext *)arg0, (InnoImGuiWindowCallback)arg1, (InnoImGuiWindowCallback)arg2);
+    return bgcs_native_value;
 }
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_cd58f4924394109c2294(ImGuiTable * arg0) {
     igTableSetColumnWidthAutoAll((ImGuiTable *)arg0);

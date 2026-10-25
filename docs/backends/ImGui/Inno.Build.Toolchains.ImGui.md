@@ -1,5 +1,7 @@
 # Inno.Build.Toolchains.ImGui
 
+Native recipe 同时冻结 upstream cimgui、构建定义及 Native owner 的手写 `Native/` 输入。共享 `ImGuiPlatformCallbacks.cpp` 随同一复制树编译进入 cimgui；源文件和头文件变化参与组件指纹。此 ABI adapter 不选择平台、不解析 SDK，也不修改 extern 或 BGCS 生成物。
+
 [分类索引](README.md) · [Wiki 首页](../../README.md) · [统一 CLI](../../build/Inno.Build.Cli.md) · [Native](Inno.Native.ImGui.md)
 
 ## 职责、依赖和公开 API

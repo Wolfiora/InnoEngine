@@ -105,8 +105,10 @@ public static class ImGuiToolchain
             throw new NotSupportedException("This presentation recipe supports shared linkage only.");
         string source = componentDescriptor.GetToolchainRoot(context.engineRoot);
         string upstream = Path.Combine(context.engineRoot, "extern", "cimgui");
+        string adapter = Path.Combine(componentDescriptor.GetNativeRoot(context.engineRoot), "Native");
         return NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
-            "cimgui", selection.targetId, [upstream, Path.Combine(source, "CMakeLists.txt")],
+            "cimgui", selection.targetId, [upstream, Path.Combine(source, "CMakeLists.txt"),
+                Path.Combine(adapter, "ImGuiPlatformCallbacks.h"), Path.Combine(adapter, "ImGuiPlatformCallbacks.cpp")],
             ["-DINNO_CIMGUI_SOURCE_DIR=" + upstream, "-DBUILD_SHARED_LIBS=ON", "-DCIMGUI_VARGS0=ON", "window-source=continuous-background"],
             [Path.Combine(source, "CimguiSourceOverlay.cs"), Path.Combine(source, "ImGuiToolchain.cs")]);
     }

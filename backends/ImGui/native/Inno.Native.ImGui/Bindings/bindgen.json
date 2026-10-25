@@ -8,9 +8,11 @@
     "language": "c",
     "languageStandard": "c17",
     "headers": [
-      "../../../../../extern/cimgui/cimgui.h"
+      "../../../../../extern/cimgui/cimgui.h",
+      "../Native/ImGuiPlatformCallbacks.h"
     ],
     "includeDirectories": [
+      "../Native",
       "../../../../../extern/cimgui"
     ],
     "defines": [
@@ -21,7 +23,8 @@
     "parseMacros": true,
     "selection": {
       "includeHeaders": [
-        "../../../../../extern/cimgui/cimgui.h"
+        "../../../../../extern/cimgui/cimgui.h",
+        "../Native/ImGuiPlatformCallbacks.h"
       ],
       "excludeDeclarations": [
         "igText",
@@ -7608,6 +7611,48 @@
     "root": "../obj/bindings/bgcs"
   },
   "semantics": {
+    "callbackParameters": [
+      {
+        "function": "igInnoCreatePlatformWindowCallbacks",
+        "parameter": "set_position",
+        "lifetime": "registration",
+        "retained": true,
+        "threading": "eventLoop",
+        "unregisterFunction": "igInnoDestroyPlatformWindowCallbacks",
+        "unregisterQuiescence": "noActiveNativeInvocations",
+        "registration": {
+          "kind": "returnedHandle",
+          "unregisterHandleParameter": "registration",
+          "nullResultQuiescence": "noActiveNativeInvocations",
+          "releaseThreadDomain": "eventLoop",
+          "unregisterIsNonBlocking": true
+        }
+      },
+      {
+        "function": "igInnoCreatePlatformWindowCallbacks",
+        "parameter": "set_size",
+        "lifetime": "registration",
+        "retained": true,
+        "threading": "eventLoop",
+        "unregisterFunction": "igInnoDestroyPlatformWindowCallbacks",
+        "unregisterQuiescence": "noActiveNativeInvocations",
+        "registration": {
+          "kind": "returnedHandle",
+          "unregisterHandleParameter": "registration",
+          "nullResultQuiescence": "noActiveNativeInvocations",
+          "releaseThreadDomain": "eventLoop",
+          "unregisterIsNonBlocking": true
+        }
+      }
+    ],
+    "ownedResults": [
+      {
+        "function": "igInnoCreatePlatformWindowCallbacks",
+        "releaseFunction": "igInnoDestroyPlatformWindowCallbacks",
+        "releaseDomain": "inno.imgui.platformCallbacks",
+        "releaseThreadDomain": "unknown"
+      }
+    ],
     "stringParameters": [
       {
         "function": "igBegin",

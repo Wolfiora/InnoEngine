@@ -6,6 +6,7 @@ using Xunit.Abstractions;
 
 namespace Inno.Native.ImGui.Tests;
 
+[Collection("ImGuiContext")]
 public sealed unsafe class ImGuiInitTests
 {
     private readonly ITestOutputHelper output;

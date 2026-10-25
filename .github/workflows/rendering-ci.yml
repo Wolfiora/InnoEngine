@@ -100,7 +100,8 @@ jobs:
     if: github.event_name != 'workflow_dispatch' || inputs.native_product_acceptance
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 180
+    # Cold Debug/Release native builds, ten hot builds and the complete contract suite share this job.
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:

@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "cimgui.h"
+#include "ImGuiPlatformCallbacks.h"
 
 
 #ifdef __cplusplus
@@ -250,6 +251,7 @@ __declspec(dllexport) ImGuiID __cdecl bgcs_inno_imgui_call_1948883598a30a9b8a82(
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_df7fdb271530d5bb2021(ImGuiID arg0, ImGuiNavLayer arg1, ImGuiID arg2, ImRect_c const *arg3);
 __declspec(dllexport) ImGuiContext * __cdecl bgcs_inno_imgui_call_994f169eea25f1d77fc8(ImFontAtlas * arg0);
 __declspec(dllexport) _Bool __cdecl bgcs_inno_imgui_call_5e0efd2e53a62158f8bd(char const * arg0, ImGuiDataType arg1, void * arg2, int arg3, void const * arg4, void const * arg5, char const * arg6, ImGuiInputTextFlags arg7);
+__declspec(dllexport) void __cdecl bgcs_inno_imgui_call_c01205302ea83a243a07(void * arg0);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_00e1b119592536c471b0(ImGuiTableColumnSettings * arg0);
 __declspec(dllexport) ImGuiWindow * __cdecl bgcs_inno_imgui_call_0a2bea18a1d901922315(void);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_64279e5ce88f917dad5a(ImGuiTable * arg0);
@@ -399,6 +401,7 @@ __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_8e630b09e959f1d262a5(ImG
 __declspec(dllexport) ImGuiTypingSelectRequest * __cdecl bgcs_inno_imgui_call_73766411ecfbaafcc4e7(ImGuiTypingSelectFlags arg0);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_aa20497174bdb756d571(ImVec2_c const *arg0, ImVec2_c const *arg1, char const * arg2, char const * arg3, ImVec2_c const * arg4, ImVec2_c const *arg5, ImRect const * arg6);
 __declspec(dllexport) char const * __cdecl bgcs_inno_imgui_call_eae6b3da170acbfc62be(ImFont * arg0, float arg1, char const * arg2, char const * arg3, float arg4, ImDrawTextFlags arg5);
+__declspec(dllexport) int __cdecl bgcs_inno_imgui_call_aa7a6897faf786341ce1(void * arg0);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_b69043729031bfc38a69(float arg0);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_2d3dde7eb1024ede9a66(ImDrawList * arg0, ImVec2_c const *arg1, ImVec2_c const *arg2, ImU32 arg3, ImU32 arg4, ImU32 arg5, ImU32 arg6);
 __declspec(dllexport) ImGuiKeyChord __cdecl bgcs_inno_imgui_call_d3c219fc0f70ca1f19b5(ImGuiKeyChord arg0);
@@ -1071,6 +1074,7 @@ __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_8cf1b3230fd6c25df828(ImG
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_73fe238504f5db2c1a4e(ImGuiStyle * arg0);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_a7f3f8fc6eb46894f290(char const * arg0, ImGuiID arg1);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_c57ebf916da99cf32aa8(void);
+__declspec(dllexport) void * __cdecl bgcs_inno_imgui_call_734ce41f24c74b739b3f(ImGuiContext * arg0, InnoImGuiWindowCallback arg1, InnoImGuiWindowCallback arg2);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_cd58f4924394109c2294(ImGuiTable * arg0);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_97cc168f024f116660b0(struct ImVec2_c *bgcs_result);
 __declspec(dllexport) void __cdecl bgcs_inno_imgui_call_94dde9938a7521fe863e(char const * arg0, ImGuiPopupFlags arg1);
