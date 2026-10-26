@@ -6,11 +6,6 @@
     Condition="'$(MSBuildProjectName)' == 'InnoEngine.Editor' and '$(DesignTimeBuild)' != 'true' and '$(InnoSuppressBuildMaintenance)' != 'true'">
     <Inno.Build.Tasks.MaintainBuildCachesTask EngineRoot="$(MSBuildThisFileDirectory)" />
   </Target>
-  <PropertyGroup>
-    <!-- SDK-inferred publish analyzers can change the restore graph. -->
-    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)build/msbuild/Inno.NuGetLockFiles.targets</AfterMicrosoftNETSdkTargets>
-  </PropertyGroup>
-
   <!-- Only the binding owner consumes its selection as a compilation input. -->
   <Import Project="$(InnoNativeBindingSelection)" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoNativeBindingSelection)' != '' and Exists('$(InnoNativeBindingSelection)')" />
   <Import Project="$(MSBuildThisFileDirectory)build/msbuild/Inno.Build.Tasks.targets" />

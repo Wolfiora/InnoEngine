@@ -2,17 +2,17 @@
 
 [架构索引](README.md) · [当前问题](CURRENT_ISSUES.md) · [Wiki 首页](../README.md)
 
-最新结果见[BGCS 4.1.2 消费验收](../../records/architecture/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)。当前基线为 .NET SDK 10.0.402、C# 14、BGCS 4.1.2；本轮平台为 Windows x64。此前三项优先修复及其独立测试记录见[专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。
+当前依赖通过标准 `.csproj` / `PackageReference` 和 SDK Restore 解析，源码不保存独立依赖锁清单；本轮范围与证据见[标准 NuGet 还原验收](../../records/architecture/acceptance/STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md)。基线保持 .NET SDK 10.0.402、C# 14、BGCS 4.1.2。
 
-锁文件治理的后续结果见 [Issue #23 专项验收](../../records/architecture/acceptance/ISSUE23_NUGET_LOCK_ACCEPTANCE.md)：该次验收有用途的清单 725 份、untracked 清单 0；19 个正式 locked restore、59 项相关回归、238 工程架构门禁、33,567 API symbols 和 196 示例通过。最终清单集合连续 10 次 Editor 热构建不改写，Native 编译／绑定生成均为 0；独立干净检出及候选更新后的 Editor Debug / Release 均构建通过。外部消费项目的四种部署再次完成 Windows 各 300 帧、Browser 各 3,000 帧和 exit 0；项目内容及详细命令归专项报告。
+此前 BGCS 消费与三项优先修复的独立证据见[BGCS 4.1.2 消费验收](../../records/architecture/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)及[专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。历史通过数量不能当作当前源码已重跑。
 
-同目录各五次规则对照的中位数为基线 157.809 秒、当前 156.422 秒，比例 0.9912，未触发 10% 回退门槛；不宣称提速。完整证据及关闭范围以专项报告为准。以下表格保留此前 BGCS 消费验收的独立范围和数量，不与 Issue #23 重复累计。
+以下表格保留此前 BGCS 消费验收的独立范围和数量；不与本轮标准还原检查重复累计，也不代表本轮重跑完整产品矩阵。
 
-## 本轮已执行
+## 此前 BGCS 专项证据
 
 | 范围 | 当前结果 |
 | --- | --- |
-| BGCS 包与锁 scope | 公共 NuGet 恢复；439 个 tracked scope 的 BGCS 包族均为 4.1.2 |
+| BGCS 包身份 | 公共 NuGet 恢复；该次检查的 BGCS 包族均为 4.1.2 |
 | Binding / native / Task 构建契约 | 65 项通过；含真实 MSBuild Restore 求值回归、SDK 生成、身份、取消与完整产物检查 |
 | 独立 Restore 回归 | 9 项通过；owned Restore、静态图及 generator restore scope |
 | 架构 / XML / Wiki | 238/238 工程通过；33,567 API symbols；196 示例通过 |

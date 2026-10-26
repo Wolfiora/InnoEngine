@@ -102,8 +102,8 @@ tests/rendering/Inno.Rendering.ShaderGraph.Tests/
 | 检查 | 结果 |
 |---|---|
 | 19 组本轮真实 SDK 还原图 | 通过；725 selected / 725 tracked，0 多余、0 缺失 |
-| `Invoke-NuGetLockChecks.ps1`，Solution SourceDebug | 通过；232 个 SDK 工程、清单集合/内容/mtime 不变、BGCS 4.1.2 |
-| Rendering2D 测试工程 `restore --locked-mode`，独立 ArtifactsPath | 通过 |
+| 当次 SDK 依赖检查，Solution SourceDebug | 通过；232 个 SDK 工程、当次依赖输入不变、BGCS 4.1.2；当前还原流程见下文 |
+| Rendering2D 测试工程当次依赖还原，独立 ArtifactsPath | 通过；当前使用普通 SDK Restore |
 | 正式 CLI 架构检查，SDK project graph | 清理后再次通过；238/238 工程 |
 | Build 入口 Debug 编译，warnings as errors | 清理前后均通过；最终 50.19 秒，0 个 MSBuild 警告、0 个错误 |
 | ImGui 官方 `CheckBindings` | 通过；BGCS 正式生成并比对，checked-in 生成物不变；源码侧旧 SDK 缓存和锁没有重新出现 |
@@ -124,4 +124,4 @@ BGCS 在 `CheckBindings` 中仍打印既有的 `BGCS-SAFETY-OWNERSHIP` 安全事
 
 证据保存在 `D:/InnoEngine-Verification/repository-hygiene-2026-10-25/`：远端/本地 inventory、19 个 SDK 图及 `current-restore-ownership.json`、逐文件 retirement hash 清单、`retirement-result.json`、locked restore 日志、架构图、编译日志/binlog 和最终完整性检查。该路径仅为本机验收位置，没有写入生产构建选择。
 
-前序锁文件治理的完整产品与性能证据见 [Issue #23 验收](ISSUE23_NUGET_LOCK_ACCEPTANCE.md)。Windows 不存在指定的 `/System/Library/Sounds/Glass.aiff`，完成提示音无法播放。
+当前依赖规则及其独立验证见[标准 NuGet 还原验收](STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md)；本页仅保留当次仓库卫生证据。Windows 不存在指定的 `/System/Library/Sounds/Glass.aiff`，完成提示音无法播放。

@@ -17,7 +17,7 @@ Registry 派生实现不得直接调用 `OnCleanupFailed` 代替退休失败传�
 
 ## 检查范围
 
-SDK 工程图检查还读取实际 `NuGetLockFilePath`、RID、入口宿主上下文和 SDK 隐式工具包范围，验证清单归属与存在性。`--project-graph` 的非公开诊断模型包含这些求值结果；它不解析另一套 NuGet 依赖。locked restore、包内容一致性和未跟踪清单由[依赖锁检查](../build/DEPENDENCY_SUBMISSION.md)通过真实 SDK 验证。
+SDK 工程图检查读取实际程序集身份、产品目标、ProjectReference、Compile 和 using 项，验证依赖方向、源码 owner 与可执行入口。`--project-graph` 的非公开诊断模型只描述真实求值结果，不维护 NuGet 解析规则；[依赖还原](../build/DEPENDENCY_SUBMISSION.md)直接使用标准 SDK 流程。
 
 `--wiki` 同时检查项目页、公开符号、链接、内容边界与独立示例。`--wiki-api inventory.json` 和 `--wiki-examples examples.json` 输出核查清单。
 逻辑脚本示例必须显式提供当前脚本编译器生成的 `--wiki-runtime-reference <Inno.ScriptApi.Runtime.dll>`，Editor 示例还需 `--wiki-editor-reference <Inno.ScriptApi.Editor.dll>`。

@@ -12,10 +12,19 @@ namespace Inno.Build.Tests;
 
 public sealed class GeneratorRestoreScopeTests
 {
+    /// <summary>
+    /// Preserves a compiler tool's SDK output owner without discarding an explicitly supplied runtime.
+    /// </summary>
+    /// <param name="relative">
+    /// The repository-relative compiler project to evaluate.
+    /// </param>
+    /// <returns>
+    /// Completion after the tool role, output owner and runtime input are verified.
+    /// </returns>
     [Theory]
     [InlineData("src/runtime/generators/Inno.Runtime.Generators/Inno.Runtime.Generators.csproj")]
     [InlineData("src/foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj")]
-    public async Task ExplicitRuntimeIdentityDoesNotOverwriteTheNeutralCompilerLock(string relative)
+    public async Task CompilerToolsKeepTheirSdkOutputOwnerWhenGivenAnExplicitRuntime(string relative)
     {
         string root = TestRepository.GetRoot(typeof(GeneratorRestoreScopeTests).Assembly);
         string project = Path.Combine(root, relative);
@@ -25,7 +34,7 @@ public sealed class GeneratorRestoreScopeTests
         } };
         foreach (string argument in new[]
         {
-            "msbuild", project, "-getProperty:NuGetLockFilePath,BaseIntermediateOutputPath,IsRoslynComponent",
+            "msbuild", project, "-getProperty:BaseIntermediateOutputPath,IsRoslynComponent,RuntimeIdentifier",
             "-p:InnoNativeTarget=windows-x64", "-p:RuntimeIdentifier=win-x64", "-nodeReuse:false"
         })
             process.StartInfo.ArgumentList.Add(argument);
@@ -51,7 +60,6 @@ public sealed class GeneratorRestoreScopeTests
         JsonElement properties = document.RootElement.GetProperty("Properties");
         Assert.Equal("true", properties.GetProperty("IsRoslynComponent").GetString());
         Assert.Equal("obj/", properties.GetProperty("BaseIntermediateOutputPath").GetString()!.Replace('\\', '/'));
-        Assert.Equal(Path.Combine(Path.GetDirectoryName(project)!, "packages.rid-win-x64.lock.json"),
-            Path.GetFullPath(properties.GetProperty("NuGetLockFilePath").GetString()!));
+        Assert.Equal("win-x64", properties.GetProperty("RuntimeIdentifier").GetString());
     }
 }

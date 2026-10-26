@@ -73,7 +73,7 @@ public sealed class ManagedInputGraphTask : Task
                 "EnableDefaultCompileItems", "GenerateAssemblyInfo", "GenerateTargetFrameworkAttribute", "ImplicitUsings",
                 "EnableDefaultEmbeddedResourceItems", "EmbeddedResourceUseDependentUponConvention", "TargetLatestRuntimePatch",
                 "NETCoreSdkVersion", "NetCoreTargetingPackRoot", "TargetingPackVersion", "InnoGeneratePlayerComposition",
-                "InnoBgfxShaderTarget", "InnoBgfxShaderApis", "InnoToolTarget", "InnoShaderToolSourceRoot", "NuGetLockFilePath"
+                "InnoBgfxShaderTarget", "InnoBgfxShaderApis", "InnoToolTarget", "InnoShaderToolSourceRoot"
             };
             using (var collection = new ProjectCollection())
             {
@@ -121,15 +121,6 @@ public sealed class ManagedInputGraphTask : Task
                     paths.Add(project.FullPath);
                     foreach (string import in project.ImportPaths)
                         paths.Add(import);
-                    string packageLock = project.GetPropertyValue("NuGetLockFilePath");
-                    if (packageLock.Length != 0)
-                    {
-                        packageLock = Path.GetFullPath(packageLock, root);
-                        if (File.Exists(packageLock))
-                            paths.Add(packageLock);
-                        else
-                            result.Add(new XElement("Declaration", project.FullPath + "|absent-package-lock=" + packageLock));
-                    }
                     foreach (var property in project.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal))
                         result.Add(new XElement("Declaration", project.FullPath + "|global:" + property.Key + "=" + property.Value));
                     foreach (string name in compilerProperties)
