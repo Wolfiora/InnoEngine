@@ -16,7 +16,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class ManagedBuildExecution : IDisposable
 {
-    private readonly FileLease m_ownership;
+    private readonly CoordinatedFileLease m_ownership;
     private readonly IReadOnlyList<NativeInputSnapshot.Entry> m_inputs;
     private readonly BuildCachePublisher m_cache;
     private readonly string m_workspace;
@@ -25,7 +25,7 @@ public sealed class ManagedBuildExecution : IDisposable
     private int m_disposed;
 
     private ManagedBuildExecution(
-        FileLease ownership,
+        CoordinatedFileLease ownership,
         string engineRoot,
         string project,
         IReadOnlyList<NativeInputSnapshot.Entry> inputs,
@@ -121,8 +121,9 @@ public sealed class ManagedBuildExecution : IDisposable
                 .Select(static pair => pair.Key + "=" + pair.Value)), []);
         string workspace = Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces", identity);
         var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace);
+        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.GetDirectoryName(workspace)!, "managed-workspaces", cache.role, cancellation);
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
-        FileLease ownership = await FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
+        CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"), workspace + ".lock", Timeout.InfiniteTimeSpan, cancellationToken: cancellation).ConfigureAwait(false);
         try
         {
             cache.BeginWorkingDirectory(workspace, workspace + ".lock",

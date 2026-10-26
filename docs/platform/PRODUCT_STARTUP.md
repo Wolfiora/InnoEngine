@@ -18,7 +18,7 @@
 在 PowerShell 中：
 
 ```powershell
-git clone --branch kernel --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+git clone --branch dotnet10 --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
 cd InnoEngine
 dotnet --version
 ```
@@ -30,7 +30,7 @@ Rider 打开 `InnoEngine.sln`，选择 **Debug / Any CPU**，选择 `entry/InnoE
 在终端中：
 
 ```sh
-git clone --branch kernel --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+git clone --branch dotnet10 --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
 cd InnoEngine
 dotnet --info
 xcrun --find clang
@@ -46,11 +46,13 @@ cmake --version
 dotnet run --project entry/InnoEngine.Editor/InnoEngine.Editor.csproj
 ```
 
-以上 `--branch kernel` 用于取得当前整改代码；合并后使用实际包含这些改动的分支。已经 clone 但未初始化子模块时，在仓库根目录执行 `git submodule update --init --recursive`。
+已经 clone 但未初始化子模块时，在仓库根目录执行 `git submodule update --init --recursive`。
 
 ### 两个日常入口
 
 日常启动项目只有：
+
+平台自己的 `DevelopmentProduct.props` 声明宿主 target、Editor 工程和产品 props。Editor 开发入口消费这些声明，将相同的 target 与产品属性传给直接引用及产品引用；Restore 和编译不会为同一个共享工程混用中立与目标输出目录。
 
 | 项目 | 操作 |
 | --- | --- |
@@ -110,13 +112,17 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- clean --s
 ## Support Pack 与游戏发布
 
 ```sh
-dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-pack --target windows-x64
-dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game --tools-target windows-x64 --project /absolute/MyGame --target windows-x64 --deployment coreclr --startup-scene Scenes/Main.iscene --output artifacts/games
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-pack --tools-target windows-x64 --target windows-x64 --output artifacts/support-packs
+dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game --tools-target windows-x64 --project /absolute/MyGame --support-packs artifacts/support-packs --target windows-x64 --deployment coreclr --startup-scene Scenes/Main.iscene --output artifacts/games
 ```
 
 Pack 是目标编译、链接与运行输入，不包含游戏内容。可单独准备，也可由游戏发布获取。Windows 的 CoreCLR / NativeAOT 发布已有实际通过记录；其他目标、完整构建成本及设备检查以[当前验收](../architecture/CURRENT_ACCEPTANCE.md)为准，不能由一个目标推断全部通过。
 
 macOS 产品目标为 `macos-arm64`。Browser 目标为 `browser-wasm`，部署选 `mono-wasm` 或 `mono-wasm-aot`，实际发布需要匹配的 workload 和 Emscripten。网页通过 HTTP 服务运行，不能把 Browser 源码库当作独立网页游戏启动。
+
+Browser 的原生聚合还要求启动构建的进程能从 PATH 找到 `cmake` 和 `ninja`。Windows 可使用 Visual Studio 安装的 C++ CMake/Ninja 工具；安装位置由 Visual Studio Installer 决定，不是仓库约定路径。运行前用 `cmake --version` 和 `ninja --version` 确认当前终端环境。目标 clang、sysroot、Node 和 Python 则由所选 .NET workload 提供，不从 PATH 中猜测替代版本。
+
+Browser 页面支持共享 Player 参数，例如 `index.html?arg=--smoke-frames&arg=3000`。有限帧运行结束会执行共同 Player 的正常释放；没有该参数时按游戏生命周期持续运行。
 
 ## Native 文件在哪里
 

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 using Inno.Build.TaskHosting;
+using Inno.Build.Toolchains;
 using Inno.Core.IO;
 using Microsoft.Build.Framework;
 using TaskItem = Microsoft.Build.Utilities.TaskItem;
@@ -55,6 +56,46 @@ public sealed class TaskRuntimeBuildTests : IDisposable
         Assert.EndsWith(":Restore", engine.requests[0], StringComparison.Ordinal);
         Assert.Equal(1, engine.builds);
         Assert.Single(task.TargetOutputs);
+    }
+
+    [Fact]
+    public async Task CompletedPreparationProtectsWorkspaceDuringMaintenanceAndCachedRestoreReuse()
+    {
+        string workspace = Path.Combine(m_root, "workspaces", "shared");
+        string assets = Path.Combine(workspace, "assets.json");
+        File.WriteAllText(m_project, """
+            <Project><PropertyGroup>
+              <TargetFramework>net10.0</TargetFramework>
+              <ProjectAssetsFile>$(ArtifactsPath)/assets.json</ProjectAssetsFile>
+            </PropertyGroup><ItemGroup><Compile Include="source.cs" /></ItemGroup></Project>
+            """);
+        bool restored = false;
+        var engine = new RecordingEngine(static () => true, () =>
+        {
+            if (restored)
+                return;
+            Directory.CreateDirectory(workspace);
+            File.WriteAllText(assets, """{"targets":{"net10.0":{}},"libraries":{},"packageFolders":{}}""");
+            restored = true;
+        });
+        BuildTaskRuntimeTask first = CreateTask(engine);
+        first.ArtifactsDirectory = workspace;
+        Assert.True(first.Execute(), string.Join("\n", engine.errors));
+        int requests = engine.requests.Count;
+        BuildCacheOwnerDescriptor[] owners =
+        [
+            new BuildCachePublisher(Path.GetDirectoryName(workspace)!, BuildCacheArtifactRole.ReusableWorkspace).Describe("workspaces"),
+            new BuildCachePublisher(Path.Combine(m_root, "hosts"), BuildCacheArtifactRole.ImmutableArtifact).Describe("hosts"),
+            new BuildCachePublisher(Path.Combine(m_root, "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("loads")
+        ];
+        BuildCacheCleanupResult maintained = await BuildCacheCleanupPlan.Create(m_root, owners, new(), retireAll: true).ExecuteAsync();
+        Assert.Empty(maintained.failures);
+        Assert.True(File.Exists(assets));
+        BuildTaskRuntimeTask repeated = CreateTask(engine);
+        repeated.ArtifactsDirectory = workspace;
+        Assert.True(repeated.Execute(), string.Join("\n", engine.errors));
+        Assert.Equal(requests, engine.requests.Count);
+        Assert.Equal(1, engine.builds);
     }
 
     [Fact]

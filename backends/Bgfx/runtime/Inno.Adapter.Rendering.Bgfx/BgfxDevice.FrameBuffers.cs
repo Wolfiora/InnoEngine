@@ -53,7 +53,7 @@ sealed unsafe partial class BgfxDevice
                         attachment.isDepth,
                         attachment.mipLevel,
                         attachment.arrayLayer);
-                    bgfx.Raw.attachment_init(
+                    BgfxNativeCalls.AttachmentInit(
                         &attachments[index],
                         nativeTexture,
                         bgfx.Access.Write,
@@ -63,7 +63,7 @@ sealed unsafe partial class BgfxDevice
                         (byte)bgfx.ResolveFlags.None);
                 }
 
-                bgfx.FrameBufferHandle frameBuffer = bgfx.Raw.create_frame_buffer_from_attachment(
+                bgfx.FrameBufferHandle frameBuffer = BgfxNativeCalls.CreateFrameBufferFromAttachment(
                     checked((byte)pass.attachments.Count),
                     attachments,
                     0);

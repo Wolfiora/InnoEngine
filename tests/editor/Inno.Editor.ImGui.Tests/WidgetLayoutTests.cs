@@ -8,11 +8,89 @@ using Inno.Native.ImGui;
 using Xunit;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.Tests;
 
 public sealed unsafe class WidgetLayoutTests
 {
+    [Fact]
+    public void TimelineWorkspace_UsesOneBoundedChildScrollOwner()
+    {
+        using NativeContext context = new(1f);
+        float childScroll = 0f;
+        float parentScroll = 0f;
+        for (int frame = 0; frame < 4; frame++)
+        {
+            context.Frame(() =>
+            {
+                BeginWindow("Timeline workspace", new Vector2(400f, 240f));
+                bool visible = EditorImGui.BeginChild("workspace");
+                try
+                {
+                    if (visible)
+                    {
+                        Widget.SectionLayout(() =>
+                        {
+                            if (Widget.SectionHeader("Frames"))
+                            {
+                                for (int index = 0; index < 40; index++)
+                                    EditorImGui.Text("Frame " + index);
+                            }
+                        });
+                    }
+                    childScroll = NativeImGui.GetScrollMaxY();
+                }
+                finally
+                {
+                    EditorImGui.EndChild();
+                }
+                parentScroll = NativeImGui.GetScrollMaxY();
+                NativeImGui.End();
+            });
+        }
+        Assert.True(childScroll > 200f);
+        Assert.Equal(0f, parentScroll);
+    }
+
+    [Fact]
+    public void TimelinePointer_UsesCumulativeUiDragUntilRelease()
+    {
+        using NativeContext context = new(1f);
+        Vector2 hit = default;
+        Vector2 drag = default;
+        bool held = false;
+        bool active = false;
+        Action draw = () =>
+        {
+            BeginWindow("Timeline pointer", new Vector2(400f, 260f));
+            EditorImGui.Button("Frame", new Vector2(180f, 60f));
+            hit = (EditorImGui.GetItemMinimum() + EditorImGui.GetItemMaximum()) * 0.5f;
+            active = EditorImGui.IsItemActive();
+            held = EditorImGui.IsMouseButtonDown();
+            drag = EditorImGui.GetMouseDragDelta(ImGuiMouseButton.Left, 0f);
+            NativeImGui.End();
+        };
+        context.Frame(draw);
+        context.Frame(draw);
+        ImGuiIO* io = NativeImGui.Raw.GetIO();
+        NativeImGui.Raw.AddMousePosEvent(io, hit.X, hit.Y);
+        context.Frame(draw);
+        NativeImGui.Raw.AddMouseButtonEvent(io, 0, 1);
+        context.Frame(draw);
+        Assert.True(active);
+        Assert.True(held);
+        NativeImGui.Raw.AddMousePosEvent(io, hit.X + 30f, hit.Y + 10f);
+        context.Frame(draw);
+        Assert.Equal(new Vector2(30f, 10f), drag);
+        context.Frame(draw);
+        Assert.Equal(new Vector2(30f, 10f), drag);
+        NativeImGui.Raw.AddMouseButtonEvent(io, 0, 0);
+        context.Frame(draw);
+        Assert.False(held);
+        Assert.False(active);
+    }
+
     [Theory]
     [InlineData(0.75f)]
     [InlineData(1f)]

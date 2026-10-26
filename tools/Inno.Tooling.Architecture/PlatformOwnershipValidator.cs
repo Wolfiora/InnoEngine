@@ -135,10 +135,9 @@ internal static class PlatformOwnershipValidator
         if (relative == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj")
         {
             XElement[] products = references.Where(static reference =>
-                reference.Attribute("Include")?.Value.Contains("/editor/", StringComparison.Ordinal) == true).ToArray();
-            if (products.Length != 2 || products.Any(static reference =>
-                reference.Attribute("Condition")?.Value.Contains("$(InnoDevelopmentTarget)", StringComparison.Ordinal) != true))
-                failures.Add($"{relative}: Editor startup must select its implemented host product through conditional project references.");
+                reference.Attribute("Include")?.Value == "$(InnoDevelopmentEditorProject)").ToArray();
+            if (products.Length != 1 || products[0].Attribute("Condition")?.Value != "'$(InnoDevelopmentEditorProject)' != ''")
+                failures.Add($"{relative}: Editor startup must consume the platform-owned development product reference.");
         }
         else if (relative == "entry/InnoEngine.Build/InnoEngine.Build.csproj")
         {

@@ -56,6 +56,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     private readonly Dictionary<uint, ViewportWindowData> m_viewportsById = [];
     private readonly Dictionary<uint, uint> m_windowToViewport = [];
     private readonly List<ViewportWindowData> m_retiringViewports = [];
+    private void* m_windowCallbacks;
     private Exception? m_callbackFailure;
     private bool m_monitorsDirty;
     private bool m_disposed;
@@ -81,12 +82,12 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         m_mainWindow = mainWindow.GetSdlWindow();
 
         var platformIo = ImGuiNative.Raw.GetPlatformIO();
+        if (ImGuiNative.Raw.GetIO()->BackendPlatformUserData != null)
+            throw new InvalidOperationException("The current ImGui context already has platform backend state.");
         platformIo->PlatformCreateWindow = &PlatformCreateWindowCallback;
         platformIo->PlatformDestroyWindow = &PlatformDestroyWindowCallback;
         platformIo->PlatformShowWindow = &PlatformShowWindowCallback;
-        platformIo->PlatformSetWindowPos = &PlatformSetWindowPosCallback;
-        platformIo->PlatformSetWindowSize = &PlatformSetWindowSizeCallback;
-        platformIo->PlatformGetWindowFramebufferScale = null;
+        platformIo->PlatformGetWindowFramebufferScale = default;
         platformIo->PlatformSetWindowFocus = &PlatformSetWindowFocusCallback;
         platformIo->PlatformGetWindowFocus = &PlatformGetWindowFocusCallback;
         platformIo->PlatformGetWindowMinimized = &PlatformGetWindowMinimizedCallback;
@@ -102,9 +103,24 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         mainViewport->PlatformHandle = (void*)mainSdlWindow;
         mainViewport->PlatformHandleRaw = (void*)mainWindow.nativeHandles.windowHandle;
 
-        RefreshMonitors(mainSdlWindow);
-        lock (S_CONTEXT_SYNC)
-            S_BACKENDS_BY_CONTEXT.Add(m_contextKey, this);
+        try
+        {
+            RefreshMonitors(mainSdlWindow);
+            m_windowCallbacks = ImGuiPlatformIoNative.CreateWindowCallbacks(
+                context, &PlatformSetWindowPosCallback, &PlatformSetWindowSizeCallback);
+            lock (S_CONTEXT_SYNC)
+                S_BACKENDS_BY_CONTEXT.Add(m_contextKey, this);
+        }
+        catch
+        {
+            ImGuiPlatformIoNative.DestroyWindowCallbacks(m_windowCallbacks);
+            m_windowCallbacks = null;
+            ImGuiNative.Raw.ClearPlatformHandlers(platformIo);
+            ImGuiNative.Raw.ClearRendererHandlers(platformIo);
+            mainViewport->PlatformHandle = null;
+            mainViewport->PlatformHandleRaw = null;
+            throw;
+        }
     }
 
     internal bool OwnsWindow(uint windowId)
@@ -251,6 +267,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             throw new RetirementPendingException("Detached ImGui windows are still borrowed by their renderer.");
 
         var platformIo = ImGuiNative.Raw.GetPlatformIO();
+        ImGuiPlatformIoNative.DestroyWindowCallbacks(m_windowCallbacks);
+        m_windowCallbacks = null;
         ImGuiNative.Raw.ClearPlatformHandlers(platformIo);
         ImGuiNative.Raw.ClearRendererHandlers(platformIo);
 
@@ -437,7 +455,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformSetWindowPosCallback(
         ImGuiViewport* viewport,
-        ImVec2C pos
+        float x,
+        float y
     ) {
         try
         {
@@ -446,7 +465,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 return;
             }
 
-            _ = SDL.Raw.SetWindowPosition(window, (int)pos.X, (int)pos.Y);
+            _ = SDL.Raw.SetWindowPosition(window, (int)x, (int)y);
         }
         catch (Exception failure)
         {
@@ -485,7 +504,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void PlatformSetWindowSizeCallback(
         ImGuiViewport* viewport,
-        ImVec2C size
+        float width,
+        float height
     ) {
         try
         {
@@ -494,7 +514,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 return;
             }
 
-            _ = SDL.Raw.SetWindowSize(window, Math.Max(1, (int)size.X), Math.Max(1, (int)size.Y));
+            _ = SDL.Raw.SetWindowSize(window, Math.Max(1, (int)width), Math.Max(1, (int)height));
         }
         catch (Exception failure)
         {

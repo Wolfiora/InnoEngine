@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Composition;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
 
@@ -31,24 +32,24 @@ public sealed class MacOSArm64PlayerSupportPackSource : IPlayerSupportPackSource
     /// The borrowed validator selected by the distribution.
     /// </param>
     public MacOSArm64PlayerSupportPackSource(
-        ProductNativeBuildPlan nativePlan,
+        NativeProductContribution nativePlan,
         BuildHostDescriptor host,
         string dotnetHost,
         INativeBindingGenerator bindingGenerator,
         IPlayerSupportPackValidator supportPackValidator
     ) {
         m_preparation = new FilePlayerSupportPackPreparation(
-            BuildTargetId.macOSArm64, "osx-arm64", BuildTargetId.macOSArm64.value, ".dylib",
+            Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id, "osx-arm64", Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id.value, ".dylib",
             supportPackValidator,
             "platforms/MacOSArm64/player/Inno.Player.MacOSArm64/Inno.Player.MacOSArm64.csproj",
             "platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Templates/MacOSArm64Player.project.xml",
-            nativePlan, new MacOSArm64NativeToolchainProvider(dotnetHost), host, bindingGenerator,
+            nativePlan.plan, nativePlan.executor, new MacOSArm64NativeToolchainProvider(dotnetHost), host, bindingGenerator,
             ["platforms/MacOSArm64/build/Inno.Build.MacOSArm64/SupportPacks/MacOSArm64PlayerSupportPackSource.cs",
                 "platforms/MacOSArm64/build/Inno.Build.MacOSArm64/SupportPacks/MacOSArm64SupportPackValidator.cs"]);
     }
 
     /// <inheritdoc />
-    public BuildTargetId target => BuildTargetId.macOSArm64;
+    public BuildTargetId target => Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id;
 
     /// <inheritdoc />
     public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(

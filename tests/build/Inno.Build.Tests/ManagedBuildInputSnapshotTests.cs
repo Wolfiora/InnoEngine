@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
+using Inno.Testing.Source;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -54,6 +56,65 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         Assert.NotEmpty(snapshot.fingerprint);
         await snapshot.VerifyAsync();
         Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
+    }
+
+    [Fact]
+    public async Task OnlyTheSdkSelectedLockBelongsToFrozenCompilationInputs()
+    {
+        string repository = TestRepository.GetRoot(typeof(ManagedBuildInputSnapshotTests).Assembly);
+        Write("LockPolicy.targets", File.ReadAllText(Path.Combine(repository, "build", "msbuild", "Inno.NuGetLockFiles.targets")));
+        Write("Directory.Build.props", "<Project><PropertyGroup><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>"
+            + "<AfterMicrosoftNETSdkTargets>$(MSBuildThisFileDirectory)LockPolicy.targets</AfterMicrosoftNETSdkTargets>"
+            + "</PropertyGroup></Project>");
+        string project = Path.Combine(m_root, "App", "App.csproj");
+        string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project, cancellation.Token);
+        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "restore", project, "-p:RuntimeIdentifier=osx-arm64", "--disable-build-servers", "-v:quiet"],
+            m_root, cancellation.Token, DotNetSdkEnvironment.Create(sdk.hostPath));
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+            new NativeBuildContext(m_root, "release"), sdk, project,
+            new Dictionary<string, string> { ["Configuration"] = "Release" }, cancellation.Token);
+        using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync(cancellation.Token);
+        Assert.True(File.Exists(Path.Combine(execution.engineRoot, "App", "packages.lock.json")));
+        Assert.False(File.Exists(Path.Combine(execution.engineRoot, "App", "packages.rid-osx-arm64.lock.json")));
+
+        File.AppendAllText(Path.Combine(m_root, "App", "packages.rid-osx-arm64.lock.json"), Environment.NewLine);
+        await snapshot.VerifyAsync(cancellation.Token);
+        File.AppendAllText(Path.Combine(m_root, "App", "packages.lock.json"), Environment.NewLine);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => snapshot.VerifyAsync(cancellation.Token).AsTask());
+    }
+
+    [Fact]
+    public async Task RuntimeInputEvaluationDoesNotShareOrdinaryRestoreOutputs()
+    {
+        string project = Path.Combine(m_root, "App", "App.csproj");
+        File.WriteAllText(project, File.ReadAllText(project).Replace("</Project>",
+            "<ItemGroup><InnoBuildInputProject Include=\"../Tool/Tool.csproj\" GlobalPropertiesToRemove=\"RuntimeIdentifier\" /></ItemGroup></Project>", StringComparison.Ordinal));
+        Write("Tool/Tool.csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
+            + "<ImplicitUsings>disable</ImplicitUsings></PropertyGroup><ItemGroup>"
+            + "<ProjectReference Include=\"../Shared/Shared.csproj\" /></ItemGroup></Project>");
+        string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
+        await RestoreOrdinary();
+        string assets = Path.Combine(m_root, "App", "obj", "project.assets.json");
+        byte[] ordinary = File.ReadAllBytes(assets);
+        ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
+            new NativeBuildContext(m_root, "release"), sdk, project,
+            new Dictionary<string, string>
+            {
+                ["Configuration"] = "Release",
+                ["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier
+            });
+        Assert.Equal(ordinary, File.ReadAllBytes(assets));
+        await Task.WhenAll(RestoreOrdinary(), snapshot.VerifyAsync().AsTask());
+        Assert.Equal(ordinary, File.ReadAllBytes(assets));
+        Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
+
+        Task RestoreOrdinary() => ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"],
+            m_root, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
     }
 
     [Fact]

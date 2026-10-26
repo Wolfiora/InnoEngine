@@ -55,10 +55,10 @@ public static unsafe partial class ImGuiWidget
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 textSize = NativeImGui.CalcTextSize(label);
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        NativeImGui.Raw.AddRectFilled(
+        ImGui.DrawNativeFilledRectangle(
             drawList,
-            ImGui.ToNative(minimum),
-            ImGui.ToNative(minimum + size),
+            minimum,
+            minimum + size,
             NativeImGui.ColorConvertFloat4ToU32(background),
             style.labelChipRounding,
             0
@@ -115,18 +115,18 @@ public static unsafe partial class ImGuiWidget
         background.W = EditorPalette.opacityOpaque;
         Vector4 outline = accent;
         outline.W = EditorPalette.opacityStrong;
-        NativeImGui.Raw.AddRectFilled(
+        ImGui.DrawNativeFilledRectangle(
             draw,
-            ImGui.ToNative(minimum),
-            ImGui.ToNative(minimum + size),
+            minimum,
+            minimum + size,
             NativeImGui.ColorConvertFloat4ToU32(background),
             style.typeBadgeRounding,
             0
         );
-        NativeImGui.Raw.AddRect(
+        ImGui.DrawNativeRectangle(
             draw,
-            ImGui.ToNative(minimum),
-            ImGui.ToNative(minimum + size),
+            minimum,
+            minimum + size,
             NativeImGui.ColorConvertFloat4ToU32(outline),
             style.typeBadgeRounding,
             (int)(ImDrawFlags.None),
@@ -187,34 +187,34 @@ public static unsafe partial class ImGuiWidget
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         if (value)
         {
-            NativeImGui.Raw.AddRectFilled(drawList, ImGui.ToNative(min), ImGui.ToNative(max), textColor, 1f, 0);
+            ImGui.DrawNativeFilledRectangle(drawList, min, max, textColor, 1f, 0);
             uint checkColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader);
-            NativeImGui.Raw.AddLine(
+            ImGui.DrawNativeLine(
                 drawList,
-                ImGui.ToNative(min + new Vector2(size * 0.22f, size * 0.52f)),
-                ImGui.ToNative(min + new Vector2(size * 0.43f, size * 0.72f)),
+                min + new Vector2(size * 0.22f, size * 0.52f),
+                min + new Vector2(size * 0.43f, size * 0.72f),
                 checkColor,
                 1.5f
             );
-            NativeImGui.Raw.AddLine(
+            ImGui.DrawNativeLine(
                 drawList,
-                ImGui.ToNative(min + new Vector2(size * 0.43f, size * 0.72f)),
-                ImGui.ToNative(min + new Vector2(size * 0.80f, size * 0.28f)),
+                min + new Vector2(size * 0.43f, size * 0.72f),
+                min + new Vector2(size * 0.80f, size * 0.28f),
                 checkColor,
                 1.5f
             );
         }
         else
         {
-            NativeImGui.Raw.AddRect(drawList, ImGui.ToNative(min), ImGui.ToNative(max), textColor, 1f, 0, 1f);
+            ImGui.DrawNativeRectangle(drawList, min, max, textColor, 1f, 0, 1f);
         }
 
         if (hovered)
         {
-            NativeImGui.Raw.AddRect(
+            ImGui.DrawNativeRectangle(
                 drawList,
-                ImGui.ToNative(min - Vector2.One),
-                ImGui.ToNative(max + Vector2.One),
+                min - Vector2.One,
+                max + Vector2.One,
                 NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered),
                 1f,
                 0,

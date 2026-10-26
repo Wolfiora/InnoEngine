@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -28,13 +28,13 @@ public sealed class BindingGenerationBatchTests : IDisposable
         NativeComponentDescriptor component = CreateComponent("planned");
         string directory = Path.Combine(m_root, "planned");
         string config = Path.Combine(directory, "bindgen.json");
-        File.WriteAllText(Path.Combine(directory, "common.json"), "{\"schemaVersion\":1,\"api\":{\"name\":\"UnusedDefault\"}}");
+        File.WriteAllText(Path.Combine(directory, "common.json"), "{\"schemaVersion\":2,\"api\":{\"name\":\"UnusedDefault\"}}");
         string text = File.ReadAllText(config);
-        File.WriteAllText(config, text.Replace("\"schemaVersion\":1", "\"schemaVersion\":1,\"extends\":[\"common.json\"]", StringComparison.Ordinal));
+        File.WriteAllText(config, text.Replace("\"schemaVersion\":2", "\"schemaVersion\":2,\"extends\":[\"common.json\"]", StringComparison.Ordinal));
         string unselected = Path.Combine(directory, "bindgen.unselected.json");
         File.WriteAllText(unselected, "{}");
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
-        var generator = new NativeBindingGenerator();
+        var generator = BuildTestProducts.Generator();
         NativeBuildContext initial = new(m_root, "release");
         string identity = await generator.ComputeInputFingerprintAsync(initial, request, CancellationToken.None);
         File.WriteAllText(unselected, "{\"changed\":true}");
@@ -55,7 +55,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     {
         var components = new[] { CreateComponent("first"), CreateComponent("second") };
         var context = new NativeBuildContext(m_root, "release");
-        var generator = new NativeBindingGenerator();
+        var generator = BuildTestProducts.Generator();
         var request = new NativeBindingGenerationRequest(components, "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var result = await generator.GenerateAsync(context, request, CancellationToken.None);
         Assert.Equal(2, result.Count);
@@ -81,7 +81,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     public async Task ActiveConsumersBlockReplacementAndReleaseAllowsRepair()
     {
         var component = CreateComponent("reader");
-        var generator = new NativeBindingGenerator();
+        var generator = BuildTestProducts.Generator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
         var context = new NativeBuildContext(m_root, "release");
         using NativeBindingGenerationResult first = await generator.GenerateAsync(context, request, CancellationToken.None);
@@ -92,7 +92,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
             using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
-                descriptor.artifactDirectory, waiting.Token);
+                descriptor.artifactDirectory, descriptor.artifactOwnerDirectory, waiting.Token);
         });
         using NativeBindingGenerationResult concurrent = await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
@@ -101,7 +101,8 @@ public sealed class BindingGenerationBatchTests : IDisposable
         first.Dispose();
         concurrent.Dispose();
         Assert.Throws<ObjectDisposedException>(() => first[component.nativeProject]);
-        using (BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(descriptor.artifactDirectory))
+        using (BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
+            descriptor.artifactDirectory, descriptor.artifactOwnerDirectory))
             File.WriteAllText(descriptor.bindingsPath, "damaged");
         using NativeBindingGenerationResult repaired = await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
@@ -113,7 +114,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     {
         var first = CreateComponent("first");
         var second = CreateComponent("second");
-        var generator = new NativeBindingGenerator();
+        var generator = BuildTestProducts.Generator();
         var request = new NativeBindingGenerationRequest([first, second], "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var completed = await generator.GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
         string original = File.ReadAllText(completed[first.nativeProject].bindingsPath);
@@ -139,7 +140,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string firstSdk = CreateSdk("sdk-first", "int");
         string secondSdk = CreateSdk("sdk-second", "long long");
         string? original = Environment.GetEnvironmentVariable(variable);
-        var generator = new NativeBindingGenerator();
+        var generator = BuildTestProducts.Generator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
 
         using var first = await generator.GenerateAsync(SdkContext(variable, firstSdk), request, CancellationToken.None);
@@ -157,7 +158,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string variable = "INNO_BINDING_SDK_" + Guid.NewGuid().ToString("N");
         var component = CreateSdkComponent();
         string sdk = CreateSdk("sdk", "int");
-        var generator = new NativeBindingGenerator();
+        var generator = BuildTestProducts.Generator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var result = await generator.GenerateAsync(SdkContext(variable, sdk), request, CancellationToken.None);
         string source = File.ReadAllText(result[component.nativeProject].bindingsPath);
@@ -198,7 +199,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         File.WriteAllText(executable, "Selected SDK tool identity; not executed by this C parser fixture.");
         var selection = new NativeToolchainSelection("fixture", new BuildHostDescriptor("Windows", "x64"),
             new Dictionary<string, string> { ["fixture"] = executable },
-            new Dictionary<string, string> { [variable] = sdk, ["INCLUDE"] = Path.Combine(sdk, "include") }, [sdk], [], ".dll", false);
+            new Dictionary<string, string> { [variable] = sdk, ["INCLUDE"] = Path.Combine(sdk, "include") }, [sdk], [], new NativeLinkPlan(".dll"), false, new NativeCompilerInputs(systemIncludeDirectories: [Path.Combine(sdk, "include")]));
         return new NativeBuildContext(m_root, "release").WithToolchain(selection);
     }
 
@@ -208,11 +209,10 @@ public sealed class BindingGenerationBatchTests : IDisposable
         Directory.CreateDirectory(owner);
         File.WriteAllText(Path.Combine(owner, name + ".csproj"), "<Project />");
         File.WriteAllText(Path.Combine(owner, "bindings.props"), $"""
-            <Project><PropertyGroup><InnoNativeComponentId>{name}</InnoNativeComponentId><InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig></PropertyGroup>
-            <ItemGroup><InnoBindingTarget Include="fixture"><Config>bindgen.json</Config></InnoBindingTarget></ItemGroup></Project>
+            <Project><PropertyGroup><InnoNativeComponentId>{name}</InnoNativeComponentId><InnoBindingConfig>bindgen.json</InnoBindingConfig></PropertyGroup></Project>
             """);
         File.WriteAllText(Path.Combine(owner, "bindgen.json"), """
-            {"schemaVersion":1,"library":{"id":"fixture","nativeName":"fixture"},
+            {"schemaVersion":2,"library":{"id":"fixture","nativeName":"fixture"},
              "source":{"language":"c","headers":["../Source/shared.h"],"includeDirectories":["../Source"]},
              "api":{"namespace":"Fixture.Native","name":"Api","naming":{"functions":{"casing":"pascal"}}},
              "output":{"root":"Generated","layout":"singleFile"}}

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Inno.Build.TaskHosting;
+using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
@@ -90,20 +91,29 @@ public sealed class TaskHostPublicationTests : IDisposable
     }
 
     [Fact]
-    public void RetirementKeepsLiveReadersAndReleasesDeadReadersAndTheirUnreferencedRuntime()
+    public async System.Threading.Tasks.Task RetirementKeepsLiveReadersAndReleasesDeadReadersAndTheirUnreferencedRuntime()
     {
-        PublishTaskHostTask old = CreateTask();
-        Assert.True(old.Execute());
-        PublishTaskHostTask live = CreateTask();
-        Assert.True(live.Execute());
-        MarkDead(old);
-        File.WriteAllBytes(Path.Combine(m_root, "input", "Inno.Build.Tasks.dll"), [5, 6, 7, 8]);
-        Assert.True(CreateTask().Execute());
-        Assert.False(Directory.Exists(Path.GetDirectoryName(old.LoadDirectory)!));
-        Assert.True(File.Exists(old.PublishedAssembly));
-        MarkDead(live);
-        Assert.True(CreateTask().Execute());
-        Assert.False(File.Exists(old.PublishedAssembly));
+        TaskHostPublicationProcess old = await TaskHostPublicationProcess.StartAsync(m_root);
+        await using TaskHostPublicationProcess live = await TaskHostPublicationProcess.StartAsync(m_root);
+        try
+        {
+            string oldRuntime = old.publishedAssembly;
+            Assert.Equal(oldRuntime, live.publishedAssembly);
+            await old.DisposeAsync();
+            File.WriteAllBytes(Path.Combine(m_root, "input", "Inno.Build.Tasks.dll"), [5, 6, 7, 8]);
+            Assert.True(CreateTask().Execute());
+            Assert.True(Directory.Exists(Path.GetDirectoryName(old.loadDirectory)!));
+            await MaintainAsync();
+            Assert.False(Directory.Exists(Path.GetDirectoryName(old.loadDirectory)!));
+            Assert.True(File.Exists(oldRuntime));
+            await live.DisposeAsync();
+            await MaintainAsync();
+            Assert.False(File.Exists(oldRuntime));
+        }
+        finally
+        {
+            await old.DisposeAsync();
+        }
     }
 
     [Theory]
@@ -119,21 +129,17 @@ public sealed class TaskHostPublicationTests : IDisposable
     }
 
     [Fact]
-    public void BootstrapRetirementPreservesCurrentProcessAndRemovesOnlyConfirmedDeadOwners()
+    public async System.Threading.Tasks.Task BootstrapRetirementPreservesCurrentProcessAndRemovesOnlyConfirmedDeadOwners()
     {
-        PublishTaskHostTask previous = CreateTask();
-        previous.PublisherDirectory = Path.Combine(m_root, "publishers", "previous", "Debug");
-        Directory.CreateDirectory(previous.PublisherDirectory);
-        Assert.True(previous.Execute());
-        string owners = Path.Combine(Path.GetDirectoryName(previous.PublisherDirectory)!, "owners");
-        foreach (string marker in Directory.GetFiles(owners, "*.pid"))
-            File.WriteAllText(marker, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
-
+        await using TaskHostPublicationProcess previous = await TaskHostPublicationProcess.StartAsync(m_root);
+        await previous.DisposeAsync();
         PublishTaskHostTask current = CreateTask();
-        current.PublisherDirectory = Path.Combine(m_root, "publishers", "current", "Debug");
+        current.PublisherDirectory = Path.Combine(m_root, "publishers", Guid.NewGuid().ToString("N"), "Debug");
         Directory.CreateDirectory(current.PublisherDirectory);
         Assert.True(current.Execute());
-        Assert.False(Directory.Exists(Path.GetDirectoryName(previous.PublisherDirectory)!));
+        Assert.True(Directory.Exists(Path.GetDirectoryName(previous.publisherDirectory)!));
+        await MaintainAsync();
+        Assert.False(Directory.Exists(Path.GetDirectoryName(previous.publisherDirectory)!));
         Assert.True(Directory.Exists(current.PublisherDirectory));
     }
 
@@ -151,11 +157,17 @@ public sealed class TaskHostPublicationTests : IDisposable
         };
     }
 
-    private static void MarkDead(PublishTaskHostTask task)
+    private async System.Threading.Tasks.Task MaintainAsync()
     {
-        string owners = Path.Combine(Path.GetDirectoryName(task.LoadDirectory)!, "owners");
-        foreach (string marker in Directory.GetFiles(owners, "*.pid"))
-            File.WriteAllText(marker, int.MaxValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        BuildCacheOwnerDescriptor[] owners =
+        [
+            new BuildCachePublisher(Path.Combine(m_root, "hosts"), BuildCacheArtifactRole.ImmutableArtifact).Describe("hosts"),
+            new BuildCachePublisher(Path.Combine(m_root, "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("loads"),
+            new BuildCachePublisher(Path.Combine(m_root, "publishers"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("publishers")
+        ];
+        BuildCacheCleanupResult result = await BuildCacheCleanupPlan.Create(m_root, owners,
+            new BuildCachePolicy(0, 0, TimeSpan.FromSeconds(20)), retireAll: true).ExecuteAsync();
+        Assert.Empty(result.failures);
     }
 
     private sealed class RecordingBuildEngine : IBuildEngine

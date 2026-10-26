@@ -15,18 +15,38 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
     private readonly NativeBindingGenerationResult m_bindings;
     private int m_disposed;
 
-    internal ProductNativeBuildResult(
+    /// <summary>
+    /// Takes ownership of a complete native and binding closure.
+    /// </summary>
+    /// <param name="products">
+    /// Owned products in dependency order.
+    /// </param>
+    /// <param name="bindings">
+    /// The owned matching binding batch.
+    /// </param>
+    /// <param name="aggregateDirectory">
+    /// A complete aggregate install directory, or null for individual products.
+    /// </param>
+    public ProductNativeBuildResult(
         IEnumerable<NativeBuildProduct> products,
-        NativeBindingGenerationResult bindings
+        NativeBindingGenerationResult bindings,
+        string? aggregateDirectory = null
     ) {
         m_products = products.ToArray();
         m_bindings = bindings;
+        this.aggregateDirectory = aggregateDirectory;
     }
 
     /// <summary>
     /// Gets the number of products in the completed build plan.
     /// </summary>
     public int Count => m_products.Length;
+
+    /// <summary>
+    /// Gets the complete aggregate install directory, or null for individually published products.
+    /// </summary>
+    public string? aggregateDirectory { get; }
+
 
     /// <summary>
     /// Borrows a product whose lease is owned by this result until disposal.

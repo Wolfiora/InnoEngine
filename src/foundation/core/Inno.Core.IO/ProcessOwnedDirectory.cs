@@ -18,14 +18,14 @@ public sealed class ProcessOwnedDirectory : IDisposable
     private readonly string m_root;
     private readonly string m_record;
     private readonly ProcessOwnerStamp m_owner;
-    private FileLease? m_lease;
+    private CoordinatedFileLease? m_lease;
 
     private ProcessOwnedDirectory(
         string root,
         string path,
         string record,
         ProcessOwnerStamp owner,
-        FileLease lease
+        CoordinatedFileLease lease
     ) {
         m_root = root;
         directory = path;
@@ -79,7 +79,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
             throw new ArgumentException("Process storage cannot manage a filesystem root.", nameof(root));
         string path = PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, identity));
         string record = RecordPath(root, identity);
-        using FileLease lease = await FileLease.AcquireAsync(path + ".work.lock", TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+        using CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(Path.Combine(root, "owner.lock"), path + ".work.lock", TimeSpan.FromSeconds(30), cancellationToken: cancellationToken).ConfigureAwait(false);
         if (File.Exists(record))
         {
             Claim claim = ReadClaim(record);
@@ -131,7 +131,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
         string relative = Guid.NewGuid().ToString("N");
         string path = Path.Combine(root, relative);
         string record = RecordPath(root, relative);
-        FileLease lease = await FileLease.AcquireAsync(path + ".work.lock", TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+        CoordinatedFileLease lease = await CoordinatedFileLease.AcquireAsync(Path.Combine(root, "owner.lock"), path + ".work.lock", TimeSpan.FromSeconds(30), cancellationToken: cancellationToken).ConfigureAwait(false);
         try
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -141,7 +141,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
             WriteClaim(record, new Claim(relative, owner.processId, owner.startedUtcTicks));
             Directory.CreateDirectory(path);
             lease.Dispose();
-            FileLease reading = await FileLease.AcquireSharedAsync(path + ".work.lock", TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+            CoordinatedFileLease reading = await CoordinatedFileLease.AcquireAsync(Path.Combine(root, "owner.lock"), path + ".work.lock", TimeSpan.FromSeconds(30), shared: true, cancellationToken: cancellationToken).ConfigureAwait(false);
             return new(root, path, record, owner, reading);
         }
         catch
@@ -174,7 +174,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
         string directory
     ) {
         PathBoundary.RequireUnlinkedPath(root, directory);
-        using FileLease reading = FileLease.AcquireSharedAsync(directory + ".work.lock", TimeSpan.FromSeconds(30))
+        using CoordinatedFileLease reading = CoordinatedFileLease.AcquireAsync(Path.Combine(root, "owner.lock"), directory + ".work.lock", TimeSpan.FromSeconds(30), shared: true)
             .AsTask().GetAwaiter().GetResult();
         RegisterProcess(root, directory);
     }
@@ -225,27 +225,70 @@ public sealed class ProcessOwnedDirectory : IDisposable
     /// </exception>
     public void Dispose()
     {
-        FileLease? lease = m_lease;
+        CoordinatedFileLease? lease = m_lease;
         if (lease is null)
             return;
         m_lease = null;
         lease.Dispose();
         try
         {
-            using FileLease retirement = FileLease.AcquireAsync(directory + ".work.lock", TimeSpan.FromSeconds(5))
+            using CoordinatedFileLease retirement = CoordinatedFileLease.AcquireAsync(Path.Combine(m_root, "owner.lock"), directory + ".work.lock", TimeSpan.FromSeconds(5))
                 .AsTask().GetAwaiter().GetResult();
             if (QueryOwners(m_record, m_owner) != ProcessOwnerState.Exited)
                 throw new IOException("A temporary directory still has an active or unverifiable subprocess owner.");
             if (Directory.Exists(directory))
                 Directory.Delete(PathBoundary.RequireUnlinkedPath(m_root, directory), recursive: true);
-            foreach (string marker in Directory.EnumerateFiles(m_root, Path.GetFileName(m_record) + ".*.process"))
-                File.Delete(marker);
-            File.Delete(m_record);
+            // The claim authorizes later leaf retirement under the owner's exclusive gate.
+
         }
         catch (TimeoutException failure)
         {
             throw new IOException("A temporary directory still has a registering subprocess reader.", failure);
         }
+    }
+
+    /// <summary>
+    /// Retires claims for absent payloads while the caller exclusively owns the persistent root gate.
+    /// </summary>
+    /// <param name="root">
+    /// The exact producer root whose owner.lock the caller exclusively holds.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation between complete metadata retirements.
+    /// </param>
+    /// <returns>
+    /// The number of fully retired claims.
+    /// </returns>
+    /// <remarks>
+    /// Every participant must acquire the same owner gate before waiting for or opening a work lease.
+    /// </remarks>
+    public static int RetireMetadataUnderOwnership(
+        string root,
+        CancellationToken cancellationToken = default
+    ) {
+        int retired = 0;
+        if (!Directory.Exists(root))
+            return retired;
+        foreach (string record in Directory.EnumerateFiles(root, "*.work.json").Order(StringComparer.Ordinal))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Claim claim = ReadClaim(PathBoundary.RequireUnlinkedPath(root, record));
+            if (record != RecordPath(root, claim.directory))
+                throw new InvalidDataException("Temporary ownership has an inconsistent identity.");
+            string path = PathBoundary.Resolve(root, claim.directory);
+            if (Directory.Exists(path))
+                continue;
+            if (QueryOwners(record, null) == ProcessOwnerState.Unknown)
+                throw new InvalidDataException("Temporary metadata has an unverifiable process owner.");
+            string leaf = PathBoundary.RequireUnlinkedPath(root, path + ".work.lock");
+            using (FileLease.AcquireAsync(leaf, TimeSpan.Zero, cancellationToken).AsTask().GetAwaiter().GetResult()) { }
+            foreach (string marker in Directory.EnumerateFiles(root, Path.GetFileName(record) + ".*.process"))
+                File.Delete(PathBoundary.RequireUnlinkedPath(root, marker));
+            File.Delete(leaf);
+            File.Delete(record);
+            retired++;
+        }
+        return retired;
     }
 
     private static void RegisterProcess(

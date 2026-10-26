@@ -1,3 +1,4 @@
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System.Runtime.CompilerServices;
 using NumericsVector2 = System.Numerics.Vector2;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
@@ -222,33 +223,31 @@ internal sealed unsafe class SettingsPageView(SettingsEditSession session)
             return;
 
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+        NativeVector2 clipMinimum = Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMinimumX, rowMinimumY));
+        NativeVector2 clipMaximum = Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMaximumX, rowMaximumY));
         NativeImGui.Raw.PushClipRect(
             drawList,
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMinimumX, rowMinimumY)),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMaximumX, rowMaximumY)),
-            (false ? (byte)1 : (byte)0)
+            &clipMinimum,
+            &clipMaximum,
+            0
         );
         try
         {
             if (tableMinimumX > windowMinimumX)
             {
-                NativeImGui.Raw.AddRectFilled(
-                    drawList,
-                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMinimumX, rowMinimumY)),
-                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(tableMinimumX, rowMaximumY)),
+                EditorImGui.DrawFilledRectangle(
+                    new System.Numerics.Vector2(windowMinimumX, rowMinimumY),
+                    new System.Numerics.Vector2(tableMinimumX, rowMaximumY),
                     background,
-                    0,
                     0
                 );
             }
             if (tableMaximumX < windowMaximumX)
             {
-                NativeImGui.Raw.AddRectFilled(
-                    drawList,
-                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(tableMaximumX, rowMinimumY)),
-                    Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMaximumX, rowMaximumY)),
+                EditorImGui.DrawFilledRectangle(
+                    new System.Numerics.Vector2(tableMaximumX, rowMinimumY),
+                    new System.Numerics.Vector2(windowMaximumX, rowMaximumY),
                     background,
-                    0,
                     0
                 );
             }

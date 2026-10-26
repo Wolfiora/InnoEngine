@@ -4,6 +4,7 @@
 #include <type_traits>
 #include "RmlUiRuntime.hpp"
 
+
 #if defined(sizeof)
 #error BGCS native storage proof token is shadowed by a macro
 #endif
@@ -83,6 +84,12 @@
 #error BGCS native storage proof token is shadowed by a macro
 #endif
 #if defined(is_same)
+#error BGCS native storage proof token is shadowed by a macro
+#endif
+#if defined(is_const)
+#error BGCS native storage proof token is shadowed by a macro
+#endif
+#if defined(is_volatile)
 #error BGCS native storage proof token is shadowed by a macro
 #endif
 #if defined(is_signed)
@@ -203,83 +210,77 @@ static_assert(BGCS_NATIVE_FIELD_OFFSET(Inno::UI::RmlUiAdapter::DrawCommand, scis
 static_assert(BGCS_NATIVE_FIELD_OFFSET(Inno::UI::RmlUiAdapter::DrawCommand, scissor_width) == 28, "BGCS native field offset differs from parsed facts");
 static_assert(BGCS_NATIVE_FIELD_OFFSET(Inno::UI::RmlUiAdapter::DrawCommand, scissor_height) == 32, "BGCS native field offset differs from parsed facts");
 #if defined(_MSC_VER)
-#define BGCS_VERIFY_CC_C __cdecl
+#define BGCS_VERIFY_CC_Win64 __cdecl
 #elif defined(__GNUC__) || defined(__clang__)
-#if defined(__i386__)
-#define BGCS_VERIFY_CC_C __attribute__((cdecl))
-#elif defined(__x86_64__)
-#define BGCS_VERIFY_CC_C __attribute__((ms_abi))
-#else
-#define BGCS_VERIFY_CC_C
-#endif
+#define BGCS_VERIFY_CC_Win64 __attribute__((ms_abi))
 #else
 #error BGCS native compiler cannot independently verify callable conventions
 #endif
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_0)(unsigned long long, unsigned long long, const char *, const char *, unsigned char, unsigned char &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_0)(unsigned long long, unsigned long long, const char *, const char *, unsigned char, unsigned char &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_0>(&Inno::UI::RmlUiAdapter::Runtime::SetClass)), bgcs_verified_callable_0>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_1)(unsigned long long, Inno::UI::RmlUiAdapter::DrawCommand *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_1)(unsigned long long, Inno::UI::RmlUiAdapter::DrawCommand *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_1>(&Inno::UI::RmlUiAdapter::Runtime::CopyCommands)), bgcs_verified_callable_1>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_2)(const char *, int, int, float, unsigned long long &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_2)(const char *, int, int, float, unsigned long long &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_2>(&Inno::UI::RmlUiAdapter::Runtime::CreateContext)), bgcs_verified_callable_2>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_3)(unsigned long long, int, int, int);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_3)(unsigned long long, int, int, int);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_3>(&Inno::UI::RmlUiAdapter::Runtime::ProcessMouseMove)), bgcs_verified_callable_3>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_4)(unsigned long long, Inno::UI::RmlUiAdapter::FrameInfo &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_4)(unsigned long long, Inno::UI::RmlUiAdapter::FrameInfo &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_4>(&Inno::UI::RmlUiAdapter::Runtime::Render)), bgcs_verified_callable_4>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_5)(unsigned long long, float, float, int);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_5)(unsigned long long, float, float, int);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_5>(&Inno::UI::RmlUiAdapter::Runtime::ProcessMouseWheel)), bgcs_verified_callable_5>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_6)(unsigned long long, unsigned long long, unsigned char *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_6)(unsigned long long, unsigned long long, unsigned char *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_6>(&Inno::UI::RmlUiAdapter::Runtime::CopyTexturePixels)), bgcs_verified_callable_6>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_7)(unsigned long long, unsigned long long &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_7)(unsigned long long, unsigned long long &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_7>(&Inno::UI::RmlUiAdapter::Runtime::GetEventCount)), bgcs_verified_callable_7>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_8)(unsigned long long, int, int, float);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_8)(unsigned long long, int, int, float);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_8>(&Inno::UI::RmlUiAdapter::Runtime::SetViewport)), bgcs_verified_callable_8>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_9)(unsigned long long, const char *, int, int, unsigned char *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_9)(unsigned long long, const char *, int, int, unsigned char *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_9>(&Inno::UI::RmlUiAdapter::Runtime::RegisterTexture)), bgcs_verified_callable_9>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_10)(unsigned long long, unsigned long long *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_10)(unsigned long long, unsigned long long *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_10>(&Inno::UI::RmlUiAdapter::Runtime::CopyReleasedMeshes)), bgcs_verified_callable_10>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_11)(unsigned long long, int, unsigned char, int);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_11)(unsigned long long, int, unsigned char, int);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_11>(&Inno::UI::RmlUiAdapter::Runtime::ProcessMouseButton)), bgcs_verified_callable_11>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_12)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::TextureInfo &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_12)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::TextureInfo &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_12>(&Inno::UI::RmlUiAdapter::Runtime::GetTextureInfo)), bgcs_verified_callable_12>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_13)(unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_13)(unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_13>(&Inno::UI::RmlUiAdapter::Runtime::ClearEvents)), bgcs_verified_callable_13>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_14)(unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_14)(unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_14>(&Inno::UI::RmlUiAdapter::Runtime::DestroyContext)), bgcs_verified_callable_14>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_15)(unsigned long long, unsigned long long *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_15)(unsigned long long, unsigned long long *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_15>(&Inno::UI::RmlUiAdapter::Runtime::CopyReleasedTextures)), bgcs_verified_callable_15>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_16)(unsigned long long, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_16)(unsigned long long, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_16>(&Inno::UI::RmlUiAdapter::Runtime::CloseDocument)), bgcs_verified_callable_16>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_17)(unsigned long long, unsigned long long, const char *, const char *, const char *, unsigned char &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_17)(unsigned long long, unsigned long long, const char *, const char *, const char *, unsigned char &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_17>(&Inno::UI::RmlUiAdapter::Runtime::SetAttribute)), bgcs_verified_callable_17>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_18)(unsigned long long, unsigned long long, unsigned int *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_18)(unsigned long long, unsigned long long, unsigned int *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_18>(&Inno::UI::RmlUiAdapter::Runtime::CopyMeshIndices)), bgcs_verified_callable_18>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_19)(unsigned long long, int, int, unsigned char &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_19)(unsigned long long, int, int, unsigned char &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_19>(&Inno::UI::RmlUiAdapter::Runtime::HasElementAtPoint)), bgcs_verified_callable_19>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_20)(unsigned long long, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_20)(unsigned long long, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_20>(&Inno::UI::RmlUiAdapter::Runtime::HideDocument)), bgcs_verified_callable_20>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_21)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::MeshInfo &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_21)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::MeshInfo &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_21>(&Inno::UI::RmlUiAdapter::Runtime::GetMeshInfo)), bgcs_verified_callable_21>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_22)(unsigned long long, int, unsigned char, int);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_22)(unsigned long long, int, unsigned char, int);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_22>(&Inno::UI::RmlUiAdapter::Runtime::ProcessKey)), bgcs_verified_callable_22>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_23)(unsigned long long, const char *);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_23)(unsigned long long, const char *);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_23>(&Inno::UI::RmlUiAdapter::Runtime::ProcessText)), bgcs_verified_callable_23>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_24)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::Vertex *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_24)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::Vertex *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_24>(&Inno::UI::RmlUiAdapter::Runtime::CopyMeshVertices)), bgcs_verified_callable_24>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_25)(unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_25)(unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_25>(&Inno::UI::RmlUiAdapter::Runtime::Update)), bgcs_verified_callable_25>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_26)(unsigned long long, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_26)(unsigned long long, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_26>(&Inno::UI::RmlUiAdapter::Runtime::ShowDocument)), bgcs_verified_callable_26>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_27)(unsigned long long, unsigned long long, char *, unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_27)(unsigned long long, unsigned long long, char *, unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_27>(&Inno::UI::RmlUiAdapter::Runtime::CopyEventTargetId)), bgcs_verified_callable_27>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_28)(unsigned long long, const char *, const char *, unsigned long long &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_28)(unsigned long long, const char *, const char *, unsigned long long &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_28>(&Inno::UI::RmlUiAdapter::Runtime::LoadDocument)), bgcs_verified_callable_28>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_29)(unsigned long long);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_29)(unsigned long long);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_29>(&Inno::UI::RmlUiAdapter::Runtime::FinishFrame)), bgcs_verified_callable_29>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_30)(unsigned long long, unsigned long long, const char *, const char *, unsigned char &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_30)(unsigned long long, unsigned long long, const char *, const char *, unsigned char &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_30>(&Inno::UI::RmlUiAdapter::Runtime::SetInnerMarkup)), bgcs_verified_callable_30>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_31)(const unsigned char *, unsigned long long, const char *, int, int, unsigned char);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_31)(const unsigned char *, unsigned long long, const char *, int, int, unsigned char);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_31>(&Inno::UI::RmlUiAdapter::Runtime::LoadFont)), bgcs_verified_callable_31>::value, "BGCS native callable signature differs from parsed facts");
-typedef Result (BGCS_VERIFY_CC_C Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_32)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::EventInfo &);
+typedef Result (BGCS_VERIFY_CC_Win64 Inno::UI::RmlUiAdapter::Runtime::*bgcs_verified_callable_32)(unsigned long long, unsigned long long, Inno::UI::RmlUiAdapter::EventInfo &);
 static_assert(std::is_same<decltype(static_cast<bgcs_verified_callable_32>(&Inno::UI::RmlUiAdapter::Runtime::GetEventInfo)), bgcs_verified_callable_32>::value, "BGCS native callable signature differs from parsed facts");
 typedef EventType bgcs_verified_field_0;
 static_assert(std::is_same<decltype(((Inno::UI::RmlUiAdapter::EventInfo*)nullptr)->type), bgcs_verified_field_0>::value, "BGCS native field type differs from parsed facts");

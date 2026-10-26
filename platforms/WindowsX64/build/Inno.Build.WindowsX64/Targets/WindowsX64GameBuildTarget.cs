@@ -1,8 +1,8 @@
 using System;
-using Inno.Build.Managed;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Managed;
 
 namespace Inno.Build.WindowsX64;
 
@@ -42,7 +42,7 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the Windows x64 target identity.
     /// </summary>
-    public BuildTargetId id => BuildTargetId.windowsX64;
+    public BuildTargetId id => Inno.Build.WindowsX64.WindowsX64BuildModule.target.id;
 
     /// <inheritdoc />
     public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;

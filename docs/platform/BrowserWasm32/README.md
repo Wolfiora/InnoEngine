@@ -19,3 +19,5 @@
 ## BGFX 运行接入
 
 - [Inno.Integration.BrowserWasm32.Bgfx.Runtime](Inno.Integration.BrowserWasm32.Bgfx.Runtime.md)：独立于构建 integration 的 surface 解析和能力声明。
+
+- [Inno.Integration.BrowserWasm32.Build](Inno.Integration.BrowserWasm32.Build.md)：平台职责与最小公开构建入口。

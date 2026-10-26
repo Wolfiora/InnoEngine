@@ -1,8 +1,8 @@
+using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using System;
+using System.Threading.Tasks;
 
 using Inno.Build.Toolchains;
 
@@ -57,8 +57,9 @@ public static class ImGuizmoToolchain
         NativeBuildRecipe sourceRecipe = CreateRecipe(context);
         if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
             throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
-        string extension = selection.sharedLibraryExtension == ".dll" ? ".lib" : selection.sharedLibraryExtension;
-        string[] libraries = imGui.files.Where(file => Path.GetExtension(file) == extension).ToArray();
+        NativeArtifactRole role = imGui.artifacts.Any(static artifact => artifact.role == NativeArtifactRole.ImportLibrary)
+            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary;
+        string[] libraries = imGui.artifacts.Where(artifact => artifact.role == role).Select(static artifact => artifact.file).ToArray();
         if (libraries.Length != 1)
             throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
         string cimguiDir = Path.Combine(context.engineRoot, "extern", "cimgui");
@@ -80,7 +81,14 @@ public static class ImGuizmoToolchain
                 File.Copy(library, Path.Combine(output, name));
                 token.ThrowIfCancellationRequested();
 
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken, describeOutputs: static (
+                @scoped,
+                output
+            ) =>
+                Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
+                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                        Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -149,8 +157,9 @@ public static class ImGuizmoToolchain
         NativeToolchainSelection selection = context.RequireToolchain();
         if (imGui.component != "cimgui" || imGui.targetId != selection.targetId)
             throw new ArgumentException("The supplied ImGui product does not match this gizmo target.", nameof(imGui));
-        string extension = selection.sharedLibraryExtension == ".dll" ? ".lib" : selection.sharedLibraryExtension;
-        string[] libraries = imGui.files.Where(file => Path.GetExtension(file) == extension).ToArray();
+        NativeArtifactRole role = imGui.artifacts.Any(static artifact => artifact.role == NativeArtifactRole.ImportLibrary)
+            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary;
+        string[] libraries = imGui.artifacts.Where(artifact => artifact.role == role).Select(static artifact => artifact.file).ToArray();
         if (libraries.Length != 1)
             throw new InvalidOperationException("The ImGui product must provide exactly one link library.");
         return sourceRecipe.WithDependency(NativeBuildInput.FromPath(context.engineRoot, libraries[0]), imGui.fingerprint);

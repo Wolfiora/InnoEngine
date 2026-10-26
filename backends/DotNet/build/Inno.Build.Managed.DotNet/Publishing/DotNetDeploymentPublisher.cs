@@ -13,6 +13,7 @@ internal static class DotNetDeploymentPublisher
         ManagedDeploymentId id,
         ManagedDeploymentCapabilities capabilities,
         string hostPath,
+        IToolchainWorkspaceProvider workspaces,
         ManagedDeploymentRequest request,
         IReadOnlyList<string> properties,
         CancellationToken cancellationToken
@@ -23,6 +24,6 @@ internal static class DotNetDeploymentPublisher
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(hostPath,
             request.projectPath, cancellationToken).ConfigureAwait(false);
         return await DotNetPublishExecutor.PublishAsync(new DotNetPublishRequest(sdk,
-            id, request, properties), cancellationToken).ConfigureAwait(false);
+            id, request, properties, workspaces), cancellationToken).ConfigureAwait(false);
     }
 }

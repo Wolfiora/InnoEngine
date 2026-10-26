@@ -1,30 +1,30 @@
-using Inno.Adapter.Rendering;
-using Inno.Adapter.Rendering.Bgfx;
-using Inno.Integration.MacOSArm64.Bgfx.Runtime;
-using Inno.Adapter.Presentation.ImGui;
-using Inno.Integration.MacOSArm64.Bgfx;
-using Inno.Adapter.Platform;
-using Inno.Adapter.Platform.Sdl3;
-using Inno.Integration.MacOSArm64.Sdl3;
-using Inno.Build.Toolchains.Bgfx.Tools;
 using System;
 using System.IO;
 using System.Threading;
 using Inno.Adapter.Authoring.Default;
 using Inno.Adapter.Default;
 using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Platform;
+using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Presentation;
+using Inno.Adapter.Presentation.ImGui;
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.FileSystem;
 using Inno.Build;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Execution;
-using Inno.Core.Logging;
-using Inno.Editor.Hosting;
-using Inno.Editor.Core;
 using Inno.Core.Input;
+using Inno.Core.Logging;
+using Inno.Editor.Core;
+using Inno.Editor.Hosting;
 using Inno.Extensibility.Modules;
+using Inno.Integration.MacOSArm64.Bgfx;
+using Inno.Integration.MacOSArm64.Bgfx.Runtime;
+using Inno.Integration.MacOSArm64.Sdl3;
 using Inno.Platform;
 using Inno.Platform.MacOSArm64;
 using Inno.Runtime;
@@ -78,10 +78,10 @@ public static class MacOSArm64EditorComposition
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
             }, [new BgfxAuthoringProvider(MacOSArm64BgfxIntegration.shaderProfile)],
                 [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: true, horizontalWheelDirection: -1))]);
-            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!, BuildTargetId.macOSArm64);
+            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!, Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id);
             var launch = new EditorLaunchOptions
             {
-                defaultBuildTarget = Inno.Build.BuildTargetId.macOSArm64,
+                defaultBuildTarget = Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id,
                 projectDirectory = project,
                 keyboard = new EditorKeyboardPolicy(KeyModifier.Super, "Cmd"),
                 adapterCatalog = adapters,

@@ -24,7 +24,7 @@ public sealed class ArchitectureCommandTests
             Directory.CreateDirectory(project);
             File.WriteAllText(Path.Combine(project, Path.GetFileName(project) + ".csproj"),
                 "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>"
-                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[3.0.1]\" /></ItemGroup></Project>");
+                + "<ItemGroup><PackageReference Include=\"BGCS.Runtime\" Version=\"[4.1.0]\" /></ItemGroup></Project>");
             (_, string output) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(rejected, output.Contains("the interop runtime dependency belongs", StringComparison.Ordinal));
             Assert.DoesNotContain("does not resolve to a repository project", output, StringComparison.Ordinal);
@@ -217,7 +217,7 @@ public sealed class ArchitectureCommandTests
     [InlineData("missing-input", "binding Config input 'missing.json' is missing", true)]
     [InlineData("unknown-property", "unknown or repeated property", true)]
     [InlineData("conditional", "cannot evaluate conditions", true)]
-    [InlineData("duplicate-target", "unique explicit identities", true)]
+    [InlineData("platform-table", "executable build logic", true)]
     public void CliValidatesBindingDefinitionOwnership(
         string scenario,
         string expected,
@@ -241,27 +241,21 @@ public sealed class ArchitectureCommandTests
                 + (scenario == "missing-import" ? string.Empty : "<Import Project=\"Bindings/bindings.props\" />")
                 + "</Project>");
             File.WriteAllText(Path.Combine(bindings, "bindgen.json"), "{}");
-            File.WriteAllText(Path.Combine(bindings, "bindgen.browser-wasm.json"), "{}");
             string definition = """
                 <Project>
                   <PropertyGroup>
                     <InnoNativeComponentId>probe</InnoNativeComponentId>
-                    <InnoBindingHostConfig>bindgen.json</InnoBindingHostConfig>
+                    <InnoBindingConfig>bindgen.json</InnoBindingConfig>
                   </PropertyGroup>
-                  <ItemGroup>
-                    <InnoBindingTarget Include="browser-wasm">
-                      <Config>bindgen.browser-wasm.json</Config>
-                    </InnoBindingTarget>
-                  </ItemGroup>
                 </Project>
                 """;
             definition = scenario switch
             {
-                "escaped-input" => definition.Replace("bindgen.browser-wasm.json", "../outside.json", StringComparison.Ordinal),
-                "missing-input" => definition.Replace("bindgen.browser-wasm.json", "missing.json", StringComparison.Ordinal),
+                "escaped-input" => definition.Replace("bindgen.json", "../outside.json", StringComparison.Ordinal),
+                "missing-input" => definition.Replace("bindgen.json", "missing.json", StringComparison.Ordinal),
                 "unknown-property" => definition.Replace("</PropertyGroup>", "<InnoBindingBridgeConfig>bridge.json</InnoBindingBridgeConfig></PropertyGroup>", StringComparison.Ordinal),
-                "conditional" => definition.Replace("<ItemGroup>", "<ItemGroup Condition=\"'$(Target)' != ''\">", StringComparison.Ordinal),
-                "duplicate-target" => definition.Replace("</ItemGroup>", "<InnoBindingTarget Include=\"browser-wasm\"><Config>bindgen.browser-wasm.json</Config></InnoBindingTarget></ItemGroup>", StringComparison.Ordinal),
+                "conditional" => definition.Replace("<PropertyGroup>", "<PropertyGroup Condition=\"'$(Target)' != ''\">", StringComparison.Ordinal),
+                "platform-table" => definition.Replace("</Project>", "<ItemGroup /></Project>", StringComparison.Ordinal),
                 _ => definition
             };
             if (scenario != "missing-definition")

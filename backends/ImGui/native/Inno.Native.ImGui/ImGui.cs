@@ -15,7 +15,9 @@ public static unsafe partial class ImGui
 
     static ImGui()
     {
-#if INNO_STATIC_NATIVE
+#if INNO_RUNTIME_IMPORTS
+        Create();
+#elif INNO_STATIC_NATIVE
         FromStatic();
 #else
         Load(NativeDllLoader.FindNativeLibrary(LibName));

@@ -80,7 +80,7 @@ public sealed class BuildCachePublisher
     /// The persistent lease used by its producer and readers.
     /// </param>
     /// <param name="dependencies">
-    /// Exact immutable generations required while this generation is protected.
+    /// Exact owned entries required while this generation is protected.
     /// </param>
     /// <param name="currentKey">
     /// A product/target/configuration root identity, or null for an unselected generation.
@@ -123,8 +123,12 @@ public sealed class BuildCachePublisher
         var metadata = new Entry(relative, Path.GetRelativePath(m_root, leasePath), DateTime.UtcNow,
             dependencies.Select(Path.GetFullPath).ToArray(), bytes, targetId);
         AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(relative) + ".cache.json"), WriteEntry(metadata));
-        if (currentKey is not null)
-            AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(currentKey) + ".current"), Encoding.UTF8.GetBytes(relative));
+        if (currentKey is not null && m_role == BuildCacheArtifactRole.ImmutableArtifact)
+        {
+            string pointer = Path.Combine(m_root, Key(currentKey) + ".current");
+            if (!File.Exists(pointer) || File.ReadAllText(pointer) != relative)
+                AtomicFile.WriteAllBytes(pointer, Encoding.UTF8.GetBytes(relative));
+        }
     }
 
     /// <summary>
@@ -137,7 +141,7 @@ public sealed class BuildCachePublisher
     /// Borrowed inventory callbacks for this publisher's lifetime.
     /// </returns>
     public BuildCacheOwnerDescriptor Describe(string id)
-        => new(id, m_root, Path.Combine(m_root, "owner.lock"), ReadArtifacts, ReadRoots);
+        => new(id, m_root, Path.Combine(m_root, "owner.lock"), ReadArtifacts, ReadRoots, RetireMetadata);
 
     /// <summary>
     /// Records a reusable workspace before its first payload write while the caller holds activity and producer leases.
@@ -180,15 +184,12 @@ public sealed class BuildCachePublisher
             throw new InvalidDataException("Working ownership has an inconsistent directory identity.");
         AtomicFile.WriteAllBytes(record, WriteEntry(new(relative, Path.GetRelativePath(m_root, leasePath).Replace('\\', '/'), DateTime.UtcNow, [], 0, targetId)));
         Directory.CreateDirectory(directory);
-        string owners = Path.Combine(directory, "owners");
-        Directory.CreateDirectory(owners);
-        ProcessOwnerStamp stamp = ProcessOwnerStamp.CaptureCurrent();
-        AtomicFile.WriteAllBytes(Path.Combine(owners, stamp.processId + ".pid"), JsonSerializer.SerializeToUtf8Bytes(stamp));
     }
 
     /// <summary>
     /// Registers a process-owned loader directory and its dependencies before returning it to a loader.
     /// Retirement preserves the directory until every recorded process has exited.
+    /// Repeated registrations retain the complete dependency closure of that process-owned operation.
     /// </summary>
     /// <param name="directory">
     /// The completed directory within this publisher's boundary.
@@ -197,7 +198,7 @@ public sealed class BuildCachePublisher
     /// The persistent producer and retirement lease outside the directory.
     /// </param>
     /// <param name="dependencies">
-    /// Immutable generations required by this loader directory.
+    /// Owned generations and workspaces required throughout this process-owned operation.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels ownership acquisition before the process claim is recorded.
@@ -214,18 +215,108 @@ public sealed class BuildCachePublisher
         IReadOnlyList<string> dependencies,
         CancellationToken cancellationToken = default
     ) {
+        ArgumentNullException.ThrowIfNull(dependencies);
         using FileLease activity = AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
         BuildCacheCleanupPlan.RequireChild(m_root, directory);
         BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
         using FileLease writing = FileLease.AcquireAsync(leasePath, TimeSpan.FromSeconds(30), cancellationToken)
             .AsTask().GetAwaiter().GetResult();
+        string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
+        string record = Path.Combine(m_root, Key(relative) + ".cache.json");
+        string[] retained = [];
+        if (File.Exists(record))
+        {
+            Entry previous = ReadEntry(record);
+            if (previous.directory != relative
+                || !BuildCacheInventory.pathComparer.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath)))
+                throw new InvalidDataException("Process ownership has an inconsistent directory or lease identity.");
+            retained = previous.dependencies;
+        }
+        string[] closure = retained.Concat(dependencies.Select(Path.GetFullPath))
+            .Distinct(BuildCacheInventory.pathComparer).ToArray();
         string owners = Path.Combine(directory, "owners");
         Directory.CreateDirectory(owners);
         ProcessOwnerStamp stamp = ProcessOwnerStamp.CaptureCurrent();
         string process = stamp.processId.ToString(System.Globalization.CultureInfo.InvariantCulture);
         AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), JsonSerializer.SerializeToUtf8Bytes(stamp));
-        Record(directory, leasePath, dependencies, null, null, cancellationToken);
+        Record(directory, leasePath, closure, null, null, cancellationToken);
     }
+
+    /// <summary>
+    /// Registers an exact cache index and the publication directories required to keep it useful.
+    /// </summary>
+    /// <param name="path">
+    /// The producer-owned index file within this publisher root.
+    /// </param>
+    /// <param name="dependencies">
+    /// Exact publication roots; missing dependencies make the index retireable.
+    /// </param>
+    /// <remarks>
+    /// The caller must hold this publisher's shared activity gate through the index write and registration.
+    /// </remarks>
+    public void RecordIndex(
+        string path,
+        IReadOnlyList<string> dependencies
+    ) {
+        BuildCacheCleanupPlan.RequireChild(m_root, path);
+        foreach (string dependency in dependencies)
+            BuildCacheCleanupPlan.RequireChild(m_root, dependency);
+        string relative = Path.GetRelativePath(m_root, path).Replace('\\', '/');
+        AtomicFile.WriteAllBytes(Path.Combine(m_root, Key(relative) + ".metadata.json"),
+            JsonSerializer.SerializeToUtf8Bytes(new Index(relative, dependencies.ToArray())));
+    }
+
+    private void RetireMetadata(CancellationToken cancellation)
+    {
+        if (!Directory.Exists(m_root))
+            return;
+        HashSet<string> currents = ReadRoots(cancellation).ToHashSet(BuildCacheInventory.pathComparer);
+        foreach (string pointer in m_role == BuildCacheArtifactRole.ImmutableArtifact
+            ? Directory.EnumerateFiles(m_root, "*.current") : Enumerable.Empty<string>())
+        {
+            string selected = PathBoundary.Resolve(m_root, File.ReadAllText(PathBoundary.RequireUnlinkedPath(m_root, pointer)));
+            if (!Directory.Exists(selected))
+                throw new InvalidDataException($"Current cache publication is missing: '{selected}'.");
+        }
+        foreach (string record in Directory.EnumerateFiles(m_root, "*.cache.json").Order(StringComparer.Ordinal))
+        {
+            cancellation.ThrowIfCancellationRequested();
+            Entry entry = ReadEntry(PathBoundary.RequireUnlinkedPath(m_root, record));
+            if (Path.GetFileName(record) != Key(entry.directory) + ".cache.json")
+                throw new InvalidDataException("Cache metadata has an inconsistent owner identity.");
+            string directory = PathBoundary.Resolve(m_root, entry.directory);
+            string leaf = PathBoundary.Resolve(m_root, entry.leasePath);
+            if (Directory.Exists(directory) || currents.Contains(directory))
+                continue;
+            PathBoundary.RequireUnlinkedPath(m_root, leaf);
+            using (FileLease.AcquireAsync(leaf, TimeSpan.Zero, cancellation).AsTask().GetAwaiter().GetResult()) { }
+            File.Delete(leaf);
+            // Keep explicit retirement authority until unlinking the leaf succeeds.
+            File.Delete(record);
+        }
+        foreach (string record in Directory.EnumerateFiles(m_root, "*.metadata.json").Order(StringComparer.Ordinal))
+        {
+            cancellation.ThrowIfCancellationRequested();
+            Index index = JsonSerializer.Deserialize<Index>(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(m_root, record)))
+                ?? throw new InvalidDataException("Cache index ownership is incomplete.");
+            if (index.dependencies is null || index.dependencies.Length == 0 || Path.GetFileName(record) != Key(index.path) + ".metadata.json")
+                throw new InvalidDataException("Cache index ownership is inconsistent.");
+            string path = PathBoundary.Resolve(m_root, index.path);
+            BuildCacheCleanupPlan.RequireChild(m_root, path);
+            foreach (string dependency in index.dependencies)
+                BuildCacheCleanupPlan.RequireChild(m_root, dependency);
+            if (index.dependencies.All(Directory.Exists))
+                continue;
+            File.Delete(path);
+            File.Delete(record);
+        }
+        ProcessOwnedDirectory.RetireMetadataUnderOwnership(m_root, cancellation);
+    }
+
+    private sealed record Index(
+        string path,
+        string[] dependencies
+    );
 
     private IReadOnlyList<BuildCacheArtifactDescriptor> ReadArtifacts(CancellationToken cancellation)
     {

@@ -166,10 +166,10 @@ public static unsafe partial class ImGuiWidget
         {
             NativeImGui.SetMouseCursor((int)(ImGuiMouseCursor.Hand));
             float underlineY = cursor.Y + size.Y;
-            NativeImGui.Raw.AddLine(
+            ImGui.DrawNativeLine(
                 NativeImGui.Raw.GetWindowDrawList(),
-                ImGui.ToNative(new Vector2(cursor.X, underlineY)),
-                ImGui.ToNative(new Vector2(cursor.X + size.X, underlineY)),
+                new Vector2(cursor.X, underlineY),
+                new Vector2(cursor.X + size.X, underlineY),
                 packedColor,
                 1f
             );
@@ -379,7 +379,7 @@ public static unsafe partial class ImGuiWidget
             MathF.Max(effectivePadding.X, (areaSize.X - textSize.X) * 0.5f),
             MathF.Max(effectivePadding.Y, (areaSize.Y - textSize.Y) * 0.5f));
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        NativeImGui.Raw.PushClipRect(drawList, ImGui.ToNative(origin + effectivePadding), ImGui.ToNative(origin + areaSize - effectivePadding), 1);
+        ImGui.PushNativeClipRectangle(drawList, origin + effectivePadding, origin + areaSize - effectivePadding, 1);
         try
         {
             ImGui.DrawNativeText(
@@ -573,10 +573,10 @@ public static unsafe partial class ImGuiWidget
             {
                 float lineY = cursor.Y + NativeImGui.GetTextLineHeight() -
                               ImGuiWidget.style.textDecorationOffset;
-                NativeImGui.Raw.AddLine(
+                ImGui.DrawNativeLine(
                     drawList,
-                    ImGui.ToNative(new Vector2(cursor.X, lineY)),
-                    ImGui.ToNative(new Vector2(textPos.X + textSize.X, lineY)),
+                    new Vector2(cursor.X, lineY),
+                    new Vector2(textPos.X + textSize.X, lineY),
                     color,
                     ImGuiWidget.style.borderSize
                 );

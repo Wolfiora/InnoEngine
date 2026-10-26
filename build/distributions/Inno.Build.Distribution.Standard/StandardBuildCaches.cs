@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Build.Toolchains;
-using Inno.Build.BrowserWasm32;
 
 namespace Inno.Build.Distribution.Standard;
 
@@ -46,12 +45,13 @@ public static class StandardBuildCaches
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "requests"), BuildCacheArtifactRole.ProcessWorkingDirectory), "managed-input-requests"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "extensions"), BuildCacheArtifactRole.ImmutableArtifact), "binding-extensions"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "intermediate"), BuildCacheArtifactRole.ReusableWorkspace), "binding-workspaces"),
+            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "bindings", "sdk-workspaces"), BuildCacheArtifactRole.ReusableWorkspace), "bgcs-workspaces"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "hosts"), BuildCacheArtifactRole.ImmutableArtifact), "task-hosts"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory), "task-loads"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "publishers"), BuildCacheArtifactRole.ProcessWorkingDirectory), "task-publishers"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "tasks", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace), "task-workspaces")
         };
-        NativeComponentDescriptor[] workspaceComponents = components.Append(BrowserWasm32Toolchain.componentDescriptor).ToArray();
+        NativeComponentDescriptor[] workspaceComponents = components.ToArray();
         foreach (string project in workspaceComponents.Select(static component => component.toolchainProject).Distinct(StringComparer.Ordinal))
         {
             NativeComponentDescriptor component = workspaceComponents.First(value => value.toolchainProject == project);

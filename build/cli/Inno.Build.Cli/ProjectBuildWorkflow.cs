@@ -1,13 +1,13 @@
-using Inno.Build.Composition;
-using Inno.Build.Distribution.Standard;
 using System;
 using System.IO;
 using System.Linq;
-using Inno.Build.Toolchains;
-using Inno.Build.Toolchains.Bgfx.Tools;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
+using Inno.Build.Composition;
+using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
+using Inno.Build.Toolchains.Bgfx.Tools;
 
 namespace Inno.Build.Cli;
 
@@ -19,15 +19,36 @@ internal static class ProjectBuildWorkflow
     ) {
         BuildCommand command = BuildCommand.Parse(arguments);
         string engineRoot = BuildCommandContext.ResolveEngineRoot(command.engineRoot);
+        int exitCode = await ExecuteAsync(command, engineRoot, cancellationToken).ConfigureAwait(false);
+        if (exitCode == 0)
+        {
+            try
+            {
+                await BuildMaintenanceApplication.CleanAsync(engineRoot, new BuildCachePolicy(),
+                    false, false, null, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception failure)
+            {
+                Console.Error.WriteLine($"Project operation succeeded; automatic cache maintenance was deferred: {failure.Message}");
+            }
+        }
+        return exitCode;
+    }
+
+    private static async Task<int> ExecuteAsync(
+        BuildCommand command,
+        string engineRoot,
+        CancellationToken cancellationToken
+    ) {
         string application = Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!;
         BuildCompositionContext context = StandardBuildEnvironment.Capture(application, command.toolsTarget, command.dotnetHost);
         using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, engineRoot, cancellationToken).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
-        string extension = context.host.system == "Windows" ? ".exe" : string.Empty;
+        string extension = context.host.services.executableExtension;
         var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
             tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant() + extension));
         string includes = Path.GetDirectoryName(product.files.Single(file => Path.GetFileName(file) == "bgfx_shader.sh"))!;
-        var tools = new ToolRunner(executables, includes);
+        var tools = new ToolRunner(executables, includes, context.host.services.workspaces);
         using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, command.supportPackRoot, context, tools);
         if (command.kind == BuildCommandKind.ImportSample)
         {

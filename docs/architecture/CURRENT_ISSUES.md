@@ -1,66 +1,63 @@
-# 当前问题与待确认范围
+# 当前问题与未完成的验收
 
 [架构索引](README.md) · [当前验收](CURRENT_ACCEPTANCE.md) · [Wiki 首页](../README.md)
 
-当前工作区使用 BGCS 3.0.1，实际状态见[当前验收](CURRENT_ACCEPTANCE.md)。.NET 10 / C# 14 的阶段测量见[非 BGCS 报告](../../records/architecture/acceptance/NET10_NON_BGCS_ACCEPTANCE_2026_10_18.md)。未验证不等于存在缺陷，契约通过不等于所有设备已验收。
+当前复验见[BGCS 4.1.2 消费验收](../../records/architecture/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)；前序平台和缓存结果按其原记录范围保留。未执行不等于已确认缺陷，契约通过不等于所有设备已验收。
 
-## 已确认且仍开放
+最新全仓深审见[四仓库核心验收报告](../../records/architecture/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md)。正式架构门禁通过不表示资源清理、错误原子性和热路径成本都已闭合。
 
-| ID | 优先级 / 所属部分 | 事实与影响 |
+## 本轮已修复并验证
+
+F02/F08 已在 Core Coroutine owner 内统一修复：嵌套枚举器逆序释放，完成/停止/失败共用退休流程；重入停止失效 handle 后在回调返回安全点清理，不再改坏活动遍历。Debug/Release 各 40 项回归通过，Runtime 62 项通过。异常明确汇总，未增加第二套调度器或事件系统。
+
+F01 的引擎路径也已闭合：Browser 平台选择官方 LibraryImport，解释执行与 AOT 产品均运行 3,000 帧。BGCS 4.1.2 已补齐 Browser import admission 和 target provider fingerprint，两个 SDK issue 已关闭；本地公开 API 探针、正式生成及实际产品复验通过。Runtime 回归不证明 session admission 已接入，见 R02。
+
+本次消费升级另外修复 Task Restore 与 compilation 的求值隔离；不再把新 DLL 与旧 package content items 混入同一 publication。修复位于中立 MSBuild 边界，真实公共 Task 回归和七个正式生成 owner 已通过；没有修改 SDK 或添加包名特例。
+
+B02 / F09 已在 [Issue #23 锁文件验收](../../records/architecture/acceptance/ISSUE23_NUGET_LOCK_ACCEPTANCE.md)中修复：清单按实际 SDK RID、入口宿主上下文及隐式工具包划分；包身份用例读取自己还原得到的 assets / lock。19 个正式 locked restore、59 项回归、固定输入 10 次热构建及独立 Editor Debug / Release 已通过。同目录各五次规则对照未触发 10% 回退门槛；不因此关闭下表中的热构建成本问题。关闭范围以专项报告为准。
+
+完整证据与全部英文 issues 见[本轮专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。以下未关闭项目仍需按 issue 验收。
+
+## 仍开放的问题
+
+| ID | 范围 | 事实、影响与处理边界 |
 | --- | --- | --- |
-| O01 | P2 / BGFX、macOS验收 | 10-15 所查 revision 的两条 macOS CI 在单线程 Metal surface 退休用例超时，根因未确认。本轮未复验该设备链；后续隔离、Pack 与 renderer smoke 仍未闭合，不能直接归责 BGCS。 |
-| O02 | P2 / 构建性能 | 此前热 Editor Build 为465.297 / 575.609 / 777.781秒，哈希约5.23GB且同期高负载。当前 .NET 10 的完整 Editor 空闲基线未取得；本轮已补独立托管热构建与脚本冷/热/增量基线，不能用不同范围的测量关闭此项。 |
-| O06 | P3 / XML与Wiki | 部分注释仍为模板化参数说明，值类型也笼统描述ownership。符号/签名/示例覆盖不等于行为说明充分，应补有实际意义的约束和失败语义。 |
-| G01 | BGCS / 产品闭环 | Windows 七组件 HostSource 比对与目标生成后 CheckBindings 均通过，UI 过期输入清单经正式 SDK 重新生成后复验通过。Windows Editor 八组件原生支持已通过正式入口构建，七个部署 DLL 的 4,002 个必需导出全部存在；正式 Task 和生成/工具链统一 20 项回归通过。发布矩阵仍继续验收。 |
-| G02 | 调用方 / 最终回归 | 完整 SourceRelease、SourceDebug 源码构建通过；233 工程架构及 Wiki 门禁、191 个示例均通过。完整 Release 运行加三项入口 fixture 复验合并为 2,097 通过、18 跳过，原失败日志保留；后续 CLI 源码输入修正的两配置相关构建及回归通过。2026-10-21 Editor Debug 正式完整构建通过，运行验收另行记录，详见当前验收。 |
-| G03 | SDK 能力 / Browser | BGCS 3.0.1 在实际 Browser 生成中以 `BGCS-CSHARP-ABI-PLAN` 拒绝 BGFX 按值结构体调用，Browser aggregate calling profile 尚未实现。该失败阻塞 Browser Player 闭包及 Mono Wasm / Wasm AOT 产品验收；不关闭 ABI 校验或借用桌面 profile。详情及理想修复边界见[专项记录](../../records/architecture/acceptance/BGCS301_BROWSER_AGGREGATE_ABI.md)。 |
-| R01 | P2 / 插件事件一致性 | 一个外部插件的公开动画帧事件仍使用直接 C# delegate，尚未统一 Core 的 hub/token 生命周期。没有第二套完整事件总线；替换公开事件会改变本轮保持签名的边界。事实、理想方案与范围见[基础能力审计](../../records/architecture/acceptance/ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md)。 |
-| R02 | P2 / 插件跨帧 Identity | 一个外部 UI 插件的跨帧状态虽以 RuntimeIdentity 为 key，仍直接持有并使用 live owner；应在后续使用边界通过原 Identity scope 解析。存在 Collect 清理及 Dispose 保护，尚未复现泄漏或崩溃；详见同一审计。 |
-| R03 | P2 / Native 验收范围 | `verify-native` 在绑定发现阶段允许选择 Player，后续却固定 Editor 并使用宿主 testhost。应在生成前依据发行声明明确验证产品/runner 能力；不能声称它已覆盖 Browser 静态产品。当前分项证据与整条命令的范围不同，详见基础能力审计。 |
+| R02 | Runtime coroutine 接入 | 私有 scheduler 只有创建、Tick、stop 和 Dispose，当前没有 admission 路径；需落地最小真实契约或删除未使用状态，不能宣称已集成。 |
+| T01/T02 | Browser 验收覆盖 | 非致命 console 404 尚未归因；最高分跨启动写入没有在有界游戏运行中触发，已各自提交 issue。 |
+| B01 | Native 构建诊断 | Windows native 源码编码告警仍需按组件 owner 处理；锁 scope 的 B02 已单独修复并验收。 |
+| F03 | History 拒绝操作的原子性 | 非 LIFO Commit 在校验 ID 前弹栈，public handler 反例确认内层修改无法随后回滚/Undo。不能用正常顺序用例通过关闭此项。 |
+| F04/F05 | 插件 UI / 2D 热路径 | UI 插件在纹理 GPU 命中前按 draw 完整复制像素；2D 模型的非空 viewContent 使完整帧缓存持续绕过。见全仓报告的分配实测和调用链，尚未修复。 |
+| F06/F07 | 热构建与缓存维护成本 | 暖 Native 准备反复读取约 4.5 GB；当前 5 秒 inventory 超时，30 秒 dry-run 可完成。内容/owner 正确性协议已存在，但没有以此证明日常维护必然收敛或性能足够。 |
+| O01 | macOS / Metal | 历史 revision 的两条 CI 在单线程 Metal surface 退休用例超时，根因未确认。本轮没有 Mac，不能关闭或直接归责 BGCS。 |
+| O02 | 完整构建性能 | 本轮有当前热构建采样及同 .NET 10 的路径解析实现对照，但没有完整改造前的空闲、同输入五次 Editor 基线。历史高负载耗时不作有效对照，不宣称整体提速或已排除全部回退。 |
+| O06 | XML / Wiki 语义 | 符号、签名和示例门禁不证明全部历史注释足够具体；部分历史参数说明仍需补充实际约束和失败语义。新增构建 API 的所有权、失败与生命周期单独说明。 |
 
-## 待确认和未执行
+## 尚未执行或覆盖不足
 
-| ID | 范围 | 当前边界 |
-| --- | --- | --- |
-| U01 | BGCS正式包 | 当前精确固定 3.0.1，已从公共包还原，通过七组件 HostSource、正式 Task 及 Windows 八组件原生支持准备；Browser 的实际阻塞见 G03，其余产品闭环继续验收。 |
-| U02 | 多目标新包生成 | Windows 七组件 HostSource/TargetArtifacts、C/C++ bridge、extension、CheckOnly 及部署必需导出已复验；取消、并发、损坏及原子发布专项回归通过。其他目标仍单独验收；Browser 不含 Editor-only ImGui/ImGuizmo，其当前阻塞见 G03。 |
-| U03 | 最终产品revision | 当前源码的 Windows Support Pack 与示例项目 CoreCLR/NativeAOT 发布均已通过；两种部署在 D3D11、D3D12、Vulkan 上分别完成 3,000 帧并正常退出，Editor Debug 三 API 同样通过。Browser 解释执行/AOT 仍受 G03 阻塞，其他设备与长期运行不从本次短运行推断通过。 |
-| U04 | MacOSArm64 | runner的Native编译、源码、架构与共同测试已实测；O01后的隔离、Pack/Editor smoke、最终游戏产品与用户机器未闭合，不能笼统标全部未测或全部通过。 |
-| U05 | GUI/视觉/声学 | 已补当前示例的 CoreCLR 画面、鼠标/键盘、昼夜和最大化/还原，以及 Editor Play 往返与正常退出。Console 首次点击未切换、保持悬停后再次点击成功，原因尚未定位；不能据此宣称完整交互通过。viewport 拖动、完整 DPI/焦点、Reload 菜单、音频听感及长期运行仍未闭合。 |
-| U06 | 负载与长期性能 | fixture、短运行与headless不证明真实GPU帧率、尾延迟、复杂项目资源增长或多小时频繁reload无泄漏。 |
-| U07 | 特殊文件系统 | Core.IO严格ownership已修复；Windows大小写敏感目录的Native输入去重仍需确认，内部仍按OS选比较器。独立探针启用属性被拒绝，没有有效复现；macOS两种卷格式亦未完整对照。 |
-| U08 | SDK间歇异常 | 历史runner的两个内部MissingMethodException根因未确认；当前head未再出现，不写成已根治，也不据此认定业务代码错误。 |
+| 范围 | 验收边界 |
+| --- | --- |
+| macOS ARM64 / Unix | 本轮无实机；Metal、Editor Debug/Release、示例产品、CoreCLR、NativeAOT 和不同卷格式未执行。历史 CI 与 fixture 仅保留原范围。 |
+| Browser 产品 | 4.1.2 Native 与两种发布通过，解释执行和 AOT 各运行 3,000 帧。完整交互、游戏得分跨启动保存及 Browser 矩阵仍未闭合。 |
+| Rider 交互 | SDK 入口及 Task worker 回归不等于本轮操作过 Rider Run；没有单独的 Rider 生产分支。 |
+| GUI / 设备 | Play、昼夜切换、返回 Edit、窗口变化和退出按报告列出；完整 DPI/焦点、所有输入、音频听感及长期运行不计作通过。 |
+| 特殊文件系统 U07 | Native 输入比较策略仍需在 Windows 大小写敏感目录及 macOS 两种卷上实测。独立探针启用属性曾被拒绝，没有有效复现；物理路径 resolver 不代表全部卷语义已解决。 |
+| 历史 SDK 异常 U08 | 历史 runner 曾出现内部 `MissingMethodException`，当前未再出现，根因未确认；不写成已根治或已复现业务错误。 |
 
-## 磁盘与本次修正
+## 本轮已处理的边界
 
-- **200,000,000,000字节目标未达到**。2026-10-15 18:09（台北）只读采样约73.52GB可用；其他进程仍可能改变占用。37个历史目录按此前自动审批拒绝保留，不补owner或绕过删除。
-- 旧Wiki突出旧耗时和过期磁盘/macOS状态。本次重写本页和当前验收，明确revision与范围；原始测量保留在记录区。标注修正不等于源码性能问题已修复。
+- 2026-10-22 插件审计中的 R01/R02 已通过插件源码、Core 事件异常回归、弱 Identity 生命周期回归及正式安装态验证关闭；[该次复验](../../records/architecture/acceptance/PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md)明确范围。它们与本页 Runtime coroutine 接入的 R02 是不同报告内的编号，不代表 Runtime admission 已完成。
 
-## 已有依据支持的架构结论
+- 组件平台 JSON、共享平台表、共享 Windows junction、CLI Browser 专用分支和 import library 后缀推导，由各 owner 的明确贡献替代。
+- `verify-native` 在生成前校验已注册 Editor runner，Windows 正式验收与 Browser 静态产品能力分开；R03 的产品/runner 范围错误已修正。
+- BGCS 包、源码和实际加载身份分别核对；生成物只经官方生成流程更新。
+- 冻结源码消费者显式接收原绑定产物 owner，不再推测位置。辅助托管求值使用 SDK 独立 ArtifactsPath，复用 Core 协调保护覆盖还原、求值及哈希，避免覆盖普通还原图。
+- 活动读取者、等待者和进程 owner 受协调锁保护；只回收证明归属的 payload 和元数据，不按后缀或年龄猜权限。未知历史内容、活动 worker 和审批拒绝的独立测试目录保留并报告。
+- 根 Build/Publish 和 CLI 成功路径复用同一有界维护；失败与取消不发布有效缓存。普通 FileLease 释放不等于删除锁文件。
+- MSBuild Task 的编译 workspace 在初始求值、等待和执行期间持有 owner 保护，并被既有 load 进程依赖引用；同一进程操作重复登记保留完整依赖闭包。真实 SDK 构建期间三次维护保留全部已选 assets，后续 Task 复用及完整产品准备通过，关闭缓存 Restore 结果与工作区退休之间的竞态。
+- Support Pack 的 Native 准备直接写入外层独占候选，不再把嵌套事务的锁和工作 claim 纳入不可变内容。准备索引通过既有缓存登记关联产物，随旧包退休；相同 current 和索引内容保留时间戳。
 
-共同领域、Runtime与Hosting消费中立契约；backend、平台基础、integration和发行组合职责清楚。233个当前源码项目有Solution归属，日常生产入口为两个；未发现需要推翻整体架构的依据，也没有本次新确认的核心生产P0/P1架构缺陷。
+## 架构结论的适用范围
 
-此前五项整改已实现：严格路径、RenderGraph前缀验证、SDK宿主RID、单调退休序号、轻量缓存维护。O03为另一条录制路径，不表示前缀优化无效。项目数量、API数量、必要完整哈希、安全保留缓存和未实现平台本身不作为缺陷。
+检查深入真实执行、依赖、失败和资源生命周期，并以公共边界 fixture 及实际调用方验证。中立层不引用具体平台或 BGCS 类型；平台基础、integration、backend、产品和发行各有职责。所有权及 IO 复用 Core，没有增加事件、Identity 或序列化平行管理器。
 
-BGCS 3.0.1 正式包已可用，专项验收正在执行；失败与未执行项如实记录，不删除断言或改过滤条件制造通过。当前证据见[实施记录](../../records/architecture/acceptance/NET10_BGCS301_PROGRESS_2026_10_20.md)。历史 CI 证据保留于[PR Checks](https://github.com/Wolfiora/InnoEngine/pull/11/checks)。
-
-## 已实现、等待最终整体验收
-
-- O03：并行录制改为本次 Execute 独占的命令缓冲，按值保存 handle/sampler、复制借用数据，并在所有退出路径归还缓冲及清除引用。Debug/Release 各 61 项 Rendering 回归通过；当前三次公开 Noop 边界采样的 10,000 Draw 分配约为 3.14 KB/帧。真实 GPU、长运行及完整产品性能仍需独立验收。
-- O04：进程执行机制收口到 `Inno.Testing.Processes`，超时保留 stdout/stderr，终止子进程树并等待退出；独立公开边界回归 4 项通过。三个 Native Window 测试宿主通过项目引用复用唯一实现。
-- O05：统一测试入口汇总普通、发现与隔离执行结果，单个独立用例失败后继续其余用例；筛选同时作用于普通执行、隔离发现和隔离执行。协议探针已验证失败聚合，当前完整运行加失败项复验合并为 2,097 通过、18 跳过，原失败证据保留。macOS 产品覆盖缺口仍然存在。
-- 分类并发：首轮托管测试发现两个独立 Host 并发发布同一个静态程序集时，分类弱表的 Remove/Add 空窗可能抛出重复 key。公共 ModuleHost 回归已在修复前复现相同异常；原子 AddOrUpdate 后 Runtime 62 项与模块/退休 32 项通过，未改变卸载 barrier 或扩大类型可见性。
-
-## 开发入口变更的验证边界（2026-10-17）
-
-普通工程启动简化已经完成代码整改及既有支持条件下的编译。完整首次 Native/BGCS 准备和普通 Native 热命中未验证；Rider 实机由用户执行。该限制不等于本轮引入了已复现的运行缺陷，详细证据见[入口报告](../../records/architecture/acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md)。上述历史测量和其他未决项仍按其原始范围保留。
-
-## 本轮已关闭的构建问题（2026-10-18）
-
-发现并修复了嵌套 Project Solution 的还原图被引擎接管、生成 IDE 工程继承无关 MSBuild 配置的问题。根 Solution 规则已限制到明确 owner，生成工程独立声明 SDK 编译输入；新增两个公开边界回归通过。外部插件示例的正式导入、脚本预检及 SDK IDE 构建均已复验通过。
-
-本轮明确选择用户目录 SDK 10.0.402。Windows Player 的实际编译引用已准备，233 工程架构及 Wiki 整体门禁通过；191 个当前 Wiki 示例编译通过，包含新增测试支持项目页。独立输出下的测试源码输入已改为明确 SDK 声明，完整运行复验继续登记，不能由局部通过推断整套完成。
-
-## 本轮已关闭的 Vulkan 退出问题（2026-10-20）
-
-关闭队列排空不再 touch 已重置的 view，保留原有 Flush、帧数、退休等待和进程 owner 协议。修正前真实窗口回归导致 testhost 崩溃；修正后同一回归在 Vulkan、D3D11、D3D12 上分别通过。五次 Vulkan 及两次 D3D 产品 smoke 全部完成 60 帧并正常退出；详见[专项记录](../../records/architecture/acceptance/WINDOWS_VULKAN_EXIT_FAILURE_2026_10_20.md)。该结果不代替长期设备、视觉和声学验收。
+此前插件事件 / Identity 的具体缺口已在后续插件复验中关闭；本页仍开放问题继续按各 issue 验收。构建和插件验收不等于整个引擎完美。持续自查要求见根 `AGENTS.md` 第 30 节。

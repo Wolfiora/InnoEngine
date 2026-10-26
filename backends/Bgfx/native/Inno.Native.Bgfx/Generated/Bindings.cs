@@ -334,168 +334,168 @@ namespace Inno.Native.Bgfx
     {
         public const string NativeLibraryName = "bgfx-shared-lib";
         private readonly global::BGCS.Runtime.NativeModuleSession m_session;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void> m_function0;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> m_function0;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort, void> m_function1;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, ushort, ushort, ushort, ushort> m_function2;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void> m_function3;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, void> m_function4;
-        private readonly delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle> m_function5;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function3;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> m_function4;
+        private readonly delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, void> m_function5;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InternalData*> m_function6;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.RendererType> m_function7;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, byte, void> m_function8;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, ushort, ushort, ushort, void> m_function9;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, void> m_function10;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle> m_function11;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, byte, void> m_function8;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, ushort, ushort, ushort, void> m_function9;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, void> m_function10;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, void> m_function11;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Init*, byte> m_function12;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, byte, sbyte*, sbyte*, void> m_function13;
-        private readonly delegate* unmanaged[Cdecl]<ushort, ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle> m_function14;
-        private readonly delegate* unmanaged[Cdecl]<ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle> m_function15;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.ShaderHandle> m_function16;
-        private readonly delegate* unmanaged[Cdecl]<ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle> m_function17;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void> m_function18;
+        private readonly delegate* unmanaged[Cdecl]<ushort, ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> m_function14;
+        private readonly delegate* unmanaged[Cdecl]<ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> m_function15;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.ShaderHandle*, void> m_function16;
+        private readonly delegate* unmanaged[Cdecl]<ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> m_function17;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> m_function18;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, uint, float, byte, void> m_function19;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort*, void> m_function20;
         private readonly delegate* unmanaged[Cdecl]<void> m_function21;
-        private readonly delegate* unmanaged[Cdecl]<void*, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle> m_function22;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void> m_function23;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, byte, void> m_function24;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, void> m_function25;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, sbyte*, int, void> m_function26;
+        private readonly delegate* unmanaged[Cdecl]<void*, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> m_function22;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> m_function23;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, byte, void> m_function24;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, void> m_function25;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, sbyte*, int, void> m_function26;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort, void> m_function27;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function28;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function28;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Init*, void> m_function29;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, void*, ushort, uint> m_function30;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void> m_function31;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void> m_function32;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> m_function31;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> m_function32;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.RendererType, sbyte*> m_function33;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, ulong> m_function34;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function35;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, ulong> m_function34;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function35;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, ushort, void> m_function36;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.BackbufferRatio, void> m_function37;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort> m_function38;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function39;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function39;
         private readonly delegate* unmanaged[Cdecl]<uint, ushort, void> m_function40;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, ushort> m_function41;
         private readonly delegate* unmanaged[Cdecl]<byte, uint, void> m_function42;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte> m_function43;
         private readonly delegate* unmanaged[Cdecl]<int, global::Inno.Native.Bgfx.bgfx.RenderFrame> m_function44;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, global::Inno.Native.Bgfx.bgfx.ShaderHandle, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle> m_function45;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, uint, uint, void> m_function46;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, void*, byte, uint> m_function47;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void> m_function48;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, byte, void> m_function49;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ulong, byte, global::Inno.Native.Bgfx.bgfx.TextureInfo*, global::Inno.Native.Bgfx.bgfx.TextureHandle> m_function50;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, global::Inno.Native.Bgfx.bgfx.ShaderHandle*, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, void> m_function45;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, uint, uint, void> m_function46;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, void*, byte, uint> m_function47;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> m_function48;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, byte, void> m_function49;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ulong, byte, global::Inno.Native.Bgfx.bgfx.TextureInfo*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> m_function50;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, float, byte, byte, byte, byte, byte, byte, byte, byte, byte, void> m_function51;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ulong, ushort, ulong> m_function52;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ulong, ushort, ulong> m_function52;
         private readonly delegate* unmanaged[Cdecl]<float*, global::Inno.Native.Bgfx.bgfx.Attrib, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void> m_function53;
         private readonly delegate* unmanaged[Cdecl]<ushort, void*, void*, void> m_function54;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, void> m_function55;
         private readonly delegate* unmanaged[Cdecl]<float*, byte, global::Inno.Native.Bgfx.bgfx.Attrib, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void> m_function56;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void> m_function57;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> m_function57;
         private readonly delegate* unmanaged[Cdecl]<uint, uint, void> m_function58;
         private readonly delegate* unmanaged[Cdecl]<uint, byte, uint> m_function59;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Attachment*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle> m_function60;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Attachment*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> m_function60;
         private readonly delegate* unmanaged[Cdecl]<byte, void> m_function61;
         private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, void*, ushort, void> m_function62;
         private readonly delegate* unmanaged[Cdecl]<byte, float, float, float, float, void> m_function63;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void> m_function64;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, void> m_function65;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, int*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryResult> m_function66;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void> m_function67;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function64;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, void> m_function65;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, int*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryResult> m_function66;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function67;
         private readonly delegate* unmanaged[Cdecl]<ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, byte> m_function68;
         private readonly delegate* unmanaged[Cdecl]<byte, float*, void> m_function69;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void> m_function70;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, sbyte*, int, void> m_function71;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> m_function70;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, sbyte*, int, void> m_function71;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, void> m_function72;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, byte, void> m_function73;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function74;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, byte, void> m_function73;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function74;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, byte, global::Inno.Native.Bgfx.bgfx.VertexLayout*> m_function75;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void> m_function76;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.UniformHandle, global::Inno.Native.Bgfx.bgfx.TextureHandle, uint, void> m_function77;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void> m_function78;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, global::Inno.Native.Bgfx.bgfx.UniformHandle*, ushort, ushort> m_function79;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, void> m_function80;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle> m_function81;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle> m_function82;
-        private readonly delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformFreq, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle> m_function83;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void> m_function76;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.UniformHandle*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, uint, void> m_function77;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> m_function78;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, global::Inno.Native.Bgfx.bgfx.UniformHandle*, ushort, ushort> m_function79;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, void> m_function80;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, void> m_function81;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, void> m_function82;
+        private readonly delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformFreq, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void> m_function83;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte, global::Inno.Native.Bgfx.bgfx.AttribType, byte, byte, global::Inno.Native.Bgfx.bgfx.VertexLayout*> m_function84;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, void> m_function85;
         private readonly delegate* unmanaged[Cdecl]<ushort, void> m_function86;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Attachment*, global::Inno.Native.Bgfx.bgfx.TextureHandle, global::Inno.Native.Bgfx.bgfx.Access, ushort, ushort, ushort, byte, void> m_function87;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Attachment*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, global::Inno.Native.Bgfx.bgfx.Access, ushort, ushort, ushort, byte, void> m_function87;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, byte, void> m_function88;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.PlatformData*, void> m_function89;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle> m_function90;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> m_function90;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.Transform*, ushort, uint> m_function91;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, void> m_function92;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, uint, byte, void> m_function93;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, uint, byte, void> m_function93;
         private readonly delegate* unmanaged[Cdecl]<byte, uint> m_function94;
         private readonly delegate* unmanaged[Cdecl]<void*, uint, global::Inno.Native.Bgfx.bgfx.Memory*> m_function95;
         private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ViewMode, void> m_function96;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function97;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle> m_function98;
-        private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle> m_function99;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function97;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> m_function98;
+        private readonly delegate* unmanaged[Cdecl]<ushort, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> m_function99;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, void> m_function100;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, uint, void> m_function101;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void> m_function102;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function102;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, uint, void> m_function103;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, void> m_function104;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, ushort, ushort, ushort, void> m_function105;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ushort, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void> m_function106;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, void> m_function104;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, ushort, ushort, ushort, void> m_function105;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ushort, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void> m_function106;
         private readonly delegate* unmanaged[Cdecl]<uint, uint, uint, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> m_function107;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> m_function108;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void> m_function109;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, uint, byte, void> m_function110;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, uint, uint, void> m_function111;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> m_function108;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function109;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, uint, byte, void> m_function110;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, uint, uint, void> m_function111;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void> m_function112;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, uint, byte, void> m_function113;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, uint, byte, void> m_function113;
         private readonly delegate* unmanaged[Cdecl]<void*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, byte, float, uint> m_function114;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, uint, byte, void> m_function115;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, uint, byte, void> m_function115;
         private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.RendererType*, byte> m_function116;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.UniformHandle, global::Inno.Native.Bgfx.bgfx.TextureHandle, uint, void> m_function117;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, uint, uint, byte, void> m_function118;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, uint, byte, void> m_function119;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.UniformHandle*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, uint, void> m_function117;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, uint, uint, byte, void> m_function118;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, uint, byte, void> m_function119;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, void> m_function120;
         private readonly delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.InterfaceVtbl*> m_function121;
         private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ShadingRate, void> m_function122;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function123;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function123;
         private readonly delegate* unmanaged[Cdecl]<uint, ushort, uint> m_function124;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void> m_function125;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, uint, uint, byte, void> m_function126;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> m_function125;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, uint, uint, byte, void> m_function126;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureInfo*, ushort, ushort, ushort, byte, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> m_function127;
         private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, void> m_function128;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ulong, uint, void> m_function129;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle> m_function130;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle> m_function131;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, void> m_function130;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> m_function131;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Transform*, ushort, uint> m_function132;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, sbyte*, int, void> m_function133;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, void> m_function134;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, sbyte*, int, void> m_function133;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> m_function134;
         private readonly delegate* unmanaged[Cdecl]<void*, uint, delegate* unmanaged[Cdecl]<void*, void*, void> , void*, global::Inno.Native.Bgfx.bgfx.Memory*> m_function135;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function136;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, void> m_function137;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function136;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, void> m_function137;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, uint, void> m_function138;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, void> m_function139;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, void> m_function139;
         private readonly delegate* unmanaged[Cdecl]<uint, void> m_function140;
         private readonly delegate* unmanaged[Cdecl]<ushort, void> m_function141;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TopologyConvert, void*, uint, void*, uint, byte, uint> m_function142;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte*, global::Inno.Native.Bgfx.bgfx.AttribType*, byte*, byte*, void> m_function143;
         private readonly delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.Memory*> m_function144;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, sbyte*, int, void> m_function145;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle> m_function146;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> m_function146;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint, global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, byte, byte> m_function147;
         private readonly delegate* unmanaged[Cdecl]<ulong, uint, void> m_function148;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, byte, void> m_function149;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, byte, void> m_function149;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Caps*> m_function150;
         private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Encoder*> m_function151;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, uint, void> m_function152;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, void*> m_function153;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle> m_function154;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, void> m_function155;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, void*> m_function153;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function154;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, void> m_function155;
         private readonly delegate* unmanaged[Cdecl]<void*, ushort, uint> m_function156;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> m_function157;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> m_function157;
         private readonly delegate* unmanaged[Cdecl]<ushort, sbyte*, int, void> m_function158;
-        private readonly delegate* unmanaged[Cdecl]<uint, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle> m_function159;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle> m_function160;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function161;
+        private readonly delegate* unmanaged[Cdecl]<uint, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, void> m_function159;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, void> m_function160;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function161;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Stats*> m_function162;
         private readonly delegate* unmanaged[Cdecl]<ushort, void> m_function163;
         private readonly delegate* unmanaged[Cdecl]<byte, byte, void> m_function164;
@@ -503,38 +503,38 @@ namespace Inno.Native.Bgfx
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort> m_function166;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, void> m_function167;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint, uint> m_function168;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, sbyte*, int, void> m_function169;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ProgramHandle, void> m_function170;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void> m_function171;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void> m_function172;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, sbyte*, int, void> m_function169;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ProgramHandle*, void> m_function170;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> m_function171;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void> m_function172;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void> m_function173;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, void> m_function174;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, global::Inno.Native.Bgfx.bgfx.UniformInfo*, void> m_function175;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, void> m_function174;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, global::Inno.Native.Bgfx.bgfx.UniformInfo*, void> m_function175;
         private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Attachment*, byte> m_function176;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void> m_function177;
-        private readonly delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle> m_function178;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, sbyte*, void> m_function179;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> m_function177;
+        private readonly delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void> m_function178;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, sbyte*, void> m_function179;
         private readonly delegate* unmanaged[Cdecl]<sbyte*, int, void> m_function180;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TopologySort, void*, uint, float*, float*, void*, uint, void*, uint, byte, void> m_function181;
         private readonly delegate* unmanaged[Cdecl]<uint, void> m_function182;
-        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, void> m_function183;
+        private readonly delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> m_function183;
         private readonly delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint> m_function184;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function185;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, uint, byte, void> m_function186;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function185;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, uint, byte, void> m_function186;
         private readonly delegate* unmanaged[Cdecl]<void*, uint, global::Inno.Native.Bgfx.bgfx.Memory*> m_function187;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, void> m_function188;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, byte, void> m_function189;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle> m_function190;
-        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void> m_function191;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void> m_function192;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, void> m_function193;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, void> m_function194;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, byte, void> m_function189;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, void> m_function190;
+        private readonly delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function191;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> m_function192;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, void> m_function193;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, void> m_function194;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.RendererType, global::Inno.Native.Bgfx.bgfx.VertexLayout*> m_function195;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ushort, byte, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void> m_function196;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ushort, byte, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void> m_function196;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, ushort, void> m_function197;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void> m_function198;
-        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, sbyte*, int, void> m_function199;
-        private readonly delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle> m_function200;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> m_function198;
+        private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, sbyte*, int, void> m_function199;
+        private readonly delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, void> m_function200;
         private readonly delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, uint, void> m_function201;
         public RawApi Raw { get; }
 
@@ -1525,209 +1525,209 @@ namespace Inno.Native.Bgfx
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<global::Inno.Native.Bgfx.bgfx.__BgcsAlignment_5efbb6b74b437d56>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                var symbols = m_session.ResolveRequiredSymbols(new string[] { "bgfx_set_view_uniform", "bgfx_set_view_scissor", "bgfx_encoder_set_scissor", "bgfx_encoder_set_vertex_buffer_with_layout", "bgfx_destroy_texture", "bgfx_create_indirect_buffer", "bgfx_get_internal_data", "bgfx_get_renderer_type", "bgfx_encoder_submit", "bgfx_encoder_blit", "bgfx_update_texture_3d", "bgfx_create_index_buffer", "bgfx_init", "bgfx_dbg_text_vprintf", "bgfx_create_texture_2d", "bgfx_create_texture_cube", "bgfx_create_shader", "bgfx_create_frame_buffer", "bgfx_set_vertex_buffer", "bgfx_set_view_clear", "bgfx_set_view_order", "bgfx_shutdown", "bgfx_create_frame_buffer_from_nwh", "bgfx_encoder_set_vertex_buffer", "bgfx_encoder_dispatch_indirect", "bgfx_destroy_dynamic_index_buffer", "bgfx_set_index_buffer_name", "bgfx_set_view_rect", "bgfx_encoder_set_compute_vertex_buffer", "bgfx_init_ctor", "bgfx_encoder_set_transform", "bgfx_set_instance_data_from_dynamic_vertex_buffer", "bgfx_encoder_set_dynamic_vertex_buffer", "bgfx_get_renderer_name", "bgfx_override_internal_texture", "bgfx_set_compute_indirect_buffer", "bgfx_encoder_set_transform_cached", "bgfx_set_view_rect_ratio", "bgfx_set_scissor", "bgfx_set_compute_dynamic_vertex_buffer", "bgfx_set_transform_cached", "bgfx_vertex_layout_get_offset", "bgfx_set_palette_color_rgba8", "bgfx_vertex_layout_has", "bgfx_render_frame", "bgfx_create_program", "bgfx_set_dynamic_index_buffer", "bgfx_read_texture", "bgfx_set_frame_uniform", "bgfx_submit", "bgfx_create_texture", "bgfx_set_view_clear_mrt", "bgfx_override_internal_texture_ptr", "bgfx_vertex_unpack", "bgfx_set_view_transform", "bgfx_encoder_touch", "bgfx_vertex_pack", "bgfx_encoder_set_instance_data_from_vertex_buffer", "bgfx_set_stencil", "bgfx_get_avail_transient_index_buffer", "bgfx_create_frame_buffer_from_attachment", "bgfx_discard", "bgfx_dbg_text_image", "bgfx_set_palette_color_rgba32f", "bgfx_set_dynamic_vertex_buffer_with_layout", "bgfx_destroy_vertex_buffer", "bgfx_get_result", "bgfx_destroy_vertex_layout", "bgfx_is_texture_valid", "bgfx_set_palette_color", "bgfx_set_uniform", "bgfx_set_shader_name", "bgfx_encoder_set_scissor_cached", "bgfx_dispatch_indirect", "bgfx_set_compute_dynamic_index_buffer", "bgfx_vertex_layout_skip", "bgfx_update_dynamic_index_buffer", "bgfx_encoder_set_texture", "bgfx_encoder_set_uniform", "bgfx_get_shader_uniforms", "bgfx_encoder_set_index_buffer", "bgfx_create_occlusion_query", "bgfx_create_compute_program", "bgfx_create_uniform_with_freq", "bgfx_vertex_layout_add", "bgfx_encoder_set_instance_count", "bgfx_touch", "bgfx_attachment_init", "bgfx_alloc_transient_index_buffer", "bgfx_set_platform_data", "bgfx_create_frame_buffer_scaled", "bgfx_encoder_alloc_transform", "bgfx_vertex_layout_end", "bgfx_submit_indirect", "bgfx_frame", "bgfx_make_ref", "bgfx_set_view_mode", "bgfx_encoder_set_compute_indirect_buffer", "bgfx_get_texture", "bgfx_create_texture_3d", "bgfx_encoder_discard", "bgfx_encoder_set_transient_index_buffer", "bgfx_encoder_set_dynamic_vertex_buffer_with_layout", "bgfx_encoder_set_stencil", "bgfx_destroy_shader", "bgfx_blit", "bgfx_update_texture_2d", "bgfx_reset", "bgfx_set_image", "bgfx_set_vertex_buffer_with_layout", "bgfx_submit_indirect_count", "bgfx_encoder_set_dynamic_index_buffer", "bgfx_alloc_transient_vertex_buffer", "bgfx_encoder_submit_indirect_count", "bgfx_weld_vertices", "bgfx_encoder_submit_indirect", "bgfx_get_supported_renderers", "bgfx_set_texture", "bgfx_encoder_dispatch", "bgfx_submit_occlusion_query", "bgfx_encoder_end", "bgfx_get_interface", "bgfx_set_view_shading_rate", "bgfx_encoder_set_compute_dynamic_index_buffer", "bgfx_get_avail_instance_data_buffer", "bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer", "bgfx_dispatch", "bgfx_calc_texture_size", "bgfx_set_transient_vertex_buffer", "bgfx_encoder_set_state", "bgfx_create_dynamic_index_buffer_mem", "bgfx_create_texture_2d_scaled", "bgfx_alloc_transform", "bgfx_set_frame_buffer_name", "bgfx_destroy_frame_buffer", "bgfx_make_ref_release", "bgfx_set_compute_index_buffer", "bgfx_destroy_uniform", "bgfx_set_instance_data_buffer", "bgfx_destroy_dynamic_vertex_buffer", "bgfx_set_debug", "bgfx_set_scissor_cached", "bgfx_topology_convert", "bgfx_vertex_layout_decode", "bgfx_alloc", "bgfx_encoder_set_marker", "bgfx_create_frame_buffer_from_handles", "bgfx_alloc_transient_buffers", "bgfx_set_state", "bgfx_encoder_set_condition", "bgfx_get_caps", "bgfx_encoder_begin", "bgfx_encoder_set_instance_data_buffer", "bgfx_get_direct_access_ptr", "bgfx_create_vertex_layout", "bgfx_destroy_occlusion_query", "bgfx_set_transform", "bgfx_encoder_set_image", "bgfx_set_view_name", "bgfx_create_dynamic_index_buffer", "bgfx_create_dynamic_vertex_buffer_mem", "bgfx_encoder_set_compute_index_buffer", "bgfx_get_stats", "bgfx_reset_view", "bgfx_dbg_text_clear", "bgfx_set_vertex_count", "bgfx_vertex_layout_get_stride", "bgfx_encoder_set_vertex_count", "bgfx_vertex_layout_get_size", "bgfx_set_texture_name", "bgfx_destroy_program", "bgfx_set_instance_data_from_vertex_buffer", "bgfx_update_dynamic_vertex_buffer", "bgfx_vertex_convert", "bgfx_set_index_buffer", "bgfx_get_uniform_info", "bgfx_is_frame_buffer_valid", "bgfx_set_dynamic_vertex_buffer", "bgfx_create_uniform", "bgfx_request_screen_shot", "bgfx_set_marker", "bgfx_topology_sort_tri_list", "bgfx_set_instance_count", "bgfx_set_view_frame_buffer", "bgfx_get_avail_transient_vertex_buffer", "bgfx_set_compute_vertex_buffer", "bgfx_encoder_submit_occlusion_query", "bgfx_copy", "bgfx_encoder_set_transient_vertex_buffer", "bgfx_set_condition", "bgfx_create_vertex_buffer", "bgfx_set_transient_vertex_buffer_with_layout", "bgfx_encoder_set_compute_dynamic_vertex_buffer", "bgfx_destroy_indirect_buffer", "bgfx_destroy_index_buffer", "bgfx_vertex_layout_begin", "bgfx_update_texture_cube", "bgfx_alloc_instance_data_buffer", "bgfx_encoder_set_transient_vertex_buffer_with_layout", "bgfx_set_vertex_buffer_name", "bgfx_create_dynamic_vertex_buffer", "bgfx_set_transient_index_buffer" });
-                m_function0 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void>)symbols["bgfx_set_view_uniform"];
-                m_function1 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort, void>)symbols["bgfx_set_view_scissor"];
-                m_function2 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, ushort, ushort, ushort, ushort>)symbols["bgfx_encoder_set_scissor"];
-                m_function3 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void>)symbols["bgfx_encoder_set_vertex_buffer_with_layout"];
-                m_function4 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, void>)symbols["bgfx_destroy_texture"];
-                m_function5 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle>)symbols["bgfx_create_indirect_buffer"];
-                m_function6 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InternalData*>)symbols["bgfx_get_internal_data"];
-                m_function7 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.RendererType>)symbols["bgfx_get_renderer_type"];
-                m_function8 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, byte, void>)symbols["bgfx_encoder_submit"];
-                m_function9 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, ushort, ushort, ushort, void>)symbols["bgfx_encoder_blit"];
-                m_function10 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, void>)symbols["bgfx_update_texture_3d"];
-                m_function11 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle>)symbols["bgfx_create_index_buffer"];
-                m_function12 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Init*, byte>)symbols["bgfx_init"];
-                m_function13 = (delegate* unmanaged[Cdecl]<ushort, ushort, byte, sbyte*, sbyte*, void>)symbols["bgfx_dbg_text_vprintf"];
-                m_function14 = (delegate* unmanaged[Cdecl]<ushort, ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle>)symbols["bgfx_create_texture_2d"];
-                m_function15 = (delegate* unmanaged[Cdecl]<ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle>)symbols["bgfx_create_texture_cube"];
-                m_function16 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.ShaderHandle>)symbols["bgfx_create_shader"];
-                m_function17 = (delegate* unmanaged[Cdecl]<ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle>)symbols["bgfx_create_frame_buffer"];
-                m_function18 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void>)symbols["bgfx_set_vertex_buffer"];
-                m_function19 = (delegate* unmanaged[Cdecl]<ushort, ushort, uint, float, byte, void>)symbols["bgfx_set_view_clear"];
-                m_function20 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort*, void>)symbols["bgfx_set_view_order"];
-                m_function21 = (delegate* unmanaged[Cdecl]<void>)symbols["bgfx_shutdown"];
-                m_function22 = (delegate* unmanaged[Cdecl]<void*, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle>)symbols["bgfx_create_frame_buffer_from_nwh"];
-                m_function23 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void>)symbols["bgfx_encoder_set_vertex_buffer"];
-                m_function24 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, byte, void>)symbols["bgfx_encoder_dispatch_indirect"];
-                m_function25 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, void>)symbols["bgfx_destroy_dynamic_index_buffer"];
-                m_function26 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, sbyte*, int, void>)symbols["bgfx_set_index_buffer_name"];
-                m_function27 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort, void>)symbols["bgfx_set_view_rect"];
-                m_function28 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_encoder_set_compute_vertex_buffer"];
-                m_function29 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Init*, void>)symbols["bgfx_init_ctor"];
-                m_function30 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, void*, ushort, uint>)symbols["bgfx_encoder_set_transform"];
-                m_function31 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void>)symbols["bgfx_set_instance_data_from_dynamic_vertex_buffer"];
-                m_function32 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void>)symbols["bgfx_encoder_set_dynamic_vertex_buffer"];
-                m_function33 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.RendererType, sbyte*>)symbols["bgfx_get_renderer_name"];
-                m_function34 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, ulong>)symbols["bgfx_override_internal_texture"];
-                m_function35 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_set_compute_indirect_buffer"];
-                m_function36 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, ushort, void>)symbols["bgfx_encoder_set_transform_cached"];
-                m_function37 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.BackbufferRatio, void>)symbols["bgfx_set_view_rect_ratio"];
-                m_function38 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort>)symbols["bgfx_set_scissor"];
-                m_function39 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_set_compute_dynamic_vertex_buffer"];
-                m_function40 = (delegate* unmanaged[Cdecl]<uint, ushort, void>)symbols["bgfx_set_transform_cached"];
-                m_function41 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, ushort>)symbols["bgfx_vertex_layout_get_offset"];
-                m_function42 = (delegate* unmanaged[Cdecl]<byte, uint, void>)symbols["bgfx_set_palette_color_rgba8"];
-                m_function43 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte>)symbols["bgfx_vertex_layout_has"];
-                m_function44 = (delegate* unmanaged[Cdecl]<int, global::Inno.Native.Bgfx.bgfx.RenderFrame>)symbols["bgfx_render_frame"];
-                m_function45 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, global::Inno.Native.Bgfx.bgfx.ShaderHandle, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle>)symbols["bgfx_create_program"];
-                m_function46 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, uint, uint, void>)symbols["bgfx_set_dynamic_index_buffer"];
-                m_function47 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, void*, byte, uint>)symbols["bgfx_read_texture"];
-                m_function48 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void>)symbols["bgfx_set_frame_uniform"];
-                m_function49 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, byte, void>)symbols["bgfx_submit"];
-                m_function50 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ulong, byte, global::Inno.Native.Bgfx.bgfx.TextureInfo*, global::Inno.Native.Bgfx.bgfx.TextureHandle>)symbols["bgfx_create_texture"];
-                m_function51 = (delegate* unmanaged[Cdecl]<ushort, ushort, float, byte, byte, byte, byte, byte, byte, byte, byte, byte, void>)symbols["bgfx_set_view_clear_mrt"];
-                m_function52 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ulong, ushort, ulong>)symbols["bgfx_override_internal_texture_ptr"];
-                m_function53 = (delegate* unmanaged[Cdecl]<float*, global::Inno.Native.Bgfx.bgfx.Attrib, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void>)symbols["bgfx_vertex_unpack"];
-                m_function54 = (delegate* unmanaged[Cdecl]<ushort, void*, void*, void>)symbols["bgfx_set_view_transform"];
-                m_function55 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, void>)symbols["bgfx_encoder_touch"];
-                m_function56 = (delegate* unmanaged[Cdecl]<float*, byte, global::Inno.Native.Bgfx.bgfx.Attrib, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void>)symbols["bgfx_vertex_pack"];
-                m_function57 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void>)symbols["bgfx_encoder_set_instance_data_from_vertex_buffer"];
-                m_function58 = (delegate* unmanaged[Cdecl]<uint, uint, void>)symbols["bgfx_set_stencil"];
-                m_function59 = (delegate* unmanaged[Cdecl]<uint, byte, uint>)symbols["bgfx_get_avail_transient_index_buffer"];
-                m_function60 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Attachment*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle>)symbols["bgfx_create_frame_buffer_from_attachment"];
-                m_function61 = (delegate* unmanaged[Cdecl]<byte, void>)symbols["bgfx_discard"];
-                m_function62 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, void*, ushort, void>)symbols["bgfx_dbg_text_image"];
-                m_function63 = (delegate* unmanaged[Cdecl]<byte, float, float, float, float, void>)symbols["bgfx_set_palette_color_rgba32f"];
-                m_function64 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void>)symbols["bgfx_set_dynamic_vertex_buffer_with_layout"];
-                m_function65 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, void>)symbols["bgfx_destroy_vertex_buffer"];
-                m_function66 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, int*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryResult>)symbols["bgfx_get_result"];
-                m_function67 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void>)symbols["bgfx_destroy_vertex_layout"];
-                m_function68 = (delegate* unmanaged[Cdecl]<ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, byte>)symbols["bgfx_is_texture_valid"];
-                m_function69 = (delegate* unmanaged[Cdecl]<byte, float*, void>)symbols["bgfx_set_palette_color"];
-                m_function70 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void>)symbols["bgfx_set_uniform"];
-                m_function71 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, sbyte*, int, void>)symbols["bgfx_set_shader_name"];
-                m_function72 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, void>)symbols["bgfx_encoder_set_scissor_cached"];
-                m_function73 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, byte, void>)symbols["bgfx_dispatch_indirect"];
-                m_function74 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_set_compute_dynamic_index_buffer"];
-                m_function75 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, byte, global::Inno.Native.Bgfx.bgfx.VertexLayout*>)symbols["bgfx_vertex_layout_skip"];
-                m_function76 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void>)symbols["bgfx_update_dynamic_index_buffer"];
-                m_function77 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.UniformHandle, global::Inno.Native.Bgfx.bgfx.TextureHandle, uint, void>)symbols["bgfx_encoder_set_texture"];
-                m_function78 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.UniformHandle, void*, ushort, void>)symbols["bgfx_encoder_set_uniform"];
-                m_function79 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, global::Inno.Native.Bgfx.bgfx.UniformHandle*, ushort, ushort>)symbols["bgfx_get_shader_uniforms"];
-                m_function80 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, void>)symbols["bgfx_encoder_set_index_buffer"];
-                m_function81 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle>)symbols["bgfx_create_occlusion_query"];
-                m_function82 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle>)symbols["bgfx_create_compute_program"];
-                m_function83 = (delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformFreq, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle>)symbols["bgfx_create_uniform_with_freq"];
-                m_function84 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte, global::Inno.Native.Bgfx.bgfx.AttribType, byte, byte, global::Inno.Native.Bgfx.bgfx.VertexLayout*>)symbols["bgfx_vertex_layout_add"];
-                m_function85 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, void>)symbols["bgfx_encoder_set_instance_count"];
-                m_function86 = (delegate* unmanaged[Cdecl]<ushort, void>)symbols["bgfx_touch"];
-                m_function87 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Attachment*, global::Inno.Native.Bgfx.bgfx.TextureHandle, global::Inno.Native.Bgfx.bgfx.Access, ushort, ushort, ushort, byte, void>)symbols["bgfx_attachment_init"];
-                m_function88 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, byte, void>)symbols["bgfx_alloc_transient_index_buffer"];
-                m_function89 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.PlatformData*, void>)symbols["bgfx_set_platform_data"];
-                m_function90 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle>)symbols["bgfx_create_frame_buffer_scaled"];
-                m_function91 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.Transform*, ushort, uint>)symbols["bgfx_encoder_alloc_transform"];
-                m_function92 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, void>)symbols["bgfx_vertex_layout_end"];
-                m_function93 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, uint, byte, void>)symbols["bgfx_submit_indirect"];
-                m_function94 = (delegate* unmanaged[Cdecl]<byte, uint>)symbols["bgfx_frame"];
-                m_function95 = (delegate* unmanaged[Cdecl]<void*, uint, global::Inno.Native.Bgfx.bgfx.Memory*>)symbols["bgfx_make_ref"];
-                m_function96 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ViewMode, void>)symbols["bgfx_set_view_mode"];
-                m_function97 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_encoder_set_compute_indirect_buffer"];
-                m_function98 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle>)symbols["bgfx_get_texture"];
-                m_function99 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle>)symbols["bgfx_create_texture_3d"];
-                m_function100 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, void>)symbols["bgfx_encoder_discard"];
-                m_function101 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, uint, void>)symbols["bgfx_encoder_set_transient_index_buffer"];
-                m_function102 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void>)symbols["bgfx_encoder_set_dynamic_vertex_buffer_with_layout"];
-                m_function103 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, uint, void>)symbols["bgfx_encoder_set_stencil"];
-                m_function104 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle, void>)symbols["bgfx_destroy_shader"];
-                m_function105 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, ushort, ushort, ushort, ushort, ushort, ushort, void>)symbols["bgfx_blit"];
-                m_function106 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ushort, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void>)symbols["bgfx_update_texture_2d"];
-                m_function107 = (delegate* unmanaged[Cdecl]<uint, uint, uint, global::Inno.Native.Bgfx.bgfx.TextureFormat, void>)symbols["bgfx_reset"];
-                m_function108 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void>)symbols["bgfx_set_image"];
-                m_function109 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void>)symbols["bgfx_set_vertex_buffer_with_layout"];
-                m_function110 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, uint, byte, void>)symbols["bgfx_submit_indirect_count"];
-                m_function111 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, uint, uint, void>)symbols["bgfx_encoder_set_dynamic_index_buffer"];
-                m_function112 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void>)symbols["bgfx_alloc_transient_vertex_buffer"];
-                m_function113 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, uint, byte, void>)symbols["bgfx_encoder_submit_indirect_count"];
-                m_function114 = (delegate* unmanaged[Cdecl]<void*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, byte, float, uint>)symbols["bgfx_weld_vertices"];
-                m_function115 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, uint, uint, uint, byte, void>)symbols["bgfx_encoder_submit_indirect"];
-                m_function116 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.RendererType*, byte>)symbols["bgfx_get_supported_renderers"];
-                m_function117 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.UniformHandle, global::Inno.Native.Bgfx.bgfx.TextureHandle, uint, void>)symbols["bgfx_set_texture"];
-                m_function118 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, uint, uint, byte, void>)symbols["bgfx_encoder_dispatch"];
-                m_function119 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, uint, byte, void>)symbols["bgfx_submit_occlusion_query"];
-                m_function120 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, void>)symbols["bgfx_encoder_end"];
-                m_function121 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.InterfaceVtbl*>)symbols["bgfx_get_interface"];
-                m_function122 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ShadingRate, void>)symbols["bgfx_set_view_shading_rate"];
-                m_function123 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_encoder_set_compute_dynamic_index_buffer"];
-                m_function124 = (delegate* unmanaged[Cdecl]<uint, ushort, uint>)symbols["bgfx_get_avail_instance_data_buffer"];
-                m_function125 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void>)symbols["bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer"];
-                m_function126 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, uint, uint, uint, byte, void>)symbols["bgfx_dispatch"];
-                m_function127 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureInfo*, ushort, ushort, ushort, byte, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, void>)symbols["bgfx_calc_texture_size"];
-                m_function128 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, void>)symbols["bgfx_set_transient_vertex_buffer"];
-                m_function129 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ulong, uint, void>)symbols["bgfx_encoder_set_state"];
-                m_function130 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle>)symbols["bgfx_create_dynamic_index_buffer_mem"];
-                m_function131 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle>)symbols["bgfx_create_texture_2d_scaled"];
-                m_function132 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Transform*, ushort, uint>)symbols["bgfx_alloc_transform"];
-                m_function133 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, sbyte*, int, void>)symbols["bgfx_set_frame_buffer_name"];
-                m_function134 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, void>)symbols["bgfx_destroy_frame_buffer"];
-                m_function135 = (delegate* unmanaged[Cdecl]<void*, uint, delegate* unmanaged[Cdecl]<void*, void*, void> , void*, global::Inno.Native.Bgfx.bgfx.Memory*>)symbols["bgfx_make_ref_release"];
-                m_function136 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_set_compute_index_buffer"];
-                m_function137 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, void>)symbols["bgfx_destroy_uniform"];
-                m_function138 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, uint, void>)symbols["bgfx_set_instance_data_buffer"];
-                m_function139 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, void>)symbols["bgfx_destroy_dynamic_vertex_buffer"];
-                m_function140 = (delegate* unmanaged[Cdecl]<uint, void>)symbols["bgfx_set_debug"];
-                m_function141 = (delegate* unmanaged[Cdecl]<ushort, void>)symbols["bgfx_set_scissor_cached"];
-                m_function142 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TopologyConvert, void*, uint, void*, uint, byte, uint>)symbols["bgfx_topology_convert"];
-                m_function143 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte*, global::Inno.Native.Bgfx.bgfx.AttribType*, byte*, byte*, void>)symbols["bgfx_vertex_layout_decode"];
-                m_function144 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.Memory*>)symbols["bgfx_alloc"];
-                m_function145 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, sbyte*, int, void>)symbols["bgfx_encoder_set_marker"];
-                m_function146 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle>)symbols["bgfx_create_frame_buffer_from_handles"];
-                m_function147 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint, global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, byte, byte>)symbols["bgfx_alloc_transient_buffers"];
-                m_function148 = (delegate* unmanaged[Cdecl]<ulong, uint, void>)symbols["bgfx_set_state"];
-                m_function149 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, byte, void>)symbols["bgfx_encoder_set_condition"];
-                m_function150 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Caps*>)symbols["bgfx_get_caps"];
-                m_function151 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Encoder*>)symbols["bgfx_encoder_begin"];
-                m_function152 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, uint, void>)symbols["bgfx_encoder_set_instance_data_buffer"];
-                m_function153 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, void*>)symbols["bgfx_get_direct_access_ptr"];
-                m_function154 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle>)symbols["bgfx_create_vertex_layout"];
-                m_function155 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, void>)symbols["bgfx_destroy_occlusion_query"];
-                m_function156 = (delegate* unmanaged[Cdecl]<void*, ushort, uint>)symbols["bgfx_set_transform"];
-                m_function157 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void>)symbols["bgfx_encoder_set_image"];
-                m_function158 = (delegate* unmanaged[Cdecl]<ushort, sbyte*, int, void>)symbols["bgfx_set_view_name"];
-                m_function159 = (delegate* unmanaged[Cdecl]<uint, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle>)symbols["bgfx_create_dynamic_index_buffer"];
-                m_function160 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle>)symbols["bgfx_create_dynamic_vertex_buffer_mem"];
-                m_function161 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_encoder_set_compute_index_buffer"];
-                m_function162 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Stats*>)symbols["bgfx_get_stats"];
-                m_function163 = (delegate* unmanaged[Cdecl]<ushort, void>)symbols["bgfx_reset_view"];
-                m_function164 = (delegate* unmanaged[Cdecl]<byte, byte, void>)symbols["bgfx_dbg_text_clear"];
-                m_function165 = (delegate* unmanaged[Cdecl]<uint, void>)symbols["bgfx_set_vertex_count"];
-                m_function166 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort>)symbols["bgfx_vertex_layout_get_stride"];
-                m_function167 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, void>)symbols["bgfx_encoder_set_vertex_count"];
-                m_function168 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint, uint>)symbols["bgfx_vertex_layout_get_size"];
-                m_function169 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, sbyte*, int, void>)symbols["bgfx_set_texture_name"];
-                m_function170 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ProgramHandle, void>)symbols["bgfx_destroy_program"];
-                m_function171 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, uint, uint, void>)symbols["bgfx_set_instance_data_from_vertex_buffer"];
-                m_function172 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void>)symbols["bgfx_update_dynamic_vertex_buffer"];
-                m_function173 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void>)symbols["bgfx_vertex_convert"];
-                m_function174 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, uint, uint, void>)symbols["bgfx_set_index_buffer"];
-                m_function175 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle, global::Inno.Native.Bgfx.bgfx.UniformInfo*, void>)symbols["bgfx_get_uniform_info"];
-                m_function176 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Attachment*, byte>)symbols["bgfx_is_frame_buffer_valid"];
-                m_function177 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, uint, uint, void>)symbols["bgfx_set_dynamic_vertex_buffer"];
-                m_function178 = (delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle>)symbols["bgfx_create_uniform"];
-                m_function179 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, sbyte*, void>)symbols["bgfx_request_screen_shot"];
-                m_function180 = (delegate* unmanaged[Cdecl]<sbyte*, int, void>)symbols["bgfx_set_marker"];
-                m_function181 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TopologySort, void*, uint, float*, float*, void*, uint, void*, uint, byte, void>)symbols["bgfx_topology_sort_tri_list"];
-                m_function182 = (delegate* unmanaged[Cdecl]<uint, void>)symbols["bgfx_set_instance_count"];
-                m_function183 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle, void>)symbols["bgfx_set_view_frame_buffer"];
-                m_function184 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint>)symbols["bgfx_get_avail_transient_vertex_buffer"];
-                m_function185 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_set_compute_vertex_buffer"];
-                m_function186 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, uint, byte, void>)symbols["bgfx_encoder_submit_occlusion_query"];
-                m_function187 = (delegate* unmanaged[Cdecl]<void*, uint, global::Inno.Native.Bgfx.bgfx.Memory*>)symbols["bgfx_copy"];
-                m_function188 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, void>)symbols["bgfx_encoder_set_transient_vertex_buffer"];
-                m_function189 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle, byte, void>)symbols["bgfx_set_condition"];
-                m_function190 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle>)symbols["bgfx_create_vertex_buffer"];
-                m_function191 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void>)symbols["bgfx_set_transient_vertex_buffer_with_layout"];
-                m_function192 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle, global::Inno.Native.Bgfx.bgfx.Access, void>)symbols["bgfx_encoder_set_compute_dynamic_vertex_buffer"];
-                m_function193 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle, void>)symbols["bgfx_destroy_indirect_buffer"];
-                m_function194 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle, void>)symbols["bgfx_destroy_index_buffer"];
-                m_function195 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.RendererType, global::Inno.Native.Bgfx.bgfx.VertexLayout*>)symbols["bgfx_vertex_layout_begin"];
-                m_function196 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle, ushort, byte, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void>)symbols["bgfx_update_texture_cube"];
-                m_function197 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, ushort, void>)symbols["bgfx_alloc_instance_data_buffer"];
-                m_function198 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle, void>)symbols["bgfx_encoder_set_transient_vertex_buffer_with_layout"];
-                m_function199 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle, sbyte*, int, void>)symbols["bgfx_set_vertex_buffer_name"];
-                m_function200 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle>)symbols["bgfx_create_dynamic_vertex_buffer"];
-                m_function201 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, uint, void>)symbols["bgfx_set_transient_index_buffer"];
+                var symbols = m_session.ResolveRequiredSymbols(new string[] { "bgcs_inno_bgfx_call_5206f4925f166688cf45", "bgcs_inno_bgfx_call_5eacf0046f107e486790", "bgcs_inno_bgfx_call_1f78372ce279a48417e8", "bgcs_inno_bgfx_call_daf9a04501f3b8bb3955", "bgcs_inno_bgfx_call_dc0f190eb6f276d41cf2", "bgcs_inno_bgfx_call_be831d977f2bfda75665", "bgcs_inno_bgfx_call_5a33f1ae805a7fd677d6", "bgcs_inno_bgfx_call_21cc556eb41e0f2e98a0", "bgcs_inno_bgfx_call_c6c8342d9ae60695b2dc", "bgcs_inno_bgfx_call_e4b477da4ae5260a23e9", "bgcs_inno_bgfx_call_cdee505e6efd719fd3f0", "bgcs_inno_bgfx_call_34e2f2d48e772b6b4036", "bgcs_inno_bgfx_call_a2daeaa79e49da954318", "bgcs_inno_bgfx_call_a47b9ec31fc7e291dad5", "bgcs_inno_bgfx_call_7ff09d1a7a9bed2f2c4b", "bgcs_inno_bgfx_call_d0525b6de9fb905e09f6", "bgcs_inno_bgfx_call_3c8a532b6ff08b702984", "bgcs_inno_bgfx_call_b3568dee304518b1d8cb", "bgcs_inno_bgfx_call_91b23ac82b4c0751aa02", "bgcs_inno_bgfx_call_31a7279cff215644b5b3", "bgcs_inno_bgfx_call_22fa889f08fa7c311c9a", "bgcs_inno_bgfx_call_a628e8b7aca9bc9fb21a", "bgcs_inno_bgfx_call_c60ab81f4ad0d12437d6", "bgcs_inno_bgfx_call_b50a59f53a16124dc5c3", "bgcs_inno_bgfx_call_15c35dbeeb06972ac4d7", "bgcs_inno_bgfx_call_8db2065e64c414d5af9b", "bgcs_inno_bgfx_call_e3019229d90aee2b8a99", "bgcs_inno_bgfx_call_90caa0fa943c5fc786c2", "bgcs_inno_bgfx_call_1f6352c087bdfe95c49b", "bgcs_inno_bgfx_call_a9420a71e764c8933e0e", "bgcs_inno_bgfx_call_2ee7a2cf4e61fc6e4e6e", "bgcs_inno_bgfx_call_a0c9b2becba9d9285512", "bgcs_inno_bgfx_call_4ae2f9114b062d1893e4", "bgcs_inno_bgfx_call_ed05ca342b34b8c1d7eb", "bgcs_inno_bgfx_call_1cba65e8fa38cc8c8f35", "bgcs_inno_bgfx_call_9122fbd233392c32eaba", "bgcs_inno_bgfx_call_bae08f6361579772dcde", "bgcs_inno_bgfx_call_1dacfbc84caf3fc7eb50", "bgcs_inno_bgfx_call_83ebace10e97a6142277", "bgcs_inno_bgfx_call_71deab7834c29e870ccf", "bgcs_inno_bgfx_call_5d0e393555cc66e5f001", "bgcs_inno_bgfx_call_0a3ea6232f5048af6f05", "bgcs_inno_bgfx_call_af2e21ab4933ddfe6631", "bgcs_inno_bgfx_call_30761e5050d31f12487a", "bgcs_inno_bgfx_call_e06f1a39cd60c653f16b", "bgcs_inno_bgfx_call_4d40884f323b73a3c20f", "bgcs_inno_bgfx_call_8729c4593673ef5190fa", "bgcs_inno_bgfx_call_9eef11ce3a2ea6103cb0", "bgcs_inno_bgfx_call_4592a74d438a037fb447", "bgcs_inno_bgfx_call_d27a6a6ccc0cf3d51170", "bgcs_inno_bgfx_call_e8cfda4509e135d6efb3", "bgcs_inno_bgfx_call_5ab8df39bb0bb60c0ae0", "bgcs_inno_bgfx_call_f3966f01e0927c16a37e", "bgcs_inno_bgfx_call_8fbe1b836cb21a34cfc0", "bgcs_inno_bgfx_call_029b25f751f6d8591f81", "bgcs_inno_bgfx_call_0a2433aa17d8cebc351c", "bgcs_inno_bgfx_call_c3e153a32c20cc68d2a0", "bgcs_inno_bgfx_call_acfe8e1627d2aa81874e", "bgcs_inno_bgfx_call_a9c097725b714c672a6f", "bgcs_inno_bgfx_call_29f06d90246f4ce48ffa", "bgcs_inno_bgfx_call_f30b85e8d1816b84c899", "bgcs_inno_bgfx_call_d0c4ba12b62d01129974", "bgcs_inno_bgfx_call_89f29f2859e635db04fb", "bgcs_inno_bgfx_call_c7e4083529c7dd707715", "bgcs_inno_bgfx_call_ae1d8d5c08e72835bb43", "bgcs_inno_bgfx_call_9d1b14758b3dbba5f01e", "bgcs_inno_bgfx_call_9caf6bab93ef18317fc9", "bgcs_inno_bgfx_call_364747f01957a4b07879", "bgcs_inno_bgfx_call_afb2f21a19a88e3e479a", "bgcs_inno_bgfx_call_d2489b1d925aefedc98f", "bgcs_inno_bgfx_call_e0a303e88a603d52541d", "bgcs_inno_bgfx_call_cadf65e6a62f3daefaba", "bgcs_inno_bgfx_call_2fc3ce08de201c9fcb31", "bgcs_inno_bgfx_call_7303fbd52d991ecec0c5", "bgcs_inno_bgfx_call_27adc234329b952e15ab", "bgcs_inno_bgfx_call_e4b86e24331bfcd2f265", "bgcs_inno_bgfx_call_ed152527304da532658f", "bgcs_inno_bgfx_call_88602c03df88caa2eeaa", "bgcs_inno_bgfx_call_6721d92fc854644dc4bf", "bgcs_inno_bgfx_call_2fa84942d90425d7aa27", "bgcs_inno_bgfx_call_217d4ad4fbcdd1c91ee7", "bgcs_inno_bgfx_call_d6bc316f322d42dd30a6", "bgcs_inno_bgfx_call_7b20ba760e345d33d7ee", "bgcs_inno_bgfx_call_02d495e5807a10af1553", "bgcs_inno_bgfx_call_f173b6709802a9b8da8a", "bgcs_inno_bgfx_call_42d4e074c6d1abce9115", "bgcs_inno_bgfx_call_86495ee589954dcc5362", "bgcs_inno_bgfx_call_8151743eb55d622ef8c1", "bgcs_inno_bgfx_call_0bf3169a4075356cafd1", "bgcs_inno_bgfx_call_91429dd7ef6a982dc8e3", "bgcs_inno_bgfx_call_66ad705b77916dbf8e86", "bgcs_inno_bgfx_call_7d880167aed1ed4f552b", "bgcs_inno_bgfx_call_dca5ce38437857016e87", "bgcs_inno_bgfx_call_b6497f043cd8eb0e84e9", "bgcs_inno_bgfx_call_bc7eee964ae6a07563a0", "bgcs_inno_bgfx_call_58a6e78e31062f62d18b", "bgcs_inno_bgfx_call_e0e5db63449fdad50498", "bgcs_inno_bgfx_call_605826ddab08660dbaeb", "bgcs_inno_bgfx_call_6c10e852c8b735d2eeaa", "bgcs_inno_bgfx_call_1201ccc056f106cc9c25", "bgcs_inno_bgfx_call_3d6b4b83c1508a4d70e7", "bgcs_inno_bgfx_call_c0ea5e436dc08a27b427", "bgcs_inno_bgfx_call_1e8f316605ad14771f3d", "bgcs_inno_bgfx_call_c4bb46d8e41e0207bd83", "bgcs_inno_bgfx_call_6bcc23f5cdaada7cd34f", "bgcs_inno_bgfx_call_d3884f03d02bb1192c1d", "bgcs_inno_bgfx_call_83db8b549e636d9ab59d", "bgcs_inno_bgfx_call_4ed075cef43cd0d3ddb0", "bgcs_inno_bgfx_call_be2a6d57bd20067dbb14", "bgcs_inno_bgfx_call_38fcce76394085f68ec8", "bgcs_inno_bgfx_call_0cb5180f4e57ccc13856", "bgcs_inno_bgfx_call_395220661565943de383", "bgcs_inno_bgfx_call_45c9791ec78ca6f5fb84", "bgcs_inno_bgfx_call_1e50c6296379f4815553", "bgcs_inno_bgfx_call_0bb9abff4ddfa937ae26", "bgcs_inno_bgfx_call_1b4248518313aa9eb6fe", "bgcs_inno_bgfx_call_3343de9ee0d38d3f2073", "bgcs_inno_bgfx_call_38c89b8f675b3136f3c5", "bgcs_inno_bgfx_call_9dee3252dcede71b0fce", "bgcs_inno_bgfx_call_be447f25e597c4966660", "bgcs_inno_bgfx_call_89e448b4d58a54e84cdb", "bgcs_inno_bgfx_call_aee444a8601b252746ca", "bgcs_inno_bgfx_call_2bd3ea8fe882ce40211f", "bgcs_inno_bgfx_call_ace58ab2635eadd06135", "bgcs_inno_bgfx_call_a3c4196bd47e85f85869", "bgcs_inno_bgfx_call_d147cddee673f10cf029", "bgcs_inno_bgfx_call_b4121d01ef83bf6d6ea2", "bgcs_inno_bgfx_call_26aa66b539b35820cff2", "bgcs_inno_bgfx_call_29dcedad98822c1cfd94", "bgcs_inno_bgfx_call_461c3b7490465fbdba41", "bgcs_inno_bgfx_call_5e6287f3bfe239b6a841", "bgcs_inno_bgfx_call_bd3d67a4fbbc6dc702f1", "bgcs_inno_bgfx_call_eddb0d8a191b19beba12", "bgcs_inno_bgfx_call_ef3d70ce88f3b5f9c3ba", "bgcs_inno_bgfx_call_42114ee018d0ef7c48b3", "bgcs_inno_bgfx_call_202d2c8c8f0ecf5a4318", "bgcs_inno_bgfx_call_2ac68ae9d2ba300dcffd", "bgcs_inno_bgfx_call_a5d071587c4edaf0b15b", "bgcs_inno_bgfx_call_1dc2f52d688df93deec0", "bgcs_inno_bgfx_call_b7c4092c66e4a56585e0", "bgcs_inno_bgfx_call_1f99fe122bacc5b08569", "bgcs_inno_bgfx_call_b99304e596da3653991d", "bgcs_inno_bgfx_call_d30356f7c8a8ebad3c2f", "bgcs_inno_bgfx_call_660b3d40df0215192d18", "bgcs_inno_bgfx_call_88293113982feee27134", "bgcs_inno_bgfx_call_b9a5a29e90579df469a5", "bgcs_inno_bgfx_call_0c14d22f7f8f3dad2447", "bgcs_inno_bgfx_call_9ad352846d06532ddd63", "bgcs_inno_bgfx_call_e88ca14affaa1a44d4c2", "bgcs_inno_bgfx_call_4f83c44ba03e9f397053", "bgcs_inno_bgfx_call_1c6ef2b76dd1c0370dcb", "bgcs_inno_bgfx_call_94a265d1f49cc493a0fc", "bgcs_inno_bgfx_call_5a04906df666bd683d49", "bgcs_inno_bgfx_call_e5b3e7a9368fbd8b9e04", "bgcs_inno_bgfx_call_cd559ca3bb459c96852f", "bgcs_inno_bgfx_call_4319197fe9508b6de393", "bgcs_inno_bgfx_call_fe4e021b056d4d03192b", "bgcs_inno_bgfx_call_2c82b06feab32cd34e49", "bgcs_inno_bgfx_call_870790ded900d521e567", "bgcs_inno_bgfx_call_0fa3af7061f33b5511cd", "bgcs_inno_bgfx_call_0206f07116d4cc23ab72", "bgcs_inno_bgfx_call_87b3e3c59bd178a848bb", "bgcs_inno_bgfx_call_d6710ee45da7e9ba61a0", "bgcs_inno_bgfx_call_fde754922923947480c6", "bgcs_inno_bgfx_call_e2c9098bec2fecb0a72f", "bgcs_inno_bgfx_call_3c9b197c150925dd0f1b", "bgcs_inno_bgfx_call_b43411556d48640bd3e2", "bgcs_inno_bgfx_call_75ec26b6793bd9743eda", "bgcs_inno_bgfx_call_e28c9c998b91b9595e25", "bgcs_inno_bgfx_call_2f8c3b044bc203e34ff7", "bgcs_inno_bgfx_call_2c84e81f8465f1edabef", "bgcs_inno_bgfx_call_f4714c6881331c009c9a", "bgcs_inno_bgfx_call_84cf353826a556502005", "bgcs_inno_bgfx_call_0a79ea2a5ad08c80838a", "bgcs_inno_bgfx_call_e9e68e802ef76c91a580", "bgcs_inno_bgfx_call_79c0580ed17c5873b841", "bgcs_inno_bgfx_call_81b179c4a6f23eaede6b", "bgcs_inno_bgfx_call_da660a9ab373a5b7a6d9", "bgcs_inno_bgfx_call_be57622772a1f9aea7e6", "bgcs_inno_bgfx_call_c97ee7d5419338e426b7", "bgcs_inno_bgfx_call_802743ac9e7362ee0781", "bgcs_inno_bgfx_call_a3fb3b6e4dae72c66f04", "bgcs_inno_bgfx_call_4a05550e64a3063fc33f", "bgcs_inno_bgfx_call_7d3b218316b667a7c243", "bgcs_inno_bgfx_call_406479806176abde0e2f", "bgcs_inno_bgfx_call_e63d385854043a897f19", "bgcs_inno_bgfx_call_f58315ab6b9d21700aac", "bgcs_inno_bgfx_call_1f3b875411efe9f9d2d3", "bgcs_inno_bgfx_call_c3eaf77f38857366d4d6", "bgcs_inno_bgfx_call_579eb332659f994e9c21", "bgcs_inno_bgfx_call_fea11b590d3d232d30f8", "bgcs_inno_bgfx_call_f9a2c9a1c16f1db55a2e", "bgcs_inno_bgfx_call_2ae72abe613820f0441a", "bgcs_inno_bgfx_call_9d2eb249f277bbd5d205", "bgcs_inno_bgfx_call_1350365bb2f44a12b74e", "bgcs_inno_bgfx_call_c0bb2bb030416c9d262d", "bgcs_inno_bgfx_call_ed93433d90fed15a406c", "bgcs_inno_bgfx_call_933920b98cc13111dcc8", "bgcs_inno_bgfx_call_1500d077a804642818a2", "bgcs_inno_bgfx_call_278c1e3349e1c2283f85", "bgcs_inno_bgfx_call_a3d6137efa59857c1a7c", "bgcs_inno_bgfx_call_2189e66dd3e1b1636b48" });
+                m_function0 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> )symbols["bgcs_inno_bgfx_call_5206f4925f166688cf45"];
+                m_function1 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort, void> )symbols["bgcs_inno_bgfx_call_5eacf0046f107e486790"];
+                m_function2 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, ushort, ushort, ushort, ushort> )symbols["bgcs_inno_bgfx_call_1f78372ce279a48417e8"];
+                m_function3 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_daf9a04501f3b8bb3955"];
+                m_function4 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> )symbols["bgcs_inno_bgfx_call_dc0f190eb6f276d41cf2"];
+                m_function5 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_be831d977f2bfda75665"];
+                m_function6 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InternalData*> )symbols["bgcs_inno_bgfx_call_5a33f1ae805a7fd677d6"];
+                m_function7 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.RendererType> )symbols["bgcs_inno_bgfx_call_21cc556eb41e0f2e98a0"];
+                m_function8 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, byte, void> )symbols["bgcs_inno_bgfx_call_c6c8342d9ae60695b2dc"];
+                m_function9 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, ushort, ushort, ushort, void> )symbols["bgcs_inno_bgfx_call_e4b477da4ae5260a23e9"];
+                m_function10 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, void> )symbols["bgcs_inno_bgfx_call_cdee505e6efd719fd3f0"];
+                m_function11 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_34e2f2d48e772b6b4036"];
+                m_function12 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Init*, byte> )symbols["bgcs_inno_bgfx_call_a2daeaa79e49da954318"];
+                m_function13 = (delegate* unmanaged[Cdecl]<ushort, ushort, byte, sbyte*, sbyte*, void> )symbols["bgcs_inno_bgfx_call_a47b9ec31fc7e291dad5"];
+                m_function14 = (delegate* unmanaged[Cdecl]<ushort, ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> )symbols["bgcs_inno_bgfx_call_7ff09d1a7a9bed2f2c4b"];
+                m_function15 = (delegate* unmanaged[Cdecl]<ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> )symbols["bgcs_inno_bgfx_call_d0525b6de9fb905e09f6"];
+                m_function16 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.ShaderHandle*, void> )symbols["bgcs_inno_bgfx_call_3c8a532b6ff08b702984"];
+                m_function17 = (delegate* unmanaged[Cdecl]<ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_b3568dee304518b1d8cb"];
+                m_function18 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_91b23ac82b4c0751aa02"];
+                m_function19 = (delegate* unmanaged[Cdecl]<ushort, ushort, uint, float, byte, void> )symbols["bgcs_inno_bgfx_call_31a7279cff215644b5b3"];
+                m_function20 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort*, void> )symbols["bgcs_inno_bgfx_call_22fa889f08fa7c311c9a"];
+                m_function21 = (delegate* unmanaged[Cdecl]<void> )symbols["bgcs_inno_bgfx_call_a628e8b7aca9bc9fb21a"];
+                m_function22 = (delegate* unmanaged[Cdecl]<void*, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.TextureFormat, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_c60ab81f4ad0d12437d6"];
+                m_function23 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_b50a59f53a16124dc5c3"];
+                m_function24 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_15c35dbeeb06972ac4d7"];
+                m_function25 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_8db2065e64c414d5af9b"];
+                m_function26 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_e3019229d90aee2b8a99"];
+                m_function27 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort, void> )symbols["bgcs_inno_bgfx_call_90caa0fa943c5fc786c2"];
+                m_function28 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_1f6352c087bdfe95c49b"];
+                m_function29 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Init*, void> )symbols["bgcs_inno_bgfx_call_a9420a71e764c8933e0e"];
+                m_function30 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, void*, ushort, uint> )symbols["bgcs_inno_bgfx_call_2ee7a2cf4e61fc6e4e6e"];
+                m_function31 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_a0c9b2becba9d9285512"];
+                m_function32 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_4ae2f9114b062d1893e4"];
+                m_function33 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.RendererType, sbyte*> )symbols["bgcs_inno_bgfx_call_ed05ca342b34b8c1d7eb"];
+                m_function34 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, ulong> )symbols["bgcs_inno_bgfx_call_1cba65e8fa38cc8c8f35"];
+                m_function35 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_9122fbd233392c32eaba"];
+                m_function36 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, ushort, void> )symbols["bgcs_inno_bgfx_call_bae08f6361579772dcde"];
+                m_function37 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.BackbufferRatio, void> )symbols["bgcs_inno_bgfx_call_1dacfbc84caf3fc7eb50"];
+                m_function38 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, ushort> )symbols["bgcs_inno_bgfx_call_83ebace10e97a6142277"];
+                m_function39 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_71deab7834c29e870ccf"];
+                m_function40 = (delegate* unmanaged[Cdecl]<uint, ushort, void> )symbols["bgcs_inno_bgfx_call_5d0e393555cc66e5f001"];
+                m_function41 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, ushort> )symbols["bgcs_inno_bgfx_call_0a3ea6232f5048af6f05"];
+                m_function42 = (delegate* unmanaged[Cdecl]<byte, uint, void> )symbols["bgcs_inno_bgfx_call_af2e21ab4933ddfe6631"];
+                m_function43 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte> )symbols["bgcs_inno_bgfx_call_30761e5050d31f12487a"];
+                m_function44 = (delegate* unmanaged[Cdecl]<int, global::Inno.Native.Bgfx.bgfx.RenderFrame> )symbols["bgcs_inno_bgfx_call_e06f1a39cd60c653f16b"];
+                m_function45 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, global::Inno.Native.Bgfx.bgfx.ShaderHandle*, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, void> )symbols["bgcs_inno_bgfx_call_4d40884f323b73a3c20f"];
+                m_function46 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_8729c4593673ef5190fa"];
+                m_function47 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, void*, byte, uint> )symbols["bgcs_inno_bgfx_call_9eef11ce3a2ea6103cb0"];
+                m_function48 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> )symbols["bgcs_inno_bgfx_call_4592a74d438a037fb447"];
+                m_function49 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, byte, void> )symbols["bgcs_inno_bgfx_call_d27a6a6ccc0cf3d51170"];
+                m_function50 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ulong, byte, global::Inno.Native.Bgfx.bgfx.TextureInfo*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> )symbols["bgcs_inno_bgfx_call_e8cfda4509e135d6efb3"];
+                m_function51 = (delegate* unmanaged[Cdecl]<ushort, ushort, float, byte, byte, byte, byte, byte, byte, byte, byte, byte, void> )symbols["bgcs_inno_bgfx_call_5ab8df39bb0bb60c0ae0"];
+                m_function52 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ulong, ushort, ulong> )symbols["bgcs_inno_bgfx_call_f3966f01e0927c16a37e"];
+                m_function53 = (delegate* unmanaged[Cdecl]<float*, global::Inno.Native.Bgfx.bgfx.Attrib, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void> )symbols["bgcs_inno_bgfx_call_8fbe1b836cb21a34cfc0"];
+                m_function54 = (delegate* unmanaged[Cdecl]<ushort, void*, void*, void> )symbols["bgcs_inno_bgfx_call_029b25f751f6d8591f81"];
+                m_function55 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, void> )symbols["bgcs_inno_bgfx_call_0a2433aa17d8cebc351c"];
+                m_function56 = (delegate* unmanaged[Cdecl]<float*, byte, global::Inno.Native.Bgfx.bgfx.Attrib, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void> )symbols["bgcs_inno_bgfx_call_c3e153a32c20cc68d2a0"];
+                m_function57 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_acfe8e1627d2aa81874e"];
+                m_function58 = (delegate* unmanaged[Cdecl]<uint, uint, void> )symbols["bgcs_inno_bgfx_call_a9c097725b714c672a6f"];
+                m_function59 = (delegate* unmanaged[Cdecl]<uint, byte, uint> )symbols["bgcs_inno_bgfx_call_29f06d90246f4ce48ffa"];
+                m_function60 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Attachment*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_f30b85e8d1816b84c899"];
+                m_function61 = (delegate* unmanaged[Cdecl]<byte, void> )symbols["bgcs_inno_bgfx_call_d0c4ba12b62d01129974"];
+                m_function62 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, ushort, void*, ushort, void> )symbols["bgcs_inno_bgfx_call_89f29f2859e635db04fb"];
+                m_function63 = (delegate* unmanaged[Cdecl]<byte, float, float, float, float, void> )symbols["bgcs_inno_bgfx_call_c7e4083529c7dd707715"];
+                m_function64 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_ae1d8d5c08e72835bb43"];
+                m_function65 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_9d1b14758b3dbba5f01e"];
+                m_function66 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, int*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryResult> )symbols["bgcs_inno_bgfx_call_9caf6bab93ef18317fc9"];
+                m_function67 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_364747f01957a4b07879"];
+                m_function68 = (delegate* unmanaged[Cdecl]<ushort, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, byte> )symbols["bgcs_inno_bgfx_call_afb2f21a19a88e3e479a"];
+                m_function69 = (delegate* unmanaged[Cdecl]<byte, float*, void> )symbols["bgcs_inno_bgfx_call_d2489b1d925aefedc98f"];
+                m_function70 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> )symbols["bgcs_inno_bgfx_call_e0a303e88a603d52541d"];
+                m_function71 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_cadf65e6a62f3daefaba"];
+                m_function72 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, void> )symbols["bgcs_inno_bgfx_call_2fc3ce08de201c9fcb31"];
+                m_function73 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_7303fbd52d991ecec0c5"];
+                m_function74 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_27adc234329b952e15ab"];
+                m_function75 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, byte, global::Inno.Native.Bgfx.bgfx.VertexLayout*> )symbols["bgcs_inno_bgfx_call_e4b86e24331bfcd2f265"];
+                m_function76 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void> )symbols["bgcs_inno_bgfx_call_ed152527304da532658f"];
+                m_function77 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.UniformHandle*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, uint, void> )symbols["bgcs_inno_bgfx_call_88602c03df88caa2eeaa"];
+                m_function78 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void*, ushort, void> )symbols["bgcs_inno_bgfx_call_6721d92fc854644dc4bf"];
+                m_function79 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, global::Inno.Native.Bgfx.bgfx.UniformHandle*, ushort, ushort> )symbols["bgcs_inno_bgfx_call_2fa84942d90425d7aa27"];
+                m_function80 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_217d4ad4fbcdd1c91ee7"];
+                m_function81 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, void> )symbols["bgcs_inno_bgfx_call_d6bc316f322d42dd30a6"];
+                m_function82 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, byte, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, void> )symbols["bgcs_inno_bgfx_call_7b20ba760e345d33d7ee"];
+                m_function83 = (delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformFreq, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void> )symbols["bgcs_inno_bgfx_call_02d495e5807a10af1553"];
+                m_function84 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte, global::Inno.Native.Bgfx.bgfx.AttribType, byte, byte, global::Inno.Native.Bgfx.bgfx.VertexLayout*> )symbols["bgcs_inno_bgfx_call_f173b6709802a9b8da8a"];
+                m_function85 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, void> )symbols["bgcs_inno_bgfx_call_42d4e074c6d1abce9115"];
+                m_function86 = (delegate* unmanaged[Cdecl]<ushort, void> )symbols["bgcs_inno_bgfx_call_86495ee589954dcc5362"];
+                m_function87 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Attachment*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, global::Inno.Native.Bgfx.bgfx.Access, ushort, ushort, ushort, byte, void> )symbols["bgcs_inno_bgfx_call_8151743eb55d622ef8c1"];
+                m_function88 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, byte, void> )symbols["bgcs_inno_bgfx_call_0bf3169a4075356cafd1"];
+                m_function89 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.PlatformData*, void> )symbols["bgcs_inno_bgfx_call_91429dd7ef6a982dc8e3"];
+                m_function90 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_66ad705b77916dbf8e86"];
+                m_function91 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.Transform*, ushort, uint> )symbols["bgcs_inno_bgfx_call_7d880167aed1ed4f552b"];
+                m_function92 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, void> )symbols["bgcs_inno_bgfx_call_dca5ce38437857016e87"];
+                m_function93 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_b6497f043cd8eb0e84e9"];
+                m_function94 = (delegate* unmanaged[Cdecl]<byte, uint> )symbols["bgcs_inno_bgfx_call_bc7eee964ae6a07563a0"];
+                m_function95 = (delegate* unmanaged[Cdecl]<void*, uint, global::Inno.Native.Bgfx.bgfx.Memory*> )symbols["bgcs_inno_bgfx_call_58a6e78e31062f62d18b"];
+                m_function96 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ViewMode, void> )symbols["bgcs_inno_bgfx_call_e0e5db63449fdad50498"];
+                m_function97 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_605826ddab08660dbaeb"];
+                m_function98 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> )symbols["bgcs_inno_bgfx_call_6c10e852c8b735d2eeaa"];
+                m_function99 = (delegate* unmanaged[Cdecl]<ushort, ushort, ushort, byte, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.Memory*, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> )symbols["bgcs_inno_bgfx_call_1201ccc056f106cc9c25"];
+                m_function100 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, void> )symbols["bgcs_inno_bgfx_call_3d6b4b83c1508a4d70e7"];
+                m_function101 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_c0ea5e436dc08a27b427"];
+                m_function102 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_1e8f316605ad14771f3d"];
+                m_function103 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_c4bb46d8e41e0207bd83"];
+                m_function104 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ShaderHandle*, void> )symbols["bgcs_inno_bgfx_call_6bcc23f5cdaada7cd34f"];
+                m_function105 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, ushort, ushort, ushort, ushort, ushort, ushort, void> )symbols["bgcs_inno_bgfx_call_d3884f03d02bb1192c1d"];
+                m_function106 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ushort, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void> )symbols["bgcs_inno_bgfx_call_83db8b549e636d9ab59d"];
+                m_function107 = (delegate* unmanaged[Cdecl]<uint, uint, uint, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> )symbols["bgcs_inno_bgfx_call_4ed075cef43cd0d3ddb0"];
+                m_function108 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> )symbols["bgcs_inno_bgfx_call_be2a6d57bd20067dbb14"];
+                m_function109 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_38fcce76394085f68ec8"];
+                m_function110 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_0cb5180f4e57ccc13856"];
+                m_function111 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_395220661565943de383"];
+                m_function112 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void> )symbols["bgcs_inno_bgfx_call_45c9791ec78ca6f5fb84"];
+                m_function113 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_1e50c6296379f4815553"];
+                m_function114 = (delegate* unmanaged[Cdecl]<void*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, byte, float, uint> )symbols["bgcs_inno_bgfx_call_0bb9abff4ddfa937ae26"];
+                m_function115 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, uint, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_1b4248518313aa9eb6fe"];
+                m_function116 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.RendererType*, byte> )symbols["bgcs_inno_bgfx_call_3343de9ee0d38d3f2073"];
+                m_function117 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.UniformHandle*, global::Inno.Native.Bgfx.bgfx.TextureHandle*, uint, void> )symbols["bgcs_inno_bgfx_call_38c89b8f675b3136f3c5"];
+                m_function118 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_9dee3252dcede71b0fce"];
+                m_function119 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, uint, byte, void> )symbols["bgcs_inno_bgfx_call_be447f25e597c4966660"];
+                m_function120 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, void> )symbols["bgcs_inno_bgfx_call_89e448b4d58a54e84cdb"];
+                m_function121 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.InterfaceVtbl*> )symbols["bgcs_inno_bgfx_call_aee444a8601b252746ca"];
+                m_function122 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ShadingRate, void> )symbols["bgcs_inno_bgfx_call_2bd3ea8fe882ce40211f"];
+                m_function123 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_ace58ab2635eadd06135"];
+                m_function124 = (delegate* unmanaged[Cdecl]<uint, ushort, uint> )symbols["bgcs_inno_bgfx_call_a3c4196bd47e85f85869"];
+                m_function125 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_d147cddee673f10cf029"];
+                m_function126 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, uint, uint, uint, byte, void> )symbols["bgcs_inno_bgfx_call_b4121d01ef83bf6d6ea2"];
+                m_function127 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureInfo*, ushort, ushort, ushort, byte, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> )symbols["bgcs_inno_bgfx_call_26aa66b539b35820cff2"];
+                m_function128 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_29dcedad98822c1cfd94"];
+                m_function129 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ulong, uint, void> )symbols["bgcs_inno_bgfx_call_461c3b7490465fbdba41"];
+                m_function130 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_5e6287f3bfe239b6a841"];
+                m_function131 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.BackbufferRatio, byte, ushort, global::Inno.Native.Bgfx.bgfx.TextureFormat, ulong, global::Inno.Native.Bgfx.bgfx.TextureHandle*, void> )symbols["bgcs_inno_bgfx_call_bd3d67a4fbbc6dc702f1"];
+                m_function132 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Transform*, ushort, uint> )symbols["bgcs_inno_bgfx_call_eddb0d8a191b19beba12"];
+                m_function133 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_ef3d70ce88f3b5f9c3ba"];
+                m_function134 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_42114ee018d0ef7c48b3"];
+                m_function135 = (delegate* unmanaged[Cdecl]<void*, uint, delegate* unmanaged[Cdecl]<void*, void*, void> , void*, global::Inno.Native.Bgfx.bgfx.Memory*> )symbols["bgcs_inno_bgfx_call_202d2c8c8f0ecf5a4318"];
+                m_function136 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_2ac68ae9d2ba300dcffd"];
+                m_function137 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, void> )symbols["bgcs_inno_bgfx_call_a5d071587c4edaf0b15b"];
+                m_function138 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_1dc2f52d688df93deec0"];
+                m_function139 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_b7c4092c66e4a56585e0"];
+                m_function140 = (delegate* unmanaged[Cdecl]<uint, void> )symbols["bgcs_inno_bgfx_call_1f99fe122bacc5b08569"];
+                m_function141 = (delegate* unmanaged[Cdecl]<ushort, void> )symbols["bgcs_inno_bgfx_call_b99304e596da3653991d"];
+                m_function142 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TopologyConvert, void*, uint, void*, uint, byte, uint> )symbols["bgcs_inno_bgfx_call_d30356f7c8a8ebad3c2f"];
+                m_function143 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.Attrib, byte*, global::Inno.Native.Bgfx.bgfx.AttribType*, byte*, byte*, void> )symbols["bgcs_inno_bgfx_call_660b3d40df0215192d18"];
+                m_function144 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.Memory*> )symbols["bgcs_inno_bgfx_call_88293113982feee27134"];
+                m_function145 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_b9a5a29e90579df469a5"];
+                m_function146 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_0c14d22f7f8f3dad2447"];
+                m_function147 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint, global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, byte, byte> )symbols["bgcs_inno_bgfx_call_9ad352846d06532ddd63"];
+                m_function148 = (delegate* unmanaged[Cdecl]<ulong, uint, void> )symbols["bgcs_inno_bgfx_call_e88ca14affaa1a44d4c2"];
+                m_function149 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, byte, void> )symbols["bgcs_inno_bgfx_call_4f83c44ba03e9f397053"];
+                m_function150 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Caps*> )symbols["bgcs_inno_bgfx_call_1c6ef2b76dd1c0370dcb"];
+                m_function151 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Encoder*> )symbols["bgcs_inno_bgfx_call_94a265d1f49cc493a0fc"];
+                m_function152 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_5a04906df666bd683d49"];
+                m_function153 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, void*> )symbols["bgcs_inno_bgfx_call_e5b3e7a9368fbd8b9e04"];
+                m_function154 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_cd559ca3bb459c96852f"];
+                m_function155 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, void> )symbols["bgcs_inno_bgfx_call_4319197fe9508b6de393"];
+                m_function156 = (delegate* unmanaged[Cdecl]<void*, ushort, uint> )symbols["bgcs_inno_bgfx_call_fe4e021b056d4d03192b"];
+                m_function157 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TextureHandle*, byte, global::Inno.Native.Bgfx.bgfx.Access, global::Inno.Native.Bgfx.bgfx.TextureFormat, void> )symbols["bgcs_inno_bgfx_call_2c82b06feab32cd34e49"];
+                m_function158 = (delegate* unmanaged[Cdecl]<ushort, sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_870790ded900d521e567"];
+                m_function159 = (delegate* unmanaged[Cdecl]<uint, ushort, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_0fa3af7061f33b5511cd"];
+                m_function160 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_0206f07116d4cc23ab72"];
+                m_function161 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_87b3e3c59bd178a848bb"];
+                m_function162 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Stats*> )symbols["bgcs_inno_bgfx_call_d6710ee45da7e9ba61a0"];
+                m_function163 = (delegate* unmanaged[Cdecl]<ushort, void> )symbols["bgcs_inno_bgfx_call_fde754922923947480c6"];
+                m_function164 = (delegate* unmanaged[Cdecl]<byte, byte, void> )symbols["bgcs_inno_bgfx_call_e2c9098bec2fecb0a72f"];
+                m_function165 = (delegate* unmanaged[Cdecl]<uint, void> )symbols["bgcs_inno_bgfx_call_3c9b197c150925dd0f1b"];
+                m_function166 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort> )symbols["bgcs_inno_bgfx_call_b43411556d48640bd3e2"];
+                m_function167 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, uint, void> )symbols["bgcs_inno_bgfx_call_75ec26b6793bd9743eda"];
+                m_function168 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint, uint> )symbols["bgcs_inno_bgfx_call_e28c9c998b91b9595e25"];
+                m_function169 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_2f8c3b044bc203e34ff7"];
+                m_function170 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.ProgramHandle*, void> )symbols["bgcs_inno_bgfx_call_2c84e81f8465f1edabef"];
+                m_function171 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_f4714c6881331c009c9a"];
+                m_function172 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, global::Inno.Native.Bgfx.bgfx.Memory*, void> )symbols["bgcs_inno_bgfx_call_84cf353826a556502005"];
+                m_function173 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, void*, uint, void> )symbols["bgcs_inno_bgfx_call_0a79ea2a5ad08c80838a"];
+                m_function174 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_e9e68e802ef76c91a580"];
+                m_function175 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.UniformHandle*, global::Inno.Native.Bgfx.bgfx.UniformInfo*, void> )symbols["bgcs_inno_bgfx_call_79c0580ed17c5873b841"];
+                m_function176 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.Attachment*, byte> )symbols["bgcs_inno_bgfx_call_81b179c4a6f23eaede6b"];
+                m_function177 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_da660a9ab373a5b7a6d9"];
+                m_function178 = (delegate* unmanaged[Cdecl]<sbyte*, global::Inno.Native.Bgfx.bgfx.UniformType, ushort, global::Inno.Native.Bgfx.bgfx.UniformHandle*, void> )symbols["bgcs_inno_bgfx_call_be57622772a1f9aea7e6"];
+                m_function179 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, sbyte*, void> )symbols["bgcs_inno_bgfx_call_c97ee7d5419338e426b7"];
+                m_function180 = (delegate* unmanaged[Cdecl]<sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_802743ac9e7362ee0781"];
+                m_function181 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TopologySort, void*, uint, float*, float*, void*, uint, void*, uint, byte, void> )symbols["bgcs_inno_bgfx_call_a3fb3b6e4dae72c66f04"];
+                m_function182 = (delegate* unmanaged[Cdecl]<uint, void> )symbols["bgcs_inno_bgfx_call_4a05550e64a3063fc33f"];
+                m_function183 = (delegate* unmanaged[Cdecl]<ushort, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_7d3b218316b667a7c243"];
+                m_function184 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, uint> )symbols["bgcs_inno_bgfx_call_406479806176abde0e2f"];
+                m_function185 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_e63d385854043a897f19"];
+                m_function186 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, ushort, global::Inno.Native.Bgfx.bgfx.ProgramHandle*, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, uint, byte, void> )symbols["bgcs_inno_bgfx_call_f58315ab6b9d21700aac"];
+                m_function187 = (delegate* unmanaged[Cdecl]<void*, uint, global::Inno.Native.Bgfx.bgfx.Memory*> )symbols["bgcs_inno_bgfx_call_1f3b875411efe9f9d2d3"];
+                m_function188 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_c3eaf77f38857366d4d6"];
+                m_function189 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*, byte, void> )symbols["bgcs_inno_bgfx_call_579eb332659f994e9c21"];
+                m_function190 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Memory*, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_fea11b590d3d232d30f8"];
+                m_function191 = (delegate* unmanaged[Cdecl]<byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_f9a2c9a1c16f1db55a2e"];
+                m_function192 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, global::Inno.Native.Bgfx.bgfx.Access, void> )symbols["bgcs_inno_bgfx_call_2ae72abe613820f0441a"];
+                m_function193 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_9d2eb249f277bbd5d205"];
+                m_function194 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_1350365bb2f44a12b74e"];
+                m_function195 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexLayout*, global::Inno.Native.Bgfx.bgfx.RendererType, global::Inno.Native.Bgfx.bgfx.VertexLayout*> )symbols["bgcs_inno_bgfx_call_c0bb2bb030416c9d262d"];
+                m_function196 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TextureHandle*, ushort, byte, byte, ushort, ushort, ushort, ushort, global::Inno.Native.Bgfx.bgfx.Memory*, ushort, void> )symbols["bgcs_inno_bgfx_call_ed93433d90fed15a406c"];
+                m_function197 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.InstanceDataBuffer*, uint, ushort, void> )symbols["bgcs_inno_bgfx_call_933920b98cc13111dcc8"];
+                m_function198 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.Encoder*, byte, global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer*, uint, uint, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*, void> )symbols["bgcs_inno_bgfx_call_1500d077a804642818a2"];
+                m_function199 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*, sbyte*, int, void> )symbols["bgcs_inno_bgfx_call_278c1e3349e1c2283f85"];
+                m_function200 = (delegate* unmanaged[Cdecl]<uint, global::Inno.Native.Bgfx.bgfx.VertexLayout*, ushort, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*, void> )symbols["bgcs_inno_bgfx_call_a3d6137efa59857c1a7c"];
+                m_function201 = (delegate* unmanaged[Cdecl]<global::Inno.Native.Bgfx.bgfx.TransientIndexBuffer*, uint, uint, void> )symbols["bgcs_inno_bgfx_call_2189e66dd3e1b1636b48"];
                 Raw = new RawApi(this);
             }
             catch
@@ -1758,12 +1758,29 @@ namespace Inno.Native.Bgfx
 
         public void destroy_texture(global::Inno.Native.Bgfx.bgfx.TextureHandle _handle)
         {
-            this.Raw.destroy_texture(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_texture((global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress0);
+            }
         }
 
         public global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle create_indirect_buffer(uint _num)
         {
-            return this.Raw.create_indirect_buffer(_num);
+            {
+                global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle __bgcsCopiedValue1 = default;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_indirect_buffer(_num, (global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*)__bgcsValueAddress1);
+                return __bgcsCopiedValue1;
+            }
         }
 
         public global::Inno.Native.Bgfx.bgfx.RendererType get_renderer_type()
@@ -1773,12 +1790,29 @@ namespace Inno.Native.Bgfx
 
         public global::Inno.Native.Bgfx.bgfx.FrameBufferHandle create_frame_buffer(ushort _width, ushort _height, global::Inno.Native.Bgfx.bgfx.TextureFormat _format, ulong _textureFlags)
         {
-            return this.Raw.create_frame_buffer(_width, _height, _format, _textureFlags);
+            {
+                global::Inno.Native.Bgfx.bgfx.FrameBufferHandle __bgcsCopiedValue4 = default;
+                nint __bgcsValueAddress4 = (nint)(&__bgcsCopiedValue4);
+                if (__bgcsValueAddress4 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress4 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_frame_buffer(_width, _height, _format, _textureFlags, (global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*)__bgcsValueAddress4);
+                return __bgcsCopiedValue4;
+            }
         }
 
         public void set_vertex_buffer(byte _stream, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, uint _startVertex, uint _numVertices)
         {
-            this.Raw.set_vertex_buffer(_stream, _handle, _startVertex, _numVertices);
+            {
+                global::Inno.Native.Bgfx.bgfx.VertexBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_vertex_buffer(_stream, (global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*)__bgcsValueAddress1, _startVertex, _numVertices);
+            }
         }
 
         public void set_view_clear(ushort _id, ushort _flags, uint _rgba, float _depth, byte _stencil)
@@ -1793,7 +1827,15 @@ namespace Inno.Native.Bgfx
 
         public void destroy_dynamic_index_buffer(global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle)
         {
-            this.Raw.destroy_dynamic_index_buffer(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_dynamic_index_buffer((global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void set_view_rect(ushort _id, ushort _x, ushort _y, ushort _width, ushort _height)
@@ -1803,17 +1845,42 @@ namespace Inno.Native.Bgfx
 
         public void set_instance_data_from_dynamic_vertex_buffer(global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, uint _startVertex, uint _num)
         {
-            this.Raw.set_instance_data_from_dynamic_vertex_buffer(_handle, _startVertex, _num);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_instance_data_from_dynamic_vertex_buffer((global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*)__bgcsValueAddress0, _startVertex, _num);
+            }
         }
 
         public ulong override_internal_texture(global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, ushort _width, ushort _height, byte _numMips, global::Inno.Native.Bgfx.bgfx.TextureFormat _format, ulong _flags)
         {
-            return this.Raw.override_internal_texture(_handle, _width, _height, _numMips, _format, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                ulong __bgcsDirectResult = this.Raw.override_internal_texture((global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress0, _width, _height, _numMips, _format, _flags);
+                return __bgcsDirectResult;
+            }
         }
 
         public void set_compute_indirect_buffer(byte _stage, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _handle, global::Inno.Native.Bgfx.bgfx.Access _access)
         {
-            this.Raw.set_compute_indirect_buffer(_stage, _handle, _access);
+            {
+                global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_compute_indirect_buffer(_stage, (global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*)__bgcsValueAddress1, _access);
+            }
         }
 
         public void set_view_rect_ratio(ushort _id, ushort _x, ushort _y, global::Inno.Native.Bgfx.bgfx.BackbufferRatio _ratio)
@@ -1828,7 +1895,15 @@ namespace Inno.Native.Bgfx
 
         public void set_compute_dynamic_vertex_buffer(byte _stage, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, global::Inno.Native.Bgfx.bgfx.Access _access)
         {
-            this.Raw.set_compute_dynamic_vertex_buffer(_stage, _handle, _access);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_compute_dynamic_vertex_buffer(_stage, (global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*)__bgcsValueAddress1, _access);
+            }
         }
 
         public void set_transform_cached(uint _cache, ushort _num)
@@ -1848,17 +1923,54 @@ namespace Inno.Native.Bgfx
 
         public global::Inno.Native.Bgfx.bgfx.ProgramHandle create_program(global::Inno.Native.Bgfx.bgfx.ShaderHandle _vsh, global::Inno.Native.Bgfx.bgfx.ShaderHandle _fsh, bool _destroyShaders)
         {
-            return this.Raw.create_program(_vsh, _fsh, RecipeConversions.__ToNative_7ab07571013b2f48(_destroyShaders));
+            {
+                global::Inno.Native.Bgfx.bgfx.ShaderHandle __bgcsCopiedValue0 = _vsh;
+                global::Inno.Native.Bgfx.bgfx.ShaderHandle __bgcsCopiedValue1 = _fsh;
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue3 = default;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress3 = (nint)(&__bgcsCopiedValue3);
+                if (__bgcsValueAddress3 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress3 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_program((global::Inno.Native.Bgfx.bgfx.ShaderHandle*)__bgcsValueAddress0, (global::Inno.Native.Bgfx.bgfx.ShaderHandle*)__bgcsValueAddress1, RecipeConversions.__ToNative_7ab07571013b2f48(_destroyShaders), (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress3);
+                return __bgcsCopiedValue3;
+            }
         }
 
         public void set_dynamic_index_buffer(global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle, uint _firstIndex, uint _numIndices)
         {
-            this.Raw.set_dynamic_index_buffer(_handle, _firstIndex, _numIndices);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_dynamic_index_buffer((global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*)__bgcsValueAddress0, _firstIndex, _numIndices);
+            }
         }
 
         public void submit(ushort _id, global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, uint _depth, byte _flags)
         {
-            this.Raw.submit(_id, _program, _depth, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue1 = _program;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.submit(_id, (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress1, _depth, _flags);
+            }
         }
 
         public void set_view_clear_mrt(ushort _id, ushort _flags, float _depth, byte _stencil, byte _c0, byte _c1, byte _c2, byte _c3, byte _c4, byte _c5, byte _c6, byte _c7)
@@ -1868,7 +1980,16 @@ namespace Inno.Native.Bgfx
 
         public ulong override_internal_texture_ptr(global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, ulong _ptr, ushort _layerIndex)
         {
-            return this.Raw.override_internal_texture_ptr(_handle, _ptr, _layerIndex);
+            {
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                ulong __bgcsDirectResult = this.Raw.override_internal_texture_ptr((global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress0, _ptr, _layerIndex);
+                return __bgcsDirectResult;
+            }
         }
 
         public void set_stencil(uint _fstencil, uint _bstencil)
@@ -1893,17 +2014,47 @@ namespace Inno.Native.Bgfx
 
         public void set_dynamic_vertex_buffer_with_layout(byte _stream, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, uint _startVertex, uint _numVertices, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
         {
-            this.Raw.set_dynamic_vertex_buffer_with_layout(_stream, _handle, _startVertex, _numVertices, _layoutHandle);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle __bgcsCopiedValue1 = _handle;
+                global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle __bgcsCopiedValue4 = _layoutHandle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress4 = (nint)(&__bgcsCopiedValue4);
+                if (__bgcsValueAddress4 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress4 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_dynamic_vertex_buffer_with_layout(_stream, (global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*)__bgcsValueAddress1, _startVertex, _numVertices, (global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*)__bgcsValueAddress4);
+            }
         }
 
         public void destroy_vertex_buffer(global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle)
         {
-            this.Raw.destroy_vertex_buffer(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.VertexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_vertex_buffer((global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void destroy_vertex_layout(global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
         {
-            this.Raw.destroy_vertex_layout(_layoutHandle);
+            {
+                global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle __bgcsCopiedValue0 = _layoutHandle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_vertex_layout((global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*)__bgcsValueAddress0);
+            }
         }
 
         public bool is_texture_valid(ushort _depth, bool _cubeMap, ushort _numLayers, global::Inno.Native.Bgfx.bgfx.TextureFormat _format, ulong _flags)
@@ -1913,22 +2064,68 @@ namespace Inno.Native.Bgfx
 
         public void dispatch_indirect(ushort _id, global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, uint _start, uint _num, byte _flags)
         {
-            this.Raw.dispatch_indirect(_id, _program, _indirectHandle, _start, _num, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue1 = _program;
+                global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle __bgcsCopiedValue2 = _indirectHandle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.dispatch_indirect(_id, (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress1, (global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*)__bgcsValueAddress2, _start, _num, _flags);
+            }
         }
 
         public void set_compute_dynamic_index_buffer(byte _stage, global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle, global::Inno.Native.Bgfx.bgfx.Access _access)
         {
-            this.Raw.set_compute_dynamic_index_buffer(_stage, _handle, _access);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_compute_dynamic_index_buffer(_stage, (global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*)__bgcsValueAddress1, _access);
+            }
         }
 
         public global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle create_occlusion_query()
         {
-            return this.Raw.create_occlusion_query();
+            {
+                global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle __bgcsCopiedValue0 = default;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_occlusion_query((global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*)__bgcsValueAddress0);
+                return __bgcsCopiedValue0;
+            }
         }
 
         public global::Inno.Native.Bgfx.bgfx.ProgramHandle create_compute_program(global::Inno.Native.Bgfx.bgfx.ShaderHandle _csh, bool _destroyShaders)
         {
-            return this.Raw.create_compute_program(_csh, RecipeConversions.__ToNative_7ab07571013b2f48(_destroyShaders));
+            {
+                global::Inno.Native.Bgfx.bgfx.ShaderHandle __bgcsCopiedValue0 = _csh;
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue2 = default;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_compute_program((global::Inno.Native.Bgfx.bgfx.ShaderHandle*)__bgcsValueAddress0, RecipeConversions.__ToNative_7ab07571013b2f48(_destroyShaders), (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress2);
+                return __bgcsCopiedValue2;
+            }
         }
 
         public void touch(ushort _id)
@@ -1938,12 +2135,35 @@ namespace Inno.Native.Bgfx
 
         public global::Inno.Native.Bgfx.bgfx.FrameBufferHandle create_frame_buffer_scaled(global::Inno.Native.Bgfx.bgfx.BackbufferRatio _ratio, global::Inno.Native.Bgfx.bgfx.TextureFormat _format, ulong _textureFlags)
         {
-            return this.Raw.create_frame_buffer_scaled(_ratio, _format, _textureFlags);
+            {
+                global::Inno.Native.Bgfx.bgfx.FrameBufferHandle __bgcsCopiedValue3 = default;
+                nint __bgcsValueAddress3 = (nint)(&__bgcsCopiedValue3);
+                if (__bgcsValueAddress3 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress3 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_frame_buffer_scaled(_ratio, _format, _textureFlags, (global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*)__bgcsValueAddress3);
+                return __bgcsCopiedValue3;
+            }
         }
 
         public void submit_indirect(ushort _id, global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, uint _start, uint _num, uint _depth, byte _flags)
         {
-            this.Raw.submit_indirect(_id, _program, _indirectHandle, _start, _num, _depth, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue1 = _program;
+                global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle __bgcsCopiedValue2 = _indirectHandle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.submit_indirect(_id, (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress1, (global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*)__bgcsValueAddress2, _start, _num, _depth, _flags);
+            }
         }
 
         public uint frame(byte _flags)
@@ -1958,17 +2178,54 @@ namespace Inno.Native.Bgfx
 
         public global::Inno.Native.Bgfx.bgfx.TextureHandle get_texture(global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle, byte _attachment)
         {
-            return this.Raw.get_texture(_handle, _attachment);
+            {
+                global::Inno.Native.Bgfx.bgfx.FrameBufferHandle __bgcsCopiedValue0 = _handle;
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue2 = default;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.get_texture((global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*)__bgcsValueAddress0, _attachment, (global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress2);
+                return __bgcsCopiedValue2;
+            }
         }
 
         public void destroy_shader(global::Inno.Native.Bgfx.bgfx.ShaderHandle _handle)
         {
-            this.Raw.destroy_shader(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.ShaderHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_shader((global::Inno.Native.Bgfx.bgfx.ShaderHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void blit(ushort _id, global::Inno.Native.Bgfx.bgfx.TextureHandle _dst, byte _dstMip, ushort _dstX, ushort _dstY, ushort _dstZ, global::Inno.Native.Bgfx.bgfx.TextureHandle _src, byte _srcMip, ushort _srcX, ushort _srcY, ushort _srcZ, ushort _width, ushort _height, ushort _depth)
         {
-            this.Raw.blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth);
+            {
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue1 = _dst;
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue6 = _src;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress6 = (nint)(&__bgcsCopiedValue6);
+                if (__bgcsValueAddress6 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress6 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.blit(_id, (global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress1, _dstMip, _dstX, _dstY, _dstZ, (global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress6, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth);
+            }
         }
 
         public void reset(uint _width, uint _height, uint _flags, global::Inno.Native.Bgfx.bgfx.TextureFormat _format)
@@ -1978,27 +2235,97 @@ namespace Inno.Native.Bgfx
 
         public void set_image(byte _stage, global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, byte _mip, global::Inno.Native.Bgfx.bgfx.Access _access, global::Inno.Native.Bgfx.bgfx.TextureFormat _format)
         {
-            this.Raw.set_image(_stage, _handle, _mip, _access, _format);
+            {
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_image(_stage, (global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress1, _mip, _access, _format);
+            }
         }
 
         public void set_vertex_buffer_with_layout(byte _stream, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, uint _startVertex, uint _numVertices, global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
         {
-            this.Raw.set_vertex_buffer_with_layout(_stream, _handle, _startVertex, _numVertices, _layoutHandle);
+            {
+                global::Inno.Native.Bgfx.bgfx.VertexBufferHandle __bgcsCopiedValue1 = _handle;
+                global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle __bgcsCopiedValue4 = _layoutHandle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress4 = (nint)(&__bgcsCopiedValue4);
+                if (__bgcsValueAddress4 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress4 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_vertex_buffer_with_layout(_stream, (global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*)__bgcsValueAddress1, _startVertex, _numVertices, (global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle*)__bgcsValueAddress4);
+            }
         }
 
         public void submit_indirect_count(ushort _id, global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, uint _start, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _numHandle, uint _numIndex, uint _numMax, uint _depth, byte _flags)
         {
-            this.Raw.submit_indirect_count(_id, _program, _indirectHandle, _start, _numHandle, _numIndex, _numMax, _depth, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue1 = _program;
+                global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle __bgcsCopiedValue2 = _indirectHandle;
+                global::Inno.Native.Bgfx.bgfx.IndexBufferHandle __bgcsCopiedValue4 = _numHandle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress4 = (nint)(&__bgcsCopiedValue4);
+                if (__bgcsValueAddress4 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress4 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.submit_indirect_count(_id, (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress1, (global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*)__bgcsValueAddress2, _start, (global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*)__bgcsValueAddress4, _numIndex, _numMax, _depth, _flags);
+            }
         }
 
         public void set_texture(byte _stage, global::Inno.Native.Bgfx.bgfx.UniformHandle _sampler, global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, uint _flags)
         {
-            this.Raw.set_texture(_stage, _sampler, _handle, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.UniformHandle __bgcsCopiedValue1 = _sampler;
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue2 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_texture(_stage, (global::Inno.Native.Bgfx.bgfx.UniformHandle*)__bgcsValueAddress1, (global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress2, _flags);
+            }
         }
 
         public void submit_occlusion_query(ushort _id, global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _occlusionQuery, uint _depth, byte _flags)
         {
-            this.Raw.submit_occlusion_query(_id, _program, _occlusionQuery, _depth, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue1 = _program;
+                global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle __bgcsCopiedValue2 = _occlusionQuery;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.submit_occlusion_query(_id, (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress1, (global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*)__bgcsValueAddress2, _depth, _flags);
+            }
         }
 
         public void set_view_shading_rate(ushort _id, global::Inno.Native.Bgfx.bgfx.ShadingRate _shadingRate)
@@ -2013,32 +2340,81 @@ namespace Inno.Native.Bgfx
 
         public void dispatch(ushort _id, global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, uint _numX, uint _numY, uint _numZ, byte _flags)
         {
-            this.Raw.dispatch(_id, _program, _numX, _numY, _numZ, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue1 = _program;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.dispatch(_id, (global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress1, _numX, _numY, _numZ, _flags);
+            }
         }
 
         public global::Inno.Native.Bgfx.bgfx.TextureHandle create_texture_2d_scaled(global::Inno.Native.Bgfx.bgfx.BackbufferRatio _ratio, bool _hasMips, ushort _numLayers, global::Inno.Native.Bgfx.bgfx.TextureFormat _format, ulong _flags)
         {
-            return this.Raw.create_texture_2d_scaled(_ratio, RecipeConversions.__ToNative_7ab07571013b2f48(_hasMips), _numLayers, _format, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.TextureHandle __bgcsCopiedValue5 = default;
+                nint __bgcsValueAddress5 = (nint)(&__bgcsCopiedValue5);
+                if (__bgcsValueAddress5 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress5 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_texture_2d_scaled(_ratio, RecipeConversions.__ToNative_7ab07571013b2f48(_hasMips), _numLayers, _format, _flags, (global::Inno.Native.Bgfx.bgfx.TextureHandle*)__bgcsValueAddress5);
+                return __bgcsCopiedValue5;
+            }
         }
 
         public void destroy_frame_buffer(global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle)
         {
-            this.Raw.destroy_frame_buffer(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.FrameBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_frame_buffer((global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void set_compute_index_buffer(byte _stage, global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle, global::Inno.Native.Bgfx.bgfx.Access _access)
         {
-            this.Raw.set_compute_index_buffer(_stage, _handle, _access);
+            {
+                global::Inno.Native.Bgfx.bgfx.IndexBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_compute_index_buffer(_stage, (global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*)__bgcsValueAddress1, _access);
+            }
         }
 
         public void destroy_uniform(global::Inno.Native.Bgfx.bgfx.UniformHandle _handle)
         {
-            this.Raw.destroy_uniform(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.UniformHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_uniform((global::Inno.Native.Bgfx.bgfx.UniformHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void destroy_dynamic_vertex_buffer(global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle)
         {
-            this.Raw.destroy_dynamic_vertex_buffer(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_dynamic_vertex_buffer((global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void set_debug(uint _debug)
@@ -2058,12 +2434,29 @@ namespace Inno.Native.Bgfx
 
         public void destroy_occlusion_query(global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _handle)
         {
-            this.Raw.destroy_occlusion_query(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_occlusion_query((global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*)__bgcsValueAddress0);
+            }
         }
 
         public global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle create_dynamic_index_buffer(uint _num, ushort _flags)
         {
-            return this.Raw.create_dynamic_index_buffer(_num, _flags);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle __bgcsCopiedValue2 = default;
+                nint __bgcsValueAddress2 = (nint)(&__bgcsCopiedValue2);
+                if (__bgcsValueAddress2 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress2 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.create_dynamic_index_buffer(_num, _flags, (global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle*)__bgcsValueAddress2);
+                return __bgcsCopiedValue2;
+            }
         }
 
         public void reset_view(ushort _id)
@@ -2083,22 +2476,54 @@ namespace Inno.Native.Bgfx
 
         public void destroy_program(global::Inno.Native.Bgfx.bgfx.ProgramHandle _handle)
         {
-            this.Raw.destroy_program(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.ProgramHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_program((global::Inno.Native.Bgfx.bgfx.ProgramHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void set_instance_data_from_vertex_buffer(global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, uint _startVertex, uint _num)
         {
-            this.Raw.set_instance_data_from_vertex_buffer(_handle, _startVertex, _num);
+            {
+                global::Inno.Native.Bgfx.bgfx.VertexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_instance_data_from_vertex_buffer((global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*)__bgcsValueAddress0, _startVertex, _num);
+            }
         }
 
         public void set_index_buffer(global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle, uint _firstIndex, uint _numIndices)
         {
-            this.Raw.set_index_buffer(_handle, _firstIndex, _numIndices);
+            {
+                global::Inno.Native.Bgfx.bgfx.IndexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_index_buffer((global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*)__bgcsValueAddress0, _firstIndex, _numIndices);
+            }
         }
 
         public void set_dynamic_vertex_buffer(byte _stream, global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, uint _startVertex, uint _numVertices)
         {
-            this.Raw.set_dynamic_vertex_buffer(_stream, _handle, _startVertex, _numVertices);
+            {
+                global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_dynamic_vertex_buffer(_stream, (global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle*)__bgcsValueAddress1, _startVertex, _numVertices);
+            }
         }
 
         public void set_instance_count(uint _numInstances)
@@ -2108,27 +2533,67 @@ namespace Inno.Native.Bgfx
 
         public void set_view_frame_buffer(ushort _id, global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle)
         {
-            this.Raw.set_view_frame_buffer(_id, _handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.FrameBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_view_frame_buffer(_id, (global::Inno.Native.Bgfx.bgfx.FrameBufferHandle*)__bgcsValueAddress1);
+            }
         }
 
         public void set_compute_vertex_buffer(byte _stage, global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, global::Inno.Native.Bgfx.bgfx.Access _access)
         {
-            this.Raw.set_compute_vertex_buffer(_stage, _handle, _access);
+            {
+                global::Inno.Native.Bgfx.bgfx.VertexBufferHandle __bgcsCopiedValue1 = _handle;
+                nint __bgcsValueAddress1 = (nint)(&__bgcsCopiedValue1);
+                if (__bgcsValueAddress1 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress1 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_compute_vertex_buffer(_stage, (global::Inno.Native.Bgfx.bgfx.VertexBufferHandle*)__bgcsValueAddress1, _access);
+            }
         }
 
         public void set_condition(global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _handle, bool _visible)
         {
-            this.Raw.set_condition(_handle, RecipeConversions.__ToNative_7ab07571013b2f48(_visible));
+            {
+                global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.set_condition((global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle*)__bgcsValueAddress0, RecipeConversions.__ToNative_7ab07571013b2f48(_visible));
+            }
         }
 
         public void destroy_indirect_buffer(global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _handle)
         {
-            this.Raw.destroy_indirect_buffer(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_indirect_buffer((global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle*)__bgcsValueAddress0);
+            }
         }
 
         public void destroy_index_buffer(global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle)
         {
-            this.Raw.destroy_index_buffer(_handle);
+            {
+                global::Inno.Native.Bgfx.bgfx.IndexBufferHandle __bgcsCopiedValue0 = _handle;
+                nint __bgcsValueAddress0 = (nint)(&__bgcsCopiedValue0);
+                if (__bgcsValueAddress0 == 0)
+                    throw new global::System.ArgumentException("This native value requires non-null borrowed storage.");
+                if ((nuint)__bgcsValueAddress0 % (nuint)2 != 0)
+                    throw new global::System.ArgumentException("Managed value address does not satisfy native alignment; use aligned native storage through Raw.");
+                this.Raw.destroy_index_buffer((global::Inno.Native.Bgfx.bgfx.IndexBufferHandle*)__bgcsValueAddress0);
+            }
         }
     }
 }
@@ -2146,7 +2611,7 @@ namespace Inno.Native.Bgfx
             internal RawApi(bgfxContext owner) => m_owner = owner;
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_view_uniform")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_view_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
+            public void set_view_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function0(_id, _handle, _value, _num);
@@ -2170,7 +2635,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_vertex_buffer_with_layout")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
+            public void encoder_set_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* _layoutHandle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function3(_this, _stream, _handle, _startVertex, _numVertices, _layoutHandle);
@@ -2178,18 +2643,18 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_texture")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle)
+            public void destroy_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function4(_handle);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_indirect_buffer")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle create_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function5(_num);
+                this.m_owner.m_function5(_num, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_get_internal_data")]
@@ -2210,7 +2675,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_submit")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_submit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void encoder_submit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function8(_this, _id, _program, _depth, _flags);
@@ -2218,7 +2683,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_blit")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_blit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dst")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _dst, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _dstMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_src")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _src, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _srcMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth)
+            public void encoder_blit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dst")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _dst, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _dstMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_src")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _src, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _srcMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function9(_this, _id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth);
@@ -2226,18 +2691,18 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_update_texture_3d")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void update_texture_3d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_z")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _z, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem)
+            public void update_texture_3d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_z")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _z, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function10(_handle, _mip, _x, _y, _z, _width, _height, _depth, _mem);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_index_buffer")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.IndexBufferHandle create_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function11(_mem, _flags);
+                this.m_owner.m_function11(_mem, _flags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_init")]
@@ -2257,40 +2722,40 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_texture_2d")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.TextureHandle create_texture_2d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_external")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _external)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_texture_2d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_external")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _external, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_s *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function14(_width, _height, _hasMips, _numLayers, _format, _flags, _mem, _external);
+                this.m_owner.m_function14(_width, _height, _hasMips, _numLayers, _format, _flags, _mem, _external, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_texture_cube")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.TextureHandle create_texture_cube([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_size")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _size, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_external")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _external)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_texture_cube([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_size")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _size, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_external")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _external, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_s *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function15(_size, _hasMips, _numLayers, _format, _flags, _mem, _external);
+                this.m_owner.m_function15(_size, _hasMips, _numLayers, _format, _flags, _mem, _external, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_shader")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.ShaderHandle create_shader([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_shader([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_s *")] global::Inno.Native.Bgfx.bgfx.ShaderHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function16(_mem);
+                this.m_owner.m_function16(_mem, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_frame_buffer")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.FrameBufferHandle create_frame_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_textureFlags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _textureFlags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_frame_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_textureFlags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _textureFlags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function17(_width, _height, _format, _textureFlags);
+                this.m_owner.m_function17(_width, _height, _format, _textureFlags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
+            public void set_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function18(_stream, _handle, _startVertex, _numVertices);
@@ -2321,16 +2786,16 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_frame_buffer_from_nwh")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.FrameBufferHandle create_frame_buffer_from_nwh([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_nwh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void *")] void* _nwh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depthFormat")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _depthFormat)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_frame_buffer_from_nwh([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_nwh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void *")] void* _nwh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depthFormat")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _depthFormat, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function22(_nwh, _width, _height, _format, _depthFormat);
+                this.m_owner.m_function22(_nwh, _width, _height, _format, _depthFormat, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
+            public void encoder_set_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function23(_this, _stream, _handle, _startVertex, _numVertices);
@@ -2338,7 +2803,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_dispatch_indirect")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_dispatch_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void encoder_dispatch_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function24(_this, _id, _program, _indirectHandle, _start, _num, _flags);
@@ -2346,7 +2811,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_dynamic_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle)
+            public void destroy_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function25(_handle);
@@ -2354,7 +2819,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_index_buffer_name")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_index_buffer_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
+            public void set_index_buffer_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function26(_handle, _name, _len);
@@ -2370,7 +2835,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_compute_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_compute_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void encoder_set_compute_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function28(_this, _stage, _handle, _access);
@@ -2394,7 +2859,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_instance_data_from_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_instance_data_from_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
+            public void set_instance_data_from_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function31(_handle, _startVertex, _num);
@@ -2402,7 +2867,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
+            public void encoder_set_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function32(_this, _stream, _handle, _startVertex, _numVertices);
@@ -2418,7 +2883,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_override_internal_texture")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uintptr_t")]
-            public ulong override_internal_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _numMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags)
+            public ulong override_internal_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _numMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 return this.m_owner.m_function34(_handle, _width, _height, _numMips, _format, _flags);
@@ -2426,7 +2891,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_compute_indirect_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_compute_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void set_compute_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function35(_stage, _handle, _access);
@@ -2458,7 +2923,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_compute_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_compute_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void set_compute_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function39(_stage, _handle, _access);
@@ -2505,16 +2970,16 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_program")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.ProgramHandle create_program([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_vsh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t")] global::Inno.Native.Bgfx.bgfx.ShaderHandle _vsh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_fsh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t")] global::Inno.Native.Bgfx.bgfx.ShaderHandle _fsh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyShaders")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyShaders)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_program([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_vsh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ShaderHandle* _vsh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_fsh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ShaderHandle* _fsh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyShaders")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyShaders, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_s *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function45(_vsh, _fsh, _destroyShaders);
+                this.m_owner.m_function45(_vsh, _fsh, _destroyShaders, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_dynamic_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
+            public void set_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function46(_handle, _firstIndex, _numIndices);
@@ -2522,7 +2987,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_read_texture")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")]
-            public uint read_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_data")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void *")] void* _data, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip)
+            public uint read_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_data")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void *")] void* _data, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 return this.m_owner.m_function47(_handle, _data, _mip);
@@ -2530,7 +2995,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_frame_uniform")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_frame_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
+            public void set_frame_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function48(_handle, _value, _num);
@@ -2538,18 +3003,18 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_submit")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void submit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void submit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function49(_id, _program, _depth, _flags);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_texture")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.TextureHandle create_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_skip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _skip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_info")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_info_t *")] global::Inno.Native.Bgfx.bgfx.TextureInfo* _info)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_skip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _skip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_info")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_info_t *")] global::Inno.Native.Bgfx.bgfx.TextureInfo* _info, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_s *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function50(_mem, _flags, _skip, _info);
+                this.m_owner.m_function50(_mem, _flags, _skip, _info, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_view_clear_mrt")]
@@ -2562,7 +3027,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_override_internal_texture_ptr")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uintptr_t")]
-            public ulong override_internal_texture_ptr([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_ptr")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uintptr_t")] ulong _ptr, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layerIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layerIndex)
+            public ulong override_internal_texture_ptr([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_ptr")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uintptr_t")] ulong _ptr, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layerIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layerIndex)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 return this.m_owner.m_function52(_handle, _ptr, _layerIndex);
@@ -2602,7 +3067,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_instance_data_from_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_instance_data_from_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
+            public void encoder_set_instance_data_from_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function57(_this, _handle, _startVertex, _num);
@@ -2625,11 +3090,11 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_frame_buffer_from_attachment")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.FrameBufferHandle create_frame_buffer_from_attachment([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_attachment")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_attachment_t const *")] global::Inno.Native.Bgfx.bgfx.Attachment* _attachment, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyTexture")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyTexture)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_frame_buffer_from_attachment([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_attachment")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_attachment_t const *")] global::Inno.Native.Bgfx.bgfx.Attachment* _attachment, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyTexture")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyTexture, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function60(_num, _attachment, _destroyTexture);
+                this.m_owner.m_function60(_num, _attachment, _destroyTexture, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_discard")]
@@ -2658,7 +3123,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_dynamic_vertex_buffer_with_layout")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_dynamic_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
+            public void set_dynamic_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* _layoutHandle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function64(_stream, _handle, _startVertex, _numVertices, _layoutHandle);
@@ -2666,7 +3131,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle)
+            public void destroy_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function65(_handle);
@@ -2674,7 +3139,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_get_result")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_result_t")]
-            public global::Inno.Native.Bgfx.bgfx.OcclusionQueryResult get_result([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t *")] int* _result)
+            public global::Inno.Native.Bgfx.bgfx.OcclusionQueryResult get_result([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t const *")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t *")] int* _result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 return this.m_owner.m_function66(_handle, _result);
@@ -2682,7 +3147,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_vertex_layout")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_vertex_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
+            public void destroy_vertex_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* _layoutHandle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function67(_layoutHandle);
@@ -2706,7 +3171,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_uniform")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
+            public void set_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function70(_handle, _value, _num);
@@ -2714,7 +3179,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_shader_name")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_shader_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t")] global::Inno.Native.Bgfx.bgfx.ShaderHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
+            public void set_shader_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ShaderHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function71(_handle, _name, _len);
@@ -2730,7 +3195,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_dispatch_indirect")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void dispatch_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void dispatch_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function73(_id, _program, _indirectHandle, _start, _num, _flags);
@@ -2738,7 +3203,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_compute_dynamic_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_compute_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void set_compute_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function74(_stage, _handle, _access);
@@ -2754,7 +3219,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_update_dynamic_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void update_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem)
+            public void update_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function76(_handle, _startIndex, _mem);
@@ -2762,7 +3227,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_texture")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_sampler")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _sampler, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _flags)
+            public void encoder_set_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_sampler")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _sampler, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function77(_this, _stage, _sampler, _handle, _flags);
@@ -2770,7 +3235,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_uniform")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
+            public void encoder_set_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void const *")] void* _value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function78(_this, _handle, _value, _num);
@@ -2778,7 +3243,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_get_shader_uniforms")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")]
-            public ushort get_shader_uniforms([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t")] global::Inno.Native.Bgfx.bgfx.ShaderHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_uniforms")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _uniforms, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_max")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _max)
+            public ushort get_shader_uniforms([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ShaderHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_uniforms")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _uniforms, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_max")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _max)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 return this.m_owner.m_function79(_handle, _uniforms, _max);
@@ -2786,34 +3251,34 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
+            public void encoder_set_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function80(_this, _handle, _firstIndex, _numIndices);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_occlusion_query")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle create_occlusion_query()
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_occlusion_query([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_s *")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function81();
+                this.m_owner.m_function81(bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_compute_program")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.ProgramHandle create_compute_program([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_csh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t")] global::Inno.Native.Bgfx.bgfx.ShaderHandle _csh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyShaders")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyShaders)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_compute_program([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_csh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ShaderHandle* _csh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyShaders")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyShaders, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_s *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function82(_csh, _destroyShaders);
+                this.m_owner.m_function82(_csh, _destroyShaders, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_uniform_with_freq")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.UniformHandle create_uniform_with_freq([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_freq")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_freq_t")] global::Inno.Native.Bgfx.bgfx.UniformFreq _freq, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_type")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_type_t")] global::Inno.Native.Bgfx.bgfx.UniformType _type, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_uniform_with_freq([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_freq")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_freq_t")] global::Inno.Native.Bgfx.bgfx.UniformFreq _freq, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_type")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_type_t")] global::Inno.Native.Bgfx.bgfx.UniformType _type, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_s *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function83(_name, _freq, _type, _num);
+                this.m_owner.m_function83(_name, _freq, _type, _num, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_vertex_layout_add")]
@@ -2842,7 +3307,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_attachment_init")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void attachment_init([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_attachment_t *")] global::Inno.Native.Bgfx.bgfx.Attachment* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layer")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layer, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_resolve")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _resolve)
+            public void attachment_init([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_attachment_t *")] global::Inno.Native.Bgfx.bgfx.Attachment* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layer")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layer, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_resolve")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _resolve)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function87(_this, _handle, _access, _layer, _numLayers, _mip, _resolve);
@@ -2865,11 +3330,11 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_frame_buffer_scaled")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.FrameBufferHandle create_frame_buffer_scaled([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_ratio")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_backbuffer_ratio_t")] global::Inno.Native.Bgfx.bgfx.BackbufferRatio _ratio, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_textureFlags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _textureFlags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_frame_buffer_scaled([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_ratio")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_backbuffer_ratio_t")] global::Inno.Native.Bgfx.bgfx.BackbufferRatio _ratio, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_textureFlags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _textureFlags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function90(_ratio, _format, _textureFlags);
+                this.m_owner.m_function90(_ratio, _format, _textureFlags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_alloc_transform")]
@@ -2890,7 +3355,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_submit_indirect")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void submit_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void submit_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function93(_id, _program, _indirectHandle, _start, _num, _depth, _flags);
@@ -2922,26 +3387,26 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_compute_indirect_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_compute_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void encoder_set_compute_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function97(_this, _stage, _handle, _access);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_get_texture")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.TextureHandle get_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_attachment")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _attachment)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void get_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_attachment")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _attachment, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_s *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function98(_handle, _attachment);
+                this.m_owner.m_function98(_handle, _attachment, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_texture_3d")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.TextureHandle create_texture_3d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_external")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _external)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_texture_3d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_external")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _external, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_s *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function99(_width, _height, _depth, _hasMips, _format, _flags, _mem, _external);
+                this.m_owner.m_function99(_width, _height, _depth, _hasMips, _format, _flags, _mem, _external, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_discard")]
@@ -2962,7 +3427,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_dynamic_vertex_buffer_with_layout")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_dynamic_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
+            public void encoder_set_dynamic_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* _layoutHandle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function102(_this, _stream, _handle, _startVertex, _numVertices, _layoutHandle);
@@ -2978,7 +3443,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_shader")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_shader([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t")] global::Inno.Native.Bgfx.bgfx.ShaderHandle _handle)
+            public void destroy_shader([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_shader_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ShaderHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function104(_handle);
@@ -2986,7 +3451,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_blit")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void blit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dst")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _dst, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _dstMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_src")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _src, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _srcMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth)
+            public void blit([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dst")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _dst, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _dstMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_dstZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _dstZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_src")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _src, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcMip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _srcMip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_srcZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _srcZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _depth)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function105(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth);
@@ -2994,7 +3459,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_update_texture_2d")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void update_texture_2d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layer")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layer, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_pitch")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _pitch)
+            public void update_texture_2d([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layer")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layer, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_pitch")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _pitch)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function106(_handle, _layer, _mip, _x, _y, _width, _height, _mem, _pitch);
@@ -3010,7 +3475,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_image")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_image([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format)
+            public void set_image([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function108(_stage, _handle, _mip, _access, _format);
@@ -3018,7 +3483,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_vertex_buffer_with_layout")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
+            public void set_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* _layoutHandle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function109(_stream, _handle, _startVertex, _numVertices, _layoutHandle);
@@ -3026,7 +3491,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_submit_indirect_count")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void submit_indirect_count([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _numHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numMax")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numMax, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void submit_indirect_count([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _numHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numMax")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numMax, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function110(_id, _program, _indirectHandle, _start, _numHandle, _numIndex, _numMax, _depth, _flags);
@@ -3034,7 +3499,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_dynamic_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
+            public void encoder_set_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function111(_this, _handle, _firstIndex, _numIndices);
@@ -3050,7 +3515,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_submit_indirect_count")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_submit_indirect_count([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _numHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numMax")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numMax, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void encoder_submit_indirect_count([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _numHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numMax")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numMax, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function113(_this, _id, _program, _indirectHandle, _start, _numHandle, _numIndex, _numMax, _depth, _flags);
@@ -3066,7 +3531,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_submit_indirect")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_submit_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void encoder_submit_indirect([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_indirectHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _indirectHandle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_start")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _start, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function115(_this, _id, _program, _indirectHandle, _start, _num, _depth, _flags);
@@ -3082,7 +3547,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_texture")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_sampler")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _sampler, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _flags)
+            public void set_texture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_sampler")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _sampler, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function117(_stage, _sampler, _handle, _flags);
@@ -3090,7 +3555,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_dispatch")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_dispatch([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void encoder_dispatch([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function118(_this, _id, _program, _numX, _numY, _numZ, _flags);
@@ -3098,7 +3563,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_submit_occlusion_query")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void submit_occlusion_query([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_occlusionQuery")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _occlusionQuery, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void submit_occlusion_query([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_occlusionQuery")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t const *")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle* _occlusionQuery, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function119(_id, _program, _occlusionQuery, _depth, _flags);
@@ -3130,7 +3595,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_compute_dynamic_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_compute_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void encoder_set_compute_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function123(_this, _stage, _handle, _access);
@@ -3146,7 +3611,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_instance_data_from_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
+            public void encoder_set_instance_data_from_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function125(_this, _handle, _startVertex, _num);
@@ -3154,7 +3619,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_dispatch")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void dispatch([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void dispatch([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numX")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numX, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numY")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numY, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numZ")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numZ, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function126(_id, _program, _numX, _numY, _numZ, _flags);
@@ -3185,19 +3650,19 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_dynamic_index_buffer_mem")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle create_dynamic_index_buffer_mem([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_dynamic_index_buffer_mem([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function130(_mem, _flags);
+                this.m_owner.m_function130(_mem, _flags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_texture_2d_scaled")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.TextureHandle create_texture_2d_scaled([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_ratio")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_backbuffer_ratio_t")] global::Inno.Native.Bgfx.bgfx.BackbufferRatio _ratio, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_texture_2d_scaled([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_ratio")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_backbuffer_ratio_t")] global::Inno.Native.Bgfx.bgfx.BackbufferRatio _ratio, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_hasMips")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _hasMips, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numLayers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _numLayers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_s *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function131(_ratio, _hasMips, _numLayers, _format, _flags);
+                this.m_owner.m_function131(_ratio, _hasMips, _numLayers, _format, _flags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_alloc_transform")]
@@ -3210,7 +3675,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_frame_buffer_name")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_frame_buffer_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
+            public void set_frame_buffer_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function133(_handle, _name, _len);
@@ -3218,7 +3683,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_frame_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_frame_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle)
+            public void destroy_frame_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function134(_handle);
@@ -3234,7 +3699,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_compute_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_compute_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void set_compute_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function136(_stage, _handle, _access);
@@ -3242,7 +3707,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_uniform")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _handle)
+            public void destroy_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function137(_handle);
@@ -3258,7 +3723,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle)
+            public void destroy_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function139(_handle);
@@ -3313,11 +3778,11 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_frame_buffer_from_handles")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.FrameBufferHandle create_frame_buffer_from_handles([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handles")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handles, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyTexture")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyTexture)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_frame_buffer_from_handles([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handles")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handles, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_destroyTexture")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _destroyTexture, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function146(_num, _handles, _destroyTexture);
+                this.m_owner.m_function146(_num, _handles, _destroyTexture, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_alloc_transient_buffers")]
@@ -3338,7 +3803,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_condition")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_condition([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_visible")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _visible)
+            public void encoder_set_condition([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t const *")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_visible")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _visible)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function149(_this, _handle, _visible);
@@ -3370,23 +3835,23 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_get_direct_access_ptr")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void *")]
-            public void* get_direct_access_ptr([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle)
+            public void* get_direct_access_ptr([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 return this.m_owner.m_function153(_handle);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_vertex_layout")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle create_vertex_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_vertex_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_s *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function154(_layout);
+                this.m_owner.m_function154(_layout, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_occlusion_query")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_occlusion_query([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _handle)
+            public void destroy_occlusion_query([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t const *")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function155(_handle);
@@ -3402,7 +3867,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_image")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_image([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format)
+            public void encoder_set_image([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_format")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_format_t")] global::Inno.Native.Bgfx.bgfx.TextureFormat _format)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function157(_this, _stage, _handle, _mip, _access, _format);
@@ -3417,24 +3882,24 @@ namespace Inno.Native.Bgfx
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_dynamic_index_buffer")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle create_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_dynamic_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_index_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.DynamicIndexBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function159(_num, _flags);
+                this.m_owner.m_function159(_num, _flags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_dynamic_vertex_buffer_mem")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle create_dynamic_vertex_buffer_mem([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_dynamic_vertex_buffer_mem([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function160(_mem, _layout, _flags);
+                this.m_owner.m_function160(_mem, _layout, _flags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_compute_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_compute_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void encoder_set_compute_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function161(_this, _stage, _handle, _access);
@@ -3498,7 +3963,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_texture_name")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_texture_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
+            public void set_texture_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function169(_handle, _name, _len);
@@ -3506,7 +3971,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_program")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_program([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _handle)
+            public void destroy_program([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function170(_handle);
@@ -3514,7 +3979,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_instance_data_from_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_instance_data_from_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
+            public void set_instance_data_from_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function171(_handle, _startVertex, _num);
@@ -3522,7 +3987,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_update_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void update_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem)
+            public void update_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function172(_handle, _startVertex, _mem);
@@ -3538,7 +4003,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
+            public void set_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_firstIndex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _firstIndex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numIndices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numIndices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function174(_handle, _firstIndex, _numIndices);
@@ -3546,7 +4011,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_get_uniform_info")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void get_uniform_info([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")] global::Inno.Native.Bgfx.bgfx.UniformHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_info")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_info_t *")] global::Inno.Native.Bgfx.bgfx.UniformInfo* _info)
+            public void get_uniform_info([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t const *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_info")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_info_t *")] global::Inno.Native.Bgfx.bgfx.UniformInfo* _info)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function175(_handle, _info);
@@ -3562,23 +4027,23 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
+            public void set_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function177(_stream, _handle, _startVertex, _numVertices);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_uniform")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.UniformHandle create_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_type")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_type_t")] global::Inno.Native.Bgfx.bgfx.UniformType _type, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_uniform([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_type")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_type_t")] global::Inno.Native.Bgfx.bgfx.UniformType _type, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_uniform_handle_s *")] global::Inno.Native.Bgfx.bgfx.UniformHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function178(_name, _type, _num);
+                this.m_owner.m_function178(_name, _type, _num, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_request_screen_shot")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void request_screen_shot([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_filePath")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _filePath)
+            public void request_screen_shot([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_filePath")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _filePath)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function179(_handle, _filePath);
@@ -3610,7 +4075,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_view_frame_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_view_frame_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle _handle)
+            public void set_view_frame_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_frame_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.FrameBufferHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function183(_id, _handle);
@@ -3626,7 +4091,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_compute_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_compute_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void set_compute_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function185(_stage, _handle, _access);
@@ -3634,7 +4099,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_submit_occlusion_query")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_submit_occlusion_query([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t")] global::Inno.Native.Bgfx.bgfx.ProgramHandle _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_occlusionQuery")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _occlusionQuery, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
+            public void encoder_submit_occlusion_query([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_view_id_t")] ushort _id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_program")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_program_handle_t const *")] global::Inno.Native.Bgfx.bgfx.ProgramHandle* _program, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_occlusionQuery")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t const *")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle* _occlusionQuery, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_depth")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _depth, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _flags)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function186(_this, _id, _program, _occlusionQuery, _depth, _flags);
@@ -3658,23 +4123,23 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_condition")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_condition([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_visible")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _visible)
+            public void set_condition([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_occlusion_query_handle_t const *")] global::Inno.Native.Bgfx.bgfx.OcclusionQueryHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_visible")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bool")] byte _visible)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function189(_handle, _visible);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_vertex_buffer")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.VertexBufferHandle create_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function190(_mem, _layout, _flags);
+                this.m_owner.m_function190(_mem, _layout, _flags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_transient_vertex_buffer_with_layout")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_transient_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_tvb")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_transient_vertex_buffer_t const *")] global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer* _tvb, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
+            public void set_transient_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_tvb")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_transient_vertex_buffer_t const *")] global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer* _tvb, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* _layoutHandle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function191(_stream, _tvb, _startVertex, _numVertices, _layoutHandle);
@@ -3682,7 +4147,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_compute_dynamic_vertex_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_compute_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
+            public void encoder_set_compute_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stage")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stage, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_access")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_access_t")] global::Inno.Native.Bgfx.bgfx.Access _access)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function192(_this, _stage, _handle, _access);
@@ -3690,7 +4155,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_indirect_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle _handle)
+            public void destroy_indirect_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_indirect_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndirectBufferHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function193(_handle);
@@ -3698,7 +4163,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_destroy_index_buffer")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void destroy_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle _handle)
+            public void destroy_index_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_index_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.IndexBufferHandle* _handle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function194(_handle);
@@ -3714,7 +4179,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_update_texture_cube")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void update_texture_cube([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t")] global::Inno.Native.Bgfx.bgfx.TextureHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layer")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layer, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_side")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _side, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_pitch")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _pitch)
+            public void update_texture_cube([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_texture_handle_t const *")] global::Inno.Native.Bgfx.bgfx.TextureHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layer")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _layer, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_side")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _side, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mip")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _mip, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_mem")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_memory_t const *")] global::Inno.Native.Bgfx.bgfx.Memory* _mem, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_pitch")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _pitch)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function196(_handle, _layer, _side, _mip, _x, _y, _width, _height, _mem, _pitch);
@@ -3730,7 +4195,7 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_encoder_set_transient_vertex_buffer_with_layout")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void encoder_set_transient_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_tvb")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_transient_vertex_buffer_t const *")] global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer* _tvb, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle _layoutHandle)
+            public void encoder_set_transient_vertex_buffer_with_layout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_this")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_encoder_t *")] global::Inno.Native.Bgfx.bgfx.Encoder* _this, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_stream")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte _stream, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_tvb")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_transient_vertex_buffer_t const *")] global::Inno.Native.Bgfx.bgfx.TransientVertexBuffer* _tvb, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_startVertex")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _startVertex, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_numVertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _numVertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layoutHandle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayoutHandle* _layoutHandle)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function198(_this, _stream, _tvb, _startVertex, _numVertices, _layoutHandle);
@@ -3738,18 +4203,18 @@ namespace Inno.Native.Bgfx
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_vertex_buffer_name")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void set_vertex_buffer_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
+            public void set_vertex_buffer_name([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_handle")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_buffer_handle_t const *")] global::Inno.Native.Bgfx.bgfx.VertexBufferHandle* _handle, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "char const *")] sbyte* _name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_len")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int _len)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function199(_handle, _name, _len);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_create_dynamic_vertex_buffer")]
-            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_t")]
-            public global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle create_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags)
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
+            public void create_dynamic_vertex_buffer([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_num")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t")] uint _num, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_vertex_layout_t const *")] global::Inno.Native.Bgfx.bgfx.VertexLayout* _layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "_flags")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint16_t")] ushort _flags, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgfx_dynamic_vertex_buffer_handle_s *")] global::Inno.Native.Bgfx.bgfx.DynamicVertexBufferHandle* bgcs_result)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function200(_num, _layout, _flags);
+                this.m_owner.m_function200(_num, _layout, _flags, bgcs_result);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgfx_set_transient_index_buffer")]

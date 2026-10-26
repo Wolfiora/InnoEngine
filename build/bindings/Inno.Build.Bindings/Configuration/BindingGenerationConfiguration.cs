@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
+using System.Threading;
 using BGCS;
+using BGCS.Core.Hosting;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Bindings;
@@ -12,22 +15,31 @@ internal sealed class BindingGenerationConfiguration
         NativeComponentDescriptor component,
         string definition,
         string configPath,
-        NativeBindingGenerationRequest request
+        NativeBindingGenerationRequest request,
+        NativeBindingProfile profile
     ) {
         this.component = component;
         this.definition = definition;
         this.configPath = configPath;
         this.request = request;
+        this.profile = profile;
     }
 
     internal NativeComponentDescriptor component { get; }
     internal string definition { get; }
     internal string configPath { get; }
     internal NativeBindingGenerationRequest request { get; }
+    internal NativeBindingProfile profile { get; }
 
-    internal GenerationRequest Load(NativeBuildContext context)
-    {
-        GenerationRequest captured = GenerationRequest.FromFile(configPath);
+    internal GenerationRequest Load(
+        NativeBuildContext context,
+        CancellationToken cancellation
+    ) {
+        if (context.toolchain is NativeToolchainSelection selected && selected.targetId != request.targetId)
+            throw new InvalidOperationException("The selected SDK does not match the binding target.");
+        using HostServices host = BindingHostFactory.CreateHostServices(context.engineRoot);
+        GenerationRequest captured = GenerationRequest.FromFile(configPath).MaterializeAsync(host.paths, cancellation)
+            .AsTask().GetAwaiter().GetResult();
         if (captured.configuration.targets.Length != 1)
             throw new InvalidDataException("A component binding request must select exactly one native target.");
         if (captured.configuration.output.layout != "singleFile" || captured.configuration.output.singleFileName != "Bindings.cs"
@@ -37,10 +49,12 @@ internal sealed class BindingGenerationConfiguration
         {
             cache = captured.configuration.cache with
             {
-                directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bgcs-cache", component.id, request.targetId)
+                directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "sdk-workspaces", component.id, request.targetId)
             }
         });
-        return BindingConfigurationPaths.Apply(captured, context.toolchain);
+        return profile.Apply(captured, context.toolchain?.compilerInputs,
+            request.componentOptions.GetValueOrDefault(component.nativeProject), context.engineRoot)
+            .MaterializeAsync(host.paths, cancellation).AsTask().GetAwaiter().GetResult();
     }
 
     internal string GetOutputRoot(NativeBuildContext context) => request.outputMode == NativeBindingOutputMode.TargetArtifacts

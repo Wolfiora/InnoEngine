@@ -2,20 +2,20 @@
 
 [Native 索引](README.md) · [构建入口](../build/Inno.Build.Cli.md) · [Wiki 首页](../README.md)
 
-每个 Native 组件通过自己的 `Bindings/bindings.props` 声明唯一生成入口、Host 配置和目标配置。ABI、命名、类型及生命周期语义属于 BGCS JSON 配置。包族由 `build/msbuild/Inno.Packages.props` 精确固定为 3.0.1。
+每个 Native 组件通过自己的 `Bindings/bindings.props` 声明唯一组件身份和公共配置。组件拥有命名、类型及生命周期语义；平台 Build integration 拥有 ABI 与托管 runtime Profile，平台 provider 冻结 SDK 输入。包族由 `build/msbuild/Inno.Packages.props` 精确固定为 4.1.2。
 
 ## 生成与检查
 
 在仓库根目录执行：
 
 ```shell
-dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:GenerateBindings -c Release
-dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:CheckBindings -c Release
+dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:GenerateBindings -c Release -p:InnoBindingTargetId=windows-x64
+dotnet build backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj -t:CheckBindings -c Release -p:InnoBindingTargetId=windows-x64
 ```
 
 `GenerateBindings` 调用正式 SDK 流程；`CheckBindings` 在独立候选中重新生成并比较完整 managed/native 输出，不发布候选。普通宿主编译在所选 binding 缺失时准备生成物；目标产品使用本次 Native 构建选定的身份。
 
-Bgfx、ImGui、ImGuizmo、MiniAudio、Sdl3、Text、UI 均使用组件自己的 `Bindings/common.json` 与 `bindgen*.json`。Text 与 UI 的手写语义 facade 分别为 `Native/include/TextRuntime.hpp` 和 `Native/include/RmlUiRuntime.hpp`，实现属于同一 Native owner。SDK 从 facade 生成 C ABI 和 managed binding。
+Bgfx、ImGui、ImGuizmo、MiniAudio、Sdl3、Text、UI 均使用组件自己的 唯一 `Bindings/bindgen.json`。Text 与 UI 的手写语义 facade 分别为 `Native/include/TextRuntime.hpp` 和 `Native/include/RmlUiRuntime.hpp`，实现属于同一 Native owner。SDK 从 facade 生成 C ABI 和 managed binding。
 
 源码、配置和第三方依赖分别归组件与 extern 所有。所有生成物通过正式流程获得，不手改 `Generated/Bindings.cs`、生成原生代码或第三方源码，不另写平行 import。
 
@@ -31,7 +31,7 @@ MSBuild 在读取保护期间将唯一选中 `Bindings.cs` 复制到本次 SDK �
 
 ## 原生编译要求
 
-`Inno.Build.Bindings` 是 SDK 消费边界。它读取经过 SDK 发布锁和哈希验证的 `NativeSourceManifest`，结合本次会话的物理 root bindings，转换为 `NativeBindingCompilation`。Toolchains 和平台不引用 BGCS 类型。
+`Inno.Build.Bindings` 是 SDK 消费边界。它读取经过 SDK 发布锁和哈希验证的 `NativeSourceManifest`，结合本次会话的物理 root bindings，转换为 `NativeBindingCompilation`。中立 Toolchains 不引用 BGCS 类型；平台 Build integration 仅使用官方公开配置创建 Profile，不解析或复制 SDK 实现。平台基础 build 不引用 BGCS。
 
 中立描述保存根身份、文件长度与 SHA-256、翻译单元标记、有序 include、宏、语言要求及导出要求。逻辑根按每个组件独立解释。SDK 的生成源码和 ShimSource 输入进入编译列表；入口头和依赖不作为翻译单元。
 

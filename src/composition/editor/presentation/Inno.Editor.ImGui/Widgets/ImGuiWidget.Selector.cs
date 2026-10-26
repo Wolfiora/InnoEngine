@@ -167,20 +167,20 @@ public static unsafe partial class ImGuiWidget
         ImDrawFlags previewRounding = size.X <= arrowSlot
             ? ImDrawFlags.RoundCornersAll
             : ImDrawFlags.RoundCornersLeft;
-        NativeImGui.Raw.AddRectFilled(
+        ImGui.DrawNativeFilledRectangle(
             drawList,
-            ImGui.ToNative(minimum),
-            ImGui.ToNative(new Vector2(arrowMinimumX, maximum.Y)),
+            minimum,
+            new Vector2(arrowMinimumX, maximum.Y),
             background,
             nativeStyle->FrameRounding,
             (int)(previewRounding)
         );
         uint arrowBackground = NativeImGui.GetColorU32(
             (int)(active || hovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button));
-        NativeImGui.Raw.AddRectFilled(
+        ImGui.DrawNativeFilledRectangle(
             drawList,
-            ImGui.ToNative(new Vector2(arrowMinimumX, minimum.Y)),
-            ImGui.ToNative(maximum),
+            new Vector2(arrowMinimumX, minimum.Y),
+            maximum,
             arrowBackground,
             nativeStyle->FrameRounding,
             (int)(size.X <= arrowSlot ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersRight)
@@ -188,12 +188,12 @@ public static unsafe partial class ImGuiWidget
 
         Vector2 textMinimum = minimum + ImGui.FromNative(nativeStyle->FramePadding);
         Vector2 textMaximum = new(arrowMinimumX, maximum.Y);
-        NativeImGui.Raw.PushClipRect(drawList, ImGui.ToNative(textMinimum), ImGui.ToNative(textMaximum), 1);
+        ImGui.PushNativeClipRectangle(drawList, textMinimum, textMaximum, 1);
         ImGui.DrawNativeText(drawList, textMinimum, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), preview);
         NativeImGui.Raw.PopClipRect(drawList);
-        NativeImGui.Raw.RenderArrow(
+        ImGui.DrawNativeArrow(
             drawList,
-            ImGui.ToNative(new Vector2(arrowMinimumX + nativeStyle->FramePadding.Y, minimum.Y + nativeStyle->FramePadding.Y)),
+            new Vector2(arrowMinimumX + nativeStyle->FramePadding.Y, minimum.Y + nativeStyle->FramePadding.Y),
             NativeImGui.GetColorU32((int)(ImGuiCol.Text)),
             ImGuiDir.Down,
             1f);

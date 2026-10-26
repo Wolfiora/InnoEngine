@@ -11,13 +11,16 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class BuildArtifactWriteLease : IDisposable
 {
-    private FileLease? m_lease;
+    private CoordinatedFileLease? m_lease;
 
-    private BuildArtifactWriteLease(FileLease lease) => m_lease = lease;
+    private BuildArtifactWriteLease(CoordinatedFileLease lease) => m_lease = lease;
 
     /// <summary>
     /// Waits for all readers before allowing mutation of one immutable artifact directory.
     /// </summary>
+    /// <param name="ownerDirectory">
+    /// The exact publisher root retaining the persistent owner.lock gate.
+    /// </param>
     /// <param name="directory">
     /// The absolute artifact location controlled by the publisher.
     /// </param>
@@ -38,13 +41,15 @@ public sealed class BuildArtifactWriteLease : IDisposable
     /// </exception>
     public static async ValueTask<BuildArtifactWriteLease> AcquireAsync(
         string directory,
+        string ownerDirectory,
         CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         if (!Path.IsPathFullyQualified(directory))
             throw new ArgumentException("Artifact mutation requires an absolute owner path.", nameof(directory));
-        return new(await FileLease.AcquireAsync(BuildArtifactReadLease.GetLeasePath(directory),
-            TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false));
+        BuildCacheCleanupPlan.RequireChild(ownerDirectory, directory);
+        return new(await CoordinatedFileLease.AcquireAsync(Path.Combine(ownerDirectory, "owner.lock"), BuildArtifactReadLease.GetLeasePath(directory),
+            TimeSpan.FromSeconds(30), cancellationToken: cancellationToken).ConfigureAwait(false));
     }
 
     /// <summary>

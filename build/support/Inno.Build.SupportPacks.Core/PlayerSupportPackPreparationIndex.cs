@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
 namespace Inno.Build.SupportPacks;
@@ -30,7 +31,10 @@ internal static class PlayerSupportPackPreparationIndex
         string path = GetPath(root, target, preparation);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         PathBoundary.RequireUnlinkedPath(root, path);
-        AtomicFile.WriteAllBytes(path, Encoding.UTF8.GetBytes(content));
+        if (!File.Exists(path) || File.ReadAllText(path) != content)
+            AtomicFile.WriteAllBytes(path, Encoding.UTF8.GetBytes(content));
+        new BuildCachePublisher(Path.GetFullPath(root), BuildCacheArtifactRole.ImmutableArtifact)
+            .RecordIndex(path, [PathBoundary.Resolve(root, target + "/" + content)]);
     }
 
     private static string GetPath(

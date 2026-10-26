@@ -1,7 +1,3 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -205,34 +201,21 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         NativeImGui.Dummy(size);
         Vector2 maximum = minimum + size;
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        NativeImGui.Raw.AddRectFilled(
-            drawList,
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(maximum),
+        EditorImGui.DrawFilledRectangle(
+            minimum,
+            maximum,
             NativeImGui.GetColorU32((int)ImGuiCol.FrameBg),
-            style->FrameRounding,
-            0
+            style->FrameRounding
         );
-        NativeImGui.Raw.AddRect(
-            drawList,
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(maximum),
+        EditorImGui.DrawRectangle(
+            minimum,
+            maximum,
             NativeImGui.GetColorU32((int)ImGuiCol.Border),
             style->FrameRounding,
-            0,
             ImGuiWidget.style.borderSize
         );
         Vector2 textSize = NativeImGui.CalcTextSize(value);
-        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(value, allowsNull: false))
-        {
-            NativeImGui.Raw.AddText(
-                drawList,
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum + (size - textSize) * 0.5f),
-                NativeImGui.GetColorU32((int)ImGuiCol.Text),
-                (sbyte*)nativeText.pointer,
-                null
-            );
-        }
+        EditorImGui.DrawText(minimum + (size - textSize) * 0.5f, NativeImGui.GetColorU32((int)ImGuiCol.Text), value);
     }
 
     private static void DrawLayerTableHeader()

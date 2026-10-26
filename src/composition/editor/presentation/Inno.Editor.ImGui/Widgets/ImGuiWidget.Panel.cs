@@ -255,7 +255,7 @@ public static unsafe partial class ImGuiWidget
             bool hostHovered = hoveredWindow != null &&
                                hoveredWindow->RootWindowDockTree == dockNode->HostWindow->RootWindowDockTree;
             bool mouseHovered = hostHovered && NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
-            bool itemAdded = NativeImGui.Raw.ItemAdd(itemBounds, itemId, null, 0) != 0;
+            bool itemAdded = NativeImGui.Raw.ItemAdd(&itemBounds, itemId, null, 0) != 0;
             bool pressed = hostHovered && itemAdded &&
                            NativeImGui.ButtonBehavior(itemBounds, itemId, out hovered, out held, (int)buttonFlags);
             hovered |= mouseHovered;
@@ -299,12 +299,12 @@ public static unsafe partial class ImGuiWidget
         ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
         Vector2 windowMaximum = ImGui.FromNative(window->Pos) + ImGui.FromNative(window->Size);
         window->ClipRect = new ImRect { Min = window->Pos, Max = ImGui.ToNative(windowMaximum) };
-        NativeImGui.Raw.PushClipRect(draw, window->Pos, ImGui.ToNative(windowMaximum), 0);
+        ImGui.PushNativeClipRectangle(draw, ImGui.FromNative(window->Pos), windowMaximum, 0);
         try
         {
             uint id = NativeImGui.GetID("##floating_panel_close");
             bool hovered = false, held = false;
-            bool pressed = NativeImGui.Raw.ItemAdd(bounds, id, null, 0) != 0 && NativeImGui.ButtonBehavior(
+            bool pressed = NativeImGui.Raw.ItemAdd(&bounds, id, null, 0) != 0 && NativeImGui.ButtonBehavior(
                 bounds, id, out hovered, out held,
                 (int)ImGuiButtonFlagsPrivate.NoNavFocus | (int)ImGuiButtonFlagsPrivate.PressedOnClickRelease);
             uint iconColor = hovered || held
@@ -333,11 +333,11 @@ public static unsafe partial class ImGuiWidget
             thickness,
             slotSize * 0.5f * 0.7071f - thickness);
         var diagonal = new Vector2(extent);
-        NativeImGui.Raw.AddLine(drawList, ImGui.ToNative(center - diagonal), ImGui.ToNative(center + diagonal), color, thickness);
-        NativeImGui.Raw.AddLine(
+        ImGui.DrawNativeLine(drawList, center - diagonal, center + diagonal, color, thickness);
+        ImGui.DrawNativeLine(
             drawList,
-            ImGui.ToNative(center + new Vector2(-extent, extent)),
-            ImGui.ToNative(center + new Vector2(extent, -extent)),
+            center + new Vector2(-extent, extent),
+            center + new Vector2(extent, -extent),
             color,
             thickness
         );

@@ -93,6 +93,12 @@ public sealed class NativeBindingGenerationDescriptor
     public required string fingerprint { get; init; }
 
     /// <summary>
+    /// Gets whether the generated context uses runtime-resolved imports instead of a module provider.
+    /// This initialization choice is independent of static or shared native linkage.
+    /// </summary>
+    public required bool usesRuntimeImports { get; init; }
+
+    /// <summary>
     /// Gets the absolute managed source path selected by the component project.
     /// </summary>
     public required string bindingsPath { get; init; }
@@ -106,6 +112,12 @@ public sealed class NativeBindingGenerationDescriptor
     /// Gets the immutable artifact root protected by reading leases, or an empty value for mutable host sources.
     /// </summary>
     public required string artifactDirectory { get; init; }
+
+    /// <summary>
+    /// Gets the publisher root coordinating immutable artifact readers and retirement, or empty for host sources.
+    /// This owner remains unchanged when component sources are copied into a frozen build workspace.
+    /// </summary>
+    public required string artifactOwnerDirectory { get; init; }
 
     /// <summary>
     /// Reads and validates the result of a completed component generation request.
@@ -122,6 +134,9 @@ public sealed class NativeBindingGenerationDescriptor
     /// <exception cref="JsonException">
     /// The descriptor cannot be read as the current contract.
     /// </exception>
+    /// <exception cref="IOException">
+    /// An immutable artifact escapes its declared publisher or traverses a linked directory.
+    /// </exception>
     public static NativeBindingGenerationDescriptor Load(string path)
     {
         NativeBindingGenerationDescriptor descriptor = JsonSerializer.Deserialize<NativeBindingGenerationDescriptor>(
@@ -129,11 +144,16 @@ public sealed class NativeBindingGenerationDescriptor
         if (string.IsNullOrWhiteSpace(descriptor.fingerprint)
             || string.IsNullOrWhiteSpace(descriptor.bindingsPath) || !Path.IsPathFullyQualified(descriptor.bindingsPath)
             || !File.Exists(descriptor.bindingsPath) || descriptor.nativeDirectory is null || descriptor.artifactDirectory is null
+            || descriptor.artifactOwnerDirectory is null
+            || descriptor.artifactDirectory.Length == 0 && descriptor.artifactOwnerDirectory.Length != 0
+            || descriptor.artifactDirectory.Length > 0 && !Path.IsPathFullyQualified(descriptor.artifactOwnerDirectory)
             || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
                 || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
             || descriptor.nativeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.nativeDirectory)
                 || !Directory.Exists(descriptor.nativeDirectory)))
             throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
+        if (descriptor.artifactDirectory.Length > 0)
+            BuildCacheCleanupPlan.RequireChild(descriptor.artifactOwnerDirectory, descriptor.artifactDirectory);
         return descriptor;
     }
 
@@ -182,7 +202,9 @@ public sealed class NativeBindingGenerationDescriptor
                 new XAttribute("Condition", "'$(MSBuildProjectName)' == '" + name + "'"),
                 new XElement("BindGenExpectedFingerprint", entry.Value.fingerprint),
                 new XElement("BindGenArtifactDirectory", entry.Value.artifactDirectory),
+                new XElement("BindGenArtifactOwnerDirectory", entry.Value.artifactOwnerDirectory),
                 new XElement("InnoNativeLibraryKind", linkage[entry.Key]),
+                new XElement("InnoNativeRuntimeImports", entry.Value.usesRuntimeImports ? "true" : "false"),
                 new XElement("BindGenOutputDirectory", Path.GetDirectoryName(entry.Value.bindingsPath))));
         }
         return new XDocument(document);

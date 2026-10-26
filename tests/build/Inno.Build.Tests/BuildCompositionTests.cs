@@ -1,20 +1,21 @@
-using Inno.Build.Bindings;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets.Pipeline;
+using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
-using Inno.Build.Toolchains;
 using Inno.Build.Managed;
+using Inno.Build.Products.Standard;
 using Inno.Build.SupportPacks;
+using Inno.Build.Toolchains;
 using Inno.Core.Identity;
 using Inno.Runtime;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -26,11 +27,11 @@ public sealed class BuildCompositionTests
     public void EditorAndStandaloneShaderToolsShareTheSameBindingFreeReleaseProducer(string target)
     {
         var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator());
+            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"));
         BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
-        ProductNativeBuildStep editor = Assert.Single(distribution.ResolveNativeProduct(target, "editor").steps,
+        ProductNativeBuildStep editor = Assert.Single(distribution.ResolveNativeProduct(target, "editor").plan.steps,
             static step => step.id == "bgfx-tools");
-        ProductNativeBuildStep standalone = Assert.Single(distribution.ResolveNativeProduct(target, "shader-tools").steps);
+        ProductNativeBuildStep standalone = Assert.Single(distribution.ResolveNativeProduct(target, "shader-tools").plan.steps);
         Assert.Equal("release", editor.configuration);
         Assert.Equal(editor.configuration, standalone.configuration);
         Assert.Same(editor.component, standalone.component);
@@ -42,7 +43,7 @@ public sealed class BuildCompositionTests
     [Fact]
     public void EveryHostObtainsTheSameFrozenBuiltInDistribution()
     {
-        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()), new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator());
+        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()), new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"));
         BuildDistribution editor = StandardBuildDistribution.Create(context).build;
         BuildDistribution cli = StandardBuildDistribution.Create(context).build;
         BuildDistribution msbuild = StandardBuildDistribution.Create(context).build;
@@ -51,10 +52,10 @@ public sealed class BuildCompositionTests
         Assert.Equal(3, editor.availableTargets.Count);
         Assert.Equal(editor.managedDeployments.availableDeployments, msbuild.managedDeployments.availableDeployments);
         Assert.Equal(4, editor.managedDeployments.availableDeployments.Count);
-        Assert.Equal(editor.ResolveNativeProduct("windows-x64", "editor").steps.Select(static step => step.id),
-            msbuild.ResolveNativeProduct("windows-x64", "editor").steps.Select(static step => step.id));
+        Assert.Equal(editor.ResolveNativeProduct("windows-x64", "editor").plan.steps.Select(static step => step.id),
+            msbuild.ResolveNativeProduct("windows-x64", "editor").plan.steps.Select(static step => step.id));
         Assert.Throws<NotSupportedException>(() => editor.ResolveNativeProduct("browser-wasm", "editor"));
-        Assert.Throws<ArgumentException>(() => new BuildCompositionContext("sdk", "relative", new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"), new NativeBindingGenerator()));
+        Assert.Throws<ArgumentException>(() => new BuildCompositionContext("sdk", "relative", new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64")));
     }
 
     [Fact]
@@ -62,18 +63,18 @@ public sealed class BuildCompositionTests
     {
         var first = new FixtureTarget(new BuildTargetId("fixture-a"));
         var second = new FixtureTarget(new BuildTargetId("fixture-b"));
-        ProductNativeBuildPlan complete = StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile);
+        ProductNativeBuildPlan complete = BuildTestProducts.Player();
         var reduced = new ProductNativeBuildPlan("player", [complete.steps[0]]);
-        ProductNativeBuildPlan[] products = [complete];
+        NativeProductContribution[] products = [new(complete, new ComponentNativeProductExecutor())];
         var firstContribution = new BuildPlatformContribution(Descriptor(first), () => first, first, new FixtureToolchain(), nativeProducts: products);
-        var secondContribution = new BuildPlatformContribution(Descriptor(second), () => second, second, new FixtureToolchain(), nativeProducts: [reduced]);
+        var secondContribution = new BuildPlatformContribution(Descriptor(second), () => second, second, new FixtureToolchain(), nativeProducts: [new(reduced, new ComponentNativeProductExecutor())]);
         var distribution = new BuildDistribution([Game(firstContribution, first), Game(secondContribution, second)], [new FixtureCompiler()]);
         products[0] = null!;
-        Assert.Same(complete, distribution.ResolveNativeProduct("fixture-a", "player"));
-        Assert.Same(reduced, distribution.ResolveNativeProduct("fixture-b", "player"));
+        Assert.Same(complete, distribution.ResolveNativeProduct("fixture-a", "player").plan);
+        Assert.Same(reduced, distribution.ResolveNativeProduct("fixture-b", "player").plan);
         Assert.Throws<NotSupportedException>(() => distribution.ResolveNativeProduct("fixture-a", "editor"));
         Assert.Throws<NotSupportedException>(() => distribution.ResolveNativeProduct("absent-target", "player"));
-        Assert.Throws<ArgumentException>(() => new BuildPlatformContribution(Descriptor(first), () => first, first, new FixtureToolchain(), nativeProducts: [complete, reduced]));
+        Assert.Throws<ArgumentException>(() => new BuildPlatformContribution(Descriptor(first), () => first, first, new FixtureToolchain(), nativeProducts: [new(complete, new ComponentNativeProductExecutor()), new(reduced, new ComponentNativeProductExecutor())]));
     }
 
     [Fact]

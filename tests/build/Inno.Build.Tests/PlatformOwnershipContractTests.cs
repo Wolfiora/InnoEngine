@@ -1,23 +1,40 @@
-using Inno.Testing.Source;
-using Inno.Build.Bindings;
-using Inno.Integration.BrowserWasm32.Bgfx;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
+using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.MacOSArm64;
+using Inno.Build.Products.Standard;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
 using Inno.Build.WindowsX64;
-using Inno.Build.MacOSArm64;
-using Xunit;
+using Inno.Integration.BrowserWasm32.Bgfx;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Tests;
 
 public sealed class PlatformOwnershipContractTests
 {
+    [Theory]
+    [InlineData("windows-x64")]
+    [InlineData("macos-arm64")]
+    public void SharedBackendSourcesKeepDistinctRuntimeBindingAndOfflineToolOwners(string target)
+    {
+        ProductNativeBuildPlan editor = BuildTestProducts.Distribution().ResolveNativeProduct(target, "editor").plan;
+        NativeComponentDescriptor runtime = editor.steps.Single(static step => step.id == "bgfx").component;
+        NativeComponentDescriptor tools = editor.steps.Single(static step => step.id == "bgfx-tools").component;
+        Assert.Equal(runtime.nativeProject, tools.nativeProject);
+        Assert.NotEqual(runtime.id, tools.id);
+        Assert.NotNull(runtime.bindingDefinition);
+        Assert.Null(tools.bindingDefinition);
+        Assert.Single(editor.steps.Where(step => step.component.id == runtime.id
+            && step.component.nativeProject == runtime.nativeProject));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -28,16 +45,16 @@ public sealed class PlatformOwnershipContractTests
         var host = unsupportedHost ? new BuildHostDescriptor("MacOS", "arm64")
             : new BuildHostDescriptor("Windows", "x64");
         var source = new WindowsX64PlayerSupportPackSource(
-            StandardNativeBuildPlans.CreatePlayer(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.nativeProfile),
-            host, sdk, new NativeBindingGenerator(), new WindowsX64SupportPackValidator());
+            BuildTestProducts.Distribution().ResolveNativeProduct("windows-x64", "player"),
+            host, sdk, BuildTestProducts.Distribution().ResolveBindingGenerator("windows-x64"), new WindowsX64SupportPackValidator());
         var publisher = new PlayerSupportPackPublisher([source]);
 
         if (unsupportedHost)
             await Assert.ThrowsAsync<PlatformNotSupportedException>(() => publisher.PublishAsync(
-                TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly), output, BuildTargetId.windowsX64, sdk).AsTask());
+                TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly), output, new BuildTargetId("windows-x64"), sdk).AsTask());
         else
             await Assert.ThrowsAsync<FileNotFoundException>(() => publisher.PublishAsync(
-                TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly), output, BuildTargetId.windowsX64, sdk).AsTask());
+                TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly), output, new BuildTargetId("windows-x64"), sdk).AsTask());
 
         Assert.False(Directory.Exists(output));
     }
@@ -45,7 +62,7 @@ public sealed class PlatformOwnershipContractTests
     [Fact]
     public void StaticComponentsHaveOneAggregateOwnerAndNoUnusedStandaloneProducer()
     {
-        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateStaticPlayer(Inno.Integration.BrowserWasm32.Bgfx.BrowserWasm32BgfxIntegration.nativeOptions);
+        ProductNativeBuildPlan plan = BuildTestProducts.StaticPlayer();
 
         Assert.All(plan.steps, static step => {
             Assert.Null(step.build);
@@ -62,11 +79,11 @@ public sealed class PlatformOwnershipContractTests
     public void StandardShaderTargetIsIndependentOfTheOfflineToolTarget()
     {
         var context = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator());
+            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"));
         StandardBuildDistribution distribution = StandardBuildDistribution.Create(context);
 
         Assert.Same(BrowserWasm32BgfxShaderProfiles.target,
-            distribution.ResolveShaderTarget(BuildTargetId.browserWasm));
+            distribution.ResolveShaderTarget(new BuildTargetId("browser-wasm")));
         Assert.Throws<NotSupportedException>(() => distribution.build.ResolveNativeProduct("linux-arm64", "shader-tools"));
         Assert.Throws<NotSupportedException>(() => distribution.ResolveShaderTarget(new("unregistered-target")));
         Assert.Throws<NotSupportedException>(() => distribution.build.ResolveNativeProduct("browser-wasm", "shader-tools"));
@@ -76,17 +93,17 @@ public sealed class PlatformOwnershipContractTests
     public void DistributionDoesNotDeriveProductTargetsFromTheToolHost()
     {
         var windows = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), BuildTargetId.windowsX64, new NativeBindingGenerator());
+            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"));
         var apple = new BuildCompositionContext("unresolved-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("MacOS", "arm64"), BuildTargetId.macOSArm64, new NativeBindingGenerator());
+            new BuildHostDescriptor("MacOS", "arm64"), new BuildTargetId("macos-arm64"));
         BuildDistribution first = StandardBuildDistribution.Create(windows).build;
         BuildDistribution second = StandardBuildDistribution.Create(apple).build;
 
         Assert.Equal(first.availableTargets, second.availableTargets);
-        Assert.Contains(BuildTargetId.browserWasm, first.availableTargets);
-        ProductNativeBuildPlan browser = first.ResolveNativeProduct("browser-wasm", "player");
+        Assert.Contains(new BuildTargetId("browser-wasm"), first.availableTargets);
+        ProductNativeBuildPlan browser = first.ResolveNativeProduct("browser-wasm", "player").plan;
         Assert.Equal(browser.steps.Select(static step => step.component.id),
-            second.ResolveNativeProduct("browser-wasm", "player").steps.Select(static step => step.component.id));
+            second.ResolveNativeProduct("browser-wasm", "player").plan.steps.Select(static step => step.component.id));
         Assert.All(browser.steps, static step =>
         {
             Assert.Equal(NativeLibraryKind.Static, step.options.libraryKind);
@@ -158,10 +175,10 @@ public sealed class PlatformOwnershipContractTests
         {
             var context = new NativeBuildContext(root, "debug");
             var plan = new ProductNativeBuildPlan("fixture-product", [Step("first", [])]);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => plan.BuildAsync(context, CancellationToken.None));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => new ComponentNativeProductExecutor().BuildAsync(context, plan, CancellationToken.None));
             using var cancellation = new CancellationTokenSource();
             cancellation.Cancel();
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => plan.BuildAsync(context, cancellation.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new ComponentNativeProductExecutor().BuildAsync(context, plan, cancellation.Token));
             Assert.False(Directory.Exists(Path.Combine(root, "artifacts")));
         }
         finally

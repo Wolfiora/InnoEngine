@@ -1,7 +1,4 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -229,13 +226,11 @@ internal sealed unsafe partial class FileBrowserPanel
 
         uint bgColor = NativeImGui.ColorConvertFloat4ToU32(bg);
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        NativeImGui.Raw.AddRectFilled(
-            drawList,
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(min),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(max),
+        EditorImGui.DrawFilledRectangle(
+            min,
+            max,
             bgColor,
-            EditorWidget.style.assetFrameRounding,
-            0
+            EditorWidget.style.assetFrameRounding
         );
 
         ImFont* font = NativeImGui.Raw.GetFont();
@@ -304,8 +299,7 @@ internal sealed unsafe partial class FileBrowserPanel
             Vector2 linePosition = new(
                 horizontalCenter - lineSize.X * 0.5f,
                 labelY + lineAdvance * i);
-            using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(nameLines[i], allowsNull: false);
-            NativeImGui.Raw.AddText(drawList, new ImVec2C { X = linePosition.X, Y = linePosition.Y }, textColor, (sbyte*)nativeText.pointer, null);
+            EditorImGui.DrawText(linePosition, textColor, nameLines[i]);
         }
         NativeImGui.PopClipRect();
     }

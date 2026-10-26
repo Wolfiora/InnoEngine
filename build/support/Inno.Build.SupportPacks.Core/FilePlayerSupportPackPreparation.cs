@@ -22,6 +22,7 @@ public sealed class FilePlayerSupportPackPreparation
     private readonly string m_productProject;
     private readonly string m_templateFile;
     private readonly ProductNativeBuildPlan m_nativePlan;
+    private readonly INativeProductExecutor m_nativeExecutor;
     private readonly INativeToolchainProvider m_toolchainProvider;
     private readonly IReadOnlyList<string> m_preparationInputs;
     private readonly BuildHostDescriptor m_host;
@@ -60,6 +61,9 @@ public sealed class FilePlayerSupportPackPreparation
     /// <param name="host">
     /// The declared machine executing tools.
     /// </param>
+    /// <param name="nativeExecutor">
+    /// The product-selected native execution strategy.
+    /// </param>
     /// <param name="bindingGenerator">
     /// The borrowed generation service used by the frozen Native operation.
     /// </param>
@@ -81,6 +85,7 @@ public sealed class FilePlayerSupportPackPreparation
         string productProject,
         string templateFile,
         ProductNativeBuildPlan nativePlan,
+        INativeProductExecutor nativeExecutor,
         INativeToolchainProvider toolchainProvider,
         BuildHostDescriptor host,
         INativeBindingGenerator bindingGenerator,
@@ -99,6 +104,7 @@ public sealed class FilePlayerSupportPackPreparation
         m_productProject = productProject;
         m_templateFile = templateFile;
         m_nativePlan = nativePlan;
+        m_nativeExecutor = nativeExecutor ?? throw new ArgumentNullException(nameof(nativeExecutor));
         m_toolchainProvider = toolchainProvider;
         ArgumentNullException.ThrowIfNull(bindingGenerator);
         ArgumentNullException.ThrowIfNull(preparationInputs);
@@ -153,10 +159,6 @@ public sealed class FilePlayerSupportPackPreparation
             ["InnoShaderToolSourceRoot"] = context.engineRoot,
             ["InnoNativeTarget"] = m_target.value, ["InnoPrepareProductNative"] = "false"
         };
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet",
-                .. properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)],
-            context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
         PlayerSupportPackPreparationIdentity identity = await PlayerSupportPackPreparationIdentity.CaptureAsync(
             native, m_nativePlan, sdk, project, properties,
             m_preparationInputs.Append(template).ToArray(), cancellationToken).ConfigureAwait(false);
@@ -170,7 +172,7 @@ public sealed class FilePlayerSupportPackPreparation
         PlayerSupportPackPreparationIdentity identity,
         CancellationToken cancellationToken
     ) {
-        using ProductNativeBuildResult products = await m_nativePlan.BuildAsync(native, cancellationToken).ConfigureAwait(false);
+        using ProductNativeBuildResult products = await m_nativeExecutor.BuildAsync(native, m_nativePlan, cancellationToken).ConfigureAwait(false);
         using ManagedBuildExecution execution = await identity.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
         context = new PlayerSupportPackBuildContext(execution.engineRoot, context.stagingDirectory, context.sdk);
         project = execution.project;
@@ -240,7 +242,7 @@ public sealed class FilePlayerSupportPackPreparation
                     $"Native runtime product '{product.component}' and '{m_target}' is empty.");
             }
         }
-        await ProductNativeDeployment.InstallAsync(products, m_nativePlan, staging, cancellationToken).ConfigureAwait(false);
+        await ProductNativeDeployment.StageAsync(products, m_nativePlan, staging, cancellationToken).ConfigureAwait(false);
     }
 
     private static async ValueTask CopyNativeToTemplateAsync(

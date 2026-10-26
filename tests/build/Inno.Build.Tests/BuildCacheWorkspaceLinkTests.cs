@@ -38,7 +38,8 @@ public sealed class BuildCacheWorkspaceLinkTests
         Assert.Equal(workspace, Assert.Single(result.retired));
         Assert.Empty(result.failures);
         Assert.False(Directory.Exists(workspace));
-        Assert.True(File.Exists(producer));
+        Assert.False(File.Exists(producer));
+        Assert.True(File.Exists(publisher.Describe("fixture").coordinationPath));
     }
 
     [UnixFileLinksFact]

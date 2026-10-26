@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -61,14 +62,21 @@ public static class ImGuiToolchain
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*cimgui-" + scoped.configuration + selection.sharedLibraryExtension);
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
-                if (selection.sharedLibraryExtension == ".dll")
+                if (selection.linkPlan.importLibraryExtension is string importExtension)
                 {
-                    string import = NativeCMakeExecutor.FindOutput(scoped, build, "*cimgui-" + scoped.configuration + ".lib");
+                    string import = NativeCMakeExecutor.FindOutput(scoped, build, "*cimgui-" + scoped.configuration + importExtension);
                     string link = Path.Combine(output, "Link");
                     Directory.CreateDirectory(link);
                     File.Copy(import, Path.Combine(link, Path.GetFileName(import)));
                 }
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken, describeOutputs: static (
+                @scoped,
+                output
+            ) =>
+                Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
+                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                        Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -97,8 +105,10 @@ public static class ImGuiToolchain
             throw new NotSupportedException("This presentation recipe supports shared linkage only.");
         string source = componentDescriptor.GetToolchainRoot(context.engineRoot);
         string upstream = Path.Combine(context.engineRoot, "extern", "cimgui");
+        string adapter = Path.Combine(componentDescriptor.GetNativeRoot(context.engineRoot), "Native");
         return NativeBuildRecipe.CreateForComponent(context, componentDescriptor,
-            "cimgui", selection.targetId, [upstream, Path.Combine(source, "CMakeLists.txt")],
+            "cimgui", selection.targetId, [upstream, Path.Combine(source, "CMakeLists.txt"),
+                Path.Combine(adapter, "ImGuiPlatformCallbacks.h"), Path.Combine(adapter, "ImGuiPlatformCallbacks.cpp")],
             ["-DINNO_CIMGUI_SOURCE_DIR=" + upstream, "-DBUILD_SHARED_LIBS=ON", "-DCIMGUI_VARGS0=ON", "window-source=continuous-background"],
             [Path.Combine(source, "CimguiSourceOverlay.cs"), Path.Combine(source, "ImGuiToolchain.cs")]);
     }

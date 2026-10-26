@@ -3,8 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using BGCS;
-using BGCS.Contracts.Artifacts;
+using BGCS.Core.Artifacts;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.Bindings;
 
@@ -24,7 +25,16 @@ internal static class BindingGenerationDiagnostics
             output = request.configuration.output with { root = candidate }
         });
         context.RecordBindingGeneration();
-        BindingHostExecution.Generate(selected, context.engineRoot, nativeOutput, managedOutput, cancellation);
+        string root = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "sdk-workspaces");
+        string workspace = selected.configuration.cache.directory;
+        var cache = new BuildCachePublisher(root, BuildCacheArtifactRole.ReusableWorkspace);
+        BuildCacheOwnerCatalog.Register(context.engineRoot, root, "bgcs-workspaces", BuildCacheArtifactRole.ReusableWorkspace, cancellation);
+        using FileLease activity = cache.AcquireUseAsync(cancellation).AsTask().GetAwaiter().GetResult();
+        using FileLease ownership = FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellation)
+            .AsTask().GetAwaiter().GetResult();
+        cache.BeginWorkingDirectory(workspace, workspace + ".lock", definition.request.targetId, cancellation);
+        BindingHostExecution.Generate(selected, definition.profile, context.engineRoot, nativeOutput, managedOutput, cancellation);
+        cache.Record(workspace, workspace + ".lock", [], null, definition.request.targetId, cancellation);
     }
 
     internal static void RequireEqual(

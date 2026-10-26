@@ -41,22 +41,21 @@ static Task<NativeBuildProduct> PrepareComponentAsync(
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
 
 ### `Inno.Build.Toolchains.Text.TextToolchain`
 
 <!-- api: T:Inno.Build.Toolchains.Text.TextToolchain 00f28d93f5b059e4d36367f3775660a04dfa935240f80cd35f0721ab54752df8 -->
 <!-- api: P:Inno.Build.Toolchains.Text.TextToolchain.componentDescriptor c3ef6d778c0080bacca90aed1326f02b9ada41cc466cb0e97648ac74deff77f9 -->
 <!-- api: M:Inno.Build.Toolchains.Text.TextToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext,System.Threading.CancellationToken) 976474e463e4d75c143380e99ea03b1bc3544f73c141daff16167d7046f5e399 -->
-
 <!-- api: M:Inno.Build.Toolchains.Text.TextToolchain.CreateRecipe(Inno.Build.Toolchains.NativeBuildContext) 3aa7417e9d74994b94b617ecf5805115481fcffb4b5901d0c3cbc3eeef660c05 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-1a2afbfb16d3f792"></a>[`public static System.Threading.Tasks.Task<Inno.Build.Toolchains.NativeBuildProduct> Inno.Build.Toolchains.Text.TextToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L47) | Builds the component using the explicitly selected target SDK and validates the complete native product.<br>返回：The immutable validated product; a failed or canceled candidate is not published.<br>`context`：The operation-owned checkout, configuration, tools and target.<br>`cancellationToken`：Cancels and drains active tool processes before publication. | — | `System.InvalidOperationException`：The SDK is unassigned or native compilation or export validation fails.<br>`System.OperationCanceledException`：The operation was canceled before publication. |
-| <a id="api-6ff96f4e06e6e309"></a>[`public static Inno.Build.Toolchains.NativeComponentDescriptor Inno.Build.Toolchains.Text.TextToolchain.componentDescriptor { get; }`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L18) | Gets the component's sole source, binding and intermediate owner. | — | — |
-| <a id="api-766460066ebd3059"></a>[`public static class Inno.Build.Toolchains.Text.TextToolchain`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L13) | Owns this backend's native recipe while SDK selection remains with the platform provider. | — | — |
-| <a id="api-f1d440b0eef352fa"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.Text.TextToolchain.CreateRecipe(Inno.Build.Toolchains.NativeBuildContext context)`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L92) | 冻结独立 Shared recipe 的源码、实现、SDK 和有序参数；不要求绑定输出已存在。 | 借用 context；返回不可变声明，不取得源文件、SDK 或 generation 的 owner。 | context/SDK/组件选项缺失、Static 请求或 build owner 项目不存在时失败；声明中的其余文件在实际内容读取时验证。 |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-1a2afbfb16d3f792"></a>[`public static System.Threading.Tasks.Task<Inno.Build.Toolchains.NativeBuildProduct> Inno.Build.Toolchains.Text.TextToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L47) | Builds the component using the explicitly selected target SDK and validates the complete native product.<br>`context`：The operation-owned checkout, configuration, tools and target.<br>`cancellationToken`：Cancels and drains active tool processes before publication.<br>返回：The immutable validated product; a failed or canceled candidate is not published.<br>T:System.InvalidOperationException：The SDK is unassigned or native compilation or export validation fails.<br>T:System.OperationCanceledException：The operation was canceled before publication. |
+| <a id="api-f1d440b0eef352fa"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.Text.TextToolchain.CreateRecipe(Inno.Build.Toolchains.NativeBuildContext context)`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L98) | Declares handwritten source, SDK and bridge requirements without reading generated output.<br>`context`：The operation with explicit target tools and this component's shared-library options.<br>返回：The producer's frozen source declaration; the publisher adds selected bridge content and location.<br>T:System.ArgumentNullException：The context is null.<br>T:System.InvalidOperationException：Target tools or component options have not been selected.<br>T:System.NotSupportedException：The request uses static rather than standalone shared linkage.<br>T:System.IO.FileNotFoundException：The declared build project is absent from the checkout. |
+| <a id="api-6ff96f4e06e6e309"></a>[`public static Inno.Build.Toolchains.NativeComponentDescriptor Inno.Build.Toolchains.Text.TextToolchain.componentDescriptor { get; }`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L18) | Gets the component's sole source, binding and intermediate owner. |
+| <a id="api-766460066ebd3059"></a>[`public static class Inno.Build.Toolchains.Text.TextToolchain`](../../../backends/Text/build/Inno.Build.Toolchains.Text/TextToolchain.cs#L13) | Owns this backend's native recipe while SDK selection remains with the platform provider. |
 
 ## 项目依赖
 

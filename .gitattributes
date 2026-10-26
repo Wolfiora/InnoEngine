@@ -2,3 +2,6 @@
 *.csproj text eol=lf
 *.props text eol=lf
 *.targets text eol=lf
+
+# Preserve the SDK's exact native payload bytes and their recorded integrity hashes.
+backends/**/native/**/Native/Generated/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

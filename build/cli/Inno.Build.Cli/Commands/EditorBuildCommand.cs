@@ -18,7 +18,7 @@ internal static class EditorBuildCommand
             ProductCleanPlan plan = await ProductCleanPlan.CreateAsync(context, project, cancellationToken).ConfigureAwait(false);
             ProductCleanExecutor.Execute(plan, false, cancellationToken);
         }
-        await ToolchainEnvironment.RunAsync(context.composition.dotnetHost, ["build", ..context.ProductArguments(project)],
+        await ToolchainEnvironment.RunAsync(context.composition.dotnetHost, ["build", ..context.ProductArguments(project), "-p:InnoSuppressBuildMaintenance=true"],
             context.root, cancellationToken, DotNetSdkEnvironment.Create(context.composition.dotnetHost)).ConfigureAwait(false);
     }
 }

@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[10.0.13, )",
+        "resolved": "10.0.13",
+        "contentHash": "40yrBMsLEcjixBR4G+FiUaBPvxXIPSKJ2OgSrbOZcmSDBda4Sb0k7BWrfDpIvn3IvvDzwOL/tEPa6gDQfh6aRw=="
+      },
+      "inno.core.collections": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.diagnostics": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.events": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.execution": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.core.identity": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.input": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.core.mathematics": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.catalogs": {
+        "type": "Project"
+      },
+      "inno.extensibility.modules": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Collections": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Reload": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.reload": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      },
+      "inno.extensibility.types": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Modules": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.input": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Input": "[1.0.0, )",
+          "Inno.Core.Mathematics": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Scripting.Api": "[1.0.0, )"
+        }
+      },
+      "inno.runtime.contracts": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Core.Diagnostics": "[1.0.0, )",
+          "Inno.Core.Events": "[1.0.0, )",
+          "Inno.Core.Execution": "[1.0.0, )",
+          "Inno.Core.Identity": "[1.0.0, )",
+          "Inno.Extensibility.Catalogs": "[1.0.0, )",
+          "Inno.Extensibility.Types": "[1.0.0, )"
+        }
+      },
+      "inno.scripting.api": {
+        "type": "Project",
+        "dependencies": {
+          "Inno.Extensibility.Catalogs": "[1.0.0, )"
+        }
+      }
+    },
+    "net10.0/osx-arm64": {}
+  }
+}

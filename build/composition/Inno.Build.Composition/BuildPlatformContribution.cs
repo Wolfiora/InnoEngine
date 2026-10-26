@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Build.Managed;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
 
@@ -33,12 +34,18 @@ public sealed class BuildPlatformContribution
     /// <param name="nativeProducts">
     /// Explicit product-native plans owned by this target; null declares no ordinary native product build.
     /// </param>
+    /// <param name="bindingGenerator">
+    /// The target-owned generator, or null when the contribution generates no bindings.
+    /// </param>
+    /// <param name="managedDeployments">
+    /// Deployment identities supported by this platform, or null when none is contributed.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// A required contribution is null.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// A source identity differs from its target, an Editor declaration is inconsistent,
-    /// or native product plans are null or duplicated.
+    /// native product plans are null or duplicated, or deployment identities are unassigned or repeated.
     /// </exception>
     public BuildPlatformContribution(
         PlatformTargetDescriptor descriptor,
@@ -46,7 +53,9 @@ public sealed class BuildPlatformContribution
         IPlayerSupportPackSource supportPackSource,
         INativeToolchainProvider toolchainProvider,
         string? editorProject = null,
-        IReadOnlyList<ProductNativeBuildPlan>? nativeProducts = null
+        IReadOnlyList<NativeProductContribution>? nativeProducts = null,
+        INativeBindingGenerator? bindingGenerator = null,
+        IReadOnlyList<ManagedDeploymentId>? managedDeployments = null
     ) {
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(factory);
@@ -61,15 +70,21 @@ public sealed class BuildPlatformContribution
                 || editor.Split('/').Any(static segment => segment is "" or "." or "..")))
             throw new ArgumentException("Editor capability requires one explicit contained product project.", nameof(editorProject));
         this.descriptor = descriptor;
+        this.bindingGenerator = bindingGenerator;
         this.factory = factory;
         this.supportPackSource = supportPackSource;
         this.toolchainProvider = toolchainProvider;
         this.editorProject = editor;
-        var products = new Dictionary<string, ProductNativeBuildPlan>(StringComparer.Ordinal);
-        foreach (ProductNativeBuildPlan plan in nativeProducts ?? [])
-            if (plan is null || !products.TryAdd(plan.productId, plan))
+        var products = new Dictionary<string, NativeProductContribution>(StringComparer.Ordinal);
+        foreach (NativeProductContribution product in nativeProducts ?? [])
+            if (product is null || !products.TryAdd(product.plan.productId, product))
                 throw new ArgumentException("Native product plans must be complete and have unique product identities.", nameof(nativeProducts));
-        this.nativeProducts = new ReadOnlyDictionary<string, ProductNativeBuildPlan>(products);
+        this.nativeProducts = new ReadOnlyDictionary<string, NativeProductContribution>(products);
+        ManagedDeploymentId[] deployments = (managedDeployments ?? []).ToArray();
+        if (deployments.Any(static id => string.IsNullOrWhiteSpace(id.value))
+            || deployments.Distinct().Count() != deployments.Length)
+            throw new ArgumentException("Platform deployment identities must be assigned and unique.", nameof(managedDeployments));
+        this.managedDeployments = Array.AsReadOnly(deployments);
     }
 
     /// <summary>
@@ -100,5 +115,15 @@ public sealed class BuildPlatformContribution
     /// <summary>
     /// Gets the frozen ordinary product-build closures explicitly contributed by this target.
     /// </summary>
-    public IReadOnlyDictionary<string, ProductNativeBuildPlan> nativeProducts { get; }
+    public IReadOnlyDictionary<string, NativeProductContribution> nativeProducts { get; }
+    /// <summary>
+    /// Gets the target-owned generator, or null when no binding capability is registered.
+    /// </summary>
+    public INativeBindingGenerator? bindingGenerator { get; }
+
+    /// <summary>
+    /// Gets the deployment identities this platform authorizes for its declared managed runtime target.
+    /// </summary>
+    public IReadOnlyList<ManagedDeploymentId> managedDeployments { get; }
+
 }

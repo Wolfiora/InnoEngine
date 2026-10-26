@@ -10,6 +10,13 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
+$sdkDirectory = Split-Path $Dotnet -Parent
+$sdkEnvironment = @('--environment', "DOTNET_ROOT=$sdkDirectory",
+    '--environment', "PATH=$sdkDirectory$([IO.Path]::PathSeparator)$env:PATH")
+# Project-mode dotnet test supplies DOTNET_HOST_PATH itself; assembly-mode VSTest needs the explicit host.
+$assemblyEnvironment = @($sdkEnvironment) + @('--environment', "DOTNET_HOST_PATH=$Dotnet")
+
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $solutionPath = [System.IO.Path]::GetFullPath($Solution, $repositoryRoot)
 $resultsRoot = [System.IO.Path]::GetFullPath($ResultsDirectory, $repositoryRoot)
@@ -54,7 +61,7 @@ if ($Target) {
 try {
     & $Dotnet test $solutionPath --configuration $Configuration `
         --no-build --no-restore --disable-build-servers -m:1 -nr:false `
-        --blame-hang-timeout 20m --blame-hang-dump-type none --filter $sharedFilter --logger 'trx' --results-directory $resultsRoot @productArguments
+        --blame-hang-timeout 20m --blame-hang-dump-type none --filter $sharedFilter --logger 'trx' --results-directory $resultsRoot @productArguments @sdkEnvironment
     $sharedExit = $LASTEXITCODE
     Add-CheckResult 'Shared' $solutionPath $(if ($sharedExit -eq 0) { 'Passed' } else { 'Failed' }) $sharedExit ''
 } catch {
@@ -91,7 +98,7 @@ foreach ($project in $projects) {
             continue
         }
         $assembly = $targetPath[0]
-        $listed = @(& $Dotnet test $assembly --list-tests --filter $isolatedFilter 2>&1)
+        $listed = @(& $Dotnet test $assembly --list-tests --filter $isolatedFilter @assemblyEnvironment 2>&1)
         $discoveryExit = $LASTEXITCODE
         if ($discoveryExit -ne 0) {
             Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine)
@@ -110,7 +117,7 @@ foreach ($project in $projects) {
         $caseFilter = "($isolatedFilter)&(FullyQualifiedName=$name)"
         try {
             & $Dotnet test $assembly --filter $caseFilter `
-                --blame-hang-timeout 10m --blame-hang-dump-type none --logger 'trx' --results-directory $resultsRoot
+                --blame-hang-timeout 10m --blame-hang-dump-type none --logger 'trx' --results-directory $resultsRoot @assemblyEnvironment
             $caseExit = $LASTEXITCODE
             Add-CheckResult 'Isolated' $name $(if ($caseExit -eq 0) { 'Passed' } else { 'Failed' }) $caseExit ''
         } catch {

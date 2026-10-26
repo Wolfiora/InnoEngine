@@ -28,7 +28,7 @@ internal static class DotNetPublishExecutor
         await File.WriteAllTextAsync(Path.Combine(publication.logDirectory, "managed-cli.txt"),
             request.sdk.cliPath, cancellationToken).ConfigureAwait(false);
         string physicalProjectDirectory = Path.GetDirectoryName(publication.projectPath)!;
-        using ToolchainWorkingDirectory workspace = await ToolchainWorkingDirectory.OpenAsync(
+        using ToolchainWorkingDirectory workspace = await request.workspaces.OpenAsync(
             physicalProjectDirectory, cancellationToken).ConfigureAwait(false);
         await File.WriteAllLinesAsync(Path.Combine(publication.logDirectory, "managed-working-directory.txt"),
             [physicalProjectDirectory, workspace.toolPath], cancellationToken).ConfigureAwait(false);

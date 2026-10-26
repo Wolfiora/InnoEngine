@@ -515,17 +515,19 @@ public sealed class WikiCoverageTests : IDisposable
         string source
     ) {
         string path = Path.Combine(m_root, name + ".dll");
-        string runtime = RuntimeEnvironment.GetRuntimeDirectory().TrimEnd(Path.DirectorySeparatorChar);
-        string references = Path.GetFullPath(Path.Combine(runtime, "..", "..", "..",
-            "packs", "Microsoft.NETCore.App.Ref", Path.GetFileName(runtime), "ref",
-            "net" + Environment.Version.Major + ".0"));
-        Assert.True(Directory.Exists(references), "The example fixture requires the matching .NET reference pack.");
+        // Runtime patch selection is independent of the SDK's compile reference pack.
+        string manifest = Path.Combine(AppContext.BaseDirectory, "WikiFrameworkReferences.txt");
+        Assert.True(File.Exists(manifest), "Build the Wiki fixture with its SDK-evaluated framework references.");
+        string[] references = File.ReadAllLines(manifest);
+        Assert.NotEmpty(references);
+        Assert.All(references, static reference => Assert.True(Path.IsPathFullyQualified(reference) && File.Exists(reference),
+            "The evaluated framework reference is unavailable: " + reference));
         var compilation = CSharpCompilation.Create(name,
             [CSharpSyntaxTree.ParseText(source)],
-            Directory.EnumerateFiles(references, "*.dll")
-                .Select(static reference => MetadataReference.CreateFromFile(reference)),
+            references.Select(static reference => MetadataReference.CreateFromFile(reference)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        Assert.True(compilation.Emit(path).Success);
+        var result = compilation.Emit(path);
+        Assert.True(result.Success, string.Join(Environment.NewLine, result.Diagnostics));
         return path;
     }
 

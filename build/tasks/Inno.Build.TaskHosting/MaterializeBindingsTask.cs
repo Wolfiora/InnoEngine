@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Threading;
+using Microsoft.Build.Framework;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Microsoft.Build.Framework;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.TaskHosting;
@@ -39,6 +39,11 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
     /// Gets or sets the immutable artifact root; empty denotes mutable host-source publication.
     /// </summary>
     public string ArtifactDirectory { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the exact publisher root coordinating immutable binding readers and retirement.
+    /// </summary>
+    public string ArtifactOwnerDirectory { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the exact generation identity required when consuming an immutable artifact.
@@ -107,6 +112,32 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
         string source,
         CancellationToken cancellation
     ) {
+        IBuildEngine3? engine = BuildEngine as IBuildEngine3;
+        IDisposable? ownership = null;
+        engine?.Yield();
+        try
+        {
+            ownership = AcquirePublication(source, cancellation);
+            return ownership;
+        }
+        finally
+        {
+            try
+            {
+                engine?.Reacquire();
+            }
+            catch
+            {
+                ownership?.Dispose();
+                throw;
+            }
+        }
+    }
+
+    private IDisposable AcquirePublication(
+        string source,
+        CancellationToken cancellation
+    ) {
         if (ArtifactDirectory.Length != 0)
         {
             if (!Path.IsPathFullyQualified(ArtifactDirectory))
@@ -114,14 +145,14 @@ public sealed class MaterializeBindingsTask : BuildTask, ICancelableTask
             string directory = Path.GetFullPath(ArtifactDirectory);
             if (!SamePath(source, Path.Combine(directory, "Generated", "Bindings.cs")))
                 throw new ArgumentException("The selected source is outside its declared binding artifact.");
-            return BuildArtifactReadLease.AcquireAsync(directory, Fingerprint, ["Native", "Generated"], cancellation)
+            return BuildArtifactReadLease.AcquireAsync(directory, ArtifactOwnerDirectory, Fingerprint, ["Native", "Generated"], cancellation)
                 .AsTask().GetAwaiter().GetResult();
         }
         string owner = Path.GetDirectoryName(Path.GetFullPath(ComponentProject))!;
         if (!SamePath(source, Path.Combine(owner, "Generated", "Bindings.cs")))
             throw new ArgumentException("Host bindings must belong to their Native project's Generated directory.");
         return FileLease.AcquireAsync(Path.Combine(owner, "obj", "bindings", "generation.lock"),
-            TimeSpan.FromSeconds(30), cancellation).AsTask().GetAwaiter().GetResult();
+            Timeout.InfiniteTimeSpan, cancellation).AsTask().GetAwaiter().GetResult();
     }
 
     private static bool SamePath(

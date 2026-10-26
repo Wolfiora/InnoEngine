@@ -363,10 +363,10 @@ public static unsafe partial class ImGuiWidget
             to = SnapTreeLinePoint(to)
         };
         s_lineSegments.Add(line);
-        NativeImGui.Raw.AddLine(
+        ImGui.DrawNativeLine(
             NativeImGui.Raw.GetWindowDrawList(),
-            ImGui.ToNative(line.from),
-            ImGui.ToNative(line.to),
+            line.from,
+            line.to,
             NativeImGui.ColorConvertFloat4ToU32(EditorPalette.treeGuide),
             style.borderSize
         );
@@ -383,7 +383,7 @@ public static unsafe partial class ImGuiWidget
         uint color
     ) {
         NativeImGui.Raw.ChannelsSetCurrent(drawList, 0);
-        NativeImGui.Raw.AddRectFilled(drawList, ImGui.ToNative(rect.min), ImGui.ToNative(rect.max), color, 0, 0);
+        ImGui.DrawNativeFilledRectangle(drawList, rect.min, rect.max, color, 0, 0);
         NativeImGui.Raw.ChannelsSetCurrent(drawList, 1);
     }
 

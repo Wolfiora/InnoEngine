@@ -1,8 +1,8 @@
 using System;
-using Inno.Build.Managed;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Managed;
 
 namespace Inno.Build.BrowserWasm32;
 
@@ -43,7 +43,7 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the browser WebAssembly target identity.
     /// </summary>
-    public BuildTargetId id => BuildTargetId.browserWasm;
+    public BuildTargetId id => Inno.Build.BrowserWasm32.BrowserWasm32BuildModule.target.id;
 
     /// <inheritdoc />
     public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.monoWasm;

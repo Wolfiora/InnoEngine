@@ -155,8 +155,8 @@ public sealed class BuildCacheCleanupPlan
             .OrderBy(static entry => entry.lastUseUtc).ThenBy(static entry => entry.directory, StringComparer.Ordinal))
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (proposed >= requested)
-                break;
+            if (proposed >= requested && artifact.role != BuildCacheArtifactRole.ProcessWorkingDirectory)
+                continue;
             selected.Add(artifact);
             proposed = checked(proposed + artifact.bytes);
         }

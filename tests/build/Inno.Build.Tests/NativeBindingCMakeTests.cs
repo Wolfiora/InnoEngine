@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Build.Windows.Host;
 using Inno.Build.WindowsX64;
 using Xunit;
 
@@ -35,7 +36,8 @@ public sealed class NativeBindingCMakeTests
             Directory.CreateDirectory(Path.Combine(root, "build"));
             File.WriteAllText(Path.Combine(root, "build", "fixture.csproj"), "<Project />");
             File.WriteAllText(header, "#define INNO_HEADER_VALUE 41\n");
-            string source = Path.Combine(root, "Source");
+            using ToolchainWorkingDirectory sourceAlias = await new WindowsToolchainWorkspaceProvider().OpenAsync(root);
+            string source = Path.Combine(sourceAlias.toolPath, "Source");
             File.WriteAllText(Path.Combine(source, "CMakeLists.txt"), """
                 cmake_minimum_required(VERSION 3.20)
                 project(BindingFixture C)
@@ -43,6 +45,7 @@ public sealed class NativeBindingCMakeTests
                 """);
             File.WriteAllText(Path.Combine(source, "upstream", "CMakeLists.txt"), $$"""
                 add_library(fixture SHARED original.c)
+                target_compile_definitions(fixture PRIVATE INNO_UPSTREAM_ONLY=1)
                 add_custom_command(TARGET fixture PRE_BUILD
                     COMMAND "${CMAKE_COMMAND}" -E rename "{{cmakeHeader}}" "{{cmakeHidden}}")
                 add_custom_command(TARGET fixture POST_BUILD
@@ -51,6 +54,9 @@ public sealed class NativeBindingCMakeTests
             File.WriteAllText(Path.Combine(source, "upstream", "original.c"), """
                 #ifdef INNO_BINDING_ONLY
                 #error Binding definitions escaped into the upstream translation unit.
+                #endif
+                #ifndef INNO_UPSTREAM_ONLY
+                #error The producer lost its private compilation contract.
                 #endif
                 __declspec(dllexport) int upstream(void) { return 37; }
                 """);
@@ -64,6 +70,9 @@ public sealed class NativeBindingCMakeTests
             File.WriteAllText(unit, """
                 #ifndef INNO_BINDING_ONLY
                 #error The binding translation unit lost its required definitions.
+                #endif
+                #ifdef INNO_UPSTREAM_ONLY
+                #error Upstream private definitions escaped into the public-header consumer.
                 #endif
                 #include "api.h"
                 __declspec(dllexport) int value(void) { return INNO_HEADER_VALUE; }
@@ -81,13 +90,15 @@ public sealed class NativeBindingCMakeTests
                 bindingDefinition: "native/Bindings/bindings.props");
             var descriptor = new NativeBindingGenerationDescriptor
             {
-                fingerprint = new string('a', 64), artifactDirectory = artifact, bindingsPath = managed, nativeDirectory = native
+                fingerprint = new string('a', 64), artifactDirectory = artifact, artifactOwnerDirectory = root,
+                bindingsPath = managed, nativeDirectory = native,
+                usesRuntimeImports = false,
             };
             using var bindings = new NativeBindingGenerationResult(
                 new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor }, []);
             var tools = await new WindowsX64NativeToolchainProvider(ToolchainEnvironment.ResolveExecutable("dotnet"))
-                .ResolveAsync(new(root, "release"), new("Windows", "x64"), "windows-x64", CancellationToken.None);
-            NativeBuildContext context = new NativeBuildContext(root, "release").WithToolchain(tools).WithBindings(bindings)
+                .ResolveAsync(new(root, "release"), BuildTestProducts.WindowsHost(), "windows-x64", CancellationToken.None);
+            NativeBuildContext context = new NativeBuildContext(sourceAlias.toolPath, "release").WithToolchain(tools).WithBindings(bindings)
                 .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
             var recipe = new NativeBuildRecipe(owner, "fixture", "windows-x64",
                 new[] { source }.Concat(tools.inputPaths).Select(path => NativeBuildInput.FromPath(root, path)), tools.declarations);

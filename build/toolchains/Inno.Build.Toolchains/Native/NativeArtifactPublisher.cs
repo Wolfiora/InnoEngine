@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json;
 using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
@@ -29,6 +30,9 @@ public static class NativeArtifactPublisher
     /// <param name="cancellationToken">
     /// Cancels ownership acquisition or candidate preparation before publication.
     /// </param>
+    /// <param name="describeOutputs">
+    /// The producer's exact role inventory, or null for generic support payloads.
+    /// </param>
     /// <returns>
     /// A complete native product with an exact, read-only output closure.
     /// </returns>
@@ -48,7 +52,8 @@ public static class NativeArtifactPublisher
         NativeBuildContext context,
         NativeBuildRecipe recipe,
         Func<NativeBuildContext, string, CancellationToken, Task> build,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        Func<NativeBuildContext, string, IReadOnlyList<NativeArtifact>>? describeOutputs = null
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(recipe);
@@ -68,8 +73,11 @@ public static class NativeArtifactPublisher
         string intermediate = scoped.GetNativeBuildRoot(owner);
         string destination = Path.Combine(context.engineRoot, "artifacts", "native", component, targetId, fingerprint);
         var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
+        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.Combine(context.engineRoot, "artifacts", "native"), "native", cache.role, cancellationToken);
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         var workspaces = new BuildCachePublisher(Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"), BuildCacheArtifactRole.ReusableWorkspace);
+        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.Combine(owner.GetToolchainRoot(context.engineRoot), "obj", "native"),
+            "workspace:" + owner.toolchainProject, workspaces.role, cancellationToken);
         using FileLease workspaceUse = await workspaces.AcquireUseAsync(cancellationToken).ConfigureAwait(false);
         using FileLease ownership = await FileLease.AcquireAsync(intermediate + ".lock",
             Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
@@ -95,11 +103,11 @@ public static class NativeArtifactPublisher
             })
         }));
         BuildArtifactReadLease? cached = await BuildArtifactReadLease.TryAcquireAsync(
-            destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false);
+            destination, Path.Combine(context.engineRoot, "artifacts", "native"), fingerprint, ["Outputs", "Metadata"], context, cancellationToken).ConfigureAwait(false);
         if (cached is not null)
         {
             Record(cached);
-            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.sharedLibraryExtension, cached);
+            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.linkPlan.sharedLibraryExtension, cached);
         }
 
         void Record(BuildArtifactReadLease reading)
@@ -123,7 +131,8 @@ public static class NativeArtifactPublisher
         Directory.CreateDirectory(output);
         try
         {
-            using (ToolchainWorkingDirectory workspace = await ToolchainWorkingDirectory.OpenAsync(
+            IToolchainWorkspaceProvider execution = context.toolchain?.host.services.workspaces ?? new PhysicalToolchainWorkspaceProvider();
+            using (ToolchainWorkingDirectory workspace = await execution.OpenAsync(
                 intermediate, cancellationToken).ConfigureAwait(false))
                 await build(scoped.WithToolDirectory(workspace.toolPath).WithExecutionInputs(snapshot),
                     output, cancellationToken).ConfigureAwait(false);
@@ -136,9 +145,11 @@ public static class NativeArtifactPublisher
             // Validate compiler workspace links before publishing the immutable candidate.
             workspaces.Record(intermediate, intermediate + ".lock", [],
                 targetId + "/" + context.configuration, targetId, cancellationToken);
-            BuildArtifactManifest.Write(staging, fingerprint, ["Outputs"], context);
+            NativeArtifact.Write(staging, describeOutputs?.Invoke(scoped, output)
+                ?? PathBoundary.EnumerateFiles(output).Select(file => new NativeArtifact(Path.GetRelativePath(output, file), file, NativeArtifactRole.SupportFile)).ToArray());
+            BuildArtifactManifest.Write(staging, fingerprint, ["Outputs", "Metadata"], context);
             cancellationToken.ThrowIfCancellationRequested();
-            using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(destination,
+            using (BuildArtifactWriteLease publication = await BuildArtifactWriteLease.AcquireAsync(destination, Path.Combine(context.engineRoot, "artifacts", "native"),
                 cancellationToken).ConfigureAwait(false))
             {
                 try
@@ -150,10 +161,10 @@ public static class NativeArtifactPublisher
                     Console.Error.WriteLine(cleanupFailure.Message);
                 }
             }
-            BuildArtifactReadLease reading = await BuildArtifactReadLease.TryAcquireAsync(destination, fingerprint, ["Outputs"], context, cancellationToken).ConfigureAwait(false)
+            BuildArtifactReadLease reading = await BuildArtifactReadLease.TryAcquireAsync(destination, Path.Combine(context.engineRoot, "artifacts", "native"), fingerprint, ["Outputs", "Metadata"], context, cancellationToken).ConfigureAwait(false)
                 ?? throw new InvalidDataException("The published Native artifact changed before reading ownership was acquired.");
             Record(reading);
-            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.sharedLibraryExtension, reading);
+            return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.linkPlan.sharedLibraryExtension, reading);
         }
         finally
         {

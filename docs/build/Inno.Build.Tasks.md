@@ -99,7 +99,7 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 
 ## 当前源码公开 API 清单
 
-按功能类型核对全部公开与可扩展 protected 声明。类型的组合与所有权从前文工作流进入。
+当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
 
 ### `Inno.Build.Tasks.CompileShaderTask`
 
@@ -116,20 +116,20 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 <!-- api: M:Inno.Build.Tasks.CompileShaderTask.Cancel 5507f05d49118d4161d95555b2dc2af93316fdf5ec8f7ce6018c90a0c15277f7 -->
 <!-- api: M:Inno.Build.Tasks.CompileShaderTask.#ctor e768f0db28186b6552c40b2e640cbe1bba4b70dec0e5b0e22080ccaf60376ada -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-2e282983370f3b9a"></a>[`public Inno.Build.Tasks.CompileShaderTask.CompileShaderTask()`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L21) | C# 语言生成的声明；按类型定义执行构造或值操作。 | — | — |
-| <a id="api-3e843d7bc51c1d99"></a>[`public void Inno.Build.Tasks.CompileShaderTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L117) | Cancels offline tool preparation and prevents publication of newly prepared tool products. | — | — |
-| <a id="api-ca9d1529950eaad3"></a>[`public override bool Inno.Build.Tasks.CompileShaderTask.Execute()`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L82) | Compiles the requested graph artifact and reports compilation failures through MSBuild.<br>返回：True after writing the artifact; false when validation or compilation fails. | — | — |
-| <a id="api-4cc2a6806019a2cd"></a>[`public string Inno.Build.Tasks.CompileShaderTask.AssetRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L42) | Gets or sets the authoring source directory. | — | — |
-| <a id="api-21957baa84608a49"></a>[`public string Inno.Build.Tasks.CompileShaderTask.Configuration { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L36) | Gets or sets the managed and native tool configuration. | — | — |
-| <a id="api-e944b3105e31d7b3"></a>[`public string Inno.Build.Tasks.CompileShaderTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L31) | Gets or sets the checkout whose native offline tools must match this build. | — | — |
-| <a id="api-cd302b54af465f25"></a>[`public string Inno.Build.Tasks.CompileShaderTask.OutputFile { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L74) | Gets or sets the compiled file inside an owned Outputs subdirectory. Its parent artifact directory is validated and atomically published with a content manifest. | — | — |
-| <a id="api-c2071a8cc41cac44"></a>[`public string Inno.Build.Tasks.CompileShaderTask.Renderer { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L67) | Gets or sets the graphics API identifier. | — | — |
-| <a id="api-58d4eb4f091bffbf"></a>[`public string Inno.Build.Tasks.CompileShaderTask.ShaderPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L48) | Gets or sets the source-local shader graph path. | — | — |
-| <a id="api-afd1629572f60a51"></a>[`public string Inno.Build.Tasks.CompileShaderTask.Target { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L54) | Gets or sets the graphics compiler target platform. | — | — |
-| <a id="api-88d5c566bc444191"></a>[`public string Inno.Build.Tasks.CompileShaderTask.ToolTarget { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L61) | Gets or sets the explicit native target of the offline compiler executed by this task. This selection is independent of the shader artifact target. | — | — |
-| <a id="api-b386a65d470033c7"></a>[`public sealed class Inno.Build.Tasks.CompileShaderTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L21) | Connects MSBuild to the same graph compiler used by the unified build workflow. | — | — |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-2e282983370f3b9a"></a>[`public Inno.Build.Tasks.CompileShaderTask.CompileShaderTask()`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L22) | 由 C# 生成，遵循所属类型的值语义与本页的生命周期约束。 |
+| <a id="api-3e843d7bc51c1d99"></a>[`public void Inno.Build.Tasks.CompileShaderTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L118) | Cancels offline tool preparation and prevents publication of newly prepared tool products. |
+| <a id="api-ca9d1529950eaad3"></a>[`public override bool Inno.Build.Tasks.CompileShaderTask.Execute()`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L83) | Compiles the requested graph artifact and reports compilation failures through MSBuild.<br>返回：True after writing the artifact; false when validation or compilation fails. |
+| <a id="api-4cc2a6806019a2cd"></a>[`public string Inno.Build.Tasks.CompileShaderTask.AssetRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L43) | Gets or sets the authoring source directory. |
+| <a id="api-21957baa84608a49"></a>[`public string Inno.Build.Tasks.CompileShaderTask.Configuration { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L37) | Gets or sets the managed and native tool configuration. |
+| <a id="api-e944b3105e31d7b3"></a>[`public string Inno.Build.Tasks.CompileShaderTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L32) | Gets or sets the checkout whose native offline tools must match this build. |
+| <a id="api-cd302b54af465f25"></a>[`public string Inno.Build.Tasks.CompileShaderTask.OutputFile { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L75) | Gets or sets the compiled file inside an owned Outputs subdirectory. Its parent artifact directory is validated and atomically published with a content manifest. |
+| <a id="api-c2071a8cc41cac44"></a>[`public string Inno.Build.Tasks.CompileShaderTask.Renderer { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L68) | Gets or sets the graphics API identifier. |
+| <a id="api-58d4eb4f091bffbf"></a>[`public string Inno.Build.Tasks.CompileShaderTask.ShaderPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L49) | Gets or sets the source-local shader graph path. |
+| <a id="api-afd1629572f60a51"></a>[`public string Inno.Build.Tasks.CompileShaderTask.Target { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L55) | Gets or sets the graphics compiler target platform. |
+| <a id="api-88d5c566bc444191"></a>[`public string Inno.Build.Tasks.CompileShaderTask.ToolTarget { get; set; }`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L62) | Gets or sets the explicit native target of the offline compiler executed by this task. This selection is independent of the shader artifact target. |
+| <a id="api-b386a65d470033c7"></a>[`public sealed class Inno.Build.Tasks.CompileShaderTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/CompileShaderTask.cs#L22) | Connects MSBuild to the same graph compiler used by the unified build workflow. |
 
 ### `Inno.Build.Tasks.GenerateBindingsTask`
 
@@ -148,30 +148,46 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 <!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.GenerationFingerprint 3573f4c3015cf9fb7871a0a919fa6d9df75195a5c1f24bf74d892244a99b1924 -->
 <!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.NativeDirectory ef4b387dcc0ac2adb2b0e6f76b18522308e866de74284d032632a6248c261b2f -->
 <!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.ArtifactDirectory c17ec197a5817bc20134d2e2c30c3c063223732aa5408c75913ebb89263d1ac1 -->
+<!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.ArtifactOwnerDirectory 315a73a705fbf1aef3cb82068a3c2623897dee4434b83d3932c6c6046ab53b42 -->
 <!-- api: M:Inno.Build.Tasks.GenerateBindingsTask.Cancel 6450d836be0b8cae8c50e013978bec40372ba8b55d248611dba53f9864007117 -->
 <!-- api: M:Inno.Build.Tasks.GenerateBindingsTask.Execute 3d0f76b35164ef0bff7c13131341d9139b45174dcd8fe52e61dd9c83833312a2 -->
 <!-- api: M:Inno.Build.Tasks.GenerateBindingsTask.#ctor 81c4f9dce488cc2cb313f6dd2e6a3f30e04dde68fb7f26f30024b80c4a6e6ccc -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-ff3d6b09600f6748"></a>[`public Inno.Build.Tasks.GenerateBindingsTask.GenerateBindingsTask()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L17) | C# 语言生成的声明；按类型定义执行构造或值操作。 | — | — |
-| <a id="api-0e2f3cc8eb4f48dd"></a>[`public void Inno.Build.Tasks.GenerateBindingsTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L95) | Cancels owned work before retiring the task cancellation source. | — | — |
-| <a id="api-5781726cd5c70adf"></a>[`public override bool Inno.Build.Tasks.GenerateBindingsTask.Execute()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L108) | Executes one explicit component request and publishes task outputs only after success.<br>返回：True after generation or comparison; false after a logged failure and complete cleanup. | — | — |
-| <a id="api-1a480d62e4caeaba"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ArtifactDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L90) | Gets the protected immutable artifact root, or an empty value for host-source generation. | — | — |
-| <a id="api-575a1911eea02136"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.BindingDefinition { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L42) | Gets or sets the sole literal definition consumed by both the project and direct generation. | — | — |
-| <a id="api-a6f2d71733c80c5a"></a>[`public bool Inno.Build.Tasks.GenerateBindingsTask.CheckOnly { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L61) | Gets or sets comparison without publication. | — | — |
-| <a id="api-c71184f5383ef80c"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ComponentId { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L32) | Gets or sets the stable component identity declared by the sole binding definition. | — | — |
-| <a id="api-982ad2c776d8e749"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ComponentProject { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L37) | Gets or sets the absolute Native owner project, which must belong to this checkout. | — | — |
-| <a id="api-d0abb47b973cb34d"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.DescriptorOutputPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L65) | Gets or sets an optional request-owned descriptor destination written only after success. | — | — |
-| <a id="api-67b85ee3fb7aaee3"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.DotnetHost { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L57) | Gets or sets the explicitly selected SDK host for declared generator extensions. | — | — |
-| <a id="api-c0c3fd50a5e4cfea"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L27) | Gets or sets the absolute checkout owning the component definition. | — | — |
-| <a id="api-9264f16119860a61"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ExpectedFingerprint { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L69) | Gets or sets an optional expected identity; stale requests fail before generation. | — | — |
-| <a id="api-47ecc7e873a694fd"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GeneratedBindings { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L74) | Gets the single source selected after complete publication or successful comparison. | — | — |
-| <a id="api-aade4e3b794412b5"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GenerationFingerprint { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L79) | Gets the complete validated input identity. | — | — |
-| <a id="api-470866008b43e628"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.NativeDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L84) | Gets the complete native artifacts and compilation requirements selected by this operation. | — | — |
-| <a id="api-af714cac5c42448a"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.OutputMode { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L52) | Gets or sets HostSource or TargetArtifacts without deriving publication from a path. | — | — |
-| <a id="api-2e58c35aa575bcc7"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.TargetId { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L47) | Gets or sets the explicit configuration identity selected from the definition. | — | — |
-| <a id="api-56d9cd602fa62564"></a>[`public sealed class Inno.Build.Tasks.GenerateBindingsTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L17) | Maps an explicit MSBuild request to the shared binding application without owning generation policy. | — | — |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-ff3d6b09600f6748"></a>[`public Inno.Build.Tasks.GenerateBindingsTask.GenerateBindingsTask()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L18) | 由 C# 生成，遵循所属类型的值语义与本页的生命周期约束。 |
+| <a id="api-0e2f3cc8eb4f48dd"></a>[`public void Inno.Build.Tasks.GenerateBindingsTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L107) | Cancels owned work before retiring the task cancellation source. |
+| <a id="api-5781726cd5c70adf"></a>[`public override bool Inno.Build.Tasks.GenerateBindingsTask.Execute()`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L120) | Executes one explicit component request and publishes task outputs only after success.<br>返回：True after generation or comparison; false after a logged failure and complete cleanup. |
+| <a id="api-1a480d62e4caeaba"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ArtifactDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L96) | Gets the protected immutable artifact root, or an empty value for host-source generation. |
+| <a id="api-66ed8053f6f55f55"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ArtifactOwnerDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L102) | Gets the publisher root coordinating the selected immutable artifact, or empty for host sources. |
+| <a id="api-575a1911eea02136"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.BindingDefinition { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L43) | Gets or sets the sole literal definition consumed by both the project and direct generation. |
+| <a id="api-a6f2d71733c80c5a"></a>[`public bool Inno.Build.Tasks.GenerateBindingsTask.CheckOnly { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L62) | Gets or sets comparison without publication. |
+| <a id="api-c71184f5383ef80c"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ComponentId { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L33) | Gets or sets the stable component identity declared by the sole binding definition. |
+| <a id="api-982ad2c776d8e749"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ComponentProject { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L38) | Gets or sets the absolute Native owner project, which must belong to this checkout. |
+| <a id="api-d0abb47b973cb34d"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.DescriptorOutputPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L66) | Gets or sets an optional request-owned descriptor destination written only after success. |
+| <a id="api-67b85ee3fb7aaee3"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.DotnetHost { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L58) | Gets or sets the explicitly selected managed SDK host used to compose the target toolchain. |
+| <a id="api-c0c3fd50a5e4cfea"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L28) | Gets or sets the absolute checkout owning the component definition. |
+| <a id="api-9264f16119860a61"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.ExpectedFingerprint { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L70) | Gets or sets an optional expected identity; stale requests fail before generation. |
+| <a id="api-47ecc7e873a694fd"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GeneratedBindings { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L75) | Gets the single source selected after complete publication or successful comparison. |
+| <a id="api-aade4e3b794412b5"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.GenerationFingerprint { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L80) | Gets the complete validated input identity. |
+| <a id="api-470866008b43e628"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.NativeDirectory { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L90) | Gets the complete native artifacts and compilation requirements selected by this operation. |
+| <a id="api-af714cac5c42448a"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.OutputMode { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L53) | Gets or sets HostSource or TargetArtifacts without deriving publication from a path. |
+| <a id="api-2e58c35aa575bcc7"></a>[`public string Inno.Build.Tasks.GenerateBindingsTask.TargetId { get; set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L48) | Gets or sets the explicit configuration identity selected from the definition. |
+| <a id="api-56d9cd602fa62564"></a>[`public sealed class Inno.Build.Tasks.GenerateBindingsTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L18) | Maps an explicit MSBuild request to the shared binding application without owning generation policy. |
+
+### `Inno.Build.Tasks.MaintainBuildCachesTask`
+
+<!-- api: T:Inno.Build.Tasks.MaintainBuildCachesTask 6a56c37da05d5e03cb999d2fda5e5ad93a6a2fee7890cc42354f599bb8942b8a -->
+<!-- api: P:Inno.Build.Tasks.MaintainBuildCachesTask.EngineRoot dd402a9e231b189d206f3f86d6330a90bdb230a9d137563750c9bfbf65c8f96d -->
+<!-- api: M:Inno.Build.Tasks.MaintainBuildCachesTask.Execute 1afc95e4d782b4058fbfa1af9962a07bc750ae92db202feb12ab1457aa9f54be -->
+<!-- api: M:Inno.Build.Tasks.MaintainBuildCachesTask.#ctor dfec429dd6a59b67a3d9cf466b193a88f0e8979850718ff23c5cf5608ec8d8fb -->
+
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-5463b4ef34c0f8d3"></a>[`public Inno.Build.Tasks.MaintainBuildCachesTask.MaintainBuildCachesTask()`](../../build/tasks/Inno.Build.Tasks/MaintainBuildCachesTask.cs#L12) | 由 C# 生成，遵循所属类型的值语义与本页的生命周期约束。 |
+| <a id="api-47d1c42c2532768d"></a>[`public override bool Inno.Build.Tasks.MaintainBuildCachesTask.Execute()`](../../build/tasks/Inno.Build.Tasks/MaintainBuildCachesTask.cs#L26) | Attempts maintenance without changing the successful product build outcome.<br>返回：True after completed or explicitly deferred automatic maintenance. |
+| <a id="api-537a4fc1c2e564e4"></a>[`public string Inno.Build.Tasks.MaintainBuildCachesTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/MaintainBuildCachesTask.cs#L18) | Gets or sets the absolute checkout owning the registered cache catalog. |
+| <a id="api-461c154fdc94dce2"></a>[`public sealed class Inno.Build.Tasks.MaintainBuildCachesTask : Microsoft.Build.Utilities.Task`](../../build/tasks/Inno.Build.Tasks/MaintainBuildCachesTask.cs#L12) | Runs bounded cache maintenance after a successful root Editor operation. |
 
 ### `Inno.Build.Tasks.PrepareProductNativeTask`
 
@@ -187,19 +203,19 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 <!-- api: M:Inno.Build.Tasks.PrepareProductNativeTask.Cancel 1836685d1d740271593d145b676374ac6faa86c1ba5296b35ad94fecaa82f820 -->
 <!-- api: M:Inno.Build.Tasks.PrepareProductNativeTask.#ctor 3f6cb457d27201c9feacf6a352fdce8fd594d2357f4798bab751017497fe204a -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-7bed92c629f73bb2"></a>[`public Inno.Build.Tasks.PrepareProductNativeTask.PrepareProductNativeTask()`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L17) | C# 语言生成的声明；按类型定义执行构造或值操作。 | — | — |
-| <a id="api-0b337b5b1b0c5708"></a>[`public void Inno.Build.Tasks.PrepareProductNativeTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L137) | Requests process-tree retirement before or during task execution without racing token disposal. | — | — |
-| <a id="api-b8ca781d2842b2bf"></a>[`public override bool Inno.Build.Tasks.PrepareProductNativeTask.Execute()`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L69) | Prepares all host-native products and installs their exact closure after successful validation.<br>返回：True after deployment, or false after reporting a build failure or cancellation to MSBuild. | — | — |
-| <a id="api-be26d4b8d714e351"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.BindingSelectionInputPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L61) | Gets or sets the managed build's frozen selection that publication must preserve before deployment. An empty value denotes initial preparation without a preceding managed compilation. | — | — |
-| <a id="api-3c90fc6208778207"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.BindingSelectionOutputPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L55) | Gets or sets an optional operation-owned selection consumed by the subsequent managed project closure. | — | — |
-| <a id="api-b480f403e77a86d1"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.Configuration { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L50) | Gets or sets the debug or release configuration used by the managed application. | — | — |
-| <a id="api-e7cf1daf35a50c42"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L27) | Gets or sets the source checkout containing the unified native toolchains. | — | — |
-| <a id="api-3d71b74537f79659"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.OutputDirectory { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L33) | Gets or sets the managed application directory receiving the complete native deployment. | — | — |
-| <a id="api-1d019d5a3b1dffca"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.ProductId { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L39) | Gets or sets the exact product identity whose component closure must be prepared. | — | — |
-| <a id="api-a11fccffcf2147ca"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.TargetId { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L45) | Gets or sets the explicitly declared product target, independent of the task execution machine. | — | — |
-| <a id="api-90feb81b27588db9"></a>[`public sealed class Inno.Build.Tasks.PrepareProductNativeTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L17) | Connects explicit product builds and publication to their target-native closure and exact deployment. | — | — |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-7bed92c629f73bb2"></a>[`public Inno.Build.Tasks.PrepareProductNativeTask.PrepareProductNativeTask()`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L18) | 由 C# 生成，遵循所属类型的值语义与本页的生命周期约束。 |
+| <a id="api-0b337b5b1b0c5708"></a>[`public void Inno.Build.Tasks.PrepareProductNativeTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L140) | Requests process-tree retirement before or during task execution without racing token disposal. |
+| <a id="api-b8ca781d2842b2bf"></a>[`public override bool Inno.Build.Tasks.PrepareProductNativeTask.Execute()`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L70) | Prepares all host-native products and installs their exact closure after successful validation.<br>返回：True after deployment, or false after reporting a build failure or cancellation to MSBuild. |
+| <a id="api-be26d4b8d714e351"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.BindingSelectionInputPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L62) | Gets or sets the managed build's frozen selection that publication must preserve before deployment. An empty value denotes initial preparation without a preceding managed compilation. |
+| <a id="api-3c90fc6208778207"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.BindingSelectionOutputPath { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L56) | Gets or sets an optional operation-owned selection consumed by the subsequent managed project closure. |
+| <a id="api-b480f403e77a86d1"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.Configuration { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L51) | Gets or sets the debug or release configuration used by the managed application. |
+| <a id="api-e7cf1daf35a50c42"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L28) | Gets or sets the source checkout containing the unified native toolchains. |
+| <a id="api-3d71b74537f79659"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.OutputDirectory { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L34) | Gets or sets the managed application directory receiving the complete native deployment. |
+| <a id="api-1d019d5a3b1dffca"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.ProductId { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L40) | Gets or sets the exact product identity whose component closure must be prepared. |
+| <a id="api-a11fccffcf2147ca"></a>[`public string Inno.Build.Tasks.PrepareProductNativeTask.TargetId { get; set; }`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L46) | Gets or sets the explicitly declared product target, independent of the task execution machine. |
+| <a id="api-90feb81b27588db9"></a>[`public sealed class Inno.Build.Tasks.PrepareProductNativeTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/PrepareProductNativeTask.cs#L18) | Connects explicit product builds and publication to their target-native closure and exact deployment. |
 
 ### `Inno.Build.Tasks.PublishSupportPackTask`
 
@@ -213,17 +229,17 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 <!-- api: M:Inno.Build.Tasks.PublishSupportPackTask.Cancel 4ed313b958d440c7b332188b188958a8d2c3802dc6cf47e183009d370c5e063b -->
 <!-- api: M:Inno.Build.Tasks.PublishSupportPackTask.#ctor 4e1d97a6c9b454101630af2574fbb21bf337ba058d75e6dcf10be889c53aa83c -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-eb6353f8d53da889"></a>[`public Inno.Build.Tasks.PublishSupportPackTask.PublishSupportPackTask()`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L17) | C# 语言生成的声明；按类型定义执行构造或值操作。 | — | — |
-| <a id="api-c2cc3ab11edf1284"></a>[`public void Inno.Build.Tasks.PublishSupportPackTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L96) | Requests cancellation before or during execution without racing disposal. | — | — |
-| <a id="api-340855085dd8722b"></a>[`public override bool Inno.Build.Tasks.PublishSupportPackTask.Execute()`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L58) | Publishes and validates the target pack, reporting failures through MSBuild.<br>返回：True after installation; false when publication fails or is canceled. | — | — |
-| <a id="api-cd3d0b94e175c13c"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.DotnetHost { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L44) | Gets or sets the SDK host executable. | — | — |
-| <a id="api-40bae46b53808cd2"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L27) | Gets or sets the engine checkout directory. | — | — |
-| <a id="api-0574e0cdd7b940fd"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.OutputRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L33) | Gets or sets the directory owning installed target packs. | — | — |
-| <a id="api-7c02113ae29f3bb8"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.Target { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L39) | Gets or sets the requested build target identifier. | — | — |
-| <a id="api-8ee71db1117460e4"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.ToolTarget { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L50) | Gets or sets the independently selected native target for executable compilation tools. | — | — |
-| <a id="api-8c2e8f3c7f71bbe4"></a>[`public sealed class Inno.Build.Tasks.PublishSupportPackTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L17) | Connects MSBuild publication to the common atomic Support Pack publisher. | — | — |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-eb6353f8d53da889"></a>[`public Inno.Build.Tasks.PublishSupportPackTask.PublishSupportPackTask()`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L17) | 由 C# 生成，遵循所属类型的值语义与本页的生命周期约束。 |
+| <a id="api-c2cc3ab11edf1284"></a>[`public void Inno.Build.Tasks.PublishSupportPackTask.Cancel()`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L95) | Requests cancellation before or during execution without racing disposal. |
+| <a id="api-340855085dd8722b"></a>[`public override bool Inno.Build.Tasks.PublishSupportPackTask.Execute()`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L58) | Publishes and validates the target pack, reporting failures through MSBuild.<br>返回：True after installation; false when publication fails or is canceled. |
+| <a id="api-cd3d0b94e175c13c"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.DotnetHost { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L44) | Gets or sets the SDK host executable. |
+| <a id="api-40bae46b53808cd2"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.EngineRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L27) | Gets or sets the engine checkout directory. |
+| <a id="api-0574e0cdd7b940fd"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.OutputRoot { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L33) | Gets or sets the directory owning installed target packs. |
+| <a id="api-7c02113ae29f3bb8"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.Target { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L39) | Gets or sets the requested build target identifier. |
+| <a id="api-8ee71db1117460e4"></a>[`public string Inno.Build.Tasks.PublishSupportPackTask.ToolTarget { get; set; }`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L50) | Gets or sets the independently selected native target for executable compilation tools. |
+| <a id="api-8c2e8f3c7f71bbe4"></a>[`public sealed class Inno.Build.Tasks.PublishSupportPackTask : Microsoft.Build.Utilities.Task, Microsoft.Build.Framework.ICancelableTask`](../../build/tasks/Inno.Build.Tasks/PublishSupportPackTask.cs#L17) | Connects MSBuild publication to the common atomic Support Pack publisher. |
 
 ## 项目依赖
 
@@ -236,3 +252,9 @@ Task 运行图按所选 SDK 的 NETCoreSdkRuntimeIdentifier 恢复依赖。产�
 - [Inno.Build.Distribution.Standard](Inno.Build.Distribution.Standard.md)：实现依赖，PrivateAssets="compile"。
 
 Native 产品与离线 Shader 工具完成 SDK 预检后，按已选择计划登记 publisher roots，复用标准发行的唯一缓存 owner 定义。登记不认领未记录的历史目录，也不创建第二份后端闭包。
+
+<!-- api: P:Inno.Build.Tasks.GenerateBindingsTask.UsesRuntimeImports f11504af6db8afaf30461a0086da0387a73167f0a8580b46eb0cf6b6344638bb -->
+
+| 声明 | 行为与约束 |
+| --- | --- |
+| <a id="api-3021459b17db2638"></a>[`public bool Inno.Build.Tasks.GenerateBindingsTask.UsesRuntimeImports { get; private set; }`](../../build/tasks/Inno.Build.Tasks/GenerateBindingsTask.cs#L85) | Gets whether the selected generated context requires runtime-import initialization. |

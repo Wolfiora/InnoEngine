@@ -10,6 +10,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/rendering-ci.yml"
+      - ".github/actions/setup-dotnet/**"
       - "build/**"
       - "extern/**"
       - "entry/**"
@@ -28,11 +29,10 @@ on:
       - "InnoEngine.sln"
   push:
     branches:
-      - main
       - master
-      - kernel
     paths:
       - ".github/workflows/rendering-ci.yml"
+      - ".github/actions/setup-dotnet/**"
       - "build/**"
       - "extern/**"
       - "entry/**"
@@ -53,9 +53,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: engine-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  CMAKE_BUILD_PARALLEL_LEVEL: "2"
 
 jobs:
   managed:
@@ -70,12 +75,19 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
+      - uses: ./.github/actions/setup-dotnet
+      - name: Validate managed locked restore
+        shell: pwsh
+        run: |
+          ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-before
       - name: Build and test the independent managed graph
         shell: pwsh
-        run: ./tests/Invoke-ManagedChecks.ps1
+        run: |
+          ./tests/Invoke-ManagedChecks.ps1 -ArtifactsPath (Join-Path $env:RUNNER_TEMP 'InnoManaged')
+      - name: Verify source locks after managed tests
+        shell: pwsh
+        run: |
+          ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-after
       - name: Upload managed results and deferred dependencies
         if: always()
         uses: actions/upload-artifact@v4
@@ -88,7 +100,8 @@ jobs:
     if: github.event_name != 'workflow_dispatch' || inputs.native_product_acceptance
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 180
+    # Cold Debug/Release native builds, ten hot builds and the complete contract suite share this job.
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
@@ -96,15 +109,19 @@ jobs:
           - os: windows-2022
             platform: windows-x64
             build_target: windows-x64
+            runtime_identifier: win-x64
             architecture: X64
             backend_pattern: "Rendering initialized with Direct3D(11|12)"
             product_properties: platforms/WindowsX64/build/Inno.Build.WindowsX64/EditorProduct.props
+            player_project: platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj
           - os: macos-15
             platform: osx-arm64
             build_target: macos-arm64
+            runtime_identifier: osx-arm64
             architecture: Arm64
             backend_pattern: "Rendering initialized with Metal"
             product_properties: platforms/MacOSArm64/build/Inno.Build.MacOSArm64/EditorProduct.props
+            player_project: platforms/MacOSArm64/player/Inno.Player.MacOSArm64/Inno.Player.MacOSArm64.csproj
 
     steps:
       - name: Checkout repository and native dependencies
@@ -113,11 +130,7 @@ jobs:
           submodules: recursive
 
       - name: Install .NET SDK
-        uses: actions/setup-dotnet@v4
-        env:
-          DOTNET_INSTALL_DIR: ${{ runner.temp }}/inno-dotnet
-        with:
-          global-json-file: global.json
+        uses: ./.github/actions/setup-dotnet
 
       - name: Install MSBuild
         if: runner.os == 'Windows'
@@ -146,21 +159,85 @@ jobs:
             Set-Content 'artifacts/acceptance/ci-build/compiler-version.txt'
           if ($LASTEXITCODE -ne 0) { throw 'The selected compiler could not report its version.' }
 
-      - name: Build host Editor in Debug and Release
+      - name: Validate Editor and NativeAOT locked restores
+        shell: pwsh
+        run: |
+          ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Debug `
+            -ResultsDirectory artifacts/acceptance/ci-build/nuget-editor-debug
+          ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Release `
+            -ResultsDirectory artifacts/acceptance/ci-build/nuget-editor-release
+          ./tests/Invoke-NuGetLockChecks.ps1 -Project '${{ matrix.player_project }}' -Configuration Release `
+            -RuntimeIdentifier '${{ matrix.runtime_identifier }}' -PublishAot `
+            -ResultsDirectory artifacts/acceptance/ci-build/nuget-player-aot
+
+      - name: Build development Build entry
+        id: build_entry
         shell: pwsh
         run: |
           dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false `
             -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/entry.binlog' 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/entry.log'
           if ($LASTEXITCODE -ne 0) { throw "Build entry preparation failed." }
+
+      - name: Build host Editor Debug
+        id: native_debug
+        shell: pwsh
+        run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Debug 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-debug.log'
           if ($LASTEXITCODE -ne 0) { throw "Debug host Editor build failed." }
+
+      - name: Run real renderer smoke
+        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          $editor = @(dotnet msbuild 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj' `
+            -nologo -m:1 -nr:false -p:Configuration=Debug -getProperty:TargetPath)
+          if ($LASTEXITCODE -ne 0 -or $editor.Count -ne 1) {
+            throw 'The built Editor entry has no unambiguous evaluated TargetPath.'
+          }
+          ./tests/Invoke-EditorSmoke.ps1 -EditorAssembly $editor[0] `
+            -ProjectDirectory (Join-Path $env:RUNNER_TEMP 'InnoRenderingSmoke') `
+            -BackendPattern '${{ matrix.backend_pattern }}' -Dotnet (Get-Command dotnet).Source
+
+      - name: Upload renderer smoke logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendering-smoke-${{ matrix.platform }}
+          path: ${{ runner.temp }}/InnoRenderingSmoke/Logs/**
+          if-no-files-found: warn
+
+      - name: Build host Editor Release
+        id: native_release
+        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
+        shell: pwsh
+        run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-release.log'
           if ($LASTEXITCODE -ne 0) { throw "Release host Editor build failed." }
 
+      - name: Verify restored BGCS package and repeated cache reuse
+        if: ${{ !cancelled() && steps.native_release.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $assets = @(dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
+            -nologo -m:1 -nr:false -getProperty:ProjectAssetsFile,InnoBgcsPackageVersion)
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve BGCS restore ownership.' }
+          $evaluation = ($assets -join [Environment]::NewLine) | ConvertFrom-Json
+          $expectedVersion = $evaluation.Properties.InnoBgcsPackageVersion
+          $restored = Get-Content -LiteralPath $evaluation.Properties.ProjectAssetsFile -Raw | ConvertFrom-Json
+          $packages = @($restored.libraries.PSObject.Properties.Name | Where-Object { $_ -match '^BGCS(?:\.[^/]+)?/' })
+          if ($packages.Count -eq 0 -or @($packages | Where-Object { ($_ -split '/')[-1] -ne $expectedVersion }).Count -ne 0) {
+            throw ('Every restored BGCS package must use exactly '+$expectedVersion+'.')
+          }
+          $packages | Set-Content 'artifacts/acceptance/ci-build/bgcs-packages.txt'
+          ./tests/Invoke-BuildCacheChecks.ps1 -ResultsDirectory 'artifacts/acceptance/ci-build/cache'
+
       - name: Build managed solution
+        id: source
+        if: ${{ !cancelled() && steps.build_entry.outcome == 'success' }}
         shell: pwsh
         run: |
           dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
@@ -169,10 +246,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'SourceDebug build failed.' }
 
       - name: Enforce source and compiled public API architecture boundaries
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         shell: pwsh
         run: dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- verify .
 
       - name: Run complete test suite
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         shell: pwsh
         run: |
           $properties = Join-Path $PWD '${{ matrix.product_properties }}'
@@ -194,6 +273,7 @@ jobs:
           ./tests/Invoke-IsolatedTests.ps1 -Configuration SourceDebug -Target '${{ matrix.build_target }}' -ProductProperties $properties
 
       - name: Generate source-independent Player Support Pack
+        if: ${{ !cancelled() && steps.native_release.outcome == 'success' }}
         shell: pwsh
         run: |
           $supportPacks = Join-Path $env:RUNNER_TEMP "InnoSupportPacks"
@@ -219,57 +299,18 @@ jobs:
             throw 'The runtime and PlayerLink Native inputs do not match.'
           }
 
-      - name: Run real renderer smoke
+      - name: Validate current Wiki signatures and compiled examples
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         shell: pwsh
         run: |
-          $smokeProject = Join-Path $env:RUNNER_TEMP "InnoRenderingSmoke"
-          New-Item -ItemType Directory -Force (Join-Path $smokeProject "Assets") | Out-Null
-          $nativeLog = Join-Path $smokeProject "Logs/NativeRendering.log"
-          New-Item -ItemType Directory -Force (Split-Path $nativeLog) | Out-Null
-          $editor = @(dotnet msbuild 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj' `
-            -nologo -m:1 -nr:false -p:Configuration=Debug -getProperty:TargetPath)
-          if ($LASTEXITCODE -ne 0 -or $editor.Count -ne 1 -or -not (Test-Path -LiteralPath $editor[0])) {
-            throw 'The built Editor entry is unavailable at its evaluated TargetPath.'
-          }
-          dotnet $editor[0] `
-            $smokeProject --smoke-frames 3 2>&1 | Tee-Object -FilePath $nativeLog
-          if ($LASTEXITCODE -ne 0) {
-            throw "Renderer smoke exited with code $LASTEXITCODE."
-          }
-
-          $bootLog = Join-Path $smokeProject "Logs/EditorBoot.log"
-          if (-not (Test-Path $bootLog)) {
-            throw "Renderer smoke did not produce EditorBoot.log."
-          }
-          $boot = Get-Content -Raw $bootLog
-          if ($boot -notmatch '${{ matrix.backend_pattern }}') {
-            throw "Renderer smoke did not initialize the required backend pattern '${{ matrix.backend_pattern }}'."
-          }
-          if ($boot -notmatch 'Smoke frame limit reached after 3 frame\(s\)\.') {
-            throw "Renderer smoke did not submit the required frame count."
-          }
-          if ($boot -notmatch 'Dispose end\.') {
-            throw "Renderer smoke did not complete orderly shutdown."
-          }
-          if ($boot -match 'Teardown failure') {
-            throw "Renderer smoke reported a teardown failure."
-          }
-
-          $native = Get-Content -Raw $nativeLog
-          if ($boot -notmatch 'Primary presentation encodes sRGB: True\.') {
-            throw "Renderer smoke did not enable the sRGB backbuffer contract."
-          }
-          if ($native -match 'BGFX FATAL') {
-            throw "Renderer smoke reported a BGFX fatal diagnostic."
-          }
-
-      - name: Upload renderer smoke logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: rendering-smoke-${{ matrix.platform }}
-          path: ${{ runner.temp }}/InnoRenderingSmoke/Logs/**
-          if-no-files-found: warn
+          dotnet build '${{ matrix.player_project }}' --configuration Debug --disable-build-servers -m:1 -nr:false `
+            '-bl:artifacts/acceptance/ci-build/wiki-player.binlog' 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-build/wiki-player.log'
+          if ($LASTEXITCODE -ne 0) { throw 'The current Wiki target reference closure could not be built.' }
+          $project = Join-Path $env:RUNNER_TEMP 'InnoWikiProject'
+          New-Item -ItemType Directory -Force (Join-Path $project 'Assets') | Out-Null
+          'public sealed class WikiProbe { }' | Set-Content (Join-Path $project 'Assets/WikiProbe.cs') -Encoding utf8
+          ./tests/Invoke-WikiChecks.ps1 -ProjectDirectory $project -Target '${{ matrix.build_target }}'
 
       - name: Upload contract and Wiki evidence
         if: always()

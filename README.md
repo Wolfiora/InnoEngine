@@ -15,7 +15,7 @@ Build your game's rendering models, gameplay systems, and Editor tools on a shar
 **Requirements:** Git, the native x64/ARM64 .NET SDK 10.0.402 (C# 14), and your host's C++ toolchain. Windows x64 requires MSVC C++ desktop tools, Windows SDK, and C++ CMake tools. macOS ARM64 requires Xcode command line tools and CMake on PATH. [Host setup and first launch](docs/platform/PRODUCT_STARTUP.md#from-zero).
 
 ```sh
-git clone --branch kernel --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+git clone --branch dotnet10 --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
 cd InnoEngine
 ```
 
@@ -24,7 +24,7 @@ Open **InnoEngine.sln** in a .NET 10-capable Rider or Visual Studio 2026. Choose
 | Start | What it does |
 |---|---|
 | **InnoEngine.Editor** | Builds the current host Editor through project references and opens a project-folder picker. |
-| **InnoEngine.Build** | Prepares host Editor support by default; `editor` builds the complete Editor. Cleaning is explicit. |
+| **InnoEngine.Build** | Prepares host Editor support by default; `editor` builds the complete Editor. Successful root builds perform bounded cache maintenance; full cleaning is explicit. |
 
 The same commands work from a terminal:
 
@@ -32,11 +32,13 @@ The same commands work from a terminal:
 dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
 ```
 
-Use the branch containing these changes; the command above selects `kernel`. BGCS is restored from pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
+Use the branch containing these changes; the command above selects `dotnet10`. BGCS 4.1.2 is restored from exact pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
 
 Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder.
 
 [Startup, advanced commands, and game exports →](docs/platform/PRODUCT_STARTUP.md) · [Current acceptance](docs/architecture/CURRENT_ACCEPTANCE.md)
+
+NuGet dependency locks are tracked source inputs. Their names distinguish actual .NET runtime identifiers and the Editor entry host; native product labels do not create extra copies. See [dependency updates and locked restore checks](docs/build/DEPENDENCY_SUBMISSION.md).
 
 ## Product targets
 
@@ -46,7 +48,7 @@ Have a project already? Pass its directory after `--`. To try FlappyBird, clone 
 | macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
 | Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
 
-Windows x64 has current Editor, Support Pack, CoreCLR, and NativeAOT acceptance evidence. Browser publication is blocked by the pinned BGCS package's aggregate ABI capability; macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
+Windows x64 acceptance covers the Editor and published players separately. Browser Mono and AOT products have passed bounded runtime checks with the official BGCS extension. macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
 
 ## Built to compose
 
@@ -82,3 +84,5 @@ New platforms select backends and supply the required integrations. New backends
 ## License
 
 [Apache License 2.0](LICENSE). Third-party dependencies retain their respective licenses.
+
+Native ABI, SDK, link settings and deployment layout are owned by platform integrations. Shared backends keep one common binding definition. [Native build ownership and file tree](docs/architecture/NATIVE_BUILD_PLATFORM_OWNERSHIP.md) · [Cache ownership and maintenance](docs/architecture/BUILD_CACHE_ARCHITECTURE.md).

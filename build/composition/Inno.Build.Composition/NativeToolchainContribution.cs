@@ -23,23 +23,28 @@ public sealed class NativeToolchainContribution
     /// <param name="nativeProducts">
     /// Optional implemented native-only products, without game publication registration.
     /// </param>
+    /// <param name="bindingGenerator">
+    /// The target-owned generator, or null when the contribution generates no bindings.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// A required contribution member is null.
     /// </exception>
     public NativeToolchainContribution(
         PlatformTargetDescriptor descriptor,
         INativeToolchainProvider provider,
-        IReadOnlyList<ProductNativeBuildPlan>? nativeProducts = null
+        IReadOnlyList<NativeProductContribution>? nativeProducts = null,
+        INativeBindingGenerator? bindingGenerator = null
     ) {
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(provider);
         this.descriptor = descriptor;
+        this.bindingGenerator = bindingGenerator;
         this.provider = provider;
         nativeProducts ??= [];
         if (nativeProducts.Any(static plan => plan is null))
             throw new ArgumentException("Native product contributions cannot be null.", nameof(nativeProducts));
-        this.nativeProducts = new ReadOnlyDictionary<string, ProductNativeBuildPlan>(
-            nativeProducts.ToDictionary(static plan => plan.productId, StringComparer.Ordinal));
+        this.nativeProducts = new ReadOnlyDictionary<string, NativeProductContribution>(
+            nativeProducts.ToDictionary(static product => product.plan.productId, StringComparer.Ordinal));
     }
 
     /// <summary>
@@ -54,6 +59,11 @@ public sealed class NativeToolchainContribution
     /// <summary>
     /// Gets explicitly implemented native-only product closures keyed by stable product identity.
     /// </summary>
-    public IReadOnlyDictionary<string, ProductNativeBuildPlan> nativeProducts { get; }
+    public IReadOnlyDictionary<string, NativeProductContribution> nativeProducts { get; }
+
+    /// <summary>
+    /// Gets the target-owned generator, or null when no binding capability is registered.
+    /// </summary>
+    public INativeBindingGenerator? bindingGenerator { get; }
 
 }

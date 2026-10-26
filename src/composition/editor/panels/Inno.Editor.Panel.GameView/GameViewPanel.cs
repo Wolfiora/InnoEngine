@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Inno.References;
 using System;
 using System.Collections.Generic;
@@ -167,12 +165,10 @@ internal sealed unsafe class GameViewPanel : EditorPanel
         Vector2 origin = NativeImGui.GetCursorScreenPos();
         if (m_presentation.preserveAspectRatio)
         {
-            NativeImGui.Raw.AddRectFilled(
-                NativeImGui.Raw.GetWindowDrawList(),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(origin),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(origin + available),
+            EditorImGui.DrawFilledRectangle(
+                origin,
+                origin + available,
                 NativeImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)),
-                0,
                 0
             );
         }
@@ -245,12 +241,10 @@ internal sealed unsafe class GameViewPanel : EditorPanel
         string message
     ) {
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
-        NativeImGui.Raw.AddRectFilled(
-            NativeImGui.Raw.GetWindowDrawList(),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(minimum + size),
+        EditorImGui.DrawFilledRectangle(
+            minimum,
+            minimum + size,
             NativeImGui.ColorConvertFloat4ToU32(m_backgroundColor),
-            0,
             0
         );
         NativeImGui.PushStyleColor((int)ImGuiCol.Text, EditorPalette.textDisabled);

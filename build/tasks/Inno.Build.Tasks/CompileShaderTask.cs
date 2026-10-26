@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Inno.Build.Toolchains;
+using Microsoft.Build.Framework;
+using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Bgfx;
 using Inno.Build.Toolchains.Bgfx.Shaders;
 using Inno.Build.Toolchains.Bgfx.Tools;
-using Inno.Rendering;
-using Microsoft.Build.Framework;
 using Inno.Core.IO;
+using Inno.Rendering;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -130,7 +131,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
     ) {
         NativeBuildContext context = new(EngineRoot, "release");
         var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
-        context = context.WithBindingGenerator(execution.bindingGenerator);
+        context = context.WithBindingGenerator(StandardBuildDistribution.Create(execution).build.ResolveBindingGenerator(ToolTarget));
         string cacheKey = "Inno.Build.ShaderTools|" + context.engineRoot + "|" + context.configuration + "|" + ToolTarget;
         IBuildEngine4 engine = BuildEngine as IBuildEngine4
             ?? throw new InvalidOperationException("Offline tool preparation requires MSBuild's build-lifetime task ownership.");
@@ -142,16 +143,17 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             .AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
         // Only neutral file names cross task load contexts. MSBuild releases the record when this build ends.
         string[]? record = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[];
-        if (record is not null && (record.Length < 3 || !BuildArtifactManifest.IsComplete(record[0], record[1], ["Outputs"])))
+        if (record is not null && (record.Length < 3 || !BuildArtifactManifest.IsComplete(record[0], record[1], ["Outputs", "Metadata"])))
             throw new InvalidDataException("The build-owned offline tool product changed after preparation.");
         if (record is null)
         {
             var distribution = StandardBuildDistribution.Create(execution).build;
             context = context.WithToolchain(distribution.ResolveNativeToolchain(ToolTarget)
                 .ResolveAsync(context, execution.host, ToolTarget, cancellationToken).AsTask().GetAwaiter().GetResult());
-            ProductNativeBuildPlan plan = distribution.ResolveNativeProduct(ToolTarget, "shader-tools");
+            NativeProductContribution contribution = distribution.ResolveNativeProduct(ToolTarget, "shader-tools");
+            ProductNativeBuildPlan plan = contribution.plan;
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
-            using ProductNativeBuildResult products = plan.BuildAsync(context, cancellationToken).GetAwaiter().GetResult();
+            using ProductNativeBuildResult products = contribution.BuildAsync(context, cancellationToken).GetAwaiter().GetResult();
             NativeBuildProduct product = products.Single();
             record = [product.directory, product.fingerprint, .. product.files];
             engine.RegisterTaskObject(cacheKey, record, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
@@ -160,11 +162,11 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
                 product.fingerprint, context.statistics.hashedFiles, context.statistics.hashedBytes,
                 context.statistics.nativeProcesses);
         }
-        reading = BuildArtifactReadLease.AcquireAsync(record[0], record[1], ["Outputs"], cancellationToken)
+        reading = BuildArtifactReadLease.AcquireAsync(record[0], Path.Combine(EngineRoot, "artifacts", "native"), record[1], ["Outputs", "Metadata"], cancellationToken)
             .AsTask().GetAwaiter().GetResult();
         try
         {
-            string extension = execution.host.system == "Windows" ? ".exe" : string.Empty;
+            string extension = execution.host.services.executableExtension;
             Dictionary<BgfxTool, string> executables = [];
             foreach (BgfxTool tool in Enum.GetValues<BgfxTool>())
             {
@@ -173,7 +175,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             }
             compilerFingerprint = record[1];
             string includes = Path.GetDirectoryName(record.Skip(2).Single(path => Path.GetFileName(path) == "bgfx_shader.sh"))!;
-            return new ToolRunner(executables, includes);
+            return new ToolRunner(executables, includes, execution.host.services.workspaces);
         }
         catch
         {
@@ -202,7 +204,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         using FileLease lease = FileLease.AcquireAsync(directory + ".lock", Timeout.InfiniteTimeSpan, cancellationToken)
             .GetAwaiter().GetResult();
         string fingerprint = NativeBuildFingerprint.Create(declarations, inputs, cancellationToken);
-        if (BuildArtifactManifest.IsComplete(directory, fingerprint, ["Outputs"]))
+        if (BuildArtifactManifest.IsComplete(directory, fingerprint, ["Outputs", "Metadata"]))
         {
             Log.LogMessage(MessageImportance.Normal, "INNO-SHADER reused {0}: {1}", Renderer, fingerprint);
             return;
@@ -218,7 +220,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
                 Path.Combine(candidateOutputs, Path.GetFileName(output)), tools, cancellationToken);
             if (NativeBuildFingerprint.Create(declarations, inputs, cancellationToken) != fingerprint)
                 throw new InvalidDataException("Shader inputs changed during compilation; the candidate was not published.");
-            BuildArtifactManifest.Write(candidate, fingerprint, ["Outputs"]);
+            BuildArtifactManifest.Write(candidate, fingerprint, ["Outputs", "Metadata"]);
             cancellationToken.ThrowIfCancellationRequested();
             try
             {

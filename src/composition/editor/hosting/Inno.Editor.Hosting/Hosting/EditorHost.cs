@@ -251,8 +251,13 @@ internal sealed class EditorHost : ShellHost
         m_authoring = null;
         m_gameInputCapture = null;
         m_gameInputSource = null;
-        BootLog("Dispose end.");
+        BootLog("Editor product resources released.");
     }
+
+    /// <summary>
+    /// Records completion only after the application has released the common Shell adapters.
+    /// </summary>
+    internal void ReportShutdownCompleted() => BootLog("Dispose end.");
 
     private RuntimeSession editSession
         => m_editSession ?? throw new InvalidOperationException("The Editor runtime session is not initialized.");

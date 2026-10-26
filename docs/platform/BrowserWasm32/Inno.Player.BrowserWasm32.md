@@ -16,6 +16,8 @@ HttpPlayerContentSource 先读取 owned manifest/catalog metadata，再取得并
 
 本源码项目使用普通 Microsoft.NET.Sdk，`OutputType=Library`；Program 保留为发布源码输入，不作为 IDE 启动项。真正的 Browser Player 由使用 WebAssembly SDK 的 Exe 发布模板生成。直接 Build 仍需要冻结的 Native binding 选择与指纹；发布还需要 archive 闭包与对应 workload。通过统一 `game` 导出，再使用 HTTP 服务打开输出的 `index.html`。详见[产品启动指南](../PRODUCT_STARTUP.md)。
 
+页面通过 .NET 的 `withApplicationArgumentsFromQuery()` 读取重复的 `arg` 查询参数，并交给共享 `PlayerCommandLineOptions`。例如 `index.html?arg=--smoke-frames&arg=3000` 会推进 3,000 帧，打印共同渲染统计并执行正常退出与资源释放。无参数时持续运行；非法参数在 Native 资源创建前拒绝，非零退出由页面显示错误。图形 API 与窗口可见性也使用共享参数校验，不另建 Browser 参数解析器。
+
 ## 当前源码公开 API 清单
 
 只列当前源码 public/protected 表面；内部机制不是稳定 API，参数、返回、失败及所有权以英文 XML 为准。

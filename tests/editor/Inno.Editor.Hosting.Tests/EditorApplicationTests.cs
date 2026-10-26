@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Adapter;
 using Inno.Adapter.Authoring.Default;
 using Inno.Adapter.Default;
@@ -9,7 +10,6 @@ using Inno.Adapter.Presentation;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.FileSystem;
 using Inno.Build;
-using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
@@ -18,7 +18,6 @@ using Inno.Core.Input;
 using Inno.Editor.Core;
 using Inno.Editor.Hosting;
 using Inno.Shell;
-using Xunit;
 
 namespace Inno.Editor.Hosting.Tests;
 
@@ -84,15 +83,14 @@ public sealed class EditorApplicationTests
             "dotnet",
             AppContext.BaseDirectory,
             new BuildHostDescriptor("Windows", "x64"),
-            BuildTargetId.windowsX64,
-            new NativeBindingGenerator());
+            new BuildTargetId("windows-x64"));
         StandardBuildDistribution standard = StandardBuildDistribution.Create(build);
         var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
         {
             platform = new Inno.Adapter.Platform.PlatformBackendCatalog([new Inno.Adapter.Platform.Sdl3.Sdl3PlatformBackendProvider(new Inno.Integration.WindowsX64.Sdl3.WindowsX64Sdl3HostIntegration())]),
             rendering = new Inno.Adapter.Rendering.RenderingBackendCatalog([new Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider(new Inno.Integration.WindowsX64.Bgfx.Runtime.WindowsX64BgfxSurfaceIntegration())]),
             storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(Path.Combine(project, "Data"))])
-        }, [new BgfxAuthoringProvider(standard.ResolveShaderTarget(BuildTargetId.windowsX64))],
+        }, [new BgfxAuthoringProvider(standard.ResolveShaderTarget(new BuildTargetId("windows-x64")))],
             [new Inno.Adapter.Presentation.ImGui.ImGuiPresentationProvider(new Inno.Adapter.Presentation.ImGui.ImGuiInteractionOptions(false, 1))]);
         return new EditorLaunchOptions
         {
@@ -103,7 +101,7 @@ public sealed class EditorApplicationTests
             presentation = PresentationBackendId.imGui,
             frameDriver = new PollingShellFrameDriver(),
             distribution = standard.build,
-            defaultBuildTarget = target ?? BuildTargetId.windowsX64,
+            defaultBuildTarget = target ?? new BuildTargetId("windows-x64"),
             buildContext = build,
             supportPackRoot = Path.Combine(project, "SupportPacks"),
             createEngineHost = () => throw new InvalidOperationException("Preflight must not acquire an engine."),

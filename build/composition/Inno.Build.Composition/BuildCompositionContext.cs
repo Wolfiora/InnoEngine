@@ -24,9 +24,6 @@ public sealed class BuildCompositionContext
     /// <param name="toolsTarget">
     /// The explicit native target of tools executed by this composition, independent of game publication.
     /// </param>
-    /// <param name="bindingGenerator">
-    /// The borrowed shared generation service, independent of the build host and platform.
-    /// </param>
     /// <exception cref="ArgumentException">
     /// The SDK command is blank or the application directory is not absolute.
     /// </exception>
@@ -34,13 +31,11 @@ public sealed class BuildCompositionContext
         string dotnetHost,
         string applicationDirectory,
         BuildHostDescriptor host,
-        BuildTargetId toolsTarget,
-        INativeBindingGenerator bindingGenerator
+        BuildTargetId toolsTarget
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationDirectory);
         ArgumentNullException.ThrowIfNull(host);
-        ArgumentNullException.ThrowIfNull(bindingGenerator);
         if (string.IsNullOrWhiteSpace(toolsTarget.value))
             throw new ArgumentException("A build composition must declare its executable native tools target.", nameof(toolsTarget));
         if (!Path.IsPathFullyQualified(applicationDirectory))
@@ -49,7 +44,6 @@ public sealed class BuildCompositionContext
         this.applicationDirectory = Path.GetFullPath(applicationDirectory);
         this.host = host;
         this.toolsTarget = toolsTarget;
-        this.bindingGenerator = bindingGenerator;
     }
 
     /// <summary>
@@ -72,8 +66,4 @@ public sealed class BuildCompositionContext
     /// </summary>
     public BuildTargetId toolsTarget { get; }
 
-    /// <summary>
-    /// Gets the borrowed generation provider selected once by distribution composition.
-    /// </summary>
-    public INativeBindingGenerator bindingGenerator { get; }
 }

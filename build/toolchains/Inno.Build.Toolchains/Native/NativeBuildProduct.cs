@@ -30,8 +30,8 @@ public sealed class NativeBuildProduct : IDisposable
         m_readLease = readLease;
         try
         {
-            files = Array.AsReadOnly(Directory.EnumerateFiles(Path.Combine(directory, "Outputs"),
-                "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal).ToArray());
+            artifacts = NativeArtifact.Read(directory);
+            files = Array.AsReadOnly(artifacts.Select(static artifact => artifact.file).Order(StringComparer.Ordinal).ToArray());
         }
         catch
         {
@@ -75,6 +75,11 @@ public sealed class NativeBuildProduct : IDisposable
     /// Gets the exact absolute output file paths validated by the publisher.
     /// </summary>
     public IReadOnlyList<string> files { get; }
+
+    /// <summary>
+    /// Gets the exact producer-declared output and link roles.
+    /// </summary>
+    public IReadOnlyList<NativeArtifact> artifacts { get; }
 
     /// <summary>
     /// Releases the artifact after all deployment, compilation and linking consumers finish.

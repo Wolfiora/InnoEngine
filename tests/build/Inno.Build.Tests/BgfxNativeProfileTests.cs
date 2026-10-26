@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Bgfx;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -98,18 +98,23 @@ public sealed class BgfxNativeProfileTests : IDisposable
         string compiler = Path.Combine(m_root, "fixture-compiler");
         File.WriteAllText(compiler, "Not executable: this fixture stops before source preparation.");
         var selection = new NativeToolchainSelection(target, new BuildHostDescriptor("FixtureHost", "fixture-cpu"),
-            new Dictionary<string, string> { ["compiler"] = compiler, ["genie"] = compiler }, new Dictionary<string, string>(), [], [], ".fixture", false);
+            new Dictionary<string, string> { ["compiler"] = compiler, ["genie"] = compiler }, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".fixture"), false);
         return new NativeBuildContext(m_root, "debug").WithToolchain(selection).WithComponentOptions(BgfxNativeBuild.componentDescriptor, new(NativeLibraryKind.Shared));
     }
 
     private sealed class FixtureProfile(string target) : BgfxNativeBuildProfile
     {
-        public override NativeToolchainSelection SelectTools(NativeBuildContext context) => context.RequireToolchain();
+        public override NativeToolchainSelection SelectTools(
+            NativeBuildContext context,
+            bool includeTools
+        ) => context.RequireToolchain();
 
         public int invocationCount { get; private set; }
         public override string targetId => target;
         public override IReadOnlyList<string> generatorArguments => ["fixture-generator"];
         public override string artifactPathToken => "/fixture-cpu/bin/";
+        public override IReadOnlyList<string> bindingCmakeArguments => [];
+        public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath) => (archivePath, []);
 
         public override BgfxBuildInvocation CreateBuildInvocation(
             NativeBuildContext context,

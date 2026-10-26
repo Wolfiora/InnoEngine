@@ -1,11 +1,64 @@
 {
-  "schemaVersion": 1,
-  "extends": [
-    "common.json"
-  ],
-  "targets": [
-    {
-      "id": "host"
-    }
-  ]
+  "schemaVersion": 2,
+  "library": {
+    "id": "inno.rmlui",
+    "nativeName": "inno-ui"
+  },
+  "source": {
+    "language": "cpp",
+    "languageStandard": "c++20",
+    "headers": [
+      "../Native/include/RmlUiRuntime.hpp"
+    ],
+    "includeDirectories": [
+      "../Native/include"
+    ],
+    "defines": [],
+    "includeTransitivelyReferencedHeaders": false,
+    "parseMacros": true,
+    "selection": {
+      "includeHeaders": [
+        "../Native/include/RmlUiRuntime.hpp"
+      ],
+      "excludeDeclarations": [],
+      "includeCategories": [
+        "callables",
+        "records",
+        "enumerations"
+      ]
+    },
+    "parseComments": false
+  },
+  "api": {
+    "namespace": "Inno.Native.UI",
+    "name": "UiNative",
+    "style": "static",
+    "importMode": "functionTable",
+    "framework": "net10.0",
+    "emitNativeMetadata": true,
+    "nestGeneratedTypesInApi": false,
+    "emitCallbackDelegates": true,
+    "emitLibraryNameConstant": true,
+    "usings": [],
+    "naming": {
+      "functions": {
+        "casing": "pascal",
+        "removePrefixes": []
+      },
+      "fields": {
+        "casing": "pascal"
+      }
+    },
+    "names": {},
+    "functions": [],
+    "records": []
+  },
+  "runtime": {
+    "mode": "package"
+  },
+  "output": {
+    "layout": "singleFile",
+    "singleFileName": "Bindings.cs",
+    "root": "../obj/bindings/bgcs"
+  }
 }

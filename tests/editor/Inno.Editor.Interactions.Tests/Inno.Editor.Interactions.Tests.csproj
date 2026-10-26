@@ -51,11 +51,12 @@
   </ItemGroup>
 
   <Target Name="CopySceneReloadTestModule" AfterTargets="Build">
-    <ItemGroup>
-      <SceneReloadTestModule Include="../../scene/fixtures/Inno.Scene.Reload.TestModule/bin/$(Configuration)/net10.0/Inno.Scene.Reload.TestModule.dll" />
-    </ItemGroup>
     <Copy SourceFiles="@(SceneReloadTestModule)" DestinationFolder="$(OutDir)Modules/SceneReload" />
   </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="../../scene/fixtures/Inno.Scene.Reload.TestModule/Inno.Scene.Reload.TestModule.csproj" ReferenceOutputAssembly="false" OutputItemType="SceneReloadTestModule" PrivateAssets="compile" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />

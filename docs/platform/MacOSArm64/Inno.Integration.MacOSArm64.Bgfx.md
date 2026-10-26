@@ -10,7 +10,7 @@ MacOS 平台与 BGFX 的构建接入 owner。依赖本平台的中立构建模�
 
 Native GENie/Make 执行选择只包含实际使用的 clang、clang++、Make、GENie 与 SDK 输入；未执行的 .NET host 和 CMake 不参与离线工具身份。绑定生成仍使用 operation 原先冻结的完整工具选择，两种职责分别校验。此处在 Windows 已完成源码与契约检查，macOS Native 执行需实机验证。
 
-Standard Distribution 读取不可变 profile，绑定平台贡献和 compiler 工厂。compiler 借用当前创作 generation，不接管 Assets、Serialization 或 Types，不能跨 generation 缓存。产品组件列表由 StandardNativeBuildPlans 声明，integration 不重复注册发行。Player 产品不引用本构建期程序集；内容在发布时编译后通过中立 store 读取。
+Standard Distribution 读取不可变 profile，绑定平台贡献和 compiler 工厂。compiler 借用当前创作 generation，不接管 Assets、Serialization 或 Types，不能跨 generation 缓存。产品组件列表由 StandardNativeComponents 声明，integration 不重复注册发行。Player 产品不引用本构建期程序集；内容在发布时编译后通过中立 store 读取。
 
 ```csharp
 using Inno.Assets.Pipeline;
@@ -37,7 +37,7 @@ Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeCompon
 
 ## 当前源码公开 API 清单
 
-签名来自当前 SDK 求值与语义符号；按类型列出 public/protected 契约。工作流与生命周期见本页前文。
+当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
 
 ### `Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration`
 
@@ -46,22 +46,22 @@ Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeCompon
 <!-- api: P:Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.shaderProfile 854026f5e16d4dbfb5d9493c4b0c7d2c9d7e69e4083628b86ed32ba23a869399 -->
 <!-- api: M:Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.CreateContentCompilerFactory(Inno.Build.Toolchains.Bgfx.Tools.ToolRunner) 82e75c5778f15ce256287e6b2789d8de98794b25c000bb83f050b0c054167616 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-37ffa4109e010cba"></a>[`public static Inno.Build.Composition.GameContentCompilerFactory Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.CreateContentCompilerFactory(Inno.Build.Toolchains.Bgfx.Tools.ToolRunner tools)`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L36) | Creates the scoped content factory using the caller's protected offline tool deployment.<br>返回：A factory borrowing current authoring services without owning them or the selected tools.<br>`tools`：The borrowed executables and shader includes, retained through every compiler created by this factory. | 约束由所属类型与本页生命周期定义。 | `System.ArgumentNullException`：The selected tools are null. |
-| <a id="api-a22043b5d6d16904"></a>[`public static Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.nativeProfile { get; }`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L17) | Gets the immutable SDK invocation for this platform and backend pairing. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-0bae63c267655a92"></a>[`public static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.shaderProfile { get; }`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L22) | Gets the explicit shader configuration used by this integration. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-a0e70a0c1bf3f22d"></a>[`public static class Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L12) | Connects platform publication facts to BGFX compilation without owning a product component list. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-37ffa4109e010cba"></a>[`public static Inno.Build.Composition.GameContentCompilerFactory Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.CreateContentCompilerFactory(Inno.Build.Toolchains.Bgfx.Tools.ToolRunner tools)`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L36) | Creates the scoped content factory using the caller's protected offline tool deployment.<br>`tools`：The borrowed executables and shader includes, retained through every compiler created by this factory.<br>返回：A factory borrowing current authoring services without owning them or the selected tools.<br>T:System.ArgumentNullException：The selected tools are null. |
+| <a id="api-a22043b5d6d16904"></a>[`public static Inno.Build.Toolchains.Bgfx.BgfxNativeBuildProfile Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.nativeProfile { get; }`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L17) | Gets the immutable SDK invocation for this platform and backend pairing. |
+| <a id="api-0bae63c267655a92"></a>[`public static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.shaderProfile { get; }`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L22) | Gets the explicit shader configuration used by this integration. |
+| <a id="api-a0e70a0c1bf3f22d"></a>[`public static class Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxIntegration.cs#L12) | Connects platform publication facts to BGFX compilation without owning a product component list. |
 
 ### `Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles`
 
 <!-- api: T:Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles a0eaf42d2aea94c3408fbca8f8bb5a92472c37cbb044166835d67e786ae7f8c3 -->
 <!-- api: P:Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target db68ac750e87b172915e1c13f3b820bee25d8c1e9da8c18a7f3c5c145f94bbce -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-49600e8ccb19db32"></a>[`public static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target { get; }`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxShaderProfiles.cs#L16) | Gets the immutable configuration shared by this platform's products and publication module. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-11b5d520d66b1a8d"></a>[`public static class Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxShaderProfiles.cs#L11) | Owns explicit MacOS shader dialects and offline product capabilities. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-49600e8ccb19db32"></a>[`public static Inno.Build.Toolchains.Bgfx.Tools.BgfxShaderTargetProfile Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target { get; }`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxShaderProfiles.cs#L16) | Gets the immutable configuration shared by this platform's products and publication module. |
+| <a id="api-11b5d520d66b1a8d"></a>[`public static class Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles`](../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/MacOSArm64BgfxShaderProfiles.cs#L11) | Owns explicit MacOS shader dialects and offline product capabilities. |
 
 ## 项目依赖
 

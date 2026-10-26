@@ -67,6 +67,7 @@ internal static partial class ArchitectureRules
     ) {
         ValidateHostIsolation(repositoryRoot, failures);
         PlatformOwnershipValidator.Validate(repositoryRoot, failures);
+        NativePlatformPolicyValidator.Validate(repositoryRoot, failures);
         string backendRoot = Path.Combine(repositoryRoot, "backends");
         if (Directory.Exists(backendRoot))
             NativeBindingOwnershipValidator.Validate(repositoryRoot, EnumerateFiles(backendRoot, "*.csproj"), failures);
@@ -291,6 +292,9 @@ internal static partial class ArchitectureRules
                     continue;
                 string? include = reference.Attribute("Include")?.Value;
                 if (string.IsNullOrWhiteSpace(include))
+                    continue;
+                // SDK evaluation validates property-based references; this static pass does not invent property values.
+                if (include.Contains("$(", StringComparison.Ordinal))
                     continue;
                 string normalizedInclude = include
                     .Replace('\\', Path.DirectorySeparatorChar)

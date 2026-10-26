@@ -15,7 +15,9 @@ public static unsafe partial class TextNative
 
     static TextNative()
     {
-#if INNO_STATIC_NATIVE
+#if INNO_RUNTIME_IMPORTS
+        Create();
+#elif INNO_STATIC_NATIVE
         FromStatic();
 #else
         Load(NativeDllLoader.FindNativeLibrary(LibName));

@@ -402,10 +402,10 @@ public static unsafe partial class ImGuiWidget
         float y
     ) {
         uint color = NativeImGui.GetColorU32((int)(ImGuiCol.DragDropTarget));
-        NativeImGui.Raw.AddLine(
+        ImGui.DrawNativeLine(
             NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
-            ImGui.ToNative(new Vector2(fromX, y)),
-            ImGui.ToNative(new Vector2(toX, y)),
+            new Vector2(fromX, y),
+            new Vector2(toX, y),
             color,
             style.interactionOverlayThickness
         );
@@ -425,10 +425,10 @@ public static unsafe partial class ImGuiWidget
         Vector2 min,
         Vector2 max
     ) {
-        NativeImGui.Raw.AddRect(
+        ImGui.DrawNativeRectangle(
             NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
-            ImGui.ToNative(min),
-            ImGui.ToNative(max),
+            min,
+            max,
             NativeImGui.GetColorU32((int)(ImGuiCol.DragDropTarget)),
             style.frameRounding,
             (int)(ImDrawFlags.None),
@@ -494,10 +494,10 @@ public static unsafe partial class ImGuiWidget
             width * style.axisPrefixWidthRatio);
         Vector2 prefixMin = NativeImGui.GetCursorScreenPos();
         Vector2 prefixMax = prefixMin + new Vector2(axisWidth, height);
-        NativeImGui.Raw.AddRectFilled(
+        ImGui.DrawNativeFilledRectangle(
             NativeImGui.Raw.GetWindowDrawList(),
-            ImGui.ToNative(prefixMin),
-            ImGui.ToNative(prefixMax),
+            prefixMin,
+            prefixMax,
             NativeImGui.ColorConvertFloat4ToU32(GetAxisColor(axis)),
             1f,
             0

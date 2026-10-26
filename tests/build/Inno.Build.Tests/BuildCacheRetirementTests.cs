@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -14,6 +14,20 @@ public sealed class BuildCacheRetirementTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoCacheRetirement", Guid.NewGuid().ToString("N"));
     private readonly List<OwnedCache> m_owners = [];
+
+    [Fact]
+    public async Task UnprotectedProcessWorkIsRetiredWithoutEvictingReusablePayloadsUnderBudget()
+    {
+        OwnedCache owner = AddOwner("process-work");
+        BuildCacheArtifactDescriptor process = owner.Add("exited-process", 2);
+        owner.artifacts[0] = new(process.directory, process.leasePath, process.targetId,
+            process.bytes, process.lastUseUtc, [], BuildCacheArtifactRole.ProcessWorkingDirectory);
+        BuildCacheArtifactDescriptor reusable = owner.Add("reusable", 3);
+        BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(long.MaxValue, 0));
+        Assert.Equal(process.directory, Assert.Single(plan.candidates).directory);
+        Assert.Equal(process.directory, Assert.Single((await plan.ExecuteAsync()).retired));
+        Assert.True(Directory.Exists(reusable.directory));
+    }
 
     [Fact]
     public async Task TargetCleanupPreservesOtherTargetsSharedArtifactsAndTheirDependencies()
@@ -81,7 +95,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildCacheArtifactDescriptor artifact = owner.Add("generation", 6);
         BuildArtifactManifest.Write(artifact.directory, "fixture", ["Outputs"]);
         BuildCacheCleanupPlan plan = CreatePlan();
-        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(artifact.directory, "fixture", ["Outputs"]))
+        using (BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(artifact.directory, Path.GetDirectoryName(artifact.directory)!, "fixture", ["Outputs"]))
         {
             BuildCacheCleanupResult blocked = await plan.ExecuteAsync();
             Assert.Empty(blocked.retired);
@@ -139,7 +153,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
         BuildArtifactManifest.Write(parent.directory, "parent", ["Outputs"]);
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(m_root, [owner.descriptor], new(13, 0));
         Assert.Equal(dependency.directory, Assert.Single(plan.candidates).directory);
-        using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(parent.directory, "parent", ["Outputs"]);
+        using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(parent.directory, Path.GetDirectoryName(parent.directory)!, "parent", ["Outputs"]);
 
         BuildCacheCleanupResult result = await plan.ExecuteAsync();
 

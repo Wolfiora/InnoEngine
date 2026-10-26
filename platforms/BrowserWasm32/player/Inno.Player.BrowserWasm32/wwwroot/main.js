@@ -35,7 +35,7 @@ try {
     }
 
     canvas.addEventListener('pointerdown', () => canvas.focus());
-    const { setModuleImports, runMain } = await dotnet.create();
+    const { setModuleImports, runMain } = await dotnet.withApplicationArgumentsFromQuery().create();
     setModuleImports('browser-player.js', {
         host: {
             baseUrl: () => new URL('./', document.baseURI).href,
@@ -52,7 +52,10 @@ try {
             keyAt: index => localStorage.key(index)
         }
     });
-    await runMain();
+    const exitCode = await runMain();
+    if (exitCode !== 0 && !error.textContent) {
+        throw new Error(`Game exited with code ${exitCode}.`);
+    }
 } catch (failure) {
     showError(String(failure));
 }

@@ -67,7 +67,7 @@ namespace Inno.Native.ImGuizmo
         private readonly delegate* unmanaged[Cdecl]<Style*> m_function2;
         private readonly delegate* unmanaged[Cdecl]<byte> m_function3;
         private readonly delegate* unmanaged[Cdecl]<byte> m_function4;
-        private readonly delegate* unmanaged[Cdecl]<float*, float, ImVec2C, ImVec2C, uint, void> m_function5;
+        private readonly delegate* unmanaged[Cdecl]<float*, float, ImVec2C*, ImVec2C*, uint, void> m_function5;
         private readonly delegate* unmanaged[Cdecl]<sbyte*, uint> m_function6;
         private readonly delegate* unmanaged[Cdecl]<int, void> m_function7;
         private readonly delegate* unmanaged[Cdecl]<void*, void> m_function8;
@@ -76,7 +76,7 @@ namespace Inno.Native.ImGuizmo
         private readonly delegate* unmanaged[Cdecl]<void> m_function11;
         private readonly delegate* unmanaged[Cdecl]<byte, byte, byte, void> m_function12;
         private readonly delegate* unmanaged[Cdecl]<float*, float, byte> m_function13;
-        private readonly delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float, ImVec2C, ImVec2C, uint, void> m_function14;
+        private readonly delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float, ImVec2C*, ImVec2C*, uint, void> m_function14;
         private readonly delegate* unmanaged[Cdecl]<Style*> m_function15;
         private readonly delegate* unmanaged[Cdecl]<byte> m_function16;
         private readonly delegate* unmanaged[Cdecl]<float, void> m_function17;
@@ -108,6 +108,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.PlatformNotSupportedException("The native target pointer width differs from this process.");
                 if (global::System.BitConverter.IsLittleEndian != true)
                     throw new global::System.PlatformNotSupportedException("The native target byte order differs from this process.");
+                if (sizeof(ImGuiDockNodeFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuizmoColor) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiViewportFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEvent) != 28)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEvent>("Type").ToInt64() != 0)
@@ -121,6 +127,12 @@ namespace Inno.Native.ImGuizmo
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEvent>("AddedByTestEngine").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2b59b1d43f23ec5b>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImColorC) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImColorC>("Value").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ee85466b1fa59048>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImVec2ih) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -160,6 +172,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_279a101f49905080>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiHoveredFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDataAuthority) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImTextureDataPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImTextureDataPtr>("Size").ToInt64() != 0)
@@ -169,6 +185,28 @@ namespace Inno.Native.ImGuizmo
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImTextureDataPtr>("Data").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5d0807f06a54b5c6>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTableColumnSettings) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumnSettings>("WidthOrWeight").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumnSettings>("UserId").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumnSettings>("Index").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumnSettings>("DisplayOrder").ToInt64() != 10)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumnSettings>("SortOrder").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (sizeof(ImVectorConstCharPtr) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorConstCharPtr>("Size").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorConstCharPtr>("Capacity").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorConstCharPtr>("Data").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0bc33ac1924026d4>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImGuiTreeNodeStackData) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -188,6 +226,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_da33994b5a1f938e>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTypingSelectFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImTextureFormat) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImDrawListFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableHeaderData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableHeaderData>("Index").ToInt64() != 0)
@@ -240,6 +284,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_3d337b926fc04643) != 2480)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImFontGlyphRangesBuilder) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontGlyphRangesBuilder>("UsedChars").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5fa6c6f6be12ac52>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImVectorStbrpNodeIm) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorStbrpNodeIm>("Size").ToInt64() != 0)
@@ -250,6 +300,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_055e9ee907510830>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiDataType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawListSharedDataPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawListSharedDataPtr>("Size").ToInt64() != 0)
@@ -260,7 +312,21 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_06b2d11695aed1bf>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImVectorImGuiTextRange) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTextRange>("Size").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTextRange>("Capacity").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTextRange>("Data").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_872894ed6f5b405c>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_e60e879954c840fa) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiAxis) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiInputTextFlagsPrivate) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_42c049e3f15c43ec) != 310)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -280,8 +346,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1f9c76435ff5ec9c>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuizmoOperation) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiBoxSelectState) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiBoxSelectState>("Id").ToInt64() != 0)
@@ -312,6 +376,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiBoxSelectState>("BoxSelectRectCurr").ToInt64() != 84)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (sizeof(ImGuiTabBarFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTooltipFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiSelectionRequest) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionRequest>("Type").ToInt64() != 0)
@@ -352,7 +420,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_492e2175db0bd218>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiMouseSource) != 4)
+                if (sizeof(ImGuiInputSource) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiDebugItemPathQuery) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -418,8 +486,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e15127654779231d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDockNodeState) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiShrinkWidthItem) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiShrinkWidthItem>("Size").ToInt64() != 0)
@@ -430,6 +496,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e4d47d8ae9a0d86c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiActivateFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuizmoOperation) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiViewportPPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiViewportPPtr>("Size").ToInt64() != 0)
@@ -568,6 +638,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_de8b29afef1afcc3>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTreeNodeFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPayload) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiPayload>("Data").ToInt64() != 0)
@@ -588,8 +660,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2b0369c55e7de1fd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiContextHookType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTabBar) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTabBar>("Size").ToInt64() != 0)
@@ -612,6 +682,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_27c4f65797813a9b>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiChildFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableTempData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTableTempData>("Size").ToInt64() != 0)
@@ -648,6 +720,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_43db0ce246f18b3f) != 528)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImWcharClass) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableColumnSortSpecs) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumnSortSpecs>("ColumnUserId").ToInt64() != 0)
@@ -660,6 +734,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b55bae10dc4a8032>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSelectionRequestType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPtrOrIndex) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiPtrOrIndex>("Ptr").ToInt64() != 0)
@@ -716,6 +792,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d98945cd0d2891de>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTableRowFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiWindowBgClickFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiFocusScopeData) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiFocusScopeData>("Id").ToInt64() != 0)
@@ -802,6 +882,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_63c446369210a871>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiKey) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiID) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiID>("Size").ToInt64() != 0)
@@ -1354,6 +1436,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9f4e92355cf8e0c7>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiLayoutType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiConfigFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiStoragePair) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiStoragePair>("Size").ToInt64() != 0)
@@ -1372,6 +1458,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_687f5838bf2c9e22>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiInputTextFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImFontAtlas) != 736)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlas>("Flags").ToInt64() != 0)
@@ -1538,6 +1626,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_690869ab01019328>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiDockNodeState) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiListClipperRange) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiListClipperRange>("Min").ToInt64() != 0)
@@ -1552,6 +1642,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_42eae5be148b711d>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiOnceUponAFrame) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiOnceUponAFrame>("RefFrame").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_677cdce8d335f18a>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_16a683b69e90f4cd) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImVec4) != 16)
@@ -1564,6 +1660,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c0ab5b12ed260301>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSortDirection) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiPopupPositionPolicy) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawIdx) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawIdx>("Size").ToInt64() != 0)
@@ -1573,6 +1673,16 @@ namespace Inno.Native.ImGuizmo
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawIdx>("Data").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_eea79217ec30272f>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiBackendFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiSelectionExternalStorage) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionExternalStorage>("UserData").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionExternalStorage>("AdapterSetItemSelected").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0ef5e442a49186c2>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImVectorImGuiPtrOrIndex) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1632,6 +1742,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_68e25b300381a6fc) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDockNodeFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiPlatformMonitor) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiPlatformMonitor>("Size").ToInt64() != 0)
@@ -1690,8 +1802,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b5250b4d9b8dbcc1>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImTextureFormat) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawDataBuilder) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawDataBuilder>("Layers").ToInt64() != 0)
@@ -1711,6 +1821,40 @@ namespace Inno.Native.ImGuizmo
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d25993b31f159b8e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_ec6e6e3c26b88eb8) != 1860)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImDrawTextFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiWindowRefreshFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiWindowSettings) != 36)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("Id").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("Pos").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("Size").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("ViewportPos").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("ViewportId").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("DockId").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("ClassId").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("DockOrder").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("Collapsed").ToInt64() != 30)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("IsChild").ToInt64() != 31)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("WantApply").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindowSettings>("WantDelete").ToInt64() != 33)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6318f49b3fe5ae53>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiMultiSelectFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiStyleMod) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -1968,6 +2112,24 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e50e3b1c31f2201e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSelectionBasicStorage) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionBasicStorage>("Size").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionBasicStorage>("PreserveOrder").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionBasicStorage>("UserData").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionBasicStorage>("AdapterIndexToStorageId").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionBasicStorage>("SelectionOrder").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSelectionBasicStorage>("Storage").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_73f44d727035e855>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiMouseSource) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_d36642d3104a6c6f) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableColumn) != 116)
@@ -2050,6 +2212,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableColumn>("SortDirectionsAvailList").ToInt64() != 114)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (sizeof(ImGuiButtonFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventMouseViewport) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEventMouseViewport>("HoveredViewportId").ToInt64() != 0)
@@ -2118,6 +2282,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_df98efe8482c9a26) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiStyleVar) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImFontBaked) != 104)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontBaked>("IndexAdvanceX").ToInt64() != 0)
@@ -2149,6 +2315,8 @@ namespace Inno.Native.ImGuizmo
                 if (sizeof(NativeArray_1eccc798bd000925) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_f9c2e11bc01cc26a) != 48)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiSliderFlagsPrivate) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiIDStackTool) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2224,6 +2392,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c6d3427c9947c071>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiLogFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPlatformIO) != 328)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiPlatformIO>("PlatformGetClipboardTextFn").ToInt64() != 0)
@@ -2330,6 +2500,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c04ab340c4ea8aa0>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuizmoMode) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiNavItemData) != 56)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiNavItemData>("Window").ToInt64() != 0)
@@ -2362,6 +2534,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7fc57f6c1fc902c9>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiNavRenderCursorFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImVec2) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImVec2>("Size").ToInt64() != 0)
@@ -2372,8 +2546,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1d5e4d44e31c9036>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiSelectionRequestType) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawListPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawListPtr>("Size").ToInt64() != 0)
@@ -2384,8 +2556,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fa511b7d646f4b35>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiNavLayer) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVec2iC) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVec2iC>("X").ToInt64() != 0)
@@ -2394,6 +2564,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b8d3d39a62b8131b>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiScrollFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiLocKey) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_fcecdbb15210e44b) != 36)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawVert) != 20)
@@ -2416,6 +2590,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1d85b397ae7c7bfd>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiCond) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImDrawVert) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawVert>("Size").ToInt64() != 0)
@@ -2456,7 +2632,15 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_47a2671474938882>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImBitVector) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImBitVector>("Storage").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fa1efeab292a7042>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImFontAtlasRectEntry) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiItemStatusFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiListClipperData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2468,14 +2652,20 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_68bb2c6be458c207>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiItemFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiInputFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiStoragePair) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiStoragePair>("Key").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiStoragePair>("AnonymousField1").ToInt64() != 4)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiStoragePair>("AnonymousField1").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fcc857681382e880>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiCol) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableHeaderData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTableHeaderData>("Size").ToInt64() != 0)
@@ -2505,6 +2695,24 @@ namespace Inno.Native.ImGuizmo
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTabItem>("Data").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_cc61a26bc67d5ec8>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTableFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTableSettings) != 20)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableSettings>("Id").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableSettings>("SaveFlags").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableSettings>("RefScale").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableSettings>("ColumnsCount").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableSettings>("ColumnsCountMax").ToInt64() != 14)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableSettings>("WantApply").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_efa3ebe90d9492d4>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImGuiDockNode) != 208)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2576,6 +2784,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5f31e296b685802c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTabItemFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableColumnSortSpecs) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTableColumnSortSpecs>("Size").ToInt64() != 0)
@@ -2594,8 +2804,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1cbfa6f70afd6d50>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiKey) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiInputEvent) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiInputEvent>("Size").ToInt64() != 0)
@@ -2632,7 +2840,7 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_dd3ec98222baa6c7>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiInputEventType) != 4)
+                if (sizeof(ImGuiTableColumnFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiColorMod) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2668,6 +2876,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4e17beb59a3a594d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiNextWindowDataFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiTableInstanceData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiTableInstanceData>("Size").ToInt64() != 0)
@@ -2698,6 +2908,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fe973fe7354cae15>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiListClipperFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiNavMoveFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(Style) != 272)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<Style>("TranslationLineThickness").ToInt64() != 0)
@@ -2726,8 +2940,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_13563fc02b9609da>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiInputSource) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventMouseButton) != 12)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEventMouseButton>("Button").ToInt64() != 0)
@@ -2748,6 +2960,32 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e373f1e9212d5091>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImFontAtlasPostProcessData) != 64)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("FontAtlas").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("Font").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("FontSrc").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("FontBaked").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("Glyph").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("Pixels").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("Format").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("Pitch").ToInt64() != 52)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("Width").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasPostProcessData>("Height").ToInt64() != 60)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1b2f935e48096834>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTextFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiMultiSelectState) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiMultiSelectState>("Window").ToInt64() != 0)
@@ -2768,7 +3006,17 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9f82a7e0f614d90d>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(NativeArray_a4f71ca2b114fa9f) != 256)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDebugLogFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiNextItemDataFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTabItemFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_9be1bbaad6627fe8) != 8)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImFontFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawListSharedData) != 568)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -2808,6 +3056,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_6e6addad886901ca>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiPlotType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiViewportPtr) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiViewportPtr>("Size").ToInt64() != 0)
@@ -3082,6 +3332,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_0b2c33dcd82edc92>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiMouseButton) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImDrawList) != 224)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImDrawList>("CmdBuffer").ToInt64() != 0)
@@ -3366,6 +3618,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiWindow>("DockId").ToInt64() != 1224)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (sizeof(ImGuiSelectableFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImGuiFocusScopeData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiFocusScopeData>("Size").ToInt64() != 0)
@@ -3414,6 +3668,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_adc560577e46b572>("value").ToInt64() != 2)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImTextureStatus) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiContextHookType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_332d40ffc044d296) != 64)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiMultiSelectTempData) != 96)
@@ -3472,6 +3730,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_232991a8c7c09f5c>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSeparatorFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiTableCellData) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTableCellData>("BgColor").ToInt64() != 0)
@@ -3480,6 +3740,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_224e1457abf520e8>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiInputFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiSliderFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTableBgTarget) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImStableVectorImFontBaked32) != 24)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImStableVectorImFontBaked32>("Size").ToInt64() != 0)
@@ -3490,6 +3756,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_d4cf06f57eea5fd5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiHoveredFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiKeyData) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiKeyData>("Down").ToInt64() != 0)
@@ -3502,6 +3770,24 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3a3a18181d0c5078>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiDataTypePrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDataTypeInfo) != 32)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDataTypeInfo>("Size").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDataTypeInfo>("Name").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDataTypeInfo>("PrintFmt").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDataTypeInfo>("ScanFmt").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2999ad4cf401b5f3>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiSelectableFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiWindowDockStyleCol) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiSizeCallbackData) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiSizeCallbackData>("UserData").ToInt64() != 0)
@@ -4180,6 +4466,14 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4ef13966a7d35145>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiPopupFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImDrawFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiButtonFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiStyleVarInfo) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_bae28ecfe547f5d7) != 8)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiStoragePairAnonymousUnionAd9ee15fe77a7ef0) != 8)
@@ -4192,11 +4486,13 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_5929f2b5f1d4ad86>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTreeNodeFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiFocusRequestFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_5caf1d5dfc8a2e78) != 80)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_41ea187b8e0849de) != 1)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (sizeof(ImGuiAxis) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_704527fa6c941baa) != 33)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4304,16 +4600,26 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e02d87c8fe8605c5>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiDir) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventAppFocused) != 1)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEventAppFocused>("Focused").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_fbcd319c23daf0d1>("value").ToInt64() != 1)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuizmoColor) != 4)
+                if (sizeof(ImGuiColorEditFlags) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiWindowFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImVectorImU32) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImU32>("Size").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImU32>("Capacity").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImU32>("Data").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3505d9445f19173e>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImGuiListClipperData) != 40)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiListClipperData>("ListClipper").ToInt64() != 0)
@@ -4328,6 +4634,12 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_303e5e7a89f5945a>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImFontAtlasFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiComboFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDir) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImTextureRefC) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImTextureRefC>("TexData").ToInt64() != 0)
@@ -4348,6 +4660,28 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(NativeArray_f3ea9f13691638c5) != 384)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiDragDropFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiMouseCursor) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiItemFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImFontAtlasRect) != 24)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasRect>("X").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasRect>("Y").ToInt64() != 2)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasRect>("W").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasRect>("H").ToInt64() != 6)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasRect>("Uv0").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImFontAtlasRect>("Uv1").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ed1e326ae8477220>("value").ToInt64() != 4)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImVectorImDrawCmd) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImDrawCmd>("Size").ToInt64() != 0)
@@ -4372,8 +4706,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_ef271d5391e075ed>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImTextureStatus) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorImFontGlyph) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImFontGlyph>("Size").ToInt64() != 0)
@@ -4444,8 +4776,40 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_e19203b18d0b025c>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuiSortDirection) != 4)
+                if (sizeof(ImGuiInputTextCallbackData) != 72)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("Ctx").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("EventFlag").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("Flags").ToInt64() != 12)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("UserData").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("Id").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("EventKey").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("EventChar").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("EventActivated").ToInt64() != 34)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("BufDirty").ToInt64() != 35)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("Buf").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("BufTextLen").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("BufSize").ToInt64() != 52)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("CursorPos").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("SelectionStart").ToInt64() != 60)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputTextCallbackData>("SelectionEnd").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_7b7a0741e21b547b>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImGuiDebugAllocInfo) != 60)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiDebugAllocInfo>("TotalAllocCount").ToInt64() != 0)
@@ -4458,8 +4822,6 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_9440e9773be81c5a>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                if (sizeof(ImGuizmoMode) != 4)
-                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiNextWindowData) != 160)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiNextWindowData>("HasFlags").ToInt64() != 0)
@@ -4510,6 +4872,8 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_c00e1426606ac45f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiOldColumnFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiColorMod) != 20)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiColorMod>("Col").ToInt64() != 0)
@@ -4530,6 +4894,10 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8ef70ca9bded13f9>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTabBarFlagsPrivate) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiComboFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiPlatformImeData) != 20)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiPlatformImeData>("WantVisible").ToInt64() != 0)
@@ -4586,6 +4954,14 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_1e3ac1c7f45d8441>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiLocEntry) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiLocEntry>("Key").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiLocEntry>("Text").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_69f8c0a1685e8350>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImGuiMetricsConfig) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiMetricsConfig>("ShowDebugLog").ToInt64() != 0)
@@ -4630,12 +5006,16 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8eaa4b8f7233699e>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiInputEventType) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImGuiInputEventText) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiInputEventText>("Char").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2acffaa2d3fde262>("value").ToInt64() != 4)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiNavLayer) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(ImVectorUnsignedChar) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorUnsignedChar>("Size").ToInt64() != 0)
@@ -4645,6 +5025,16 @@ namespace Inno.Native.ImGuizmo
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorUnsignedChar>("Data").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_3d3d602898fedb75>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiFocusedFlags) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(ImGuiTextRange) != 16)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTextRange>("B").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTextRange>("E").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_b2cab8916364f6d3>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImGuiKeyRoutingTable) != 344)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -4656,6 +5046,16 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_2f4e07490b13bed0>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
+                if (sizeof(ImGuiTextFilter) != 280)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTextFilter>("InputBuf").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTextFilter>("Filters").ToInt64() != 256)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImGuiTextFilter>("CountGrep").ToInt64() != 272)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_4d1463422334dd93>("value").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
                 if (sizeof(ImVectorImGuiContextHook) != 16)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<ImVectorImGuiContextHook>("Size").ToInt64() != 0)
@@ -4666,42 +5066,42 @@ namespace Inno.Native.ImGuizmo
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<__BgcsAlignment_8f16d7dfc1a9db3f>("value").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed aggregate alignment differs from the recorded native alignment.");
-                var symbols = m_session.ResolveRequiredSymbols(new string[] { "ImGuizmo_IsUsingAny", "ImGuizmo_RecomposeMatrixFromComponents", "Style_Style", "ImGuizmo_IsUsing", "ImGuizmo_IsUsingViewManipulate", "ImGuizmo_ViewManipulate_Float", "ImGuizmo_GetID_Str", "ImGuizmo_PushID_Int", "ImGuizmo_PushID_Ptr", "ImGuizmo_DecomposeMatrixToComponents", "ImGuizmo_GetID_Ptr", "ImGuizmo_PopID", "ImGuizmo_SetAxisMask", "ImGuizmo_IsOver_FloatPtr", "ImGuizmo_ViewManipulate_FloatPtr", "ImGuizmo_GetStyle", "ImGuizmo_IsViewManipulateHovered", "ImGuizmo_SetAxisLimit", "ImGuizmo_SetPlaneLimit", "ImGuizmo_SetDrawlist", "ImGuizmo_DrawGrid", "ImGuizmo_IsOver_Nil", "ImGuizmo_Manipulate", "ImGuizmo_DrawCubes", "ImGuizmo_SetGizmoSizeClipSpace", "ImGuizmo_PushID_Str", "ImGuizmo_Enable", "ImGuizmo_IsOver_OPERATION", "ImGuizmo_SetImGuiContext", "ImGuizmo_SetOrthographic", "ImGuizmo_SetRect", "ImGuizmo_SetAlternativeWindow", "ImGuizmo_AllowAxisFlip", "Style_destroy", "ImGuizmo_BeginFrame" });
-                m_function0 = (delegate* unmanaged[Cdecl]<byte>)symbols["ImGuizmo_IsUsingAny"];
-                m_function1 = (delegate* unmanaged[Cdecl]<float*, float*, float*, float*, void>)symbols["ImGuizmo_RecomposeMatrixFromComponents"];
-                m_function2 = (delegate* unmanaged[Cdecl]<Style*>)symbols["Style_Style"];
-                m_function3 = (delegate* unmanaged[Cdecl]<byte>)symbols["ImGuizmo_IsUsing"];
-                m_function4 = (delegate* unmanaged[Cdecl]<byte>)symbols["ImGuizmo_IsUsingViewManipulate"];
-                m_function5 = (delegate* unmanaged[Cdecl]<float*, float, ImVec2C, ImVec2C, uint, void>)symbols["ImGuizmo_ViewManipulate_Float"];
-                m_function6 = (delegate* unmanaged[Cdecl]<sbyte*, uint>)symbols["ImGuizmo_GetID_Str"];
-                m_function7 = (delegate* unmanaged[Cdecl]<int, void>)symbols["ImGuizmo_PushID_Int"];
-                m_function8 = (delegate* unmanaged[Cdecl]<void*, void>)symbols["ImGuizmo_PushID_Ptr"];
-                m_function9 = (delegate* unmanaged[Cdecl]<float*, float*, float*, float*, void>)symbols["ImGuizmo_DecomposeMatrixToComponents"];
-                m_function10 = (delegate* unmanaged[Cdecl]<void*, uint>)symbols["ImGuizmo_GetID_Ptr"];
-                m_function11 = (delegate* unmanaged[Cdecl]<void>)symbols["ImGuizmo_PopID"];
-                m_function12 = (delegate* unmanaged[Cdecl]<byte, byte, byte, void>)symbols["ImGuizmo_SetAxisMask"];
-                m_function13 = (delegate* unmanaged[Cdecl]<float*, float, byte>)symbols["ImGuizmo_IsOver_FloatPtr"];
-                m_function14 = (delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float, ImVec2C, ImVec2C, uint, void>)symbols["ImGuizmo_ViewManipulate_FloatPtr"];
-                m_function15 = (delegate* unmanaged[Cdecl]<Style*>)symbols["ImGuizmo_GetStyle"];
-                m_function16 = (delegate* unmanaged[Cdecl]<byte>)symbols["ImGuizmo_IsViewManipulateHovered"];
-                m_function17 = (delegate* unmanaged[Cdecl]<float, void>)symbols["ImGuizmo_SetAxisLimit"];
-                m_function18 = (delegate* unmanaged[Cdecl]<float, void>)symbols["ImGuizmo_SetPlaneLimit"];
-                m_function19 = (delegate* unmanaged[Cdecl]<ImDrawList*, void>)symbols["ImGuizmo_SetDrawlist"];
-                m_function20 = (delegate* unmanaged[Cdecl]<float*, float*, float*, float, void>)symbols["ImGuizmo_DrawGrid"];
-                m_function21 = (delegate* unmanaged[Cdecl]<byte>)symbols["ImGuizmo_IsOver_Nil"];
-                m_function22 = (delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float*, float*, float*, float*, byte>)symbols["ImGuizmo_Manipulate"];
-                m_function23 = (delegate* unmanaged[Cdecl]<float*, float*, float*, int, void>)symbols["ImGuizmo_DrawCubes"];
-                m_function24 = (delegate* unmanaged[Cdecl]<float, void>)symbols["ImGuizmo_SetGizmoSizeClipSpace"];
-                m_function25 = (delegate* unmanaged[Cdecl]<sbyte*, void>)symbols["ImGuizmo_PushID_Str"];
-                m_function26 = (delegate* unmanaged[Cdecl]<byte, void>)symbols["ImGuizmo_Enable"];
-                m_function27 = (delegate* unmanaged[Cdecl]<ImGuizmoOperation, byte>)symbols["ImGuizmo_IsOver_OPERATION"];
-                m_function28 = (delegate* unmanaged[Cdecl]<ImGuiContext*, void>)symbols["ImGuizmo_SetImGuiContext"];
-                m_function29 = (delegate* unmanaged[Cdecl]<byte, void>)symbols["ImGuizmo_SetOrthographic"];
-                m_function30 = (delegate* unmanaged[Cdecl]<float, float, float, float, void>)symbols["ImGuizmo_SetRect"];
-                m_function31 = (delegate* unmanaged[Cdecl]<ImGuiWindow*, void>)symbols["ImGuizmo_SetAlternativeWindow"];
-                m_function32 = (delegate* unmanaged[Cdecl]<byte, void>)symbols["ImGuizmo_AllowAxisFlip"];
-                m_function33 = (delegate* unmanaged[Cdecl]<Style*, void>)symbols["Style_destroy"];
-                m_function34 = (delegate* unmanaged[Cdecl]<void>)symbols["ImGuizmo_BeginFrame"];
+                var symbols = m_session.ResolveRequiredSymbols(new string[] { "bgcs_inno_imguizmo_call_76b9e5cb3d2755770b03", "bgcs_inno_imguizmo_call_0b2ad4ab97de3bc0bd52", "bgcs_inno_imguizmo_call_42754dd85c3294d677bd", "bgcs_inno_imguizmo_call_5c7402a48671eca2d0a9", "bgcs_inno_imguizmo_call_4b33fe0090db08df4880", "bgcs_inno_imguizmo_call_793453221c778c93c424", "bgcs_inno_imguizmo_call_e63b71ead3a3ebde474e", "bgcs_inno_imguizmo_call_fdbd3928c792cbf22f4e", "bgcs_inno_imguizmo_call_b5b98b3cefb3be35370f", "bgcs_inno_imguizmo_call_813507648e11917088d8", "bgcs_inno_imguizmo_call_55c714f68debb13e5892", "bgcs_inno_imguizmo_call_5600db677cf040535bc8", "bgcs_inno_imguizmo_call_28b132b0afafbd2be972", "bgcs_inno_imguizmo_call_ac8b2b288cb85be4d421", "bgcs_inno_imguizmo_call_a267201368356ba7a28f", "bgcs_inno_imguizmo_call_287239f6655d6b33996d", "bgcs_inno_imguizmo_call_2201c7dd6e51b9afda7c", "bgcs_inno_imguizmo_call_675c102b649e6ca42567", "bgcs_inno_imguizmo_call_6a2796ad3b4a9026c85c", "bgcs_inno_imguizmo_call_b611839c49cc5618225d", "bgcs_inno_imguizmo_call_0bf5461dccf1a0d3332a", "bgcs_inno_imguizmo_call_2b2ab3710fc79c7973bf", "bgcs_inno_imguizmo_call_3b7d5d14890840434a4b", "bgcs_inno_imguizmo_call_a05969d8b2c1f42f0b41", "bgcs_inno_imguizmo_call_62282629096270ef0d0b", "bgcs_inno_imguizmo_call_a080df3ce349e46bd85e", "bgcs_inno_imguizmo_call_72caa6f66c6527167f95", "bgcs_inno_imguizmo_call_5a636a89707eb37759a5", "bgcs_inno_imguizmo_call_8136cac0e05804a5d5cc", "bgcs_inno_imguizmo_call_0e6aa409b199af71a022", "bgcs_inno_imguizmo_call_0a86e0bc99f77bea48bb", "bgcs_inno_imguizmo_call_45e93fe2bbb16c971f16", "bgcs_inno_imguizmo_call_bea8ad6f3394dca6a87e", "bgcs_inno_imguizmo_call_42300de316c531af704b", "bgcs_inno_imguizmo_call_aaca9747784b9266d2b1" });
+                m_function0 = (delegate* unmanaged[Cdecl]<byte> )symbols["bgcs_inno_imguizmo_call_76b9e5cb3d2755770b03"];
+                m_function1 = (delegate* unmanaged[Cdecl]<float*, float*, float*, float*, void> )symbols["bgcs_inno_imguizmo_call_0b2ad4ab97de3bc0bd52"];
+                m_function2 = (delegate* unmanaged[Cdecl]<Style*> )symbols["bgcs_inno_imguizmo_call_42754dd85c3294d677bd"];
+                m_function3 = (delegate* unmanaged[Cdecl]<byte> )symbols["bgcs_inno_imguizmo_call_5c7402a48671eca2d0a9"];
+                m_function4 = (delegate* unmanaged[Cdecl]<byte> )symbols["bgcs_inno_imguizmo_call_4b33fe0090db08df4880"];
+                m_function5 = (delegate* unmanaged[Cdecl]<float*, float, ImVec2C*, ImVec2C*, uint, void> )symbols["bgcs_inno_imguizmo_call_793453221c778c93c424"];
+                m_function6 = (delegate* unmanaged[Cdecl]<sbyte*, uint> )symbols["bgcs_inno_imguizmo_call_e63b71ead3a3ebde474e"];
+                m_function7 = (delegate* unmanaged[Cdecl]<int, void> )symbols["bgcs_inno_imguizmo_call_fdbd3928c792cbf22f4e"];
+                m_function8 = (delegate* unmanaged[Cdecl]<void*, void> )symbols["bgcs_inno_imguizmo_call_b5b98b3cefb3be35370f"];
+                m_function9 = (delegate* unmanaged[Cdecl]<float*, float*, float*, float*, void> )symbols["bgcs_inno_imguizmo_call_813507648e11917088d8"];
+                m_function10 = (delegate* unmanaged[Cdecl]<void*, uint> )symbols["bgcs_inno_imguizmo_call_55c714f68debb13e5892"];
+                m_function11 = (delegate* unmanaged[Cdecl]<void> )symbols["bgcs_inno_imguizmo_call_5600db677cf040535bc8"];
+                m_function12 = (delegate* unmanaged[Cdecl]<byte, byte, byte, void> )symbols["bgcs_inno_imguizmo_call_28b132b0afafbd2be972"];
+                m_function13 = (delegate* unmanaged[Cdecl]<float*, float, byte> )symbols["bgcs_inno_imguizmo_call_ac8b2b288cb85be4d421"];
+                m_function14 = (delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float, ImVec2C*, ImVec2C*, uint, void> )symbols["bgcs_inno_imguizmo_call_a267201368356ba7a28f"];
+                m_function15 = (delegate* unmanaged[Cdecl]<Style*> )symbols["bgcs_inno_imguizmo_call_287239f6655d6b33996d"];
+                m_function16 = (delegate* unmanaged[Cdecl]<byte> )symbols["bgcs_inno_imguizmo_call_2201c7dd6e51b9afda7c"];
+                m_function17 = (delegate* unmanaged[Cdecl]<float, void> )symbols["bgcs_inno_imguizmo_call_675c102b649e6ca42567"];
+                m_function18 = (delegate* unmanaged[Cdecl]<float, void> )symbols["bgcs_inno_imguizmo_call_6a2796ad3b4a9026c85c"];
+                m_function19 = (delegate* unmanaged[Cdecl]<ImDrawList*, void> )symbols["bgcs_inno_imguizmo_call_b611839c49cc5618225d"];
+                m_function20 = (delegate* unmanaged[Cdecl]<float*, float*, float*, float, void> )symbols["bgcs_inno_imguizmo_call_0bf5461dccf1a0d3332a"];
+                m_function21 = (delegate* unmanaged[Cdecl]<byte> )symbols["bgcs_inno_imguizmo_call_2b2ab3710fc79c7973bf"];
+                m_function22 = (delegate* unmanaged[Cdecl]<float*, float*, ImGuizmoOperation, ImGuizmoMode, float*, float*, float*, float*, float*, byte> )symbols["bgcs_inno_imguizmo_call_3b7d5d14890840434a4b"];
+                m_function23 = (delegate* unmanaged[Cdecl]<float*, float*, float*, int, void> )symbols["bgcs_inno_imguizmo_call_a05969d8b2c1f42f0b41"];
+                m_function24 = (delegate* unmanaged[Cdecl]<float, void> )symbols["bgcs_inno_imguizmo_call_62282629096270ef0d0b"];
+                m_function25 = (delegate* unmanaged[Cdecl]<sbyte*, void> )symbols["bgcs_inno_imguizmo_call_a080df3ce349e46bd85e"];
+                m_function26 = (delegate* unmanaged[Cdecl]<byte, void> )symbols["bgcs_inno_imguizmo_call_72caa6f66c6527167f95"];
+                m_function27 = (delegate* unmanaged[Cdecl]<ImGuizmoOperation, byte> )symbols["bgcs_inno_imguizmo_call_5a636a89707eb37759a5"];
+                m_function28 = (delegate* unmanaged[Cdecl]<ImGuiContext*, void> )symbols["bgcs_inno_imguizmo_call_8136cac0e05804a5d5cc"];
+                m_function29 = (delegate* unmanaged[Cdecl]<byte, void> )symbols["bgcs_inno_imguizmo_call_0e6aa409b199af71a022"];
+                m_function30 = (delegate* unmanaged[Cdecl]<float, float, float, float, void> )symbols["bgcs_inno_imguizmo_call_0a86e0bc99f77bea48bb"];
+                m_function31 = (delegate* unmanaged[Cdecl]<ImGuiWindow*, void> )symbols["bgcs_inno_imguizmo_call_45e93fe2bbb16c971f16"];
+                m_function32 = (delegate* unmanaged[Cdecl]<byte, void> )symbols["bgcs_inno_imguizmo_call_bea8ad6f3394dca6a87e"];
+                m_function33 = (delegate* unmanaged[Cdecl]<Style*, void> )symbols["bgcs_inno_imguizmo_call_42300de316c531af704b"];
+                m_function34 = (delegate* unmanaged[Cdecl]<void> )symbols["bgcs_inno_imguizmo_call_aaca9747784b9266d2b1"];
                 Raw = new RawApi(this);
             }
             catch
@@ -4859,7 +5259,7 @@ namespace Inno.Native.ImGuizmo
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "ImGuizmo_ViewManipulate_Float")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void ViewManipulate([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "view")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float *")] float* view, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "length")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float length, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "position")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c")] ImVec2C position, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "size")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c")] ImVec2C size, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "backgroundColor")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImU32")] uint backgroundColor)
+            public void ViewManipulate([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "view")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float *")] float* view, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "length")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float length, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "position")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c const *")] ImVec2C* position, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "size")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c const *")] ImVec2C* size, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "backgroundColor")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImU32")] uint backgroundColor)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function5(view, length, position, size, backgroundColor);
@@ -4931,7 +5331,7 @@ namespace Inno.Native.ImGuizmo
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "ImGuizmo_ViewManipulate_FloatPtr")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "void")]
-            public void ViewManipulate([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "view")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float *")] float* view, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "projection")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float const *")] float* projection, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "operation")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "OPERATION")] ImGuizmoOperation operation, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "mode")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "MODE")] ImGuizmoMode mode, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "matrix")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float *")] float* matrix, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "length")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float length, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "position")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c")] ImVec2C position, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "size")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c")] ImVec2C size, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "backgroundColor")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImU32")] uint backgroundColor)
+            public void ViewManipulate([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "view")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float *")] float* view, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "projection")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float const *")] float* projection, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "operation")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "OPERATION")] ImGuizmoOperation operation, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "mode")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "MODE")] ImGuizmoMode mode, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "matrix")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float *")] float* matrix, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "length")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float length, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "position")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c const *")] ImVec2C* position, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "size")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImVec2_c const *")] ImVec2C* size, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "backgroundColor")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "ImU32")] uint backgroundColor)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
                 this.m_owner.m_function14(view, projection, operation, mode, matrix, length, position, size, backgroundColor);
@@ -5174,6 +5574,24 @@ namespace Inno.Native.ImGuizmo
 {
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImBitVector
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ImVectorImU32 Storage;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_fa1efeab292a7042
+    {
+        public byte prefix;
+        public ImBitVector value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
     public unsafe partial struct ImChunkStreamImGuiTableSettings
     {
         [global::System.Runtime.InteropServices.FieldOffset(0)]
@@ -5203,6 +5621,24 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImChunkStreamImGuiWindowSettings value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 4 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 16)]
+    public unsafe partial struct ImColorC
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ImVec4C Value;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_ee85466b1fa59048
+    {
+        public byte prefix;
+        public ImColorC value;
     }
 }
 
@@ -5346,6 +5782,27 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImDrawFlags : int
+    {
+        ImDrawFlagsNone = 0,
+        ImDrawFlagsClosed = 1,
+        ImDrawFlagsRoundCornersTopLeft = 16,
+        ImDrawFlagsRoundCornersTopRight = 32,
+        ImDrawFlagsRoundCornersBottomLeft = 64,
+        ImDrawFlagsRoundCornersBottomRight = 128,
+        ImDrawFlagsRoundCornersNone = 256,
+        ImDrawFlagsRoundCornersTop = 48,
+        ImDrawFlagsRoundCornersBottom = 192,
+        ImDrawFlagsRoundCornersLeft = 80,
+        ImDrawFlagsRoundCornersRight = 160,
+        ImDrawFlagsRoundCornersAll = 240,
+        ImDrawFlagsRoundCornersDefault = 240,
+        ImDrawFlagsRoundCornersMask = 496,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 224)]
     public unsafe partial struct ImDrawList
@@ -5389,6 +5846,18 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImDrawList value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImDrawListFlags : int
+    {
+        ImDrawListFlagsNone = 0,
+        ImDrawListFlagsAntiAliasedLines = 1,
+        ImDrawListFlagsAntiAliasedLinesUseTex = 2,
+        ImDrawListFlagsAntiAliasedFill = 4,
+        ImDrawListFlagsAllowVtxOffset = 8,
     }
 }
 
@@ -5461,6 +5930,17 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImDrawListSplitter value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImDrawTextFlags : int
+    {
+        ImDrawTextFlagsNone = 0,
+        ImDrawTextFlagsCpuFineClip = 1,
+        ImDrawTextFlagsWrapKeepBlanks = 2,
+        ImDrawTextFlagsStopOnNewLine = 4,
     }
 }
 
@@ -5655,6 +6135,81 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImFontAtlasBuilder value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImFontAtlasFlags : int
+    {
+        ImFontAtlasFlagsNone = 0,
+        ImFontAtlasFlagsNoPowerOfTwoHeight = 1,
+        ImFontAtlasFlagsNoMouseCursors = 2,
+        ImFontAtlasFlagsNoBakedLines = 4,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 64)]
+    public unsafe partial struct ImFontAtlasPostProcessData
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ImFontAtlas* FontAtlas;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public ImFont* Font;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public ImFontConfig* FontSrc;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public ImFontBaked* FontBaked;
+        [global::System.Runtime.InteropServices.FieldOffset(32)]
+        public ImFontGlyph* Glyph;
+        [global::System.Runtime.InteropServices.FieldOffset(40)]
+        public void* Pixels;
+        [global::System.Runtime.InteropServices.FieldOffset(48)]
+        public ImTextureFormat Format;
+        [global::System.Runtime.InteropServices.FieldOffset(52)]
+        public int Pitch;
+        [global::System.Runtime.InteropServices.FieldOffset(56)]
+        public int Width;
+        [global::System.Runtime.InteropServices.FieldOffset(60)]
+        public int Height;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_1b2f935e48096834
+    {
+        public byte prefix;
+        public ImFontAtlasPostProcessData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 4 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 24)]
+    public unsafe partial struct ImFontAtlasRect
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ushort X;
+        [global::System.Runtime.InteropServices.FieldOffset(2)]
+        public ushort Y;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public ushort W;
+        [global::System.Runtime.InteropServices.FieldOffset(6)]
+        public ushort H;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public ImVec2C Uv0;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public ImVec2C Uv1;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_ed1e326ae8477220
+    {
+        public byte prefix;
+        public ImFontAtlasRect value;
     }
 }
 
@@ -5996,6 +6551,17 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImFontFlags : int
+    {
+        ImFontFlagsNone = 0,
+        ImFontFlagsNoLoadError = 2,
+        ImFontFlagsNoLoadGlyphs = 4,
+        ImFontFlagsLockBakedSizes = 8,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 4 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 44)]
     public unsafe partial struct ImFontGlyph
@@ -6155,6 +6721,24 @@ namespace Inno.Native.ImGuizmo
 namespace Inno.Native.ImGuizmo
 {
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImFontGlyphRangesBuilder
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ImVectorImU32 UsedChars;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_5fa6c6f6be12ac52
+    {
+        public byte prefix;
+        public ImFontGlyphRangesBuilder value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 80)]
     public unsafe partial struct ImFontLoader
     {
@@ -6212,11 +6796,42 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiActivateFlags : int
+    {
+        ImGuiActivateFlagsNone = 0,
+        ImGuiActivateFlagsPreferInput = 1,
+        ImGuiActivateFlagsPreferTweak = 2,
+        ImGuiActivateFlagsTryToPreserveState = 4,
+        ImGuiActivateFlagsFromTabbing = 8,
+        ImGuiActivateFlagsFromShortcut = 16,
+        ImGuiActivateFlagsFromFocusApi = 32,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     public enum ImGuiAxis : int
     {
         ImGuiAxisNone = -1,
         ImGuiAxisX = 0,
         ImGuiAxisY = 1,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiBackendFlags : int
+    {
+        ImGuiBackendFlagsNone = 0,
+        ImGuiBackendFlagsHasGamepad = 1,
+        ImGuiBackendFlagsHasMouseCursors = 2,
+        ImGuiBackendFlagsHasSetMousePos = 4,
+        ImGuiBackendFlagsRendererHasVtxOffset = 8,
+        ImGuiBackendFlagsRendererHasTextures = 16,
+        ImGuiBackendFlagsRendererHasViewports = 1024,
+        ImGuiBackendFlagsPlatformHasViewports = 2048,
+        ImGuiBackendFlagsHasMouseHoveredViewport = 4096,
+        ImGuiBackendFlagsHasParentViewport = 8192,
     }
 }
 
@@ -6292,6 +6907,170 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiButtonFlags : int
+    {
+        ImGuiButtonFlagsNone = 0,
+        ImGuiButtonFlagsMouseButtonLeft = 1,
+        ImGuiButtonFlagsMouseButtonRight = 2,
+        ImGuiButtonFlagsMouseButtonMiddle = 4,
+        ImGuiButtonFlagsMouseButtonMask = 7,
+        ImGuiButtonFlagsEnableNav = 8,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiButtonFlagsPrivate : int
+    {
+        ImGuiButtonFlagsPressedOnClick = 16,
+        ImGuiButtonFlagsPressedOnClickRelease = 32,
+        ImGuiButtonFlagsPressedOnClickReleaseAnywhere = 64,
+        ImGuiButtonFlagsPressedOnRelease = 128,
+        ImGuiButtonFlagsPressedOnDoubleClick = 256,
+        ImGuiButtonFlagsPressedOnDragDropHold = 512,
+        ImGuiButtonFlagsFlattenChildren = 2048,
+        ImGuiButtonFlagsAllowOverlap = 4096,
+        ImGuiButtonFlagsAlignTextBaseLine = 32768,
+        ImGuiButtonFlagsNoKeyModsAllowed = 65536,
+        ImGuiButtonFlagsNoHoldingActiveId = 131072,
+        ImGuiButtonFlagsNoNavFocus = 262144,
+        ImGuiButtonFlagsNoHoveredOnFocus = 524288,
+        ImGuiButtonFlagsNoSetKeyOwner = 1048576,
+        ImGuiButtonFlagsNoTestKeyOwner = 2097152,
+        ImGuiButtonFlagsNoFocus = 4194304,
+        ImGuiButtonFlagsPressedOnMask = 1008,
+        ImGuiButtonFlagsPressedOnDefault = 32,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiChildFlags : int
+    {
+        ImGuiChildFlagsNone = 0,
+        ImGuiChildFlagsBorders = 1,
+        ImGuiChildFlagsAlwaysUseWindowPadding = 2,
+        ImGuiChildFlagsResizeX = 4,
+        ImGuiChildFlagsResizeY = 8,
+        ImGuiChildFlagsAutoResizeX = 16,
+        ImGuiChildFlagsAutoResizeY = 32,
+        ImGuiChildFlagsAlwaysAutoResize = 64,
+        ImGuiChildFlagsFrameStyle = 128,
+        ImGuiChildFlagsNavFlattened = 256,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiCol : int
+    {
+        ImGuiColText = 0,
+        ImGuiColTextDisabled = 1,
+        ImGuiColWindowBg = 2,
+        ImGuiColChildBg = 3,
+        ImGuiColPopupBg = 4,
+        ImGuiColBorder = 5,
+        ImGuiColBorderShadow = 6,
+        ImGuiColFrameBg = 7,
+        ImGuiColFrameBgHovered = 8,
+        ImGuiColFrameBgActive = 9,
+        ImGuiColTitleBg = 10,
+        ImGuiColTitleBgActive = 11,
+        ImGuiColTitleBgCollapsed = 12,
+        ImGuiColMenuBarBg = 13,
+        ImGuiColScrollbarBg = 14,
+        ImGuiColScrollbarGrab = 15,
+        ImGuiColScrollbarGrabHovered = 16,
+        ImGuiColScrollbarGrabActive = 17,
+        ImGuiColCheckMark = 18,
+        ImGuiColSliderGrab = 19,
+        ImGuiColSliderGrabActive = 20,
+        ImGuiColButton = 21,
+        ImGuiColButtonHovered = 22,
+        ImGuiColButtonActive = 23,
+        ImGuiColHeader = 24,
+        ImGuiColHeaderHovered = 25,
+        ImGuiColHeaderActive = 26,
+        ImGuiColSeparator = 27,
+        ImGuiColSeparatorHovered = 28,
+        ImGuiColSeparatorActive = 29,
+        ImGuiColResizeGrip = 30,
+        ImGuiColResizeGripHovered = 31,
+        ImGuiColResizeGripActive = 32,
+        ImGuiColInputTextCursor = 33,
+        ImGuiColTabHovered = 34,
+        ImGuiColTab = 35,
+        ImGuiColTabSelected = 36,
+        ImGuiColTabSelectedOverline = 37,
+        ImGuiColTabDimmed = 38,
+        ImGuiColTabDimmedSelected = 39,
+        ImGuiColTabDimmedSelectedOverline = 40,
+        ImGuiColDockingPreview = 41,
+        ImGuiColDockingEmptyBg = 42,
+        ImGuiColPlotLines = 43,
+        ImGuiColPlotLinesHovered = 44,
+        ImGuiColPlotHistogram = 45,
+        ImGuiColPlotHistogramHovered = 46,
+        ImGuiColTableHeaderBg = 47,
+        ImGuiColTableBorderStrong = 48,
+        ImGuiColTableBorderLight = 49,
+        ImGuiColTableRowBg = 50,
+        ImGuiColTableRowBgAlt = 51,
+        ImGuiColTextLink = 52,
+        ImGuiColTextSelectedBg = 53,
+        ImGuiColTreeLines = 54,
+        ImGuiColDragDropTarget = 55,
+        ImGuiColDragDropTargetBg = 56,
+        ImGuiColUnsavedMarker = 57,
+        ImGuiColNavCursor = 58,
+        ImGuiColNavWindowingHighlight = 59,
+        ImGuiColNavWindowingDimBg = 60,
+        ImGuiColModalWindowDimBg = 61,
+        ImGuiColCount = 62,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiColorEditFlags : int
+    {
+        ImGuiColorEditFlagsNone = 0,
+        ImGuiColorEditFlagsNoAlpha = 2,
+        ImGuiColorEditFlagsNoPicker = 4,
+        ImGuiColorEditFlagsNoOptions = 8,
+        ImGuiColorEditFlagsNoSmallPreview = 16,
+        ImGuiColorEditFlagsNoInputs = 32,
+        ImGuiColorEditFlagsNoTooltip = 64,
+        ImGuiColorEditFlagsNoLabel = 128,
+        ImGuiColorEditFlagsNoSidePreview = 256,
+        ImGuiColorEditFlagsNoDragDrop = 512,
+        ImGuiColorEditFlagsNoBorder = 1024,
+        ImGuiColorEditFlagsNoColorMarkers = 2048,
+        ImGuiColorEditFlagsAlphaOpaque = 4096,
+        ImGuiColorEditFlagsAlphaNoBg = 8192,
+        ImGuiColorEditFlagsAlphaPreviewHalf = 16384,
+        ImGuiColorEditFlagsAlphaBar = 262144,
+        ImGuiColorEditFlagsHdr = 524288,
+        ImGuiColorEditFlagsDisplayRgb = 1048576,
+        ImGuiColorEditFlagsDisplayHsv = 2097152,
+        ImGuiColorEditFlagsDisplayHex = 4194304,
+        ImGuiColorEditFlagsUint8 = 8388608,
+        ImGuiColorEditFlagsFloat = 16777216,
+        ImGuiColorEditFlagsPickerHueBar = 33554432,
+        ImGuiColorEditFlagsPickerHueWheel = 67108864,
+        ImGuiColorEditFlagsInputRgb = 134217728,
+        ImGuiColorEditFlagsInputHsv = 268435456,
+        ImGuiColorEditFlagsDefaultOptions = 177209344,
+        ImGuiColorEditFlagsAlphaMask = 28674,
+        ImGuiColorEditFlagsDisplayMask = 7340032,
+        ImGuiColorEditFlagsDataTypeMask = 25165824,
+        ImGuiColorEditFlagsPickerMask = 100663296,
+        ImGuiColorEditFlagsInputMask = 402653184,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 4 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 20)]
     public unsafe partial struct ImGuiColorMod
@@ -6307,6 +7086,31 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiColorMod value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiComboFlags : int
+    {
+        ImGuiComboFlagsNone = 0,
+        ImGuiComboFlagsPopupAlignLeft = 1,
+        ImGuiComboFlagsHeightSmall = 2,
+        ImGuiComboFlagsHeightRegular = 4,
+        ImGuiComboFlagsHeightLarge = 8,
+        ImGuiComboFlagsHeightLargest = 16,
+        ImGuiComboFlagsNoArrowButton = 32,
+        ImGuiComboFlagsNoPreview = 64,
+        ImGuiComboFlagsWidthFitPreview = 128,
+        ImGuiComboFlagsHeightMask = 30,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiComboFlagsPrivate : int
+    {
+        ImGuiComboFlagsCustomPreview = 1048576,
     }
 }
 
@@ -6335,6 +7139,35 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiComboPreviewData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiCond : int
+    {
+        ImGuiCondNone = 0,
+        ImGuiCondAlways = 1,
+        ImGuiCondOnce = 2,
+        ImGuiCondFirstUseEver = 4,
+        ImGuiCondAppearing = 8,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiConfigFlags : int
+    {
+        ImGuiConfigFlagsNone = 0,
+        ImGuiConfigFlagsNavEnableKeyboard = 1,
+        ImGuiConfigFlagsNavEnableGamepad = 2,
+        ImGuiConfigFlagsNoMouse = 16,
+        ImGuiConfigFlagsNoMouseCursorChange = 32,
+        ImGuiConfigFlagsNoKeyboard = 64,
+        ImGuiConfigFlagsDockingEnable = 128,
+        ImGuiConfigFlagsViewportsEnable = 1024,
+        ImGuiConfigFlagsIsSrgb = 1048576,
+        ImGuiConfigFlagsIsTouchScreen = 2097152,
     }
 }
 
@@ -7044,6 +7877,69 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiDataAuthority : int
+    {
+        ImGuiDataAuthorityAuto = 0,
+        ImGuiDataAuthorityDockNode = 1,
+        ImGuiDataAuthorityWindow = 2,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiDataType : int
+    {
+        ImGuiDataTypeS8 = 0,
+        ImGuiDataTypeU8 = 1,
+        ImGuiDataTypeS16 = 2,
+        ImGuiDataTypeU16 = 3,
+        ImGuiDataTypeS32 = 4,
+        ImGuiDataTypeU32 = 5,
+        ImGuiDataTypeS64 = 6,
+        ImGuiDataTypeU64 = 7,
+        ImGuiDataTypeFloat = 8,
+        ImGuiDataTypeDouble = 9,
+        ImGuiDataTypeBool = 10,
+        ImGuiDataTypeString = 11,
+        ImGuiDataTypeCount = 12,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 32)]
+    public unsafe partial struct ImGuiDataTypeInfo
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ulong Size;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public sbyte* Name;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public sbyte* PrintFmt;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public sbyte* ScanFmt;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_2999ad4cf401b5f3
+    {
+        public byte prefix;
+        public ImGuiDataTypeInfo value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiDataTypePrivate : int
+    {
+        ImGuiDataTypePointer = 12,
+        ImGuiDataTypeId = 13,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 1 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 8)]
     public unsafe partial struct ImGuiDataTypeStorage
@@ -7157,6 +8053,30 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiDebugItemPathQuery value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiDebugLogFlags : int
+    {
+        ImGuiDebugLogFlagsNone = 0,
+        ImGuiDebugLogFlagsEventError = 1,
+        ImGuiDebugLogFlagsEventActiveId = 2,
+        ImGuiDebugLogFlagsEventFocus = 4,
+        ImGuiDebugLogFlagsEventPopup = 8,
+        ImGuiDebugLogFlagsEventNav = 16,
+        ImGuiDebugLogFlagsEventClipper = 32,
+        ImGuiDebugLogFlagsEventSelection = 64,
+        ImGuiDebugLogFlagsEventIo = 128,
+        ImGuiDebugLogFlagsEventFont = 256,
+        ImGuiDebugLogFlagsEventInputRouting = 512,
+        ImGuiDebugLogFlagsEventDocking = 1024,
+        ImGuiDebugLogFlagsEventViewport = 2048,
+        ImGuiDebugLogFlagsEventMask = 4095,
+        ImGuiDebugLogFlagsOutputToTty = 1048576,
+        ImGuiDebugLogFlagsOutputToDebugger = 2097152,
+        ImGuiDebugLogFlagsOutputToTestEngine = 4194304,
     }
 }
 
@@ -7713,6 +8633,46 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiDockNodeFlags : int
+    {
+        ImGuiDockNodeFlagsNone = 0,
+        ImGuiDockNodeFlagsKeepAliveOnly = 1,
+        ImGuiDockNodeFlagsNoDockingOverCentralNode = 4,
+        ImGuiDockNodeFlagsPassthruCentralNode = 8,
+        ImGuiDockNodeFlagsNoDockingSplit = 16,
+        ImGuiDockNodeFlagsNoResize = 32,
+        ImGuiDockNodeFlagsAutoHideTabBar = 64,
+        ImGuiDockNodeFlagsNoUndocking = 128,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiDockNodeFlagsPrivate : int
+    {
+        ImGuiDockNodeFlagsDockSpace = 1024,
+        ImGuiDockNodeFlagsCentralNode = 2048,
+        ImGuiDockNodeFlagsNoTabBar = 4096,
+        ImGuiDockNodeFlagsHiddenTabBar = 8192,
+        ImGuiDockNodeFlagsNoWindowMenuButton = 16384,
+        ImGuiDockNodeFlagsNoCloseButton = 32768,
+        ImGuiDockNodeFlagsNoResizeX = 65536,
+        ImGuiDockNodeFlagsNoResizeY = 131072,
+        ImGuiDockNodeFlagsDockedWindowsInFocusRoute = 262144,
+        ImGuiDockNodeFlagsNoDockingSplitOther = 524288,
+        ImGuiDockNodeFlagsNoDockingOverMe = 1048576,
+        ImGuiDockNodeFlagsNoDockingOverOther = 2097152,
+        ImGuiDockNodeFlagsNoDockingOverEmpty = 4194304,
+        ImGuiDockNodeFlagsNoDocking = 7864336,
+        ImGuiDockNodeFlagsSharedFlagsInheritMask = -1,
+        ImGuiDockNodeFlagsNoResizeFlagsMask = 196640,
+        ImGuiDockNodeFlagsLocalFlagsTransferMask = 260208,
+        ImGuiDockNodeFlagsSavedFlagsMask = 261152,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Opaque native marker: storage size and by-value use are intentionally unavailable.
     public unsafe partial struct ImGuiDockNodeSettings
     {
@@ -7735,6 +8695,27 @@ namespace Inno.Native.ImGuizmo
     // Opaque native marker: storage size and by-value use are intentionally unavailable.
     public unsafe partial struct ImGuiDockRequest
     {
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiDragDropFlags : int
+    {
+        ImGuiDragDropFlagsNone = 0,
+        ImGuiDragDropFlagsSourceNoPreviewTooltip = 1,
+        ImGuiDragDropFlagsSourceNoDisableHover = 2,
+        ImGuiDragDropFlagsSourceNoHoldToOpenOthers = 4,
+        ImGuiDragDropFlagsSourceAllowNullId = 8,
+        ImGuiDragDropFlagsSourceExtern = 16,
+        ImGuiDragDropFlagsPayloadAutoExpire = 32,
+        ImGuiDragDropFlagsPayloadNoCrossContext = 64,
+        ImGuiDragDropFlagsPayloadNoCrossProcess = 128,
+        ImGuiDragDropFlagsAcceptBeforeDelivery = 1024,
+        ImGuiDragDropFlagsAcceptNoDrawDefaultRect = 2048,
+        ImGuiDragDropFlagsAcceptNoPreviewTooltip = 4096,
+        ImGuiDragDropFlagsAcceptDrawAsHovered = 8192,
+        ImGuiDragDropFlagsAcceptPeekOnly = 3072,
     }
 }
 
@@ -7779,6 +8760,30 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiErrorRecoveryState value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiFocusedFlags : int
+    {
+        ImGuiFocusedFlagsNone = 0,
+        ImGuiFocusedFlagsChildWindows = 1,
+        ImGuiFocusedFlagsRootWindow = 2,
+        ImGuiFocusedFlagsAnyWindow = 4,
+        ImGuiFocusedFlagsNoPopupHierarchy = 8,
+        ImGuiFocusedFlagsDockHierarchy = 16,
+        ImGuiFocusedFlagsRootAndChildWindows = 3,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiFocusRequestFlags : int
+    {
+        ImGuiFocusRequestFlagsNone = 0,
+        ImGuiFocusRequestFlagsRestoreFocusedChild = 1,
+        ImGuiFocusRequestFlagsUnlessBelowModal = 2,
     }
 }
 
@@ -7843,6 +8848,44 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiGroupData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiHoveredFlags : int
+    {
+        ImGuiHoveredFlagsNone = 0,
+        ImGuiHoveredFlagsChildWindows = 1,
+        ImGuiHoveredFlagsRootWindow = 2,
+        ImGuiHoveredFlagsAnyWindow = 4,
+        ImGuiHoveredFlagsNoPopupHierarchy = 8,
+        ImGuiHoveredFlagsDockHierarchy = 16,
+        ImGuiHoveredFlagsAllowWhenBlockedByPopup = 32,
+        ImGuiHoveredFlagsAllowWhenBlockedByActiveItem = 128,
+        ImGuiHoveredFlagsAllowWhenOverlappedByItem = 256,
+        ImGuiHoveredFlagsAllowWhenOverlappedByWindow = 512,
+        ImGuiHoveredFlagsAllowWhenDisabled = 1024,
+        ImGuiHoveredFlagsNoNavOverride = 2048,
+        ImGuiHoveredFlagsAllowWhenOverlapped = 768,
+        ImGuiHoveredFlagsRectOnly = 928,
+        ImGuiHoveredFlagsRootAndChildWindows = 3,
+        ImGuiHoveredFlagsForTooltip = 4096,
+        ImGuiHoveredFlagsStationary = 8192,
+        ImGuiHoveredFlagsDelayNone = 16384,
+        ImGuiHoveredFlagsDelayShort = 32768,
+        ImGuiHoveredFlagsDelayNormal = 65536,
+        ImGuiHoveredFlagsNoSharedDelay = 131072,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiHoveredFlagsPrivate : int
+    {
+        ImGuiHoveredFlagsDelayMask = 245760,
+        ImGuiHoveredFlagsAllowedMaskForIsWindowHovered = 12479,
+        ImGuiHoveredFlagsAllowedMaskForIsItemHovered = 262048,
     }
 }
 
@@ -8086,6 +9129,55 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiInputFlags : int
+    {
+        ImGuiInputFlagsNone = 0,
+        ImGuiInputFlagsRepeat = 1,
+        ImGuiInputFlagsRouteActive = 1024,
+        ImGuiInputFlagsRouteFocused = 2048,
+        ImGuiInputFlagsRouteGlobal = 4096,
+        ImGuiInputFlagsRouteAlways = 8192,
+        ImGuiInputFlagsRouteOverFocused = 16384,
+        ImGuiInputFlagsRouteOverActive = 32768,
+        ImGuiInputFlagsRouteUnlessBgFocused = 65536,
+        ImGuiInputFlagsRouteFromRootWindow = 131072,
+        ImGuiInputFlagsTooltip = 262144,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiInputFlagsPrivate : int
+    {
+        ImGuiInputFlagsRepeatRateDefault = 2,
+        ImGuiInputFlagsRepeatRateNavMove = 4,
+        ImGuiInputFlagsRepeatRateNavTweak = 8,
+        ImGuiInputFlagsRepeatUntilRelease = 16,
+        ImGuiInputFlagsRepeatUntilKeyModsChange = 32,
+        ImGuiInputFlagsRepeatUntilKeyModsChangeFromNone = 64,
+        ImGuiInputFlagsRepeatUntilOtherKeyPress = 128,
+        ImGuiInputFlagsLockThisFrame = 1048576,
+        ImGuiInputFlagsLockUntilRelease = 2097152,
+        ImGuiInputFlagsCondHovered = 4194304,
+        ImGuiInputFlagsCondActive = 8388608,
+        ImGuiInputFlagsCondDefault = 12582912,
+        ImGuiInputFlagsRepeatRateMask = 14,
+        ImGuiInputFlagsRepeatUntilMask = 240,
+        ImGuiInputFlagsRepeatMask = 255,
+        ImGuiInputFlagsCondMask = 12582912,
+        ImGuiInputFlagsRouteTypeMask = 15360,
+        ImGuiInputFlagsRouteOptionsMask = 245760,
+        ImGuiInputFlagsSupportedByIsKeyPressed = 255,
+        ImGuiInputFlagsSupportedByIsMouseClicked = 1,
+        ImGuiInputFlagsSupportedByShortcut = 261375,
+        ImGuiInputFlagsSupportedBySetNextItemShortcut = 523519,
+        ImGuiInputFlagsSupportedBySetKeyOwner = 3145728,
+        ImGuiInputFlagsSupportedBySetItemKeyOwner = 15728640,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     public enum ImGuiInputSource : int
     {
         ImGuiInputSourceNone = 0,
@@ -8093,6 +9185,66 @@ namespace Inno.Native.ImGuizmo
         ImGuiInputSourceKeyboard = 2,
         ImGuiInputSourceGamepad = 3,
         ImGuiInputSourceCount = 4,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    [global::System.Runtime.InteropServices.UnmanagedFunctionPointer(global::System.Runtime.InteropServices.CallingConvention.Cdecl)]
+    public unsafe delegate int ImGuiInputTextCallback(ImGuiInputTextCallbackData* argument0);
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 72)]
+    public unsafe partial struct ImGuiInputTextCallbackData
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ImGuiContext* Ctx;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public int EventFlag;
+        [global::System.Runtime.InteropServices.FieldOffset(12)]
+        public int Flags;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public void* UserData;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public uint Id;
+        [global::System.Runtime.InteropServices.FieldOffset(28)]
+        public ImGuiKey EventKey;
+        [global::System.Runtime.InteropServices.FieldOffset(32)]
+        public ushort EventChar;
+        [global::System.Runtime.InteropServices.FieldOffset(34)]
+        public byte EventActivated;
+        [global::System.Runtime.InteropServices.FieldOffset(35)]
+        public byte BufDirty;
+        [global::System.Runtime.InteropServices.FieldOffset(40)]
+        public sbyte* Buf;
+        [global::System.Runtime.InteropServices.FieldOffset(48)]
+        public int BufTextLen;
+        [global::System.Runtime.InteropServices.FieldOffset(52)]
+        public int BufSize;
+        [global::System.Runtime.InteropServices.FieldOffset(56)]
+        public int CursorPos;
+        [global::System.Runtime.InteropServices.FieldOffset(60)]
+        public int SelectionStart;
+        [global::System.Runtime.InteropServices.FieldOffset(64)]
+        public int SelectionEnd;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_7b7a0741e21b547b
+    {
+        public byte prefix;
+        public ImGuiInputTextCallbackData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Opaque native marker: storage size and by-value use are intentionally unavailable.
+    public unsafe partial struct ImGuiInputTextDeactivateData
+    {
     }
 }
 
@@ -8113,6 +9265,49 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiInputTextDeactivatedState value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiInputTextFlags : int
+    {
+        ImGuiInputTextFlagsNone = 0,
+        ImGuiInputTextFlagsCharsDecimal = 1,
+        ImGuiInputTextFlagsCharsHexadecimal = 2,
+        ImGuiInputTextFlagsCharsScientific = 4,
+        ImGuiInputTextFlagsCharsUppercase = 8,
+        ImGuiInputTextFlagsCharsNoBlank = 16,
+        ImGuiInputTextFlagsAllowTabInput = 32,
+        ImGuiInputTextFlagsEnterReturnsTrue = 64,
+        ImGuiInputTextFlagsEscapeClearsAll = 128,
+        ImGuiInputTextFlagsCtrlEnterForNewLine = 256,
+        ImGuiInputTextFlagsReadOnly = 512,
+        ImGuiInputTextFlagsPassword = 1024,
+        ImGuiInputTextFlagsAlwaysOverwrite = 2048,
+        ImGuiInputTextFlagsAutoSelectAll = 4096,
+        ImGuiInputTextFlagsParseEmptyRefVal = 8192,
+        ImGuiInputTextFlagsDisplayEmptyRefVal = 16384,
+        ImGuiInputTextFlagsNoHorizontalScroll = 32768,
+        ImGuiInputTextFlagsNoUndoRedo = 65536,
+        ImGuiInputTextFlagsElideLeft = 131072,
+        ImGuiInputTextFlagsCallbackCompletion = 262144,
+        ImGuiInputTextFlagsCallbackHistory = 524288,
+        ImGuiInputTextFlagsCallbackAlways = 1048576,
+        ImGuiInputTextFlagsCallbackCharFilter = 2097152,
+        ImGuiInputTextFlagsCallbackResize = 4194304,
+        ImGuiInputTextFlagsCallbackEdit = 8388608,
+        ImGuiInputTextFlagsWordWrap = 16777216,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiInputTextFlagsPrivate : int
+    {
+        ImGuiInputTextFlagsMultiline = 67108864,
+        ImGuiInputTextFlagsMergedItem = 134217728,
+        ImGuiInputTextFlagsLocalizeDecimalPoint = 268435456,
     }
 }
 
@@ -8413,6 +9608,58 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiIO value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiItemFlags : int
+    {
+        ImGuiItemFlagsNone = 0,
+        ImGuiItemFlagsNoTabStop = 1,
+        ImGuiItemFlagsNoNav = 2,
+        ImGuiItemFlagsNoNavDefaultFocus = 4,
+        ImGuiItemFlagsButtonRepeat = 8,
+        ImGuiItemFlagsAutoClosePopups = 16,
+        ImGuiItemFlagsAllowDuplicateId = 32,
+        ImGuiItemFlagsDisabled = 64,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiItemFlagsPrivate : int
+    {
+        ImGuiItemFlagsReadOnly = 2048,
+        ImGuiItemFlagsMixedValue = 4096,
+        ImGuiItemFlagsNoWindowHoverableCheck = 8192,
+        ImGuiItemFlagsAllowOverlap = 16384,
+        ImGuiItemFlagsNoNavDisableMouseHover = 32768,
+        ImGuiItemFlagsNoMarkEdited = 65536,
+        ImGuiItemFlagsNoFocus = 131072,
+        ImGuiItemFlagsInputable = 1048576,
+        ImGuiItemFlagsHasSelectionUserData = 2097152,
+        ImGuiItemFlagsIsMultiSelect = 4194304,
+        ImGuiItemFlagsDefault = 16,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiItemStatusFlags : int
+    {
+        ImGuiItemStatusFlagsNone = 0,
+        ImGuiItemStatusFlagsHoveredRect = 1,
+        ImGuiItemStatusFlagsHasDisplayRect = 2,
+        ImGuiItemStatusFlagsEdited = 4,
+        ImGuiItemStatusFlagsToggledSelection = 8,
+        ImGuiItemStatusFlagsToggledOpen = 16,
+        ImGuiItemStatusFlagsHasDeactivated = 32,
+        ImGuiItemStatusFlagsDeactivated = 64,
+        ImGuiItemStatusFlagsHoveredWindow = 128,
+        ImGuiItemStatusFlagsVisible = 256,
+        ImGuiItemStatusFlagsHasClipRect = 512,
+        ImGuiItemStatusFlagsHasShortcut = 1024,
     }
 }
 
@@ -8720,6 +9967,15 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiLayoutType : int
+    {
+        ImGuiLayoutTypeHorizontal = 0,
+        ImGuiLayoutTypeVertical = 1,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 56)]
     public unsafe partial struct ImGuiListClipper
@@ -8780,6 +10036,15 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiListClipperFlags : int
+    {
+        ImGuiListClipperFlagsNone = 0,
+        ImGuiListClipperFlagsNoSetTableRowCounters = 1,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 4 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 12)]
     public unsafe partial struct ImGuiListClipperRange
@@ -8802,6 +10067,72 @@ namespace Inno.Native.ImGuizmo
         public byte prefix;
         public ImGuiListClipperRange value;
     }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImGuiLocEntry
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ImGuiLocKey Key;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public sbyte* Text;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_69f8c0a1685e8350
+    {
+        public byte prefix;
+        public ImGuiLocEntry value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiLocKey : int
+    {
+        ImGuiLocKeyVersionStr = 0,
+        ImGuiLocKeyTableSizeOne = 1,
+        ImGuiLocKeyTableSizeAllFit = 2,
+        ImGuiLocKeyTableSizeAllDefault = 3,
+        ImGuiLocKeyTableResetOrder = 4,
+        ImGuiLocKeyWindowingMainMenuBar = 5,
+        ImGuiLocKeyWindowingPopup = 6,
+        ImGuiLocKeyWindowingUntitled = 7,
+        ImGuiLocKeyOpenLinkS = 8,
+        ImGuiLocKeyCopyLink = 9,
+        ImGuiLocKeyDockingHideTabBar = 10,
+        ImGuiLocKeyDockingHoldShiftToDock = 11,
+        ImGuiLocKeyDockingDragToUndockOrMoveNode = 12,
+        ImGuiLocKeyCount = 13,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiLogFlags : int
+    {
+        ImGuiLogFlagsNone = 0,
+        ImGuiLogFlagsOutputTty = 1,
+        ImGuiLogFlagsOutputFile = 2,
+        ImGuiLogFlagsOutputBuffer = 4,
+        ImGuiLogFlagsOutputClipboard = 8,
+        ImGuiLogFlagsOutputMask = 15,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    [global::System.Runtime.InteropServices.UnmanagedFunctionPointer(global::System.Runtime.InteropServices.CallingConvention.Cdecl)]
+    public unsafe delegate void* ImGuiMemAllocFunc(ulong argument0, void* argument1);
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    [global::System.Runtime.InteropServices.UnmanagedFunctionPointer(global::System.Runtime.InteropServices.CallingConvention.Cdecl)]
+    public unsafe delegate void ImGuiMemFreeFunc(void* argument0, void* argument1);
 }
 
 namespace Inno.Native.ImGuizmo
@@ -8884,12 +10215,68 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiMouseButton : int
+    {
+        ImGuiMouseButtonLeft = 0,
+        ImGuiMouseButtonRight = 1,
+        ImGuiMouseButtonMiddle = 2,
+        ImGuiMouseButtonCount = 5,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiMouseCursor : int
+    {
+        ImGuiMouseCursorNone = -1,
+        ImGuiMouseCursorArrow = 0,
+        ImGuiMouseCursorTextInput = 1,
+        ImGuiMouseCursorResizeAll = 2,
+        ImGuiMouseCursorResizeNs = 3,
+        ImGuiMouseCursorResizeEw = 4,
+        ImGuiMouseCursorResizeNesw = 5,
+        ImGuiMouseCursorResizeNwse = 6,
+        ImGuiMouseCursorHand = 7,
+        ImGuiMouseCursorWait = 8,
+        ImGuiMouseCursorProgress = 9,
+        ImGuiMouseCursorNotAllowed = 10,
+        ImGuiMouseCursorCount = 11,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     public enum ImGuiMouseSource : int
     {
         ImGuiMouseSourceMouse = 0,
         ImGuiMouseSourceTouchScreen = 1,
         ImGuiMouseSourcePen = 2,
         ImGuiMouseSourceCount = 3,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiMultiSelectFlags : int
+    {
+        ImGuiMultiSelectFlagsNone = 0,
+        ImGuiMultiSelectFlagsSingleSelect = 1,
+        ImGuiMultiSelectFlagsNoSelectAll = 2,
+        ImGuiMultiSelectFlagsNoRangeSelect = 4,
+        ImGuiMultiSelectFlagsNoAutoSelect = 8,
+        ImGuiMultiSelectFlagsNoAutoClear = 16,
+        ImGuiMultiSelectFlagsNoAutoClearOnReselect = 32,
+        ImGuiMultiSelectFlagsBoxSelect1d = 64,
+        ImGuiMultiSelectFlagsBoxSelect2d = 128,
+        ImGuiMultiSelectFlagsBoxSelectNoScroll = 256,
+        ImGuiMultiSelectFlagsClearOnEscape = 512,
+        ImGuiMultiSelectFlagsClearOnClickVoid = 1024,
+        ImGuiMultiSelectFlagsScopeWindow = 2048,
+        ImGuiMultiSelectFlagsScopeRect = 4096,
+        ImGuiMultiSelectFlagsSelectOnClick = 8192,
+        ImGuiMultiSelectFlagsSelectOnClickRelease = 16384,
+        ImGuiMultiSelectFlagsNavWrapX = 65536,
+        ImGuiMultiSelectFlagsNoSelectOnRightClick = 131072,
     }
 }
 
@@ -9047,6 +10434,42 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiNavMoveFlags : int
+    {
+        ImGuiNavMoveFlagsNone = 0,
+        ImGuiNavMoveFlagsLoopX = 1,
+        ImGuiNavMoveFlagsLoopY = 2,
+        ImGuiNavMoveFlagsWrapX = 4,
+        ImGuiNavMoveFlagsWrapY = 8,
+        ImGuiNavMoveFlagsWrapMask = 15,
+        ImGuiNavMoveFlagsAllowCurrentNavId = 16,
+        ImGuiNavMoveFlagsAlsoScoreVisibleSet = 32,
+        ImGuiNavMoveFlagsScrollToEdgeY = 64,
+        ImGuiNavMoveFlagsForwarded = 128,
+        ImGuiNavMoveFlagsDebugNoResult = 256,
+        ImGuiNavMoveFlagsFocusApi = 512,
+        ImGuiNavMoveFlagsIsTabbing = 1024,
+        ImGuiNavMoveFlagsIsPageMove = 2048,
+        ImGuiNavMoveFlagsActivate = 4096,
+        ImGuiNavMoveFlagsNoSelect = 8192,
+        ImGuiNavMoveFlagsNoSetNavCursorVisible = 16384,
+        ImGuiNavMoveFlagsNoClearActiveId = 32768,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiNavRenderCursorFlags : int
+    {
+        ImGuiNavRenderCursorFlagsNone = 0,
+        ImGuiNavRenderCursorFlagsCompact = 2,
+        ImGuiNavRenderCursorFlagsAlwaysDraw = 4,
+        ImGuiNavRenderCursorFlagsNoRounding = 8,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 56)]
     public unsafe partial struct ImGuiNextItemData
@@ -9082,6 +10505,20 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiNextItemData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiNextItemDataFlags : int
+    {
+        ImGuiNextItemDataFlagsNone = 0,
+        ImGuiNextItemDataFlagsHasWidth = 1,
+        ImGuiNextItemDataFlagsHasOpen = 2,
+        ImGuiNextItemDataFlagsHasShortcut = 4,
+        ImGuiNextItemDataFlagsHasRefVal = 8,
+        ImGuiNextItemDataFlagsHasStorageId = 16,
+        ImGuiNextItemDataFlagsHasColorMarker = 32,
     }
 }
 
@@ -9149,6 +10586,28 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiNextWindowDataFlags : int
+    {
+        ImGuiNextWindowDataFlagsNone = 0,
+        ImGuiNextWindowDataFlagsHasPos = 1,
+        ImGuiNextWindowDataFlagsHasSize = 2,
+        ImGuiNextWindowDataFlagsHasContentSize = 4,
+        ImGuiNextWindowDataFlagsHasCollapsed = 8,
+        ImGuiNextWindowDataFlagsHasSizeConstraint = 16,
+        ImGuiNextWindowDataFlagsHasFocus = 32,
+        ImGuiNextWindowDataFlagsHasBgAlpha = 64,
+        ImGuiNextWindowDataFlagsHasScroll = 128,
+        ImGuiNextWindowDataFlagsHasWindowFlags = 256,
+        ImGuiNextWindowDataFlagsHasChildFlags = 512,
+        ImGuiNextWindowDataFlagsHasRefreshPolicy = 1024,
+        ImGuiNextWindowDataFlagsHasViewport = 2048,
+        ImGuiNextWindowDataFlagsHasDock = 4096,
+        ImGuiNextWindowDataFlagsHasWindowClass = 8192,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 4 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 28)]
     public unsafe partial struct ImGuiOldColumnData
@@ -9168,6 +10627,19 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiOldColumnData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiOldColumnFlags : int
+    {
+        ImGuiOldColumnFlagsNone = 0,
+        ImGuiOldColumnFlagsNoBorder = 1,
+        ImGuiOldColumnFlagsNoResize = 2,
+        ImGuiOldColumnFlagsNoPreserveWidths = 4,
+        ImGuiOldColumnFlagsNoForceWithinWindow = 8,
+        ImGuiOldColumnFlagsGrowParentContentsSize = 16,
     }
 }
 
@@ -9218,6 +10690,24 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiOldColumns value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 4 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 4)]
+    public unsafe partial struct ImGuiOnceUponAFrame
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public int RefFrame;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_677cdce8d335f18a
+    {
+        public byte prefix;
+        public ImGuiOnceUponAFrame value;
     }
 }
 
@@ -9403,6 +10893,15 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiPlotType : int
+    {
+        ImGuiPlotTypeLines = 0,
+        ImGuiPlotTypeHistogram = 1,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 56)]
     public unsafe partial struct ImGuiPopupData
@@ -9435,6 +10934,36 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiPopupFlags : int
+    {
+        ImGuiPopupFlagsNone = 0,
+        ImGuiPopupFlagsMouseButtonLeft = 4,
+        ImGuiPopupFlagsMouseButtonRight = 8,
+        ImGuiPopupFlagsMouseButtonMiddle = 12,
+        ImGuiPopupFlagsNoReopen = 32,
+        ImGuiPopupFlagsNoOpenOverExistingPopup = 128,
+        ImGuiPopupFlagsNoOpenOverItems = 256,
+        ImGuiPopupFlagsAnyPopupId = 1024,
+        ImGuiPopupFlagsAnyPopupLevel = 2048,
+        ImGuiPopupFlagsAnyPopup = 3072,
+        ImGuiPopupFlagsMouseButtonShift = 2,
+        ImGuiPopupFlagsMouseButtonMask = 12,
+        ImGuiPopupFlagsInvalidMask = 3,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiPopupPositionPolicy : int
+    {
+        ImGuiPopupPositionPolicyDefault = 0,
+        ImGuiPopupPositionPolicyComboBox = 1,
+        ImGuiPopupPositionPolicyTooltip = 2,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
     public unsafe partial struct ImGuiPtrOrIndex
@@ -9450,6 +10979,100 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiPtrOrIndex value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiScrollFlags : int
+    {
+        ImGuiScrollFlagsNone = 0,
+        ImGuiScrollFlagsKeepVisibleEdgeX = 1,
+        ImGuiScrollFlagsKeepVisibleEdgeY = 2,
+        ImGuiScrollFlagsKeepVisibleCenterX = 4,
+        ImGuiScrollFlagsKeepVisibleCenterY = 8,
+        ImGuiScrollFlagsAlwaysCenterX = 16,
+        ImGuiScrollFlagsAlwaysCenterY = 32,
+        ImGuiScrollFlagsNoScrollParent = 64,
+        ImGuiScrollFlagsMaskX = 21,
+        ImGuiScrollFlagsMaskY = 42,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiSelectableFlags : int
+    {
+        ImGuiSelectableFlagsNone = 0,
+        ImGuiSelectableFlagsNoAutoClosePopups = 1,
+        ImGuiSelectableFlagsSpanAllColumns = 2,
+        ImGuiSelectableFlagsAllowDoubleClick = 4,
+        ImGuiSelectableFlagsDisabled = 8,
+        ImGuiSelectableFlagsAllowOverlap = 16,
+        ImGuiSelectableFlagsHighlight = 32,
+        ImGuiSelectableFlagsSelectOnNav = 64,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiSelectableFlagsPrivate : int
+    {
+        ImGuiSelectableFlagsNoHoldingActiveId = 1048576,
+        ImGuiSelectableFlagsSelectOnClick = 4194304,
+        ImGuiSelectableFlagsSelectOnRelease = 8388608,
+        ImGuiSelectableFlagsSpanAvailWidth = 16777216,
+        ImGuiSelectableFlagsSetNavIdOnHover = 33554432,
+        ImGuiSelectableFlagsNoPadWithHalfSpacing = 67108864,
+        ImGuiSelectableFlagsNoSetKeyOwner = 134217728,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 48)]
+    public unsafe partial struct ImGuiSelectionBasicStorage
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public int Size;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public byte PreserveOrder;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public void* UserData;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public delegate* unmanaged[Cdecl]<ImGuiSelectionBasicStorage*, int, uint> AdapterIndexToStorageId;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public int SelectionOrder;
+        [global::System.Runtime.InteropServices.FieldOffset(32)]
+        public ImGuiStorage Storage;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_73f44d727035e855
+    {
+        public byte prefix;
+        public ImGuiSelectionBasicStorage value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImGuiSelectionExternalStorage
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public void* UserData;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public delegate* unmanaged[Cdecl]<ImGuiSelectionExternalStorage*, int, byte, void> AdapterSetItemSelected;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_0ef5e442a49186c2
+    {
+        public byte prefix;
+        public ImGuiSelectionExternalStorage value;
     }
 }
 
@@ -9486,6 +11109,17 @@ namespace Inno.Native.ImGuizmo
         ImGuiSelectionRequestTypeNone = 0,
         ImGuiSelectionRequestTypeSetAll = 1,
         ImGuiSelectionRequestTypeSetRange = 2,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiSeparatorFlags : int
+    {
+        ImGuiSeparatorFlagsNone = 0,
+        ImGuiSeparatorFlagsHorizontal = 1,
+        ImGuiSeparatorFlagsVertical = 2,
+        ImGuiSeparatorFlagsSpanAllColumns = 4,
     }
 }
 
@@ -9577,6 +11211,33 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiSliderFlags : int
+    {
+        ImGuiSliderFlagsNone = 0,
+        ImGuiSliderFlagsLogarithmic = 32,
+        ImGuiSliderFlagsNoRoundToFormat = 64,
+        ImGuiSliderFlagsNoInput = 128,
+        ImGuiSliderFlagsWrapAround = 256,
+        ImGuiSliderFlagsClampOnInput = 512,
+        ImGuiSliderFlagsClampZeroRange = 1024,
+        ImGuiSliderFlagsNoSpeedTweaks = 2048,
+        ImGuiSliderFlagsColorMarkers = 4096,
+        ImGuiSliderFlagsAlwaysClamp = 1536,
+        ImGuiSliderFlagsInvalidMask = 1879048207,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiSliderFlagsPrivate : int
+    {
+        ImGuiSliderFlagsVertical = 1048576,
+        ImGuiSliderFlagsReadOnly = 2097152,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     public enum ImGuiSortDirection : int
     {
         ImGuiSortDirectionNone = 0,
@@ -9637,7 +11298,7 @@ namespace Inno.Native.ImGuizmo
     {
         [global::System.Runtime.InteropServices.FieldOffset(0)]
         public uint Key;
-        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
         public ImGuiStoragePairAnonymousUnionAd9ee15fe77a7ef0 AnonymousField1;
     }
 
@@ -9877,6 +11538,161 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiStyleVar : int
+    {
+        ImGuiStyleVarAlpha = 0,
+        ImGuiStyleVarDisabledAlpha = 1,
+        ImGuiStyleVarWindowPadding = 2,
+        ImGuiStyleVarWindowRounding = 3,
+        ImGuiStyleVarWindowBorderSize = 4,
+        ImGuiStyleVarWindowMinSize = 5,
+        ImGuiStyleVarWindowTitleAlign = 6,
+        ImGuiStyleVarChildRounding = 7,
+        ImGuiStyleVarChildBorderSize = 8,
+        ImGuiStyleVarPopupRounding = 9,
+        ImGuiStyleVarPopupBorderSize = 10,
+        ImGuiStyleVarFramePadding = 11,
+        ImGuiStyleVarFrameRounding = 12,
+        ImGuiStyleVarFrameBorderSize = 13,
+        ImGuiStyleVarItemSpacing = 14,
+        ImGuiStyleVarItemInnerSpacing = 15,
+        ImGuiStyleVarIndentSpacing = 16,
+        ImGuiStyleVarCellPadding = 17,
+        ImGuiStyleVarScrollbarSize = 18,
+        ImGuiStyleVarScrollbarRounding = 19,
+        ImGuiStyleVarScrollbarPadding = 20,
+        ImGuiStyleVarGrabMinSize = 21,
+        ImGuiStyleVarGrabRounding = 22,
+        ImGuiStyleVarImageRounding = 23,
+        ImGuiStyleVarImageBorderSize = 24,
+        ImGuiStyleVarTabRounding = 25,
+        ImGuiStyleVarTabBorderSize = 26,
+        ImGuiStyleVarTabMinWidthBase = 27,
+        ImGuiStyleVarTabMinWidthShrink = 28,
+        ImGuiStyleVarTabBarBorderSize = 29,
+        ImGuiStyleVarTabBarOverlineSize = 30,
+        ImGuiStyleVarTableAngledHeadersAngle = 31,
+        ImGuiStyleVarTableAngledHeadersTextAlign = 32,
+        ImGuiStyleVarTreeLinesSize = 33,
+        ImGuiStyleVarTreeLinesRounding = 34,
+        ImGuiStyleVarButtonTextAlign = 35,
+        ImGuiStyleVarSelectableTextAlign = 36,
+        ImGuiStyleVarSeparatorTextBorderSize = 37,
+        ImGuiStyleVarSeparatorTextAlign = 38,
+        ImGuiStyleVarSeparatorTextPadding = 39,
+        ImGuiStyleVarDockingSeparatorSize = 40,
+        ImGuiStyleVarCount = 41,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 4 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 4)]
+    public unsafe partial struct ImGuiStyleVarInfo
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        private fixed byte m_bitStorage[4];
+        public uint Count
+        {
+            get
+            {
+                ulong bits = 0;
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 8; index++)
+                    {
+                        long position = 0L + index;
+                        bits |= (ulong)((storage[position >> 3] >> (int)(position & 7)) & 1) << index;
+                    }
+                }
+
+                return unchecked((uint)bits);
+            }
+
+            set
+            {
+                ulong bits = unchecked((ulong)value);
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 8; index++)
+                    {
+                        long position = 0L + index;
+                        int shift = (int)(position & 7);
+                        storage[position >> 3] = (byte)((storage[position >> 3] & ~(1 << shift)) | (int)((bits >> index) & 1) << shift);
+                    }
+                }
+            }
+        }
+
+        public int DataType
+        {
+            get
+            {
+                ulong bits = 0;
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 8; index++)
+                    {
+                        long position = 8L + index;
+                        bits |= (ulong)((storage[position >> 3] >> (int)(position & 7)) & 1) << index;
+                    }
+                }
+
+                return unchecked((int)((long)(bits << 56) >> 56));
+            }
+
+            set
+            {
+                ulong bits = unchecked((ulong)value);
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 8; index++)
+                    {
+                        long position = 8L + index;
+                        int shift = (int)(position & 7);
+                        storage[position >> 3] = (byte)((storage[position >> 3] & ~(1 << shift)) | (int)((bits >> index) & 1) << shift);
+                    }
+                }
+            }
+        }
+
+        public uint Offset
+        {
+            get
+            {
+                ulong bits = 0;
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 16; index++)
+                    {
+                        long position = 16L + index;
+                        bits |= (ulong)((storage[position >> 3] >> (int)(position & 7)) & 1) << index;
+                    }
+                }
+
+                return unchecked((uint)bits);
+            }
+
+            set
+            {
+                ulong bits = unchecked((ulong)value);
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 16; index++)
+                    {
+                        long position = 16L + index;
+                        int shift = (int)(position & 7);
+                        storage[position >> 3] = (byte)((storage[position >> 3] & ~(1 << shift)) | (int)((bits >> index) & 1) << shift);
+                    }
+                }
+            }
+        }
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 176)]
     public unsafe partial struct ImGuiTabBar
@@ -9967,6 +11783,36 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiTabBarFlags : int
+    {
+        ImGuiTabBarFlagsNone = 0,
+        ImGuiTabBarFlagsReorderable = 1,
+        ImGuiTabBarFlagsAutoSelectNewTabs = 2,
+        ImGuiTabBarFlagsTabListPopupButton = 4,
+        ImGuiTabBarFlagsNoCloseWithMiddleMouseButton = 8,
+        ImGuiTabBarFlagsNoTabListScrollingButtons = 16,
+        ImGuiTabBarFlagsNoTooltip = 32,
+        ImGuiTabBarFlagsDrawSelectedOverline = 64,
+        ImGuiTabBarFlagsFittingPolicyMixed = 128,
+        ImGuiTabBarFlagsFittingPolicyShrink = 256,
+        ImGuiTabBarFlagsFittingPolicyScroll = 512,
+        ImGuiTabBarFlagsFittingPolicyMask = 896,
+        ImGuiTabBarFlagsFittingPolicyDefault = 128,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTabBarFlagsPrivate : int
+    {
+        ImGuiTabBarFlagsDockNode = 1048576,
+        ImGuiTabBarFlagsIsFocused = 2097152,
+        ImGuiTabBarFlagsSaveSettings = 4194304,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 56)]
     public unsafe partial struct ImGuiTabItem
@@ -10004,6 +11850,35 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiTabItem value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTabItemFlags : int
+    {
+        ImGuiTabItemFlagsNone = 0,
+        ImGuiTabItemFlagsUnsavedDocument = 1,
+        ImGuiTabItemFlagsSetSelected = 2,
+        ImGuiTabItemFlagsNoCloseWithMiddleMouseButton = 4,
+        ImGuiTabItemFlagsNoPushId = 8,
+        ImGuiTabItemFlagsNoTooltip = 16,
+        ImGuiTabItemFlagsNoReorder = 32,
+        ImGuiTabItemFlagsLeading = 64,
+        ImGuiTabItemFlagsTrailing = 128,
+        ImGuiTabItemFlagsNoAssumedClosure = 256,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTabItemFlagsPrivate : int
+    {
+        ImGuiTabItemFlagsSectionMask = 192,
+        ImGuiTabItemFlagsNoCloseButton = 1048576,
+        ImGuiTabItemFlagsButton = 2097152,
+        ImGuiTabItemFlagsInvisible = 4194304,
+        ImGuiTabItemFlagsUnsorted = 8388608,
     }
 }
 
@@ -10305,6 +12180,17 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiTableBgTarget : int
+    {
+        ImGuiTableBgTargetNone = 0,
+        ImGuiTableBgTargetRowBg0 = 1,
+        ImGuiTableBgTargetRowBg1 = 2,
+        ImGuiTableBgTargetCellBg = 3,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 4 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 8)]
     public unsafe partial struct ImGuiTableCellData
@@ -10509,6 +12395,157 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiTableColumnFlags : int
+    {
+        ImGuiTableColumnFlagsNone = 0,
+        ImGuiTableColumnFlagsDisabled = 1,
+        ImGuiTableColumnFlagsDefaultHide = 2,
+        ImGuiTableColumnFlagsDefaultSort = 4,
+        ImGuiTableColumnFlagsWidthStretch = 8,
+        ImGuiTableColumnFlagsWidthFixed = 16,
+        ImGuiTableColumnFlagsNoResize = 32,
+        ImGuiTableColumnFlagsNoReorder = 64,
+        ImGuiTableColumnFlagsNoHide = 128,
+        ImGuiTableColumnFlagsNoClip = 256,
+        ImGuiTableColumnFlagsNoSort = 512,
+        ImGuiTableColumnFlagsNoSortAscending = 1024,
+        ImGuiTableColumnFlagsNoSortDescending = 2048,
+        ImGuiTableColumnFlagsNoHeaderLabel = 4096,
+        ImGuiTableColumnFlagsNoHeaderWidth = 8192,
+        ImGuiTableColumnFlagsPreferSortAscending = 16384,
+        ImGuiTableColumnFlagsPreferSortDescending = 32768,
+        ImGuiTableColumnFlagsIndentEnable = 65536,
+        ImGuiTableColumnFlagsIndentDisable = 131072,
+        ImGuiTableColumnFlagsAngledHeader = 262144,
+        ImGuiTableColumnFlagsIsEnabled = 16777216,
+        ImGuiTableColumnFlagsIsVisible = 33554432,
+        ImGuiTableColumnFlagsIsSorted = 67108864,
+        ImGuiTableColumnFlagsIsHovered = 134217728,
+        ImGuiTableColumnFlagsWidthMask = 24,
+        ImGuiTableColumnFlagsIndentMask = 196608,
+        ImGuiTableColumnFlagsStatusMask = 251658240,
+        ImGuiTableColumnFlagsNoDirectResize = 1073741824,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 4 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 16)]
+    public unsafe partial struct ImGuiTableColumnSettings
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        private fixed byte m_bitStorage[16];
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public float WidthOrWeight;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public uint UserId;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public short Index;
+        [global::System.Runtime.InteropServices.FieldOffset(10)]
+        public short DisplayOrder;
+        [global::System.Runtime.InteropServices.FieldOffset(12)]
+        public short SortOrder;
+        public byte SortDirection
+        {
+            get
+            {
+                ulong bits = 0;
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 2; index++)
+                    {
+                        long position = 112L + index;
+                        bits |= (ulong)((storage[position >> 3] >> (int)(position & 7)) & 1) << index;
+                    }
+                }
+
+                return unchecked((byte)bits);
+            }
+
+            set
+            {
+                ulong bits = unchecked((ulong)value);
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 2; index++)
+                    {
+                        long position = 112L + index;
+                        int shift = (int)(position & 7);
+                        storage[position >> 3] = (byte)((storage[position >> 3] & ~(1 << shift)) | (int)((bits >> index) & 1) << shift);
+                    }
+                }
+            }
+        }
+
+        public sbyte IsEnabled
+        {
+            get
+            {
+                ulong bits = 0;
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 2; index++)
+                    {
+                        long position = 114L + index;
+                        bits |= (ulong)((storage[position >> 3] >> (int)(position & 7)) & 1) << index;
+                    }
+                }
+
+                return unchecked((sbyte)((long)(bits << 62) >> 62));
+            }
+
+            set
+            {
+                ulong bits = unchecked((ulong)value);
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 2; index++)
+                    {
+                        long position = 114L + index;
+                        int shift = (int)(position & 7);
+                        storage[position >> 3] = (byte)((storage[position >> 3] & ~(1 << shift)) | (int)((bits >> index) & 1) << shift);
+                    }
+                }
+            }
+        }
+
+        public byte IsStretch
+        {
+            get
+            {
+                ulong bits = 0;
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 1; index++)
+                    {
+                        long position = 116L + index;
+                        bits |= (ulong)((storage[position >> 3] >> (int)(position & 7)) & 1) << index;
+                    }
+                }
+
+                return unchecked((byte)bits);
+            }
+
+            set
+            {
+                ulong bits = unchecked((ulong)value);
+                fixed (byte* storage = m_bitStorage)
+                {
+                    for (int index = 0; index < 1; index++)
+                    {
+                        long position = 116L + index;
+                        int shift = (int)(position & 7);
+                        storage[position >> 3] = (byte)((storage[position >> 3] & ~(1 << shift)) | (int)((bits >> index) & 1) << shift);
+                    }
+                }
+            }
+        }
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 4 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 12)]
     public unsafe partial struct ImGuiTableColumnSortSpecs
@@ -10528,6 +12565,58 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiTableColumnSortSpecs value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Opaque native marker: storage size and by-value use are intentionally unavailable.
+    public unsafe partial struct ImGuiTableColumnsSettings
+    {
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTableFlags : int
+    {
+        ImGuiTableFlagsNone = 0,
+        ImGuiTableFlagsResizable = 1,
+        ImGuiTableFlagsReorderable = 2,
+        ImGuiTableFlagsHideable = 4,
+        ImGuiTableFlagsSortable = 8,
+        ImGuiTableFlagsNoSavedSettings = 16,
+        ImGuiTableFlagsContextMenuInBody = 32,
+        ImGuiTableFlagsRowBg = 64,
+        ImGuiTableFlagsBordersInnerH = 128,
+        ImGuiTableFlagsBordersOuterH = 256,
+        ImGuiTableFlagsBordersInnerV = 512,
+        ImGuiTableFlagsBordersOuterV = 1024,
+        ImGuiTableFlagsBordersH = 384,
+        ImGuiTableFlagsBordersV = 1536,
+        ImGuiTableFlagsBordersInner = 640,
+        ImGuiTableFlagsBordersOuter = 1280,
+        ImGuiTableFlagsBorders = 1920,
+        ImGuiTableFlagsNoBordersInBody = 2048,
+        ImGuiTableFlagsNoBordersInBodyUntilResize = 4096,
+        ImGuiTableFlagsSizingFixedFit = 8192,
+        ImGuiTableFlagsSizingFixedSame = 16384,
+        ImGuiTableFlagsSizingStretchProp = 24576,
+        ImGuiTableFlagsSizingStretchSame = 32768,
+        ImGuiTableFlagsNoHostExtendX = 65536,
+        ImGuiTableFlagsNoHostExtendY = 131072,
+        ImGuiTableFlagsNoKeepColumnsVisible = 262144,
+        ImGuiTableFlagsPreciseWidths = 524288,
+        ImGuiTableFlagsNoClip = 1048576,
+        ImGuiTableFlagsPadOuterX = 2097152,
+        ImGuiTableFlagsNoPadOuterX = 4194304,
+        ImGuiTableFlagsNoPadInnerX = 8388608,
+        ImGuiTableFlagsScrollX = 16777216,
+        ImGuiTableFlagsScrollY = 33554432,
+        ImGuiTableFlagsSortMulti = 67108864,
+        ImGuiTableFlagsSortTristate = 134217728,
+        ImGuiTableFlagsHighlightHoveredColumn = 268435456,
+        ImGuiTableFlagsSizingMask = 57344,
     }
 }
 
@@ -10580,6 +12669,43 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiTableInstanceData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTableRowFlags : int
+    {
+        ImGuiTableRowFlagsNone = 0,
+        ImGuiTableRowFlagsHeaders = 1,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 4 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 20)]
+    public unsafe partial struct ImGuiTableSettings
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public uint Id;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public int SaveFlags;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public float RefScale;
+        [global::System.Runtime.InteropServices.FieldOffset(12)]
+        public short ColumnsCount;
+        [global::System.Runtime.InteropServices.FieldOffset(14)]
+        public short ColumnsCountMax;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public byte WantApply;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_efa3ebe90d9492d4
+    {
+        public byte prefix;
+        public ImGuiTableSettings value;
     }
 }
 
@@ -10672,6 +12798,37 @@ namespace Inno.Native.ImGuizmo
 namespace Inno.Native.ImGuizmo
 {
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 280)]
+    public unsafe partial struct ImGuiTextFilter
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public NativeArray_a4f71ca2b114fa9f InputBuf;
+        [global::System.Runtime.InteropServices.FieldOffset(256)]
+        public ImVectorImGuiTextRange Filters;
+        [global::System.Runtime.InteropServices.FieldOffset(272)]
+        public int CountGrep;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_4d1463422334dd93
+    {
+        public byte prefix;
+        public ImGuiTextFilter value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTextFlags : int
+    {
+        ImGuiTextFlagsNone = 0,
+        ImGuiTextFlagsNoWidthForLargeClippedText = 1,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 24)]
     public unsafe partial struct ImGuiTextIndex
     {
@@ -10686,6 +12843,76 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiTextIndex value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImGuiTextRange
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public sbyte* B;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public sbyte* E;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_b2cab8916364f6d3
+    {
+        public byte prefix;
+        public ImGuiTextRange value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTooltipFlags : int
+    {
+        ImGuiTooltipFlagsNone = 0,
+        ImGuiTooltipFlagsOverridePrevious = 2,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTreeNodeFlags : int
+    {
+        ImGuiTreeNodeFlagsNone = 0,
+        ImGuiTreeNodeFlagsSelected = 1,
+        ImGuiTreeNodeFlagsFramed = 2,
+        ImGuiTreeNodeFlagsAllowOverlap = 4,
+        ImGuiTreeNodeFlagsNoTreePushOnOpen = 8,
+        ImGuiTreeNodeFlagsNoAutoOpenOnLog = 16,
+        ImGuiTreeNodeFlagsDefaultOpen = 32,
+        ImGuiTreeNodeFlagsOpenOnDoubleClick = 64,
+        ImGuiTreeNodeFlagsOpenOnArrow = 128,
+        ImGuiTreeNodeFlagsLeaf = 256,
+        ImGuiTreeNodeFlagsBullet = 512,
+        ImGuiTreeNodeFlagsFramePadding = 1024,
+        ImGuiTreeNodeFlagsSpanAvailWidth = 2048,
+        ImGuiTreeNodeFlagsSpanFullWidth = 4096,
+        ImGuiTreeNodeFlagsSpanLabelWidth = 8192,
+        ImGuiTreeNodeFlagsSpanAllColumns = 16384,
+        ImGuiTreeNodeFlagsLabelSpanAllColumns = 32768,
+        ImGuiTreeNodeFlagsNavLeftJumpsToParent = 131072,
+        ImGuiTreeNodeFlagsCollapsingHeader = 26,
+        ImGuiTreeNodeFlagsDrawLinesNone = 262144,
+        ImGuiTreeNodeFlagsDrawLinesFull = 524288,
+        ImGuiTreeNodeFlagsDrawLinesToNodes = 1048576,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTreeNodeFlagsPrivate : int
+    {
+        ImGuiTreeNodeFlagsNoNavFocus = 134217728,
+        ImGuiTreeNodeFlagsClipLabelForTrailingButton = 268435456,
+        ImGuiTreeNodeFlagsUpsideDownArrow = 536870912,
+        ImGuiTreeNodeFlagsOpenOnMask = 192,
+        ImGuiTreeNodeFlagsDrawLinesMask = 1835008,
     }
 }
 
@@ -10716,6 +12943,16 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiTreeNodeStackData value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiTypingSelectFlags : int
+    {
+        ImGuiTypingSelectFlagsNone = 0,
+        ImGuiTypingSelectFlagsAllowBackspace = 1,
+        ImGuiTypingSelectFlagsAllowSingleCharMode = 2,
     }
 }
 
@@ -10826,6 +13063,28 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiViewport value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiViewportFlags : int
+    {
+        ImGuiViewportFlagsNone = 0,
+        ImGuiViewportFlagsIsPlatformWindow = 1,
+        ImGuiViewportFlagsIsPlatformMonitor = 2,
+        ImGuiViewportFlagsOwnedByApp = 4,
+        ImGuiViewportFlagsNoDecoration = 8,
+        ImGuiViewportFlagsNoTaskBarIcon = 16,
+        ImGuiViewportFlagsNoFocusOnAppearing = 32,
+        ImGuiViewportFlagsNoFocusOnClick = 64,
+        ImGuiViewportFlagsNoInputs = 128,
+        ImGuiViewportFlagsNoRendererClear = 256,
+        ImGuiViewportFlagsNoAutoMerge = 512,
+        ImGuiViewportFlagsTopMost = 1024,
+        ImGuiViewportFlagsCanHostOtherWindows = 2048,
+        ImGuiViewportFlagsIsMinimized = 4096,
+        ImGuiViewportFlagsIsFocused = 8192,
     }
 }
 
@@ -11423,6 +13682,15 @@ namespace Inno.Native.ImGuizmo
 
 namespace Inno.Native.ImGuizmo
 {
+    public enum ImGuiWindowBgClickFlags : int
+    {
+        ImGuiWindowBgClickFlagsNone = 0,
+        ImGuiWindowBgClickFlagsMove = 1,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
     // Native allocation alignment: 4 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 32)]
     public unsafe partial struct ImGuiWindowClass
@@ -11470,6 +13738,111 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImGuiWindowDockStyle value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiWindowDockStyleCol : int
+    {
+        ImGuiWindowDockStyleColText = 0,
+        ImGuiWindowDockStyleColTabHovered = 1,
+        ImGuiWindowDockStyleColTabFocused = 2,
+        ImGuiWindowDockStyleColTabSelected = 3,
+        ImGuiWindowDockStyleColTabSelectedOverline = 4,
+        ImGuiWindowDockStyleColTabDimmed = 5,
+        ImGuiWindowDockStyleColTabDimmedSelected = 6,
+        ImGuiWindowDockStyleColTabDimmedSelectedOverline = 7,
+        ImGuiWindowDockStyleColUnsavedMarker = 8,
+        ImGuiWindowDockStyleColCount = 9,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiWindowFlags : int
+    {
+        ImGuiWindowFlagsNone = 0,
+        ImGuiWindowFlagsNoTitleBar = 1,
+        ImGuiWindowFlagsNoResize = 2,
+        ImGuiWindowFlagsNoMove = 4,
+        ImGuiWindowFlagsNoScrollbar = 8,
+        ImGuiWindowFlagsNoScrollWithMouse = 16,
+        ImGuiWindowFlagsNoCollapse = 32,
+        ImGuiWindowFlagsAlwaysAutoResize = 64,
+        ImGuiWindowFlagsNoBackground = 128,
+        ImGuiWindowFlagsNoSavedSettings = 256,
+        ImGuiWindowFlagsNoMouseInputs = 512,
+        ImGuiWindowFlagsMenuBar = 1024,
+        ImGuiWindowFlagsHorizontalScrollbar = 2048,
+        ImGuiWindowFlagsNoFocusOnAppearing = 4096,
+        ImGuiWindowFlagsNoBringToFrontOnFocus = 8192,
+        ImGuiWindowFlagsAlwaysVerticalScrollbar = 16384,
+        ImGuiWindowFlagsAlwaysHorizontalScrollbar = 32768,
+        ImGuiWindowFlagsNoNavInputs = 65536,
+        ImGuiWindowFlagsNoNavFocus = 131072,
+        ImGuiWindowFlagsUnsavedDocument = 262144,
+        ImGuiWindowFlagsNoDocking = 524288,
+        ImGuiWindowFlagsNoNav = 196608,
+        ImGuiWindowFlagsNoDecoration = 43,
+        ImGuiWindowFlagsNoInputs = 197120,
+        ImGuiWindowFlagsDockNodeHost = 8388608,
+        ImGuiWindowFlagsChildWindow = 16777216,
+        ImGuiWindowFlagsTooltip = 33554432,
+        ImGuiWindowFlagsPopup = 67108864,
+        ImGuiWindowFlagsModal = 134217728,
+        ImGuiWindowFlagsChildMenu = 268435456,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImGuiWindowRefreshFlags : int
+    {
+        ImGuiWindowRefreshFlagsNone = 0,
+        ImGuiWindowRefreshFlagsTryToAvoidRefresh = 1,
+        ImGuiWindowRefreshFlagsRefreshOnHover = 2,
+        ImGuiWindowRefreshFlagsRefreshOnFocus = 4,
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 4 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 4, Size = 36)]
+    public unsafe partial struct ImGuiWindowSettings
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public uint Id;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public ImVec2ih Pos;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public ImVec2ih Size;
+        [global::System.Runtime.InteropServices.FieldOffset(12)]
+        public ImVec2ih ViewportPos;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public uint ViewportId;
+        [global::System.Runtime.InteropServices.FieldOffset(20)]
+        public uint DockId;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public uint ClassId;
+        [global::System.Runtime.InteropServices.FieldOffset(28)]
+        public short DockOrder;
+        [global::System.Runtime.InteropServices.FieldOffset(30)]
+        public byte Collapsed;
+        [global::System.Runtime.InteropServices.FieldOffset(31)]
+        public byte IsChild;
+        [global::System.Runtime.InteropServices.FieldOffset(32)]
+        public byte WantApply;
+        [global::System.Runtime.InteropServices.FieldOffset(33)]
+        public byte WantDelete;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_6318f49b3fe5ae53
+    {
+        public byte prefix;
+        public ImGuiWindowSettings value;
     }
 }
 
@@ -12067,6 +14440,28 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImVectorChar value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImVectorConstCharPtr
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public int Size;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public int Capacity;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public sbyte** Data;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_0bc33ac1924026d4
+    {
+        public byte prefix;
+        public ImVectorConstCharPtr value;
     }
 }
 
@@ -13108,6 +15503,28 @@ namespace Inno.Native.ImGuizmo
 {
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImVectorImGuiTextRange
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public int Size;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public int Capacity;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public ImGuiTextRange* Data;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_872894ed6f5b405c
+    {
+        public byte prefix;
+        public ImVectorImGuiTextRange value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
     public unsafe partial struct ImVectorImGuiTreeNodeStackData
     {
         [global::System.Runtime.InteropServices.FieldOffset(0)]
@@ -13306,6 +15723,28 @@ namespace Inno.Native.ImGuizmo
 {
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
     [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
+    public unsafe partial struct ImVectorImU32
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public int Size;
+        [global::System.Runtime.InteropServices.FieldOffset(4)]
+        public int Capacity;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public uint* Data;
+    }
+
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Sequential)]
+    internal unsafe struct __BgcsAlignment_3505d9445f19173e
+    {
+        public byte prefix;
+        public ImVectorImU32 value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 8, Size = 16)]
     public unsafe partial struct ImVectorImU8
     {
         [global::System.Runtime.InteropServices.FieldOffset(0)]
@@ -13453,6 +15892,16 @@ namespace Inno.Native.ImGuizmo
     {
         public byte prefix;
         public ImVectorUnsignedChar value;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    public enum ImWcharClass : int
+    {
+        ImWcharClassBlank = 0,
+        ImWcharClassPunct = 1,
+        ImWcharClassOther = 2,
     }
 }
 
@@ -13735,6 +16184,15 @@ namespace Inno.Native.ImGuizmo
     public partial struct NativeArray_a4748c2e54d124a7
     {
         private byte _element0;
+    }
+}
+
+namespace Inno.Native.ImGuizmo
+{
+    [global::System.Runtime.CompilerServices.InlineArray(256)]
+    public partial struct NativeArray_a4f71ca2b114fa9f
+    {
+        private sbyte _element0;
     }
 }
 

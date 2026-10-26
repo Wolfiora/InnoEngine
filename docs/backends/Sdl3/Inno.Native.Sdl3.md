@@ -8,11 +8,11 @@
 
 ## 静态目标
 
-同一项目通过 `Bindings/bindgen.browser-wasm.json` 生成 wasm32 的静态符号绑定，继承 `common.json` 的声明；目标编译使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。Host profile 使用动态库命名与显式初始化。宿主生成输出位于 `Generated/Bindings.cs`，目标输出位于 `artifacts/bindings/sdl3/browser-wasm/<generationFingerprint>/Generated/Bindings.cs`。
+组件仅维护公共 `Bindings/bindgen.json`。Browser Build integration 提供明确 wasm32 ABI、托管 runtime 和静态库名称；Windows、macOS integration 分别提供自己的 Profile，组件没有平台目标表。静态产品使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。HostSource 输出属于组件的 `Generated/Bindings.cs` 和 `Native/Generated`；TargetArtifacts 的 managed/native 输出共同属于 `artifacts/bindings/sdl3/<target>/<generationFingerprint>`。是否可运行以[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)为准。
 
 ## 声明与实际导出
 
-共同定义排除 SDL 头文件中声明的编译器内建函数 `__debugbreak`。它属于 MSVC 的断言实现，不是 SDL DLL 的导出。该规则属于 SDL 的绑定定义，BGCS 不包含 SDL 专用识别逻辑。动态函数表初始化要求全部已选择符号存在；Native 测试通过实际初始化和调用检查部署闭包。
+共同定义不将 `SDL_assert.h` 作为公开绑定根；引擎不消费 SDL 的 assertion API，也不绑定该头文件中声明的编译器内建函数。这个组件语义边界适用于全部目标，不保存平台内建符号名单。动态函数表初始化要求全部已选择符号存在；Native 测试通过实际初始化和调用检查部署闭包。
 
 ## 源码归属
 
@@ -20,13 +20,13 @@
 
 ## 当前源码公开 API 清单
 
-以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
+当前签名由正式源码语义清单核对；生命周期与错误约束见前文及对应 XML。
 
 <!-- api: T:Inno.Native.Sdl3.SDL 75f9ea5744d371e26cd438217c5f4020f8be05b1e992b1a0a022671c99672036 -->
 
-| 声明 | 语义与限制 |
+| 声明 | 行为与约束 |
 | --- | --- |
-| <a id="api-e67f3d5045477c09"></a>[`public static class Inno.Native.Sdl3.SDL`](../../../backends/Sdl3/native/Inno.Native.Sdl3/SDL.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
+| <a id="api-e67f3d5045477c09"></a>[`public static class Inno.Native.Sdl3.SDL`](../../../backends/Sdl3/native/Inno.Native.Sdl3/SDL.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API.<br>Owns one explicitly shared context. Replacement closes the previous context; existing resource leases retain its native cleanup capability. |
 
 ## 项目依赖
 

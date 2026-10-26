@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -6,10 +5,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Xunit;
 using Inno.Build.Managed;
 using Inno.Build.Managed.DotNet;
 using Inno.Build.Toolchains;
-using Xunit;
+using Inno.Build.Windows.Host;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Tests;
 
@@ -43,7 +44,9 @@ public sealed class FileProductPublicationTests : IDisposable
         File.Copy(sourceAssembly, nativeInput);
 
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-        CoreClrDeploymentCompiler compiler = new(host);
+        IToolchainWorkspaceProvider workspaces = OperatingSystem.IsWindows()
+            ? new WindowsToolchainWorkspaceProvider() : new PhysicalToolchainWorkspaceProvider();
+        CoreClrDeploymentCompiler compiler = new(host, [RuntimeInformation.RuntimeIdentifier], workspaces);
         using CancellationTokenSource timeout = new(TimeSpan.FromMinutes(3));
         DotNetSdkDescriptor selectedSdk = await DotNetSdkResolver.ResolveAsync(host, project, timeout.Token);
         XDocument definition = XDocument.Load(project);

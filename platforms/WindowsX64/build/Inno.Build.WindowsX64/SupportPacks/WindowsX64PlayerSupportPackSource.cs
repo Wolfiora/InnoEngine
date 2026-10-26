@@ -1,5 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Composition;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
 
@@ -31,24 +32,24 @@ public sealed class WindowsX64PlayerSupportPackSource : IPlayerSupportPackSource
     /// The borrowed validator selected by the distribution.
     /// </param>
     public WindowsX64PlayerSupportPackSource(
-        ProductNativeBuildPlan nativePlan,
+        NativeProductContribution nativePlan,
         BuildHostDescriptor host,
         string dotnetHost,
         INativeBindingGenerator bindingGenerator,
         IPlayerSupportPackValidator supportPackValidator
     ) {
         m_preparation = new FilePlayerSupportPackPreparation(
-            BuildTargetId.windowsX64, "win-x64", BuildTargetId.windowsX64.value, ".dll",
+            Inno.Build.WindowsX64.WindowsX64BuildModule.target.id, "win-x64", Inno.Build.WindowsX64.WindowsX64BuildModule.target.id.value, ".dll",
             supportPackValidator,
             "platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj",
             "platforms/WindowsX64/build/Inno.Build.WindowsX64/Templates/WindowsX64Player.project.xml",
-            nativePlan, new WindowsX64NativeToolchainProvider(dotnetHost), host, bindingGenerator,
+            nativePlan.plan, nativePlan.executor, new WindowsX64NativeToolchainProvider(dotnetHost), host, bindingGenerator,
             ["platforms/WindowsX64/build/Inno.Build.WindowsX64/SupportPacks/WindowsX64PlayerSupportPackSource.cs",
                 "platforms/WindowsX64/build/Inno.Build.WindowsX64/SupportPacks/WindowsX64SupportPackValidator.cs"]);
     }
 
     /// <inheritdoc />
-    public BuildTargetId target => BuildTargetId.windowsX64;
+    public BuildTargetId target => Inno.Build.WindowsX64.WindowsX64BuildModule.target.id;
 
     /// <inheritdoc />
     public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(

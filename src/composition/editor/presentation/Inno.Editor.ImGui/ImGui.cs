@@ -825,6 +825,35 @@ public static unsafe class ImGui
     public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsItemClicked((int)(button));
 
     /// <summary>
+    /// Gets whether a mouse button is held in the current Editor UI frame, including input consumed by UI controls.
+    /// </summary>
+    /// <param name="button">
+    /// The UI mouse button to query.
+    /// </param>
+    /// <returns>
+    /// True while the button is held; callers must also check their item's active or hovered state before editing.
+    /// </returns>
+    public static bool IsMouseButtonDown(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsMouseDown((int)button);
+
+    /// <summary>
+    /// Gets accumulated pointer displacement from the current UI drag's starting position for timeline and canvas controls.
+    /// </summary>
+    /// <param name="button">
+    /// The button that owns the drag.
+    /// </param>
+    /// <param name="threshold">
+    /// Movement required to start dragging, or a negative value to use the Editor's configured threshold.
+    /// </param>
+    /// <returns>
+    /// Displacement in UI coordinates, or zero before the drag threshold is crossed or when no drag is available.
+    /// The value is cumulative; it must be applied to a captured starting value, not added again each frame.
+    /// </returns>
+    public static Vector2 GetMouseDragDelta(
+        ImGuiMouseButton button = ImGuiMouseButton.Left,
+        float threshold = -1f
+    ) => RawImGui.GetMouseDragDelta((int)button, threshold);
+
+    /// <summary>
     /// Converts a floating-point RGBA color to Dear ImGui packed color order.
     /// </summary>
     /// <returns>
@@ -856,7 +885,7 @@ public static unsafe class ImGui
         uint color,
         float thickness = 1f
     )
-        => RawImGui.Raw.AddLine(RawImGui.Raw.GetWindowDrawList(), ImGui.ToNative(start), ImGui.ToNative(end), color, thickness);
+        => ImGui.DrawNativeLine(RawImGui.Raw.GetWindowDrawList(), start, end, color, thickness);
 
     /// <summary>
     /// Adds a rectangle outline to the current window draw list.
@@ -883,7 +912,7 @@ public static unsafe class ImGui
         float rounding = 0f,
         float thickness = 1f
     )
-        => RawImGui.Raw.AddRect(RawImGui.Raw.GetWindowDrawList(), ImGui.ToNative(minimum), ImGui.ToNative(maximum), color, rounding, 0, thickness);
+        => ImGui.DrawNativeRectangle(RawImGui.Raw.GetWindowDrawList(), minimum, maximum, color, rounding, 0, thickness);
 
     /// <summary>
     /// Adds a filled rectangle to the current window draw list.
@@ -906,7 +935,7 @@ public static unsafe class ImGui
         uint color,
         float rounding = 0f
     )
-        => RawImGui.Raw.AddRectFilled(RawImGui.Raw.GetWindowDrawList(), ImGui.ToNative(minimum), ImGui.ToNative(maximum), color, rounding, 0);
+        => ImGui.DrawNativeFilledRectangle(RawImGui.Raw.GetWindowDrawList(), minimum, maximum, color, rounding, 0);
 
     /// <summary>
     /// Adds text to the current window draw list.
@@ -934,6 +963,97 @@ public static unsafe class ImGui
 
     internal static Vector4 FromNative(ImVec4C value) => new(value.X, value.Y, value.Z, value.W);
 
+    internal static void DrawNativeLine(
+        ImDrawList* drawList,
+        Vector2 start,
+        Vector2 end,
+        uint color,
+        float thickness
+    ) {
+        ImVec2C nativeStart = ToNative(start);
+        ImVec2C nativeEnd = ToNative(end);
+        RawImGui.Raw.AddLine(drawList, &nativeStart, &nativeEnd, color, thickness);
+    }
+
+    internal static void DrawNativeRectangle(
+        ImDrawList* drawList,
+        Vector2 minimum,
+        Vector2 maximum,
+        uint color,
+        float rounding,
+        int flags,
+        float thickness
+    ) {
+        ImVec2C nativeMinimum = ToNative(minimum);
+        ImVec2C nativeMaximum = ToNative(maximum);
+        RawImGui.Raw.AddRect(drawList, &nativeMinimum, &nativeMaximum, color, rounding, flags, thickness);
+    }
+
+    internal static void DrawNativeFilledRectangle(
+        ImDrawList* drawList,
+        Vector2 minimum,
+        Vector2 maximum,
+        uint color,
+        float rounding,
+        int flags
+    ) {
+        ImVec2C nativeMinimum = ToNative(minimum);
+        ImVec2C nativeMaximum = ToNative(maximum);
+        RawImGui.Raw.AddRectFilled(drawList, &nativeMinimum, &nativeMaximum, color, rounding, flags);
+    }
+
+    internal static void ConstrainNativeWindowSize(
+        Vector2 minimum,
+        Vector2 maximum,
+        delegate* unmanaged[Cdecl]<ImGuiSizeCallbackData*, void> callback,
+        void* userData
+    ) {
+        ImVec2C nativeMinimum = ToNative(minimum);
+        ImVec2C nativeMaximum = ToNative(maximum);
+        RawImGui.Raw.SetNextWindowSizeConstraints(&nativeMinimum, &nativeMaximum, callback, userData);
+    }
+
+    internal static void PushNativeClipRectangle(
+        ImDrawList* drawList,
+        Vector2 minimum,
+        Vector2 maximum,
+        byte intersect
+    ) {
+        ImVec2C nativeMinimum = ToNative(minimum);
+        ImVec2C nativeMaximum = ToNative(maximum);
+        RawImGui.Raw.PushClipRect(drawList, &nativeMinimum, &nativeMaximum, intersect);
+    }
+
+    internal static void DrawNativePathLine(
+        ImDrawList* drawList,
+        Vector2 position
+    ) {
+        ImVec2C nativePosition = ToNative(position);
+        RawImGui.Raw.PathLineTo(drawList, &nativePosition);
+    }
+
+    internal static void DrawNativePathQuadratic(
+        ImDrawList* drawList,
+        Vector2 control,
+        Vector2 end,
+        int segments
+    ) {
+        ImVec2C nativeControl = ToNative(control);
+        ImVec2C nativeEnd = ToNative(end);
+        RawImGui.Raw.PathBezierQuadraticCurveTo(drawList, &nativeControl, &nativeEnd, segments);
+    }
+
+    internal static void DrawNativeArrow(
+        ImDrawList* drawList,
+        Vector2 position,
+        uint color,
+        ImGuiDir direction,
+        float scale
+    ) {
+        ImVec2C nativePosition = ToNative(position);
+        RawImGui.Raw.RenderArrow(drawList, &nativePosition, color, direction, scale);
+    }
+
     internal static void DrawNativeText(
         ImDrawList* drawList,
         Vector2 position,
@@ -941,7 +1061,8 @@ public static unsafe class ImGui
         string text
     ) {
         using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(text, allowsNull: false);
-        RawImGui.Raw.AddText(drawList, ToNative(position), color, (sbyte*)nativeText.pointer, null);
+        ImVec2C nativePosition = ToNative(position);
+        RawImGui.Raw.AddText(drawList, &nativePosition, color, (sbyte*)nativeText.pointer, null);
     }
 
     internal static void DrawNativeText(
@@ -954,7 +1075,8 @@ public static unsafe class ImGui
         float wrapWidth = 0f
     ) {
         using NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(text, allowsNull: false);
-        RawImGui.Raw.AddText(drawList, font, fontSize, ToNative(position), color, (sbyte*)nativeText.pointer, null, wrapWidth, null);
+        ImVec2C nativePosition = ToNative(position);
+        RawImGui.Raw.AddText(drawList, font, fontSize, &nativePosition, color, (sbyte*)nativeText.pointer, null, wrapWidth, null);
     }
 
     internal static bool BeginNativeWindow(

@@ -78,7 +78,7 @@ internal static unsafe class EditorModalRenderer
             Vector2 minimumSize = Vector2.Min(
                 presentation.minimumSize * EditorWidget.style.zoom,
                 maximumSize);
-            NativeImGui.Raw.SetNextWindowSizeConstraints(ImGui.ToNative(minimumSize), ImGui.ToNative(maximumSize), null, null);
+            ImGui.ConstrainNativeWindowSize(minimumSize, maximumSize, null, null);
         }
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.Alpha), alpha);
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoCollapse;

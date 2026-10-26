@@ -157,14 +157,14 @@ internal sealed unsafe partial class BgfxCommandEncoder
         switch (buffer.kind)
         {
             case BgfxBufferKind.Vertex:
-                bgfx.Raw.encoder_set_instance_data_from_vertex_buffer(
+                BgfxNativeCalls.EncoderSetInstanceDataFromVertexBuffer(
                     m_encoder,
                     new bgfx.VertexBufferHandle { idx = buffer.nativeIndex },
                     checked((uint)firstInstance),
                     checked((uint)instanceCount));
                 break;
             case BgfxBufferKind.DynamicVertex:
-                bgfx.Raw.encoder_set_instance_data_from_dynamic_vertex_buffer(
+                BgfxNativeCalls.EncoderSetInstanceDataFromDynamicVertexBuffer(
                     m_encoder,
                     new bgfx.DynamicVertexBufferHandle { idx = buffer.nativeIndex },
                     checked((uint)firstInstance),
@@ -201,7 +201,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             bgfx.VertexBufferHandle handle = new() { idx = buffer.nativeIndex };
             if (buffer.vertexLayout is null)
             {
-                bgfx.Raw.encoder_set_vertex_buffer_with_layout(
+                BgfxNativeCalls.EncoderSetVertexBufferWithLayout(
                     m_encoder,
                     0,
                     handle,
@@ -211,7 +211,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             }
             else
             {
-                bgfx.Raw.encoder_set_vertex_buffer(m_encoder, 0, handle, first, count);
+                BgfxNativeCalls.EncoderSetVertexBuffer(m_encoder, 0, handle, first, count);
             }
 
             return;
@@ -222,7 +222,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             bgfx.DynamicVertexBufferHandle handle = new() { idx = buffer.nativeIndex };
             if (buffer.vertexLayout is null)
             {
-                bgfx.Raw.encoder_set_dynamic_vertex_buffer_with_layout(
+                BgfxNativeCalls.EncoderSetDynamicVertexBufferWithLayout(
                     m_encoder,
                     0,
                     handle,
@@ -232,7 +232,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             }
             else
             {
-                bgfx.Raw.encoder_set_dynamic_vertex_buffer(m_encoder, 0, handle, first, count);
+                BgfxNativeCalls.EncoderSetDynamicVertexBuffer(m_encoder, 0, handle, first, count);
             }
 
             return;
@@ -251,7 +251,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         uint count = checked((uint)indexCount);
         if (buffer.kind == BgfxBufferKind.Index)
         {
-            bgfx.Raw.encoder_set_index_buffer(
+            BgfxNativeCalls.EncoderSetIndexBuffer(
                 m_encoder,
                 new bgfx.IndexBufferHandle { idx = buffer.nativeIndex },
                 first,
@@ -261,7 +261,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
 
         if (buffer.kind == BgfxBufferKind.DynamicIndex)
         {
-            bgfx.Raw.encoder_set_dynamic_index_buffer(
+            BgfxNativeCalls.EncoderSetDynamicIndexBuffer(
                 m_encoder,
                 new bgfx.DynamicIndexBufferHandle { idx = buffer.nativeIndex },
                 first,

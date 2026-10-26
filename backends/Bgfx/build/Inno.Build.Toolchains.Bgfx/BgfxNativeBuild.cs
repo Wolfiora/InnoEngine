@@ -19,8 +19,7 @@ public static class BgfxNativeBuild
         new NativeStaticBuildDefinition(
             "backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Native/StaticLibraries.cmake",
             ["extern/bgfx", "extern/bx", "extern/bimg"],
-            ["bgfxRelease.a", "bxRelease.a", "bimgRelease.a", "bimg_decodeRelease.a"],
-            ["browser-wasm"]),
+            ["bgfxRelease", "bxRelease", "bimgRelease", "bimg_decodeRelease"]),
         bindingDefinition: "backends/Bgfx/native/Inno.Native.Bgfx/Bindings/bindings.props");
 
     /// <summary>

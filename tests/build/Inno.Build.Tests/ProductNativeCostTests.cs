@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,12 +6,14 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.Products.Standard;
 using Inno.Build.Toolchains;
 using Inno.Build.WindowsX64;
 using Inno.Integration.WindowsX64.Bgfx;
-using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Tests;
 
@@ -24,15 +25,15 @@ public sealed class ProductNativeCostTests
         if (Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_IMGUI_BUILD") is null)
             return;
         string root = TestRepository.GetRoot(typeof(ProductNativeCostTests).Assembly);
-        ProductNativeBuildStep[] steps = StandardNativeBuildPlans.CreateEditor(WindowsX64BgfxIntegration.nativeProfile).steps
+        ProductNativeBuildStep[] steps = BuildTestProducts.Editor().steps
             .Where(static step => step.id is "cimgui" or "cimguizmo").ToArray();
         var plan = new ProductNativeBuildPlan("presentation-acceptance", steps);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
-        var context = new NativeBuildContext(root, "debug").WithBindingGenerator(new NativeBindingGenerator());
+        var context = new NativeBuildContext(root, "debug").WithBindingGenerator(BuildTestProducts.Distribution().ResolveBindingGenerator("windows-x64"));
         NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(context,
-            new BuildHostDescriptor("Windows", "x64"), "windows-x64", cancellation.Token);
+            BuildTestProducts.WindowsHost(), "windows-x64", cancellation.Token);
         context = context.WithToolchain(sdk);
-        using ProductNativeBuildResult result = await plan.BuildAsync(context, cancellation.Token);
+        using ProductNativeBuildResult result = await new ComponentNativeProductExecutor().BuildAsync(context, plan, cancellation.Token);
         Assert.Equal(2, result.Count);
         Assert.All(result, product => Assert.Contains(product.files, file => Path.GetExtension(file) == ".dll"));
     }
@@ -43,13 +44,13 @@ public sealed class ProductNativeCostTests
         if (Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_NATIVE_COST") is not string evidence)
             return;
         string root = TestRepository.GetRoot(typeof(ProductNativeCostTests).Assembly);
-        ProductNativeBuildPlan plan = StandardNativeBuildPlans.CreateEditor(WindowsX64BgfxIntegration.nativeProfile);
+        ProductNativeBuildPlan plan = BuildTestProducts.Editor();
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));
         async Task<NativeBuildContext> Context()
         {
-            var context = new NativeBuildContext(root, "debug").WithBindingGenerator(new NativeBindingGenerator());
+            var context = new NativeBuildContext(root, "debug").WithBindingGenerator(BuildTestProducts.Distribution().ResolveBindingGenerator("windows-x64"));
             NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(context,
-                new BuildHostDescriptor("Windows", "x64"), "windows-x64", cancellation.Token);
+                BuildTestProducts.WindowsHost(), "windows-x64", cancellation.Token);
             return context.WithToolchain(sdk);
         }
         NativeBuildContext serial = await Context();
@@ -79,7 +80,7 @@ public sealed class ProductNativeCostTests
         Assert.Equal(0, serial.statistics.bindingGenerations);
         NativeBuildContext batch = await Context();
         elapsed.Restart();
-        using ProductNativeBuildResult result = await plan.BuildAsync(batch, cancellation.Token);
+        using ProductNativeBuildResult result = await new ComponentNativeProductExecutor().BuildAsync(batch, plan, cancellation.Token);
         double batchSeconds = elapsed.Elapsed.TotalSeconds;
         Assert.Equal(plan.steps.Count, result.Count);
         Assert.Equal(0, batch.statistics.nativeProcesses);

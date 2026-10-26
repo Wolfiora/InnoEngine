@@ -41,7 +41,6 @@ internal static class NativeBindingOwnershipValidator
                 if (root.Name != "Project" || root.HasAttributes)
                     throw new InvalidDataException("The binding definition must contain declarative Project data.");
                 Dictionary<string, string> properties = new(StringComparer.Ordinal);
-                HashSet<string> targets = new(StringComparer.Ordinal);
                 foreach (XElement group in root.Elements())
                 {
                     if (group.HasAttributes)
@@ -50,25 +49,10 @@ internal static class NativeBindingOwnershipValidator
                     {
                         foreach (XElement property in group.Elements())
                         {
-                            if (property.Name.LocalName is not ("InnoNativeComponentId" or "InnoBindingHostConfig")
+                            if (property.Name.LocalName is not ("InnoNativeComponentId" or "InnoBindingConfig")
                                 || property.HasAttributes || property.HasElements
                                 || !properties.TryAdd(property.Name.LocalName, property.Value))
                                 throw new InvalidDataException("The binding definition has an unknown or repeated property.");
-                        }
-                    }
-                    else if (group.Name == "ItemGroup")
-                    {
-                        foreach (XElement target in group.Elements())
-                        {
-                            if (target.Name != "InnoBindingTarget" || target.Attributes().Count() != 1
-                                || target.Attribute("Include") is not XAttribute identity
-                                || string.IsNullOrWhiteSpace(identity.Value) || !targets.Add(identity.Value))
-                                throw new InvalidDataException("Binding targets require unique explicit identities.");
-                            XElement[] fields = target.Elements().ToArray();
-                            if (fields.Length != 1 || fields[0].Name != "Config"
-                                || fields[0].HasAttributes || fields[0].HasElements)
-                                throw new InvalidDataException("Each binding target must declare one Config input.");
-                            ValidateConfigPath(bindings, fields[0].Value);
                         }
                     }
                     else
@@ -79,8 +63,8 @@ internal static class NativeBindingOwnershipValidator
                     throw new InvalidDataException("A binding definition requires its component identity.");
                 if (!components.TryAdd(componentId, relative))
                     failures.Add($"{relative}: binding component '{componentId}' already belongs to '{components[componentId]}'.");
-                if (!properties.TryGetValue("InnoBindingHostConfig", out string? hostConfig))
-                    throw new InvalidDataException("A binding definition requires its host Config input.");
+                if (!properties.TryGetValue("InnoBindingConfig", out string? hostConfig))
+                    throw new InvalidDataException("A binding definition requires its common Config input.");
                 ValidateConfigPath(bindings, hostConfig);
             }
             catch (Exception failure) when (failure is InvalidDataException or XmlException)

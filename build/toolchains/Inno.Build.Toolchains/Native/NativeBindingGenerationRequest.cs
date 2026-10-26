@@ -43,6 +43,9 @@ public sealed class NativeBindingGenerationRequest
     /// <param name="expectedFingerprints">
     /// Optional expected identities indexed by Native project; mismatches reject the request.
     /// </param>
+    /// <param name="componentOptions">
+    /// Explicit component configurations keyed by native owner project, or null for component defaults.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// A target, owner, output mode or expected identity is invalid or duplicated.
     /// </exception>
@@ -51,7 +54,8 @@ public sealed class NativeBindingGenerationRequest
         string targetId,
         NativeBindingOutputMode outputMode,
         bool checkOnly = false,
-        IReadOnlyDictionary<string, string>? expectedFingerprints = null
+        IReadOnlyDictionary<string, string>? expectedFingerprints = null,
+        IReadOnlyDictionary<string, NativeComponentBuildOptions>? componentOptions = null
     ) {
         ArgumentNullException.ThrowIfNull(components);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
@@ -72,6 +76,8 @@ public sealed class NativeBindingGenerationRequest
             || string.IsNullOrWhiteSpace(pair.Value)))
             throw new ArgumentException("An expected identity must belong to the requested binding closure.", nameof(expectedFingerprints));
         this.expectedFingerprints = new ReadOnlyDictionary<string, string>(expected);
+        this.componentOptions = new ReadOnlyDictionary<string, NativeComponentBuildOptions>(
+            new Dictionary<string, NativeComponentBuildOptions>(componentOptions ?? new Dictionary<string, NativeComponentBuildOptions>(), StringComparer.Ordinal));
     }
 
     /// <summary>
@@ -94,4 +100,9 @@ public sealed class NativeBindingGenerationRequest
     /// Gets the expected identities which must match before any candidate is generated.
     /// </summary>
     public IReadOnlyDictionary<string, string> expectedFingerprints { get; }
+
+    /// <summary>
+    /// Gets explicit component binding and linkage choices.
+    /// </summary>
+    public IReadOnlyDictionary<string, NativeComponentBuildOptions> componentOptions { get; }
 }

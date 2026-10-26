@@ -132,6 +132,7 @@ public sealed class NativeBuildRecipe
         ArgumentNullException.ThrowIfNull(declarations);
         ArgumentNullException.ThrowIfNull(implementationPaths);
         NativeComponentBuildOptions options = context.RequireComponentOptions(owner);
+        context.toolchain?.linkPlan.GetFileExtension(options.libraryKind);
         string projectFile = Path.GetFullPath(owner.toolchainProject, context.engineRoot);
         if (!File.Exists(projectFile))
             throw new FileNotFoundException("A native recipe owner project is unavailable.", projectFile);
@@ -144,22 +145,23 @@ public sealed class NativeBuildRecipe
         {
             "NativeArtifactPublisher.cs", "ProductNativeCacheLookup.cs", "NativeBuildFingerprint.cs", "NativeBuildInput.cs", "NativeWorkspaceIdentity.cs", "NativeBindingInputPaths.cs",
             "NativeBuildInputState.cs", "NativeInputSnapshot.cs", "NativeInputReadCache.cs", "NativeInputVerificationScope.cs", "NativeBuildPhaseStatistics.cs", "NativeBuildProduct.cs",
-            "NativeBuildStatistics.cs", "NativeToolchainSelection.cs", "NativeBuildRecipe.cs", "ProductNativeBuildResult.cs",
+            "NativeBuildStatistics.cs", "NativeToolchainSelection.cs", "NativeBuildRecipe.cs", "ProductNativeBuildResult.cs", "NativeArtifact.cs", "NativeCompilerInputs.cs", "NativeLinkPlan.cs",
             "NativeCMakeExecutor.cs", "NativeCMakeSource.cs", "NativeComponentBuildOptions.cs", "ProductNativeBuildStep.cs", "ProductNativeBuildPlan.cs", "NativeInputMaterializer.cs", "NativeBindingGenerationDescriptor.cs",
             "NativeBindingGenerationResult.cs", "NativeBindingPreparation.cs", "NativeComponentDescriptor.cs", "NativeStaticBuildDefinition.cs",
             "NativeToolchainPreparation.cs", "BuildHostDescriptor.cs",
             "NativeBindingCompilation.cs", "NativeBindingSourceRoot.cs", "NativeBindingSourceFile.cs", "NativeBindingIncludeDirectory.cs", "NativeBindingCMake.cs"
         }.Select(file => Path.Combine(commonRoot, "Native", file)));
-        if (context.toolchain?.host.system == "Windows")
-            paths.Add(Path.Combine(commonRoot, "Platforms", "WindowsToolchainDirectory.cs"));
+        paths.AddRange(new[] { "BuildHostServices.cs", "IToolchainWorkspaceProvider.cs", "PhysicalToolchainWorkspaceProvider.cs" }
+            .Select(file => Path.Combine(commonRoot, "Host", file)));
+        paths.AddRange((context.toolchain?.host.services.inputPaths ?? []).Select(path => Path.GetFullPath(path, context.engineRoot)));
         paths.Add(Path.Combine(commonRoot, "Managed", "DotNetSdkEnvironment.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildArtifactReadLease.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildArtifactWriteLease.cs"));
         paths.Add(Path.Combine(commonRoot, "Cache", "BuildCachePublisher.cs"));
-          paths.Add(Path.Combine(commonRoot, "Cache", "BuildCacheFileInventory.cs"));
+        paths.Add(Path.Combine(commonRoot, "Cache", "BuildCacheFileInventory.cs"));
         string ioRoot = Path.Combine(context.engineRoot, "src", "foundation", "core", "Inno.Core.IO");
         paths.AddRange(new[] { "AtomicDirectory.cs", "AtomicFile.cs", "DirectoryCleanupException.cs", "FileSystemRename.cs", "FileLease.cs", "PathBoundary.cs",
-            "ProcessOwnerStamp.cs", "ProcessOwnerState.cs", "ProcessOwnedDirectory.cs", "ProcessOwnedDirectoryDescriptor.cs" }
+            "ProcessOwnerStamp.cs", "ProcessOwnerState.cs", "ProcessOwnedDirectory.cs", "ProcessOwnedDirectoryDescriptor.cs", "CoordinatedFileLease.cs" }
             .Select(file => Path.Combine(ioRoot, file)));
         return new NativeBuildRecipe(owner, component, targetId,
             paths.Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),

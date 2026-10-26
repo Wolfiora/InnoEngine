@@ -22,8 +22,7 @@ public static class TextToolchain
         new NativeStaticBuildDefinition(
             "backends/Text/build/Inno.Build.Toolchains.Text/Native/StaticLibraries.cmake",
             ["extern/freetype", "extern/harfbuzz", "backends/Text/native/Inno.Native.Text/Native/include", "backends/Text/native/Inno.Native.Text/Native/src", "backends/Text/native/Inno.Native.Text/Native/CMakeLists.txt"],
-            ["libinno-text.a", "libfreetype.a", "libharfbuzz.a"],
-            ["browser-wasm"],
+            ["libinno-text", "libfreetype", "libharfbuzz"],
             nativeSourceDirectory: "backends/Text/native/Inno.Native.Text"),
         bindingDefinition: "backends/Text/native/Inno.Native.Text/Bindings/bindings.props");
 
@@ -65,7 +64,14 @@ public static class TextToolchain
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
 
-            }, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken, describeOutputs: static (
+                @scoped,
+                output
+            ) =>
+                Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
+                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                        Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
     }
 
     /// <summary>

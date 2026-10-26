@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Inno.Build.Composition;
+using Inno.Build.Managed;
 using Inno.Build.Managed.DotNet;
-using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Build.SupportPacks;
 using Inno.Build.Toolchains;
-using Inno.Build.WindowsX64;
-using Inno.Build.MacOSArm64;
-using Inno.Build.BrowserWasm32;
-using Inno.Integration.WindowsX64.Bgfx;
-using Inno.Integration.MacOSArm64.Bgfx;
+using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Integration.BrowserWasm32.Bgfx;
+using Inno.Integration.BrowserWasm32.Build;
+using Inno.Integration.MacOSArm64.Bgfx;
+using Inno.Integration.MacOSArm64.Build;
+using Inno.Integration.WindowsX64.Bgfx;
+using Inno.Integration.WindowsX64.Build;
 
 namespace Inno.Build.Distribution.Standard;
 
@@ -53,39 +54,24 @@ public sealed class StandardBuildDistribution
         ToolRunner? tools = null
     ) {
         ArgumentNullException.ThrowIfNull(context);
-        tools ??= new ToolRunner();
-        ProductNativeBuildPlan windowsPlayer = StandardNativeBuildPlans.CreatePlayer(WindowsX64BgfxIntegration.nativeProfile);
-        ProductNativeBuildPlan macPlayer = StandardNativeBuildPlans.CreatePlayer(MacOSArm64BgfxIntegration.nativeProfile);
-        ProductNativeBuildPlan browserPlayer = StandardNativeBuildPlans.CreateStaticPlayer(BrowserWasm32BgfxIntegration.nativeOptions);
-        var windowsValidator = new PlayerSupportPackClosureValidator(
-            StandardSupportPackRequirements.CreateDynamic(windowsPlayer, BuildTargetId.windowsX64, ".dll"),
-            new WindowsX64SupportPackValidator(), StandardNativeDeployment.CreateValidator(BuildTargetId.windowsX64, ".dll"));
-        var macValidator = new PlayerSupportPackClosureValidator(
-            StandardSupportPackRequirements.CreateDynamic(macPlayer, BuildTargetId.macOSArm64, ".dylib"),
-            new MacOSArm64SupportPackValidator(), StandardNativeDeployment.CreateValidator(BuildTargetId.macOSArm64, ".dylib"));
-        var browserValidator = new PlayerSupportPackClosureValidator(
-            StandardSupportPackRequirements.CreateStatic(browserPlayer, BuildTargetId.browserWasm),
-            new BrowserWasm32SupportPackValidator(), null);
+        tools ??= new ToolRunner(context.host.services.workspaces);
         (BuildPlatformContribution platform, BgfxShaderTargetProfile shaders, GameContentCompilerFactory compiler)[] bindings =
         [
-            (WindowsX64BuildModule.CreateContribution(context,
-                windowsPlayer,
-                StandardNativeBuildPlans.CreateEditor(WindowsX64BgfxIntegration.nativeProfile),
-                StandardNativeBuildPlans.CreateShaderTools(WindowsX64BgfxIntegration.nativeProfile), windowsValidator), WindowsX64BgfxIntegration.shaderProfile, WindowsX64BgfxIntegration.CreateContentCompilerFactory(tools)),
-            (MacOSArm64BuildModule.CreateContribution(context,
-                macPlayer,
-                StandardNativeBuildPlans.CreateEditor(MacOSArm64BgfxIntegration.nativeProfile),
-                StandardNativeBuildPlans.CreateShaderTools(MacOSArm64BgfxIntegration.nativeProfile), macValidator), MacOSArm64BgfxIntegration.shaderProfile, MacOSArm64BgfxIntegration.CreateContentCompilerFactory(tools)),
-            (BrowserWasm32BuildModule.CreateContribution(context, browserPlayer, browserValidator), BrowserWasm32BgfxIntegration.shaderProfile, BrowserWasm32BgfxIntegration.CreateContentCompilerFactory(tools))
+            (WindowsX64BuildIntegration.Create(context), WindowsX64BgfxIntegration.shaderProfile, WindowsX64BgfxIntegration.CreateContentCompilerFactory(tools)),
+            (MacOSArm64BuildIntegration.Create(context), MacOSArm64BgfxIntegration.shaderProfile, MacOSArm64BgfxIntegration.CreateContentCompilerFactory(tools)),
+            (BrowserWasm32BuildIntegration.Create(context), BrowserWasm32BgfxIntegration.shaderProfile, BrowserWasm32BgfxIntegration.CreateContentCompilerFactory(tools))
         ];
         foreach ((BuildPlatformContribution platform, BgfxShaderTargetProfile shaders, GameContentCompilerFactory _) in bindings)
             if (platform.descriptor.id.value != shaders.id)
                 throw new InvalidOperationException("Platform publication and shader target identities disagree.");
+        string[] Runtimes(ManagedDeploymentId deployment) => bindings
+            .Where(binding => binding.platform.managedDeployments.Contains(deployment))
+            .Select(static binding => binding.platform.descriptor.runtimeIdentifier).Distinct(StringComparer.Ordinal).ToArray();
         var build = new BuildDistribution(bindings.Select(static binding => new GameBuildContribution(binding.platform, binding.compiler)).ToArray(),
-            [new CoreClrDeploymentCompiler(context.dotnetHost),
-                new MonoWasmDeploymentCompiler(context.dotnetHost, aheadOfTime: false),
-                new MonoWasmDeploymentCompiler(context.dotnetHost, aheadOfTime: true),
-                new NativeAotDeploymentCompiler(context.dotnetHost)]);
+            [new CoreClrDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.coreClr), context.host.services.workspaces),
+                new MonoWasmDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.monoWasm), context.host.services.workspaces, aheadOfTime: false),
+                new MonoWasmDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.monoWasmAot), context.host.services.workspaces, aheadOfTime: true),
+                new NativeAotDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.nativeAot), context.host.services.workspaces)]);
         return new(build, new ReadOnlyDictionary<BuildTargetId, BgfxShaderTargetProfile>(
             bindings.ToDictionary(static binding => binding.platform.descriptor.id, static binding => binding.shaders)));
     }

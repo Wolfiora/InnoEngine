@@ -104,10 +104,10 @@ internal static class ProductNativeCacheLookup
         Candidate candidate,
         CancellationToken cancellation
     ) {
-        BuildArtifactReadLease? reading = await BuildArtifactReadLease.TryAcquireAsync(candidate.directory,
-            candidate.fingerprint, ["Outputs"], candidate.context, cancellation).ConfigureAwait(false);
+        BuildArtifactReadLease? reading = await BuildArtifactReadLease.TryAcquireAsync(candidate.directory, Path.Combine(candidate.context.engineRoot, "artifacts", "native"),
+            candidate.fingerprint, ["Outputs", "Metadata"], candidate.context, cancellation).ConfigureAwait(false);
         return reading is null ? null : new NativeBuildProduct(candidate.recipe.component, candidate.recipe.targetId,
-            candidate.fingerprint, candidate.directory, candidate.binding, candidate.context.RequireToolchain().sharedLibraryExtension, reading);
+            candidate.fingerprint, candidate.directory, candidate.binding, candidate.context.RequireToolchain().linkPlan.sharedLibraryExtension, reading);
     }
 
     private sealed record Candidate(

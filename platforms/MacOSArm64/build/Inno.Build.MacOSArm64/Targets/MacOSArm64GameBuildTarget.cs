@@ -1,9 +1,9 @@
 using System;
-using Inno.Build.Managed;
 using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Managed;
 
 namespace Inno.Build.MacOSArm64;
 
@@ -43,7 +43,7 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the macOS ARM64 target identity.
     /// </summary>
-    public BuildTargetId id => BuildTargetId.macOSArm64;
+    public BuildTargetId id => Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id;
 
     /// <inheritdoc />
     public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;

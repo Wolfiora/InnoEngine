@@ -18,7 +18,7 @@
     <ProjectReference Include="../../../src/content/scene/Inno.Scene/Inno.Scene.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../fixtures/Inno.Scene.Reload.TestModule/Inno.Scene.Reload.TestModule.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
+    <ProjectReference Include="../fixtures/Inno.Scene.Reload.TestModule/Inno.Scene.Reload.TestModule.csproj" ReferenceOutputAssembly="false" OutputItemType="SceneReloadTestModule" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,10 +31,7 @@
   </ItemGroup>
 
   <Target Name="CopySceneReloadTestModule" AfterTargets="Build">
-    <ItemGroup>
-      <SceneReloadTestModule Include="..\fixtures\Inno.Scene.Reload.TestModule\bin\$(Configuration)\net10.0\Inno.Scene.Reload.TestModule.dll" />
-    </ItemGroup>
-    <Copy SourceFiles="@(SceneReloadTestModule)" DestinationFolder="$(OutDir)Modules\SceneReload" />
+    <Copy SourceFiles="@(SceneReloadTestModule)" DestinationFolder="$(OutDir)Modules/SceneReload" />
   </Target>
 
   <ItemGroup>

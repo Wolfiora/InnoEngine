@@ -106,9 +106,8 @@ Presentation 同样使用 `PresentationBackendId`、`PresentationBackendProvider
 ```text
 native/Inno.Native.<component>/
   Native/include + src                   手写窄语义 facade 和第三方适配
-  Bindings/common.json                   共同映射及 ownership
-  Bindings/bindgen*.json                  当前目标定义
-  Bindings/<facade>.bridge*.json          C++ 到 C 的桥定义
+  Bindings/bindings.props                唯一组件身份和公共配置入口
+  Bindings/bindgen.json                  共同映射及 ownership
   Native/Generated                       宿主生成 C 桥
   Generated/Bindings.cs                  宿主单文件 managed 绑定
   artifacts/bindings/<component>/<target>/<generationFingerprint>/
@@ -117,7 +116,7 @@ native/Inno.Native.<component>/
     generation-manifest.json            精确文件集合及内容散列
 ```
 
-`GenerateBindingsTask` 通过 BGCS 公共库入口运行，无第二个生成器进程。
+平台 Build integration 提供明确 ABI/runtime Profile，平台 SDK provider 提供冻结编译输入；组件不保存目标名单。`GenerateBindingsTask` 通过 BGCS 4.1.2 公共库入口运行，无第二个生成器进程。
 目标桥和 managed source 在共同 staging 内生成，验证完成后提交；失败和取消保留已完成 generation。
 缓存身份包括生成程序集、配置、扩展、目标描述、实际编译器、sysroot 和输入内容。
 缓存命中仍检查完整文件集合和 bytes，不能仅依赖目录存在。

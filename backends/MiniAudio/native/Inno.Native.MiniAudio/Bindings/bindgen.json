@@ -1,11 +1,62 @@
 {
-  "schemaVersion": 1,
-  "extends": [
-    "common.json"
-  ],
-  "targets": [
-    {
-      "id": "host"
+  "schemaVersion": 2,
+  "library": {
+    "id": "inno.miniaudio",
+    "nativeName": "miniaudio"
+  },
+  "source": {
+    "language": "c",
+    "languageStandard": "c17",
+    "headers": [
+      "../../../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
+    ],
+    "includeDirectories": [
+      "../../../../../extern/miniaudio/extras/miniaudio_split"
+    ],
+    "defines": [],
+    "includeTransitivelyReferencedHeaders": false,
+    "parseMacros": true,
+    "selection": {
+      "includeHeaders": [
+        "../../../../../extern/miniaudio/extras/miniaudio_split/miniaudio.h"
+      ],
+      "excludeDeclarations": [
+        "ma_log_postf"
+      ]
     }
-  ]
+  },
+  "api": {
+    "namespace": "Inno.Native.MiniAudio",
+    "name": "MiniAudio",
+    "style": "static",
+    "importMode": "functionTable",
+    "framework": "net10.0",
+    "emitNativeMetadata": true,
+    "nestGeneratedTypesInApi": false,
+    "emitCallbackDelegates": true,
+    "emitLibraryNameConstant": true,
+    "usings": [],
+    "naming": {
+      "functions": {
+        "casing": "pascal",
+        "removePrefixes": [
+          "ma_"
+        ]
+      },
+      "fields": {
+        "casing": "pascal"
+      }
+    },
+    "names": {},
+    "functions": [],
+    "records": []
+  },
+  "runtime": {
+    "mode": "package"
+  },
+  "output": {
+    "layout": "singleFile",
+    "singleFileName": "Bindings.cs",
+    "root": "../obj/bindings/bgcs"
+  }
 }

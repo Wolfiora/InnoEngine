@@ -1,7 +1,6 @@
 using System.Runtime.CompilerServices;
 using NumericsVector2 = System.Numerics.Vector2;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
 using System;
 using System.Numerics;
 
@@ -151,24 +150,17 @@ internal sealed unsafe class InspectorTargetHeader
             NativeImGui.AlignTextToFramePadding();
             Vector2 textOrigin = NativeImGui.GetCursorScreenPos();
             ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
+            NativeVector2 clipMinimum = Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin);
+            NativeVector2 clipMaximum = Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin + new Vector2(nameWidth, rowHeight));
             NativeImGui.Raw.PushClipRect(
                 drawList,
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin),
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin + new Vector2(nameWidth, rowHeight)),
-                (true ? (byte)1 : (byte)0)
+                &clipMinimum,
+                &clipMaximum,
+                1
             );
             try
             {
-                using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(name, allowsNull: false))
-                {
-                    NativeImGui.Raw.AddText(
-                        drawList,
-                        Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin),
-                        NativeImGui.GetColorU32((int)ImGuiCol.Text),
-                        (sbyte*)nativeText.pointer,
-                        null
-                    );
-                }
+                EditorImGui.DrawText(textOrigin, NativeImGui.GetColorU32((int)ImGuiCol.Text), name);
             }
             finally
             {

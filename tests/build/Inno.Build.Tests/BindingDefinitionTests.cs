@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -21,16 +21,16 @@ public sealed class BindingDefinitionTests : IDisposable
     }
 
     [Theory]
-    [InlineData("<PropertyGroup Condition=\"true\"><InnoBindingHostConfig>config.json</InnoBindingHostConfig></PropertyGroup>")]
-    [InlineData("<PropertyGroup><InnoBindingHostConfig>$(SDK)/config.json</InnoBindingHostConfig></PropertyGroup>")]
-    [InlineData("<PropertyGroup><InnoBindingHostConfig>../config.json</InnoBindingHostConfig></PropertyGroup>")]
+    [InlineData("<PropertyGroup Condition=\"true\"><InnoBindingConfig>config.json</InnoBindingConfig></PropertyGroup>")]
+    [InlineData("<PropertyGroup><InnoBindingConfig>$(SDK)/config.json</InnoBindingConfig></PropertyGroup>")]
+    [InlineData("<PropertyGroup><InnoBindingConfig>../config.json</InnoBindingConfig></PropertyGroup>")]
     [InlineData("<Target Name=\"Execute\" />")]
     public async Task ExecutableOrNonLiteralDefinitionsFailBeforeOutputCreation(string body)
     {
         File.WriteAllText(Path.Combine(m_root, "bindings.props"), "<Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId></PropertyGroup>" + body + "</Project>");
         var descriptor = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var request = new NativeBindingGenerationRequest([descriptor], "fixture", NativeBindingOutputMode.HostSource);
-        await Assert.ThrowsAsync<InvalidDataException>(async () => await new NativeBindingGenerator()
+        await Assert.ThrowsAsync<InvalidDataException>(async () => await BuildTestProducts.Generator()
             .GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
         Assert.False(Directory.Exists(Path.Combine(m_root, "obj")));
     }
@@ -39,11 +39,11 @@ public sealed class BindingDefinitionTests : IDisposable
     public async Task UndeclaredTargetNeverFallsBackToTheHostAbi()
     {
         File.WriteAllText(Path.Combine(m_root, "bindings.props"), """
-            <Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId><InnoBindingHostConfig>config.json</InnoBindingHostConfig></PropertyGroup></Project>
+            <Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId><InnoBindingConfig>config.json</InnoBindingConfig></PropertyGroup></Project>
             """);
         var descriptor = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var request = new NativeBindingGenerationRequest([descriptor], "unknown", NativeBindingOutputMode.TargetArtifacts);
-        await Assert.ThrowsAsync<NotSupportedException>(async () => await new NativeBindingGenerator()
+        await Assert.ThrowsAsync<NotSupportedException>(async () => await BuildTestProducts.Generator()
             .GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None));
         Assert.False(Directory.Exists(Path.Combine(m_root, "obj")));
     }

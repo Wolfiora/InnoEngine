@@ -5,9 +5,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Build.WindowsX64;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -111,7 +111,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
         string? previousProduct = null;
         var tools = new NativeToolchainSelection("fixture-x64", new BuildHostDescriptor("Fixture", "x64"),
             new Dictionary<string, string> { ["fixture"] = ToolchainEnvironment.ResolveExecutable("dotnet") },
-            new Dictionary<string, string>(), [], [], ".native", false);
+            new Dictionary<string, string>(), [], [], new NativeLinkPlan(".native"), false);
         foreach (string generation in new[] { new string('a', 64), new string('b', 64) })
         {
             string artifact = Path.Combine(externalBindings ? m_bindingRoot : m_root, "native", "obj", "fixture-x64", generation);
@@ -131,8 +131,10 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             {
                 fingerprint = generation,
                 bindingsPath = managed,
+                usesRuntimeImports = false,
                 nativeDirectory = bridge,
-                artifactDirectory = artifact
+                artifactDirectory = artifact,
+                artifactOwnerDirectory = externalBindings ? m_bindingRoot : m_root
             };
             using var bindings = new NativeBindingGenerationResult(
                 new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor }, []);
@@ -176,7 +178,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             return;
         NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(
             ToolchainEnvironment.ResolveExecutable("dotnet")).ResolveAsync(new(m_root, "release"),
-            new BuildHostDescriptor("Windows", "x64"), "windows-x64", CancellationToken.None);
+            BuildTestProducts.WindowsHost(), "windows-x64", CancellationToken.None);
         string source = Path.Combine(m_root, "Source");
         Directory.CreateDirectory(source);
         File.WriteAllText(Path.Combine(source, "CMakeLists.txt"),

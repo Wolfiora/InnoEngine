@@ -29,7 +29,7 @@ public sealed class MacOSArm64SupportPackValidator : IPlayerSupportPackValidator
             if (foreignNativeExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             {
                 throw new InvalidDataException(
-                    $"Player Support Pack '{BuildTargetId.macOSArm64}' contains foreign native runtime '{Path.GetFileName(file)}'.");
+                    $"Player Support Pack '{Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id}' contains foreign native runtime '{Path.GetFileName(file)}'.");
             }
             if (Path.GetExtension(file).Equals(".dylib", StringComparison.OrdinalIgnoreCase))
                 ValidateLibrary(file);

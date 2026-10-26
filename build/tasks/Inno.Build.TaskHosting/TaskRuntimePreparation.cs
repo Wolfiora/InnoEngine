@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Text.Json;
-using Inno.Core.IO;
-using Inno.Build.Toolchains;
+using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.TaskHosting;
 
@@ -58,7 +58,15 @@ internal static class TaskRuntimePreparation
         string cache,
         string request,
         ITaskItem[] outputs
-    ) => AtomicFile.WriteAllBytes(Path.Combine(cache, request + ".request.json"), JsonSerializer.SerializeToUtf8Bytes(FreezeFiles(outputs)));
+    ) {
+        var publisher = new BuildCachePublisher(cache, BuildCacheArtifactRole.ImmutableArtifact);
+        using FileLease activity = publisher.AcquireUseAsync().AsTask().GetAwaiter().GetResult();
+        RuntimeFile[] files = FreezeFiles(outputs);
+        string path = Path.Combine(cache, request + ".request.json");
+        AtomicFile.WriteAllBytes(path, JsonSerializer.SerializeToUtf8Bytes(files));
+        publisher.RecordIndex(path, files.Select(static file => Path.GetDirectoryName(Path.GetDirectoryName(file.source)!)!)
+            .Distinct(StringComparer.Ordinal).ToArray());
+    }
 
     private static ITaskItem[] CreateOutputs(IReadOnlyList<RuntimeFile> files) => files.Select(file =>
     {
@@ -203,6 +211,16 @@ internal static class TaskRuntimePreparation
     {
         using FileStream input = File.OpenRead(path);
         return Convert.ToHexString(SHA256.HashData(input));
+    }
+
+    internal static void RegisterWorkspaceReader(
+        string load,
+        string workspace,
+        CancellationToken cancellation
+    ) {
+        string operation = Path.GetDirectoryName(load)!;
+        new BuildCachePublisher(Path.GetDirectoryName(operation)!, BuildCacheArtifactRole.ProcessWorkingDirectory)
+            .RecordProcessUse(operation, operation + ".lock", [workspace], cancellation);
     }
 
     internal static void RegisterReader(

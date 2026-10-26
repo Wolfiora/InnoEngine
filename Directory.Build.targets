@@ -1,12 +1,14 @@
 <Project>
+  <Target
+    Name="MaintainInnoRootBuildCaches"
+    AfterTargets="Build;Publish"
+    DependsOnTargets="PrepareInnoBuildTaskHost"
+    Condition="'$(MSBuildProjectName)' == 'InnoEngine.Editor' and '$(DesignTimeBuild)' != 'true' and '$(InnoSuppressBuildMaintenance)' != 'true'">
+    <Inno.Build.Tasks.MaintainBuildCachesTask EngineRoot="$(MSBuildThisFileDirectory)" />
+  </Target>
   <PropertyGroup>
-    <!-- Evaluate after product declarations so explicit target restores never overwrite neutral locks. -->
-    <_InnoPackageLockScope></_InnoPackageLockScope>
-    <_InnoPackageLockScope Condition="'$(IsRoslynComponent)' != 'true'">$(InnoNativeTarget)</_InnoPackageLockScope>
-    <_InnoPackageLockScope Condition="'$(IsRoslynComponent)' != 'true' and '$(RuntimeIdentifier)' != ''">$(_InnoPackageLockScope).$(RuntimeIdentifier)</_InnoPackageLockScope>
-    <_InnoPackageLockScope>$([System.String]::Copy('$(_InnoPackageLockScope)').Trim('.'))</_InnoPackageLockScope>
-    <NuGetLockFilePath Condition="'$(NuGetLockFilePath)' == ''">$(MSBuildProjectDirectory)/packages.lock.json</NuGetLockFilePath>
-    <NuGetLockFilePath Condition="'$(_InnoPackageLockScope)' != ''">$(MSBuildProjectDirectory)/packages.$(_InnoPackageLockScope).lock.json</NuGetLockFilePath>
+    <!-- SDK-inferred publish analyzers can change the restore graph. -->
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)build/msbuild/Inno.NuGetLockFiles.targets</AfterMicrosoftNETSdkTargets>
   </PropertyGroup>
 
   <!-- Only the binding owner consumes its selection as a compilation input. -->
@@ -104,16 +106,12 @@
     <InnoBindingEngineRoot Condition="'$(InnoBindingEngineRoot)' == ''">$(MSBuildThisFileDirectory)</InnoBindingEngineRoot>
     <InnoBindingDefinition Condition="'$(InnoBindingDefinition)' == ''">$(MSBuildProjectDirectory)/Bindings/bindings.props</InnoBindingDefinition>
     <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == '' and '$(InnoNativeTarget)' != ''">$(InnoNativeTarget)</InnoBindingTargetId>
-    <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == ''">host</InnoBindingTargetId>
-    <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == '' and '$(InnoBindingTargetId)' != 'host'">TargetArtifacts</InnoBindingOutputMode>
+    <InnoBindingTargetId Condition="'$(InnoBindingTargetId)' == ''">$(InnoDevelopmentTarget)</InnoBindingTargetId>
+    <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == '' and '$(InnoNativeTarget)' != ''">TargetArtifacts</InnoBindingOutputMode>
     <InnoBindingOutputMode Condition="'$(InnoBindingOutputMode)' == ''">HostSource</InnoBindingOutputMode>
     <InnoBindingDotnetHost Condition="'$(InnoBindingDotnetHost)' == ''">$(DOTNET_HOST_PATH)</InnoBindingDotnetHost>
     <InnoBindingDotnetHost Condition="'$(InnoBindingDotnetHost)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildBinPath)/../../dotnet'))</InnoBindingDotnetHost>
   </PropertyGroup>
-
-  <ItemGroup Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(InnoBindingOutputMode)' == 'TargetArtifacts'">
-    <_InnoSelectedBindingTarget Include="@(InnoBindingTarget->WithMetadataValue('Identity', '$(InnoBindingTargetId)'))" />
-  </ItemGroup>
 
   <Target Name="ValidateNativeBindingSelection" BeforeTargets="CoreCompile" Condition="'$(InnoNativeBindingSelection)' != ''">
     <Error Condition="!Exists('$(InnoNativeBindingSelection)')" Text="The selected native binding manifest is missing: $(InnoNativeBindingSelection)" />
@@ -121,8 +119,7 @@
 
   <Target Name="ValidateBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <Error Condition="!Exists('$(InnoBindingDefinition)')" Text="The sole component binding definition is missing: $(InnoBindingDefinition)" />
-    <Error Condition="'$(InnoBindingOutputMode)' == 'TargetArtifacts' and '@(_InnoSelectedBindingTarget->Count())' != '1'" Text="The binding definition must declare exactly one configuration for $(InnoBindingTargetId)." />
-    <Error Condition="'$(InnoBindingHostConfig)' == ''" Text="The component binding definition must declare a host configuration." />
+    <Error Condition="'$(InnoBindingConfig)' == ''" Text="The component binding definition must declare its common configuration." />
   </Target>
 
   <Target Name="BuildBindingGenerator" DependsOnTargets="ValidateBindingGenerator;PrepareInnoBuildTaskHost" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'" />
@@ -141,11 +138,17 @@
       <Output TaskParameter="GeneratedBindings" PropertyName="BindGenGeneratedSource" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenGenerationFingerprint" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenExpectedFingerprint" />
+      <Output TaskParameter="UsesRuntimeImports" PropertyName="_BindGenUsesRuntimeImports" />
       <Output TaskParameter="ArtifactDirectory" PropertyName="BindGenArtifactDirectory" />
+      <Output TaskParameter="ArtifactOwnerDirectory" PropertyName="BindGenArtifactOwnerDirectory" />
       <Output TaskParameter="NativeDirectory" PropertyName="BindGenNativeDirectory" />
     </Inno.Build.Tasks.GenerateBindingsTask>
+    <Error
+      Condition="'$(InnoNativeBindingSelection)' != '' and '$(_BindGenUsesRuntimeImports)' != '$(InnoNativeRuntimeImports)'"
+      Text="The selected native import initialization differs from the generated binding contract." />
     <PropertyGroup>
       <BindGenOutputDirectory>$([System.IO.Path]::GetDirectoryName('$(BindGenGeneratedSource)'))</BindGenOutputDirectory>
+      <InnoNativeRuntimeImports Condition="'$(InnoNativeBindingSelection)' == ''">$(_BindGenUsesRuntimeImports)</InnoNativeRuntimeImports>
     </PropertyGroup>
     <ItemGroup>
       <Compile Remove="@(Compile)" Condition="'%(Compile.Filename)%(Compile.Extension)' == 'Bindings.cs'" />
@@ -180,6 +183,7 @@
       IntermediateDirectory="$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))"
       ComponentProject="$(MSBuildProjectFullPath)"
       ArtifactDirectory="$(BindGenArtifactDirectory)"
+      ArtifactOwnerDirectory="$(BindGenArtifactOwnerDirectory)"
       Fingerprint="$(BindGenExpectedFingerprint)">
       <Output TaskParameter="MaterializedSource" PropertyName="BindGenCompileSource" />
     </Inno.Build.TaskHosting.MaterializeBindingsTask>
@@ -190,6 +194,12 @@
   </Target>
 
   <Target Name="ValidateBindGenBindings" BeforeTargets="CoreCompile" DependsOnTargets="EnsureBindGenBindings;MaterializeBindGenBindings" Condition="'$(BindGenGeneratedBindings)' == 'true'">
+    <Error
+      Condition="'$(InnoNativeBindingSelection)' != '' and '$(InnoNativeRuntimeImports)' != 'true' and '$(InnoNativeRuntimeImports)' != 'false'"
+      Text="The selected native component must declare its generated import initialization." />
+    <PropertyGroup>
+      <DefineConstants Condition="'$(InnoNativeRuntimeImports)' == 'true'">$(DefineConstants);INNO_RUNTIME_IMPORTS</DefineConstants>
+    </PropertyGroup>
     <Error
       Condition="'$(InnoNativeBindingSelection)' != '' and '$(InnoNativeLibraryKind)' != 'Static' and '$(InnoNativeLibraryKind)' != 'Shared'"
       Text="The selected native component must declare its exact Static or Shared linkage." />

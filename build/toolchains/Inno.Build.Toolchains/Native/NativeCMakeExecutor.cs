@@ -115,6 +115,7 @@ public static class NativeCMakeExecutor
         NativeCMakeSource sources = await PrepareSourceAsync(context, component, cancellationToken).ConfigureAwait(false);
         List<string> configure = ["-S", sources.ResolvePath(sourceDirectory), "-B", buildDirectory];
         configure.AddRange(selection.cmakeArguments.Select(sources.ResolveDefinition));
+        configure.AddRange((options.linkPlan ?? selection.linkPlan).cmakeArguments.Select(sources.ResolveDefinition));
         configure.Add("-DINNO_ROOT=" + sources.root);
         configure.Add("-DINNO_NATIVE_TARGET=" + selection.targetId);
         if (!selection.multiConfiguration)
@@ -140,12 +141,12 @@ public static class NativeCMakeExecutor
             environment["PYTHONPYCACHEPREFIX"] = Path.Combine(buildDirectory, "PythonCache");
         }
         await ToolchainEnvironment.RunAsync(context, selection.ResolveExecutable("cmake"), configure,
-            context.engineRoot, cancellationToken, environment).ConfigureAwait(false);
+            sources.root, cancellationToken, environment).ConfigureAwait(false);
         List<string> build = ["--build", buildDirectory, "--config", buildType];
         if (target is not null)
             build.AddRange(["--target", target]);
         await ToolchainEnvironment.RunAsync(context, selection.ResolveExecutable("cmake"), build,
-            context.engineRoot, cancellationToken, environment).ConfigureAwait(false);
+            sources.root, cancellationToken, environment).ConfigureAwait(false);
         return buildDirectory;
     }
 

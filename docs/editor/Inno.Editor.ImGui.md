@@ -1,5 +1,16 @@
 # Inno.Editor.ImGui
 
+## 时间条与画布指针
+
+动画时间条等自绘控件在 Editor 绘制回调中使用以下 UI 查询。它们复用当前 ImGui 输入状态；控件命中后再查询，不能用游戏 Input 判断已被 UI 消费的手势。
+
+| API | 当前语义 |
+| --- | --- |
+| `ImGui.IsMouseButtonDown(ImGuiMouseButton button = ImGuiMouseButton.Left)` | 当前 UI 帧的按钮保持状态；开始编辑仍需 `IsItemClicked` 或 `IsItemActive`。 |
+| `ImGui.GetMouseDragDelta(ImGuiMouseButton button = ImGuiMouseButton.Left, float threshold = -1f)` | 从按下位置累计的 UI 坐标位移；负阈值使用当前 Editor 配置。应作用于捕获的起始值，不能逐帧重复累加。 |
+
+绘制回调外不访问这些查询。拖动开始时保存中立数值，释放时通过现有 History 记录一次；失去绘制 owner、取消或代际卸载时由功能 owner 明确完成或回滚。鼠标位置落在区域内本身不足以获得编辑权，必须尊重前景窗口、Popup 与 Modal。
+
 ## 共享 Inspector 与窗口呈现
 
 `ImGuiWidget.SectionLayout(Action drawContent)` 为一段内容建立可复用的 fieldset scope；scope 内连续调用 `bool SectionHeader(string title, string? description = null, Action? drawLeadingControl = null)` 时，标题嵌入上边框，直到下一个标题或 scope 结束的内容都被同一边框完整包裹。展开的内部 content fieldset 使用轻微圆角；窗口、Panel、顶层 Header 和其他大容器保持直角。返回值决定当前 section 正文是否应绘制；标题文字本身通过共享的 `ClickableText` widget 切换展开状态，不显示额外的加减号或整行 hover 背景。标题与 Stats 的共享 `CollectionSectionHeader` 使用同一 `sectionHeaderPadding`，因此左侧缩进不会由各 Panel 自行估算。折叠态保留中断式横线，并在整条线的左右端各绘制一根以横线为中心的短竖帽，形成 `⊢ … ⊣` 轮廓；竖帽与横线共享颜色、粗细和交点，不形成向下的残留边框。折叠状态由 ImGui 按当前 Inspector scope 的稳定顺序保存，标题或 Local/World 文案变化不会重置状态。`EnsureSection` 为没有 `[Header]` 的默认属性自动建立 `Properties` fieldset，`isSectionContentVisible` 则让 serialized-property pipeline 在任意 section 折叠后持续跳过内容，直到下一个 Header。可选 leading control 用于 Local/World 这类属于分组语义本身的开关；scope 外的 `SectionHeader` 仍保持普通分隔标题并返回 `true`。`HeaderSurface(id, drawContent, spanWindowPadding)` 是 Inspector target 与 Shader Editor 顶部共用的直角 header 容器；`CollectionSectionHeader` 是 Stats 等 collection surface 的直角分组条。`HelpBox(string text, string icon, Vector4 color)` 绘制有边框、状态图标与侧边语义色的内部提示卡片。`DrawItemTooltip` 使用父 viewport work area、真实内宽和缩放 padding 测量，靠边自动翻向并约束位置。File Browser、Hierarchy 与 Stats 共用暗色 collectionRow/collectionRowAlternate，交替条纹、hover、选择仍保持区分。
@@ -812,6 +823,8 @@ Scripting facade 同时导出 `TreeNodeDrawContext`、`TreeNodeOptions`、`TreeN
 <!-- api: M:Inno.Editor.ImGui.ImGui.MeasureText(System.String) c6a8ecd1fdfb6d444ec94b33aa384ccbe043800852ad13c563866dc54d9ecf9e -->
 <!-- api: M:Inno.Editor.ImGui.ImGui.IsItemHovered(Inno.Native.ImGui.ImGuiHoveredFlags) 3cc60508a458fd38075ccd2b5e8cc455f3935d87cf078ba78c2870b00a267618 -->
 <!-- api: M:Inno.Editor.ImGui.ImGui.IsItemActive 7eb5249071f404927123764d671eecfdc077db17f072914b00185e10596bb64c -->
+<!-- api: M:Inno.Editor.ImGui.ImGui.IsMouseButtonDown(Inno.Native.ImGui.ImGuiMouseButton) 80827918d10a7068f53de9162076b8d07643432b0911b13e7a88c84cd387aec8 -->
+<!-- api: M:Inno.Editor.ImGui.ImGui.GetMouseDragDelta(Inno.Native.ImGui.ImGuiMouseButton,System.Single) 84ef9154b3c81c04ec1c2a267f32cad78af2d694f405f49c4addfae5853f3c9a -->
 <!-- api: M:Inno.Editor.ImGui.ImGui.IsItemClicked(Inno.Native.ImGui.ImGuiMouseButton) c060924ad20e1daaf21df0736207d47b14200ccb57ab69e391182d1c63b842c8 -->
 <!-- api: M:Inno.Editor.ImGui.ImGui.ToPackedColor(System.Numerics.Vector4) d43be290a64f80b432c962ba160a2ac7c239884c970a8c9616f45fb5d81122e9 -->
 <!-- api: M:Inno.Editor.ImGui.ImGui.DrawLine(System.Numerics.Vector2,System.Numerics.Vector2,System.UInt32,System.Single) df55f058fe9d897369ca8032bba0587633057ac3ae9dac77bc28b39b8a021a15 -->
@@ -860,6 +873,8 @@ Scripting facade 同时导出 `TreeNodeDrawContext`、`TreeNodeOptions`、`TreeN
 | <a id="api-a0dea119e192ddc0"></a>[`public static bool Inno.Editor.ImGui.ImGui.InputText(string label, ref string value, int capacity = 1024, Inno.Native.ImGui.ImGuiInputTextFlags flags = Inno.Native.ImGui.ImGuiInputTextFlags.None)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L89) | Draws and edits a bounded UTF-8 text value.<br>返回：true when the control reports an edit or submit event.<br>`label`：The control label.<br>`value`：The managed string to display and update.<br>`capacity`：The positive maximum UTF-8 buffer capacity, including the terminator.<br>`flags`：Text editing behavior. | — | `System.ArgumentOutOfRangeException`：Thrown when capacity is not positive. |
 | <a id="api-72d1aff42ff04706"></a>[`public static bool Inno.Editor.ImGui.ImGui.InputTextWithHint(string label, string hint, ref string value, int capacity = 1024, Inno.Native.ImGui.ImGuiInputTextFlags flags = Inno.Native.ImGui.ImGuiInputTextFlags.None)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L123) | Draws and edits a bounded UTF-8 text value with placeholder text.<br>返回：true when the control reports an edit or submit event.<br>`label`：The control label.<br>`hint`：The placeholder shown while the value is empty.<br>`value`：The managed string to display and update.<br>`capacity`：The positive maximum UTF-8 buffer capacity, including the terminator.<br>`flags`：Text editing behavior. | — | `System.ArgumentOutOfRangeException`：Thrown when capacity is not positive. |
 | <a id="api-34345b03ddd59692"></a>[`public static bool Inno.Editor.ImGui.ImGui.IsItemActive()`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L810) | Gets whether the previous item is active.<br>返回：true while the item owns an active interaction. | — | — |
+| <a id="api-d0ffaf93006e17d7"></a>[`public static bool Inno.Editor.ImGui.ImGui.IsMouseButtonDown(Inno.Native.ImGui.ImGuiMouseButton button = Inno.Native.ImGui.ImGuiMouseButton.Left)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L836) | UI 帧中的按钮保持状态；必须与 item 命中/激活状态共同使用。 | — | — |
+| <a id="api-97ed83019337c038"></a>[`public static System.Numerics.Vector2 Inno.Editor.ImGui.ImGui.GetMouseDragDelta(Inno.Native.ImGui.ImGuiMouseButton button = Inno.Native.ImGui.ImGuiMouseButton.Left, float threshold = -1)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L851) | UI 拖动开始位置至当前指针的累计位移；负阈值使用 Editor 配置。 | — | — |
 | <a id="api-26591e8dc8dbf91b"></a>[`public static bool Inno.Editor.ImGui.ImGui.IsItemClicked(Inno.Native.ImGui.ImGuiMouseButton button = Inno.Native.ImGui.ImGuiMouseButton.Left)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L821) | Gets whether the previous item was clicked with a mouse button.<br>返回：true when the item was clicked.<br>`button`：The mouse button to query. | — | — |
 | <a id="api-a4e7a15be0470d7f"></a>[`public static bool Inno.Editor.ImGui.ImGui.IsItemHovered(Inno.Native.ImGui.ImGuiHoveredFlags flags = Inno.Native.ImGui.ImGuiHoveredFlags.None)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L802) | Gets whether the previous item is hovered.<br>返回：true when the query succeeds.<br>`flags`：Hovered query behavior. | — | — |
 | <a id="api-2f7d82967144f1b1"></a>[`public static System.Numerics.Vector2 Inno.Editor.ImGui.ImGui.MeasureText(string text)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/ImGui.cs#L791) | Measures text using the current font.<br>返回：The measured width and height.<br>`text`：The text text validated by the measure text operation. | — | — |

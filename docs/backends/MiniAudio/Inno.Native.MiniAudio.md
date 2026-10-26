@@ -54,7 +54,7 @@ unsafe
 
 ## 静态目标
 
-同一项目通过 bindgen.browser-wasm.json 生成 wasm32 的静态符号绑定，继承 common.json 的声明；目标编译使用 INNO_STATIC_NATIVE，不初始化动态 loader。Host profile 通过类型初始化装载对应配置的库。生成输出分别属于宿主 Generated/Bindings.cs 和目标 `artifacts/bindings/miniaudio/browser-wasm/<generationFingerprint>/Generated/Bindings.cs`，没有 Native Browser 副本。
+组件仅维护公共 `Bindings/bindgen.json`。Browser Build integration 提供明确 wasm32 ABI、托管 runtime 和静态库名称；Windows、macOS integration 分别提供自己的 Profile，组件没有平台目标表。静态产品使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。HostSource 输出属于组件的 `Generated/Bindings.cs` 和 `Native/Generated`；TargetArtifacts 的 managed/native 输出共同属于 `artifacts/bindings/miniaudio/<target>/<generationFingerprint>`。是否可运行以[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)为准。
 
 ## 源码归属
 
@@ -62,13 +62,13 @@ unsafe
 
 ## 当前源码公开 API 清单
 
-以下签名来自当前源码与正式生成结果；原生所有权、线程及关闭顺序见本页前文。
+当前签名由正式源码语义清单核对；生命周期与错误约束见前文及对应 XML。
 
 <!-- api: T:Inno.Native.MiniAudio.MiniAudio 56fe2dd550a169475ab674592354636c7813ab7d832b9e68f283d94aa0ead451 -->
 
-| 声明 | 语义与限制 |
+| 声明 | 行为与约束 |
 | --- | --- |
-| <a id="api-51696dd28a5dbd8b"></a>[`public static class Inno.Native.MiniAudio.MiniAudio`](../../../backends/MiniAudio/native/Inno.Native.MiniAudio/MiniAudio.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API. |
+| <a id="api-51696dd28a5dbd8b"></a>[`public static class Inno.Native.MiniAudio.MiniAudio`](../../../backends/MiniAudio/native/Inno.Native.MiniAudio/MiniAudio.cs#L8) | Initializes the explicitly deployed module through the generated BGCS API.<br>Owns one explicitly shared context. Replacement closes the previous context; existing resource leases retain its native cleanup capability. |
 
 ## 项目依赖
 

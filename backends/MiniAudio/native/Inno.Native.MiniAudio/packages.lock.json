@@ -4,9 +4,9 @@
     "net10.0": {
       "BGCS.Runtime": {
         "type": "Direct",
-        "requested": "[3.0.1, 3.0.1]",
-        "resolved": "3.0.1",
-        "contentHash": "sQRfxJieqlKGCEcNr+F1fTuDITDR+csgI2Khe/nv+MyCxpqhMI02Zg2Mz4LxUpNhFhH+Fk6MtV8uVfQszYa0UQ=="
+        "requested": "[4.1.2, 4.1.2]",
+        "resolved": "4.1.2",
+        "contentHash": "VR0fxNhsvFQRw6W+1Igk0vp7dnAijav5lHDvG010GmP268imzyCyUY1uBfhrytMmAhaDUCRBog5hV3mYx4HaOA=="
       },
       "inno.core.io": {
         "type": "Project",

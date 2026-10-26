@@ -190,7 +190,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
 
         fixed (byte* data = value)
         {
-            bgfx.Raw.encoder_set_uniform(
+            BgfxNativeCalls.EncoderSetUniform(
                 m_encoder,
                 resource.uniform,
                 data,
@@ -204,7 +204,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderSamplerState sampler
     ) {
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.Texture);
-        bgfx.Raw.encoder_set_texture(
+        BgfxNativeCalls.EncoderSetTexture(
             m_encoder,
             checked((byte)resource.descriptor.slot),
             resource.uniform,
@@ -239,7 +239,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 $"Texture format '{descriptor.format}' does not support {resource.descriptor.storageAccess} storage access.");
         }
 
-        bgfx.Raw.encoder_set_image(
+        BgfxNativeCalls.EncoderSetImage(
             m_encoder,
             checked((byte)resource.descriptor.slot),
             texture,
@@ -265,35 +265,35 @@ internal sealed unsafe partial class BgfxCommandEncoder
         switch (buffer.kind)
         {
             case BgfxBufferKind.Vertex:
-                bgfx.Raw.encoder_set_compute_vertex_buffer(
+                BgfxNativeCalls.EncoderSetComputeVertexBuffer(
                     m_encoder,
                     slot,
                     new bgfx.VertexBufferHandle { idx = buffer.nativeIndex },
                     access);
                 break;
             case BgfxBufferKind.Index:
-                bgfx.Raw.encoder_set_compute_index_buffer(
+                BgfxNativeCalls.EncoderSetComputeIndexBuffer(
                     m_encoder,
                     slot,
                     new bgfx.IndexBufferHandle { idx = buffer.nativeIndex },
                     access);
                 break;
             case BgfxBufferKind.DynamicVertex:
-                bgfx.Raw.encoder_set_compute_dynamic_vertex_buffer(
+                BgfxNativeCalls.EncoderSetComputeDynamicVertexBuffer(
                     m_encoder,
                     slot,
                     new bgfx.DynamicVertexBufferHandle { idx = buffer.nativeIndex },
                     access);
                 break;
             case BgfxBufferKind.DynamicIndex:
-                bgfx.Raw.encoder_set_compute_dynamic_index_buffer(
+                BgfxNativeCalls.EncoderSetComputeDynamicIndexBuffer(
                     m_encoder,
                     slot,
                     new bgfx.DynamicIndexBufferHandle { idx = buffer.nativeIndex },
                     access);
                 break;
             case BgfxBufferKind.Indirect:
-                bgfx.Raw.encoder_set_compute_indirect_buffer(
+                BgfxNativeCalls.EncoderSetComputeIndirectBuffer(
                     m_encoder,
                     slot,
                     new bgfx.IndirectBufferHandle { idx = buffer.nativeIndex },

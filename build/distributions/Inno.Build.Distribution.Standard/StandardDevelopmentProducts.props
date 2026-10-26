@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/DevelopmentProduct.props" />
+  <Import Project="../../../platforms/MacOSArm64/build/Inno.Build.MacOSArm64/DevelopmentProduct.props" />
+</Project>

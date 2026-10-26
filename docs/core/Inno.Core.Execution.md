@@ -1,5 +1,7 @@
 # Inno.Core.Execution
 
+`OwnerThreadExecution.Run` 的完成通知在 owner 回调队列中消费后才结束 pump，并继续排空已入队工作及其派发的回调。内部不会先唤醒空队列、再依赖另一线程的 continuation Task 状态改变，避免任务已完成而 owner 永久等待下一条消息；同步完成、失败、取消和原同步上下文恢复语义保持一致。
+
 ## 取消、异步工作与退休屏障
 
 `RunAsync<TResult>(operation, cancellationToken)` 先在锁内校验接收状态并登记占位 Task，再在锁外组合取消并调用 operation 的同步前缀，避免“开始 IO 后才发现已经停止”的窗口，也不持 owner 锁执行调用者代码。返回原操作结果；调用方仍须观察失败。

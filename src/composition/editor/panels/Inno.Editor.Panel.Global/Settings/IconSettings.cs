@@ -185,16 +185,10 @@ internal abstract unsafe class IconSetting : EditorSetting
             glyph,
             new Vector2(origin.X + iconSlotWidth * 0.5f, origin.Y + lineHeight * 0.5f),
             color);
-        using (NativeStringLease nativeText = Utf8Codec.EncodeNullTerminated(text, allowsNull: false))
-        {
-            NativeImGui.Raw.AddText(
-                drawList,
-                Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(origin.X + iconSlotWidth + style->ItemInnerSpacing.X, origin.Y)),
-                color,
-                (sbyte*)nativeText.pointer,
-                null
-            );
-        }
+        Inno.Editor.ImGui.ImGui.DrawText(
+            new Vector2(origin.X + iconSlotWidth + style->ItemInnerSpacing.X, origin.Y),
+            color,
+            text);
     }
 }
 

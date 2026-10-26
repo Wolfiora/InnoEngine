@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Integration.WindowsX64.Bgfx;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
 public sealed class ShaderToolSelectionTests
 {
     [Fact]
-    public void NativeGraphicsSelectionDoesNotDependOnTheManagedSdkExecutable()
+    public void OfflineToolsExcludeCmakeWhileRuntimeBindingsKeepTheSelectedSdk()
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoShaderToolSelection", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -28,12 +28,13 @@ public sealed class ShaderToolSelectionTests
                 File.WriteAllText(tools[name], "frozen executable input");
             }
             var sdk = new NativeToolchainSelection("windows-x64", new BuildHostDescriptor("Windows", "x64"),
-                tools, new Dictionary<string, string>(), [], [], ".dll", true);
-            NativeToolchainSelection first = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(sdk));
+                tools, new Dictionary<string, string>(), [], ["-G", "Fixture"], new NativeLinkPlan(".dll"), true);
+            NativeToolchainSelection first = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(sdk), true);
+            NativeToolchainSelection runtime = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(sdk), false);
             tools["dotnet"] = Path.Combine(root, "another-dotnet.exe");
             File.WriteAllText(tools["dotnet"], "another managed SDK");
-            var otherSdk = new NativeToolchainSelection("windows-x64", sdk.host, tools, sdk.environment, [], [], ".dll", true);
-            NativeToolchainSelection second = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(otherSdk));
+            var otherSdk = new NativeToolchainSelection("windows-x64", sdk.host, tools, sdk.environment, [], sdk.cmakeArguments, new NativeLinkPlan(".dll"), true);
+            NativeToolchainSelection second = WindowsX64BgfxIntegration.nativeProfile.SelectTools(new NativeBuildContext(root, "release").WithToolchain(otherSdk), true);
 
             Assert.Equal(first.declarations, second.declarations);
             Assert.Equal(first.inputPaths, second.inputPaths);
@@ -42,6 +43,13 @@ public sealed class ShaderToolSelectionTests
             Assert.Equal(tools["msbuild"], first.ResolveExecutable("msbuild"));
             Assert.DoesNotContain(first.inputPaths, path => Path.GetFileName(path).Contains("dotnet", StringComparison.Ordinal));
             Assert.Empty(first.cmakeArguments);
+            Assert.Equal(tools["cmake"], runtime.ResolveExecutable("cmake"));
+            Assert.Equal(sdk.cmakeArguments, runtime.cmakeArguments);
+            Assert.False(runtime.TryResolveExecutable("dotnet", out _));
+            string archive = Path.Combine(root, "bridge.lib");
+            var linking = WindowsX64BgfxIntegration.nativeProfile.CreateBindingLinkSettings(archive);
+            Assert.Equal(Path.Combine(root, "bridge"), linking.reference);
+            Assert.Equal(["/WHOLEARCHIVE:\"" + archive + "\""], linking.arguments);
         }
         finally
         {

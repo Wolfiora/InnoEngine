@@ -21,7 +21,7 @@
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../fixtures/Inno.Rendering.Runtime.Reload.TestModule/Inno.Rendering.Runtime.Reload.TestModule.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
+    <ProjectReference Include="../fixtures/Inno.Rendering.Runtime.Reload.TestModule/Inno.Rendering.Runtime.Reload.TestModule.csproj" ReferenceOutputAssembly="false" OutputItemType="RenderingReloadTestModule" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,11 +34,7 @@
   </ItemGroup>
 
   <Target Name="CopyRenderingReloadTestModule" AfterTargets="Build">
-    <ItemGroup>
-      <RenderingReloadTestModule Include="..\fixtures\Inno.Rendering.Runtime.Reload.TestModule\bin\$(Configuration)\net10.0\Inno.Rendering.Runtime.Reload.TestModule.dll" />
-    </ItemGroup>
-    <MakeDir Directories="$(OutputPath)Modules\RenderingReload" />
-    <Copy SourceFiles="@(RenderingReloadTestModule)" DestinationFolder="$(OutputPath)Modules\RenderingReload" />
+    <Copy SourceFiles="@(RenderingReloadTestModule)" DestinationFolder="$(OutDir)Modules/RenderingReload" />
   </Target>
 
   <ItemGroup>

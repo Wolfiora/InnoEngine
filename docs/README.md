@@ -5,8 +5,8 @@
 ## 第一次使用
 
 1. 阅读[启动指南](platform/PRODUCT_STARTUP.md)，确认本机 SDK 和支持范围。
-2. 在 IDE 选择 [InnoEngine.Build](entry/InnoEngine.Build.md)，增量准备当前宿主的 Editor。
-3. 启动 [InnoEngine.Editor](entry/InnoEngine.Editor.md)。没有传入 Project 路径时打开目录选择窗口。
+2. 在 IDE 直接启动 [InnoEngine.Editor](entry/InnoEngine.Editor.md)，正常 Build 会准备完整依赖。没有传入 Project 路径时打开目录选择窗口。
+3. 需要独立准备支持或显式清理时使用 [InnoEngine.Build](entry/InnoEngine.Build.md)。
 4. 阅读[架构总览](architecture/ENGINE_ARCHITECTURE_OVERVIEW.md)，再进入所需项目页。
 
 引擎源码修改后运行 Build。游戏内容修改由导入和 reload 流程处理。清理使用显式命令，不属于默认构建。
@@ -56,3 +56,5 @@
 独立的 [Inno.Scripting.Compiler.Tests](testing/Inno.Scripting.Compiler.Tests.md) 覆盖当前语言契约、跨插件 IDE 引用和框架内容缓存失效，纳入托管验证图。[Inno.Build.Toolchains.Tests](testing/Inno.Build.Toolchains.Tests.md) 独立验证中立原生编译清单、冻结根映射与完整性契约。
 
 [Inno.Testing.Source](testing/Inno.Testing.Source.md) 为需要 checkout 的测试读取显式 SDK 输入，源码只属于该测试支持程序集。
+
+平台构建接入新增独立标准产品库、Windows 宿主及三个平台 Build integration；各项目的当前公开契约和签名映射见对应分类索引。

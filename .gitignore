@@ -62,12 +62,8 @@ dlldata.c
 # Benchmark Results
 BenchmarkDotNet.Artifacts/
 
-# .NET Core
-project.lock.json
-project.fragment.lock.json
+# Owned build output
 artifacts/
-*.bgcs-lock
-**/.bgcs/
 !src/**/Artifacts/
 !src/**/Artifacts/**/*.cs
 
@@ -241,9 +237,6 @@ _pkginfo.txt
 # but keep track of directories ending in .cache
 !?*.[Cc]ache/
 
-# Native binding generation scratch output
-**/.bindgen-cache/
-
 # Others
 ClientBin/
 ~$*
@@ -316,10 +309,6 @@ node_modules/
 *.dsw
 *.dsp
 
-# Visual Studio 6 technical files
-*.ncb
-*.aps
-
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -367,9 +356,6 @@ ASALocalRun/
 # MSBuild Binary and Structured Log
 *.binlog
 
-# Persistent cross-process binding generation ownership
-*.generation.lock
-
 # NVidia Nsight GPU debugger configuration file
 *.nvuser
 
@@ -411,9 +397,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-
-# JetBrains Rider
-*.sln.iml
 
 # macOS
 .DS_Store

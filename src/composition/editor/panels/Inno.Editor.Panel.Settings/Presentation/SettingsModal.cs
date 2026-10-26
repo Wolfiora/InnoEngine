@@ -1,6 +1,4 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -275,10 +273,9 @@ internal sealed unsafe class SettingsModal(
                 ? EditorPalette.assetBorder
                 : EditorPalette.assetBorderSoft;
         float centerX = (minimum.X + maximum.X) * 0.5f;
-        NativeImGui.Raw.AddLine(
-            NativeImGui.Raw.GetWindowDrawList(),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(centerX, minimum.Y)),
-            Unsafe.BitCast<NumericsVector2, NativeVector2>(new Vector2(centerX, maximum.Y)),
+        EditorImGui.DrawLine(
+            new Vector2(centerX, minimum.Y),
+            new Vector2(centerX, maximum.Y),
             NativeImGui.ColorConvertFloat4ToU32(color),
             EditorWidget.style.borderSize
         );

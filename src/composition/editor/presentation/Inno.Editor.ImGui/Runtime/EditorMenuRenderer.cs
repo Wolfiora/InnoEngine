@@ -271,10 +271,10 @@ public static unsafe class EditorMenuRenderer
                 : hovered
                     ? EditorPalette.accentHovered
                     : EditorPalette.accent;
-            NativeImGui.Raw.AddRectFilled(
+            ImGui.DrawNativeFilledRectangle(
                 NativeImGui.Raw.GetWindowDrawList(),
-                ImGui.ToNative(minimum),
-                ImGui.ToNative(minimum + size),
+                minimum,
+                minimum + size,
                 NativeImGui.ColorConvertFloat4ToU32(background),
                 NativeImGui.Raw.GetStyle()->FrameRounding,
                 0

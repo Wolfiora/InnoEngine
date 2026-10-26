@@ -1,11 +1,6 @@
 <Project>
   <!-- Resolve the SDK execution host without changing any game publication target. -->
-  <PropertyGroup>
-    <InnoDevelopmentTarget Condition="'$(NETCoreSdkRuntimeIdentifier)' == 'win-x64'">windows-x64</InnoDevelopmentTarget>
-    <InnoDevelopmentTarget Condition="'$(NETCoreSdkRuntimeIdentifier)' == 'osx-arm64'">macos-arm64</InnoDevelopmentTarget>
-    <DefineConstants Condition="'$(InnoDevelopmentTarget)' == 'windows-x64'">$(DefineConstants);INNO_HOST_WINDOWS_X64</DefineConstants>
-    <DefineConstants Condition="'$(InnoDevelopmentTarget)' == 'macos-arm64'">$(DefineConstants);INNO_HOST_MACOS_ARM64</DefineConstants>
-  </PropertyGroup>
+  <Import Project="../build/distributions/Inno.Build.Distribution.Standard/StandardDevelopmentProducts.props" />
 
   <Target
     Name="ValidateDevelopmentHost"

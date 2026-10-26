@@ -55,3 +55,7 @@ BGCS 的 `src/BGCS.Platforms/ManagedRuntimeResolver.cs` 在 BrowserWasm 下返�
 ## 引擎重新验收条件
 
 消费包含上述能力的正式 BGCS 包后，重新执行 Browser 五组件生成、冻结原生聚合、静态闭包验证、Mono Wasm / Wasm AOT 发布和实际启动、输入、存储、帧推进及退出检查。当前此项记为失败且由 SDK 能力阻塞，不能记为通过。
+
+## 2026-10-22 再复验
+
+实际 workload 与已配置工具下再次出现相同 BGFX aggregate ABI 拒绝，宏常量诊断一并保留；[本次记录](PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md)包含命令证据和扩展协议边界。未修改 SDK 或其包内容。

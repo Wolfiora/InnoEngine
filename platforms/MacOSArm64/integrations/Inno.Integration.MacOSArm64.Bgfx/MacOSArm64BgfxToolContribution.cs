@@ -8,8 +8,10 @@ namespace Inno.Integration.MacOSArm64.Bgfx;
 
 internal static class MacOSArm64BgfxToolContribution
 {
-    internal static NativeToolchainSelection Select(NativeBuildContext context)
-    {
+    internal static NativeToolchainSelection Select(
+        NativeBuildContext context,
+        bool includeTools
+    ) {
         NativeToolchainSelection sdk = context.RequireToolchain();
         if (sdk.host.system != "MacOS")
             throw new PlatformNotSupportedException("This BGFX integration requires a MacOS tool host.");
@@ -28,9 +30,11 @@ internal static class MacOSArm64BgfxToolContribution
         };
         string dotnet = sdk.ResolveExecutable("dotnet");
         string cmake = sdk.ResolveExecutable("cmake");
+        if (!includeTools)
+            tools.Add("cmake", cmake);
         return new NativeToolchainSelection(sdk.targetId, sdk.host, tools, sdk.environment,
-            sdk.inputPaths.Where(path => path != dotnet && path != cmake)
+            sdk.inputPaths.Where(path => path != dotnet && (!includeTools || path != cmake))
                 .Concat([Path.Combine(owner, "MacOSArm64BgfxToolContribution.cs"), Path.Combine(owner, "MacOSArm64BgfxBuildProfile.cs")]),
-            [], sdk.sharedLibraryExtension, sdk.multiConfiguration);
+            includeTools ? [] : sdk.cmakeArguments, sdk.linkPlan, sdk.multiConfiguration, sdk.compilerInputs);
     }
 }

@@ -1,11 +1,146 @@
 {
-  "schemaVersion": 1,
-  "extends": [
-    "common.json"
-  ],
-  "targets": [
-    {
-      "id": "host"
+  "schemaVersion": 2,
+  "library": {
+    "id": "inno.imguizmo",
+    "nativeName": "cimguizmo"
+  },
+  "source": {
+    "language": "c",
+    "languageStandard": "c17",
+    "headers": [
+      "../../../../../extern/cimguizmo/cimguizmo.h"
+    ],
+    "includeDirectories": [
+      "../../../../../extern/cimguizmo",
+      "../../../../../extern/cimgui"
+    ],
+    "defines": [
+      "CIMGUI_DEFINE_ENUMS_AND_STRUCTS"
+    ],
+    "includeTransitivelyReferencedHeaders": false,
+    "parseMacros": true,
+    "selection": {
+      "includeHeaders": [
+        "../../../../../extern/cimguizmo/cimguizmo.h"
+      ],
+      "excludeDeclarations": [
+        "ImGuizmo_SetID",
+        "ImGuizmo_PushID_StrStr",
+        "ImGuizmo_GetID_StrStr"
+      ]
     }
-  ]
+  },
+  "api": {
+    "namespace": "Inno.Native.ImGuizmo",
+    "name": "ImGuizmo",
+    "style": "static",
+    "importMode": "functionTable",
+    "framework": "net10.0",
+    "emitNativeMetadata": true,
+    "nestGeneratedTypesInApi": false,
+    "emitCallbackDelegates": true,
+    "emitLibraryNameConstant": true,
+    "usings": [
+      "System.Numerics",
+      "Inno.Native.ImGui"
+    ],
+    "naming": {
+      "functions": {
+        "casing": "pascal",
+        "removePrefixes": [
+          "ImGuizmo_"
+        ]
+      },
+      "fields": {
+        "casing": "pascal"
+      },
+      "enumerators": {
+        "casing": "pascal"
+      }
+    },
+    "names": {
+      "OPERATION": "ImGuizmoOperation",
+      "MODE": "ImGuizmoMode",
+      "COLOR": "ImGuizmoColor"
+    },
+    "functions": [
+      {
+        "name": "SetDrawlist",
+        "function": "ImGuizmo_SetDrawlist"
+      },
+      {
+        "name": "IsOver",
+        "function": "ImGuizmo_IsOver_Nil"
+      },
+      {
+        "name": "Manipulate",
+        "function": "ImGuizmo_Manipulate"
+      },
+      {
+        "name": "ViewManipulate",
+        "function": "ImGuizmo_ViewManipulate_Float"
+      },
+      {
+        "name": "ViewManipulate",
+        "function": "ImGuizmo_ViewManipulate_FloatPtr"
+      },
+      {
+        "name": "PushID",
+        "function": "ImGuizmo_PushID_Str"
+      },
+      {
+        "name": "PushID",
+        "function": "ImGuizmo_PushID_Ptr"
+      },
+      {
+        "name": "PushID",
+        "function": "ImGuizmo_PushID_Int"
+      },
+      {
+        "name": "GetID",
+        "function": "ImGuizmo_GetID_Str"
+      },
+      {
+        "name": "GetID",
+        "function": "ImGuizmo_GetID_Ptr"
+      },
+      {
+        "name": "IsOver",
+        "function": "ImGuizmo_IsOver_OPERATION"
+      },
+      {
+        "name": "IsOver",
+        "function": "ImGuizmo_IsOver_FloatPtr"
+      }
+    ],
+    "records": [],
+    "externalTypes": [
+      {
+        "managedType": "System.Numerics.Vector2",
+        "nativeType": "ImVec2_c",
+        "fields": {
+          "y": "Y",
+          "x": "X"
+        }
+      },
+      {
+        "managedType": "System.Numerics.Vector4",
+        "nativeType": "ImVec4_c",
+        "fields": {
+          "z": "Z",
+          "x": "X",
+          "w": "W",
+          "y": "Y"
+        }
+      }
+    ]
+  },
+  "runtime": {
+    "mode": "package"
+  },
+  "output": {
+    "layout": "singleFile",
+    "singleFileName": "Bindings.cs",
+    "root": "../obj/bindings/bgcs"
+  }
 }

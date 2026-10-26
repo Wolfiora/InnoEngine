@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
 
@@ -79,11 +80,18 @@ public sealed class ManagedBuildInputSnapshot
     /// <returns>
     /// A snapshot that can be freshly verified after waiting or executing; no Player compilation is performed.
     /// </returns>
+    /// <remarks>
+    /// Restore and evaluation use an owned SDK output layout, independently of ordinary IDE outputs.
+    /// An explicit ArtifactsPath remains the caller's responsibility, including its concurrency protection.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// A required operation, SDK or property collection is null.
     /// </exception>
     /// <exception cref="FileNotFoundException">
     /// A required source, compiler, restored package input or SDK declaration is absent.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The source entry escapes the physical checkout or a filesystem alias cannot be resolved.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// The selected SDK cannot evaluate the declared graph.
@@ -103,7 +111,8 @@ public sealed class ManagedBuildInputSnapshot
         ArgumentNullException.ThrowIfNull(properties);
         ArgumentException.ThrowIfNullOrWhiteSpace(project);
         cancellationToken.ThrowIfCancellationRequested();
-        string selected = Path.GetFullPath(project, context.engineRoot);
+        string selected = new PhysicalPathResolver().Resolve(Path.GetFullPath(project, context.engineRoot));
+        PathBoundary.RequireContained(context.engineRoot, selected);
         if (!File.Exists(selected))
             throw new FileNotFoundException("The managed input entry project is absent.", selected);
         var frozen = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(

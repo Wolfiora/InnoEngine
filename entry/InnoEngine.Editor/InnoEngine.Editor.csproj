@@ -1,25 +1,37 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project
+  Sdk="Microsoft.NET.Sdk"
+  TreatAsLocalProperty="BuildProjectReferences;BuildingInsideVisualStudio;OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration">
   <Import Project="../DevelopmentHost.props" />
 
   <PropertyGroup>
+    <!-- This entry selects a different project closure for each SDK host. -->
+    <InnoNuGetHostContext>$(NETCoreSdkRuntimeIdentifier)</InnoNuGetHostContext>
+    <!-- Direct and product references must share one restore/output context. -->
+    <InnoNativeTarget Condition="'$(InnoNativeTarget)' == ''">$(InnoDevelopmentTarget)</InnoNativeTarget>
+    <InnoToolTarget Condition="'$(InnoToolTarget)' == ''">$(InnoDevelopmentTarget)</InnoToolTarget>
+    <InnoProductBuildProperties Condition="'$(InnoProductBuildProperties)' == ''">$(InnoDevelopmentEditorBuildProperties)</InnoProductBuildProperties>
     <OutputType>Exe</OutputType>
     <AssemblyName>InnoEngine.Editor</AssemblyName>
     <RootNamespace>InnoEngine.Editor</RootNamespace>
     <!-- The host product is built through this reference, rather than as a second solution root. -->
     <OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>false</OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>
+    <BuildProjectReferences Condition="'$(DesignTimeBuild)' != 'true'">true</BuildProjectReferences>
+    <BuildingInsideVisualStudio Condition="'$(DesignTimeBuild)' != 'true'">false</BuildingInsideVisualStudio>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference
-      Include="../../platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj"
-      Condition="'$(InnoDevelopmentTarget)' == 'windows-x64'"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj"
-      Condition="'$(InnoDevelopmentTarget)' == 'macos-arm64'"
+      Include="$(InnoDevelopmentEditorProject)"
+      Condition="'$(InnoDevelopmentEditorProject)' != ''"
       PrivateAssets="compile" />
     <ProjectReference Include="../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
+  <ItemDefinitionGroup Condition="'$(DesignTimeBuild)' != 'true'">
+    <ProjectReference>
+      <AdditionalProperties>BuildProjectReferences=true;BuildingInsideVisualStudio=false</AdditionalProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
 
   <ItemGroup>
     <AssemblyMetadata

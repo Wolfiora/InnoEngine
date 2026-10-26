@@ -296,3 +296,23 @@ public void AAA(
 - 冷 CMake producer 通过共同 executor 固定 recipe 声明的工作区输入；Browser 聚合的组件 include、bridge 与参数必须解析到同一复制树。热缓存命中不复制，外部 SDK 与输出保持自己的位置和 owner，不用字符串替换整个仓库根来误重定向输出。
 - Task runtime 只在 IBuildEngine4 Build 生命周期、同一完整请求身份内复用成功不可变 publication；registry 只存 BCL 数据，不持有 SDK owner、lease 或私有 ALC 类型。每个实际载入边界仍有独立 owner；失败/取消不缓存。共享 restore 写入由 Core.IO lease 协调，等待时 Yield/Reacquire，保留锁文件。
 - 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。NuGet Runtime 资产按产品真实 Restore 图选择，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。
+- Owned NuGet Restore 必须使用标准 `ExcludeRestorePackageImports=true`，编译使用包含已恢复 imports 的独立求值配置。不得让同一缓存 ProjectInstance 把旧 package content items 带入新程序集输出，也不得通过包名特例、补写 NuGet imports 或删除缓存掩盖混装。
+- NuGet 锁文件由 `Inno.NuGetLockFiles.targets` 唯一声明：中立工程、实际 SDK RID 和入口显式声明的宿主引用图上下文各有归属；不得按产品 Native target 扩散重复清单，也不得剥除 SDK 属性来缩减文件数。消费者读取实际求值的锁和 assets 路径，保留清单全部提交；CI 同时验证 locked restore、文件稳定性和 untracked 文件。不得用 ignore 规则隐藏冗余或过期依赖清单。
+
+- 引擎管理的构建 SDK 工作缓存与协调锁必须位于对应的 `artifacts` / `obj` 或显式输出 owner 内，不为源码目录中的已退出缓存位置保留全局 ignore 或验证豁免。清理旧工程目录前，核对当前工程/还原图、Git 归属、符号链接、活动进程和完整文件清单；普通运行锁仍遵守现有 owner 退休协议。远端旧分支的历史配置不是当前分支的游离文件，不得跨分支只删清单或改写历史来制造已清理的结果。
+
+## 30. 完成前的深层自查与交付说明
+
+- 不得在 `BindGen-CS` 仓库创建或保留 `Agent.md`、`AGENTS.md` 及其大小写变体；引擎的代理工作约束只记录在引擎自己的规范中。
+- 每次交付前必须主动自问：当前实现是否达到职责清楚、代码整洁、真实解耦且易于扩展的要求。检查必须深入实际执行链、依赖方向、输入来源、失败处理、并发协议和资源生命周期；不得仅凭目录、类型名或接口数量判断架构质量。
+- 检查新增或修改的基础能力是否能够直接复用 Core IO、Events、Identity、Serialization 等既有契约；在不破坏领域边界的前提下消除重复协议、平行管理器和重复实现。
+- 通过真实调用方、可替换边界及适用验证确认扩展能力。新增 backend 或平台时需要修改哪些 owner，必须能够从实际代码说明；不得用未执行的测试或抽象声明代替证据。
+- 每次最终交付必须简要说明上述自查结果、实际验证证据及尚未解决或无法执行的事项。没有完成验证时明确说明，不得宣称已经达到完美或全部通过。
+
+## 31. Issue 与 Pull Request 交付规范
+
+- 创建或更新仓库 issue 或 Pull Request 时，标题必须采用 `type(scope): description` 格式；标题和正文必须全部使用英文。
+- Issue 必须区分已复现缺陷与待验证风险，说明职责 owner、复现条件、实际结果、预期结果和可执行验收条件；提交前检索已有 issue，避免重复。
+- Pull Request 正文必须根据目标分支的完整差异说明问题、最终行为与实际验证，并明确未执行的检查；创建前检索已有 PR，避免重复，不得将部分验收描述为完整矩阵通过。
+- Git 提交的 author 和 committer 均使用 `Aaron Liao <hsuankailiao@gmail.com>`；不得使用 Codex/bot 身份或添加任何 `Co-authored-by` 署名。Pull Request 使用用户授权的 GitHub 账号创建。
+- BGCS 缺陷必须通过公开 API 独立复现并明确标记；不得修改 BGCS 源码、包、二进制或手工修改生成物来绕过缺陷。

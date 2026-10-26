@@ -20,3 +20,5 @@
 ## BGFX 运行接入
 
 - [Inno.Integration.MacOSArm64.Bgfx.Runtime](Inno.Integration.MacOSArm64.Bgfx.Runtime.md)：独立于构建 integration 的 surface 解析和能力声明。
+
+- [Inno.Integration.MacOSArm64.Build](Inno.Integration.MacOSArm64.Build.md)：平台职责与最小公开构建入口。

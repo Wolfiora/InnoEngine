@@ -3,14 +3,41 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Cli;
 using Xunit;
+using Inno.Build.Cli;
 
 namespace Inno.Build.Tests;
 
 [Collection("Build pipeline serialization")]
 public sealed class ArchitectureVerificationCommandTests
 {
+    [Fact]
+    public async Task NativeVerificationRejectsTargetsWithoutAnEditorRunnerBeforeCreatingState()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "InnoNativeVerifyCommand", Guid.NewGuid().ToString("N"));
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        TextWriter previousOutput = Console.Out;
+        TextWriter previousError = Console.Error;
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
+            Console.SetOut(output);
+            Console.SetError(output);
+            int result = await BuildApplication.Run(["verify-native", "--engine-root", root, "--target", "browser-wasm"], CancellationToken.None);
+            Assert.Equal(1, result);
+            Assert.Contains("requires a registered Editor test host", output.ToString(), StringComparison.Ordinal);
+            Assert.DoesNotContain("BGCS-CSHARP-ABI-PLAN", output.ToString(), StringComparison.Ordinal);
+            Assert.False(Directory.Exists(Path.Combine(root, "artifacts")));
+        }
+        finally
+        {
+            Console.SetOut(previousOutput);
+            Console.SetError(previousError);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task VerifyRoutesToTheArchitectureCommandWithoutPreparingAProduct()
     {

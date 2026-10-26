@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Native.LibraryLoading;
 using Inno.Build.Toolchains;
+using Inno.Native.LibraryLoading;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
@@ -17,12 +17,16 @@ public sealed class ToolRunner
 {
     private readonly IReadOnlyDictionary<BgfxTool, string>? m_executables;
     private readonly string? m_includesDirectory;
+    private readonly IToolchainWorkspaceProvider m_workspaces;
 
     /// <summary>
     /// Creates a runner for tools explicitly deployed with the current application.
     /// Resolution is deferred until execution; constructing a compiler does not start or discover a process.
     /// </summary>
-    public ToolRunner() { }
+    /// <param name="workspaces">
+    /// Explicit execution path policy, or null for physical execution.
+    /// </param>
+    public ToolRunner(IToolchainWorkspaceProvider? workspaces = null) => m_workspaces = workspaces ?? new PhysicalToolchainWorkspaceProvider();
 
     /// <summary>
     /// Freezes executables selected and validated by the host's toolchain operation.
@@ -33,6 +37,9 @@ public sealed class ToolRunner
     /// <param name="includesDirectory">
     /// The absolute shader include directory belonging to the same protected tool product.
     /// </param>
+    /// <param name="workspaces">
+    /// Explicit execution path policy, or null for physical execution.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// An identity is unsupported or an executable path is relative.
     /// </exception>
@@ -41,8 +48,10 @@ public sealed class ToolRunner
     /// </exception>
     public ToolRunner(
         IReadOnlyDictionary<BgfxTool, string> executables,
-        string includesDirectory
+        string includesDirectory,
+        IToolchainWorkspaceProvider? workspaces = null
     ) {
+        m_workspaces = workspaces ?? new PhysicalToolchainWorkspaceProvider();
         ArgumentNullException.ThrowIfNull(executables);
         ArgumentException.ThrowIfNullOrWhiteSpace(includesDirectory);
         if (!Path.IsPathFullyQualified(includesDirectory) || !Directory.Exists(includesDirectory))
@@ -118,7 +127,7 @@ public sealed class ToolRunner
         ArgumentNullException.ThrowIfNull(arguments);
         cancellationToken.ThrowIfCancellationRequested();
         string toolPath = ResolveToolPath(tool);
-        using ToolchainWorkingDirectory execution = await ToolchainWorkingDirectory.OpenAsync(
+        using ToolchainWorkingDirectory execution = await m_workspaces.OpenAsync(
             Path.GetDirectoryName(toolPath)!, cancellationToken).ConfigureAwait(false);
         var startInfo = new ProcessStartInfo
         {

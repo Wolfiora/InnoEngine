@@ -4,12 +4,12 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.MiniAudio;
 using Inno.Build.Toolchains.Sdl3;
 using Inno.Build.Toolchains.Text;
 using Inno.Build.Toolchains.UI;
-using Xunit;
 
 namespace Inno.Build.Tests;
 
@@ -205,7 +205,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
     private NativeBuildContext Context() => new NativeBuildContext(m_root, "release")
         .WithToolchain(new NativeToolchainSelection("fixture-target", new BuildHostDescriptor("Windows", "x64"),
             new Dictionary<string, string> { ["compiler"] = Path.Combine(m_root, "tools", "compiler") },
-            new Dictionary<string, string>(), [], [], ".dll", false))
+            new Dictionary<string, string>(), [], [], new NativeLinkPlan(".dll"), false))
         .WithComponentOptions(m_owner, new(NativeLibraryKind.Shared));
 
     private NativeBuildRecipe Recipe(NativeBuildContext context)
@@ -232,7 +232,9 @@ public sealed class NativeRecipeClosureTests : IDisposable
         {
             [m_owner.nativeProject] = new()
             {
-                fingerprint = fingerprint, bindingsPath = generated, nativeDirectory = bridge, artifactDirectory = string.Empty
+                fingerprint = fingerprint, bindingsPath = generated, nativeDirectory = bridge,
+                usesRuntimeImports = false,
+                artifactDirectory = string.Empty, artifactOwnerDirectory = string.Empty
             }
         }, []);
     }

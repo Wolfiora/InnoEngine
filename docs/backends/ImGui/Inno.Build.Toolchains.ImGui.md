@@ -1,5 +1,7 @@
 # Inno.Build.Toolchains.ImGui
 
+Native recipe 同时冻结 upstream cimgui、构建定义及 Native owner 的手写 `Native/` 输入。共享 `ImGuiPlatformCallbacks.cpp` 随同一复制树编译进入 cimgui；源文件和头文件变化参与组件指纹。此 ABI adapter 不选择平台、不解析 SDK，也不修改 extern 或 BGCS 生成物。
+
 [分类索引](README.md) · [Wiki 首页](../../README.md) · [统一 CLI](../../build/Inno.Build.Cli.md) · [Native](Inno.Native.ImGui.md)
 
 ## 职责、依赖和公开 API
@@ -37,22 +39,21 @@ static Task<NativeBuildProduct> PrepareComponentAsync(
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
 
 ### `Inno.Build.Toolchains.ImGui.ImGuiToolchain`
 
 <!-- api: T:Inno.Build.Toolchains.ImGui.ImGuiToolchain faaf5019ee8e8ccc5d1361f6404dcc2045f282830a537e7779f4a84383c557be -->
 <!-- api: P:Inno.Build.Toolchains.ImGui.ImGuiToolchain.componentDescriptor 064777d83c6313d7d53c02142a9df6c677766f3daab81c269f221703e94a6230 -->
 <!-- api: M:Inno.Build.Toolchains.ImGui.ImGuiToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext,System.Threading.CancellationToken) e1c4c8d960588ce133709b5d0ef4cdb19fac575d99f44171772452ae66bb2d80 -->
-
 <!-- api: M:Inno.Build.Toolchains.ImGui.ImGuiToolchain.CreateRecipe(Inno.Build.Toolchains.NativeBuildContext) 29e432c6aef29c85d53887dded8785795393c706c64e30169278258181530dab -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-c42114783caa835a"></a>[`public static System.Threading.Tasks.Task<Inno.Build.Toolchains.NativeBuildProduct> Inno.Build.Toolchains.ImGui.ImGuiToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L41) | Builds the component using the explicitly selected target SDK and validates the complete native product.<br>返回：The immutable validated product; a failed or canceled candidate is not published.<br>`context`：The operation-owned checkout, configuration, tools and target.<br>`cancellationToken`：Cancels and drains active tool processes before publication. | — | `System.InvalidOperationException`：The SDK is unassigned or native compilation or export validation fails.<br>`System.OperationCanceledException`：The operation was canceled before publication. |
-| <a id="api-4ada589813d66796"></a>[`public static Inno.Build.Toolchains.NativeComponentDescriptor Inno.Build.Toolchains.ImGui.ImGuiToolchain.componentDescriptor { get; }`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L17) | Gets the component's sole source, binding and intermediate owner. | — | — |
-| <a id="api-e0a9740b39ddd554"></a>[`public static class Inno.Build.Toolchains.ImGui.ImGuiToolchain`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L12) | Owns this backend's native recipe while SDK selection remains with the platform provider. | — | — |
-| <a id="api-c427c58c10960b64"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGui.ImGuiToolchain.CreateRecipe(Inno.Build.Toolchains.NativeBuildContext context)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L89) | 冻结当前明确目标的源码、工具与 shared 编译参数；不要求生成输出已经存在。 | 借用 context，返回不可变声明；实际发布加入选定 binding 字节，ImGuizmo 还加入 ImGui 链接库与身份。 | 缺 SDK/options/source 或不支持的链接方式立即失败。 |
+| 声明 | 行为、参数与结果 |
+| --- | --- |
+| <a id="api-c42114783caa835a"></a>[`public static System.Threading.Tasks.Task<Inno.Build.Toolchains.NativeBuildProduct> Inno.Build.Toolchains.ImGui.ImGuiToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L42) | Builds the component using the explicitly selected target SDK and validates the complete native product.<br>`context`：The operation-owned checkout, configuration, tools and target.<br>`cancellationToken`：Cancels and drains active tool processes before publication.<br>返回：The immutable validated product; a failed or canceled candidate is not published.<br>T:System.InvalidOperationException：The SDK is unassigned or native compilation or export validation fails.<br>T:System.OperationCanceledException：The operation was canceled before publication. |
+| <a id="api-c427c58c10960b64"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGui.ImGuiToolchain.CreateRecipe(Inno.Build.Toolchains.NativeBuildContext context)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L100) | Declares the selected source, tools and parameters without generating bindings or compiling native code.<br>`context`：The operation with a frozen target SDK and explicit shared component options.<br>返回：The source recipe; publication adds the selected binding outputs before computing artifact identity.<br>T:System.ArgumentNullException：The context is null.<br>T:System.InvalidOperationException：The target SDK or component options have not been assigned.<br>T:System.NotSupportedException：The component requests a linkage mode this recipe cannot produce. |
+| <a id="api-4ada589813d66796"></a>[`public static Inno.Build.Toolchains.NativeComponentDescriptor Inno.Build.Toolchains.ImGui.ImGuiToolchain.componentDescriptor { get; }`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L18) | Gets the component's sole source, binding and intermediate owner. |
+| <a id="api-e0a9740b39ddd554"></a>[`public static class Inno.Build.Toolchains.ImGui.ImGuiToolchain`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGui/ImGuiToolchain.cs#L13) | Owns this backend's native recipe while SDK selection remains with the platform provider. |
 
 ## 项目依赖
 

@@ -14,6 +14,11 @@ internal static class PackageDependencyBoundaryValidator
     ) {
         bool test = project.StartsWith("tests/", StringComparison.Ordinal) || project.Contains("/tests/", StringComparison.Ordinal);
         bool generator = project == "build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj";
+        bool bindingProfile = project.StartsWith("platforms/", StringComparison.Ordinal)
+            && project.Contains("/integrations/Inno.Integration.", StringComparison.Ordinal)
+            && project.EndsWith(".Build.csproj", StringComparison.Ordinal)
+            && document.Descendants("ProjectReference").Any(static reference =>
+                reference.Attribute("Include")?.Value.EndsWith("/Inno.Build.Bindings.csproj", StringComparison.Ordinal) == true);
         foreach (XElement package in document.Descendants("PackageReference"))
         {
             string? id = package.Attribute("Include")?.Value;
@@ -24,7 +29,7 @@ internal static class PackageDependencyBoundaryValidator
                 if (!test && !project.StartsWith("backends/", StringComparison.Ordinal))
                     failures.Add($"{project}: the interop runtime dependency belongs to a backend boundary.");
             }
-            else if (!test && !generator)
+            else if (!test && !generator && !bindingProfile)
                 failures.Add($"{project}: binding generator packages belong only to their build application or declared extension.");
             string version = package.Attribute("Version")?.Value
                 ?? package.Elements("Version").Select(static value => value.Value).SingleOrDefault() ?? string.Empty;

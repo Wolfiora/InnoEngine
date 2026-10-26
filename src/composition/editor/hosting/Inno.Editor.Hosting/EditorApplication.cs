@@ -62,8 +62,14 @@ public static class EditorApplication
         if (!options.adapterCatalog.renderingAuthoring.supportedBackends.Contains(options.shell.adapters.rendering))
             throw new NotSupportedException("The selected rendering backend requires a matching authoring provider.");
         cancellationToken.ThrowIfCancellationRequested();
-        using EditorHost host = EditorHost.Create(options);
-        cancellationToken.ThrowIfCancellationRequested();
-        return await host.RunAsync(options.frameDriver, options.smokeFrameLimit, cancellationToken);
+        EditorHost host = EditorHost.Create(options);
+        int result;
+        using (host)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            result = await host.RunAsync(options.frameDriver, options.smokeFrameLimit, cancellationToken);
+        }
+        host.ReportShutdownCompleted();
+        return result;
     }
 }

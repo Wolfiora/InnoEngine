@@ -1,5 +1,6 @@
 using System;
 using Inno.Build.Composition;
+using Inno.Build.Managed;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.WindowsX64;
@@ -13,7 +14,7 @@ public static class WindowsX64BuildModule
     /// Gets the explicit implemented product target, independent of the tool execution host.
     /// </summary>
     public static PlatformTargetDescriptor target { get; } = new(
-        BuildTargetId.windowsX64, "Windows", "x64", "msvc-x64", "win-x64", true);
+        new BuildTargetId("windows-x64"), "Windows", "x64", "msvc-x64", "win-x64", true);
 
     /// <summary>
     /// Contributes the platform's target, product inputs and SDK resolver as one registration.
@@ -33,23 +34,28 @@ public static class WindowsX64BuildModule
     /// <param name="supportPackValidator">
     /// The complete borrowed platform and selected component validator.
     /// </param>
+    /// <param name="bindingGenerator">
+    /// The generator configured by this platform integration.
+    /// </param>
     /// <returns>
     /// A complete immutable contribution without starting tools or creating files.
     /// </returns>
     public static BuildPlatformContribution CreateContribution(
         BuildCompositionContext context,
-        ProductNativeBuildPlan nativePlan,
-        ProductNativeBuildPlan editorNativePlan,
-        ProductNativeBuildPlan shaderToolsPlan,
-        IPlayerSupportPackValidator supportPackValidator
+        NativeProductContribution nativePlan,
+        NativeProductContribution editorNativePlan,
+        NativeProductContribution shaderToolsPlan,
+        IPlayerSupportPackValidator supportPackValidator,
+        INativeBindingGenerator bindingGenerator
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(nativePlan);
         ArgumentNullException.ThrowIfNull(editorNativePlan);
         return new(target,
             () => new WindowsX64GameBuildTarget(supportPackValidator),
-            new WindowsX64PlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, context.bindingGenerator, supportPackValidator), new WindowsX64NativeToolchainProvider(context.dotnetHost),
+            new WindowsX64PlayerSupportPackSource(nativePlan, context.host, context.dotnetHost, bindingGenerator, supportPackValidator), new WindowsX64NativeToolchainProvider(context.dotnetHost),
             "platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj",
-            [nativePlan, editorNativePlan, shaderToolsPlan]);
+            [nativePlan, editorNativePlan, shaderToolsPlan], bindingGenerator,
+            [ManagedDeploymentId.coreClr, ManagedDeploymentId.nativeAot]);
     }
 }

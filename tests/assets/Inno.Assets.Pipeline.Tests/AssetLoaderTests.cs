@@ -66,9 +66,7 @@ public sealed class AssetLoaderTests : IDisposable
         m_logs.Dispose();
         m_diagnosticScope.Dispose();
         m_identityScope.Dispose();
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
-        GC.WaitForPendingFinalizers();
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        m_modules.generations.Wait();
         if (Directory.Exists(m_moduleArtifacts))
             Directory.Delete(m_moduleArtifacts, recursive: true);
     }

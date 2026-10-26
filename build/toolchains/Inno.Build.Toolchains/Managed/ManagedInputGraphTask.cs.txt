@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Linq;
 using System.Text.Json;
 using Microsoft.Build.Evaluation;
@@ -95,8 +97,14 @@ public sealed class ManagedInputGraphTask : Task
                         foreach (string name in contribution.GetMetadataValue("GlobalPropertiesToRemove").Split(';', StringSplitOptions.RemoveEmptyEntries))
                             selected.Remove(name);
                         string dependency = Path.GetFullPath(contribution.EvaluatedInclude, Path.GetDirectoryName(project.FullPath));
-                        string restoreKey = dependency + "|" + string.Join(";", selected.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                        string restoreKey = dependency + "|" + string.Join(";", selected
+                            .Where(pair => !pair.Key.Equals("ArtifactsPath", StringComparison.OrdinalIgnoreCase))
+                            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
                             .Select(pair => pair.Key + "=" + pair.Value));
+                        // Distinct graph properties must not overwrite a shared dependency's restored RID targets.
+                        string layout = globals["ArtifactsPath"];
+                        selected["ArtifactsPath"] = Path.Combine(layout, "contributions",
+                            Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(restoreKey))));
                         if (RestoreContributions && restoredContributions.Add(restoreKey))
                         {
                             var restoreProperties = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);

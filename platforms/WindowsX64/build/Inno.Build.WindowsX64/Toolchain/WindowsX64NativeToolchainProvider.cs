@@ -87,7 +87,8 @@ public sealed class WindowsX64NativeToolchainProvider : INativeToolchainProvider
 
         cmakeArguments.InsertRange(0, ["-G", "Visual Studio 17 2022", "-A", "x64"]);
         return NativeToolchainPreparation.Freeze(targetId, host, tools, environment, inputs,
-            cmakeArguments, ".dll", true);
+            cmakeArguments, WindowsX64LinkerSettings.Create(), true, new NativeCompilerInputs(tools["cl"], tools["cl"],
+                systemIncludeDirectories: environment["INCLUDE"].Split(';', StringSplitOptions.RemoveEmptyEntries)));
     }
 
     private static string RequireVariable(

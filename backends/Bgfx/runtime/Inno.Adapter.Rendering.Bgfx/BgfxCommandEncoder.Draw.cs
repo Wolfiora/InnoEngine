@@ -157,7 +157,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 m_indexBuffer.descriptor.elementCount - m_firstIndex);
         }
         SetDrawState(pipeline);
-        bgfx.Raw.encoder_submit_indirect(
+        BgfxNativeCalls.EncoderSubmitIndirect(
             m_encoder,
             m_viewId,
             pipeline.program,
@@ -188,7 +188,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
 
         SetDrawState(pipeline);
-        bgfx.Raw.encoder_submit(
+        BgfxNativeCalls.EncoderSubmit(
             m_encoder,
             m_viewId,
             pipeline.program,
