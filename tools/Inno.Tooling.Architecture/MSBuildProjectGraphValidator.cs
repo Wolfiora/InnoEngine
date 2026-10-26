@@ -83,7 +83,7 @@ internal static class MSBuildProjectGraphValidator
         foreach (string argument in new[]
         {
             "msbuild", project, "-nologo", "-getItem:ProjectReference,Compile,Using",
-            "-getProperty:AssemblyName,OutputType,InnoProductId,InnoProductTarget,InnoNativeTarget,ImplicitUsings,NuGetLockFilePath,RuntimeIdentifier,InnoNuGetHostContext,_InnoNuGetToolScope,RestorePackagesWithLockFile",
+            "-getProperty:AssemblyName,OutputType,InnoProductId,InnoProductTarget,InnoNativeTarget,ImplicitUsings",
             "-p:DesignTimeBuild=true", "-p:BuildProjectReferences=false", "-p:InnoProductRestore=false",
             "-p:Configuration=" + configuration
         })
@@ -122,13 +122,9 @@ internal static class MSBuildProjectGraphValidator
         EvaluatedSource[] sources = items.GetProperty("Compile").EnumerateArray()
             .Select(item => new EvaluatedSource(Relative(root, item.GetProperty("FullPath").GetString()!),
                 Value(item, "Link"))).ToArray();
-        string selectedLock = Value(properties, "NuGetLockFilePath");
         return new(Relative(root, project), Value(properties, "AssemblyName"), Value(properties, "OutputType"),
             Value(properties, "InnoProductId"), Value(properties, "InnoProductTarget"),
             Value(properties, "InnoNativeTarget"), Value(properties, "ImplicitUsings"),
-            selectedLock.Length == 0 ? string.Empty : Relative(root, selectedLock), Value(properties, "RuntimeIdentifier"),
-            Value(properties, "InnoNuGetHostContext"), Value(properties, "_InnoNuGetToolScope"),
-            Value(properties, "RestorePackagesWithLockFile"),
             items.GetProperty("Using").GetArrayLength(), references, sources);
     }
 
@@ -139,17 +135,6 @@ internal static class MSBuildProjectGraphValidator
     ) {
         bool test = project.path.StartsWith("tests/", StringComparison.Ordinal)
             || project.path.Contains("/tests/", StringComparison.Ordinal);
-        string lockName = "packages"
-            + (project.nuGetHostContext.Length == 0 ? string.Empty : ".host-" + project.nuGetHostContext)
-            + (project.runtimeIdentifier.Length == 0 ? string.Empty : ".rid-" + project.runtimeIdentifier)
-            + (project.nuGetToolScope.Length == 0 ? string.Empty : "." + project.nuGetToolScope)
-            + ".lock.json";
-        string expectedLock = Path.GetDirectoryName(project.path)!.Replace('\\', '/') + "/" + lockName;
-        if (!project.restorePackagesWithLockFile.Equals("true", StringComparison.OrdinalIgnoreCase)
-            || !project.nuGetLockFile.Equals(expectedLock, StringComparison.Ordinal))
-            failures.Add($"{project.path}: effective NuGet lock ownership must be '{expectedLock}'.");
-        else if (!File.Exists(Path.GetFullPath(project.nuGetLockFile, root)))
-            failures.Add($"{project.path}: the selected NuGet lock file is missing: {project.nuGetLockFile}.");
         if (project.implicitUsings.Equals("enable", StringComparison.OrdinalIgnoreCase)
             || project.implicitUsings.Equals("true", StringComparison.OrdinalIgnoreCase)
             || project.usingItems != 0)
@@ -250,11 +235,6 @@ internal static class MSBuildProjectGraphValidator
         string target,
         string nativeTarget,
         string implicitUsings,
-        string nuGetLockFile,
-        string runtimeIdentifier,
-        string nuGetHostContext,
-        string nuGetToolScope,
-        string restorePackagesWithLockFile,
         int usingItems,
         IReadOnlyList<EvaluatedReference> references,
         IReadOnlyList<EvaluatedSource> sources

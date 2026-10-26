@@ -19,7 +19,7 @@
 
 绑定增量回归使用真实 SDK 检查：新的绑定选择文件不会使中立项目重编译；相同选择保持 import 时间戳；产品选择在 Build/Publish 后仍可核对。生成回归同时检查未选目标映射不失效、选中配置变化仍产生独立 generation。
 
-`BindingExtensionPreparationTests.ExtensionRestoreCompletesBeforeItsInputInventoryIsFrozen` 通过实际扩展项目验证首次 Restore 产生的 lock 文件先进入输入身份，再执行生成和热请求复用。扩展加载使用独立测试进程，父进程在子进程退出后清理其预先登记的目录；构建后的 fresh 校验继续检查真实变化。
+绑定扩展准备通过实际项目验证 SDK Restore 在冻结包与源码输入前完成，再执行生成和热请求复用。扩展加载使用独立测试进程，父进程在子进程退出后清理其预先登记的目录；构建后的 fresh 校验继续检查真实变化。
 
 `BuildCacheWorkspaceLinkTests` 验证 workspace 文件别名不重复计数、安全退休，以及越界、循环、悬空、不可变产物与目录链接的拒绝规则。文件链接用例仅在 Unix 文件系统执行，Windows 明确标为 Skip；目录链接拒绝在 Windows 使用 junction 实测。
 
@@ -161,6 +161,6 @@ dotnet test tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj --configuration
 
 ## NuGet、目标与闭包验证
 
-`NuGetBindingDependencyTests` 验证固定 Runtime 包和 Restore 内容身份；`SupportPackClosureValidationTests` 验证任意后端组、精确静态归档及 Browser 对象 ABI。平台 fixture 单独验证 PE/Mach-O 的目标拒绝，不冒充 foreign 产品运行证据。
+`NuGetBindingDependencyTests` 验证精确 Runtime 包声明和还原包的内容哈希；`SdkRestoreTests` 验证普通 SDK 还原、RID/AOT/裁剪依赖与 Editor 宿主路由；输入快照验证 PackageReference 变化会使冻结输入失效。`SupportPackClosureValidationTests` 验证任意后端组、精确静态归档及 Browser 对象 ABI。平台 fixture 单独验证 PE/Mach-O 的目标拒绝，不冒充 foreign 产品运行证据。
 
 ## 轻量维护闭包

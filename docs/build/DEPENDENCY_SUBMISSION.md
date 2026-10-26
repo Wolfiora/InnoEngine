@@ -1,60 +1,45 @@
-# NuGet 依赖图提交
+# NuGet 依赖还原与提交
 
 [统一构建](README.md) · [Wiki 首页](../README.md) · [绑定生成](Inno.Build.Bindings.md)
 
-## 当前依赖来源
+## 依赖声明
 
-BGCS 生成器与 Runtime 完全由 NuGet 恢复。`build/msbuild/Inno.Packages.props` 固定包族版本，项目求值选定的 NuGet 锁文件保存解析版本和内容哈希。引擎不要求 BGCS 源码仓库。
+工程通过标准 `PackageReference` 声明依赖，由 .NET SDK / NuGet 执行解析。BGCS 包族版本统一声明在 `build/msbuild/Inno.Packages.props`，各消费者使用精确版本范围；不引用 BGCS 源码。
 
-Native 第三方源码属于 `extern/`，不是 NuGet 依赖图的根。Browser Player 的 Wasm workload 由实际发布工程使用，默认开发入口还原不应要求它。
+普通类库、工具、测试与产品工程使用同一标准还原流程，不生成或提交独立依赖锁文件，不维护宿主、RID 或发布模式的清单命名规则。包的传递依赖、目标资产与 SDK 隐式工具包由 NuGet 解析。
 
-## 工作流
-
-[`nuget-dependencies.yml`](../../.github/workflows/nuget-dependencies.yml) 使用引擎 SDK，对 `SourceDebug` 图执行 locked restore。默认 Debug/Release 仅还原两个开发入口；SourceDebug 才包含中立源码、构建库和测试。
+## 日常开发
 
 ```powershell
-./tests/Invoke-NuGetLockChecks.ps1
+dotnet restore InnoEngine.sln -p:Configuration=SourceDebug
+dotnet build entry/InnoEngine.Editor/InnoEngine.Editor.csproj
 ```
 
-PR 检查还原；push 和手动运行提交解析后的依赖 snapshot。提交权限仅属于该步骤，fork PR 不执行写入步骤。工作流不发布包，不编译 Native，不代表产品运行验收通过。
+普通 `dotnet build` 与 Rider Build 会自动执行需要的 Restore，不要求额外依赖准备脚本。默认 Debug/Release 的 Solution 还原面向两个开发入口；SourceDebug 包含完整源码、构建库及测试工程。
 
-## 锁文件的唯一归属
+修改包版本后重新执行普通 Restore、构建和相关测试。实际还原结果属于 SDK 求值的 `ProjectAssetsFile`，一般位于 `obj`，也可以由明确的 `ArtifactsPath` 隔离；不提交这些中间文件。
 
-所有创作源码工程继续参与逐工程依赖锁定。`Inno.NuGetLockFiles.targets` 是唯一命名规则；NuGet 自己解析依赖、框架、包资产和内容哈希。
+## 产品与工具隔离
 
-| 工程实际输入 | 清单 |
-| --- | --- |
-| 没有 SDK RID | `packages.lock.json` |
-| 明确 SDK RID | `packages.rid-<RID>.lock.json` |
-| Editor 入口的宿主路由 | `packages.host-<SDK宿主RID>.lock.json` |
-| 宿主路由与实际 RID 同时存在 | `packages.host-<SDK宿主RID>.rid-<实际RID>.lock.json` |
-| SDK 需要 NativeAOT 编译工具包 | 在上述名称的 `.lock.json` 前增加 `.aot` |
-| SDK 需要 trimming / analyzer 工具包，且不是 NativeAOT | 在上述名称的 `.lock.json` 前增加 `.link` |
+平台继续贡献真实 RID、目标 SDK 和发布模板。NativeAOT、裁剪与 Wasm 发布所需的隐式包由 SDK 选择，不能为了简化项目布局而剥除发布属性。
 
-引擎 Native target、配置和输出目录继续按原职责传递，但不会自动扩大清单文件名。普通编译器工具引用保持中立；显式向生成器传入 SDK RID 是不同的还原请求，不能因工具身份而忽略。临时发布、测试和输入求值工程的清单属于它们自己的 owner。
+Task 私有还原与编译保持独立的 MSBuild 求值配置。托管输入冻结读取实际还原结果、包内容和 SDK reference pack；不从其他输出 owner 的中间文件推断依赖。
 
-规则通过 SDK 的 `AfterMicrosoftNETSdkTargets` 扩展点执行，保留既有扩展列表，读取 SDK 已推导的发布／analyzer 能力。同一个 RID 的 CoreCLR、NativeAOT 和 trimming 请求可能具有不同隐式 NuGet 依赖，不能合并。例如 `packages.rid-win-x64.aot.lock.json` 包含 SDK 请求的编译工具包；没有更改或屏蔽 SDK 属性。
+Native 第三方源码属于 `extern/`。BGCS 生成缓存、构建缓存、进程协调 lease 和产品读取保护各自保持原有 owner，与 NuGet 依赖声明分离。
 
-清单必须提交，不添加笼统的 ignore 规则。`owner.lock` 等跨进程协调文件属于已经忽略的构建输出目录，不能与 NuGet 依赖清单混淆。后者也不属于按字节压力清理的构建缓存。
+## CI
 
-修改包声明后，使用普通 NuGet 命令明确更新当前正式请求的清单，再执行 locked 检查：
+[`nuget-dependencies.yml`](../../.github/workflows/nuget-dependencies.yml) 使用仓库声明的 SDK 执行普通 Solution Restore，并保留日志和 binlog。push 与手动运行可以提交 SDK 实际解析的依赖 snapshot；PR 不执行写入步骤。
 
-```powershell
-dotnet restore InnoEngine.sln -p:Configuration=SourceDebug --force-evaluate
-./tests/Invoke-NuGetLockChecks.ps1
-```
+Engine CI 分别验证托管源码、Editor Debug/Release 和实际 NativeAOT RID 的普通还原。托管测试后检查 tracked 与 untracked 源码变化。包身份回归通过真实 SDK Restore，核对声明的 BGCS 版本、归档 SHA-512 与 SDK 元数据；assets 中的 NuGet 内容身份与 `.nupkg.metadata` 对照，不与包含签名的 ZIP 原始哈希混淆。
 
-具有独立 RID、隐式工具包或宿主上下文的正式请求也必须分别更新和检查，不能复制另一个请求的 JSON。检查脚本接受 Project、Configuration、Target、RuntimeIdentifier、ProductProperties、ArtifactsPath、PublishAot 和 PublishTrimmed，并记录 SDK 的实际图、锁路径、assets 输出和包身份。它不解析另一套依赖规则，也不会整理或删除源码清单。
-
-`--force-evaluate` 属于显式更新操作，不能带入 locked 验收：NuGet 会按这个明确请求重新生成清单，即使同时设置了 locked mode。验收只使用 `--locked-mode` 并检查文件没有变化。
-
-CI 同时检查文件集合、内容、时间戳和未跟踪文件。只运行 `git diff` 无法发现新生成的 untracked 清单；还原通过也不能代替源码目录卫生检查。普通开发在依赖未变时不应新增或改写清单。
+这种方式使用标准 NuGet 依赖解析，不承诺冻结所有未来包源状态；SDK 基线、包版本声明、实际解析身份和构建测试共同作为当前可验证输入。
 
 ## 失败定位
 
-- `NU1004`：项目声明与锁文件不一致。更新真实项目图的锁文件后重新 locked restore。
-- 包不可取得：核对精确版本、NuGet source 和网络；不回退到源码项目。
-- 默认入口要求 Wasm workload：核对产品属性是否泄漏到工具或共同库。
-- snapshot 提交失败：查看 GitHub token 权限和服务返回；本地还原成功不能证明远端提交成功。
+- 包不可取得：检查声明版本、NuGet source 与网络，不回退到源码项目。
+- SDK 或 targeting pack 缺失：安装工程声明的 SDK / workload，不从其他已安装版本猜测替代。
+- 默认入口要求 Wasm workload：检查产品属性是否泄漏到工具或共同库。
+- snapshot 提交失败：检查 GitHub 权限和服务返回；本地还原成功不表示远端提交成功。
 
-仓库设置和远端 workflow 状态单独检查，当前结果见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。
+当前检查范围见[当前验收](../architecture/CURRENT_ACCEPTANCE.md)。

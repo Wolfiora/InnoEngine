@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Inno.Testing.Source;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -58,31 +57,36 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
     }
 
+    /// <summary>
+    /// Keeps package declarations in the frozen source and rejects changes after capture.
+    /// </summary>
+    /// <returns>
+    /// Completion after the execution copy is checked and a modified package request is rejected.
+    /// </returns>
     [Fact]
-    public async Task OnlyTheSdkSelectedLockBelongsToFrozenCompilationInputs()
+    public async Task PackageDeclarationsBelongToFrozenCompilationInputs()
     {
-        string repository = TestRepository.GetRoot(typeof(ManagedBuildInputSnapshotTests).Assembly);
-        Write("LockPolicy.targets", File.ReadAllText(Path.Combine(repository, "build", "msbuild", "Inno.NuGetLockFiles.targets")));
-        Write("Directory.Build.props", "<Project><PropertyGroup><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>"
-            + "<AfterMicrosoftNETSdkTargets>$(MSBuildThisFileDirectory)LockPolicy.targets</AfterMicrosoftNETSdkTargets>"
-            + "</PropertyGroup></Project>");
+        Write("App/Options.props", """
+            <Project>
+              <ItemGroup><PackageReference Include="BGCS.Runtime" Version="[4.1.2]" /></ItemGroup>
+            </Project>
+            """);
         string project = Path.Combine(m_root, "App", "App.csproj");
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project, cancellation.Token);
         await ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "restore", project, "-p:RuntimeIdentifier=osx-arm64", "--disable-build-servers", "-v:quiet"],
+            [sdk.cliPath, "restore", project, "--disable-build-servers", "-v:quiet"],
             m_root, cancellation.Token, DotNetSdkEnvironment.Create(sdk.hostPath));
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
             new NativeBuildContext(m_root, "release"), sdk, project,
             new Dictionary<string, string> { ["Configuration"] = "Release" }, cancellation.Token);
         using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync(cancellation.Token);
-        Assert.True(File.Exists(Path.Combine(execution.engineRoot, "App", "packages.lock.json")));
-        Assert.False(File.Exists(Path.Combine(execution.engineRoot, "App", "packages.rid-osx-arm64.lock.json")));
-
-        File.AppendAllText(Path.Combine(m_root, "App", "packages.rid-osx-arm64.lock.json"), Environment.NewLine);
-        await snapshot.VerifyAsync(cancellation.Token);
-        File.AppendAllText(Path.Combine(m_root, "App", "packages.lock.json"), Environment.NewLine);
+        string source = Path.Combine(m_root, "App", "Options.props");
+        string frozen = Path.Combine(execution.engineRoot, "App", "Options.props");
+        Assert.Equal(File.ReadAllText(source), File.ReadAllText(frozen));
+        Assert.Empty(Directory.EnumerateFiles(execution.engineRoot, "packages*.lock.json", SearchOption.AllDirectories));
+        File.WriteAllText(source, File.ReadAllText(source).Replace("[4.1.2]", "[4.1.1]", StringComparison.Ordinal));
         await Assert.ThrowsAsync<InvalidOperationException>(() => snapshot.VerifyAsync(cancellation.Token).AsTask());
     }
 

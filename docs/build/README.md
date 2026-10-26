@@ -68,4 +68,4 @@ Renderer smoke 紧随 Debug 产品构建，通过 `Invoke-EditorSmoke.ps1` 验�
 
 独立绑定 Task 按组件 ID 和源码 owner 共同解析参与绑定的产品声明；共用源码的离线工具不参与运行库绑定参数选择。不同有效绑定声明仍明确拒绝，不按宿主或平台名称选择第一份配置。
 
-- [NuGet 依赖图提交](DEPENDENCY_SUBMISSION.md)：固定包版本、锁文件还原与 CI snapshot 提交。
+- [NuGet 依赖还原与提交](DEPENDENCY_SUBMISSION.md)：标准 PackageReference、SDK Restore、包身份验证与 CI snapshot 提交。

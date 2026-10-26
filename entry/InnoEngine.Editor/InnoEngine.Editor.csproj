@@ -4,8 +4,6 @@
   <Import Project="../DevelopmentHost.props" />
 
   <PropertyGroup>
-    <!-- This entry selects a different project closure for each SDK host. -->
-    <InnoNuGetHostContext>$(NETCoreSdkRuntimeIdentifier)</InnoNuGetHostContext>
     <!-- Direct and product references must share one restore/output context. -->
     <InnoNativeTarget Condition="'$(InnoNativeTarget)' == ''">$(InnoDevelopmentTarget)</InnoNativeTarget>
     <InnoToolTarget Condition="'$(InnoToolTarget)' == ''">$(InnoDevelopmentTarget)</InnoToolTarget>

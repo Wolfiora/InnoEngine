@@ -2,7 +2,7 @@
 
 托管工具使用 .NET 10 SDK。输入快照先读取求值后的工程图，再仅执行 SDK 的编译符号准备 target，捕获包括 `NET10_0` 在内的最终符号集合；该步骤不执行编译、原生准备或产品发布。SDK target 输入与求值器一起参与内容指纹，缺少符号准备能力时明确失败。
 
-托管输入快照包含当前 Restore 实际选择的 NuGet 锁文件及包内容身份。中立源码使用 `packages.lock.json`；实际 SDK RID 使用 `packages.rid-<RID>.lock.json`。具有宿主产品路由的 Editor 开发入口额外使用 `host-<SDK宿主RID>` 上下文；SDK 隐式工具包不同的 NativeAOT 和 trimming 请求分别增加 `.aot` / `.link`。规则在 SDK 完成属性推导后求值。引擎 Native target 不自动成为 NuGet 锁文件维度；完整 target、SDK 属性和输出隔离仍保留。固定源码编译消费相同求值路径，详见[依赖锁定与 CI](DEPENDENCY_SUBMISSION.md)。
+托管输入快照包含当前 SDK Restore 实际解析的 assets、包内容、reference pack、项目声明和编译选项。输入路径通过 MSBuild 求值取得，完整 target、SDK 发布属性与输出隔离保持明确；源码目录不保存额外依赖清单。固定源码编译消费同一不可变输入，详见[依赖还原与 CI](DEPENDENCY_SUBMISSION.md)。
 
 [分类索引](README.md) · [Wiki 首页](../README.md) · [平台归属与扩展](../architecture/PLATFORM_EXTENSION_GUIDE.md)
 

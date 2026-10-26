@@ -38,7 +38,7 @@ Have a project already? Pass its directory after `--`. To try FlappyBird, clone 
 
 [Startup, advanced commands, and game exports →](docs/platform/PRODUCT_STARTUP.md) · [Current acceptance](docs/architecture/CURRENT_ACCEPTANCE.md)
 
-NuGet dependency locks are tracked source inputs. Their names distinguish actual .NET runtime identifiers and the Editor entry host; native product labels do not create extra copies. See [dependency updates and locked restore checks](docs/build/DEPENDENCY_SUBMISSION.md).
+NuGet dependencies use standard project `PackageReference` declarations and SDK restore. Resolved assets remain in the selected intermediate output directory. See [dependency updates and CI](docs/build/DEPENDENCY_SUBMISSION.md).
 
 ## Product targets
 

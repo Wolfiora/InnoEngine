@@ -10,10 +10,8 @@ on:
       - "**/global.json"
       - "InnoEngine.sln"
       - ".gitmodules"
-      - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
       - ".github/actions/setup-dotnet/**"
-      - "tests/Invoke-NuGetLockChecks.ps1"
   push:
     branches:
       - master
@@ -24,10 +22,8 @@ on:
       - "**/global.json"
       - "InnoEngine.sln"
       - ".gitmodules"
-      - "**/packages*.lock.json"
       - ".github/workflows/nuget-dependencies.yml"
       - ".github/actions/setup-dotnet/**"
-      - "tests/Invoke-NuGetLockChecks.ps1"
 
 permissions:
   contents: read
@@ -64,7 +60,12 @@ jobs:
 
       - name: Restore the complete solution
         shell: pwsh
-        run: ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/nuget-locks
+        run: |
+          New-Item -ItemType Directory -Force 'artifacts/acceptance/nuget' | Out-Null
+          dotnet restore InnoEngine.sln -p:Configuration=SourceDebug --disable-parallel -nr:false `
+            '-bl:artifacts/acceptance/nuget/restore.binlog' 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/nuget/restore.log'
+          if ($LASTEXITCODE -ne 0) { throw 'The solution dependency restore failed.' }
 
       - name: Submit resolved NuGet dependencies
         if: github.event_name != 'pull_request'
@@ -75,10 +76,10 @@ jobs:
           detectorsCategories: NuGet
           correlator: inno-nuget
 
-      - name: Upload lock ownership and restore evidence
+      - name: Upload dependency restore evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nuget-lock-evidence
-          path: InnoEngine/artifacts/acceptance/nuget-locks/**
+          name: nuget-restore-evidence
+          path: InnoEngine/artifacts/acceptance/nuget/**
           if-no-files-found: error

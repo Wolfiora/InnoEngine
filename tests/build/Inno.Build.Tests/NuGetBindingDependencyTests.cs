@@ -2,6 +2,7 @@ using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,8 +36,14 @@ public sealed class NuGetBindingDependencyTests
         Assert.False(File.Exists(Path.Combine(root, "build", "msbuild", "Inno.Dependencies.props")));
     }
 
+    /// <summary>
+    /// Verifies the restored runtime version, signed archive and NuGet content identity without a source manifest.
+    /// </summary>
+    /// <returns>
+    /// Completion after the official restore output and installed package metadata agree.
+    /// </returns>
     [Fact]
-    public async Task RestoredRuntimePackageMatchesItsLockedContentIdentity()
+    public async Task RestoredRuntimePackageMatchesItsDeclaredVersionAndNuGetContentIdentity()
     {
         string root = TestRepository.GetRoot(typeof(NuGetBindingDependencyTests).Assembly);
         string host = ToolchainEnvironment.ResolveExecutable("dotnet");
@@ -46,19 +53,28 @@ public sealed class NuGetBindingDependencyTests
             using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
             string output = await ToolchainEnvironment.CaptureOutputAsync(host,
                 ["msbuild", Path.Combine(root, "backends", "ImGui", "native", "Inno.Native.ImGui", "Inno.Native.ImGui.csproj"),
-                    "-t:Restore", "-p:RestoreLockedMode=true", "-p:ArtifactsPath=" + workspace,
-                    "-getProperty:ProjectAssetsFile,NuGetLockFilePath,TargetFramework", "-nologo", "-nr:false", "-v:quiet"],
+                    "-t:Restore", "-p:ArtifactsPath=" + workspace,
+                    "-getProperty:ProjectAssetsFile,InnoBgcsPackageVersion", "-nologo", "-nr:false", "-v:quiet"],
                 root, cancellation.Token, DotNetSdkEnvironment.Create(host));
             using JsonDocument evaluation = JsonDocument.Parse(output);
             JsonElement properties = evaluation.RootElement.GetProperty("Properties");
             using JsonDocument assets = JsonDocument.Parse(File.ReadAllBytes(properties.GetProperty("ProjectAssetsFile").GetString()!));
-            using JsonDocument locked = JsonDocument.Parse(File.ReadAllBytes(properties.GetProperty("NuGetLockFilePath").GetString()!));
             JsonProperty runtime = assets.RootElement.GetProperty("libraries").EnumerateObject()
                 .Single(static library => library.Name.StartsWith("BGCS.Runtime/", StringComparison.Ordinal));
-            JsonElement lockEntry = locked.RootElement.GetProperty("dependencies")
-                .GetProperty(properties.GetProperty("TargetFramework").GetString()!).GetProperty("BGCS.Runtime");
-            Assert.Equal(runtime.Name["BGCS.Runtime/".Length..], lockEntry.GetProperty("resolved").GetString());
-            Assert.Equal(runtime.Value.GetProperty("sha512").GetString(), lockEntry.GetProperty("contentHash").GetString());
+            string version = properties.GetProperty("InnoBgcsPackageVersion").GetString()!;
+            Assert.Equal("BGCS.Runtime/" + version, runtime.Name);
+            string packagePath = runtime.Value.GetProperty("path").GetString()!;
+            string archive = assets.RootElement.GetProperty("packageFolders").EnumerateObject()
+                .Select(folder => Path.Combine(folder.Name, packagePath, "bgcs.runtime." + version + ".nupkg"))
+                .Single(File.Exists);
+            await using FileStream package = File.OpenRead(archive);
+            string archiveHash = Convert.ToBase64String(await SHA512.HashDataAsync(package));
+            Assert.Equal(File.ReadAllText(archive + ".sha512").Trim(), archiveHash);
+            // NuGet's content identity excludes signature metadata from the signed archive.
+            using JsonDocument metadata = JsonDocument.Parse(File.ReadAllBytes(
+                Path.Combine(Path.GetDirectoryName(archive)!, ".nupkg.metadata")));
+            Assert.Equal(runtime.Value.GetProperty("sha512").GetString(),
+                metadata.RootElement.GetProperty("contentHash").GetString());
         }
         finally
         {
@@ -67,27 +83,4 @@ public sealed class NuGetBindingDependencyTests
         }
     }
 
-    [Theory]
-    [InlineData("", "", "packages.lock.json")]
-    [InlineData("windows-x64", "", "packages.lock.json")]
-    [InlineData("browser-wasm", "", "packages.lock.json")]
-    [InlineData("macos-arm64", "", "packages.lock.json")]
-    [InlineData("windows-x64", "win-x64", "packages.rid-win-x64.lock.json")]
-    [InlineData("browser-wasm", "browser-wasm", "packages.rid-browser-wasm.lock.json")]
-    public async Task ExplicitUntrimmedRestoreUsesOnlyActualRuntimeIdentity(
-        string target,
-        string runtime,
-        string expectedFile
-    ) {
-        string root = TestRepository.GetRoot(typeof(NuGetBindingDependencyTests).Assembly);
-        string host = ToolchainEnvironment.ResolveExecutable("dotnet");
-        string project = Path.Combine(root, "src", "foundation", "core", "Inno.Core.IO", "Inno.Core.IO.csproj");
-        string selected = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", project, "-nologo", "-nodeReuse:false", "-p:DesignTimeBuild=true",
-                // This tests the untrimmed graph independently of installed Wasm workload defaults.
-                "-p:PublishTrimmed=false", "-p:EnableTrimAnalyzer=false",
-                "-p:InnoNativeTarget=" + target, "-p:RuntimeIdentifier=" + runtime, "-getProperty:NuGetLockFilePath"],
-            root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
-        Assert.Equal(expectedFile, Path.GetFileName(selected.Trim()));
-    }
 }

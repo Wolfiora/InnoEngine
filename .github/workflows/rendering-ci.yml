@@ -76,18 +76,24 @@ jobs:
         with:
           submodules: recursive
       - uses: ./.github/actions/setup-dotnet
-      - name: Validate managed locked restore
+      - name: Restore managed source dependencies
         shell: pwsh
         run: |
-          ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-before
+          dotnet restore InnoEngine.sln -p:Configuration=SourceDebug --disable-parallel -nr:false
+          if ($LASTEXITCODE -ne 0) { throw 'The solution dependency restore failed.' }
       - name: Build and test the independent managed graph
         shell: pwsh
         run: |
           ./tests/Invoke-ManagedChecks.ps1 -ArtifactsPath (Join-Path $env:RUNNER_TEMP 'InnoManaged')
-      - name: Verify source locks after managed tests
+      - name: Verify source hygiene after managed tests
         shell: pwsh
         run: |
-          ./tests/Invoke-NuGetLockChecks.ps1 -ResultsDirectory artifacts/acceptance/managed/nuget-after
+          git diff --exit-code
+          if ($LASTEXITCODE -ne 0) { throw 'Managed verification changed tracked source files.' }
+          $untracked = @(git ls-files --others --exclude-standard)
+          if ($LASTEXITCODE -ne 0 -or $untracked.Count -ne 0) {
+            throw "Managed verification created untracked source files: $($untracked -join ', ')"
+          }
       - name: Upload managed results and deferred dependencies
         if: always()
         uses: actions/upload-artifact@v4
@@ -159,16 +165,16 @@ jobs:
             Set-Content 'artifacts/acceptance/ci-build/compiler-version.txt'
           if ($LASTEXITCODE -ne 0) { throw 'The selected compiler could not report its version.' }
 
-      - name: Validate Editor and NativeAOT locked restores
+      - name: Restore Editor and NativeAOT dependencies
         shell: pwsh
         run: |
-          ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Debug `
-            -ResultsDirectory artifacts/acceptance/ci-build/nuget-editor-debug
-          ./tests/Invoke-NuGetLockChecks.ps1 -Project entry/InnoEngine.Editor/InnoEngine.Editor.csproj -Configuration Release `
-            -ResultsDirectory artifacts/acceptance/ci-build/nuget-editor-release
-          ./tests/Invoke-NuGetLockChecks.ps1 -Project '${{ matrix.player_project }}' -Configuration Release `
-            -RuntimeIdentifier '${{ matrix.runtime_identifier }}' -PublishAot `
-            -ResultsDirectory artifacts/acceptance/ci-build/nuget-player-aot
+          dotnet restore entry/InnoEngine.Editor/InnoEngine.Editor.csproj -p:Configuration=Debug --disable-parallel -nr:false
+          if ($LASTEXITCODE -ne 0) { throw 'The Debug Editor dependency restore failed.' }
+          dotnet restore entry/InnoEngine.Editor/InnoEngine.Editor.csproj -p:Configuration=Release --disable-parallel -nr:false
+          if ($LASTEXITCODE -ne 0) { throw 'The Release Editor dependency restore failed.' }
+          dotnet restore '${{ matrix.player_project }}' -p:Configuration=Release `
+            -r '${{ matrix.runtime_identifier }}' -p:PublishAot=true --disable-parallel -nr:false
+          if ($LASTEXITCODE -ne 0) { throw 'The NativeAOT Player dependency restore failed.' }
 
       - name: Build development Build entry
         id: build_entry
