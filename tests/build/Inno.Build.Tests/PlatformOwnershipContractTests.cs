@@ -20,6 +20,22 @@ namespace Inno.Build.Tests;
 public sealed class PlatformOwnershipContractTests
 {
     [Theory]
+    [InlineData("windows-x64")]
+    [InlineData("macos-arm64")]
+    public void SharedBackendSourcesKeepDistinctRuntimeBindingAndOfflineToolOwners(string target)
+    {
+        ProductNativeBuildPlan editor = BuildTestProducts.Distribution().ResolveNativeProduct(target, "editor").plan;
+        NativeComponentDescriptor runtime = editor.steps.Single(static step => step.id == "bgfx").component;
+        NativeComponentDescriptor tools = editor.steps.Single(static step => step.id == "bgfx-tools").component;
+        Assert.Equal(runtime.nativeProject, tools.nativeProject);
+        Assert.NotEqual(runtime.id, tools.id);
+        Assert.NotNull(runtime.bindingDefinition);
+        Assert.Null(tools.bindingDefinition);
+        Assert.Single(editor.steps.Where(step => step.component.id == runtime.id
+            && step.component.nativeProject == runtime.nativeProject));
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task RealPlatformPreflightRejectsUnavailableSdkOrHostWithoutCreatingOutput(bool unsupportedHost)

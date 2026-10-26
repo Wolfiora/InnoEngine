@@ -36,7 +36,7 @@ public sealed unsafe class ViewportMetricsTests
         context.SetIniFile(null);
         context.RenderFrame(() => {
             Assert.Equal(commandKeys, (NativeImGui.Raw.GetIO()->ConfigMacOsxBehaviors != 0));
-            Assert.True(NativeImGui.Raw.GetPlatformIO()->PlatformGetWindowFramebufferScale == null);
+            Assert.True(NativeImGui.Raw.GetPlatformIO()->PlatformGetWindowFramebufferScale == default);
             int logicalWidth = 0;
             int logicalHeight = 0;
             int pixelWidth = 0;

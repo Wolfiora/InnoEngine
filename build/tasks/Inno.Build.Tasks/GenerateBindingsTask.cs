@@ -142,17 +142,19 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             context = context.WithToolchain(toolchain);
             Dictionary<string, string>? expected = ExpectedFingerprint.Length == 0 ? null
                 : new(StringComparer.Ordinal) { [owner.nativeProject] = ExpectedFingerprint };
+            // A source project can also host an offline producer that owns no runtime bindings.
             NativeComponentBuildOptions[] configured = distribution.platforms
                 .Where(platform => platform.descriptor.id.value == TargetId)
                 .SelectMany(static platform => platform.nativeProducts.Values)
                 .SelectMany(static product => product.plan.steps)
-                .Where(step => step.component.nativeProject == owner.nativeProject)
+                .Where(step => step.component.id == owner.id && step.component.nativeProject == owner.nativeProject
+                    && step.component.bindingDefinition is not null)
                 .Select(static step => step.options).ToArray();
             NativeComponentBuildOptions? selectedOptions = configured.FirstOrDefault();
             if (selectedOptions is not null && configured.Any(options => options.libraryKind != selectedOptions.libraryKind
                 || options.bindingLibraryName != selectedOptions.bindingLibraryName
                 || !options.bindingIncludeDirectories.SequenceEqual(selectedOptions.bindingIncludeDirectories, StringComparer.Ordinal)))
-                throw new InvalidOperationException("The registered products declare ambiguous standalone component binding inputs.");
+                throw new InvalidOperationException($"The registered products for target '{TargetId}' declare ambiguous binding inputs for component '{ComponentId}' in '{project}'.");
             Dictionary<string, NativeComponentBuildOptions>? componentOptions = selectedOptions is null ? null
                 : new(StringComparer.Ordinal) { [owner.nativeProject] = selectedOptions };
             var request = new NativeBindingGenerationRequest([owner], TargetId, mode, CheckOnly, expected, componentOptions);

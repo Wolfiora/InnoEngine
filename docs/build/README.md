@@ -64,4 +64,8 @@ Task fixture 通过官方 binlog replay 的 `Csc` 事件核对实际编译次数
 
 完整测试、Support Pack、Wiki 与 renderer 门禁按各自成功的构建前置条件执行，独立验证失败后仍收集其他适用门禁的结果。任一门禁失败都会使 job 失败；取消或构建前置条件失败时不执行依赖检查。
 
+Renderer smoke 紧随 Debug 产品构建，通过 `Invoke-EditorSmoke.ps1` 验证进程退出、完整 Shell 释放、帧数、后端及 sRGB。默认进程期限为 180 秒，输出分别写入所属 Project 的 Logs；超时采集可用的 macOS 原生栈并终止自有进程树，输出管道也有独立收尾期限。日志中的产品资源释放不能替代完整适配器释放或进程退出。
+
+独立绑定 Task 按组件 ID 和源码 owner 共同解析参与绑定的产品声明；共用源码的离线工具不参与运行库绑定参数选择。不同有效绑定声明仍明确拒绝，不按宿主或平台名称选择第一份配置。
+
 - [NuGet 依赖图提交](DEPENDENCY_SUBMISSION.md)：固定包版本、锁文件还原与 CI snapshot 提交。

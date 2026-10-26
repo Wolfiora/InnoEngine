@@ -187,8 +187,31 @@ jobs:
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-debug.log'
           if ($LASTEXITCODE -ne 0) { throw "Debug host Editor build failed." }
 
+      - name: Run real renderer smoke
+        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          $editor = @(dotnet msbuild 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj' `
+            -nologo -m:1 -nr:false -p:Configuration=Debug -getProperty:TargetPath)
+          if ($LASTEXITCODE -ne 0 -or $editor.Count -ne 1) {
+            throw 'The built Editor entry has no unambiguous evaluated TargetPath.'
+          }
+          ./tests/Invoke-EditorSmoke.ps1 -EditorAssembly $editor[0] `
+            -ProjectDirectory (Join-Path $env:RUNNER_TEMP 'InnoRenderingSmoke') `
+            -BackendPattern '${{ matrix.backend_pattern }}' -Dotnet (Get-Command dotnet).Source
+
+      - name: Upload renderer smoke logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendering-smoke-${{ matrix.platform }}
+          path: ${{ runner.temp }}/InnoRenderingSmoke/Logs/**
+          if-no-files-found: warn
+
       - name: Build host Editor Release
         id: native_release
+        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
         shell: pwsh
         run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
@@ -196,6 +219,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Release host Editor build failed." }
 
       - name: Verify restored BGCS package and repeated cache reuse
+        if: ${{ !cancelled() && steps.native_release.outcome == 'success' }}
         shell: pwsh
         run: |
           $assets = @(dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
@@ -213,6 +237,7 @@ jobs:
 
       - name: Build managed solution
         id: source
+        if: ${{ !cancelled() && steps.build_entry.outcome == 'success' }}
         shell: pwsh
         run: |
           dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
@@ -221,6 +246,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'SourceDebug build failed.' }
 
       - name: Enforce source and compiled public API architecture boundaries
+        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
         shell: pwsh
         run: dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- verify .
 
@@ -285,59 +311,6 @@ jobs:
           New-Item -ItemType Directory -Force (Join-Path $project 'Assets') | Out-Null
           'public sealed class WikiProbe { }' | Set-Content (Join-Path $project 'Assets/WikiProbe.cs') -Encoding utf8
           ./tests/Invoke-WikiChecks.ps1 -ProjectDirectory $project -Target '${{ matrix.build_target }}'
-
-      - name: Run real renderer smoke
-        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          $smokeProject = Join-Path $env:RUNNER_TEMP "InnoRenderingSmoke"
-          New-Item -ItemType Directory -Force (Join-Path $smokeProject "Assets") | Out-Null
-          $nativeLog = Join-Path $smokeProject "Logs/NativeRendering.log"
-          New-Item -ItemType Directory -Force (Split-Path $nativeLog) | Out-Null
-          $editor = @(dotnet msbuild 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj' `
-            -nologo -m:1 -nr:false -p:Configuration=Debug -getProperty:TargetPath)
-          if ($LASTEXITCODE -ne 0 -or $editor.Count -ne 1 -or -not (Test-Path -LiteralPath $editor[0])) {
-            throw 'The built Editor entry is unavailable at its evaluated TargetPath.'
-          }
-          dotnet $editor[0] `
-            $smokeProject --smoke-frames 3 2>&1 | Tee-Object -FilePath $nativeLog
-          if ($LASTEXITCODE -ne 0) {
-            throw "Renderer smoke exited with code $LASTEXITCODE."
-          }
-
-          $bootLog = Join-Path $smokeProject "Logs/EditorBoot.log"
-          if (-not (Test-Path $bootLog)) {
-            throw "Renderer smoke did not produce EditorBoot.log."
-          }
-          $boot = Get-Content -Raw $bootLog
-          if ($boot -notmatch '${{ matrix.backend_pattern }}') {
-            throw "Renderer smoke did not initialize the required backend pattern '${{ matrix.backend_pattern }}'."
-          }
-          if ($boot -notmatch 'Smoke frame limit reached after 3 frame\(s\)\.') {
-            throw "Renderer smoke did not submit the required frame count."
-          }
-          if ($boot -notmatch 'Dispose end\.') {
-            throw "Renderer smoke did not complete orderly shutdown."
-          }
-          if ($boot -match 'Teardown failure') {
-            throw "Renderer smoke reported a teardown failure."
-          }
-
-          $native = Get-Content -Raw $nativeLog
-          if ($boot -notmatch 'Primary presentation encodes sRGB: True\.') {
-            throw "Renderer smoke did not enable the sRGB backbuffer contract."
-          }
-          if ($native -match 'BGFX FATAL') {
-            throw "Renderer smoke reported a BGFX fatal diagnostic."
-          }
-
-      - name: Upload renderer smoke logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: rendering-smoke-${{ matrix.platform }}
-          path: ${{ runner.temp }}/InnoRenderingSmoke/Logs/**
-          if-no-files-found: warn
 
       - name: Upload contract and Wiki evidence
         if: always()

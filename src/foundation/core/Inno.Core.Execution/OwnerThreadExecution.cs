@@ -107,10 +107,13 @@ public static class OwnerThreadExecution
 
         internal void Pump(Task completion)
         {
-            Task notification = completion.ContinueWith(_ => m_callbacks.Add(static () => { }),
+            bool notified = false;
+            Task notification = completion.ContinueWith(_ => m_callbacks.Add(() => notified = true),
                 CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
-            while (!notification.IsCompleted || m_callbacks.Count != 0)
+            // Observe completion on the owner, after the wake-up item has actually been consumed.
+            while (!notified || m_callbacks.Count != 0)
                 m_callbacks.Take()();
+            notification.GetAwaiter().GetResult();
         }
     }
 }
