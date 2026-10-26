@@ -92,7 +92,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
             using BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
-                descriptor.artifactDirectory, Path.Combine(m_root, "artifacts", "bindings"), waiting.Token);
+                descriptor.artifactDirectory, descriptor.artifactOwnerDirectory, waiting.Token);
         });
         using NativeBindingGenerationResult concurrent = await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
@@ -101,7 +101,8 @@ public sealed class BindingGenerationBatchTests : IDisposable
         first.Dispose();
         concurrent.Dispose();
         Assert.Throws<ObjectDisposedException>(() => first[component.nativeProject]);
-        using (BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(descriptor.artifactDirectory, Path.Combine(m_root, "artifacts", "bindings")))
+        using (BuildArtifactWriteLease mutation = await BuildArtifactWriteLease.AcquireAsync(
+            descriptor.artifactDirectory, descriptor.artifactOwnerDirectory))
             File.WriteAllText(descriptor.bindingsPath, "damaged");
         using NativeBindingGenerationResult repaired = await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, CancellationToken.None);

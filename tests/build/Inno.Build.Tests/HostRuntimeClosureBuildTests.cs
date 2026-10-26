@@ -5,6 +5,7 @@ using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using Xunit;
 
 namespace Inno.Build.Tests;
@@ -17,6 +18,8 @@ public sealed class HostRuntimeClosureBuildTests
     public async Task RuntimeDiscoveryReceivesPrivateDependenciesWithoutExposingTheirCompileAssets(bool exposeClosure)
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoHostClosure", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        root = new PhysicalPathResolver().Resolve(root);
         string engine = TestRepository.GetRoot(typeof(HostRuntimeClosureBuildTests).Assembly);
         string dotnet = ToolchainEnvironment.ResolveExecutable("dotnet");
         string artifacts = Path.Combine(root, "managed");
