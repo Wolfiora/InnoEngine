@@ -182,16 +182,16 @@ sealed unsafe partial class BgfxDevice
 
     private void DrainDeferredResourcesForShutdown()
     {
-        // Advance destruction queues without submitting a draw against an already reset view.
+        // Complete destruction frames without drawing against an already reset view.
         while (m_deferredResources.Count != 0)
         {
-            m_backendFrame = SubmitNativeFrame(bgfx.FrameFlags.Flush);
+            SubmitRetirementFrame();
             ProcessDeferredResources(force: false);
         }
 
         for (int frame = 0; frame < m_deferredDestroyFrames; frame++)
         {
-            m_backendFrame = SubmitNativeFrame(bgfx.FrameFlags.Flush);
+            SubmitRetirementFrame();
         }
     }
 

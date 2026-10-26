@@ -94,11 +94,19 @@ public sealed class BgfxSurfaceRetirementTests
         Assert.True(retirement.IsCompletedSuccessfully);
         Assert.False(additional.isClosed);
 
-        RenderSurfaceHandle final = device.CreateWindowSurface(handles, 100, 90, "Final surface");
-        var drained = device.RetireWindowSurface(final);
+        // Exceed the native frame-credit count without relying on another product frame to flush it.
+        for (int cycle = 0; cycle < 8; cycle++)
+        {
+            RenderSurfaceHandle final = device.CreateWindowSurface(handles, 100, 90, "Drained surface");
+            var drained = device.RetireWindowSurface(final);
+            device.DrainWindowSurfaceRetirements();
+            Assert.True(drained.IsCompletedSuccessfully);
+            Assert.False(primary.isClosed);
+            Assert.False(additional.isClosed);
+        }
         device.DrainWindowSurfaceRetirements();
-        Assert.True(drained.IsCompletedSuccessfully);
-        device.DrainWindowSurfaceRetirements();
+        device.BeginFrame();
+        device.EndFrame();
     }
 
     private sealed class FixtureIntegration : IBgfxSurfaceIntegration

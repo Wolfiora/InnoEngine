@@ -166,11 +166,12 @@ public sealed unsafe partial class BgfxDevice
     }
 
     /// <summary>
-    /// Advances nonpresenting frames until all requested window retirements have been acknowledged.
+    /// Advances complete discard frames until all requested window retirements have been acknowledged.
     /// </summary>
     /// <remarks>
     /// Call only on the API thread with no open frame, graph, encoder or native UI callback.
     /// A failed drain retains the device and the borrowed native windows.
+    /// Presentation may advance while the primary window remains borrowed by the device.
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// The caller is not at a closed-frame API-thread safety point.
@@ -188,7 +189,7 @@ public sealed unsafe partial class BgfxDevice
         m_surfaceRetirementBarrier ??= new RetirementBarrier("BGFX window surfaces");
         m_surfaceRetirementBarrier.Wait(() =>
         {
-            SubmitNativeFrame(bgfx.FrameFlags.Flush);
+            SubmitRetirementFrame();
             foreach (BgfxSurfaceRetirement retirement in m_surfaceRetirements)
                 if (retirement.closing)
                     throw new RetirementPendingException("BGFX has not acknowledged window destruction.", retirement.failure);
@@ -202,6 +203,13 @@ public sealed unsafe partial class BgfxDevice
             if (retirement.closing)
                 return true;
         return false;
+    }
+
+    private void SubmitRetirementFrame()
+    {
+        // Complete the backend frame, including command-buffer submission and frame-credit return.
+        // A nonpresenting flush does not provide that completion boundary on every renderer.
+        SubmitNativeFrame(bgfx.FrameFlags.Discard);
     }
 
     private uint SubmitNativeFrame(bgfx.FrameFlags flags)
