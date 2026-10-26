@@ -2,20 +2,17 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
     private const float C_TOOLTIP_MINIMUM_WIDTH = 300f;
     private const float C_TOOLTIP_WRAP_WIDTH = 440f;
-
     /// <summary>
     /// Begins an explicitly opened popup using the editor context-menu presentation contract.
     /// The popup stays in its parent viewport, sizes itself to submitted content, and scrolls when
@@ -31,13 +28,13 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="id"/> is empty.
     /// </exception>
-    public static bool BeginMenuPopup(string id)
+    public bool BeginMenuPopup(string id)
     {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
         NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
-        ImGuiWindowFlags flags = ImGuiWindowFlags.AlwaysAutoResize |
-                                 ImGuiWindowFlags.NoSavedSettings;
+        ImGuiWindowFlags flags = ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoSavedSettings;
         if (NativeImGui.BeginPopup(id, (int)(flags)))
             return true;
         PopContextMenuStyle();
@@ -47,8 +44,9 @@ public static unsafe partial class ImGuiWidget
     /// <summary>
     /// Ends a popup opened by <see cref="BeginMenuPopup"/> and restores the previous style.
     /// </summary>
-    public static void EndMenuPopup()
+    public void EndMenuPopup()
     {
+        m_session.EnsureDrawing();
         NativeImGui.EndPopup();
         PopContextMenuStyle();
     }
@@ -60,8 +58,9 @@ public static unsafe partial class ImGuiWidget
     /// <see langword="true"/> when tooltip content should be submitted; otherwise,
     /// <see langword="false"/>.
     /// </returns>
-    public static bool BeginMenuTooltip()
+    public bool BeginMenuTooltip()
     {
+        m_session.EnsureDrawing();
         PushContextMenuStyle();
         NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         if (NativeImGui.BeginTooltip())
@@ -73,8 +72,9 @@ public static unsafe partial class ImGuiWidget
     /// <summary>
     /// Ends a tooltip opened by <see cref="BeginMenuTooltip"/> and restores the previous style.
     /// </summary>
-    public static void EndMenuTooltip()
+    public void EndMenuTooltip()
     {
+        m_session.EnsureDrawing();
         NativeImGui.EndTooltip();
         PopContextMenuStyle();
     }
@@ -85,10 +85,10 @@ public static unsafe partial class ImGuiWidget
     /// <param name="text">
     /// Tooltip text. Empty values do not draw a tooltip.
     /// </param>
-    public static void DrawItemTooltip(string? text)
+    public void DrawItemTooltip(string? text)
     {
-        if (string.IsNullOrWhiteSpace(text) ||
-            !NativeImGui.IsItemHovered((int)(ImGuiHoveredFlags.AllowWhenDisabled)))
+        m_session.EnsureDrawing();
+        if (string.IsNullOrWhiteSpace(text) || !NativeImGui.IsItemHovered((int)(ImGuiHoveredFlags.AllowWhenDisabled)))
         {
             return;
         }
@@ -102,11 +102,11 @@ public static unsafe partial class ImGuiWidget
     /// <param name="text">
     /// Tooltip contents. The caller owns hit testing; empty text draws nothing.
     /// </param>
-    public static void DrawTooltip(string? text)
+    public void DrawTooltip(string? text)
     {
+        m_session.EnsureDrawing();
         if (string.IsNullOrWhiteSpace(text))
             return;
-
         ImGuiViewport* viewport = NativeImGui.Raw.GetWindowViewport();
         Vector2 margin = new(6f * style.zoom);
         Vector2 available = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize) - margin * 2f);
@@ -114,9 +114,7 @@ public static unsafe partial class ImGuiWidget
         float outerWidth = MathF.Min(C_TOOLTIP_WRAP_WIDTH * style.zoom, available.X);
         float innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
         Vector2 textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
-        outerWidth = MathF.Min(outerWidth, MathF.Max(
-            MathF.Min(C_TOOLTIP_MINIMUM_WIDTH * style.zoom, available.X),
-            textSize.X + padding.X * 2f + style.menuBorderSize * 2f));
+        outerWidth = MathF.Min(outerWidth, MathF.Max(MathF.Min(C_TOOLTIP_MINIMUM_WIDTH * style.zoom, available.X), textSize.X + padding.X * 2f + style.menuBorderSize * 2f));
         innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
         textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
         Vector2 size = new(outerWidth, MathF.Min(available.Y, textSize.Y + padding.Y * 2f + style.menuBorderSize * 2f));
@@ -160,8 +158,9 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when context-menu content should be drawn; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool BeginContextMenu(string id)
+    public bool BeginContextMenu(string id)
     {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
         NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
@@ -181,56 +180,45 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when context-menu content should be drawn; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool BeginWindowContextMenu(string id)
+    public bool BeginWindowContextMenu(string id)
     {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         PushContextMenuStyle();
         NativeImGui.SetNextWindowViewport(NativeImGui.Raw.GetWindowViewport()->ID);
         ConstrainContextMenu();
-        if (NativeImGui.BeginPopupContextWindow(
-                id,
-                (int)(ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems)))
+        if (NativeImGui.BeginPopupContextWindow(id, (int)(ImGuiPopupFlags.MouseButtonRight | ImGuiPopupFlags.NoOpenOverItems)))
         {
             return true;
         }
+
         PopContextMenuStyle();
         return false;
     }
 
     /// <summary>
-    /// Ends a context menu opened by <see cref="BeginContextMenu"/> or <see cref="BeginWindowContextMenu"/>.
+    /// Ends a context menu opened by <see cref = "BeginContextMenu"/> or <see cref="BeginWindowContextMenu"/>.
     /// </summary>
-    public static void EndContextMenu()
+    public void EndContextMenu()
     {
+        m_session.EnsureDrawing();
         EndMenuPopup();
     }
 
-    private static bool IsPopupBlockingInteraction()
-        => NativeImGui.IsPopupOpen(
-            string.Empty,
-            (int)(ImGuiPopupFlags.AnyPopupId | ImGuiPopupFlags.AnyPopupLevel));
-
-    private static void ConstrainContextMenu()
+    private bool IsPopupBlockingInteraction() => NativeImGui.IsPopupOpen(string.Empty, (int)(ImGuiPopupFlags.AnyPopupId | ImGuiPopupFlags.AnyPopupLevel));
+    private void ConstrainContextMenu()
     {
         Vector2 workSize = ImGui.FromNative(NativeImGui.Raw.GetWindowViewport()->WorkSize);
-        float minimumWidth = MathF.Min(
-            workSize.X,
-            style.searchPopupWidth + style.menuWindowPadding.X * 2f + style.menuBorderSize * 2f);
-        SetMenuPopupSizeConstraints(
-            new Vector2(minimumWidth, 0f),
-            Vector2.Max(workSize, Vector2.One));
+        float minimumWidth = MathF.Min(workSize.X, style.searchPopupWidth + style.menuWindowPadding.X * 2f + style.menuBorderSize * 2f);
+        SetMenuPopupSizeConstraints(new Vector2(minimumWidth, 0f), Vector2.Max(workSize, Vector2.One));
     }
 
-    private static unsafe void SetMenuPopupSizeConstraints(
+    private unsafe void SetMenuPopupSizeConstraints(
         Vector2 minimum,
         Vector2 maximum
     ) {
-        Vector2 pixelMaximum = Vector2.Max(Vector2.One, new Vector2(
-            MathF.Floor(maximum.X),
-            MathF.Floor(maximum.Y)));
-        Vector2 pixelMinimum = Vector2.Min(pixelMaximum, new Vector2(
-            MathF.Ceiling(minimum.X),
-            MathF.Ceiling(minimum.Y)));
+        Vector2 pixelMaximum = Vector2.Max(Vector2.One, new Vector2(MathF.Floor(maximum.X), MathF.Floor(maximum.Y)));
+        Vector2 pixelMinimum = Vector2.Min(pixelMaximum, new Vector2(MathF.Ceiling(minimum.X), MathF.Ceiling(minimum.Y)));
         ImGui.ConstrainNativeWindowSize(pixelMinimum, pixelMaximum, &RoundMenuPopupSize, null);
     }
 
@@ -239,12 +227,10 @@ public static unsafe partial class ImGuiWidget
     {
         // ImGui truncates constrained sizes. Round content upward within integer bounds so
         // fractional padding cannot turn a fully fitting menu into a scrolling window.
-        data->DesiredSize = ImGui.ToNative(new Vector2(
-            MathF.Ceiling(data->DesiredSize.X),
-            MathF.Ceiling(data->DesiredSize.Y)));
+        data->DesiredSize = ImGui.ToNative(new Vector2(MathF.Ceiling(data->DesiredSize.X), MathF.Ceiling(data->DesiredSize.Y)));
     }
 
-    private static void PushContextMenuStyle()
+    private void PushContextMenuStyle()
     {
         NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.menuText);
         NativeImGui.PushStyleColor((int)(ImGuiCol.PopupBg), EditorPalette.menuBackground);
@@ -260,7 +246,7 @@ public static unsafe partial class ImGuiWidget
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.PopupBorderSize), style.menuBorderSize);
     }
 
-    private static void PopContextMenuStyle()
+    private void PopContextMenuStyle()
     {
         NativeImGui.PopStyleVar(5);
         NativeImGui.PopStyleColor(7);

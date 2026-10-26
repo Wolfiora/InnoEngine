@@ -1,8 +1,7 @@
 using Inno.Editor.Settings;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
-
 [EditorSettingPath("Editor/Diagnostics")]
 internal sealed class DiagnosticsSettingsPage : EditorSetting
 {
@@ -25,7 +24,6 @@ internal sealed class ConsoleSettingsPage : EditorSetting
 internal sealed class ClearConsoleOnPlaySetting : EditorSetting
 {
     internal const string C_PATH = "Editor/Diagnostics/Console/Clear on Play";
-
     /// <summary>
     /// Gets a new value initialized to the canonical Console retention policy.
     /// </summary>
@@ -43,12 +41,10 @@ internal sealed class ClearConsoleOnPlaySetting : EditorSetting
     /// Gets the presentation section that groups this setting.
     /// </summary>
     public override string section => "Play Mode";
-
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Clear ordinary Console logs when a new Play Mode request begins while retaining active diagnostics.";
+    public override string description => "Clear ordinary Console logs when a new Play Mode request begins while retaining active diagnostics.";
 
     /// <summary>
     /// Draws the staged Console retention preference.
@@ -59,7 +55,7 @@ internal sealed class ClearConsoleOnPlaySetting : EditorSetting
     protected override void OnDraw(EditorSettingObject setting)
     {
         bool value = setting.GetAsBoolean("value", true);
-        if (NativeImGui.Checkbox("Clear ordinary logs when entering Play Mode", ref value))
+        if (Ui.Checkbox("Clear ordinary logs when entering Play Mode", ref value))
             setting.SetAsBoolean("value", value);
     }
 

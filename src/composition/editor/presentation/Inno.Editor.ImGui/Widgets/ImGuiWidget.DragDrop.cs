@@ -1,16 +1,14 @@
 using System;
 using BGCS.Runtime;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Publishes an unmanaged drag payload for the most recently submitted item.
@@ -36,7 +34,7 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="payloadType"/> is empty or whitespace.
     /// </exception>
-    public static bool DragDropSource<TPayload>(
+    public bool DragDropSource<TPayload>(
         string payloadType,
         in TPayload payload,
         Action? drawPreview = null,
@@ -45,9 +43,7 @@ public static unsafe partial class ImGuiWidget
         where TPayload : unmanaged
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
-        ImGuiDragDropFlags sourceFlags = allowHoldToOpenOthers
-            ? ImGuiDragDropFlags.None
-            : ImGuiDragDropFlags.SourceNoHoldToOpenOthers;
+        ImGuiDragDropFlags sourceFlags = allowHoldToOpenOthers ? ImGuiDragDropFlags.None : ImGuiDragDropFlags.SourceNoHoldToOpenOthers;
         if (!NativeImGui.BeginDragDropSource((int)(sourceFlags)))
         {
             return false;
@@ -86,7 +82,7 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="payloadFactory"/> is <see langword="null"/>.
     /// </exception>
-    public static bool DragDropSource<TPayload>(
+    public bool DragDropSource<TPayload>(
         string payloadType,
         Func<TPayload> payloadFactory,
         Action? drawPreview = null,
@@ -96,9 +92,7 @@ public static unsafe partial class ImGuiWidget
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(payloadType);
         ArgumentNullException.ThrowIfNull(payloadFactory);
-        ImGuiDragDropFlags sourceFlags = allowHoldToOpenOthers
-            ? ImGuiDragDropFlags.None
-            : ImGuiDragDropFlags.SourceNoHoldToOpenOthers;
+        ImGuiDragDropFlags sourceFlags = allowHoldToOpenOthers ? ImGuiDragDropFlags.None : ImGuiDragDropFlags.SourceNoHoldToOpenOthers;
         if (!NativeImGui.BeginDragDropSource((int)(sourceFlags)))
         {
             return false;
@@ -126,7 +120,7 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> only when a compatible payload is delivered.
     /// </returns>
-    public static bool DragDropTarget<TPayload>(
+    public bool DragDropTarget<TPayload>(
         string payloadType,
         out TPayload payload
     )
@@ -153,7 +147,7 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> only when a compatible payload is delivered.
     /// </returns>
-    public static bool DragDropTarget<TPayload>(
+    public bool DragDropTarget<TPayload>(
         string payloadType,
         out TPayload payload,
         out bool isPreviewing
@@ -184,7 +178,7 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> only when a compatible payload is delivered.
     /// </returns>
-    public static bool DragDropTarget<TPayload>(
+    public bool DragDropTarget<TPayload>(
         string payloadType,
         out TPayload payload,
         out bool isPreviewing,
@@ -208,7 +202,6 @@ public static unsafe partial class ImGuiWidget
         bool compatible = TryReadDragDropPayload(nativePayload, out payload);
         if (compatible)
             isPreviewing = nativePayload->Preview != 0;
-
         bool delivered = compatible && nativePayload->Delivery != 0;
         NativeImGui.EndDragDropTarget();
         return delivered;
@@ -247,7 +240,7 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="payloadType"/> is empty or whitespace.
     /// </exception>
-    public static bool DragDropTarget<TPayload>(
+    public bool DragDropTarget<TPayload>(
         string payloadType,
         Vector2 minimum,
         Vector2 maximum,
@@ -263,7 +256,11 @@ public static unsafe partial class ImGuiWidget
         isPreviewing = false;
         if (maximum.X <= minimum.X || maximum.Y <= minimum.Y)
             return false;
-        ImRect bounds = new() { Min = ImGui.ToNative(minimum), Max = ImGui.ToNative(maximum) };
+        ImRect bounds = new()
+        {
+            Min = ImGui.ToNative(minimum),
+            Max = ImGui.ToNative(maximum)
+        };
         if (NativeImGui.Raw.BeginDragDropTargetCustom(&bounds, targetId) == 0)
             return false;
         try
@@ -284,7 +281,7 @@ public static unsafe partial class ImGuiWidget
         }
     }
 
-    private static unsafe void SetDragDropPayload<TPayload>(
+    private unsafe void SetDragDropPayload<TPayload>(
         string payloadType,
         in TPayload payload
     )
@@ -295,7 +292,7 @@ public static unsafe partial class ImGuiWidget
         _ = NativeImGui.Raw.SetDragDropPayload((sbyte*)nativeType.pointer, &payloadCopy, (uint)sizeof(TPayload), 0);
     }
 
-    private static unsafe bool TryReadDragDropPayload<TPayload>(
+    private unsafe bool TryReadDragDropPayload<TPayload>(
         ImGuiPayload* nativePayload,
         out TPayload payload
     )

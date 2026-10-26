@@ -1,15 +1,13 @@
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Gets the layout size of a compact colored label chip using the centralized editor style.
@@ -23,15 +21,12 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="label"/> is <see langword="null"/>.
     /// </exception>
-    public static Vector2 GetLabelChipSize(string label)
+    public Vector2 GetLabelChipSize(string label)
     {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(label);
         Vector2 textSize = NativeImGui.CalcTextSize(label);
-        return new Vector2(
-            textSize.X + style.labelChipPadding.X * 2f,
-            MathF.Max(
-                NativeImGui.GetFrameHeight(),
-                textSize.Y + style.labelChipPadding.Y * 2f));
+        return new Vector2(textSize.X + style.labelChipPadding.X * 2f, MathF.Max(NativeImGui.GetFrameHeight(), textSize.Y + style.labelChipPadding.Y * 2f));
     }
 
     /// <summary>
@@ -46,23 +41,17 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="label"/> is <see langword="null"/>.
     /// </exception>
-    public static void LabelChip(
+    public void LabelChip(
         string label,
         Vector4 background
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(label);
         Vector2 size = GetLabelChipSize(label);
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 textSize = NativeImGui.CalcTextSize(label);
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        ImGui.DrawNativeFilledRectangle(
-            drawList,
-            minimum,
-            minimum + size,
-            NativeImGui.ColorConvertFloat4ToU32(background),
-            style.labelChipRounding,
-            0
-        );
+        ImGui.DrawNativeFilledRectangle(drawList, minimum, minimum + size, NativeImGui.ColorConvertFloat4ToU32(background), style.labelChipRounding, 0);
         ImGui.DrawNativeText(drawList, minimum + (size - textSize) * 0.5f, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), label);
         NativeImGui.Dummy(size);
     }
@@ -79,8 +68,9 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="label"/> is <see langword="null"/>.
     /// </exception>
-    public static Vector2 GetTypeBadgeSize(string label)
+    public Vector2 GetTypeBadgeSize(string label)
     {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(label);
         Vector2 textSize = NativeImGui.CalcTextSize(label);
         return textSize + style.typeBadgePadding * 2f;
@@ -101,11 +91,12 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="label"/> is <see langword="null"/>.
     /// </exception>
-    public static void TypeBadge(
+    public void TypeBadge(
         string label,
         Vector4 accent,
         string? tooltip = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(label);
         Vector2 size = GetTypeBadgeSize(label);
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
@@ -115,23 +106,8 @@ public static unsafe partial class ImGuiWidget
         background.W = EditorPalette.opacityOpaque;
         Vector4 outline = accent;
         outline.W = EditorPalette.opacityStrong;
-        ImGui.DrawNativeFilledRectangle(
-            draw,
-            minimum,
-            minimum + size,
-            NativeImGui.ColorConvertFloat4ToU32(background),
-            style.typeBadgeRounding,
-            0
-        );
-        ImGui.DrawNativeRectangle(
-            draw,
-            minimum,
-            minimum + size,
-            NativeImGui.ColorConvertFloat4ToU32(outline),
-            style.typeBadgeRounding,
-            (int)(ImDrawFlags.None),
-            style.borderSize
-        );
+        ImGui.DrawNativeFilledRectangle(draw, minimum, minimum + size, NativeImGui.ColorConvertFloat4ToU32(background), style.typeBadgeRounding, 0);
+        ImGui.DrawNativeRectangle(draw, minimum, minimum + size, NativeImGui.ColorConvertFloat4ToU32(outline), style.typeBadgeRounding, (int)(ImDrawFlags.None), style.borderSize);
         ImGui.DrawNativeText(draw, minimum + (size - textSize) * 0.5f, NativeImGui.ColorConvertFloat4ToU32(accent), label);
         NativeImGui.Dummy(size);
         DrawItemTooltip(tooltip);
@@ -155,12 +131,13 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the value changed.
     /// </returns>
-    public static bool CompactCheckbox(
+    public bool CompactCheckbox(
         string id,
         ref bool value,
         float size = -1f,
         string? tooltip = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (size < 0f)
             size = style.compactCheckboxSize;
@@ -173,9 +150,7 @@ public static unsafe partial class ImGuiWidget
         float frameHeight = NativeImGui.GetFrameHeight();
         float verticalOffset = MathF.Max(0f, (frameHeight - size) * 0.5f);
         Vector2 min = initialCursor + new Vector2(0f, verticalOffset);
-        bool changed = NativeImGui.InvisibleButton(
-            $"##compact_checkbox_{id}",
-            new Vector2(size, frameHeight));
+        bool changed = NativeImGui.InvisibleButton($"##compact_checkbox_{id}", new Vector2(size, frameHeight));
         if (changed)
         {
             value = !value;
@@ -189,20 +164,8 @@ public static unsafe partial class ImGuiWidget
         {
             ImGui.DrawNativeFilledRectangle(drawList, min, max, textColor, 1f, 0);
             uint checkColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader);
-            ImGui.DrawNativeLine(
-                drawList,
-                min + new Vector2(size * 0.22f, size * 0.52f),
-                min + new Vector2(size * 0.43f, size * 0.72f),
-                checkColor,
-                1.5f
-            );
-            ImGui.DrawNativeLine(
-                drawList,
-                min + new Vector2(size * 0.43f, size * 0.72f),
-                min + new Vector2(size * 0.80f, size * 0.28f),
-                checkColor,
-                1.5f
-            );
+            ImGui.DrawNativeLine(drawList, min + new Vector2(size * 0.22f, size * 0.52f), min + new Vector2(size * 0.43f, size * 0.72f), checkColor, 1.5f);
+            ImGui.DrawNativeLine(drawList, min + new Vector2(size * 0.43f, size * 0.72f), min + new Vector2(size * 0.80f, size * 0.28f), checkColor, 1.5f);
         }
         else
         {
@@ -211,19 +174,10 @@ public static unsafe partial class ImGuiWidget
 
         if (hovered)
         {
-            ImGui.DrawNativeRectangle(
-                drawList,
-                min - Vector2.One,
-                max + Vector2.One,
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered),
-                1f,
-                0,
-                1.5f
-            );
+            ImGui.DrawNativeRectangle(drawList, min - Vector2.One, max + Vector2.One, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered), 1f, 0, 1.5f);
         }
 
         DrawItemTooltip(tooltip);
-
         return changed;
     }
 
@@ -245,11 +199,12 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="label"/> is empty or whitespace.
     /// </exception>
-    public static bool Checkbox(
+    public bool Checkbox(
         string label,
         ref bool value,
         string? tooltip = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         bool changed = NativeImGui.Checkbox(label, ref value);
         DrawItemTooltip(tooltip);
@@ -268,10 +223,11 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the button is pressed.
     /// </returns>
-    public static bool CenteredButton(
+    public bool CenteredButton(
         string label,
         float topPadding = 0f
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         if (topPadding < 0f)
         {
@@ -304,20 +260,18 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="overlay"/> is <see langword="null"/>.
     /// </exception>
-    public static void CenteredProgressBar(
+    public void CenteredProgressBar(
         float fraction,
         Vector2 size,
         string overlay
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(overlay);
-
         NativeImGui.ProgressBar(fraction, size, string.Empty);
-
         Vector2 minimum = NativeImGui.GetItemRectMin();
         Vector2 maximum = NativeImGui.GetItemRectMax();
         Vector2 textSize = NativeImGui.CalcTextSize(overlay);
         Vector2 textPosition = minimum + (maximum - minimum - textSize) * 0.5f;
         ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), textPosition, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), overlay);
     }
-
 }

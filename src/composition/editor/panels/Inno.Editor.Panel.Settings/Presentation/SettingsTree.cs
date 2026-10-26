@@ -1,17 +1,14 @@
+using Inno.Editor.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
-
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
-
 internal sealed class SettingsTree
 {
     private string? m_revealPath;
-
     internal void Reveal(string path)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -54,6 +51,7 @@ internal sealed class SettingsTree
             if (nested is not null)
                 return nested;
         }
+
         return null;
     }
 
@@ -74,6 +72,7 @@ internal sealed class SettingsTree
             if (nested is not null)
                 return nested;
         }
+
         return null;
     }
 
@@ -87,19 +86,13 @@ internal sealed class SettingsTree
         bool hasVisibleChildren = false;
         for (int i = 0; i < page.children.Count; i++)
             hasVisibleChildren |= Matches(page.children[i], query);
-        if ((!string.IsNullOrWhiteSpace(query) && hasVisibleChildren) ||
-            (hasVisibleChildren && IsRevealed(page.path, revealPath)))
-            EditorWidget.SetNextTreeNodeOpen(true);
-
-        TreeNodeResult result = EditorWidget.TreeNode(
+        if ((!string.IsNullOrWhiteSpace(query) && hasVisibleChildren) || (hasVisibleChildren && IsRevealed(page.path, revealPath)))
+            EditorUI.current.widgets.SetNextTreeNodeOpen(true);
+        TreeNodeResult result = EditorUI.current.widgets.TreeNode(
             $"settings_tree_{page.path}",
-            _ => NativeImGui.TextUnformatted(page.label),
-            new TreeNodeOptions
-            {
-                selected = string.Equals(page.path, selectedPath, StringComparison.Ordinal),
-                isLeaf = !hasVisibleChildren,
-                hideGuideLines = false
-            });
+            _ => Ui.Text(page.label),
+            new TreeNodeOptions { selected = string.Equals(page.path, selectedPath, StringComparison.Ordinal), isLeaf = !hasVisibleChildren, hideGuideLines = false }
+        );
         if (result.isClicked)
             select(page);
         if (!result.isOpen)
@@ -109,17 +102,14 @@ internal sealed class SettingsTree
             if (Matches(page.children[i], query))
                 DrawPage(page.children[i], query, selectedPath, revealPath, select);
         }
-        NativeImGui.TreePop();
+
+        Ui.TreePop();
     }
 
     private static bool IsRevealed(
         string pagePath,
         string? revealPath
-    )
-        => revealPath is not null &&
-           (string.Equals(pagePath, revealPath, StringComparison.Ordinal) ||
-            revealPath.StartsWith(pagePath + "/", StringComparison.Ordinal));
-
+    ) => revealPath is not null && (string.Equals(pagePath, revealPath, StringComparison.Ordinal) || revealPath.StartsWith(pagePath + "/", StringComparison.Ordinal));
     private static bool Matches(
         SettingsPage page,
         string query
@@ -133,6 +123,7 @@ internal sealed class SettingsTree
             if (Matches(page.children[i], query))
                 return true;
         }
+
         return false;
     }
 
@@ -140,22 +131,42 @@ internal sealed class SettingsTree
         SettingsPage page,
         string query
     ) {
-        if (page.label.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-            page.path.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-            page.description.Contains(query, StringComparison.OrdinalIgnoreCase))
+        if (page.label.Contains(
+            query,
+            StringComparison.OrdinalIgnoreCase
+        )
+            || page.path.Contains(
+            query,
+            StringComparison.OrdinalIgnoreCase
+        )
+            || page.description.Contains(
+            query,
+            StringComparison.OrdinalIgnoreCase
+        ))
         {
             return true;
         }
+
         for (int i = 0; i < page.settings.Count; i++)
         {
             SettingsField setting = page.settings[i];
-            if (setting.label.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                (setting.section?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                setting.description.Contains(query, StringComparison.OrdinalIgnoreCase))
+            if (setting.label.Contains(
+                query,
+                StringComparison.OrdinalIgnoreCase
+            )
+                || (setting.section?.Contains(
+                query,
+                StringComparison.OrdinalIgnoreCase
+            ) ?? false)
+                || setting.description.Contains(
+                query,
+                StringComparison.OrdinalIgnoreCase
+            ))
             {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -169,17 +180,28 @@ internal sealed class SettingsTree
             for (int settingIndex = 0; settingIndex < page.settings.Count; settingIndex++)
             {
                 SettingsField setting = page.settings[settingIndex];
-                if (setting.label.Contains(query, StringComparison.OrdinalIgnoreCase) ||
-                    (setting.section?.Contains(query, StringComparison.OrdinalIgnoreCase) ?? false) ||
-                    setting.description.Contains(query, StringComparison.OrdinalIgnoreCase))
+                if (setting.label.Contains(
+                    query,
+                    StringComparison.OrdinalIgnoreCase
+                )
+                    || (setting.section?.Contains(
+                    query,
+                    StringComparison.OrdinalIgnoreCase
+                ) ?? false)
+                    || setting.description.Contains(
+                    query,
+                    StringComparison.OrdinalIgnoreCase
+                ))
                 {
                     return page;
                 }
             }
+
             SettingsPage? nested = FindFirstFieldMatch(page.children, query);
             if (nested is not null)
                 return nested;
         }
+
         return null;
     }
 }

@@ -2,6 +2,8 @@
 
 [架构索引](README.md) · [当前问题](CURRENT_ISSUES.md) · [Wiki 首页](../README.md)
 
+当前 Editor UI 的分层、Session、Selection、History、插件调用方及逐项质量评价见[Editor UI 验收](../../records/architecture/acceptance/EDITOR_UI_ACCEPTANCE_2026_10_27.md)和[当前 UI 架构](EDITOR_UI_ARCHITECTURE.md)。该报告分别列出自动验证、产品运行与未执行的人工/设备检查，不将此前数量累加为本次结果。
+
 当前依赖通过标准 `.csproj` / `PackageReference` 和 SDK Restore 解析，源码不保存独立依赖锁清单；本轮范围与证据见[标准 NuGet 还原验收](../../records/architecture/acceptance/STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md)。基线保持 .NET SDK 10.0.402、C# 14、BGCS 4.1.2。
 
 此前 BGCS 消费与三项优先修复的独立证据见[BGCS 4.1.2 消费验收](../../records/architecture/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)及[专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。历史通过数量不能当作当前源码已重跑。

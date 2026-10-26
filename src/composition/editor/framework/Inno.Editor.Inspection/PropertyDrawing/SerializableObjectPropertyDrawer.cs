@@ -1,21 +1,18 @@
+using Inno.Editor.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
-
 using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.ImGui.ImGuiWidget;
-using Inno.Native.ImGui;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
-
 [PropertyDrawer(typeof(ISerializable), useForChildren: true, priority: 20)]
 internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
 {
     private readonly SerializationRegistry m_serialization;
     private readonly TypeCacheSnapshot m_types;
-
     internal SerializableObjectPropertyDrawer(
         TypeCacheSnapshot types,
         SerializationRegistry serialization
@@ -38,26 +35,25 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
         value = context.GetValue();
         if (value is not ISerializable serializable)
         {
-            NativeImGui.TextUnformatted("Null");
+            Ui.Text("Null");
             return;
         }
 
         string header = $"{value.GetType().Name}##{context.path}_foldout";
-        if (!NativeImGui.TreeNodeEx(header, (int)(ImGuiTreeNodeFlags.SpanAvailWidth)))
+        if (!Ui.TreeNode(header, (ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }
 
         IReadOnlyList<SerializedProperty> properties = m_serialization.GetProperties(serializable);
-        EditorWidget.SectionLayout(() =>
+        EditorUI.current.widgets.SectionLayout(() =>
         {
             for (int i = 0; i < properties.Count; i++)
             {
                 context.DrawChild(serializable, properties[i]);
             }
         });
-
-        NativeImGui.TreePop();
+        Ui.TreePop();
     }
 
     private void DrawTypeSelector(
@@ -65,14 +61,12 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
         Type runtimeType,
         object? value
     ) {
-        if (!EditorWidget.BeginBoundedCombo(
-                $"##{context.path}_runtime_type",
-                value is null ? "Null" : runtimeType.Name))
+        if (!EditorUI.current.widgets.BeginBoundedCombo($"##{context.path}_runtime_type", value is null ? "Null" : runtimeType.Name))
         {
             return;
         }
 
-        if (NativeImGui.Selectable("Null", value is null))
+        if (Ui.Selectable("Null", value is null))
         {
             context.SetValue(null);
         }
@@ -86,12 +80,12 @@ internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
                 continue;
             }
 
-            if (NativeImGui.Selectable(candidate.Name, candidate == runtimeType && value is not null))
+            if (Ui.Selectable(candidate.Name, candidate == runtimeType && value is not null))
             {
                 context.SetValue(Activator.CreateInstance(candidate, nonPublic: true));
             }
         }
 
-        EditorWidget.EndBoundedCombo();
+        EditorUI.current.widgets.EndBoundedCombo();
     }
 }

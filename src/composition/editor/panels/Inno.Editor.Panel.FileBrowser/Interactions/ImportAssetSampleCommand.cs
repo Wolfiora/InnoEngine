@@ -1,15 +1,15 @@
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using System;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
 [EditorAction(FileBrowserInteractionIds.C_IMPORT_SAMPLE, FileBrowserInteractionIds.C_AREA)]
 [EditorMenu(FileBrowserInteractionIds.C_AREA, "Import Sample", order: 120)]
 internal sealed class ImportAssetSampleCommand(
-    AssetEditorModule assets,
+    AssetBrowserModule assets,
     AssetSampleImportModule imports
 ) : EditorAction<AssetFileEntry>
 {
@@ -31,9 +31,7 @@ internal sealed class ImportAssetSampleCommand(
         try
         {
             AssetPath target = AssetPath.Project(AssetSample.GetImportName(context.target.assetPath));
-            return assets.pipeline.TryGetFileSystemEntry(target, out _)
-                ? EditorActionState.disabled
-                : EditorActionState.enabled;
+            return assets.edits.pipeline.TryGetFileSystemEntry(target, out _) ? EditorActionState.disabled : EditorActionState.enabled;
         }
         catch (ArgumentException)
         {
@@ -47,6 +45,5 @@ internal sealed class ImportAssetSampleCommand(
     /// <param name="context">
     /// The action context containing the selected sample and history transaction.
     /// </param>
-    protected override void Execute(EditorActionContext<AssetFileEntry> context)
-        => imports.Request(context.target.assetPath);
+    protected override void Execute(EditorActionContext<AssetFileEntry> context) => imports.Request(context.target.assetPath);
 }

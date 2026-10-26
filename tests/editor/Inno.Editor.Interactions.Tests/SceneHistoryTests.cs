@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Extensibility.Modules;
@@ -22,13 +21,9 @@ using Inno.Scene.Layers;
 using Xunit;
 
 namespace Inno.Editor.Interactions.Tests;
-
-public sealed class SceneHistoryTests : IDisposable
+public sealed partial class SceneHistoryTests : IDisposable
 {
-    private readonly string m_projectRoot = Path.Combine(
-        Path.GetTempPath(),
-        "InnoSceneHistoryTests",
-        Guid.NewGuid().ToString("N"));
+    private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoSceneHistoryTests", Guid.NewGuid().ToString("N"));
     private readonly EngineHost m_host;
     private readonly RuntimeSession m_session;
     private readonly IDisposable m_executionScope;
@@ -36,26 +31,16 @@ public sealed class SceneHistoryTests : IDisposable
     private readonly EditorInteractionRuntime m_runtime;
     private readonly SceneEdits m_edits;
     private readonly EditorReloadCoordinator m_reloads = new();
-
     public SceneHistoryTests()
     {
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         SceneHistoryProbe.Reset();
-        m_host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(SceneHistoryTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .Build();
-        m_session = m_host.CreateSession(new RuntimeSessionOptions
-        {
-            kind = RuntimeSessionKind.Edit,
-            applicationId = "inno.tests.scene-history",
-            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
-                m_projectRoot,
-                "Library",
-                "PersistentData",
-                "inno.tests.scene-history"), "Logs")),
-            jobExecutionMode = RuntimeJobExecutionMode.SingleThread
-        });
+        m_host = new EngineHostBuilder().UseMetadataSources(
+            new DotNetAssemblyCatalogSource(typeof(SceneHistoryTests).Assembly),
+            new ReflectionTypeCatalogSource(),
+            new ReflectionSerializationMetadataSource()
+        ).Build();
+        m_session = m_host.CreateSession(new RuntimeSessionOptions { kind = RuntimeSessionKind.Edit, applicationId = "inno.tests.scene-history", createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_projectRoot, "Library", "PersistentData", "inno.tests.scene-history"), "Logs")), jobExecutionMode = RuntimeJobExecutionMode.SingleThread });
         m_executionScope = m_session.EnterExecutionScope();
         m_assets = new AssetPipeline(
             m_host.modules,
@@ -64,23 +49,14 @@ public sealed class SceneHistoryTests : IDisposable
             new IdentityAllocator(),
             m_host.diagnostics,
             m_host.logs,
-            AssetPipelineOptions.Create(
-                Path.Combine(m_projectRoot, "Assets"),
-                Path.Combine(m_projectRoot, "Library")) with
-            {
-                enableFileSystemWatcher = false
-            });
+            AssetPipelineOptions.Create(Path.Combine(m_projectRoot, "Assets"), Path.Combine(m_projectRoot, "Library"))with { enableFileSystemWatcher = false }
+        );
         m_runtime = new EditorInteractionRuntime(
             new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_host.types,
             m_host.logs,
-            [
-                m_host.types,
-                m_host.serialization,
-                m_session,
-                m_assets,
-                m_reloads
-            ]);
+            [m_host.types, m_host.serialization, m_session, m_assets, m_reloads]
+        );
         m_runtime.Start();
         _ = m_runtime.panelCount;
         m_edits = Assert.IsType<SceneEdits>(SceneHistoryProbe.edits);
@@ -107,22 +83,14 @@ public sealed class SceneHistoryTests : IDisposable
         Guid sceneId = scene.identity.persistentId;
         Guid objectId = gameObject.identity.persistentId;
         Guid componentId = component.identity.persistentId;
-
-        Assert.True(m_edits.ChangeProperty(
-            component,
-            nameof(HistoryComponent.value),
-            () => component.value = 25,
-            "Change Value",
-            "tests:component-value"));
+        Assert.True(m_edits.ChangeProperty(component, nameof(HistoryComponent.value), () => component.value = 25, "Change Value", "tests:component-value"));
         Assert.Equal(25, component.value);
-
         EditorHistoryResult undo = m_runtime.interactions.history.Undo();
         Assert.True(undo.succeeded, undo.message);
         Assert.Equal(10, component.value);
         Assert.Same(scene, IdentityAllocator.current.Get<GameScene>(sceneId));
         Assert.Same(gameObject, IdentityAllocator.current.Get<GameObject>(objectId));
         Assert.Same(component, IdentityAllocator.current.Get<GameComponent>(componentId));
-
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.Equal(25, component.value);
     }
@@ -133,20 +101,13 @@ public sealed class SceneHistoryTests : IDisposable
         var component = CreateScene().CreateObject("Coupled").AddComponent<CoupledHistoryComponent>();
         Assert.True(component.primary);
         Assert.Equal(CoupledHistoryMode.Base, component.mode);
-
-        Assert.True(m_edits.ChangeProperty(
-            component,
-            nameof(CoupledHistoryComponent.mode),
-            () => component.mode = CoupledHistoryMode.Overlay,
-            "Change Coupled Mode"));
+        Assert.True(m_edits.ChangeProperty(component, nameof(CoupledHistoryComponent.mode), () => component.mode = CoupledHistoryMode.Overlay, "Change Coupled Mode"));
         Assert.Equal(CoupledHistoryMode.Overlay, component.mode);
         Assert.False(component.primary);
-
         EditorHistoryResult undo = m_runtime.interactions.history.Undo();
         Assert.True(undo.succeeded, undo.message);
         Assert.Equal(CoupledHistoryMode.Base, component.mode);
         Assert.True(component.primary);
-
         EditorHistoryResult redo = m_runtime.interactions.history.Redo();
         Assert.True(redo.succeeded, redo.message);
         Assert.Equal(CoupledHistoryMode.Overlay, component.mode);
@@ -159,28 +120,13 @@ public sealed class SceneHistoryTests : IDisposable
         GameObject gameObject = CreateScene().CreateObject("Manipulated");
         Transform transform = gameObject.transform;
         var position = new Inno.Core.Mathematics.Vector3(3f, -2f, 4f);
-        Inno.Core.Mathematics.Quaternion rotation =
-            Inno.Core.Mathematics.Quaternion.CreateFromYawPitchRoll(0.2f, 0.3f, 0.4f);
+        Inno.Core.Mathematics.Quaternion rotation = Inno.Core.Mathematics.Quaternion.CreateFromYawPitchRoll(0.2f, 0.3f, 0.4f);
         var scale = new Inno.Core.Mathematics.Vector3(2f, 3f, 4f);
-
-        using (EditorHistoryTransaction transaction =
-               m_runtime.interactions.history.BeginTransaction("Move GameObject"))
+        using (EditorHistoryTransaction transaction = m_runtime.interactions.history.BeginTransaction("Move GameObject"))
         {
-            Assert.True(m_edits.ChangeProperty(
-                transform,
-                nameof(Transform.localPosition),
-                () => transform.localPosition = position,
-                "Move GameObject"));
-            Assert.True(m_edits.ChangeProperty(
-                transform,
-                nameof(Transform.localRotation),
-                () => transform.localRotation = rotation,
-                "Move GameObject"));
-            Assert.True(m_edits.ChangeProperty(
-                transform,
-                nameof(Transform.localScale),
-                () => transform.localScale = scale,
-                "Move GameObject"));
+            Assert.True(m_edits.ChangeProperty(transform, nameof(Transform.localPosition), () => transform.localPosition = position, "Move GameObject"));
+            Assert.True(m_edits.ChangeProperty(transform, nameof(Transform.localRotation), () => transform.localRotation = rotation, "Move GameObject"));
+            Assert.True(m_edits.ChangeProperty(transform, nameof(Transform.localScale), () => transform.localScale = scale, "Move GameObject"));
             transaction.Commit();
         }
 
@@ -207,9 +153,7 @@ public sealed class SceneHistoryTests : IDisposable
         var beforeLocal = child.localPosition;
         var beforeWorld = child.worldPosition;
         var requestedWorld = new Inno.Core.Mathematics.Vector3(11f, 7f, 20f);
-
-        Assert.True(m_edits.ChangeProperty(child, nameof(Transform.localPosition),
-            () => child.worldPosition = requestedWorld, "Edit World Position"));
+        Assert.True(m_edits.ChangeProperty(child, nameof(Transform.localPosition), () => child.worldPosition = requestedWorld, "Edit World Position"));
         var afterLocal = child.localPosition;
         Assert.Equal(requestedWorld, child.worldPosition);
         Assert.NotEqual(beforeLocal, afterLocal);
@@ -228,27 +172,23 @@ public sealed class SceneHistoryTests : IDisposable
         GameObject gameObject = scene.CreateObject("Object");
         var first = (HistoryComponent)m_edits.AddComponent(gameObject, typeof(HistoryComponent));
         Guid firstId = first.identity.persistentId;
-
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(firstId));
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         var restoredFirst = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(firstId));
         Assert.NotSame(first, restoredFirst);
         Assert.Equal(7, restoredFirst.value);
-
         var second = (HistoryComponent)m_edits.AddComponent(gameObject, typeof(HistoryComponent));
         m_edits.SetComponentIndex(second, 1);
         Assert.Equal(1, gameObject.GetComponentIndex(second));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal(2, gameObject.GetComponentIndex(second));
-
         restoredFirst.value = 99;
         m_edits.ResetComponent(restoredFirst);
         Assert.Equal(7, restoredFirst.value);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal(99, restoredFirst.value);
         Assert.Same(restoredFirst, IdentityAllocator.current.Get<GameComponent>(firstId));
-
         Assert.True(m_edits.RemoveComponent(restoredFirst));
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(firstId));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
@@ -265,18 +205,14 @@ public sealed class SceneHistoryTests : IDisposable
         AssetPath assetPath = AssetPath.Project("Text/shared.txt");
         Assert.True(m_assets.Import(assetPath));
         TextAsset asset = m_assets.Load<TextAsset>(assetPath);
-
         GameObject owner = CreateScene().CreateObject("Audio Source Owner");
         var component = owner.AddComponent<HistoryAssetReferenceComponent>();
         component.asset = asset;
         Guid componentId = component.identity.persistentId;
-
         Assert.True(m_edits.RemoveComponent(component));
         EditorHistoryResult undo = m_runtime.interactions.history.Undo();
-
         Assert.True(undo.succeeded, undo.message);
-        var restored = Assert.IsType<HistoryAssetReferenceComponent>(
-            IdentityAllocator.current.Get<GameComponent>(componentId));
+        var restored = Assert.IsType<HistoryAssetReferenceComponent>(IdentityAllocator.current.Get<GameComponent>(componentId));
         Assert.Same(asset, restored.asset);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(componentId));
@@ -299,13 +235,11 @@ public sealed class SceneHistoryTests : IDisposable
         m_assets.Rescan();
         ReloadHistoryModule(install: false);
         m_host.modules.generations.Wait();
-
         EditorHistoryResult undo = m_runtime.interactions.history.Undo();
         Assert.True(undo.succeeded, undo.message);
         MissingGameComponent missing = Assert.IsType<MissingGameComponent>(m_session.scenes.Find<GameComponent>(componentId));
         int missingRuntimeId = Assert.IsType<int>(missing.identity.runtimeId);
         Assert.Equal(componentId, missing.identity.persistentId);
-
         File.WriteAllText(sourcePath, "shared recovery content");
         File.WriteAllBytes(sourcePath + ".imeta", sourceIdentity);
         m_assets.Rescan();
@@ -330,7 +264,6 @@ public sealed class SceneHistoryTests : IDisposable
         m_host.modules.generations.Wait();
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         MissingGameComponent missing = Assert.IsType<MissingGameComponent>(m_session.scenes.Find<GameComponent>(componentId));
-
         AssertRejectedHistoryModule();
         m_host.modules.generations.Wait();
         Assert.Same(missing, m_session.scenes.Find<GameComponent>(componentId));
@@ -358,9 +291,7 @@ public sealed class SceneHistoryTests : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AssertRejectedHistoryModule()
-        => Assert.ThrowsAny<Exception>(() => ReloadHistoryModule(install: true));
-
+    private void AssertRejectedHistoryModule() => Assert.ThrowsAny<Exception>(() => ReloadHistoryModule(install: true));
     [Fact]
     public void MissingComponentEditsPreserveOriginalStateAndRecoveryDoesNotDirtySavedScene()
     {
@@ -410,7 +341,7 @@ public sealed class SceneHistoryTests : IDisposable
         m_host.modules.generations.Wait();
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         MissingGameSystem missing = Assert.IsType<MissingGameSystem>(m_session.scenes.Find<GameSystem>(id));
-        Assert.True(m_edits.RemoveSystem(scene, missing));
+        Assert.True(m_edits.RemoveSystem(missing));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         ReloadHistoryModule(install: true);
         AssertRecoveredSystem(id);
@@ -427,7 +358,7 @@ public sealed class SceneHistoryTests : IDisposable
         GameSystem system = scene.AddSystem(type);
         type.GetProperty("value")!.SetValue(system, 92);
         Guid id = system.identity.persistentId;
-        Assert.True(m_edits.RemoveSystem(scene, system));
+        Assert.True(m_edits.RemoveSystem(system));
         return id;
     }
 
@@ -458,22 +389,18 @@ public sealed class SceneHistoryTests : IDisposable
     private void ReloadHistoryModule(bool install)
     {
         DotNetModuleSource request = CreateHistoryRequest();
-        using AssemblyReloadSession reload = install
-            ? m_host.modules.BeginReload([request])
-            : m_host.modules.BeginReload([], [request.moduleName]);
+        using AssemblyReloadSession reload = install ? m_host.modules.BeginReload([request]) : m_host.modules.BeginReload([], [request.moduleName]);
         _ = m_reloads.Execute(reload);
     }
 
-    private DotNetModuleSource CreateHistoryRequest()
-        => new()
-        {
-            moduleName = "SceneHistoryRecovery",
-            artifactRootDirectory = Path.Combine(m_projectRoot, "Library", "Modules"),
-            mainAssemblyPath = Path.Combine(AppContext.BaseDirectory, "Modules", "SceneReload", "Inno.Scene.Reload.TestModule.dll"),
-            domain = AssemblyDomain.InnoPlugin,
-            scope = AssemblyScope.Runtime
-        };
-
+    private DotNetModuleSource CreateHistoryRequest() => new()
+    {
+        moduleName = "SceneHistoryRecovery",
+        artifactRootDirectory = Path.Combine(m_projectRoot, "Library", "Modules"),
+        mainAssemblyPath = Path.Combine(AppContext.BaseDirectory, "Modules", "SceneReload", "Inno.Scene.Reload.TestModule.dll"),
+        domain = AssemblyDomain.InnoPlugin,
+        scope = AssemblyScope.Runtime
+    };
     [Fact]
     public void ExternalResolversAreRestoredBeforeDomainPropertyCompensation()
     {
@@ -481,8 +408,7 @@ public sealed class SceneHistoryTests : IDisposable
         var participant = new ExternalRecoveryOrder(() => externalCandidateActive);
         using IDisposable registration = m_reloads.Register(participant);
         using AssemblyReloadSession reload = m_host.modules.BeginReload([CreateHistoryRequest()]);
-        Assert.Throws<InvalidOperationException>(() => m_reloads.Execute(reload,
-            new ExternalContentChange(() => externalCandidateActive = true, () => externalCandidateActive = false)));
+        Assert.Throws<InvalidOperationException>(() => m_reloads.Execute(reload, new ExternalContentChange(() => externalCandidateActive = true, () => externalCandidateActive = false)));
         Assert.True(participant.restored);
         Assert.False(externalCandidateActive);
         reload.Dispose();
@@ -495,30 +421,45 @@ public sealed class SceneHistoryTests : IDisposable
         Action restore
     ) : IGenerationChange
     {
-        public void PrepareForActivation() { }
+        public void PrepareForActivation()
+        {
+        }
+
         public void Apply() => activate();
-        public void Complete() { }
-        public void RollbackStructure() { }
+        public void Complete()
+        {
+        }
+
+        public void RollbackStructure()
+        {
+        }
+
         public void RestorePreviousState() => restore();
     }
 
     private sealed class ExternalRecoveryOrder(Func<bool> externalCandidateActive) : IEditorReloadParticipant, IGenerationChange
     {
         internal bool restored { get; private set; }
+
         public IGenerationChange Capture(AssemblyReloadContext context) => this;
-        public void RefreshDiagnostics() { }
+        public void RefreshDiagnostics()
+        {
+        }
+
         public void PrepareForActivation() => Assert.False(externalCandidateActive());
         public void Apply()
         {
             Assert.True(externalCandidateActive());
             throw new InvalidOperationException("Rejected domain candidate.");
         }
+
         public void RollbackStructure() => Assert.True(externalCandidateActive());
         public void RestorePreviousState()
         {
             Assert.False(externalCandidateActive());
             restored = true;
         }
+
         public void Complete() => Assert.Fail("Failed candidate cannot commit.");
     }
 
@@ -538,14 +479,12 @@ public sealed class SceneHistoryTests : IDisposable
         Guid componentId = targetComponent.identity.persistentId;
         Guid rootId = targetObject.identity.persistentId;
         Guid childId = targetChild.identity.persistentId;
-
         Assert.True(m_edits.RemoveComponent(targetComponent));
         EditorHistoryResult restoreComponentResult = m_runtime.interactions.history.Undo();
         Assert.True(restoreComponentResult.succeeded, restoreComponentResult.message);
         var restoredComponent = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(componentId));
         Assert.Same(restoredComponent, references.targetComponent);
         Assert.Equal(41, restoredComponent.value);
-
         Assert.True(m_edits.DeleteGameObject(targetObject));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         GameObject restoredRoot = Assert.IsType<GameObject>(IdentityAllocator.current.Get<GameObject>(rootId));
@@ -553,7 +492,6 @@ public sealed class SceneHistoryTests : IDisposable
         Assert.Same(restoredRoot.transform, restoredChild.transform.parent);
         Assert.Same(restoredChild, references.targetObject);
         Assert.Equal(componentId, references.targetComponent?.identity.persistentId);
-
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.Null(IdentityAllocator.current.Get<GameObject>(rootId));
     }
@@ -564,35 +502,14 @@ public sealed class SceneHistoryTests : IDisposable
         GameScene scene = CreateScene();
         GameObject sourceObject = scene.CreateObject("Source");
         var source = sourceObject.AddComponent<HistoryReferenceComponent>();
-        byte[] incompatibleState = SceneElementSerialization.CaptureState(
-            source,
-            m_host.serialization,
-            m_assets);
+        byte[] incompatibleState = SceneElementSerialization.CaptureState(source, m_host.serialization, m_assets);
         GameObject owner = scene.CreateObject("Owner");
         TypeRef componentType = m_host.types.GetTypeRef(typeof(HistoryComponent));
         TypeRef systemType = m_host.types.GetTypeRef(typeof(HistorySystem));
         Guid componentId = Guid.NewGuid();
         Guid systemId = Guid.NewGuid();
-
-        InvalidDataException componentFailure = Assert.Throws<InvalidDataException>(() =>
-            SceneElementSerialization.RestoreComponent(
-                owner,
-                componentType,
-                componentId,
-                componentIndex: owner.GetComponents().Count,
-                incompatibleState,
-                m_host.serialization,
-                m_assets));
-        InvalidDataException systemFailure = Assert.Throws<InvalidDataException>(() =>
-            SceneElementSerialization.RestoreSystem(
-                scene,
-                systemType,
-                systemId,
-                systemIndex: scene.GetSystems().Count,
-                incompatibleState,
-                m_host.serialization,
-                m_assets));
-
+        InvalidDataException componentFailure = Assert.Throws<InvalidDataException>(() => SceneElementSerialization.RestoreComponent(owner, componentType, componentId, componentIndex: owner.GetComponents().Count, incompatibleState, m_host.serialization, m_assets));
+        InvalidDataException systemFailure = Assert.Throws<InvalidDataException>(() => SceneElementSerialization.RestoreSystem(scene, systemType, systemId, systemIndex: scene.GetSystems().Count, incompatibleState, m_host.serialization, m_assets));
         Assert.Contains("type", componentFailure.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("type", systemFailure.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(componentId));
@@ -605,24 +522,11 @@ public sealed class SceneHistoryTests : IDisposable
         GameScene scene = CreateScene();
         GameObject sourceOwner = scene.CreateObject("Source");
         var source = sourceOwner.AddComponent<RestoreCleanupFailureComponent>();
-        byte[] state = SceneElementSerialization.CaptureState(
-            source,
-            m_host.serialization,
-            m_assets);
+        byte[] state = SceneElementSerialization.CaptureState(source, m_host.serialization, m_assets);
         GameObject targetOwner = scene.CreateObject("Target");
         TypeRef typeRef = m_host.types.GetTypeRef(typeof(RestoreCleanupFailureComponent));
         Guid persistentId = Guid.NewGuid();
-
-        _ = Assert.ThrowsAny<Exception>(() =>
-            SceneElementSerialization.RestoreComponent(
-                targetOwner,
-                typeRef,
-                persistentId,
-                componentIndex: targetOwner.GetComponents().Count,
-                state,
-                m_host.serialization,
-                m_assets));
-
+        _ = Assert.ThrowsAny<Exception>(() => SceneElementSerialization.RestoreComponent(targetOwner, typeRef, persistentId, componentIndex: targetOwner.GetComponents().Count, state, m_host.serialization, m_assets));
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(persistentId));
     }
 
@@ -635,25 +539,14 @@ public sealed class SceneHistoryTests : IDisposable
         GameObject child = scene.CreateObject("Child");
         child.transform.SetParent(root.transform);
         _ = child.AddComponent<SubtreeRestoreFailureComponent>();
-        byte[] state = SceneSubtreeSerialization.Capture(
-            root,
-            m_host.serialization,
-            m_assets);
+        byte[] state = SceneSubtreeSerialization.Capture(root, m_host.serialization, m_assets);
         Guid rootId = root.identity.persistentId;
         Guid childId = child.identity.persistentId;
-
         Assert.True(scene.DestroyObject(root));
         SubtreeRestoreFailureComponent.throwOnDestroy = true;
         try
         {
-            _ = Assert.ThrowsAny<Exception>(() =>
-                SceneSubtreeSerialization.Restore(
-                    scene,
-                    state,
-                    m_host.serialization,
-                    m_assets,
-                    parent: null,
-                    siblingIndex: 0));
+            _ = Assert.ThrowsAny<Exception>(() => SceneSubtreeSerialization.Restore(scene, state, m_host.serialization, m_assets, parent: null, siblingIndex: 0));
         }
         finally
         {
@@ -676,7 +569,6 @@ public sealed class SceneHistoryTests : IDisposable
         _ = child.AddComponent<SubtreeRestoreFailureComponent>();
         Guid rootId = root.identity.persistentId;
         Guid childId = child.identity.persistentId;
-
         Assert.True(m_edits.DeleteGameObject(root));
         SubtreeRestoreFailureComponent.throwOnDestroy = true;
         EditorHistoryResult result;
@@ -705,12 +597,8 @@ public sealed class SceneHistoryTests : IDisposable
         GameObject secondParent = scene.CreateObject("Second");
         GameObject child = scene.CreateObject("Child");
         child.transform.SetParent(firstParent.transform);
-
-        Assert.True(m_edits.ChangeHierarchy(
-            child,
-            _ => child.transform.SetParent(secondParent.transform)));
+        Assert.True(m_edits.ChangeHierarchy(child, _ => child.transform.SetParent(secondParent.transform)));
         Assert.Same(secondParent.transform, child.transform.parent);
-
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Same(firstParent.transform, child.transform.parent);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
@@ -725,18 +613,15 @@ public sealed class SceneHistoryTests : IDisposable
         var second = (HistorySystem)m_edits.AddSystem(scene, typeof(HistorySystem));
         first.value = 30;
         Guid firstId = first.identity.persistentId;
-
         m_edits.SetSystemIndex(scene, second, 0);
         Assert.Equal(0, scene.GetSystemIndex(second));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal(1, scene.GetSystemIndex(second));
-
-        m_edits.ResetSystem(scene, first);
+        m_edits.ResetSystem(first);
         Assert.Equal(11, first.value);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal(30, first.value);
-
-        Assert.True(m_edits.RemoveSystem(scene, first));
+        Assert.True(m_edits.RemoveSystem(first));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         var restored = Assert.IsType<HistorySystem>(IdentityAllocator.current.Get<GameSystem>(firstId));
         Assert.Equal(30, restored.value);
@@ -748,13 +633,10 @@ public sealed class SceneHistoryTests : IDisposable
         GameScene scene = m_edits.CreateScene();
         scene.CreateObject("Persistent");
         Guid sceneId = scene.identity.persistentId;
-
         Assert.True(m_edits.CloseScene(scene));
         Assert.Empty(SceneManager.loadedScenes);
         Assert.Null(IdentityAllocator.current.Get<GameScene>(sceneId));
-        Assert.True(
-            m_runtime.interactions.history.canUndo,
-            m_runtime.interactions.history.undoUnavailableReason);
+        Assert.True(m_runtime.interactions.history.canUndo, m_runtime.interactions.history.undoUnavailableReason);
         EditorHistoryResult undo = m_runtime.interactions.history.Undo();
         Assert.True(undo.succeeded, undo.message);
         GameScene restored = Assert.IsType<GameScene>(IdentityAllocator.current.Get<GameScene>(sceneId));
@@ -771,10 +653,8 @@ public sealed class SceneHistoryTests : IDisposable
         GameScene scene = CreateScene();
         GameObject gameObject = scene.CreateObject("Before");
         m_edits.RenameGameObject(gameObject, "After");
-
         m_host.types.Rebuild();
         _ = m_runtime.panelCount;
-
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal("Before", gameObject.name);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
@@ -786,10 +666,8 @@ public sealed class SceneHistoryTests : IDisposable
     {
         GameScene scene = CreateScene();
         GameObject gameObject = scene.CreateObject("Object Before");
-
         m_edits.RenameScene(scene, "Scene After");
         m_edits.RenameGameObject(gameObject, "Object After");
-
         Assert.Equal("Scene After", scene.name);
         Assert.Equal("Object After", gameObject.name);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
@@ -807,9 +685,7 @@ public sealed class SceneHistoryTests : IDisposable
     {
         GameScene scene = CreateScene();
         GameObject gameObject = scene.CreateObject("Tagged");
-
         m_edits.SetGameObjectTag(gameObject, "Player");
-
         Assert.Equal("Player", gameObject.tag);
         Assert.Same(gameObject, scene.FindObjectWithTag("Player"));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
@@ -826,9 +702,7 @@ public sealed class SceneHistoryTests : IDisposable
         GameScene scene = CreateScene();
         GameObject gameObject = scene.CreateObject("Layered");
         var gameplay = new GameLayer(6);
-
         m_edits.SetGameObjectLayer(gameObject, gameplay);
-
         Assert.Equal(gameplay, gameObject.layer);
         Assert.Same(gameObject, scene.FindObjectWithLayer(gameplay));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
@@ -839,8 +713,7 @@ public sealed class SceneHistoryTests : IDisposable
         Assert.Same(gameObject, scene.FindObjectWithLayer(gameplay));
     }
 
-    private GameScene CreateScene()
-        => m_session.scenes.LoadNewSceneAdditive();
+    private GameScene CreateScene() => m_session.scenes.LoadNewSceneAdditive();
 }
 
 [EditorModule("tests.scene-history-probe", order: 220)]
@@ -855,7 +728,6 @@ public sealed class SceneHistoryProbe : EditorModule
     }
 
     public static SceneEdits? edits { get; private set; }
-
     public static IEditorSceneWorkspace? documents { get; private set; }
 
     public static void Reset()
@@ -889,13 +761,8 @@ internal sealed class CoupledHistoryComponent : GameBehavior
 {
     private bool m_primary = true;
     private CoupledHistoryMode m_mode;
-
     [SerializableProperty]
-    public bool primary
-    {
-        get => m_primary;
-        set => m_primary = value && mode == CoupledHistoryMode.Base;
-    }
+    public bool primary { get => m_primary; set => m_primary = value && mode == CoupledHistoryMode.Base; }
 
     [SerializableProperty]
     public CoupledHistoryMode mode
@@ -949,8 +816,7 @@ internal sealed class RestoreCleanupFailureComponent : GameBehavior
     public int value { get; set; } = 5;
 
     [OnSerializableRestored]
-    private void OnRestored()
-        => throw new InvalidOperationException("Injected restore callback failure.");
+    private void OnRestored() => throw new InvalidOperationException("Injected restore callback failure.");
 }
 
 [StableTypeId("8503e97b-1845-4ab2-a116-1ece04934a4b")]
@@ -958,14 +824,11 @@ internal sealed class RestoreCleanupFailureComponent : GameBehavior
 internal sealed class SubtreeRestoreFailureComponent : GameBehavior
 {
     internal static bool throwOnDestroy;
-
     [SerializableProperty]
     public int value { get; set; } = 5;
 
     [OnSerializableRestored]
-    private void OnRestored()
-        => throw new InvalidOperationException("Injected subtree restore callback failure.");
-
+    private void OnRestored() => throw new InvalidOperationException("Injected subtree restore callback failure.");
     protected override void OnDestroy()
     {
         if (throwOnDestroy)

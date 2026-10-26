@@ -1,3 +1,4 @@
+using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using System.Runtime.CompilerServices;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using BGCS.Runtime;
@@ -15,9 +16,7 @@ using Xunit;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Inno.Editor.ImGui.Tests;
-
 public sealed unsafe class ViewportMetricsTests
 {
     [Theory]
@@ -27,14 +26,12 @@ public sealed unsafe class ViewportMetricsTests
     {
         if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback) + "." + commandKeys))
             return;
-
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
-        { title = "Viewport metrics", width = 320, height = 240, visible = false, highPixelDensity = true });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
-            new ImGuiInteractionOptions(commandKeys, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport metrics", width = 320, height = 240, visible = false, highPixelDensity = true });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(commandKeys, 1), new FixtureRenderer());
         context.SetIniFile(null);
-        context.RenderFrame(() => {
+        context.RenderFrame(() =>
+        {
             Assert.Equal(commandKeys, (NativeImGui.Raw.GetIO()->ConfigMacOsxBehaviors != 0));
             Assert.True(NativeImGui.Raw.GetPlatformIO()->PlatformGetWindowFramebufferScale == default);
             int logicalWidth = 0;
@@ -45,8 +42,10 @@ public sealed unsafe class ViewportMetricsTests
             SDL.Raw.GetWindowSizeInPixels((SDLWindow*)window.sdlWindowHandle, &pixelWidth, &pixelHeight);
             Vector2 expected = new(pixelWidth / (float)logicalWidth, pixelHeight / (float)logicalHeight);
             Assert.Equal(expected, Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetMainViewport()->FramebufferScale));
-            Assert.Equal(SDL.Raw.GetWindowDisplayScale((SDLWindow*)window.sdlWindowHandle)
-                / SDL.Raw.GetWindowPixelDensity((SDLWindow*)window.sdlWindowHandle), NativeImGui.Raw.GetMainViewport()->DpiScale);
+            Assert.Equal(
+                SDL.Raw.GetWindowDisplayScale((SDLWindow*)window.sdlWindowHandle) / SDL.Raw.GetWindowPixelDensity((SDLWindow*)window.sdlWindowHandle),
+                NativeImGui.Raw.GetMainViewport()->DpiScale
+            );
             Assert.Equal(new Vector2(logicalWidth, logicalHeight), Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize));
         });
         SDL.Raw.SetWindowSize((SDLWindow*)window.sdlWindowHandle, 450, 300);
@@ -58,14 +57,16 @@ public sealed unsafe class ViewportMetricsTests
     {
         if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(MetricRefreshPreservesRequestedViewportGeometry)))
             return;
-
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
-        { title = "Viewport geometry owner", width = 320, height = 240, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
-            new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport geometry owner", width = 320, height = 240, visible = false });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
         context.SetIniFile(null);
-        var viewport = new ImGuiViewport { ID = 4218, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)), Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30)) };
+        var viewport = new ImGuiViewport
+        {
+            ID = 4218,
+            Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)),
+            Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30))
+        };
         var io = NativeImGui.Raw.GetPlatformIO();
         io->PlatformCreateWindow(&viewport);
         try
@@ -75,7 +76,9 @@ public sealed unsafe class ViewportMetricsTests
             Vector2 requestedSize = new(140, 110);
             viewport.Pos = viewport.WorkPos = Unsafe.BitCast<Vector2, NativeVector2>(requestedPosition);
             viewport.Size = viewport.WorkSize = Unsafe.BitCast<Vector2, NativeVector2>(requestedSize);
-            context.RenderFrame(() => { });
+            context.RenderFrame(() =>
+            {
+            });
             Assert.Equal(requestedPosition, Unsafe.BitCast<NativeVector2, Vector2>(viewport.Pos));
             Assert.Equal(requestedPosition, Unsafe.BitCast<NativeVector2, Vector2>(viewport.WorkPos));
             Assert.Equal(requestedSize, Unsafe.BitCast<NativeVector2, Vector2>(viewport.Size));
@@ -95,12 +98,9 @@ public sealed unsafe class ViewportMetricsTests
     {
         if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(DetachedWindowAppliesRequestsAfterPlatformEventReconciliation)))
             return;
-
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
-        { title = "Viewport movement", width = 320, height = 240, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
-            new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport movement", width = 320, height = 240, visible = false });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
         context.SetIniFile(null);
         var io = NativeImGui.Raw.GetIO();
         io->ConfigViewportsNoAutoMerge = (true ? (byte)1 : (byte)0);
@@ -108,7 +108,8 @@ public sealed unsafe class ViewportMetricsTests
         {
             Vector2 requested = new(500 + frame * 7, 200 + frame * 3);
             uint viewportId = 0;
-            context.RenderFrame(() => {
+            context.RenderFrame(() =>
+            {
                 NativeImGui.SetNextWindowPos(requested);
                 NativeImGui.SetNextWindowSize(new Vector2(200, 120));
                 using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Detached movement", allowsNull: false);
@@ -122,11 +123,14 @@ public sealed unsafe class ViewportMetricsTests
             int y = 0;
             Assert.True(SDL.Raw.GetWindowPosition(SDL.Raw.GetWindowFromId(windowId), &x, &y) != 0);
             Assert.Equal(requested, new Vector2(x, y));
-
             // A real OS move acknowledgement owns reconciliation in the following frame.
             // Complete that frame before submitting the next application position request.
-            while (application.PollEvent(out _)) { }
-            context.RenderFrame(() => {
+            while (application.PollEvent(out _))
+            {
+            }
+
+            context.RenderFrame(() =>
+            {
                 using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Detached movement", allowsNull: false);
                 NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, (int)(ImGuiWindowFlags.NoFocusOnAppearing));
                 Assert.Equal(requested, NativeImGui.GetWindowPos());
@@ -141,12 +145,9 @@ public sealed unsafe class ViewportMetricsTests
     {
         if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame)))
             return;
-
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
-        { title = "Logical DPI transition", width = 320, height = 240, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
-            new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Logical DPI transition", width = 320, height = 240, visible = false });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
         context.SetIniFile(null);
         float previous = 0f;
         context.RenderFrame(() => previous = NativeImGui.Raw.GetMainViewport()->DpiScale);
@@ -163,14 +164,16 @@ public sealed unsafe class ViewportMetricsTests
     {
         if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction)))
             return;
-
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
-        { title = "Viewport ownership", width = 320, height = 240, visible = false });
+        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport ownership", width = 320, height = 240, visible = false });
         var renderer = new FixtureRenderer();
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports,
-            new ImGuiInteractionOptions(false, 1), renderer);
-        var viewport = new ImGuiViewport { ID = 4217, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)), Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30)) };
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
+        var viewport = new ImGuiViewport
+        {
+            ID = 4217,
+            Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)),
+            Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30))
+        };
         var io = NativeImGui.Raw.GetPlatformIO();
         io->PlatformCreateWindow(&viewport);
         try
@@ -186,6 +189,7 @@ public sealed unsafe class ViewportMetricsTests
         {
             io->PlatformDestroyWindow(&viewport);
         }
+
         Assert.Single(application.GetWindows());
         Assert.Null(renderer.target);
         Assert.True(viewport.PlatformUserData == null);
@@ -195,24 +199,44 @@ public sealed unsafe class ViewportMetricsTests
     {
         internal PlatformImGuiViewportTarget? target;
         public bool supportsViewports => true;
-        public void RenderMain(IntPtr drawData) { }
+
+        public void RenderMain(IntPtr drawData)
+        {
+        }
+
         public void SynchronizeMainOutput(
             int pixelWidth,
             int pixelHeight
-        ) { }
+        ) {
+        }
+
         public void CreateViewport(PlatformImGuiViewportTarget target) => this.target = target;
-        public void ResizeViewport(PlatformImGuiViewportTarget target) { }
+        public void ResizeViewport(PlatformImGuiViewportTarget target)
+        {
+        }
+
         public void RenderViewport(
             PlatformImGuiViewportTarget target,
             IntPtr drawData
-        ) { }
-        public void PresentViewport(PlatformImGuiViewportTarget target) { }
+        ) {
+        }
+
+        public void PresentViewport(PlatformImGuiViewportTarget target)
+        {
+        }
+
         public Task RetireViewport(PlatformImGuiViewportTarget target)
         {
             this.target = null;
             return Task.CompletedTask;
         }
-        public void DrainViewportRetirements() { }
-        public void Dispose() { }
+
+        public void DrainViewportRetirements()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
     }
 }

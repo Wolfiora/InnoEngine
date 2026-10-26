@@ -1,11 +1,9 @@
 using System;
 using System.Text;
-
 using Inno.Editor.Diagnostics;
 
 namespace Inno.Editor.Panel.Logging;
-
-internal sealed class ConsoleEntryCopyTarget
+internal readonly struct ConsoleEntryCopyTarget
 {
     internal ConsoleEntryCopyTarget(
         EditorConsoleOccurrence entry,
@@ -23,15 +21,7 @@ internal sealed class ConsoleEntryCopyTarget
         int repeatCount
     ) {
         var builder = new StringBuilder();
-        builder.Append('[')
-            .Append(entry.time.ToString("yyyy-MM-dd HH:mm:ss.fff"))
-            .Append("] [")
-            .Append(entry.kind)
-            .Append("] [")
-            .Append(entry.level)
-            .Append("] [")
-            .Append(entry.category)
-            .Append(']');
+        builder.Append('[').Append(entry.time.ToString("yyyy-MM-dd HH:mm:ss.fff")).Append("] [").Append(entry.kind).Append("] [").Append(entry.level).Append("] [").Append(entry.category).Append(']');
         builder.Append(' ').Append(entry.displayMessage);
         if (repeatCount > 1)
             builder.Append(" (x").Append(repeatCount).Append(')');
@@ -47,6 +37,7 @@ internal sealed class ConsoleEntryCopyTarget
                 builder.Append(')');
             }
         }
+
         return builder.ToString();
     }
 }

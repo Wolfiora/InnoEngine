@@ -67,14 +67,8 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
     /// </summary>
     public LogSessionId activeSessionId => m_controller.activeSessionId;
 
-    /// <summary>
-    /// Occurs after the Play Mode transition state changes.
-    /// </summary>
-    public event Action<EditorPlayModeState>? stateChanged
-    {
-        add => m_controller.stateChanged += value;
-        remove => m_controller.stateChanged -= value;
-    }
+    /// <inheritdoc />
+    public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_controller.ListenStateChanges(listener);
 
     /// <summary>
     /// Requests entry after the active script generation becomes ready.

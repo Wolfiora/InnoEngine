@@ -1,22 +1,22 @@
+using Inno.Editor.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Linq;
 using Inno.Core.Graphs;
-using Inno.Native.ImGui;
 using Inno.Rendering;
 using Inno.Rendering.Shaders;
 using Inno.Editor.Shaders;
+using Inno.Editor.Shaders.ImGui;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using ImGuiApi = Inno.Native.ImGui.ImGui;
+using ImGuiApi = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
-
 internal sealed partial class ShaderEditorCanvas
 {
     private bool StoragePopup(ref ShaderGraphType type)
     {
-        ImGuiApi.SetNextWindowSize(new(490, 390), (int)(ImGuiCond.Appearing));
+        ImGuiApi.SetNextWindowSize(new(490, 390), (ImGuiCond.Appearing));
         if (!ImGuiApi.BeginPopup("##storage"))
             return false;
         bool changed = false;
@@ -29,16 +29,21 @@ internal sealed partial class ShaderEditorCanvas
             {
                 type.isImage = image;
                 type.isStorage = true;
-                type.storageElement = image ? null : new() { id = "float4" };
+                type.storageElement = image ? null : new()
+                {
+                    id = "float4"
+                };
                 type.format = RenderTextureFormat.RGBA16Float;
                 changed = true;
             }
+
             RenderStorageAccess access = type.access;
             if (EnumControl("Access", ref access))
             {
                 type.access = access;
                 changed = true;
             }
+
             if (type.isImage)
             {
                 RenderTextureFormat format = type.format;
@@ -47,12 +52,14 @@ internal sealed partial class ShaderEditorCanvas
                     type.format = format;
                     changed = true;
                 }
+
                 RenderTextureDimension dimension = type.dimension;
                 if (EnumControl("Dimension", ref dimension))
                 {
                     type.dimension = dimension;
                     changed = true;
                 }
+
                 bool array = type.isArray;
                 bool arrayChanged = false;
                 InspectorRow("storage.array", "Array Layers", () => arrayChanged = ImGuiApi.Checkbox("##array", ref array));
@@ -68,31 +75,52 @@ internal sealed partial class ShaderEditorCanvas
                 string selected = current;
                 InspectorRow("storage.element", "Element", () =>
                 {
-                    if (!Widget.BeginBoundedCombo("##element", current))
+                    if (!EditorUI.current.widgets.BeginBoundedCombo("##element", current))
                         return;
                     try
                     {
-                        foreach (string candidate in new[] { "float", "float2", "float3", "float4", "int", "int2", "int3", "int4", "uint", "uint2", "uint3", "uint4" })
+                        foreach (string candidate in new[]
+                        {
+                            "float",
+                            "float2",
+                            "float3",
+                            "float4",
+                            "int",
+                            "int2",
+                            "int3",
+                            "int4",
+                            "uint",
+                            "uint2",
+                            "uint3",
+                            "uint4"
+                        }
+
+                        )
                             if (ImGuiApi.Selectable(candidate, current == candidate))
                                 selected = candidate;
                     }
                     finally
                     {
-                        Widget.EndBoundedCombo();
+                        EditorUI.current.widgets.EndBoundedCombo();
                     }
                 });
                 if (selected != current)
                 {
-                    type.storageElement = new() { id = selected };
+                    type.storageElement = new()
+                    {
+                        id = selected
+                    };
                     changed = true;
                 }
             }
-            Widget.WrappedText("Storage resources are bound by the render pass. The graph declares types and access; the Render Graph owns resource lifetime and synchronization.");
+
+            EditorUI.current.widgets.WrappedText("Storage resources are bound by the render pass. The graph declares types and access; the Render Graph owns resource lifetime and synchronization.");
         }
         finally
         {
             ImGuiApi.EndPopup();
         }
+
         return changed;
     }
 
@@ -104,11 +132,15 @@ internal sealed partial class ShaderEditorCanvas
         int index = Array.FindIndex(definition.properties, value => value.id.value == input.id);
         if (index < 0)
         {
-            Widget.Hint("Enter a binding name and supported type to declare this parameter.");
+            EditorUI.current.widgets.Hint("Enter a binding name and supported type to declare this parameter.");
             return;
         }
+
         ShaderPropertyDefinition property = definition.properties[index];
-        bool parameterOpen = Widget.SectionHeader("Parameter", "The stable binding ID identifies overrides. Shader defaults and Material overrides are edited independently.");
+        bool parameterOpen = EditorUI.current.widgets.SectionHeader(
+            "Parameter",
+            "The stable binding ID identifies overrides. Shader defaults and Material overrides are edited independently."
+        );
         if (parameterOpen)
         {
             string displayName = property.displayName;
@@ -120,12 +152,14 @@ internal sealed partial class ShaderEditorCanvas
                 property.displayName = displayName;
                 Save(property, true);
             }
+
             ShaderPropertyBindingOwner bindingOwner = property.bindingOwner;
             if (EnumControl("Bound By", ref bindingOwner))
             {
                 property.bindingOwner = bindingOwner;
                 Save(property, false);
             }
+
             if (property.type is ShaderPropertyType.Vector4 or ShaderPropertyType.Color)
             {
                 bool color = property.type == ShaderPropertyType.Color;
@@ -142,20 +176,26 @@ internal sealed partial class ShaderEditorCanvas
                 });
             }
         }
+
         if (property.bindingOwner != ShaderPropertyBindingOwner.Material)
         {
             if (parameterOpen)
-                Widget.Hint("Supplied by the Render Pass. This binding is read-only in Material Inspectors.");
+                EditorUI.current.widgets.Hint("Supplied by the Render Pass. This binding is read-only in Material Inspectors.");
             return;
         }
+
         if (property.bindingKind is not (ShaderPropertyBindingKind.Uniform or ShaderPropertyBindingKind.SampledTexture))
         {
             if (parameterOpen)
-                Widget.Hint("Storage resources require a Render Pass owner.");
+                EditorUI.current.widgets.Hint("Storage resources require a Render Pass owner.");
             return;
         }
+
         ShaderParameterPresentation presentation = ShaderParameterPresentation.Read(Controller.document, property.id, owner.serialization, owner.context);
-        if (!Widget.SectionHeader("Material Inspector", "Presentation belongs only to this Shader's authoring graph. It does not modify existing Material values or enter the Player."))
+        if (!EditorUI.current.widgets.SectionHeader(
+            "Material Inspector",
+            "Presentation belongs only to this Shader's authoring graph. It does not modify existing Material values or enter the Player."
+        ))
             return;
         string group = presentation.group;
         bool groupChanged = false;
@@ -165,6 +205,7 @@ internal sealed partial class ShaderEditorCanvas
             presentation.group = group;
             SavePresentation(true);
         }
+
         Gesture();
         string description = presentation.description;
         bool descriptionChanged = false;
@@ -174,6 +215,7 @@ internal sealed partial class ShaderEditorCanvas
             presentation.description = description;
             SavePresentation(true);
         }
+
         Gesture();
         bool visible = presentation.visible;
         InspectorRow("parameter.visible", "Visible in Material", () =>
@@ -197,41 +239,40 @@ internal sealed partial class ShaderEditorCanvas
             });
             if (range)
             {
-                m_inspection.properties.DrawValue(m_inspection.editorContext, draft, "shader.parameter." + property.id.value + ".minimum",
-                    "Minimum", typeof(double), () => presentation.minimum, value =>
-                    {
-                        if (!double.IsFinite((double)value!))
-                            return;
-                        presentation.minimum = Math.Clamp((double)value!, -float.MaxValue, presentation.maximum);
-                        SavePresentation(true);
-                    }, new ParameterEdits(this), draft.readOnly, minimum: -float.MaxValue, maximum: presentation.maximum);
-                m_inspection.properties.DrawValue(m_inspection.editorContext, draft, "shader.parameter." + property.id.value + ".maximum",
-                    "Maximum", typeof(double), () => presentation.maximum, value =>
-                    {
-                        if (!double.IsFinite((double)value!))
-                            return;
-                        presentation.maximum = Math.Clamp((double)value!, presentation.minimum, float.MaxValue);
-                        SavePresentation(true);
-                    }, new ParameterEdits(this), draft.readOnly, minimum: presentation.minimum, maximum: float.MaxValue);
-                Widget.Hint("Editing bounds only · existing defaults and overrides are not clamped on display");
+                m_inspection.properties.DrawValue(m_inspection.editorContext, draft, "shader.parameter." + property.id.value + ".minimum", "Minimum", typeof(double), () => presentation.minimum, value =>
+                {
+                    if (!double.IsFinite((double)value!))
+                        return;
+                    presentation.minimum = Math.Clamp((double)value!, -float.MaxValue, presentation.maximum);
+                    SavePresentation(true);
+                }, new ParameterEdits(this), draft.readOnly, minimum: -float.MaxValue, maximum: presentation.maximum);
+                m_inspection.properties.DrawValue(m_inspection.editorContext, draft, "shader.parameter." + property.id.value + ".maximum", "Maximum", typeof(double), () => presentation.maximum, value =>
+                {
+                    if (!double.IsFinite((double)value!))
+                        return;
+                    presentation.maximum = Math.Clamp((double)value!, presentation.minimum, float.MaxValue);
+                    SavePresentation(true);
+                }, new ParameterEdits(this), draft.readOnly, minimum: presentation.minimum, maximum: float.MaxValue);
+                EditorUI.current.widgets.Hint("Editing bounds only · existing defaults and overrides are not clamped on display");
             }
         }
+
         ShaderPropertyDefinition shown = property;
         shown.displayName = "Default";
-        ShaderPropertyInspector.Draw(m_inspection, draft, "shader.parameter." + property.id.value, shown, property.defaultValue,
-            value =>
-            {
-                property.defaultValue = value;
-                Save(property, true);
-            }, new ParameterEdits(this), draft.readOnly, presentation);
+        ShaderPropertyInspector.Draw(m_inspection, draft, "shader.parameter." + property.id.value, shown, property.defaultValue, value =>
+        {
+            property.defaultValue = value;
+            Save(property, true);
+        }, new ParameterEdits(this), draft.readOnly, presentation);
         void SavePresentation(bool continuous)
         {
             Gesture();
             GraphDocument candidate = Controller.document.Clone();
             ShaderParameterPresentation.Write(candidate, property.id, presentation, owner.serialization, owner.context);
-            Controller.ReplaceDocument(candidate, "Edit Parameter Presentation", continuous && ImGuiApi.IsAnyItemActive() ? draft.valueGesture : null);
+            Controller.ReplaceDocument(candidate, "Edit Parameter Presentation", continuous ? EditorUI.current.widgets.editMergeKey : null);
             owner.Changed(draft);
         }
+
         void Save(
             ShaderPropertyDefinition value,
             bool continuous
@@ -243,30 +284,15 @@ internal sealed partial class ShaderEditorCanvas
 
     private sealed class ParameterEdits(ShaderEditorCanvas canvas) : Inno.Editor.Inspection.IInspectionPropertyEditService
     {
-        /// <summary>
-        /// Applies one serialized property edit and records its reversible history payload.
-        /// </summary>
-        /// <param name="owner">
-        /// The object that owns the resulting lifetime and state.
-        /// </param>
-        /// <param name="propertyName">
-        /// The property name text validated by the change property operation.
-        /// </param>
-        /// <param name="mutation">
-        /// The callback invoked by change property within the operation's owned lifetime.
-        /// </param>
-        /// <param name="historyName">
-        /// The history name text validated by the change property operation.
-        /// </param>
-        /// <returns>
-        /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
-        /// </returns>
-public bool ChangeProperty(
-    object owner,
-    string propertyName,
-    Action mutation,
-    string historyName
-) {
+        /// <inheritdoc />
+        public bool ChangeProperty(
+            object owner,
+            string propertyName,
+            Action mutation,
+            string historyName,
+            string? mergeKey,
+            string? componentName
+        ) {
             canvas.Gesture();
             mutation();
             return true;
@@ -279,8 +305,11 @@ public bool ChangeProperty(
         bool continuous = false
     ) {
         GraphDocument candidate = Controller.document.Clone();
-        candidate.SetMetadata(ShaderGraphDocument.definitionKey, ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context));
-        Controller.ReplaceDocument(candidate, label, continuous ? draft.valueGesture : null);
+        candidate.SetMetadata(
+            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
+        );
+        Controller.ReplaceDocument(candidate, label, continuous ? EditorUI.current.widgets.editMergeKey : null);
         owner.Changed(draft);
     }
 }

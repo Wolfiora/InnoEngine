@@ -109,7 +109,10 @@ public static partial class ArchitectureValidator
             else if (!argument.StartsWith("--", StringComparison.Ordinal) && paths.Count == 0)
                 paths.Add(argument);
             else
-                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json] [--wiki] [--wiki-target targetId] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]", nameof(arguments));
+                throw new ArgumentException(
+                    "Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json] [--wiki] [--wiki-target targetId] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]",
+                    nameof(arguments)
+                );
         }
         if (projectGraphPath is not null && dotnetHost is null)
             throw new ArgumentException("Evaluated project graph output requires an explicitly selected --dotnet SDK.", nameof(arguments));
@@ -584,7 +587,7 @@ public static partial class ArchitectureValidator
             return "src/composition/editor/panels";
         if (string.Equals(projectName, "Inno.Editor.Hosting", StringComparison.Ordinal))
             return "src/composition/editor/hosting";
-        if (string.Equals(projectName, "Inno.Editor.ImGui", StringComparison.Ordinal))
+        if (projectName is "Inno.Editor.ImGui" or "Inno.Editor.Workbench" or "Inno.Editor.Assets.ImGui" or "Inno.Editor.Shaders.ImGui" or "Inno.Editor.Graph.ImGui")
             return "src/composition/editor/presentation";
         if (string.Equals(projectName, "Inno.Editor.Core", StringComparison.Ordinal) ||
             string.Equals(projectName, "Inno.Editor.Diagnostics", StringComparison.Ordinal) ||

@@ -27,3 +27,5 @@
 日期化计划、阶段报告和旧审查保存于仓库 records 目录；当前 Wiki 不通过历史完成声明解释当前能力。
 
 - [Native 构建平台职责与文件树](NATIVE_BUILD_PLATFORM_OWNERSHIP.md)
+
+- [Editor UI 架构与交互所有权](EDITOR_UI_ARCHITECTURE.md)

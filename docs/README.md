@@ -58,3 +58,5 @@
 [Inno.Testing.Source](testing/Inno.Testing.Source.md) 为需要 checkout 的测试读取显式 SDK 输入，源码只属于该测试支持程序集。
 
 平台构建接入新增独立标准产品库、Windows 宿主及三个平台 Build integration；各项目的当前公开契约和签名映射见对应分类索引。
+
+Editor UI 的程序集边界、当前文件树、手势、选择与基础能力复用见 [Editor UI 架构](architecture/EDITOR_UI_ARCHITECTURE.md)。[Editor 索引](editor/README.md) 包含 Assets.ImGui、Shaders.ImGui、Graph.ImGui 和 Workbench 的独立项目页。

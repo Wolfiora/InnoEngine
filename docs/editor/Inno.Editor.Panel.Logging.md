@@ -38,21 +38,21 @@ Console card header 显示等级和来源，例如 `[Info] [Log]` 或 `[Error] [
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
-本项目没有公开入口，通过组合或扩展发现使用内部实现。
+本程序集没有对外公开类型；扩展由当前产品的 Registry 在内部发现。
 
 ## 项目依赖
 
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Diagnostics](Inno.Editor.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Diagnostics` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.PlayMode` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Logging` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Diagnostics` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |
+| `Inno.Core.Serialization` | 公开签名依赖 |

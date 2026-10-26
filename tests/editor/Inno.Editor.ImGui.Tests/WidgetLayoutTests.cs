@@ -1,9 +1,12 @@
+using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
+using ImGuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
+using ImGuiCond = Inno.Editor.ImGui.ImGuiCond;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System.Runtime.CompilerServices;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using BGCS.Runtime;
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 using Xunit;
 using NativeImGui = Inno.Native.ImGui.ImGui;
@@ -11,9 +14,58 @@ using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.Tests;
-
 public sealed unsafe class WidgetLayoutTests
 {
+    [Fact]
+    public void DrawingBorrowRejectsAnotherWindowOrFrame()
+    {
+        using NativeContext context = new(1f);
+        Inno.Editor.ImGui.EditorDrawList borrow = default;
+        context.Frame(() =>
+        {
+            BeginWindow("Drawing owner", new Vector2(400f, 300f));
+            borrow = EditorImGui.GetDrawList();
+            borrow.Line(new(30f, 30f), new(60f, 60f), uint.MaxValue);
+            _ = EditorImGui.BeginChild("Other owner", new Vector2(100f, 100f));
+            Assert.Throws<InvalidOperationException>(() => borrow.Line(Vector2.Zero, Vector2.One, 0));
+            EditorImGui.EndChild();
+            NativeImGui.End();
+        });
+        context.Frame(() =>
+        {
+            BeginWindow("Drawing owner", new Vector2(400f, 300f));
+            Assert.Throws<InvalidOperationException>(() => borrow.Line(Vector2.Zero, Vector2.One, 0));
+            NativeImGui.End();
+        });
+        Assert.Throws<InvalidOperationException>(() => default(Inno.Editor.ImGui.EditorDrawList).Line(Vector2.Zero, Vector2.One, 0));
+    }
+
+    [Fact]
+    public void BoundedTextControlsDoNotAllocateOneBufferAndEncoderPerSubmission()
+    {
+        using NativeContext context = new(1f);
+        string value = "Unicode: 漢字 😀";
+        long allocated = 0;
+        Action draw = () =>
+        {
+            BeginWindow("Text allocation", new Vector2(400f, 300f));
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            for (int index = 0; index < 128; index++)
+            {
+                EditorImGui.PushId(index);
+                _ = EditorImGui.InputText("Value", ref value, 1024);
+                EditorImGui.PopId();
+            }
+
+            allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            NativeImGui.End();
+        };
+        context.Frame(draw);
+        context.Frame(draw);
+        Assert.Equal("Unicode: 漢字 😀", value);
+        Assert.True(allocated < 128L * 512, $"Unexpected steady-state allocation: {allocated} bytes for 128 fields.");
+    }
+
     [Fact]
     public void TimelineWorkspace_UsesOneBoundedChildScrollOwner()
     {
@@ -30,25 +82,28 @@ public sealed unsafe class WidgetLayoutTests
                 {
                     if (visible)
                     {
-                        Widget.SectionLayout(() =>
+                        EditorUI.current.widgets.SectionLayout(() =>
                         {
-                            if (Widget.SectionHeader("Frames"))
+                            if (EditorUI.current.widgets.SectionHeader("Frames"))
                             {
                                 for (int index = 0; index < 40; index++)
                                     EditorImGui.Text("Frame " + index);
                             }
                         });
                     }
+
                     childScroll = NativeImGui.GetScrollMaxY();
                 }
                 finally
                 {
                     EditorImGui.EndChild();
                 }
+
                 parentScroll = NativeImGui.GetScrollMaxY();
                 NativeImGui.End();
             });
         }
+
         Assert.True(childScroll > 200f);
         Assert.Equal(0f, parentScroll);
     }
@@ -109,20 +164,17 @@ public sealed unsafe class WidgetLayoutTests
             {
                 BeginWindow("Property layout", new Vector2(320f, 270f));
                 fontHeight = NativeImGui.GetTextLineHeight();
-                Widget.PropertyRow(
-                    "persistence",
-                    () =>
-                    {
-                        labelWidth = NativeImGui.GetContentRegionAvail().X;
-                        Widget.PropertyLabel("Persistent data directory for this exported application");
-                        labelSize = NativeImGui.GetItemRectSize();
-                    },
-                    () =>
-                    {
-                        valueWidth = NativeImGui.GetContentRegionAvail().X;
-                        string value = "Application data";
-                        Widget.SearchInput("directory", "Directory", ref value);
-                    });
+                EditorUI.current.widgets.PropertyRow("persistence", () =>
+                {
+                    labelWidth = NativeImGui.GetContentRegionAvail().X;
+                    EditorUI.current.widgets.PropertyLabel("Persistent data directory for this exported application");
+                    labelSize = NativeImGui.GetItemRectSize();
+                }, () =>
+                {
+                    valueWidth = NativeImGui.GetContentRegionAvail().X;
+                    string value = "Application data";
+                    EditorUI.current.widgets.SearchInput("directory", "Directory", ref value);
+                });
                 scroll = new Vector2(NativeImGui.GetScrollMaxX(), NativeImGui.GetScrollMaxY());
                 NativeImGui.End();
             });
@@ -159,7 +211,7 @@ public sealed unsafe class WidgetLayoutTests
         {
             BeginWindow("Selector layout", new Vector2(400f, 360f));
             NativeImGui.SetNextItemWidth(260f);
-            bool visible = Widget.BeginBoundedCombo("tags", "Untagged");
+            bool visible = EditorUI.current.widgets.BeginBoundedCombo("tags", "Untagged");
             if (visible)
             {
                 opened = true;
@@ -168,21 +220,20 @@ public sealed unsafe class WidgetLayoutTests
                 popupPosition = NativeImGui.GetWindowPos();
                 popupSize = NativeImGui.GetWindowSize();
                 scroll = new Vector2(NativeImGui.GetScrollMaxX(), NativeImGui.GetScrollMaxY());
-                Widget.EndBoundedCombo();
+                EditorUI.current.widgets.EndBoundedCombo();
             }
             else
             {
                 controlMinimum = NativeImGui.GetItemRectMin();
                 controlMaximum = NativeImGui.GetItemRectMax();
             }
+
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Click((controlMinimum + controlMaximum) * 0.5f, 0, draw);
         for (int frame = 0; frame < 6; frame++)
             context.Frame(draw);
-
         Assert.True(opened);
         Assert.InRange(popupPosition.Y, controlMaximum.Y - 1f, controlMaximum.Y + 1f);
         Assert.True(popupPosition.X >= 20f);
@@ -209,28 +260,27 @@ public sealed unsafe class WidgetLayoutTests
             BeginWindow("Bottom selector", new Vector2(400f, 360f));
             NativeImGui.SetCursorPosY(verticalOffset);
             NativeImGui.SetNextItemWidth(260f);
-            if (Widget.BeginBoundedCombo("objects", "Selected object"))
+            if (EditorUI.current.widgets.BeginBoundedCombo("objects", "Selected object"))
             {
                 opened = true;
                 for (int index = 0; index < 100; index++)
                     NativeImGui.Selectable($"Object {index}");
                 popupPosition = NativeImGui.GetWindowPos();
                 popupSize = NativeImGui.GetWindowSize();
-                Widget.EndBoundedCombo();
+                EditorUI.current.widgets.EndBoundedCombo();
             }
             else
             {
                 controlMinimum = NativeImGui.GetItemRectMin();
                 controlMaximum = NativeImGui.GetItemRectMax();
             }
+
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Click((controlMinimum + controlMaximum) * 0.5f, 0, draw);
         for (int frame = 0; frame < 6; frame++)
             context.Frame(draw);
-
         Assert.True(opened);
         Assert.InRange(popupPosition.Y, controlMaximum.Y - 1f, controlMaximum.Y + 1f);
         Assert.True(popupPosition.Y + popupSize.Y <= 381f);
@@ -257,27 +307,26 @@ public sealed unsafe class WidgetLayoutTests
             NativeImGui.InvisibleButton("Scene", new Vector2(200f, 30f));
             controlMinimum = NativeImGui.GetItemRectMin();
             controlMaximum = NativeImGui.GetItemRectMax();
-            if (Widget.BeginContextMenu("scene-actions"))
+            if (EditorUI.current.widgets.BeginContextMenu("scene-actions"))
             {
                 opened = true;
                 availableWidth = NativeImGui.GetContentRegionAvail().X;
-                Widget.SearchInput("commands", "Search commands...", ref query);
+                EditorUI.current.widgets.SearchInput("commands", "Search commands...", ref query);
                 searchWidth = NativeImGui.GetItemRectSize().X;
                 NativeImGui.MenuItem("Set Active Scene", string.Empty, false, true);
                 NativeImGui.MenuItem("Create", string.Empty, false, true);
                 NativeImGui.MenuItem("Rename", "F2", false, true);
                 NativeImGui.MenuItem("Unload", "Delete", false, true);
                 scroll = new Vector2(NativeImGui.GetScrollMaxX(), NativeImGui.GetScrollMaxY());
-                Widget.EndContextMenu();
+                EditorUI.current.widgets.EndContextMenu();
             }
+
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Click((controlMinimum + controlMaximum) * 0.5f, 1, draw);
         for (int frame = 0; frame < 6; frame++)
             context.Frame(draw);
-
         Assert.True(opened);
         Assert.InRange(availableWidth - searchWidth, 0f, 1.1f);
         Assert.Equal(Vector2.Zero, scroll);
@@ -294,21 +343,19 @@ public sealed unsafe class WidgetLayoutTests
         {
             BeginWindow("Background panel", new Vector2(400f, 300f));
             NativeImGui.SetCursorScreenPos(new Vector2(100f, 100f));
-            if (Widget.ClickableText("close", "X", new Vector2(40f, 40f)))
+            if (EditorUI.current.widgets.ClickableText("close", "X", new Vector2(40f, 40f)))
                 backgroundPresses++;
             NativeImGui.End();
             BeginWindow("Foreground shader", new Vector2(400f, 300f));
             NativeImGui.SetCursorScreenPos(new Vector2(100f, 100f));
-            if (Widget.ClickableText("action", "Edit", new Vector2(40f, 40f)))
+            if (EditorUI.current.widgets.ClickableText("action", "Edit", new Vector2(40f, 40f)))
                 foregroundPresses++;
             hit = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Frame(draw);
         context.Click(hit, 0, draw);
-
         Assert.Equal(0, backgroundPresses);
         Assert.Equal(1, foregroundPresses);
     }
@@ -328,19 +375,16 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree content", new Vector2(400f, 300f));
-            var result = Widget.TreeNode(
-                $"content-{isLeaf}-{zoom}",
-                _ => Widget.IconText("O", "Selected object", false),
-                new()
-                {
-                    isLeaf = isLeaf,
-                    drawViewportOverlay = () =>
-                    {
-                        float rowY = NativeImGui.GetItemRectMin().Y;
-                        NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
-                        _ = Widget.ClickableIcon("visibility", "V", "Visibility");
-                    }
-                });
+            var result = EditorUI.current.widgets.TreeNode($"content-{isLeaf}-{zoom}", _ => EditorUI.current.widgets.IconText(
+                "O",
+                "Selected object",
+                false
+            ), new() { isLeaf = isLeaf, drawViewportOverlay = () =>
+            {
+                float rowY = NativeImGui.GetItemRectMin().Y;
+                NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
+                _ = EditorUI.current.widgets.ClickableIcon("visibility", "V", "Visibility");
+            } });
             hit = new Vector2(result.contentMin.X + 80f, (result.min.Y + result.max.Y) * 0.5f);
             if (result.isClicked)
                 presses++;
@@ -348,11 +392,9 @@ public sealed unsafe class WidgetLayoutTests
                 NativeImGui.TreePop();
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Frame(draw);
         context.Click(hit, 0, draw, settleHover: false);
-
         Assert.Equal(1, presses);
     }
 
@@ -366,13 +408,8 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree disclosure", new Vector2(400f, 300f));
-            var result = Widget.TreeNode(
-                "disclosure",
-                _ => NativeImGui.TextUnformatted("Parent"),
-                new() { isLeaf = false });
-            hit = new Vector2(
-                result.contentMin.X - NativeImGui.GetTreeNodeToLabelSpacing() * 0.5f,
-                (result.min.Y + result.max.Y) * 0.5f);
+            var result = EditorUI.current.widgets.TreeNode("disclosure", _ => NativeImGui.TextUnformatted("Parent"), new() { isLeaf = false });
+            hit = new Vector2(result.contentMin.X - NativeImGui.GetTreeNodeToLabelSpacing() * 0.5f, (result.min.Y + result.max.Y) * 0.5f);
             opened = result.isOpen;
             if (result.isClicked)
                 presses++;
@@ -380,12 +417,10 @@ public sealed unsafe class WidgetLayoutTests
                 NativeImGui.TreePop();
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Frame(draw);
         context.Click(hit, 0, draw);
         context.Frame(draw);
-
         Assert.True(opened);
         Assert.Equal(0, presses);
     }
@@ -402,30 +437,21 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree overlay", new Vector2(400f, 300f));
-            var result = Widget.TreeNode(
-                $"overlay-{settleHover}",
-                _ => NativeImGui.TextUnformatted("Object"),
-                new()
-                {
-                    isLeaf = true,
-                    drawViewportOverlay = () =>
-                    {
-                        float rowY = NativeImGui.GetItemRectMin().Y;
-                        NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
-                        if (NativeImGui.SmallButton("Eye"))
-                            overlayPresses++;
-                        overlayHit = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
-                    }
-                });
+            var result = EditorUI.current.widgets.TreeNode($"overlay-{settleHover}", _ => NativeImGui.TextUnformatted("Object"), new() { isLeaf = true, drawViewportOverlay = () =>
+            {
+                float rowY = NativeImGui.GetItemRectMin().Y;
+                NativeImGui.SetCursorScreenPos(new Vector2(360f, rowY));
+                if (NativeImGui.SmallButton("Eye"))
+                    overlayPresses++;
+                overlayHit = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
+            } });
             if (result.isClicked)
                 rowPresses++;
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Frame(draw);
         context.Click(overlayHit, 0, draw, settleHover);
-
         Assert.Equal(1, overlayPresses);
         Assert.Equal(0, rowPresses);
     }
@@ -441,10 +467,7 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree double click", new Vector2(400f, 300f));
-            var result = Widget.TreeNode(
-                "double-click",
-                _ => NativeImGui.TextUnformatted("Parent"),
-                new() { isLeaf = false });
+            var result = EditorUI.current.widgets.TreeNode("double-click", _ => NativeImGui.TextUnformatted("Parent"), new() { isLeaf = false });
             hit = new Vector2(result.contentMin.X + 80f, (result.min.Y + result.max.Y) * 0.5f);
             opened = result.isOpen;
             if (result.isClicked)
@@ -455,16 +478,36 @@ public sealed unsafe class WidgetLayoutTests
                 NativeImGui.TreePop();
             NativeImGui.End();
         };
-
         context.Frame(draw);
         context.Frame(draw);
         context.Click(hit, 0, draw);
         context.Click(hit, 0, draw);
         context.Frame(draw);
-
         Assert.Equal(2, presses);
         Assert.Equal(1, doublePresses);
         Assert.True(opened);
+    }
+
+    [Fact]
+    public void MixedValueRestoresOuterStateAfterNestedGroupsAndFailures()
+    {
+        using NativeContext context = new(1f);
+        context.Frame(() =>
+        {
+            BeginWindow("Mixed scope", new Vector2(400f, 300f));
+            var widgets = EditorUI.current.widgets;
+            Assert.False(widgets.isMixedValue);
+            widgets.MixedValue(true, () =>
+            {
+                Assert.True(widgets.isMixedValue);
+                widgets.MixedValue(false, () => Assert.True(widgets.isMixedValue));
+                Assert.True(widgets.isMixedValue);
+            });
+            Assert.False(widgets.isMixedValue);
+            Assert.Throws<InvalidOperationException>(() => widgets.MixedValue(true, () => throw new InvalidOperationException("rejected draw")));
+            Assert.False(widgets.isMixedValue);
+            NativeImGui.End();
+        });
     }
 
     private static void BeginWindow(
@@ -474,25 +517,30 @@ public sealed unsafe class WidgetLayoutTests
         NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
         NativeImGui.SetNextWindowSize(size, (int)(ImGuiCond.Always));
         using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated(name, allowsNull: false);
-        NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove
-                | ImGuiWindowFlags.NoSavedSettings));
+        NativeImGui.Raw.Begin(
+            (sbyte*)nativeTestText0.pointer,
+            null,
+            (int)(ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings)
+        );
     }
 
     private sealed class NativeContext : IDisposable
     {
         private readonly ImGuiNativeContext* m_context;
-
+        private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
+        private readonly IDisposable m_uiScope;
         public NativeContext(float zoom)
         {
             m_context = NativeImGui.Raw.CreateContext(null);
+            m_uiScope = m_ui.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
             io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1024f, 768f));
             io->DeltaTime = 1f / 60f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
             io->IniFilename = null;
-            Widget.style.SetZoom(zoom);
-            Widget.SetupStyle();
+            EditorUI.current.widgets.style.SetZoom(zoom);
+            EditorUI.current.widgets.SetupStyle();
         }
 
         public void Frame(Action draw)
@@ -520,8 +568,9 @@ public sealed unsafe class WidgetLayoutTests
 
         public void Dispose()
         {
+            m_uiScope.Dispose();
+            m_ui.Dispose();
             NativeImGui.Raw.DestroyContext(m_context);
-            Widget.style.SetZoom(1f);
         }
     }
 }

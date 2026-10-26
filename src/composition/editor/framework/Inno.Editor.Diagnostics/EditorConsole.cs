@@ -24,6 +24,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     private int m_capacity = 1024;
     private long m_nextSequence;
     private long m_revision;
+    private IDisposable? m_playModeSubscription;
     private bool m_started;
     private bool m_disposed;
 
@@ -93,10 +94,21 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_started)
             return;
-        m_logRouter.RegisterSink(this);
-        m_diagnosticHub.RegisterSink(this);
-        m_playMode.stateChanged += OnPlayModeStateChanged;
-        m_started = true;
+        IDisposable subscription = m_playMode.ListenStateChanges(OnPlayModeStateChanged);
+        try
+        {
+            m_logRouter.RegisterSink(this);
+            m_diagnosticHub.RegisterSink(this);
+            m_playModeSubscription = subscription;
+            m_started = true;
+        }
+        catch
+        {
+            m_diagnosticHub.UnregisterSink(this);
+            m_logRouter.UnregisterSink(this);
+            subscription.Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -195,7 +207,8 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             return;
         if (m_started)
         {
-            m_playMode.stateChanged -= OnPlayModeStateChanged;
+            m_playModeSubscription?.Dispose();
+            m_playModeSubscription = null;
             m_logRouter.UnregisterSink(this);
             m_diagnosticHub.UnregisterSink(this);
             m_started = false;

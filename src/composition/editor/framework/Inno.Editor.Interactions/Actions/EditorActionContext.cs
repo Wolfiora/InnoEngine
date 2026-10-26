@@ -1,9 +1,7 @@
 using System;
-
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
-
 /// <summary>
 /// Provides contextual state to an editor action.
 /// </summary>
@@ -28,7 +26,7 @@ public class EditorActionContext
     /// An optional placement-specific argument.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="editor"/> or <paramref name="interactions"/> is <see langword="null"/>.
+    /// Thrown when <paramref name = "editor"/> or <paramref name="interactions"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="area"/> is empty.
@@ -52,27 +50,22 @@ public class EditorActionContext
     /// Gets the shared passive editor context.
     /// </summary>
     public EditorContext editor { get; }
-
     /// <summary>
     /// Gets the active interaction entry point.
     /// </summary>
     public EditorInteractions interactions { get; }
-
     /// <summary>
     /// Gets the transactional history used to record reversible mutations performed by this action.
     /// </summary>
     public IEditorHistory history => interactions.history;
-
     /// <summary>
     /// Gets the stable interaction area.
     /// </summary>
     public string area { get; }
-
     /// <summary>
     /// Gets the contextual action target.
     /// </summary>
     public object? target { get; }
-
     /// <summary>
     /// Gets the optional action argument.
     /// </summary>
@@ -86,13 +79,11 @@ public class EditorActionContext
 /// The target type required by the action.
 /// </typeparam>
 public sealed class EditorActionContext<TTarget> : EditorActionContext
-    where TTarget : class
 {
     internal EditorActionContext(
         EditorActionContext context,
         TTarget target
-    )
-        : base(context.editor, context.interactions, context.area, target, context.argument)
+    ) : base(context.editor, context.interactions, context.area, target, context.argument)
     {
         this.target = target;
     }
@@ -113,14 +104,12 @@ public sealed class EditorActionContext<TTarget> : EditorActionContext
 /// The action argument type required by the action.
 /// </typeparam>
 public sealed class EditorActionContext<TTarget, TArgument> : EditorActionContext
-    where TTarget : class
 {
     internal EditorActionContext(
         EditorActionContext context,
         TTarget target,
         TArgument argument
-    )
-        : base(context.editor, context.interactions, context.area, target, argument)
+    ) : base(context.editor, context.interactions, context.area, target, argument)
     {
         this.target = target;
         this.argument = argument;
@@ -130,7 +119,6 @@ public sealed class EditorActionContext<TTarget, TArgument> : EditorActionContex
     /// Gets the strongly typed action target.
     /// </summary>
     public new TTarget target { get; }
-
     /// <summary>
     /// Gets the strongly typed action argument.
     /// </summary>
@@ -148,8 +136,7 @@ public sealed class EditorActionArgumentContext<TArgument> : EditorActionContext
     internal EditorActionArgumentContext(
         EditorActionContext context,
         TArgument argument
-    )
-        : base(context.editor, context.interactions, context.area, target: null, argument: argument)
+    ) : base(context.editor, context.interactions, context.area, target: null, argument: argument)
     {
         this.argument = argument;
     }

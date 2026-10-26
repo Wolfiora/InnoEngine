@@ -1,15 +1,14 @@
 using System;
-
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
 
 namespace Inno.Editor.Panel.Hierarchy;
-
 [EditorDrop(HierarchyInteractionIds.C_AREA)]
-internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits)
-    : EditorDrop<GameObject, HierarchySceneDropTarget>
+internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits) : EditorDrop<GameObject, HierarchySceneDropTarget>
 {
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
@@ -22,12 +21,12 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits)
     /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<GameObject, HierarchySceneDropTarget> context)
     {
-        GameObject source = context.source;
+        GameObject[] sources = SelectedSources(context);
         GameScene target = context.target.scene;
-        return source.isRuntimeValid && edits.CanEdit(source) && edits.CanEdit(target)
-            && target is { isLoaded: true, isDestroyed: false }
-            ? EditorDropStatus.Accept()
-            : EditorDropStatus.rejected;
+        return sources.Length > 0
+            && sources.All(value => value.isRuntimeValid && edits.CanEdit(value))
+            && edits.CanEdit(target)
+            && target is { isLoaded: true, isDestroyed: false } ? EditorDropStatus.Accept() : EditorDropStatus.rejected;
     }
 
     /// <summary>
@@ -41,30 +40,18 @@ internal sealed class MoveGameObjectToSceneDropHandler(SceneEdits edits)
     /// </returns>
     protected override EditorDropResult Drop(EditorDropContext<GameObject, HierarchySceneDropTarget> context)
     {
-        GameObject source = context.source;
-        GameScene target = context.target.scene;
-        _ = edits.ChangeHierarchy(
-            source,
-            hierarchy =>
-            {
-                if (!ReferenceEquals(source.scene, target))
-                    hierarchy.MoveToScene(source, target);
-                else
-                    source.transform.SetParent(null);
-                source.transform.SetSiblingIndex(GetRootCount(target) - 1);
-            });
-        _ = context.interactions.For(context.area, source).Select();
-        return EditorDropResult.Accepted(source, target);
+        if (!Query(context).canDrop)
+            return EditorDropResult.rejected;
+        edits.MoveGameObjects(SelectedSources(context), context.target.scene);
+        return EditorDropResult.Accepted(context.source, context.target);
     }
 
-    private static int GetRootCount(GameScene scene)
+    private static GameObject[] SelectedSources(EditorDropContext<GameObject, HierarchySceneDropTarget> context)
     {
-        int count = 0;
-        foreach (GameObject gameObject in scene.GetObjects())
-        {
-            if (gameObject.transform.parent is null)
-                count++;
-        }
-        return count;
+        if (!context.interactions.selection.Contains(context.source))
+            return[context.source];
+        var values = new List<GameObject>();
+        context.interactions.selection.CopyTargets(values);
+        return values.Count == context.interactions.selection.count ? values.ToArray() : [];
     }
 }

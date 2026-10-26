@@ -1,20 +1,16 @@
 using System;
 using System.Numerics;
-using System.Text;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
     private const string C_COMPACT_FLOAT_FORMAT = "%.1f";
     private const string C_PRECISE_FLOAT_FORMAT = "%.9g";
-
     /// <summary>
     /// Draws a two-column property row with a stable internal identifier.
     /// </summary>
@@ -34,19 +30,17 @@ public static unsafe partial class ImGuiWidget
     /// Thrown when <paramref name="id"/> is empty or whitespace.
     /// </exception>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="label"/> or <paramref name="drawValue"/> is <see langword="null"/>.
+    /// Thrown when <paramref name = "label"/> or <paramref name="drawValue"/> is <see langword="null"/>.
     /// </exception>
-    public static void PropertyRow(
+    public void PropertyRow(
         string id,
         string label,
         Action drawValue,
         string? tooltip = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(label);
-        PropertyRow(
-            id,
-            () => PropertyLabel(label, tooltip),
-            drawValue);
+        PropertyRow(id, () => PropertyLabel(label, tooltip), drawValue);
     }
 
     /// <summary>
@@ -65,20 +59,18 @@ public static unsafe partial class ImGuiWidget
     /// Thrown when <paramref name="id"/> is empty or whitespace.
     /// </exception>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="drawLabel"/> or <paramref name="drawValue"/> is <see langword="null"/>.
+    /// Thrown when <paramref name = "drawLabel"/> or <paramref name="drawValue"/> is <see langword="null"/>.
     /// </exception>
-    public static void PropertyRow(
+    public void PropertyRow(
         string id,
         Action drawLabel,
         Action drawValue
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawLabel);
         ArgumentNullException.ThrowIfNull(drawValue);
-
-        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp
-            | ImGuiTableFlags.NoSavedSettings
-            | ImGuiTableFlags.NoPadOuterX;
+        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX;
         if (!NativeImGui.BeginTable($"##property_{id}", 2, (int)flags, Vector2.Zero, 0f))
         {
             return;
@@ -105,8 +97,9 @@ public static unsafe partial class ImGuiWidget
     /// Configures the label and input columns of an active table with a shared two-to-three ratio.
     /// A following fixed-width action column may be added by the caller.
     /// </summary>
-    public static void SetupPropertyColumns()
+    public void SetupPropertyColumns()
     {
+        m_session.EnsureDrawing();
         NativeImGui.TableSetupColumn("##label", (int)(ImGuiTableColumnFlags.WidthStretch), style.propertyLabelRatio);
         NativeImGui.TableSetupColumn("##value", (int)(ImGuiTableColumnFlags.WidthStretch), 1f - style.propertyLabelRatio);
     }
@@ -123,10 +116,11 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="label"/> is null.
     /// </exception>
-    public static void PropertyLabel(
+    public void PropertyLabel(
         string label,
         string? tooltip = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(label);
         NativeImGui.AlignTextToFramePadding();
         WrappedText(label);
@@ -146,14 +140,15 @@ public static unsafe partial class ImGuiWidget
     /// Optional explanation displayed while the metadata is hovered.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="metadata"/> or <paramref name="drawValue"/> is
+    /// Thrown when <paramref name = "metadata"/> or <paramref name="drawValue"/> is
     /// <see langword="null"/>.
     /// </exception>
-    public static void MetadataValue(
+    public void MetadataValue(
         string metadata,
         Action drawValue,
         string? tooltip = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(drawValue);
         NativeImGui.AlignTextToFramePadding();
@@ -179,14 +174,15 @@ public static unsafe partial class ImGuiWidget
     /// Optional explanation displayed while the combined value is hovered.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="metadata"/> or <paramref name="value"/> is
+    /// Thrown when <paramref name = "metadata"/> or <paramref name="value"/> is
     /// <see langword="null"/>.
     /// </exception>
-    public static void MetadataValue(
+    public void MetadataValue(
         string metadata,
         string value,
         string? tooltip = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(metadata);
         ArgumentNullException.ThrowIfNull(value);
         NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.textDisabled);
@@ -222,13 +218,14 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the value changed.
     /// </returns>
-    public static bool AxisDragFloat(
+    public bool AxisDragFloat(
         string id,
         string axis,
         ref float value,
         float width,
         float speed = 0.1f
     ) {
+        m_session.EnsureDrawing();
         DrawAxisPrefix(id, axis, width);
         return CompactDragFloat($"##axis_float_{id}_{axis}", ref value, speed);
     }
@@ -254,29 +251,20 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the exact value changed.
     /// </returns>
-    public static bool CompactDragFloat(
+    public bool CompactDragFloat(
         string label,
         ref float value,
         float speed = 0.1f,
         float? minimum = null,
         float? maximum = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ValidateFloatBounds(minimum, maximum);
         bool bounded = minimum.HasValue;
-        ImGuiSliderFlags flags = ImGuiSliderFlags.NoRoundToFormat |
-                                 (bounded ? ImGuiSliderFlags.AlwaysClamp : ImGuiSliderFlags.None);
-        string format = WantsPreciseFloatInput(label)
-            ? C_PRECISE_FLOAT_FORMAT
-            : C_COMPACT_FLOAT_FORMAT;
-        return NativeImGui.DragFloat(
-            label,
-            ref value,
-            speed,
-            minimum ?? 0f,
-            maximum ?? 0f,
-            format,
-            (int)(flags));
+        ImGuiSliderFlags flags = ImGuiSliderFlags.NoRoundToFormat | (bounded ? ImGuiSliderFlags.AlwaysClamp : ImGuiSliderFlags.None);
+        string format = WantsPreciseFloatInput(label) ? C_PRECISE_FLOAT_FORMAT : C_COMPACT_FLOAT_FORMAT;
+        return NativeImGui.DragFloat(label, ref value, speed, minimum ?? 0f, maximum ?? 0f, format, (int)(flags));
     }
 
     /// <summary>
@@ -297,34 +285,23 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the exact value changed.
     /// </returns>
-    public static bool CompactSliderFloat(
+    public bool CompactSliderFloat(
         string label,
         ref float value,
         float minimum,
         float maximum
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         ValidateFloatBounds(minimum, maximum);
         ImGuiSliderFlags flags = ImGuiSliderFlags.NoRoundToFormat | ImGuiSliderFlags.AlwaysClamp;
         if (WantsPreciseFloatInput(label))
         {
             float speed = MathF.Max((maximum - minimum) * 0.01f, 0.0001f);
-            return NativeImGui.DragFloat(
-                label,
-                ref value,
-                speed,
-                minimum,
-                maximum,
-                C_PRECISE_FLOAT_FORMAT,
-                (int)(flags));
+            return NativeImGui.DragFloat(label, ref value, speed, minimum, maximum, C_PRECISE_FLOAT_FORMAT, (int)(flags));
         }
-        return NativeImGui.SliderFloat(
-            label,
-            ref value,
-            minimum,
-            maximum,
-            C_COMPACT_FLOAT_FORMAT,
-            (int)(flags));
+
+        return NativeImGui.SliderFloat(label, ref value, minimum, maximum, C_COMPACT_FLOAT_FORMAT, (int)(flags));
     }
 
     /// <summary>
@@ -348,13 +325,14 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the value changed.
     /// </returns>
-    public static bool AxisDragInt(
+    public bool AxisDragInt(
         string id,
         string axis,
         ref int value,
         float width,
         float speed = 1f
     ) {
+        m_session.EnsureDrawing();
         DrawAxisPrefix(id, axis, width);
         return NativeImGui.DragInt($"##axis_int_{id}_{axis}", ref value, speed, 0, 0, "%d", 0);
     }
@@ -368,10 +346,11 @@ public static unsafe partial class ImGuiWidget
     /// <param name="draw">
     /// Drawing callback.
     /// </param>
-    public static void Disabled(
+    public void Disabled(
         bool disabled,
         Action draw
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(draw);
         NativeImGui.BeginDisabled(disabled);
         try
@@ -396,19 +375,14 @@ public static unsafe partial class ImGuiWidget
     /// <param name="y">
     /// Marker Y coordinate.
     /// </param>
-    public static void InsertionLine(
+    public void InsertionLine(
         float fromX,
         float toX,
         float y
     ) {
+        m_session.EnsureDrawing();
         uint color = NativeImGui.GetColorU32((int)(ImGuiCol.DragDropTarget));
-        ImGui.DrawNativeLine(
-            NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
-            new Vector2(fromX, y),
-            new Vector2(toX, y),
-            color,
-            style.interactionOverlayThickness
-        );
+        ImGui.DrawNativeLine(NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null), new Vector2(fromX, y), new Vector2(toX, y), color, style.interactionOverlayThickness);
     }
 
     /// <summary>
@@ -421,10 +395,11 @@ public static unsafe partial class ImGuiWidget
     /// <param name="max">
     /// Maximum target coordinate.
     /// </param>
-    public static void DropTargetHighlight(
+    public void DropTargetHighlight(
         Vector2 min,
         Vector2 max
     ) {
+        m_session.EnsureDrawing();
         ImGui.DrawNativeRectangle(
             NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
             min,
@@ -436,98 +411,39 @@ public static unsafe partial class ImGuiWidget
         );
     }
 
-    /// <summary>
-    /// Converts an identifier into a readable editor label.
-    /// </summary>
-    /// <param name="name">
-    /// Source identifier.
-    /// </param>
-    /// <returns>
-    /// A label with separators and title casing.
-    /// </returns>
-    public static string NicifyName(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return string.Empty;
-        }
-
-        var builder = new StringBuilder(name.Length + 8);
-        char previous = '\0';
-        for (int i = 0; i < name.Length; i++)
-        {
-            char current = name[i];
-            if (current == '_' || current == '-')
-            {
-                if (builder.Length > 0 && builder[builder.Length - 1] != ' ')
-                {
-                    builder.Append(' ');
-                }
-
-                previous = current;
-                continue;
-            }
-
-            if (i > 0 && char.IsUpper(current) && char.IsLower(previous) && builder[builder.Length - 1] != ' ')
-            {
-                builder.Append(' ');
-            }
-
-            builder.Append(builder.Length == 0 ? char.ToUpperInvariant(current) : current);
-            previous = current;
-        }
-
-        return builder.ToString();
-    }
-
-    private static void DrawAxisPrefix(
+    private void DrawAxisPrefix(
         string id,
         string axis,
         float width
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(axis);
-
         float height = NativeImGui.GetFrameHeight();
-        float axisWidth = MathF.Min(
-            MathF.Max(style.axisPrefixMinimumWidth, height),
-            width * style.axisPrefixWidthRatio);
+        float axisWidth = MathF.Min(MathF.Max(style.axisPrefixMinimumWidth, height), width * style.axisPrefixWidthRatio);
         Vector2 prefixMin = NativeImGui.GetCursorScreenPos();
         Vector2 prefixMax = prefixMin + new Vector2(axisWidth, height);
-        ImGui.DrawNativeFilledRectangle(
-            NativeImGui.Raw.GetWindowDrawList(),
-            prefixMin,
-            prefixMax,
-            NativeImGui.ColorConvertFloat4ToU32(GetAxisColor(axis)),
-            1f,
-            0
-        );
-
+        ImGui.DrawNativeFilledRectangle(NativeImGui.Raw.GetWindowDrawList(), prefixMin, prefixMax, NativeImGui.ColorConvertFloat4ToU32(GetAxisColor(axis)), 1f, 0);
         Vector2 textSize = NativeImGui.CalcTextSize(axis);
         Vector2 textPosition = prefixMin + (new Vector2(axisWidth, height) - textSize) * 0.5f;
         ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), textPosition, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.text), axis);
-
         NativeImGui.Dummy(new Vector2(axisWidth, height));
         NativeImGui.SameLine(0f, 0f);
         NativeImGui.SetNextItemWidth(MathF.Max(1f, width - axisWidth));
     }
 
-    private static bool WantsPreciseFloatInput(string label)
+    private bool WantsPreciseFloatInput(string label)
     {
-        bool inputRequested = NativeImGui.IsMouseDoubleClicked((int)(ImGuiMouseButton.Left)) ||
-                              (NativeImGui.Raw.GetIO()->KeyCtrl != 0 &&
-                               NativeImGui.IsMouseClicked((int)(ImGuiMouseButton.Left)));
+        bool inputRequested = NativeImGui.IsMouseDoubleClicked((int)(ImGuiMouseButton.Left))
+            || (NativeImGui.Raw.GetIO()->KeyCtrl != 0
+            && NativeImGui.IsMouseClicked((int)(ImGuiMouseButton.Left)));
         if (!inputRequested)
             return false;
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
-        Vector2 maximum = minimum + new Vector2(
-            MathF.Max(1f, NativeImGui.CalcItemWidth()),
-            NativeImGui.GetFrameHeight());
-        return NativeImGui.IsWindowHovered((int)(ImGuiHoveredFlags.RootAndChildWindows))
-            && NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
+        Vector2 maximum = minimum + new Vector2(MathF.Max(1f, NativeImGui.CalcItemWidth()), NativeImGui.GetFrameHeight());
+        return NativeImGui.IsWindowHovered((int)(ImGuiHoveredFlags.RootAndChildWindows)) && NativeImGui.IsMouseHoveringRect(minimum, maximum, true);
     }
 
-    private static void ValidateFloatBounds(
+    private void ValidateFloatBounds(
         float? minimum,
         float? maximum
     ) {
@@ -535,13 +451,14 @@ public static unsafe partial class ImGuiWidget
         {
             throw new ArgumentException("Floating-point bounds must either both be supplied or both be omitted.");
         }
+
         if (minimum is not float lower || maximum is not float upper)
             return;
         if (!float.IsFinite(lower) || !float.IsFinite(upper) || lower > upper)
             throw new ArgumentOutOfRangeException(nameof(maximum), "Floating-point bounds must be finite and ordered.");
     }
 
-    private static Vector4 GetAxisColor(string axis)
+    private Vector4 GetAxisColor(string axis)
     {
         return axis.ToUpperInvariant() switch
         {

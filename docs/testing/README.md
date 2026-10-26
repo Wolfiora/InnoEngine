@@ -99,3 +99,6 @@ Native 测试部署在成功 Build 后执行；CI 的目标 Build 明确设置 I
 `BgfxShutdownTests.ShutdownAfterAnOffscreenGraphReleasesTheProcessOwner` 使用真实窗口、离屏 Graph 与设备所有资源，验证关闭后的进程 owner 可再次取得且借用窗口仍有效。默认使用当前测试宿主的 D3D11 / Metal；显式设置 `INNO_TEST_GRAPHICS_API=Vulkan` 或 `Direct3D12` 可在对应设备单独执行同一回归。该 ID 必须与实际能力一致，不提供失败后切换后端的 fallback。
 
 脚本测试覆盖 C# 14 的 `field`、空条件赋值、Span、开放泛型 `nameof`、推断类型 Lambda 参数修饰符，以及跨插件扩展成员的引擎/IDE 一致性；另验证 framework reference 内容变化和 SDK target 生成符号的缓存失效。
+
+
+隔离测试入口保留每个程序集的 `.discovery.log`，发现阶段的 stderr 异常即使伴随零退出码也会失败。程序集模式由选定 `DOTNET_HOST_PATH` 让 VSTest 推导运行根，避免重复传入同一环境键。`Invoke-EditorSmoke.ps1 -GraphicsApi <renderer-id>` 通过正式 Editor CLI 选择图形 API，不在脚本中维护平台列表。

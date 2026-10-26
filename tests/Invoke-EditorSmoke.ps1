@@ -2,6 +2,7 @@ param(
     [Parameter(Mandatory = $true)][string]$EditorAssembly,
     [Parameter(Mandatory = $true)][string]$ProjectDirectory,
     [Parameter(Mandatory = $true)][string]$BackendPattern,
+    [string]$GraphicsApi,
     [string]$Dotnet = 'dotnet',
     [int]$Frames = 3,
     [int]$TimeoutSeconds = 180
@@ -29,6 +30,10 @@ $start.RedirectStandardError = $true
 $start.WorkingDirectory = $ProjectDirectory
 foreach ($argument in @($EditorAssembly, $ProjectDirectory, '--smoke-frames', [string]$Frames)) {
     $start.ArgumentList.Add($argument)
+}
+if ($GraphicsApi) {
+    $start.ArgumentList.Add('--graphics-api')
+    $start.ArgumentList.Add($GraphicsApi)
 }
 $process = [Diagnostics.Process]::new()
 $process.StartInfo = $start

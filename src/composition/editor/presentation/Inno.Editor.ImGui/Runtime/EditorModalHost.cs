@@ -1,17 +1,14 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
-
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.ImGui;
-
 internal sealed class EditorModalHost
 {
     private readonly Dictionary<string, Transition> m_transitions = new(StringComparer.Ordinal);
-
     internal bool Update(
         IReadOnlyList<EditorModalExtension> modals,
         double now
@@ -19,13 +16,13 @@ internal sealed class EditorModalHost
         bool newBlockingModalRequested = false;
         for (int i = 0; i < modals.Count; i++)
         {
-            if (modals[i].TryGetPresentation(out EditorModalExtension.Presentation candidate) &&
-                candidate.isVisible && candidate.blocksInteraction)
+            if (modals[i].TryGetPresentation(out EditorModalExtension.Presentation candidate) && candidate.isVisible && candidate.blocksInteraction)
             {
                 newBlockingModalRequested = true;
                 break;
             }
         }
+
         bool blocksInteraction = false;
         for (int i = 0; i < modals.Count; i++)
         {
@@ -40,6 +37,7 @@ internal sealed class EditorModalHost
             if (presentation.blocksInteraction && transition.isVisible)
                 blocksInteraction = true;
         }
+
         return blocksInteraction;
     }
 
@@ -56,24 +54,19 @@ internal sealed class EditorModalHost
                 EditorModalRenderer.Close(extension.id, extension.title);
                 continue;
             }
+
             Transition transition = GetTransition(extension.id);
             if (!transition.isVisible)
             {
                 EditorModalRenderer.Close(extension.id, extension.title);
                 continue;
             }
-            EditorModalRenderer.Draw(
-                extension.id,
-                extension.title,
-                transition.GetAlpha(now),
-                extension,
-                presentation,
-                context);
+
+            EditorModalRenderer.Draw(extension.id, extension.title, transition.GetAlpha(now), extension, presentation, context);
         }
     }
 
     internal void Clear() => m_transitions.Clear();
-
     private Transition GetTransition(string id)
     {
         if (m_transitions.TryGetValue(id, out Transition? transition))
@@ -88,7 +81,6 @@ internal sealed class EditorModalHost
         private double m_visibleAt;
         private double m_hideAt;
         private bool m_requested;
-
         internal bool isVisible { get; private set; }
 
         internal void HideImmediately()
@@ -110,17 +102,16 @@ internal sealed class EditorModalHost
                         m_visibleAt = now;
                     isVisible = true;
                 }
+
                 m_hideAt = double.PositiveInfinity;
             }
             else if (m_requested)
             {
-                m_hideAt = Math.Max(
-                    now,
-                    m_visibleAt + EditorWidget.style.modalMinimumVisibleSeconds);
+                m_hideAt = Math.Max(now, m_visibleAt + EditorUI.current.widgets.style.modalMinimumVisibleSeconds);
             }
+
             m_requested = requested;
-            if (isVisible && !requested &&
-                now >= m_hideAt + EditorWidget.style.modalFadeOutSeconds)
+            if (isVisible && !requested && now >= m_hideAt + EditorUI.current.widgets.style.modalFadeOutSeconds)
             {
                 isVisible = false;
             }
@@ -130,10 +121,11 @@ internal sealed class EditorModalHost
         {
             if (m_requested || now <= m_hideAt)
             {
-                double fadeIn = (now - m_visibleAt) / EditorWidget.style.modalFadeInSeconds;
+                double fadeIn = (now - m_visibleAt) / EditorUI.current.widgets.style.modalFadeInSeconds;
                 return (float)Math.Clamp(fadeIn, EditorPalette.opacityFaint, EditorPalette.opacityOpaque);
             }
-            double fadeOut = (now - m_hideAt) / EditorWidget.style.modalFadeOutSeconds;
+
+            double fadeOut = (now - m_hideAt) / EditorUI.current.widgets.style.modalFadeOutSeconds;
             return (float)Math.Clamp(1.0 - fadeOut, EditorPalette.opacityFaint, EditorPalette.opacityOpaque);
         }
     }

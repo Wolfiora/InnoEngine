@@ -12,7 +12,7 @@
     <StartupObject>Inno.Editor.ImGui.Tests.NativeWindowTestHost</StartupObject>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
     <InnoTestNativeProduct>editor</InnoTestNativeProduct>
-    <InnoTestNativeTarget>windows-x64</InnoTestNativeTarget>
+    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,5 +35,4 @@
   <ItemGroup>
     <ProjectReference Include="../../process/Inno.Testing.Processes/Inno.Testing.Processes.csproj" PrivateAssets="compile" />
   </ItemGroup>
-
 </Project>

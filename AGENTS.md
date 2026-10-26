@@ -316,3 +316,13 @@ public void AAA(
 - Pull Request 正文必须根据目标分支的完整差异说明问题、最终行为与实际验证，并明确未执行的检查；创建前检索已有 PR，避免重复，不得将部分验收描述为完整矩阵通过。
 - Git 提交的 author 和 committer 均使用 `Aaron Liao <hsuankailiao@gmail.com>`；不得使用 Codex/bot 身份或添加任何 `Co-authored-by` 署名。Pull Request 使用用户授权的 GitHub 账号创建。
 - BGCS 缺陷必须通过公开 API 独立复现并明确标记；不得修改 BGCS 源码、包、二进制或手工修改生成物来绕过缺陷。
+
+## 32. Editor UI ownership and acceptance
+
+- Domain editing in `features` must remain independent from native UI, Panels and Workbench. Panels compose feature APIs; they do not reference other Panels. Reusable controls belong to the session-owned ImGui adapter, and generic Graph presentation cannot depend on Shader semantics.
+- Every interactive host owns one `EditorUiSession`. Transient widget/menu state belongs to its session and stable presentation owner. Native drawing borrows cannot survive their frame, window, context or owner thread. `current` is only a synchronous scoped accessor, never a global state owner.
+- Continuous Inspector and viewport edits use one `EditorEditGesture` over `EditorInteractions.history`. Each sample records immediately; Escape rolls back the same transaction. Save, commands and generation changes finish the gesture before their own operation. No feature may delay History publication behind a separate UI-active flag.
+- Selection, deferred commands and cross-frame tools resolve identities through Core Identity. Batch operations validate the complete selection, normalize overlapping roots and roll back atomically. Mixed, Missing, read-only and unassigned states remain distinct.
+- Final delivery must evaluate architecture, organization, state/lifetime cleanliness, abstraction, reuse, visual consistency, extensibility, interaction, Undo/Redo, menu clarity and component granularity individually. Each evaluation must identify actual evidence, limitations and remaining improvements; directory changes and interface counts alone are insufficient.
+- UI-neutral name formatting and Action/Menu queries must work without a native context or drawing session. Keep pure label formatting in Editor Core; only drawing and native borrows require an active UI scope.
+- Temporary presentation worlds register their borrowed Core allocator through the existing selection coordinator's routing lease. Restore Edit selection before releasing that lease; failed retirement must preserve its owner. The routing table never becomes a second live-object authority.

@@ -1,34 +1,31 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
-using Inno.Native.ImGui;
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
 internal sealed class FileBrowserContextMenu(
-    AssetEditorModule assets,
+    AssetBrowserModule assets,
     FileBrowserRename rename
-) {
+)
+{
     internal void DrawEntry(
         EditorContext context,
         string id,
         string relativePath,
         FileBrowserPresentation presentation
     ) {
-        if (NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Right)))
-            assets.browser.Select(context, relativePath);
-        if (!assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry))
+        if (!assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry))
             return;
-        string creationDirectory = entry.isDirectory
-            ? entry.assetPath.ToString()
-            : GetParentDirectory(entry.assetPath.ToString());
-        bool isOpen = EditorMenuRenderer.ContextMenu(
-            id,
-            CreateDirectoryInteraction(creationDirectory),
-            assets.interactions.For(FileBrowserInteractionIds.C_AREA, entry));
+        if (Ui.IsItemClicked(ImGuiMouseButton.Right) && !assets.edits.interactions.selection.Contains(entry))
+            assets.edits.interactions.SetSelection(entry);
+        string creationDirectory = entry.isDirectory ? entry.assetPath.ToString() : GetParentDirectory(entry.assetPath.ToString());
+        bool isOpen = EditorUI.current.menus.ContextMenu(id, CreateDirectoryInteraction(creationDirectory), assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, entry));
         if (isOpen)
             rename.MarkInteraction(presentation);
     }
@@ -39,11 +36,9 @@ internal sealed class FileBrowserContextMenu(
         string relativePath,
         FileBrowserPresentation presentation
     ) {
-        if (IsReadOnlySource(assets.pipeline, relativePath))
+        if (IsReadOnlySource(assets.edits.pipeline, relativePath))
             return;
-        bool isOpen = EditorMenuRenderer.ContextMenu(
-            id,
-            CreateDirectoryInteraction(relativePath));
+        bool isOpen = EditorUI.current.menus.ContextMenu(id, CreateDirectoryInteraction(relativePath));
         if (isOpen)
             rename.MarkInteraction(presentation);
     }
@@ -53,17 +48,15 @@ internal sealed class FileBrowserContextMenu(
         string id,
         FileBrowserPresentation presentation
     ) {
-        if (IsReadOnlyLocation(assets.pipeline, assets.browser))
+        if (IsReadOnlyLocation(assets.edits.pipeline, assets.browser))
             return;
-        bool isOpen = EditorMenuRenderer.WindowContextMenu(
-            id,
-            CreateDirectoryInteraction(assets.browser.currentDirectory));
+        bool isOpen = EditorUI.current.menus.WindowContextMenu(id, CreateDirectoryInteraction(assets.browser.currentDirectory));
         if (isOpen)
             rename.MarkInteraction(presentation);
     }
 
-    private Inno.Editor.Interactions.EditorInteraction CreateDirectoryInteraction(string relativePath)
-        => assets.interactions.For(
-            FileBrowserInteractionIds.C_AREA,
-            NormalizePath(relativePath));
+    private Inno.Editor.Interactions.EditorInteraction CreateDirectoryInteraction(string relativePath) => assets.edits.interactions.For(
+        FileBrowserInteractionIds.C_AREA,
+        NormalizePath(relativePath)
+    );
 }

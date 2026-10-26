@@ -1,23 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Events;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
-
 internal sealed class EditorActionRouter(
     EditorExtensionCatalog catalog,
     EditorContext editor,
     EditorInteractions interactions,
     Logger log
-) {
-    private readonly Queue<(string Action, EditorActionContext Context)> m_pending = [];
+)
+{
+    private readonly Queue<PendingAction> m_pending = [];
     private readonly HashSet<string> m_presentationFailures = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_queryFailures = new(StringComparer.Ordinal);
-
+    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]>? m_byId;
     internal EditorActionState Query(
         string action,
         EditorActionContext context
@@ -55,6 +54,7 @@ internal sealed class EditorActionRouter(
             EditorActionState state = registration.action.QueryInternal(context);
             if (!state.isVisible || !state.isEnabled)
                 return false;
+            interactions.PrepareOperation();
             registration.action.ExecuteInternal(context);
             return true;
         }
@@ -85,10 +85,7 @@ internal sealed class EditorActionRouter(
         {
             TryCancel(registration.action, action, "presentation cleanup");
             if (m_presentationFailures.Add(action))
-                log.Write(
-                    LogLevel.Error,
-                    "Editor action '{0}' presentation failed: {1}",
-                    [action, exception]);
+                log.Write(LogLevel.Error, "Editor action '{0}' presentation failed: {1}", [action, exception]);
             return false;
         }
     }
@@ -109,13 +106,19 @@ internal sealed class EditorActionRouter(
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(action);
         ArgumentNullException.ThrowIfNull(context);
-        m_pending.Enqueue((action, context));
+        m_pending.Enqueue(new PendingAction(action, context.area, EditorTargetReference.Capture(context.target), context.target is not null, EditorTargetReference.Capture(context.argument), context.argument is not null));
     }
 
     internal void Flush()
     {
-        while (m_pending.TryDequeue(out (string Action, EditorActionContext Context) request))
-            _ = Execute(request.Action, request.Context);
+        while (m_pending.TryDequeue(out PendingAction? request))
+        {
+            object? target = request.target.Resolve(interactions);
+            object? argument = request.argument.Resolve(interactions);
+            if (request.hasTarget && target is null || request.hasArgument && argument is null)
+                continue;
+            _ = Execute(request.action, new EditorActionContext(editor, interactions, request.area, target, argument));
+        }
     }
 
     internal void Clear(IReadOnlyList<EditorExtensionCatalog.ActionRegistration> registrations)
@@ -124,6 +127,7 @@ internal sealed class EditorActionRouter(
         m_pending.Clear();
         m_presentationFailures.Clear();
         m_queryFailures.Clear();
+        InvalidateDiscovery();
         for (int i = 0; i < registrations.Count; i++)
         {
             EditorExtensionCatalog.ActionRegistration registration = registrations[i];
@@ -136,8 +140,10 @@ internal sealed class EditorActionRouter(
         m_pending.Clear();
         m_presentationFailures.Clear();
         m_queryFailures.Clear();
+        InvalidateDiscovery();
     }
 
+    internal void InvalidateDiscovery() => m_byId = null;
     internal void LosePresentationExcept(object? target)
     {
         var visited = new HashSet<EditorAction>(ReferenceEqualityComparer.Instance);
@@ -152,10 +158,7 @@ internal sealed class EditorActionRouter(
             }
             catch (Exception exception)
             {
-                log.Write(
-                    LogLevel.Error,
-                    "Editor action '{0}' failed while losing presentation focus: {1}",
-                    [registration.attribute.action, exception]);
+                log.Write(LogLevel.Error, "Editor action '{0}' failed while losing presentation focus: {1}", [registration.attribute.action, exception]);
             }
         }
     }
@@ -190,9 +193,8 @@ internal sealed class EditorActionRouter(
             {
                 continue;
             }
-            foreach (EditorShortcutAttribute shortcut in GetApplicableShortcuts(
-                         resolved.Value.registration,
-                         area))
+
+            foreach (EditorShortcutAttribute shortcut in GetApplicableShortcuts(resolved.Value.registration, area))
             {
                 HotKeyGesture gesture = CreateGesture(shortcut);
                 if (!gesture.Matches(keyEvent))
@@ -201,6 +203,7 @@ internal sealed class EditorActionRouter(
                 break;
             }
         }
+
         candidates.Sort(static (
             left,
             right
@@ -212,8 +215,7 @@ internal sealed class EditorActionRouter(
             int distanceComparison = left.resolved.targetDistance.CompareTo(right.resolved.targetDistance);
             if (distanceComparison != 0)
                 return distanceComparison;
-            int priorityComparison = right.resolved.registration.attribute.priority.CompareTo(
-                left.resolved.registration.attribute.priority);
+            int priorityComparison = right.resolved.registration.attribute.priority.CompareTo(left.resolved.registration.attribute.priority);
             if (priorityComparison != 0)
                 return priorityComparison;
             return string.Compare(left.action, right.action, StringComparison.Ordinal);
@@ -224,6 +226,7 @@ internal sealed class EditorActionRouter(
             if (Execute(candidate.action, context))
                 return true;
         }
+
         return false;
     }
 
@@ -232,14 +235,13 @@ internal sealed class EditorActionRouter(
         string area,
         out HotKeyGesture gesture
     ) {
-        EditorShortcutAttribute? best = registration is null
-            ? null
-            : GetApplicableShortcuts(registration, area).FirstOrDefault();
+        EditorShortcutAttribute? best = registration is null ? null : GetApplicableShortcuts(registration, area).FirstOrDefault();
         if (best is null)
         {
             gesture = default;
             return false;
         }
+
         gesture = CreateGesture(best);
         return true;
     }
@@ -247,22 +249,19 @@ internal sealed class EditorActionRouter(
     private EditorExtensionCatalog.ActionRegistration? Resolve(
         string action,
         EditorActionContext context
-    )
-        => ResolveWithSpecificity(action, context)?.registration;
-
+    ) => ResolveWithSpecificity(action, context)?.registration;
     private ResolvedAction? ResolveWithSpecificity(
         string action,
         EditorActionContext context
     ) {
         EditorExtensionCatalog.ActionRegistration? best = null;
         int bestDistance = int.MaxValue;
-        foreach (EditorExtensionCatalog.ActionRegistration registration in catalog.extensions.actions)
+        if (!Index.TryGetValue(action, out EditorExtensionCatalog.ActionRegistration[]? registrations))
+            return null;
+        foreach (EditorExtensionCatalog.ActionRegistration registration in registrations)
         {
-            if (!string.Equals(registration.id, action, StringComparison.Ordinal))
-                continue;
             bool exactArea = registration.area is not null;
-            if (exactArea &&
-                !string.Equals(registration.area, context.area, StringComparison.Ordinal))
+            if (exactArea && !string.Equals(registration.area, context.area, StringComparison.Ordinal))
             {
                 continue;
             }
@@ -271,52 +270,89 @@ internal sealed class EditorActionRouter(
             Type? targetType = registration.targetType;
             if (targetType is not null)
             {
-                if (context.target is null ||
-                    !EditorTypeDistance.TryGet(context.target.GetType(), targetType, out distance))
+                if (context.target is null || !EditorTypeDistance.TryGet(context.target.GetType(), targetType, out distance))
                 {
                     continue;
                 }
             }
+
             Type? argumentType = registration.argumentType;
-            if (argumentType is not null &&
-                (context.argument is null || !argumentType.IsInstanceOfType(context.argument)))
+            if (argumentType is not null && (context.argument is null || !argumentType.IsInstanceOfType(context.argument)))
             {
                 continue;
             }
 
             bool bestExactArea = best?.area is not null;
-            if (best is null ||
-                exactArea && !bestExactArea ||
-                exactArea == bestExactArea &&
-                (distance < bestDistance ||
-                 distance == bestDistance && registration.attribute.priority > best.attribute.priority ||
-                 distance == bestDistance && registration.attribute.priority == best.attribute.priority &&
-                 string.Compare(registration.type.FullName, best.type.FullName, StringComparison.Ordinal) < 0))
+            if (best is null
+                || exactArea
+                && !bestExactArea
+                || exactArea == bestExactArea
+                && (distance < bestDistance
+                || distance == bestDistance
+                && registration.attribute.priority > best.attribute.priority
+                || distance == bestDistance
+                && registration.attribute.priority == best.attribute.priority
+                && string.Compare(
+                registration.type.FullName,
+                best.type.FullName,
+                StringComparison.Ordinal
+            ) < 0))
             {
                 best = registration;
                 bestDistance = distance;
             }
         }
-        return best is null
-            ? null
-            : new ResolvedAction(best, bestDistance, best.area is not null);
+
+        return best is null ? null : new ResolvedAction(best, bestDistance, best.area is not null);
     }
 
-    private HotKeyGesture CreateGesture(EditorShortcutAttribute shortcut)
-        => shortcut.primary
-            ? HotKeyGesture.Primary(shortcut.key, editor.keyboard, shortcut.modifiers)
-            : new HotKeyGesture(shortcut.key, shortcut.modifiers, editor.keyboard.superModifierLabel);
+    internal IReadOnlyList<EditorMenuItem> BuildUnplacedCommands(
+        EditorActionContext context,
+        IReadOnlySet<string> placed
+    ) {
+        var result = new List<EditorMenuItem>();
+        foreach (string id in Index.Keys)
+        {
+            if (placed.Contains(id))
+                continue;
+            EditorActionState state = Query(id, context);
+            if (!state.isVisible)
+                continue;
+            string label = state.displayName ?? id;
+            result.Add(new EditorMenuItem(label, id, 0, false, state));
+        }
 
+        result.Sort(static (
+            left,
+            right
+        ) => StringComparer.OrdinalIgnoreCase.Compare(left.label, right.label));
+        return result;
+    }
+
+    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]> Index => m_byId ??= catalog.extensions.actions.GroupBy(
+        static registration => registration.id,
+        StringComparer.Ordinal
+    ).ToDictionary(
+        static group => group.Key,
+        static group => group.ToArray(),
+        StringComparer.Ordinal
+    );
+
+    private HotKeyGesture CreateGesture(EditorShortcutAttribute shortcut) => shortcut.primary ? HotKeyGesture.Primary(
+        shortcut.key,
+        editor.keyboard,
+        shortcut.modifiers
+    ) : new HotKeyGesture(
+        shortcut.key,
+        shortcut.modifiers,
+        editor.keyboard.superModifierLabel
+    );
     private static IEnumerable<EditorShortcutAttribute> GetApplicableShortcuts(
         EditorExtensionCatalog.ActionRegistration registration,
         string area
     ) {
-        bool hasExact = registration.shortcuts.Any(shortcut =>
-            !string.IsNullOrEmpty(shortcut.area) &&
-            string.Equals(shortcut.area, area, StringComparison.Ordinal));
-        return registration.shortcuts.Where(shortcut => hasExact
-            ? string.Equals(shortcut.area, area, StringComparison.Ordinal)
-            : string.IsNullOrEmpty(shortcut.area));
+        bool hasExact = registration.shortcuts.Any(shortcut => !string.IsNullOrEmpty(shortcut.area) && string.Equals(shortcut.area, area, StringComparison.Ordinal));
+        return registration.shortcuts.Where(shortcut => hasExact ? string.Equals(shortcut.area, area, StringComparison.Ordinal) : string.IsNullOrEmpty(shortcut.area));
     }
 
     private void TryCancel(
@@ -330,19 +366,23 @@ internal sealed class EditorActionRouter(
         }
         catch (Exception exception)
         {
-            log.Write(
-                LogLevel.Error,
-                "Editor action '{0}' failed during {1}: {2}",
-                [actionId, phase, exception]);
+            log.Write(LogLevel.Error, "Editor action '{0}' failed during {1}: {2}", [actionId, phase, exception]);
         }
     }
 
+    private sealed record PendingAction(
+        string action,
+        string area,
+        EditorTargetReference target,
+        bool hasTarget,
+        EditorTargetReference argument,
+        bool hasArgument
+    );
     private readonly record struct ResolvedAction(
         EditorExtensionCatalog.ActionRegistration registration,
         int targetDistance,
         bool exactArea
     );
-
     private readonly record struct ShortcutCandidate(
         string action,
         ResolvedAction resolved,

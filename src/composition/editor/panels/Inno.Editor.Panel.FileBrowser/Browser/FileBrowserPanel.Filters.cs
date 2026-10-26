@@ -1,42 +1,33 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using Inno.Native.ImGui;
-using Inno.Adapter.Presentation.ImGui;
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
 internal sealed partial class FileBrowserPanel
-
 {
-
     private void DrawEntryFilterCombo()
     {
-        if (!EditorWidget.BeginBoundedCombo(
-                "##AssetEntryFilter",
-                "Filter",
-                ImGuiComboFlags.WidthFitPreview))
+        if (!EditorUI.current.widgets.BeginBoundedCombo("##AssetEntryFilter", "Filter", ImGuiComboFlags.WidthFitPreview))
             return;
-
         DrawEntryTypeFilterOption("All", FileBrowserEntryTypeFilter.All);
         DrawEntryTypeFilterOption("Folders", FileBrowserEntryTypeFilter.FoldersOnly);
         DrawEntryTypeFilterOption("Files", FileBrowserEntryTypeFilter.FilesOnly);
-        NativeImGui.Separator();
+        Ui.Separator();
         DrawEntryScopeFilterOption("Current", FileBrowserEntryScopeFilter.CurrentOnly);
         DrawEntryScopeFilterOption("Recursive", FileBrowserEntryScopeFilter.Recursive);
-
-        EditorWidget.EndBoundedCombo();
+        EditorUI.current.widgets.EndBoundedCombo();
     }
 
     private void DrawEntryTypeFilterOption(
@@ -44,7 +35,7 @@ internal sealed partial class FileBrowserPanel
         FileBrowserEntryTypeFilter filter
     ) {
         bool selected = m_entryTypeFilter == filter;
-        if (NativeImGui.Checkbox(label, ref selected))
+        if (Ui.Checkbox(label, ref selected))
         {
             if (selected)
                 m_entryTypeFilter = filter;
@@ -58,7 +49,7 @@ internal sealed partial class FileBrowserPanel
         FileBrowserEntryScopeFilter filter
     ) {
         bool selected = m_entryScopeFilter == filter;
-        if (NativeImGui.Checkbox(label, ref selected))
+        if (Ui.Checkbox(label, ref selected))
         {
             if (selected)
                 m_entryScopeFilter = filter;
@@ -69,11 +60,6 @@ internal sealed partial class FileBrowserPanel
 
     private void DrawSearchInput()
     {
-        _ = EditorWidget.SearchInput(
-            "AssetSearch",
-            ImGuiIcon.MagnifyingGlass,
-            ref m_filter,
-            (nuint)C_SEARCH_BUFFER_SIZE);
+        _ = EditorUI.current.widgets.SearchInput("AssetSearch", ImGuiIcon.MagnifyingGlass, ref m_filter, (nuint)C_SEARCH_BUFFER_SIZE);
     }
-
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
@@ -9,10 +8,8 @@ using Inno.Scene;
 using Inno.Scene.Components;
 
 namespace Inno.Editor.Panel.Hierarchy;
-
 [EditorDrop(HierarchyInteractionIds.C_AREA)]
-internal sealed class ReparentGameObjectDropHandler(SceneEdits edits)
-    : EditorDrop<GameObject, HierarchyObjectDropTarget>
+internal sealed class ReparentGameObjectDropHandler(SceneEdits edits) : EditorDrop<GameObject, HierarchyObjectDropTarget>
 {
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
@@ -25,10 +22,15 @@ internal sealed class ReparentGameObjectDropHandler(SceneEdits edits)
     /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<GameObject, HierarchyObjectDropTarget> context)
     {
-        GameObject source = context.source;
         GameObject target = context.target.gameObject;
-        if (ReferenceEquals(source, target) || !source.isRuntimeValid || !target.isRuntimeValid
-            || !edits.CanEdit(source) || !edits.CanEdit(target))
+        GameObject[] sources = SelectedSources(context);
+        if (sources.Length == 0 || !target.isRuntimeValid || !edits.CanEdit(target) || sources.Any(value => !value.isRuntimeValid || !edits.CanEdit(value)))
+            return EditorDropStatus.rejected;
+        Transform? parent = context.placement == EditorDropPlacement.Into ? target.transform : target.transform.parent;
+        for (Transform? ancestor = parent; ancestor is not null; ancestor = ancestor.parent)
+            if (sources.Any(value => ReferenceEquals(value.transform, ancestor)))
+                return EditorDropStatus.rejected;
+        if (sources.Contains(target))
             return EditorDropStatus.rejected;
         return EditorDropStatus.Accept(context.placement switch
         {
@@ -49,73 +51,30 @@ internal sealed class ReparentGameObjectDropHandler(SceneEdits edits)
     /// </returns>
     protected override EditorDropResult Drop(EditorDropContext<GameObject, HierarchyObjectDropTarget> context)
     {
-        GameObject source = context.source;
+        if (!Query(context).canDrop)
+            return EditorDropResult.rejected;
         GameObject target = context.target.gameObject;
-        Transform sourceTransform = source.transform;
-        Transform targetTransform = target.transform;
-        GameObject[] relatedObjects = sourceTransform.children
-            .Select(static child => child.gameObject)
-            .ToArray();
-        _ = edits.ChangeHierarchy(
-            source,
-            hierarchy =>
-            {
-                if (!ReferenceEquals(source.scene, target.scene))
-                    hierarchy.MoveToScene(source, target.scene);
-                ApplyDrop(context, sourceTransform, targetTransform);
-            },
-            "Reparent GameObject",
-            relatedObjects);
-        _ = context.interactions.For(context.area, source).Select();
-        return EditorDropResult.Accepted(source, target);
-    }
-
-    private static void ApplyDrop(
-        EditorDropContext<GameObject, HierarchyObjectDropTarget> context,
-        Transform sourceTransform,
-        Transform targetTransform
-    ) {
-        if (context.placement == EditorDropPlacement.Into)
+        GameObject[] sources = SelectedSources(context);
+        Transform? parent = context.placement == EditorDropPlacement.Into ? target.transform : target.transform.parent;
+        int insertionIndex = int.MaxValue;
+        if (context.placement != EditorDropPlacement.Into)
         {
-            if (IsDescendantOf(targetTransform, sourceTransform))
-                PromoteDirectChildren(sourceTransform);
-            sourceTransform.SetParent(targetTransform);
-            sourceTransform.SetSiblingIndex(targetTransform.children.Count - 1);
-            return;
+            insertionIndex = target.transform.siblingIndex;
+            insertionIndex -= sources.Count(value => ReferenceEquals(value.transform.parent, parent) && ReferenceEquals(value.scene, target.scene) && value.transform.siblingIndex < target.transform.siblingIndex);
+            if (context.placement == EditorDropPlacement.After)
+                insertionIndex++;
         }
 
-        Transform? targetParent = targetTransform.parent;
-        sourceTransform.SetParent(targetParent);
-        int sourceIndex = sourceTransform.siblingIndex;
-        int targetIndex = targetTransform.siblingIndex;
-        if (sourceIndex < targetIndex)
-            targetIndex--;
-        sourceTransform.SetSiblingIndex(
-            targetIndex + (context.placement == EditorDropPlacement.After ? 1 : 0));
+        edits.MoveGameObjects(sources, target.scene, parent?.gameObject, insertionIndex);
+        return EditorDropResult.Accepted(context.source, context.target);
     }
 
-    private static bool IsDescendantOf(
-        Transform transform,
-        Transform possibleAncestor
-    ) {
-        for (Transform? current = transform.parent; current is not null; current = current.parent)
-        {
-            if (ReferenceEquals(current, possibleAncestor))
-                return true;
-        }
-        return false;
-    }
-
-    private static void PromoteDirectChildren(Transform transform)
+    private static GameObject[] SelectedSources(EditorDropContext<GameObject, HierarchyObjectDropTarget> context)
     {
-        Transform? previousParent = transform.parent;
-        int insertionIndex = transform.siblingIndex;
-        List<Transform> children = new(transform.children);
-        for (int i = 0; i < children.Count; i++)
-        {
-            Transform child = children[i];
-            child.SetParent(previousParent);
-            child.SetSiblingIndex(insertionIndex + i);
-        }
+        if (!context.interactions.selection.Contains(context.source))
+            return[context.source];
+        var values = new List<GameObject>();
+        context.interactions.selection.CopyTargets(values);
+        return values.Count == context.interactions.selection.count ? values.ToArray() : [];
     }
 }

@@ -250,62 +250,28 @@ Serialized state 使用逐成员兼容迁移：成员类型保持兼容时恢复
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
-
-### `Inno.Editor.Scripting.EditorScriptCompilationState`
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 <!-- api: T:Inno.Editor.Scripting.EditorScriptCompilationState 44361a7f85a4918a8d7e4bbed353a55b966c0d0fcb92f6b362793bb33b882378 -->
 <!-- api: F:Inno.Editor.Scripting.EditorScriptCompilationState.Initializing 82439dbf7d096856fb84955a9095b751ce885c57ea159f4f1be1f226b55362ac -->
 <!-- api: F:Inno.Editor.Scripting.EditorScriptCompilationState.Compiling 0b0c8c8946a1535b4dc7d1b5d49636be972abdcf9e2915cf9a1581411c2db5ba -->
 <!-- api: F:Inno.Editor.Scripting.EditorScriptCompilationState.Ready fd31501237b10282d5e16ad4c449838e3117c865b3e5635cbb7d747ada9e6450 -->
 <!-- api: F:Inno.Editor.Scripting.EditorScriptCompilationState.Failed 743fce31ecb80b65c373f9ce4af2110584ffee80202b3ce9969e5c797903f379 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-5d2daed1bd593977"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Compiling = 1`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L18) | A requested script generation is compiling, activating, or completing unload verification. | — | — |
-| <a id="api-a257dd0ce2c960c1"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Failed = 3`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L28) | Compilation, activation, or generation retirement failed, so game simulation must not start. | — | — |
-| <a id="api-056ac92f3525aeda"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Initializing = 0`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L13) | The script service has not produced its initial active generation. | — | — |
-| <a id="api-e49210b63225555c"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Ready = 2`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L23) | The most recent compilation succeeded, its generation is active, and retired generations passed GC verification. | — | — |
-| <a id="api-f2c7e3b6b3a0b643"></a>[`public enum Inno.Editor.Scripting.EditorScriptCompilationState : int`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L8) | Identifies whether the active project script generation can safely start game simulation. | — | — |
-
-### `Inno.Editor.Scripting.IEditorScriptCompilation`
-
 <!-- api: T:Inno.Editor.Scripting.IEditorScriptCompilation 4954c0d92fba082b7d26326ef71012cda046f90c2d62a186ab0e1041d4f5d682 -->
+<!-- api: P:Inno.Editor.Scripting.IEditorScriptCompilation.requiresExclusiveProgress 879117f557d8faf8cc2748c9a79239291bfe5c02e30d61a1c256a5c5382fc7ca -->
+<!-- api: P:Inno.Editor.Scripting.IEditorScriptCompilation.progress d151832dec3241cf762cbdd44fe375003760919903abd9894502dc687ede1469 -->
+<!-- api: M:Inno.Editor.Scripting.IEditorScriptCompilation.CancelCompilation ef8561d8297c7ecfaf8fa364fdc09931bb8d584d09d094f534b873f38ba14f74 -->
 <!-- api: M:Inno.Editor.Scripting.IEditorScriptCompilation.RequestCompilation 779431968580637699439201ee00136d7a649df39162d204757b6bb78ea4538f -->
 <!-- api: P:Inno.Editor.Scripting.IEditorScriptCompilation.currentTicket fc7171085e0c20e515a8808d38f9083b59f28ec28265e4e9b81436c7a37a2d5b -->
 <!-- api: P:Inno.Editor.Scripting.IEditorScriptCompilation.state d97c2e8c0b62b8a065673682bf40e75bf158ab2a3e6d367d56e60af7a51ad80c -->
 <!-- api: P:Inno.Editor.Scripting.IEditorScriptCompilation.status 2ef4995e39c7e97bd4cccac3b6db37b896635758e44df8ac7b435a88a63d4110 -->
 <!-- api: P:Inno.Editor.Scripting.IEditorScriptCompilation.lastCompilation 88ec836faafa1bb3840f16681c566511683a2372738fa2c1757bb12d2a03de24 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-d4347e54c4200dbb"></a>[`Inno.Editor.Scripting.IScriptCompilationTicket Inno.Editor.Scripting.IEditorScriptCompilation.RequestCompilation()`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L43) | Queues a fresh cache-aware compilation for a build or simulation workflow.<br>返回：A ticket bound to the exact request. Success requires activation and completed retirement verification; a faulted host returns a failed ticket and requires restart. | — | — |
-| <a id="api-b43f410406dc5df8"></a>[`Inno.Editor.Scripting.IScriptCompilationTicket? Inno.Editor.Scripting.IEditorScriptCompilation.currentTicket { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L48) | Gets the most recently requested compilation ticket, or null when no explicit request exists. | — | — |
-| <a id="api-fa6ff992cca36e38"></a>[`Inno.Scripting.Compiler.ScriptCompilationResult? Inno.Editor.Scripting.IEditorScriptCompilation.lastCompilation { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L63) | Gets the most recently completed compilation, or null before the first attempt completes. | — | — |
-| <a id="api-b28fe0d2d08348e4"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState Inno.Editor.Scripting.IEditorScriptCompilation.state { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L53) | Gets the current script-generation readiness state. | — | — |
-| <a id="api-9fa59b7c8c1112dd"></a>[`string Inno.Editor.Scripting.IEditorScriptCompilation.status { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L58) | Gets a human-readable description of current compiler work or readiness. | — | — |
-| <a id="api-ee8f2866ab9a80d8"></a>[`public interface Inno.Editor.Scripting.IEditorScriptCompilation`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L34) | Exposes the minimal script-generation readiness contract required by editor workflows. | — | — |
-
-### `Inno.Editor.Scripting.IScriptCompilationTicket`
-
 <!-- api: T:Inno.Editor.Scripting.IScriptCompilationTicket 12629f8643fa4680f7e3c235afd9a8fc31838601ace932b9069c2d4f56c61ad8 -->
 <!-- api: P:Inno.Editor.Scripting.IScriptCompilationTicket.requestId 509b9443e780446ee84d4f9a1e62ef62f6c9735d9d9b9dc6d8814679406ce83e -->
 <!-- api: P:Inno.Editor.Scripting.IScriptCompilationTicket.state b9e39cd7ac7c9e5764f69bcb31d94f96d8c210cd5612e673a5e857917501fd24 -->
 <!-- api: P:Inno.Editor.Scripting.IScriptCompilationTicket.status ff40ce29ece35ade5e9d116da37c53bda967fea347dd1576e60304dcf0120b78 -->
 <!-- api: P:Inno.Editor.Scripting.IScriptCompilationTicket.result d142d34b06e318e2f5e3605737bbdceb8f145045af985521fcf1bb9511d67e5c -->
 <!-- api: P:Inno.Editor.Scripting.IScriptCompilationTicket.isCompleted 9f3c8252c4af28400802981ebbf58e2cba61c150f0db55f07ddf982594cc25a2 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-7b6f07239d6a5d4e"></a>[`bool Inno.Editor.Scripting.IScriptCompilationTicket.isCompleted { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L33) | Gets whether no further state transition is valid for this request. | — | — |
-| <a id="api-1d04ab49d4ec5331"></a>[`long Inno.Editor.Scripting.IScriptCompilationTicket.requestId { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L13) | Gets the producer-local monotonic identifier of this request. | — | — |
-| <a id="api-2c573e64fee8ecb9"></a>[`Inno.Scripting.Compiler.ScriptCompilationResult? Inno.Editor.Scripting.IScriptCompilationTicket.result { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L28) | Gets the completed compiler result, or null before the compiler finishes. | — | — |
-| <a id="api-ed20412afaf9e932"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState Inno.Editor.Scripting.IScriptCompilationTicket.state { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L18) | Gets the current lifecycle state of this exact request. | — | — |
-| <a id="api-6db681e389d4203f"></a>[`string Inno.Editor.Scripting.IScriptCompilationTicket.status { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L23) | Gets a human-readable description of the current or terminal state. | — | — |
-| <a id="api-4ef88a7d70746b4c"></a>[`public interface Inno.Editor.Scripting.IScriptCompilationTicket`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L8) | Exposes the immutable observer view of one exact script compilation and activation request. | — | — |
-
-### `Inno.Editor.Scripting.ScriptCompilationTicketState`
-
 <!-- api: T:Inno.Editor.Scripting.ScriptCompilationTicketState 5d506516b116507a41402c5d921316f0540fbe7986052e1de60ad614e5c328c3 -->
 <!-- api: F:Inno.Editor.Scripting.ScriptCompilationTicketState.Queued ad9899dc3069abb0a933f10666796ad74d38b7703f8eee3738067b8a617e6074 -->
 <!-- api: F:Inno.Editor.Scripting.ScriptCompilationTicketState.Compiling 896739a9b90d56c6f816d7a0bb8353aac18c1799982dd5b0801fa016b90ec3bc -->
@@ -314,30 +280,50 @@ Serialized state 使用逐成员兼容迁移：成员类型保持兼容时恢复
 <!-- api: F:Inno.Editor.Scripting.ScriptCompilationTicketState.Canceled c1ad2118ef9842d0506f6d11f97e698e06d6601c6c775fd9db42181bdd1696a1 -->
 <!-- api: F:Inno.Editor.Scripting.ScriptCompilationTicketState.Superseded 33deb502edd819a9101faed03bc9f500bdec85ae53158568b07eb962114bd67f -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| API 与源码 | 契约与参数 | 返回值 | 重要异常 |
 | --- | --- | --- | --- |
-| <a id="api-23662c5f8bb587c7"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Canceled = 4`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L31) | The request was explicitly canceled before activation. | — | — |
-| <a id="api-e669239421f6f53f"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Compiling = 1`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L16) | The request owns the compiler pipeline or is activating its candidate generation. | — | — |
-| <a id="api-373348395de43d26"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Failed = 3`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L26) | Compilation or candidate activation failed without replacing the active generation. | — | — |
-| <a id="api-243f57a0cd9223de"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Queued = 0`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L11) | The request is queued behind the active compiler operation. | — | — |
-| <a id="api-5e6c53a7681ebedb"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Succeeded = 2`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L21) | The request compiled and atomically activated its candidate generation. | — | — |
-| <a id="api-a6d57635bb4929e8"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Superseded = 5`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L36) | A newer request replaced this request before its candidate could activate. | — | — |
+| <a id="api-f2c7e3b6b3a0b643"></a>[`public enum Inno.Editor.Scripting.EditorScriptCompilationState : int`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L7) | Identifies whether the active project script generation can safely start game simulation. | — | — |
+| <a id="api-056ac92f3525aeda"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Initializing = 0`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L12) | The script service has not produced its initial active generation. | — | — |
+| <a id="api-5d2daed1bd593977"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Compiling = 1`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L16) | A requested script generation is compiling, activating, or completing unload verification. | — | — |
+| <a id="api-e49210b63225555c"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Ready = 2`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L20) | The most recent compilation succeeded, its generation is active, and retired generations passed GC verification. | — | — |
+| <a id="api-a257dd0ce2c960c1"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState.Failed = 3`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L24) | Compilation, activation, or generation retirement failed, so game simulation must not start. | — | — |
+| <a id="api-ee8f2866ab9a80d8"></a>[`public interface Inno.Editor.Scripting.IEditorScriptCompilation`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L30) | Exposes the minimal script-generation readiness contract required by editor workflows. | — | — |
+| <a id="api-1e65ee827ebdc315"></a>[`bool Inno.Editor.Scripting.IEditorScriptCompilation.requiresExclusiveProgress { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L35) | Gets whether compiler or activation work currently requires a blocking progress presentation. | — | — |
+| <a id="api-20d6786e5b5c3f20"></a>[`float Inno.Editor.Scripting.IEditorScriptCompilation.progress { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L40) | Gets the most recent compiler progress fraction in the inclusive range zero to one. | — | — |
+| <a id="api-309698984bffe0d8"></a>[`void Inno.Editor.Scripting.IEditorScriptCompilation.CancelCompilation()`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L45) | Requests cancellation while retaining ownership until compilation and retirement finish. | — | — |
+| <a id="api-d4347e54c4200dbb"></a>[`Inno.Editor.Scripting.IScriptCompilationTicket Inno.Editor.Scripting.IEditorScriptCompilation.RequestCompilation()`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L53) | Queues a fresh cache-aware compilation for a build or simulation workflow. | A ticket bound to the exact request. Success requires activation and completed retirement verification; a faulted host returns a failed ticket and requires restart. | — |
+| <a id="api-b43f410406dc5df8"></a>[`Inno.Editor.Scripting.IScriptCompilationTicket? Inno.Editor.Scripting.IEditorScriptCompilation.currentTicket { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L57) | Gets the most recently requested compilation ticket, or when no explicit request exists. | — | — |
+| <a id="api-b28fe0d2d08348e4"></a>[`Inno.Editor.Scripting.EditorScriptCompilationState Inno.Editor.Scripting.IEditorScriptCompilation.state { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L62) | Gets the current script-generation readiness state. | — | — |
+| <a id="api-9fa59b7c8c1112dd"></a>[`string Inno.Editor.Scripting.IEditorScriptCompilation.status { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L67) | Gets a human-readable description of current compiler work or readiness. | — | — |
+| <a id="api-fa6ff992cca36e38"></a>[`Inno.Scripting.Compiler.ScriptCompilationResult? Inno.Editor.Scripting.IEditorScriptCompilation.lastCompilation { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IEditorScriptCompilation.cs#L72) | Gets the most recently completed compilation, or before the first attempt completes. | — | — |
+| <a id="api-4ef88a7d70746b4c"></a>[`public interface Inno.Editor.Scripting.IScriptCompilationTicket`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L8) | Exposes the immutable observer view of one exact script compilation and activation request. | — | — |
+| <a id="api-1d04ab49d4ec5331"></a>[`long Inno.Editor.Scripting.IScriptCompilationTicket.requestId { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L13) | Gets the producer-local monotonic identifier of this request. | — | — |
+| <a id="api-ed20412afaf9e932"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState Inno.Editor.Scripting.IScriptCompilationTicket.state { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L18) | Gets the current lifecycle state of this exact request. | — | — |
+| <a id="api-6db681e389d4203f"></a>[`string Inno.Editor.Scripting.IScriptCompilationTicket.status { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L23) | Gets a human-readable description of the current or terminal state. | — | — |
+| <a id="api-2c573e64fee8ecb9"></a>[`Inno.Scripting.Compiler.ScriptCompilationResult? Inno.Editor.Scripting.IScriptCompilationTicket.result { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L28) | Gets the completed compiler result, or before the compiler finishes. | — | — |
+| <a id="api-7b6f07239d6a5d4e"></a>[`bool Inno.Editor.Scripting.IScriptCompilationTicket.isCompleted { get; }`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/IScriptCompilationTicket.cs#L33) | Gets whether no further state transition is valid for this request. | — | — |
 | <a id="api-e457e1b326a53818"></a>[`public enum Inno.Editor.Scripting.ScriptCompilationTicketState : int`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L6) | Identifies the lifecycle state of one exact script compilation request. | — | — |
+| <a id="api-243f57a0cd9223de"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Queued = 0`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L11) | The request is queued behind the active compiler operation. | — | — |
+| <a id="api-e669239421f6f53f"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Compiling = 1`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L16) | The request owns the compiler pipeline or is activating its candidate generation. | — | — |
+| <a id="api-5e6c53a7681ebedb"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Succeeded = 2`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L21) | The request compiled and atomically activated its candidate generation. | — | — |
+| <a id="api-373348395de43d26"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Failed = 3`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L26) | Compilation or candidate activation failed without replacing the active generation. | — | — |
+| <a id="api-23662c5f8bb587c7"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Canceled = 4`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L31) | The request was explicitly canceled before activation. | — | — |
+| <a id="api-a6d57635bb4929e8"></a>[`Inno.Editor.Scripting.ScriptCompilationTicketState.Superseded = 5`](../../src/composition/editor/features/Inno.Editor.Scripting/Runtime/ScriptCompilationTicketState.cs#L36) | A newer request replaced this request before its candidate could activate. | — | — |
 
 ## 项目依赖
 
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scripting.Reload](../scripting/Inno.Scripting.Reload.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
+| `Inno.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Plugins.Authoring` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Modules` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Diagnostics` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Logging` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Scripting.Reload` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
+| `Inno.Assets.Pipeline` | 实现依赖；不传递 compile surface |
+| `Inno.Scripting.Compiler` | 公开签名依赖 |
+| `Inno.Core.Serialization` | 公开签名依赖 |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |

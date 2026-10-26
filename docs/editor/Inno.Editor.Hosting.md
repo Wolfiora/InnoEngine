@@ -35,39 +35,16 @@ Project 创作 IO 属于创作服务；OS 用户位置由平台产品提供。�
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
-
-### `Inno.Editor.Hosting.EditorApplication`
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 <!-- api: T:Inno.Editor.Hosting.EditorApplication 779a9eb9c073b04b1a1da11647c0c4cb38687e967e4c6403f210f3a28890f997 -->
 <!-- api: M:Inno.Editor.Hosting.EditorApplication.RunAsync(Inno.Editor.Hosting.EditorLaunchOptions,System.Threading.CancellationToken) f8ae63b8c40aa255a1de93943731019e708907c40efaf197c74214b122d2a8ff -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-7caea7eb5327ca45"></a>[`public static System.Threading.Tasks.Task<int> Inno.Editor.Hosting.EditorApplication.RunAsync(Inno.Editor.Hosting.EditorLaunchOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorApplication.cs#L40) | Validates composition, owns the created Editor host and retires resources on exit, cancellation or failure.<br>返回：Zero after orderly completion; startup, execution and retirement failures propagate.<br>`options`：Borrowed catalogs, factories and product configuration; created resources transfer to the host.<br>`cancellationToken`：Cancels before creation or requests orderly owner-thread shutdown. | — | `System.ArgumentNullException`：Options or a required dependency is null.<br>`System.ArgumentException`：A required location or product selection is invalid.<br>`System.NotSupportedException`：A selected backend lacks its matching runtime or authoring provider.<br>`System.OperationCanceledException`：Startup or execution was canceled after resource retirement.<br>`System.InvalidOperationException`：Product startup or resource retirement fails. |
-| <a id="api-ae0867da67a39e55"></a>[`public static class Inno.Editor.Hosting.EditorApplication`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorApplication.cs#L11) | Runs the shared Editor product with explicitly supplied platform and publication composition. | — | — |
-
-### `Inno.Editor.Hosting.EditorCommandLineOptions`
-
-<!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.windowVisible 8b3cff7e40c4b8932296da36d374053ae1fdb5b08af7e1a2ebebc2ef72278a4e -->
-
 <!-- api: T:Inno.Editor.Hosting.EditorCommandLineOptions fd15e5fd61d89471431593d80cd25cc48cce63b8249ae3eb5cf4191719d6ec0a -->
 <!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.projectDirectory d83304e24c2ae152e6692a7ccbc45b43bd7b06d162ffb774630c7287ebfc97f4 -->
 <!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.smokeFrameLimit d2f91776ab75dd1ad0976a408f2b09cb5cb949897e8901072dbbe6a78ded490a -->
+<!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.windowVisible 8b3cff7e40c4b8932296da36d374053ae1fdb5b08af7e1a2ebebc2ef72278a4e -->
 <!-- api: P:Inno.Editor.Hosting.EditorCommandLineOptions.graphicsApi f3001171409a91f3c773db0a73c8c15407dd187110594292f00c1ae40f083e77 -->
 <!-- api: M:Inno.Editor.Hosting.EditorCommandLineOptions.Parse(System.String[]) ce01e405a4995daffee7f58e043c222cd567a999e1c5b3a7bf86e90825f6e0c3 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-17cdafb64bf2912c"></a>[`public bool Inno.Editor.Hosting.EditorCommandLineOptions.windowVisible { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L27) | 是否显示真实平台窗口；默认 true，false 保留同一 Editor 初始化、帧循环与退出。 | 启动配置不可变；产品组合将值传给 PlatformWindowOptions。 | 参数解析失败发生在创建设备前；隐藏运行不验证 GUI 或焦点。 |
-| <a id="api-0d2fbb58476a4b3e"></a>[`public static Inno.Editor.Hosting.EditorCommandLineOptions Inno.Editor.Hosting.EditorCommandLineOptions.Parse(string[] arguments)`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L41) | Parses the common Editor command line without selecting a platform.<br>返回：The immutable project startup configuration.<br>`arguments`：The project path followed by optional name/value pairs. | — | `System.ArgumentException`：The project or an option is missing, repeated or invalid. |
-| <a id="api-1071da5e2056ccf2"></a>[`public Inno.Rendering.GraphicsApi? Inno.Editor.Hosting.EditorCommandLineOptions.graphicsApi { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L27) | Gets an explicit renderer preference, or null for backend policy. | — | — |
-| <a id="api-29f225c5e1e36c31"></a>[`public string Inno.Editor.Hosting.EditorCommandLineOptions.projectDirectory { get; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L17) | Gets the caller-selected authoring project. | — | — |
-| <a id="api-3c3a465645ba3c3b"></a>[`public int? Inno.Editor.Hosting.EditorCommandLineOptions.smokeFrameLimit { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L22) | Gets the optional bounded verification frame count. | — | — |
-| <a id="api-ad59f502c90c8a47"></a>[`public sealed class Inno.Editor.Hosting.EditorCommandLineOptions`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L10) | Parses the shared Editor project and verification workflow before platform composition starts. | — | — |
-
-### `Inno.Editor.Hosting.EditorLaunchOptions`
-
 <!-- api: T:Inno.Editor.Hosting.EditorLaunchOptions 182a68f3071287ee6610e552b4d487318bc003843aa7a755c613751c517ee8d2 -->
 <!-- api: P:Inno.Editor.Hosting.EditorLaunchOptions.projectDirectory 40f33b2698088a4e2b88ddbb37c1c2c26d3927bf15a8aae911a87b4bcb693b33 -->
 <!-- api: P:Inno.Editor.Hosting.EditorLaunchOptions.keyboard 9f22d5759961536e336b74e4b40c2c6da84e4b033898e11e0d797a03afd34b72 -->
@@ -86,72 +63,82 @@ Project 创作 IO 属于创作服务；OS 用户位置由平台产品提供。�
 <!-- api: P:Inno.Editor.Hosting.EditorLaunchOptions.smokeFrameLimit ba9fc4a247c4982f72f7c31132b52d0c3b617fe7a8b6d0778d96aa52df051733 -->
 <!-- api: M:Inno.Editor.Hosting.EditorLaunchOptions.#ctor a3ab6c277bc24e792116f7bd125739f56a08dc2cb3e5671300e632b3914ca678 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| API 与源码 | 契约与参数 | 返回值 | 重要异常 |
 | --- | --- | --- | --- |
-| <a id="api-6da1e019bd1144d3"></a>[`public Inno.Editor.Hosting.EditorLaunchOptions.EditorLaunchOptions()`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L17) | C# 隐式构造函数；按类型声明执行字段初始化和基类构造。 | — | — |
+| <a id="api-ae0867da67a39e55"></a>[`public static class Inno.Editor.Hosting.EditorApplication`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorApplication.cs#L11) | Runs the shared Editor product with explicitly supplied platform and publication composition. | — | — |
+| <a id="api-7caea7eb5327ca45"></a>[`public static System.Threading.Tasks.Task<int> Inno.Editor.Hosting.EditorApplication.RunAsync(Inno.Editor.Hosting.EditorLaunchOptions options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorApplication.cs#L40) | Validates composition, owns the created Editor host and retires resources on exit, cancellation or failure.<br>`options`: Borrowed catalogs, factories and product configuration; created resources transfer to the host.<br>`cancellationToken`: Cancels before creation or requests orderly owner-thread shutdown. | Zero after orderly completion; startup, execution and retirement failures propagate. | `System.ArgumentNullException`: Options or a required dependency is null.<br>`System.ArgumentException`: A required location or product selection is invalid.<br>`System.NotSupportedException`: A selected backend lacks its matching runtime or authoring provider.<br>`System.OperationCanceledException`: Startup or execution was canceled after resource retirement.<br>`System.InvalidOperationException`: Product startup or resource retirement fails. |
+| <a id="api-ad59f502c90c8a47"></a>[`public sealed class Inno.Editor.Hosting.EditorCommandLineOptions`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L10) | Parses the shared Editor project and verification workflow before platform composition starts. | — | — |
+| <a id="api-29f225c5e1e36c31"></a>[`public string Inno.Editor.Hosting.EditorCommandLineOptions.projectDirectory { get; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L17) | Gets the caller-selected authoring project. | — | — |
+| <a id="api-3c3a465645ba3c3b"></a>[`public int? Inno.Editor.Hosting.EditorCommandLineOptions.smokeFrameLimit { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L22) | Gets the optional bounded verification frame count. | — | — |
+| <a id="api-17cdafb64bf2912c"></a>[`public bool Inno.Editor.Hosting.EditorCommandLineOptions.windowVisible { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L27) | Gets whether the platform window is shown; hidden execution retains the same Editor lifecycle. | — | — |
+| <a id="api-1071da5e2056ccf2"></a>[`public Inno.Rendering.GraphicsApi? Inno.Editor.Hosting.EditorCommandLineOptions.graphicsApi { get; private init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L32) | Gets an explicit renderer preference, or null for backend policy. | — | — |
+| <a id="api-0d2fbb58476a4b3e"></a>[`public static Inno.Editor.Hosting.EditorCommandLineOptions Inno.Editor.Hosting.EditorCommandLineOptions.Parse(string[] arguments)`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorCommandLineOptions.cs#L46) | Parses the common Editor command line without selecting a platform.<br>`arguments`: The project path followed by optional name/value pairs. | The immutable project startup configuration. | `System.ArgumentException`: The project or an option is missing, repeated or invalid. |
+| <a id="api-c9a90e0897b22d57"></a>[`public sealed class Inno.Editor.Hosting.EditorLaunchOptions`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L17) | Supplies product-owned composition to the shared Editor lifecycle without selecting a platform or backend. | — | — |
+| <a id="api-14d2d0c2a7a75287"></a>[`public required string Inno.Editor.Hosting.EditorLaunchOptions.projectDirectory { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L22) | Gets the current authoring project location; shared authoring services own its project IO. | — | — |
+| <a id="api-354603c534d553e4"></a>[`public required Inno.Editor.Core.EditorKeyboardPolicy Inno.Editor.Hosting.EditorLaunchOptions.keyboard { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L27) | Gets explicit keyboard conventions selected by the Editor product. | — | — |
 | <a id="api-170ae73abd7cd2fa"></a>[`public required Inno.Adapter.Presentation.IAuthoringAdapterCatalog Inno.Editor.Hosting.EditorLaunchOptions.adapterCatalog { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L32) | Gets the borrowed immutable runtime, authoring and presentation provider catalogs. | — | — |
+| <a id="api-9eb68534641c0804"></a>[`public required Inno.Shell.ShellOptions Inno.Editor.Hosting.EditorLaunchOptions.shell { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L37) | Gets explicit backend, primary-window and rendering policy selected by the product. | — | — |
+| <a id="api-9cda60eef5d7e002"></a>[`public required Inno.Adapter.Presentation.PresentationBackendId Inno.Editor.Hosting.EditorLaunchOptions.presentation { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L42) | Gets the explicit presentation implementation selected by the product. | — | — |
+| <a id="api-a5e839f634c68d61"></a>[`public required Inno.Shell.IShellFrameDriver Inno.Editor.Hosting.EditorLaunchOptions.frameDriver { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L47) | Gets the borrowed owner-thread scheduling policy. | — | — |
+| <a id="api-23b09222eab68717"></a>[`public required Inno.Build.Composition.BuildDistribution Inno.Editor.Hosting.EditorLaunchOptions.distribution { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L52) | Gets the borrowed immutable publication distribution. | — | — |
+| <a id="api-7e95c28bc5a9139c"></a>[`public required Inno.Build.BuildTargetId Inno.Editor.Hosting.EditorLaunchOptions.defaultBuildTarget { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L57) | Gets the explicit default game target for new project build settings. | — | — |
 | <a id="api-1420b2d66b36ad67"></a>[`public required Inno.Build.Composition.BuildCompositionContext Inno.Editor.Hosting.EditorLaunchOptions.buildContext { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L62) | Gets the explicitly selected SDK and build execution host. | — | — |
+| <a id="api-ca5b3ee2aa92d3ca"></a>[`public required string Inno.Editor.Hosting.EditorLaunchOptions.supportPackRoot { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L67) | Gets the explicit installed Support Pack location provided by product composition. | — | — |
 | <a id="api-cbdaa13e65e6ced8"></a>[`public required System.Func<Inno.Runtime.EngineHost> Inno.Editor.Hosting.EditorLaunchOptions.createEngineHost { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L72) | Gets the factory transferring a newly created metadata-configured engine to the Editor owner. | — | — |
-| <a id="api-aa962f56bdd0e036"></a>[`public System.Func<Inno.Core.Logging.ILogSink?>? Inno.Editor.Hosting.EditorLaunchOptions.createHostLogSink { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L87) | Gets an optional factory transferring one host log sink to the Editor lifetime. | — | — |
 | <a id="api-cf613acc31313d59"></a>[`public required System.Func<Inno.Scripting.Compiler.ScriptModuleDeployment, Inno.Extensibility.Modules.IModuleSource> Inno.Editor.Hosting.EditorLaunchOptions.createScriptModuleSource { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L77) | Gets the factory transferring a candidate script module source to the existing reload transaction. | — | — |
 | <a id="api-f1ccf3bf52ca5105"></a>[`public System.Func<Inno.Runtime.RuntimeSessionKind, Inno.Core.Logging.LogSessionId, Inno.Core.Logging.ILogSink>? Inno.Editor.Hosting.EditorLaunchOptions.createSessionLogSink { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L82) | Gets an optional factory transferring each edit or play log sink to its owning session. | — | — |
-| <a id="api-7e95c28bc5a9139c"></a>[`public required Inno.Build.BuildTargetId Inno.Editor.Hosting.EditorLaunchOptions.defaultBuildTarget { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L57) | Gets the explicit default game target for new project build settings. | — | — |
-| <a id="api-23b09222eab68717"></a>[`public required Inno.Build.Composition.BuildDistribution Inno.Editor.Hosting.EditorLaunchOptions.distribution { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L52) | Gets the borrowed immutable publication distribution. | — | — |
-| <a id="api-a5e839f634c68d61"></a>[`public required Inno.Shell.IShellFrameDriver Inno.Editor.Hosting.EditorLaunchOptions.frameDriver { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L47) | Gets the borrowed owner-thread scheduling policy. | — | — |
-| <a id="api-354603c534d553e4"></a>[`public required Inno.Editor.Core.EditorKeyboardPolicy Inno.Editor.Hosting.EditorLaunchOptions.keyboard { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L27) | Gets explicit keyboard conventions selected by the Editor product. | — | — |
-| <a id="api-9cda60eef5d7e002"></a>[`public required Inno.Adapter.Presentation.PresentationBackendId Inno.Editor.Hosting.EditorLaunchOptions.presentation { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L42) | Gets the explicit presentation implementation selected by the product. | — | — |
-| <a id="api-14d2d0c2a7a75287"></a>[`public required string Inno.Editor.Hosting.EditorLaunchOptions.projectDirectory { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L22) | Gets the current authoring project location; shared authoring services own its project IO. | — | — |
-| <a id="api-9eb68534641c0804"></a>[`public required Inno.Shell.ShellOptions Inno.Editor.Hosting.EditorLaunchOptions.shell { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L37) | Gets explicit backend, primary-window and rendering policy selected by the product. | — | — |
+| <a id="api-aa962f56bdd0e036"></a>[`public System.Func<Inno.Core.Logging.ILogSink?>? Inno.Editor.Hosting.EditorLaunchOptions.createHostLogSink { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L87) | Gets an optional factory transferring one host log sink to the Editor lifetime. | — | — |
 | <a id="api-cd5812aaa8d39fbb"></a>[`public int? Inno.Editor.Hosting.EditorLaunchOptions.smokeFrameLimit { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L92) | Gets an optional positive frame limit for bounded product verification. | — | — |
-| <a id="api-ca5b3ee2aa92d3ca"></a>[`public required string Inno.Editor.Hosting.EditorLaunchOptions.supportPackRoot { get; init; }`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L67) | Gets the explicit installed Support Pack location provided by product composition. | — | — |
-| <a id="api-c9a90e0897b22d57"></a>[`public sealed class Inno.Editor.Hosting.EditorLaunchOptions`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L17) | Supplies product-owned composition to the shared Editor lifecycle without selecting a platform or backend. | — | — |
+| <a id="api-6da1e019bd1144d3"></a>[`public Inno.Editor.Hosting.EditorLaunchOptions.EditorLaunchOptions()`](../../src/composition/editor/hosting/Inno.Editor.Hosting/EditorLaunchOptions.cs#L17) | Inherited or compiler-provided contract. | — | — |
 
 ## 项目依赖
 
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Engine.Default](../runtime/Inno.Engine.Default.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter](../runtime/Inno.Adapter.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Audio](../audio/Inno.Adapter.Audio.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Animation.Assets](../animation/Inno.Animation.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Animation.Runtime](../animation/Inno.Animation.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Audio](Inno.Editor.Audio.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Audio.Assets](../audio/Inno.Audio.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Audio.Runtime](../audio/Inno.Audio.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Text.Assets](../text/Inno.Text.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.UI.Assets](../ui/Inno.UI.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.UI.Runtime](../ui/Inno.UI.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Plugins.Authoring](../plugins/Inno.Plugins.Authoring.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Events](../core/Inno.Core.Events.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Layers](../core/Inno.Core.Layers.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Input.Runtime](../input/Inno.Input.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scene](../scene/Inno.Scene.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scene.Assets](../scene/Inno.Scene.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Platform](../platform/Inno.Platform.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Storage.Runtime](../storage/Inno.Storage.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Managed](../build/Inno.Build.Managed.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Runtime.Contracts](../runtime/Inno.Runtime.Contracts.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Reload](../extensibility/Inno.Extensibility.Reload.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Build.Composition](../build/Inno.Build.Composition.md)：公开引用边界由实际签名核对。
-- [Inno.Shell](../runtime/Inno.Shell.md)：公开引用边界由实际签名核对。
-- [Inno.Adapter.Presentation](../platform/Inno.Adapter.Presentation.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：公开引用边界由实际签名核对。
-- [Inno.Runtime](../runtime/Inno.Runtime.md)：公开引用边界由实际签名核对。
-- [Inno.Build](../build/Inno.Build.md)：公开引用边界由实际签名核对。
-- [Inno.Rendering](../rendering/Inno.Rendering.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：公开引用边界由实际签名核对。
-- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：公开引用边界由实际签名核对。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Core.Execution` | 实现依赖；不传递 compile surface |
+| `Inno.Engine.Default` | 实现依赖；不传递 compile surface |
+| `Inno.Adapter` | 实现依赖；不传递 compile surface |
+| `Inno.Adapter.Audio` | 实现依赖；不传递 compile surface |
+| `Inno.Animation.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Animation.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Audio` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.PlayMode` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Rendering` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Scene` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Audio.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Audio.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Text.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.UI.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.UI.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Plugins.Authoring` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Diagnostics` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Events` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Layers` | 实现依赖；不传递 compile surface |
+| `Inno.Input.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Scene` | 实现依赖；不传递 compile surface |
+| `Inno.Scene.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Platform` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Storage.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Managed` | 实现依赖；不传递 compile surface |
+| `Inno.Assets.Pipeline` | 实现依赖；不传递 compile surface |
+| `Inno.Runtime.Contracts` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Reload` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering.Assets.Authoring` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |
+| `Inno.Core.Serialization` | 公开签名依赖 |
+| `Inno.Build.Composition` | 公开签名依赖 |
+| `Inno.Shell` | 公开签名依赖 |
+| `Inno.Adapter.Presentation` | 公开签名依赖 |
+| `Inno.Core.Logging` | 公开签名依赖 |
+| `Inno.Runtime` | 公开签名依赖 |
+| `Inno.Build` | 公开签名依赖 |
+| `Inno.Rendering` | 公开签名依赖 |
+| `Inno.Extensibility.Modules` | 公开签名依赖 |
+| `Inno.Scripting.Compiler` | 公开签名依赖 |
+| `Inno.Editor.Core` | 公开签名依赖 |

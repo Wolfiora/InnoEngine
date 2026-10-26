@@ -1,17 +1,15 @@
 using System;
 using System.Numerics;
 using BGCS.Runtime;
-
 using Inno.Native.ImGui;
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
-
 /// <summary>
 /// Exposes a script-safe, pointer-free subset of Dear ImGui for custom Editor tools.
 /// Every call is valid only while an Editor drawing callback is active.
 /// </summary>
-public static unsafe class ImGui
+public static unsafe partial class ImGui
 {
     /// <summary>
     /// Draws unformatted text.
@@ -19,7 +17,11 @@ public static unsafe class ImGui
     /// <param name="text">
     /// Literal text to draw; percent characters are displayed without format-string interpretation.
     /// </param>
-    public static void Text(string text) => RawImGui.TextUnformatted(text);
+    public static void Text(string text)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.TextUnformatted(text);
+    }
 
     /// <summary>
     /// Draws a standard button.
@@ -36,7 +38,10 @@ public static unsafe class ImGui
     public static bool Button(
         string label,
         Vector2 size = default
-    ) => RawImGui.Button(label, size);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.Button(label, size);
+    }
 
     /// <summary>
     /// Draws a compact button.
@@ -47,7 +52,11 @@ public static unsafe class ImGui
     /// <param name="label">
     /// The visible label and optional ImGui identity suffix.
     /// </param>
-    public static bool SmallButton(string label) => RawImGui.SmallButton(label);
+    public static bool SmallButton(string label)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.SmallButton(label);
+    }
 
     /// <summary>
     /// Draws and edits a Boolean value.
@@ -64,7 +73,10 @@ public static unsafe class ImGui
     public static bool Checkbox(
         string label,
         ref bool value
-    ) => RawImGui.Checkbox(label, ref value);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.Checkbox(label, ref value);
+    }
 
     /// <summary>
     /// Draws and edits a bounded UTF-8 text value.
@@ -144,10 +156,25 @@ public static unsafe class ImGui
     /// <param name="value">
     /// The integer displayed by the control and replaced after an accepted edit.
     /// </param>
+    /// <param name="step">
+    /// Increment used by the ordinary step button.
+    /// </param>
+    /// <param name="fastStep">
+    /// Increment used by the accelerated step button.
+    /// </param>
+    /// <param name="flags">
+    /// Text editing options for the numeric field.
+    /// </param>
     public static bool InputInt(
         string label,
-        ref int value
-    ) => RawImGui.InputInt(label, ref value, 1, 100, 0);
+        ref int value,
+        int step = 1,
+        int fastStep = 100,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.InputInt(label, ref value, step, fastStep, (int)flags);
+    }
 
     /// <summary>
     /// Draws and edits a floating-point value.
@@ -164,7 +191,10 @@ public static unsafe class ImGui
     public static bool InputFloat(
         string label,
         ref float value
-    ) => RawImGui.InputFloat(label, ref value, 0f, 0f, "%.3f", 0);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.InputFloat(label, ref value, 0f, 0f, "%.3f", 0);
+    }
 
     /// <summary>
     /// Draws a floating-point drag control.
@@ -193,8 +223,10 @@ public static unsafe class ImGui
         float speed = 1f,
         float minimum = 0f,
         float maximum = 0f
-    )
-        => RawImGui.DragFloat(label, ref value, speed, minimum, maximum);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.DragFloat(label, ref value, speed, minimum, maximum);
+    }
 
     /// <summary>
     /// Draws a bounded floating-point slider.
@@ -223,8 +255,10 @@ public static unsafe class ImGui
         float minimum,
         float maximum,
         ImGuiSliderFlags flags = ImGuiSliderFlags.None
-    )
-        => RawImGui.SliderFloat(label, ref value, minimum, maximum, (int)flags);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.SliderFloat(label, ref value, minimum, maximum, (int)flags);
+    }
 
     /// <summary>
     /// Draws and edits a four-component color.
@@ -286,7 +320,8 @@ public static unsafe class ImGui
             display.X == original.X ? value.X : SrgbToLinear(display.X),
             display.Y == original.Y ? value.Y : SrgbToLinear(display.Y),
             display.Z == original.Z ? value.Z : SrgbToLinear(display.Z),
-            display.W);
+            display.W
+        );
         return true;
     }
 
@@ -305,17 +340,27 @@ public static unsafe class ImGui
     /// <returns>
     /// <see langword="true"/> when child contents should be submitted.
     /// </returns>
+    /// <param name="windowFlags">
+    /// Scroll and window policies for the child.
+    /// </param>
     public static bool BeginChild(
         string id,
         Vector2 size = default,
-        ImGuiChildFlags flags = ImGuiChildFlags.None
-    )
-        => RawImGui.BeginChild(id, size, (int)(flags));
+        ImGuiChildFlags flags = ImGuiChildFlags.None,
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags.None
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.BeginChild(id, size, (int)flags, (int)windowFlags);
+    }
 
     /// <summary>
     /// Ends the current child region.
     /// </summary>
-    public static void EndChild() => RawImGui.EndChild();
+    public static void EndChild()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndChild();
+    }
 
     /// <summary>
     /// Begins a table.
@@ -335,18 +380,28 @@ public static unsafe class ImGui
     /// <returns>
     /// <see langword="true"/> when table contents should be submitted.
     /// </returns>
+    /// <param name="innerWidth">
+    /// Optional inner scrolling width; zero uses the outer size.
+    /// </param>
     public static bool BeginTable(
         string id,
         int columns,
         ImGuiTableFlags flags = ImGuiTableFlags.None,
-        Vector2 size = default
-    )
-        => RawImGui.BeginTable(id, columns, (int)flags, size);
+        Vector2 size = default,
+        float innerWidth = 0f
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.BeginTable(id, columns, (int)flags, size, innerWidth);
+    }
 
     /// <summary>
     /// Ends the current table.
     /// </summary>
-    public static void EndTable() => RawImGui.EndTable();
+    public static void EndTable()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndTable();
+    }
 
     /// <summary>
     /// Declares one table column.
@@ -364,18 +419,36 @@ public static unsafe class ImGui
         string label,
         ImGuiTableColumnFlags flags = ImGuiTableColumnFlags.None,
         float widthOrWeight = 0f
-    )
-        => RawImGui.TableSetupColumn(label, (int)(flags), widthOrWeight);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.TableSetupColumn(label, (int)(flags), widthOrWeight);
+    }
 
     /// <summary>
     /// Draws the table header row from configured column labels.
     /// </summary>
-    public static void TableHeadersRow() => RawImGui.TableHeadersRow();
+    public static void TableHeadersRow()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.TableHeadersRow();
+    }
 
     /// <summary>
     /// Advances to the next table row.
     /// </summary>
-    public static void TableNextRow() => RawImGui.TableNextRow();
+    /// <param name="flags">
+    /// Row presentation flags.
+    /// </param>
+    /// <param name="minimumHeight">
+    /// Minimum row height in UI pixels.
+    /// </param>
+    public static void TableNextRow(
+        ImGuiTableRowFlags flags = ImGuiTableRowFlags.None,
+        float minimumHeight = 0f
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.TableNextRow((int)flags, minimumHeight);
+    }
 
     /// <summary>
     /// Advances to the next table column.
@@ -383,7 +456,11 @@ public static unsafe class ImGui
     /// <returns>
     /// <see langword="true"/> when the column is visible.
     /// </returns>
-    public static bool TableNextColumn() => RawImGui.TableNextColumn();
+    public static bool TableNextColumn()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.TableNextColumn();
+    }
 
     /// <summary>
     /// Begins a combo popup.
@@ -404,13 +481,19 @@ public static unsafe class ImGui
         string label,
         string preview,
         ImGuiComboFlags flags = ImGuiComboFlags.None
-    )
-        => RawImGui.BeginCombo(label, preview, (int)(flags));
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.BeginCombo(label, preview, (int)(flags));
+    }
 
     /// <summary>
     /// Ends the current combo popup.
     /// </summary>
-    public static void EndCombo() => RawImGui.EndCombo();
+    public static void EndCombo()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndCombo();
+    }
 
     /// <summary>
     /// Draws one selectable item.
@@ -427,12 +510,18 @@ public static unsafe class ImGui
     /// <returns>
     /// <see langword="true"/> when the item is activated.
     /// </returns>
+    /// <param name="size">
+    /// The interaction bounds, or zero for the ordinary content size.
+    /// </param>
     public static bool Selectable(
         string label,
         bool selected = false,
-        ImGuiSelectableFlags flags = ImGuiSelectableFlags.None
-    )
-        => RawImGui.Selectable(label, selected, (int)flags);
+        ImGuiSelectableFlags flags = ImGuiSelectableFlags.None,
+        Vector2 size = default
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.Selectable(label, selected, (int)flags, size);
+    }
 
     /// <summary>
     /// Draws a collapsible section header.
@@ -449,8 +538,10 @@ public static unsafe class ImGui
     public static bool CollapsingHeader(
         string label,
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None
-    )
-        => RawImGui.CollapsingHeader(label, (int)(flags));
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.CollapsingHeader(label, (int)(flags));
+    }
 
     /// <summary>
     /// Draws a tree node and pushes its tree scope when it is open.
@@ -467,12 +558,19 @@ public static unsafe class ImGui
     public static bool TreeNode(
         string label,
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None
-    ) => RawImGui.TreeNodeEx(label, (int)(flags));
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.TreeNodeEx(label, (int)(flags));
+    }
 
     /// <summary>
     /// Ends the current open tree-node scope.
     /// </summary>
-    public static void TreePop() => RawImGui.TreePop();
+    public static void TreePop()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.TreePop();
+    }
 
     /// <summary>
     /// Begins a tab bar.
@@ -489,12 +587,19 @@ public static unsafe class ImGui
     public static bool BeginTabBar(
         string id,
         ImGuiTabBarFlags flags = ImGuiTabBarFlags.None
-    ) => RawImGui.BeginTabBar(id, (int)(flags));
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.BeginTabBar(id, (int)(flags));
+    }
 
     /// <summary>
     /// Ends the current tab bar.
     /// </summary>
-    public static void EndTabBar() => RawImGui.EndTabBar();
+    public static void EndTabBar()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndTabBar();
+    }
 
     /// <summary>
     /// Begins one tab item.
@@ -542,7 +647,11 @@ public static unsafe class ImGui
     /// <summary>
     /// Ends the current tab item.
     /// </summary>
-    public static void EndTabItem() => RawImGui.EndTabItem();
+    public static void EndTabItem()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndTabItem();
+    }
 
     /// <summary>
     /// Opens a named popup.
@@ -556,7 +665,10 @@ public static unsafe class ImGui
     public static void OpenPopup(
         string id,
         ImGuiPopupFlags flags = ImGuiPopupFlags.None
-    ) => RawImGui.OpenPopup(id, (int)(flags));
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.OpenPopup(id, (int)(flags));
+    }
 
     /// <summary>
     /// Begins a named popup.
@@ -573,17 +685,28 @@ public static unsafe class ImGui
     public static bool BeginPopup(
         string id,
         ImGuiWindowFlags flags = ImGuiWindowFlags.None
-    ) => RawImGui.BeginPopup(id, (int)(flags));
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.BeginPopup(id, (int)(flags));
+    }
 
     /// <summary>
     /// Ends the current popup.
     /// </summary>
-    public static void EndPopup() => RawImGui.EndPopup();
+    public static void EndPopup()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndPopup();
+    }
 
     /// <summary>
     /// Closes the current popup.
     /// </summary>
-    public static void CloseCurrentPopup() => RawImGui.CloseCurrentPopup();
+    public static void CloseCurrentPopup()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.CloseCurrentPopup();
+    }
 
     /// <summary>
     /// Begins a disabled block.
@@ -591,22 +714,38 @@ public static unsafe class ImGui
     /// <param name="disabled">
     /// Whether controls in the block are disabled.
     /// </param>
-    public static void BeginDisabled(bool disabled = true) => RawImGui.BeginDisabled(disabled);
+    public static void BeginDisabled(bool disabled = true)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.BeginDisabled(disabled);
+    }
 
     /// <summary>
     /// Ends the current disabled block.
     /// </summary>
-    public static void EndDisabled() => RawImGui.EndDisabled();
+    public static void EndDisabled()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndDisabled();
+    }
 
     /// <summary>
     /// Begins an item group.
     /// </summary>
-    public static void BeginGroup() => RawImGui.BeginGroup();
+    public static void BeginGroup()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.BeginGroup();
+    }
 
     /// <summary>
     /// Ends the current item group.
     /// </summary>
-    public static void EndGroup() => RawImGui.EndGroup();
+    public static void EndGroup()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.EndGroup();
+    }
 
     /// <summary>
     /// Pushes a string identity onto the ImGui ID stack.
@@ -614,7 +753,11 @@ public static unsafe class ImGui
     /// <param name="id">
     /// The stable identity used to locate the requested value.
     /// </param>
-    public static void PushId(string id) => RawImGui.PushID(id);
+    public static void PushId(string id)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PushID(id);
+    }
 
     /// <summary>
     /// Pushes an integer identity onto the ImGui ID stack.
@@ -622,12 +765,20 @@ public static unsafe class ImGui
     /// <param name="id">
     /// The stable identity used to locate the requested value.
     /// </param>
-    public static void PushId(int id) => RawImGui.PushID(id);
+    public static void PushId(int id)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PushID(id);
+    }
 
     /// <summary>
     /// Pops one identity from the ImGui ID stack.
     /// </summary>
-    public static void PopId() => RawImGui.PopID();
+    public static void PopId()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PopID();
+    }
 
     /// <summary>
     /// Pushes one color override.
@@ -641,7 +792,10 @@ public static unsafe class ImGui
     public static void PushStyleColor(
         ImGuiCol color,
         Vector4 value
-    ) => RawImGui.PushStyleColor((int)(color), value);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PushStyleColor((int)(color), value);
+    }
 
     /// <summary>
     /// Pops color overrides.
@@ -649,7 +803,11 @@ public static unsafe class ImGui
     /// <param name="count">
     /// The positive number of overrides to pop.
     /// </param>
-    public static void PopStyleColor(int count = 1) => RawImGui.PopStyleColor(count);
+    public static void PopStyleColor(int count = 1)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PopStyleColor(count);
+    }
 
     /// <summary>
     /// Pushes one scalar style override.
@@ -663,7 +821,10 @@ public static unsafe class ImGui
     public static void PushStyleVar(
         ImGuiStyleVar style,
         float value
-    ) => RawImGui.PushStyleVar((int)(style), value);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PushStyleVar((int)(style), value);
+    }
 
     /// <summary>
     /// Pushes one two-component style override.
@@ -677,7 +838,10 @@ public static unsafe class ImGui
     public static void PushStyleVar(
         ImGuiStyleVar style,
         Vector2 value
-    ) => RawImGui.PushStyleVar((int)(style), value);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PushStyleVar((int)(style), value);
+    }
 
     /// <summary>
     /// Pops style-variable overrides.
@@ -685,7 +849,11 @@ public static unsafe class ImGui
     /// <param name="count">
     /// The positive number of overrides to pop.
     /// </param>
-    public static void PopStyleVar(int count = 1) => RawImGui.PopStyleVar(count);
+    public static void PopStyleVar(int count = 1)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.PopStyleVar(count);
+    }
 
     /// <summary>
     /// Places the next item on the same line.
@@ -699,12 +867,19 @@ public static unsafe class ImGui
     public static void SameLine(
         float offset = 0f,
         float spacing = -1f
-    ) => RawImGui.SameLine(offset, spacing);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.SameLine(offset, spacing);
+    }
 
     /// <summary>
     /// Draws a horizontal separator.
     /// </summary>
-    public static void Separator() => RawImGui.Separator();
+    public static void Separator()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.Separator();
+    }
 
     /// <summary>
     /// Draws a labeled horizontal separator.
@@ -712,12 +887,20 @@ public static unsafe class ImGui
     /// <param name="label">
     /// The label text validated by the separator text operation.
     /// </param>
-    public static void SeparatorText(string label) => RawImGui.SeparatorText(label);
+    public static void SeparatorText(string label)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.SeparatorText(label);
+    }
 
     /// <summary>
     /// Adds one standard vertical spacing unit.
     /// </summary>
-    public static void Spacing() => RawImGui.Spacing();
+    public static void Spacing()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.Spacing();
+    }
 
     /// <summary>
     /// Advances layout by an invisible size.
@@ -725,7 +908,11 @@ public static unsafe class ImGui
     /// <param name="size">
     /// The size consumed by dummy; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void Dummy(Vector2 size) => RawImGui.Dummy(size);
+    public static void Dummy(Vector2 size)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.Dummy(size);
+    }
 
     /// <summary>
     /// Sets the width of the next item.
@@ -733,7 +920,11 @@ public static unsafe class ImGui
     /// <param name="width">
     /// The width in logical units or pixels required by this operation.
     /// </param>
-    public static void SetNextItemWidth(float width) => RawImGui.SetNextItemWidth(width);
+    public static void SetNextItemWidth(float width)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.SetNextItemWidth(width);
+    }
 
     /// <summary>
     /// Gets the remaining content size in the current region.
@@ -741,7 +932,11 @@ public static unsafe class ImGui
     /// <returns>
     /// The remaining local width and height.
     /// </returns>
-    public static Vector2 GetContentRegionAvailable() => RawImGui.GetContentRegionAvail();
+    public static Vector2 GetContentRegionAvailable()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.GetContentRegionAvail();
+    }
 
     /// <summary>
     /// Gets the current local cursor position.
@@ -749,7 +944,11 @@ public static unsafe class ImGui
     /// <returns>
     /// The local cursor position.
     /// </returns>
-    public static Vector2 GetCursorPosition() => RawImGui.GetCursorPos();
+    public static Vector2 GetCursorPosition()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.GetCursorPos();
+    }
 
     /// <summary>
     /// Sets the current local cursor position.
@@ -757,7 +956,11 @@ public static unsafe class ImGui
     /// <param name="position">
     /// The position consumed by set cursor position; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static void SetCursorPosition(Vector2 position) => RawImGui.SetCursorPos(position);
+    public static void SetCursorPosition(Vector2 position)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.SetCursorPos(position);
+    }
 
     /// <summary>
     /// Gets the current screen-space cursor position.
@@ -765,7 +968,11 @@ public static unsafe class ImGui
     /// <returns>
     /// The screen-space cursor position.
     /// </returns>
-    public static Vector2 GetCursorScreenPosition() => RawImGui.GetCursorScreenPos();
+    public static Vector2 GetCursorScreenPosition()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.GetCursorScreenPos();
+    }
 
     /// <summary>
     /// Gets the minimum screen-space corner of the previous item.
@@ -773,7 +980,11 @@ public static unsafe class ImGui
     /// <returns>
     /// The item minimum corner.
     /// </returns>
-    public static Vector2 GetItemMinimum() => RawImGui.GetItemRectMin();
+    public static Vector2 GetItemMinimum()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.GetItemRectMin();
+    }
 
     /// <summary>
     /// Gets the maximum screen-space corner of the previous item.
@@ -781,7 +992,11 @@ public static unsafe class ImGui
     /// <returns>
     /// The item maximum corner.
     /// </returns>
-    public static Vector2 GetItemMaximum() => RawImGui.GetItemRectMax();
+    public static Vector2 GetItemMaximum()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.GetItemRectMax();
+    }
 
     /// <summary>
     /// Measures text using the current font.
@@ -792,7 +1007,11 @@ public static unsafe class ImGui
     /// <param name="text">
     /// The text text validated by the measure text operation.
     /// </param>
-    public static Vector2 MeasureText(string text) => RawImGui.CalcTextSize(text);
+    public static Vector2 MeasureText(string text)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.CalcTextSize(text);
+    }
 
     /// <summary>
     /// Gets whether the previous item is hovered.
@@ -803,7 +1022,11 @@ public static unsafe class ImGui
     /// <returns>
     /// <see langword="true"/> when the query succeeds.
     /// </returns>
-    public static bool IsItemHovered(ImGuiHoveredFlags flags = ImGuiHoveredFlags.None) => RawImGui.IsItemHovered((int)(flags));
+    public static bool IsItemHovered(ImGuiHoveredFlags flags = ImGuiHoveredFlags.None)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.IsItemHovered((int)(flags));
+    }
 
     /// <summary>
     /// Gets whether the previous item is active.
@@ -811,7 +1034,11 @@ public static unsafe class ImGui
     /// <returns>
     /// <see langword="true"/> while the item owns an active interaction.
     /// </returns>
-    public static bool IsItemActive() => RawImGui.IsItemActive();
+    public static bool IsItemActive()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.IsItemActive();
+    }
 
     /// <summary>
     /// Gets whether the previous item was clicked with a mouse button.
@@ -822,7 +1049,11 @@ public static unsafe class ImGui
     /// <returns>
     /// <see langword="true"/> when the item was clicked.
     /// </returns>
-    public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsItemClicked((int)(button));
+    public static bool IsItemClicked(ImGuiMouseButton button = ImGuiMouseButton.Left)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.IsItemClicked((int)(button));
+    }
 
     /// <summary>
     /// Gets whether a mouse button is held in the current Editor UI frame, including input consumed by UI controls.
@@ -833,7 +1064,11 @@ public static unsafe class ImGui
     /// <returns>
     /// True while the button is held; callers must also check their item's active or hovered state before editing.
     /// </returns>
-    public static bool IsMouseButtonDown(ImGuiMouseButton button = ImGuiMouseButton.Left) => RawImGui.IsMouseDown((int)button);
+    public static bool IsMouseButtonDown(ImGuiMouseButton button = ImGuiMouseButton.Left)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.IsMouseDown((int)button);
+    }
 
     /// <summary>
     /// Gets accumulated pointer displacement from the current UI drag's starting position for timeline and canvas controls.
@@ -851,7 +1086,10 @@ public static unsafe class ImGui
     public static Vector2 GetMouseDragDelta(
         ImGuiMouseButton button = ImGuiMouseButton.Left,
         float threshold = -1f
-    ) => RawImGui.GetMouseDragDelta((int)button, threshold);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.GetMouseDragDelta((int)button, threshold);
+    }
 
     /// <summary>
     /// Converts a floating-point RGBA color to Dear ImGui packed color order.
@@ -862,7 +1100,11 @@ public static unsafe class ImGui
     /// <param name="color">
     /// The color consumed by to packed color; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    public static uint ToPackedColor(Vector4 color) => RawImGui.ColorConvertFloat4ToU32(color);
+    public static uint ToPackedColor(Vector4 color)
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.ColorConvertFloat4ToU32(color);
+    }
 
     /// <summary>
     /// Adds a line to the current window draw list.
@@ -884,8 +1126,10 @@ public static unsafe class ImGui
         Vector2 end,
         uint color,
         float thickness = 1f
-    )
-        => ImGui.DrawNativeLine(RawImGui.Raw.GetWindowDrawList(), start, end, color, thickness);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        ImGui.DrawNativeLine(RawImGui.Raw.GetWindowDrawList(), start, end, color, thickness);
+    }
 
     /// <summary>
     /// Adds a rectangle outline to the current window draw list.
@@ -911,8 +1155,10 @@ public static unsafe class ImGui
         uint color,
         float rounding = 0f,
         float thickness = 1f
-    )
-        => ImGui.DrawNativeRectangle(RawImGui.Raw.GetWindowDrawList(), minimum, maximum, color, rounding, 0, thickness);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        ImGui.DrawNativeRectangle(RawImGui.Raw.GetWindowDrawList(), minimum, maximum, color, rounding, 0, thickness);
+    }
 
     /// <summary>
     /// Adds a filled rectangle to the current window draw list.
@@ -934,8 +1180,44 @@ public static unsafe class ImGui
         Vector2 maximum,
         uint color,
         float rounding = 0f
-    )
-        => ImGui.DrawNativeFilledRectangle(RawImGui.Raw.GetWindowDrawList(), minimum, maximum, color, rounding, 0);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        ImGui.DrawNativeFilledRectangle(RawImGui.Raw.GetWindowDrawList(), minimum, maximum, color, rounding, 0);
+    }
+
+    /// <summary>
+    /// Draws a cubic curve without exposing a native draw list or borrowed pointer.
+    /// </summary>
+    /// <param name="start">
+    /// The first screen-space endpoint.
+    /// </param>
+    /// <param name="firstControl">
+    /// The control point beside the first endpoint.
+    /// </param>
+    /// <param name="secondControl">
+    /// The control point beside the final endpoint.
+    /// </param>
+    /// <param name="end">
+    /// The final screen-space endpoint.
+    /// </param>
+    /// <param name="color">
+    /// The packed presentation color.
+    /// </param>
+    /// <param name="thickness">
+    /// The positive stroke width.
+    /// </param>
+    public static void DrawCubicCurve(
+        Vector2 start,
+        Vector2 firstControl,
+        Vector2 secondControl,
+        Vector2 end,
+        uint color,
+        float thickness = 1f
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        ImVec2C a = ToNative(start), b = ToNative(firstControl), c = ToNative(secondControl), d = ToNative(end);
+        RawImGui.Raw.AddBezierCubic(RawImGui.Raw.GetWindowDrawList(), &a, &b, &c, &d, color, thickness, 0);
+    }
 
     /// <summary>
     /// Adds text to the current window draw list.
@@ -953,16 +1235,25 @@ public static unsafe class ImGui
         Vector2 position,
         uint color,
         string text
-    ) => ImGui.DrawNativeText(RawImGui.Raw.GetWindowDrawList(), position, color, text);
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        ImGui.DrawNativeText(RawImGui.Raw.GetWindowDrawList(), position, color, text);
+    }
 
-    internal static ImVec2C ToNative(Vector2 value) => new() { X = value.X, Y = value.Y };
-
-    internal static ImVec4C ToNative(Vector4 value) => new() { X = value.X, Y = value.Y, Z = value.Z, W = value.W };
-
+    internal static ImVec2C ToNative(Vector2 value) => new()
+    {
+        X = value.X,
+        Y = value.Y
+    };
+    internal static ImVec4C ToNative(Vector4 value) => new()
+    {
+        X = value.X,
+        Y = value.Y,
+        Z = value.Z,
+        W = value.W
+    };
     internal static Vector2 FromNative(ImVec2C value) => new(value.X, value.Y);
-
     internal static Vector4 FromNative(ImVec4C value) => new(value.X, value.Y, value.Z, value.W);
-
     internal static void DrawNativeLine(
         ImDrawList* drawList,
         Vector2 start,
@@ -1085,8 +1376,7 @@ public static unsafe class ImGui
         bool modal
     ) {
         using NativeStringLease nativeLabel = Utf8Codec.EncodeNullTerminated(label, allowsNull: false);
-        return (modal ? RawImGui.Raw.BeginPopupModal((sbyte*)nativeLabel.pointer, null, (int)flags)
-            : RawImGui.Raw.Begin((sbyte*)nativeLabel.pointer, null, (int)flags)) != 0;
+        return (modal ? RawImGui.Raw.BeginPopupModal((sbyte*)nativeLabel.pointer, null, (int)flags) : RawImGui.Raw.Begin((sbyte*)nativeLabel.pointer, null, (int)flags)) != 0;
     }
 
     internal static uint HashNativeId(
@@ -1098,6 +1388,5 @@ public static unsafe class ImGui
     }
 
     private static float LinearToSrgb(float value) => value <= 0.0031308f ? value * 12.92f : 1.055f * MathF.Pow(value, 1f / 2.4f) - 0.055f;
-
     private static float SrgbToLinear(float value) => value <= 0.04045f ? value / 12.92f : MathF.Pow((value + 0.055f) / 1.055f, 2.4f);
 }

@@ -4,15 +4,12 @@ using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides standard help box presentation in the Editor UI.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
-    [ThreadStatic]
-    private static SectionLayoutState? s_sectionLayout;
-
+    private SectionLayoutState? m_sectionLayout;
     /// <summary>
     /// Draws a wrapped contextual message with a semantic icon and a subdued status surface.
     /// </summary>
@@ -25,11 +22,12 @@ public static unsafe partial class ImGuiWidget
     /// <param name="color">
     /// Semantic accent for the icon, outline, and leading stripe.
     /// </param>
-    public static void HelpBox(
+    public void HelpBox(
         string text,
         string icon,
         Vector4 color
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(icon);
         Vector2 origin = NativeImGui.GetCursorScreenPos();
@@ -45,31 +43,9 @@ public static unsafe partial class ImGuiWidget
         background.W = EditorPalette.opacityOpaque;
         Vector4 outline = color;
         outline.W = EditorPalette.opacityMuted;
-        ImGui.DrawNativeFilledRectangle(
-            draw,
-            origin,
-            origin + new Vector2(width, height),
-            NativeImGui.ColorConvertFloat4ToU32(background),
-            4f * style.zoom,
-            0
-        );
-        ImGui.DrawNativeRectangle(
-            draw,
-            origin,
-            origin + new Vector2(width, height),
-            NativeImGui.ColorConvertFloat4ToU32(outline),
-            4f * style.zoom,
-            0,
-            1f
-        );
-        ImGui.DrawNativeFilledRectangle(
-            draw,
-            origin,
-            origin + new Vector2(2f * style.zoom, height),
-            NativeImGui.ColorConvertFloat4ToU32(color),
-            0,
-            0
-        );
+        ImGui.DrawNativeFilledRectangle(draw, origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(background), 4f * style.zoom, 0);
+        ImGui.DrawNativeRectangle(draw, origin, origin + new Vector2(width, height), NativeImGui.ColorConvertFloat4ToU32(outline), 4f * style.zoom, 0, 1f);
+        ImGui.DrawNativeFilledRectangle(draw, origin, origin + new Vector2(2f * style.zoom, height), NativeImGui.ColorConvertFloat4ToU32(color), 0, 0);
         ImGui.DrawNativeText(draw, origin + padding, NativeImGui.ColorConvertFloat4ToU32(color), icon);
         NativeImGui.SetCursorScreenPos(origin + padding + new Vector2(iconWidth + gap, 0f));
         NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + textWidth);
@@ -81,6 +57,7 @@ public static unsafe partial class ImGuiWidget
         {
             NativeImGui.PopTextWrapPos();
         }
+
         NativeImGui.SetCursorScreenPos(origin);
         NativeImGui.Dummy(new Vector2(width, height));
     }
@@ -95,8 +72,9 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="title"/> is <see langword="null"/>.
     /// </exception>
-    public static void CollectionSectionHeader(string title)
+    public void CollectionSectionHeader(string title)
     {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(title);
         Vector2 origin = NativeImGui.GetCursorScreenPos();
         float width = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
@@ -129,12 +107,13 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="drawContent"/> is <see langword="null"/>.
     /// </exception>
-    public static void SectionLayout(Action drawContent)
+    public void SectionLayout(Action drawContent)
     {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(drawContent);
-        SectionLayoutState? parent = s_sectionLayout;
+        SectionLayoutState? parent = m_sectionLayout;
         var current = new SectionLayoutState();
-        s_sectionLayout = current;
+        m_sectionLayout = current;
         try
         {
             drawContent();
@@ -142,7 +121,7 @@ public static unsafe partial class ImGuiWidget
         finally
         {
             CompleteSection(current);
-            s_sectionLayout = parent;
+            m_sectionLayout = parent;
         }
     }
 
@@ -153,7 +132,7 @@ public static unsafe partial class ImGuiWidget
     /// Attribute-driven drawers use this value to skip properties until the next section header
     /// when the current section is collapsed.
     /// </remarks>
-    public static bool isSectionContentVisible => s_sectionLayout?.contentVisible ?? true;
+    public bool isSectionContentVisible => m_sectionLayout?.contentVisible ?? true;
 
     /// <summary>
     /// Ensures that subsequently drawn default properties belong to a framed section.
@@ -171,17 +150,16 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="title"/> is <see langword="null"/>.
     /// </exception>
-    public static bool EnsureSection(
+    public bool EnsureSection(
         string title = "Properties",
         string? description = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(title);
-        SectionLayoutState? layout = s_sectionLayout;
+        SectionLayoutState? layout = m_sectionLayout;
         if (layout is null)
             return true;
-        return layout.sectionIndex == 0
-            ? SectionHeader(title, description)
-            : layout.contentVisible;
+        return layout.sectionIndex == 0 ? SectionHeader(title, description) : layout.contentVisible;
     }
 
     /// <summary>
@@ -203,13 +181,14 @@ public static unsafe partial class ImGuiWidget
     /// <see langword="true"/> when the section content should be drawn; otherwise,
     /// <see langword="false"/> when the section is collapsed.
     /// </returns>
-    public static bool SectionHeader(
+    public bool SectionHeader(
         string title,
         string? description = null,
         Action? drawLeadingControl = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(title);
-        SectionLayoutState? layout = s_sectionLayout;
+        SectionLayoutState? layout = m_sectionLayout;
         if (layout is null)
         {
             NativeImGui.SeparatorText(title);
@@ -227,7 +206,6 @@ public static unsafe partial class ImGuiWidget
         uint stateId = NativeImGui.GetID($"##inspector_section_{sectionIndex}");
         ImGuiStorage* storage = NativeImGui.Raw.GetStateStorage();
         bool open = NativeImGui.Raw.GetBool(storage, stateId, 1) != 0;
-
         NativeImGui.SetCursorScreenPos(new Vector2(origin.X + legendInset, origin.Y));
         bool titlePressed = false;
         Vector2 titleSize = GetClickableTextSize(title, Vector2.Zero);
@@ -240,11 +218,7 @@ public static unsafe partial class ImGuiWidget
                 NativeImGui.SameLine(0f, style.inspectorHeaderControlSpacing);
             }
 
-            titlePressed = ClickableText(
-                $"inspector_section_title_{sectionIndex}",
-                title,
-                new Vector2(MathF.Max(1f, titleSize.X), frameHeight),
-                description);
+            titlePressed = ClickableText($"inspector_section_title_{sectionIndex}", title, new Vector2(MathF.Max(1f, titleSize.X), frameHeight), description);
         }
         finally
         {
@@ -264,18 +238,11 @@ public static unsafe partial class ImGuiWidget
         float top = origin.Y + frameHeight * 0.5f;
         float legendLeft = legendMin.X - style.inspectorSectionLegendGap;
         float legendRight = legendMax.X + style.inspectorSectionLegendGap;
-
         NativeImGui.SetCursorScreenPos(contentCursor);
         layout.contentVisible = open;
         if (!open)
         {
-            DrawCollapsedSectionBorder(
-                NativeImGui.Raw.GetWindowDrawList(),
-                origin.X,
-                origin.X + width,
-                top,
-                legendLeft,
-                legendRight);
+            DrawCollapsedSectionBorder(NativeImGui.Raw.GetWindowDrawList(), origin.X, origin.X + width, top, legendLeft, legendRight);
             NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionSpacing));
             return false;
         }
@@ -291,7 +258,7 @@ public static unsafe partial class ImGuiWidget
         return true;
     }
 
-    private static void DrawCollapsedSectionBorder(
+    private void DrawCollapsedSectionBorder(
         ImDrawList* draw,
         float left,
         float right,
@@ -300,23 +267,11 @@ public static unsafe partial class ImGuiWidget
         float legendRight
     ) {
         uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorSectionBorder);
-        DrawCappedSectionSegment(
-            draw,
-            left,
-            MathF.Max(left, legendLeft),
-            top,
-            capAtStart: true,
-            color);
-        DrawCappedSectionSegment(
-            draw,
-            MathF.Min(right, legendRight),
-            right,
-            top,
-            capAtStart: false,
-            color);
+        DrawCappedSectionSegment(draw, left, MathF.Max(left, legendLeft), top, capAtStart: true, color);
+        DrawCappedSectionSegment(draw, MathF.Min(right, legendRight), right, top, capAtStart: false, color);
     }
 
-    private static void DrawCappedSectionSegment(
+    private void DrawCappedSectionSegment(
         ImDrawList* draw,
         float from,
         float to,
@@ -328,71 +283,32 @@ public static unsafe partial class ImGuiWidget
         float halfThickness = thickness * 0.5f;
         float halfCap = style.inspectorCollapsedSectionCapLength * 0.5f;
         float capX = capAtStart ? from : to;
-        float innerX = capAtStart
-            ? MathF.Min(to, capX + halfThickness)
-            : MathF.Max(from, capX - halfThickness);
-        ImGui.DrawNativeLine(
-            draw,
-            new Vector2(capX, centerY - halfCap),
-            new Vector2(capX, centerY + halfCap),
-            color,
-            thickness
-        );
-        ImGui.DrawNativeLine(
-            draw,
-            new Vector2(innerX, centerY),
-            new Vector2(capAtStart ? to : from, centerY),
-            color,
-            thickness
-        );
+        float innerX = capAtStart ? MathF.Min(to, capX + halfThickness) : MathF.Max(from, capX - halfThickness);
+        ImGui.DrawNativeLine(draw, new Vector2(capX, centerY - halfCap), new Vector2(capX, centerY + halfCap), color, thickness);
+        ImGui.DrawNativeLine(draw, new Vector2(innerX, centerY), new Vector2(capAtStart ? to : from, centerY), color, thickness);
     }
 
-    private static void CompleteSection(SectionLayoutState layout)
+    private void CompleteSection(SectionLayoutState layout)
     {
         if (!layout.active)
             return;
-
         NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionPadding.Y));
         NativeImGui.Unindent(style.inspectorSectionPadding.X);
-        float bottom = MathF.Max(
-            NativeImGui.GetCursorScreenPos().Y,
-            layout.top + NativeImGui.GetFrameHeight());
+        float bottom = MathF.Max(NativeImGui.GetCursorScreenPos().Y, layout.top + NativeImGui.GetFrameHeight());
         uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorSectionBorder);
         ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
-        float radius = MathF.Min(
-            style.inspectorSectionRounding,
-            MathF.Max(0f, MathF.Min(layout.right - layout.left, bottom - layout.top) * 0.5f));
+        float radius = MathF.Min(style.inspectorSectionRounding, MathF.Max(0f, MathF.Min(layout.right - layout.left, bottom - layout.top) * 0.5f));
         float leftLegend = MathF.Max(layout.left + radius, layout.legendLeft);
         float rightLegend = MathF.Min(layout.right - radius, layout.legendRight);
         ImGui.DrawNativePathLine(draw, new Vector2(leftLegend, layout.top));
         ImGui.DrawNativePathLine(draw, new Vector2(layout.left + radius, layout.top));
-        ImGui.DrawNativePathQuadratic(
-            draw,
-            new Vector2(layout.left, layout.top),
-            new Vector2(layout.left, layout.top + radius),
-            0
-        );
+        ImGui.DrawNativePathQuadratic(draw, new Vector2(layout.left, layout.top), new Vector2(layout.left, layout.top + radius), 0);
         ImGui.DrawNativePathLine(draw, new Vector2(layout.left, bottom - radius));
-        ImGui.DrawNativePathQuadratic(
-            draw,
-            new Vector2(layout.left, bottom),
-            new Vector2(layout.left + radius, bottom),
-            0
-        );
+        ImGui.DrawNativePathQuadratic(draw, new Vector2(layout.left, bottom), new Vector2(layout.left + radius, bottom), 0);
         ImGui.DrawNativePathLine(draw, new Vector2(layout.right - radius, bottom));
-        ImGui.DrawNativePathQuadratic(
-            draw,
-            new Vector2(layout.right, bottom),
-            new Vector2(layout.right, bottom - radius),
-            0
-        );
+        ImGui.DrawNativePathQuadratic(draw, new Vector2(layout.right, bottom), new Vector2(layout.right, bottom - radius), 0);
         ImGui.DrawNativePathLine(draw, new Vector2(layout.right, layout.top + radius));
-        ImGui.DrawNativePathQuadratic(
-            draw,
-            new Vector2(layout.right, layout.top),
-            new Vector2(layout.right - radius, layout.top),
-            0
-        );
+        ImGui.DrawNativePathQuadratic(draw, new Vector2(layout.right, layout.top), new Vector2(layout.right - radius, layout.top), 0);
         ImGui.DrawNativePathLine(draw, new Vector2(rightLegend, layout.top));
         NativeImGui.Raw.PathStroke(draw, color, (int)(ImDrawFlags.None), style.borderSize);
         NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionSpacing));

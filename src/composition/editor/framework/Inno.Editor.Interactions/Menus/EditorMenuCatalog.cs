@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
-
 internal sealed class EditorMenuCatalog(
     EditorExtensionCatalog catalog,
     EditorActionRouter actions,
     Logger log
-) {
+)
+{
     private readonly HashSet<string> m_sourceFailures = new(StringComparer.Ordinal);
-
     internal EditorMenuModel Build(EditorMenuContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -24,14 +22,7 @@ internal sealed class EditorMenuCatalog(
             {
                 if (!string.Equals(menu.area, context.area, StringComparison.Ordinal))
                     continue;
-                placements.Add(new Placement(
-                    NormalizePath(menu.path),
-                    registration.id,
-                    menu.order,
-                    menu.separatorBefore,
-                    argument: null,
-                    status: null,
-                    isGroup: false));
+                placements.Add(new Placement(NormalizePath(menu.path), registration.id, menu.order, menu.separatorBefore, argument: null, status: null, isGroup: false));
             }
         }
 
@@ -45,64 +36,25 @@ internal sealed class EditorMenuCatalog(
                 registration.source.Build(context, builder);
                 string sourceName = registration.type.FullName ?? registration.type.Name;
                 m_sourceFailures.Remove(sourceName);
-                placements.AddRange(builder.groups.Select(static group => new Placement(
-                    NormalizePath(group.path),
-                    actionId: null,
-                    group.order,
-                    group.separatorBefore,
-                    argument: null,
-                    status: null,
-                    isGroup: true)));
-                placements.AddRange(builder.items.Select(static item => new Placement(
-                    NormalizePath(item.path),
-                    item.actionId,
-                    item.order,
-                    item.separatorBefore,
-                    item.argument,
-                    status: null,
-                    isGroup: false)));
+                placements.AddRange(builder.groups.Select(static group => new Placement(NormalizePath(group.path), actionId: null, group.order, group.separatorBefore, argument: null, status: null, isGroup: true)));
+                placements.AddRange(builder.items.Select(static item => new Placement(NormalizePath(item.path), item.actionId, item.order, item.separatorBefore, item.argument, status: null, isGroup: false)));
             }
             catch (Exception exception)
             {
                 string sourceName = registration.type.FullName ?? registration.type.Name;
                 if (m_sourceFailures.Add(sourceName))
                 {
-                    log.Write(
-                        LogLevel.Error,
-                        "Editor menu source '{0}' failed: {1}",
-                        [sourceName, exception]);
+                    log.Write(LogLevel.Error, "Editor menu source '{0}' failed: {1}", [sourceName, exception]);
                 }
             }
         }
 
-        if (string.Equals(
-                context.area,
-                EditorBuiltInInteractionIds.C_MAIN_MENU_AREA,
-                StringComparison.Ordinal))
-        {
-            foreach (EditorExtensionCatalog.PanelRegistration panel in catalog.extensions.panels)
-            {
-                string menuPath = string.IsNullOrEmpty(panel.attribute.menuPath)
-                    ? panel.attribute.title
-                    : $"{panel.attribute.menuPath}/{panel.attribute.title}";
-                placements.Add(new Placement(
-                    $"Panel/{menuPath}",
-                    EditorBuiltInInteractionIds.C_TOGGLE_PANEL,
-                    panel.attribute.order,
-                    panel.attribute.separatorBefore,
-                    panel.attribute.id,
-                    new EditorActionState(isVisible: true, isEnabled: true, isChecked: panel.panel.isOpen),
-                    isGroup: false));
-            }
-        }
-
         var root = new MutableNode(string.Empty, 0, false);
-        foreach (Placement placement in placements
-                     .OrderBy(static value => value.order)
-                     .ThenBy(static value => value.path, StringComparer.Ordinal))
+        foreach (Placement placement in placements.OrderBy(static value => value.order).ThenBy(static value => value.path, StringComparer.Ordinal))
         {
             AddPlacement(root, placement, context);
         }
+
         return new EditorMenuModel(Freeze(root.children.Values));
     }
 
@@ -112,12 +64,9 @@ internal sealed class EditorMenuCatalog(
         EditorMenuContext context
     ) {
         EditorActionContext actionContext = context.CreateActionContext(placement.argument);
-        EditorActionState state = placement.isGroup
-            ? EditorActionState.enabled
-            : placement.status ?? actions.Query(placement.actionId!, actionContext);
+        EditorActionState state = placement.isGroup ? EditorActionState.enabled : placement.status ?? actions.Query(placement.actionId!, actionContext);
         if (!state.isVisible)
             return;
-
         string[] segments = placement.path.Split('/');
         MutableNode current = root;
         for (int i = 0; i < segments.Length; i++)
@@ -125,10 +74,10 @@ internal sealed class EditorMenuCatalog(
             string segment = segments[i];
             if (!current.children.TryGetValue(segment, out MutableNode? child))
             {
-                child = new MutableNode(segment, placement.order,
-                    i == segments.Length - 1 && placement.separatorBefore);
+                child = new MutableNode(segment, placement.order, i == segments.Length - 1 && placement.separatorBefore);
                 current.children.Add(segment, child);
             }
+
             current = child;
         }
 
@@ -146,33 +95,21 @@ internal sealed class EditorMenuCatalog(
     private static IReadOnlyList<EditorMenuItem> Freeze(IEnumerable<MutableNode> nodes)
     {
         var result = new List<EditorMenuItem>();
-        foreach (MutableNode node in nodes
-                     .OrderBy(static value => value.order)
-                     .ThenBy(static value => value.label, StringComparer.Ordinal))
+        foreach (MutableNode node in nodes.OrderBy(static value => value.order).ThenBy(static value => value.label, StringComparer.Ordinal))
         {
             IReadOnlyList<EditorMenuItem> children = Freeze(node.children.Values);
-            EditorActionState state = node.actionId is null
-                ? new EditorActionState(children.Count > 0, children.Count > 0)
-                : node.state;
+            EditorActionState state = node.actionId is null ? new EditorActionState(children.Count > 0, children.Count > 0) : node.state;
             if (!state.isVisible && children.Count == 0)
                 continue;
-            result.Add(new EditorMenuItem(
-                node.label,
-                node.actionId ?? string.Empty,
-                node.order,
-                node.separatorBefore,
-                state,
-                children,
-                node.argument));
+            result.Add(new EditorMenuItem(node.label, node.actionId ?? string.Empty, node.order, node.separatorBefore, state, children, node.argument));
         }
+
         return result;
     }
 
     private static string NormalizePath(string path)
     {
-        string normalized = string.Join(
-            '/',
-            path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        string normalized = string.Join('/', path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
         if (string.IsNullOrEmpty(normalized))
             throw new InvalidOperationException("An editor menu path must contain at least one segment.");
         return normalized;
@@ -187,12 +124,12 @@ internal sealed class EditorMenuCatalog(
         EditorActionState? status,
         bool isGroup
     );
-
     private sealed class MutableNode(
         string label,
         int order,
         bool separatorBefore
-    ) {
+    )
+    {
         internal string label = label;
         internal int order = order;
         internal bool separatorBefore = separatorBefore;

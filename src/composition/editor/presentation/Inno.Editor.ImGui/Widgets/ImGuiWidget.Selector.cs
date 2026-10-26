@@ -1,16 +1,13 @@
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
-using Inno.Adapter.Presentation.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Begins a combo whose popup opens below the control and stays within its containing window.
@@ -37,28 +34,25 @@ public static unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="flags"/> contains a presentation mode unsupported by the editor selector.
     /// </exception>
-    public static bool BeginBoundedCombo(
+    public bool BeginBoundedCombo(
         string id,
         string preview,
         ImGuiComboFlags flags = ImGuiComboFlags.None
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(preview);
         if ((flags & ~ImGuiComboFlags.WidthFitPreview) != 0)
             throw new ArgumentOutOfRangeException(nameof(flags), flags, "The combo flag is not supported by the editor selector.");
-
         ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
-        float width = (flags & ImGuiComboFlags.WidthFitPreview) != 0
-            ? NativeImGui.CalcTextSize(preview).X + NativeImGui.GetFrameHeight() + nativeStyle->FramePadding.X * 2f
-            : NativeImGui.CalcItemWidth();
+        float width = (flags & ImGuiComboFlags.WidthFitPreview) != 0 ? NativeImGui.CalcTextSize(preview).X + NativeImGui.GetFrameHeight() + nativeStyle->FramePadding.X * 2f : NativeImGui.CalcItemWidth();
         return BeginMenuSelector(id, preview, MathF.Max(1f, width), MathF.Max(1f, width));
     }
 
     /// <summary>
     /// Ends a combo opened by <see cref="BeginBoundedCombo"/>.
     /// </summary>
-    public static void EndBoundedCombo() => EndMenuSelector();
-
+    public void EndBoundedCombo() => EndMenuSelector();
     /// <summary>
     /// Draws a compact selector control and begins a work-area-bounded menu popup.
     /// </summary>
@@ -85,24 +79,22 @@ public static unsafe partial class ImGuiWidget
     /// Thrown when <paramref name="preview"/> is <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="width"/> or <paramref name="minimumPopupWidth"/> is not positive.
+    /// Thrown when <paramref name = "width"/> or <paramref name="minimumPopupWidth"/> is not positive.
     /// </exception>
-    public static bool BeginMenuSelector(
+    public bool BeginMenuSelector(
         string id,
         string preview,
         float width,
         float minimumPopupWidth
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(preview);
         if (width <= 0f)
             throw new ArgumentOutOfRangeException(nameof(width), width, "Selector width must be positive.");
         if (minimumPopupWidth <= 0f)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(minimumPopupWidth),
-                minimumPopupWidth,
-                "Popup width must be positive.");
+            throw new ArgumentOutOfRangeException(nameof(minimumPopupWidth), minimumPopupWidth, "Popup width must be positive.");
         }
 
         string popupId = $"##menu_selector_popup_{id}";
@@ -115,25 +107,20 @@ public static unsafe partial class ImGuiWidget
         bool open = NativeImGui.IsPopupOpen(popupId);
         if (pressed)
             NativeImGui.OpenPopup(popupId);
-
         DrawMenuSelectorFrame(minimum, size, preview, hovered, active || open);
         Vector2 popupOrigin = new(minimum.X, minimum.Y + height);
         NativeImGui.SetNextWindowPos(popupOrigin, (int)ImGuiCond.Always, Vector2.Zero);
         ImGuiViewport* parentViewport = NativeImGui.Raw.GetWindowViewport();
         NativeImGui.SetNextWindowViewport(parentViewport->ID);
-        SetWorkAreaPopupSize(
-            MathF.Max(width, minimumPopupWidth),
-            popupOrigin,
-            parentViewport);
+        SetWorkAreaPopupSize(MathF.Max(width, minimumPopupWidth), popupOrigin, parentViewport);
         return BeginMenuPopup(popupId);
     }
 
     /// <summary>
     /// Ends a selector popup opened by <see cref="BeginMenuSelector"/>.
     /// </summary>
-    public static void EndMenuSelector() => EndMenuPopup();
-
-    private static void SetWorkAreaPopupSize(
+    public void EndMenuSelector() => EndMenuPopup();
+    private void SetWorkAreaPopupSize(
         float requestedWidth,
         Vector2 popupOrigin,
         ImGuiViewport* viewport
@@ -145,12 +132,10 @@ public static unsafe partial class ImGuiWidget
         float maximumHeight = MathF.Min(availableHeight, containingWindow->Size.Y * 0.45f);
         float availableWidth = MathF.Max(1f, MathF.Min(windowMaximum.X, viewportMaximum.X) - popupOrigin.X);
         float popupWidth = Math.Clamp(requestedWidth, 1f, availableWidth);
-        SetMenuPopupSizeConstraints(
-            new Vector2(popupWidth, 0f),
-            new Vector2(popupWidth, MathF.Max(1f, maximumHeight)));
+        SetMenuPopupSizeConstraints(new Vector2(popupWidth, 0f), new Vector2(popupWidth, MathF.Max(1f, maximumHeight)));
     }
 
-    private static void DrawMenuSelectorFrame(
+    private void DrawMenuSelectorFrame(
         Vector2 minimum,
         Vector2 size,
         string preview,
@@ -158,25 +143,14 @@ public static unsafe partial class ImGuiWidget
         bool active
     ) {
         ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
-        uint background = NativeImGui.GetColorU32(
-            (int)(active ? ImGuiCol.FrameBgActive : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg));
+        uint background = NativeImGui.GetColorU32((int)(active ? ImGuiCol.FrameBgActive : hovered ? ImGuiCol.FrameBgHovered : ImGuiCol.FrameBg));
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         Vector2 maximum = minimum + size;
         float arrowSlot = size.Y;
         float arrowMinimumX = MathF.Max(minimum.X, maximum.X - arrowSlot);
-        ImDrawFlags previewRounding = size.X <= arrowSlot
-            ? ImDrawFlags.RoundCornersAll
-            : ImDrawFlags.RoundCornersLeft;
-        ImGui.DrawNativeFilledRectangle(
-            drawList,
-            minimum,
-            new Vector2(arrowMinimumX, maximum.Y),
-            background,
-            nativeStyle->FrameRounding,
-            (int)(previewRounding)
-        );
-        uint arrowBackground = NativeImGui.GetColorU32(
-            (int)(active || hovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button));
+        ImDrawFlags previewRounding = size.X <= arrowSlot ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersLeft;
+        ImGui.DrawNativeFilledRectangle(drawList, minimum, new Vector2(arrowMinimumX, maximum.Y), background, nativeStyle->FrameRounding, (int)(previewRounding));
+        uint arrowBackground = NativeImGui.GetColorU32((int)(active || hovered ? ImGuiCol.ButtonHovered : ImGuiCol.Button));
         ImGui.DrawNativeFilledRectangle(
             drawList,
             new Vector2(arrowMinimumX, minimum.Y),
@@ -185,7 +159,6 @@ public static unsafe partial class ImGuiWidget
             nativeStyle->FrameRounding,
             (int)(size.X <= arrowSlot ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersRight)
         );
-
         Vector2 textMinimum = minimum + ImGui.FromNative(nativeStyle->FramePadding);
         Vector2 textMaximum = new(arrowMinimumX, maximum.Y);
         ImGui.PushNativeClipRectangle(drawList, textMinimum, textMaximum, 1);
@@ -196,7 +169,8 @@ public static unsafe partial class ImGuiWidget
             new Vector2(arrowMinimumX + nativeStyle->FramePadding.Y, minimum.Y + nativeStyle->FramePadding.Y),
             NativeImGui.GetColorU32((int)(ImGuiCol.Text)),
             ImGuiDir.Down,
-            1f);
+            1f
+        );
         NativeImGui.RenderFrameBorder(minimum, maximum, nativeStyle->FrameRounding);
     }
 }

@@ -14,8 +14,9 @@ $Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
 $sdkDirectory = Split-Path $Dotnet -Parent
 $sdkEnvironment = @('--environment', "DOTNET_ROOT=$sdkDirectory",
     '--environment', "PATH=$sdkDirectory$([IO.Path]::PathSeparator)$env:PATH")
-# Project-mode dotnet test supplies DOTNET_HOST_PATH itself; assembly-mode VSTest needs the explicit host.
-$assemblyEnvironment = @($sdkEnvironment) + @('--environment', "DOTNET_HOST_PATH=$Dotnet")
+# Assembly-mode VSTest derives DOTNET_ROOT from the explicit host; passing both duplicates its environment key.
+$assemblyEnvironment = @('--environment', "DOTNET_HOST_PATH=$Dotnet",
+    '--environment', "PATH=$sdkDirectory$([IO.Path]::PathSeparator)$env:PATH")
 
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $solutionPath = [System.IO.Path]::GetFullPath($Solution, $repositoryRoot)
@@ -100,7 +101,9 @@ foreach ($project in $projects) {
         $assembly = $targetPath[0]
         $listed = @(& $Dotnet test $assembly --list-tests --filter $isolatedFilter @assemblyEnvironment 2>&1)
         $discoveryExit = $LASTEXITCODE
-        if ($discoveryExit -ne 0) {
+        $listed | Set-Content -LiteralPath (Join-Path $resultsRoot ($project.BaseName + '.discovery.log')) -Encoding utf8
+        $discoveryErrors = @($listed | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
+        if ($discoveryExit -ne 0 -or $discoveryErrors.Count -ne 0) {
             Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine)
             continue
         }

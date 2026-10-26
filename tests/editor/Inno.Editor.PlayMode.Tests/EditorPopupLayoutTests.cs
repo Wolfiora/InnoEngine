@@ -1,16 +1,15 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System.Runtime.CompilerServices;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using BGCS.Runtime;
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
-
 public sealed unsafe class EditorPopupLayoutTests
 {
     [Fact]
@@ -19,8 +18,10 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
-            EditorWidget.SetupStyle();
+            EditorUI.current.widgets.SetupStyle();
             string query = string.Empty;
             for (int frame = 0; frame < 3; frame++)
             {
@@ -30,19 +31,19 @@ public sealed unsafe class EditorPopupLayoutTests
                 _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
                 _ = NativeImGui.Button("Target");
                 NativeImGui.OpenPopup("commands");
-
-                Assert.True(EditorWidget.BeginContextMenu("commands"));
-                _ = EditorWidget.SearchInput("commands", "Search commands...", ref query);
+                Assert.True(EditorUI.current.widgets.BeginContextMenu("commands"));
+                _ = EditorUI.current.widgets.SearchInput("commands", "Search commands...", ref query);
                 if (frame == 2)
                 {
                     float inputWidth = NativeImGui.GetItemRectSize().X;
                     float contentWidth = NativeImGui.GetContentRegionAvail().X;
-                    Assert.True(inputWidth >= EditorWidget.style.searchPopupWidth - 1f);
+                    Assert.True(inputWidth >= EditorUI.current.widgets.style.searchPopupWidth - 1f);
                     Assert.InRange(MathF.Abs(inputWidth - contentWidth), 0f, 2f);
                     Assert.InRange(NativeImGui.GetScrollMaxX(), 0f, 1f);
                 }
+
                 NativeImGui.Selectable("Rename");
-                EditorWidget.EndContextMenu();
+                EditorUI.current.widgets.EndContextMenu();
                 NativeImGui.End();
                 NativeImGui.Render();
             }
@@ -59,9 +60,10 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
-            EditorWidget.SetupStyle();
-
+            EditorUI.current.widgets.SetupStyle();
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
@@ -72,8 +74,7 @@ public sealed unsafe class EditorPopupLayoutTests
                 NativeImGui.SetNextItemWidth(140f);
                 float triggerBottom = NativeImGui.GetCursorScreenPos().Y + NativeImGui.GetFrameHeight();
                 NativeImGui.OpenPopup("##menu_selector_popup_tag");
-
-                Assert.True(EditorWidget.BeginBoundedCombo("tag", "Untagged"));
+                Assert.True(EditorUI.current.widgets.BeginBoundedCombo("tag", "Untagged"));
                 Vector2 popupPosition = NativeImGui.GetWindowPos();
                 Vector2 popupSize = NativeImGui.GetWindowSize();
                 _ = NativeImGui.Selectable("Untagged");
@@ -85,7 +86,8 @@ public sealed unsafe class EditorPopupLayoutTests
                     Assert.True(popupPosition.Y + popupSize.Y <= 270f + 1f);
                     Assert.InRange(NativeImGui.GetScrollMaxY(), 0f, 1f);
                 }
-                EditorWidget.EndBoundedCombo();
+
+                EditorUI.current.widgets.EndBoundedCombo();
                 NativeImGui.End();
                 NativeImGui.Render();
             }
@@ -102,8 +104,10 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
-            EditorWidget.SetupStyle();
+            EditorUI.current.widgets.SetupStyle();
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
@@ -115,8 +119,7 @@ public sealed unsafe class EditorPopupLayoutTests
                 float triggerBottom = NativeImGui.GetCursorScreenPos().Y + NativeImGui.GetFrameHeight();
                 NativeImGui.SetNextItemWidth(140f);
                 NativeImGui.OpenPopup("##menu_selector_popup_long");
-
-                Assert.True(EditorWidget.BeginBoundedCombo("long", "Choose"));
+                Assert.True(EditorUI.current.widgets.BeginBoundedCombo("long", "Choose"));
                 Vector2 popupPosition = NativeImGui.GetWindowPos();
                 Vector2 popupSize = NativeImGui.GetWindowSize();
                 for (int index = 0; index < 40; index++)
@@ -127,7 +130,8 @@ public sealed unsafe class EditorPopupLayoutTests
                     Assert.True(popupPosition.Y + popupSize.Y <= 270f + 1f);
                     Assert.True(NativeImGui.GetScrollMaxY() > 0f);
                 }
-                EditorWidget.EndBoundedCombo();
+
+                EditorUI.current.widgets.EndBoundedCombo();
                 NativeImGui.End();
                 NativeImGui.Render();
             }
@@ -144,8 +148,10 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
-            EditorWidget.SetupStyle();
+            EditorUI.current.widgets.SetupStyle();
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
@@ -156,8 +162,7 @@ public sealed unsafe class EditorPopupLayoutTests
                 _ = NativeImGui.BeginChild("Fields", new Vector2(200f, 55f), 0, 0);
                 NativeImGui.SetNextItemWidth(140f);
                 NativeImGui.OpenPopup("##menu_selector_popup_nested");
-
-                Assert.True(EditorWidget.BeginBoundedCombo("nested", "Choose"));
+                Assert.True(EditorUI.current.widgets.BeginBoundedCombo("nested", "Choose"));
                 Vector2 popupPosition = NativeImGui.GetWindowPos();
                 Vector2 popupSize = NativeImGui.GetWindowSize();
                 for (int index = 0; index < 40; index++)
@@ -167,7 +172,8 @@ public sealed unsafe class EditorPopupLayoutTests
                     Assert.True(popupSize.Y > 55f);
                     Assert.True(popupPosition.Y + popupSize.Y <= 270f + 1f);
                 }
-                EditorWidget.EndBoundedCombo();
+
+                EditorUI.current.widgets.EndBoundedCombo();
                 NativeImGui.EndChild();
                 NativeImGui.End();
                 NativeImGui.Render();

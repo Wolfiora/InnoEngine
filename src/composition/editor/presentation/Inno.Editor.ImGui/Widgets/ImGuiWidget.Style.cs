@@ -1,45 +1,41 @@
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
-    private static float s_appliedZoom = float.NaN;
-    private static bool? s_appliedCompactMode;
-
+    private float m_appliedZoom = float.NaN;
+    private bool? m_appliedCompactMode;
     /// <summary>
     /// Gets the centralized editor layout metrics shared by every widget and feature panel.
     /// </summary>
-    public static EditorStyleMetrics style { get; } = new();
+    public EditorStyleMetrics style { get; } = new();
 
     /// <summary>
     /// Applies the centralized editor layout metrics and palette to the current ImGui context.
     /// </summary>
-    public static void SetupStyle()
+    public void SetupStyle()
     {
+        m_session.EnsureDrawing();
         ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
         ApplyLayoutStyle(nativeStyle);
         EditorPalette.Apply(nativeStyle);
-        s_appliedZoom = style.zoom;
-        s_appliedCompactMode = style.isCompact;
+        m_appliedZoom = style.zoom;
+        m_appliedCompactMode = style.isCompact;
     }
 
-    internal static void ApplyPendingStyle()
+    internal void ApplyPendingStyle()
     {
-        if (float.IsNaN(s_appliedZoom)
-            || MathF.Abs(s_appliedZoom - style.zoom) > 0.0001f
-            || s_appliedCompactMode != style.isCompact)
+        if (float.IsNaN(m_appliedZoom) || MathF.Abs(m_appliedZoom - style.zoom) > 0.0001f || m_appliedCompactMode != style.isCompact)
             SetupStyle();
     }
 
-    private static void ApplyLayoutStyle(ImGuiStyle* nativeStyle)
+    private void ApplyLayoutStyle(ImGuiStyle* nativeStyle)
     {
         nativeStyle->Alpha = EditorPalette.opacityOpaque;
         nativeStyle->DisabledAlpha = style.disabledAlpha;

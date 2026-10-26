@@ -3,7 +3,6 @@ using System.IO;
 using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
-
 [Collection("Architecture diagnostics")]
 public sealed class IntegrationBoundaryTests
 {
@@ -18,6 +17,12 @@ public sealed class IntegrationBoundaryTests
     [InlineData("build/toolchains/Probe", "build/bindings/Inno.Build.Bindings", "neutral toolchains cannot depend", true)]
     [InlineData("build/bindings/Inno.Build.Bindings", "build/tasks/Inno.Build.Tasks", "binding generation cannot depend", true)]
     [InlineData("platforms/WindowsX64/build/Probe", "build/bindings/Inno.Build.Bindings", "platform modules must borrow", true)]
+    [InlineData("src/composition/editor/features/Inno.Editor.TestFeature", "src/composition/editor/presentation/Inno.Editor.ImGui", "Editor feature editing must be presentation-independent", true)]
+    [InlineData("src/composition/editor/features/Inno.Editor.TestFeature", "src/composition/editor/framework/Inno.Editor.Interactions", "Editor feature editing must be presentation-independent", false)]
+    [InlineData("src/composition/editor/panels/Inno.Editor.Panel.A", "src/composition/editor/panels/Inno.Editor.Panel.B", "Panels cannot depend on other Panels", true)]
+    [InlineData("src/composition/editor/panels/Inno.Editor.Panel.A", "src/composition/editor/presentation/Inno.Editor.Assets.ImGui", "Panels cannot depend on other Panels", false)]
+    [InlineData("src/composition/editor/panels/Inno.Editor.Panel.A", "backends/ImGui/native/Inno.Native.ImGui", "native UI access belongs", true)]
+    [InlineData("src/composition/editor/presentation/Inno.Editor.Graph.ImGui", "src/composition/editor/features/Inno.Editor.Shaders", "reusable Graph mechanisms cannot depend", true)]
     public void CliChecksActualPlatformIntegrationProjectReferences(
         string owner,
         string dependency,
@@ -34,7 +39,6 @@ public sealed class IntegrationBoundaryTests
             (_, string report) = ArchitectureCommandFixture.Run(root);
             Assert.Equal(rejected, report.Contains(expected, StringComparison.Ordinal));
             Assert.DoesNotContain("explicit project dependency is missing", report);
-
             string CreateProject(
                 string relative,
                 string references

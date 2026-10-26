@@ -1,10 +1,8 @@
+using Inno.Editor.ImGui;
 using System;
-
-using Inno.Adapter.Presentation.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
-
 [InspectionDrawer(typeof(object), useForChildren: true, priority: int.MinValue)]
 internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
 {
@@ -28,9 +26,7 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     protected override (string name, Action<string>? setter) BindName(
         InspectionDrawContext context,
         object target
-    )
-        => (target.GetType().Name, null);
-
+    ) => (target.GetType().Name, null);
     /// <summary>
     /// Renders the header presentation for the current editor frame.
     /// </summary>
@@ -43,9 +39,7 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     protected override void DrawHeader(
         InspectionDrawContext context,
         object target
-    )
-        => NativeImGui.TextUnformatted(target.GetType().FullName ?? target.GetType().Name);
-
+    ) => Ui.Text(target.GetType().FullName ?? target.GetType().Name);
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>

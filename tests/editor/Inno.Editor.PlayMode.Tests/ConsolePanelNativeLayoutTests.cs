@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Diagnostics;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Modules;
@@ -50,7 +51,13 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             using var console = new EditorConsole(logs, hub, new InactivePlayMode());
             console.Start();
             using var reporter = hub.CreateReporter(new("shader", "Rendering"));
-            using var runtime = new EditorInteractionRuntime(new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), types, logs, [console]);
+            using var ui = new EditorUiSession();
+            using var runtime = new EditorInteractionRuntime(
+                new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+                types,
+                logs,
+                [console]
+            );
             runtime.Start();
             logs.Flush();
             console.Clear();
@@ -61,6 +68,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             panel.isOpen = true;
             void Draw(float width)
             {
+                using IDisposable scope = ui.Enter();
                 ImGuiApi.NewFrame();
                 ImGuiApi.SetNextWindowPos(new(0, 0));
                 ImGuiApi.SetNextWindowSize(new(width, 700));
@@ -118,7 +126,9 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         public bool isPlaying => false;
         public string? lastFailure => null;
         public LogSessionId activeSessionId => LogSessionId.none;
-        public event Action<EditorPlayModeState>? stateChanged { add { } remove { } }
+        private readonly Inno.Core.Events.EventDispatcher m_stateDispatcher = new();
+        public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
+
         public bool EnterPlayMode() => false;
         public bool ExitPlayMode() => false;
     }

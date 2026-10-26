@@ -21,8 +21,8 @@ Editor 采用“被动核心 → 后端无关交互 → ImGui 表现 → 独立 
 | [Inno.Editor.Inspection](Inno.Editor.Inspection.md) | InspectionDrawer、PropertyDrawer、Registry 与 serialized property renderer。 |
 | [Inno.Editor.Scripting](Inno.Editor.Scripting.md) | Asset-backed Roslyn 编译、facade、IDE 工程与热重载。 |
 | [Inno.Editor.Exporting](Inno.Editor.Exporting.md) | File 菜单 Plugin/Game 导出、编译门禁、平台 Player 发布与原子输出。 |
-| [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md) | AssetEditor、文件浏览、Asset 操作与 Asset-side drag/drop。 |
-| [Inno.Editor.Panel.Global](Inno.Editor.Panel.Global.md) | internal 全局 Action、Editor/Appearance 页面、Icon 与 Zoom setting definitions。 |
+| [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md) | 文件浏览、导航与 Asset-side drag/drop；编辑由 Assets feature 负责。 |
+| [Inno.Editor.Workbench](Inno.Editor.Workbench.md) | internal 全局 Action、Editor/Appearance 页面、Icon 与 Zoom setting definitions。 |
 | [Inno.Editor.Panel.Hierarchy](Inno.Editor.Panel.Hierarchy.md) | Scene workspace、Hierarchy、Scene/GameObject 操作与排序。 |
 | [Inno.Editor.Panel.Inspector](Inno.Editor.Panel.Inspector.md) | Inspector Panel、Scene Drawer 与 Component/System 操作。 |
 | [Inno.Editor.Panel.Logging](Inno.Editor.Panel.Logging.md) | Editor 日志/诊断缓冲与 Console Panel。 |
@@ -30,11 +30,14 @@ Editor 采用“被动核心 → 后端无关交互 → ImGui 表现 → 独立 
 | [Inno.Editor.Panel.Stats](Inno.Editor.Panel.Stats.md) | 平滑后的帧统计与 Stats Panel。 |
 | [Inno.Editor.Panel.SceneView](Inno.Editor.Panel.SceneView.md) | 不含 Camera/Picking 假设的 Plugin 驱动 Scene viewport host。 |
 | [Inno.Editor.Panel.GameView](Inno.Editor.Panel.GameView.md) | 不含运行时世界观的 Plugin 驱动 Game viewport host。 |
-| [Inno.Editor.Shaders](Inno.Editor.Shaders.md) | 可复用 Shader 节点呈现协议与 generation-scoped Drawer 注册。 |
-| [Inno.Editor.Assets](Inno.Editor.Assets.md) | Material/Pipeline 共用的原生资产草稿、显式保存与中立 History 生命周期。 |
+| [Inno.Editor.Shaders](Inno.Editor.Shaders.md) | 无界面的 Material 草稿、Shader 创作服务与缓存。 |
+| [Inno.Editor.Assets](Inno.Editor.Assets.md) | 可复用 Asset 编辑、源操作、导入设置、草稿、显式保存与中立 History。 |
 | [Inno.Editor.Panel.ShaderEditor](Inno.Editor.Panel.ShaderEditor.md) | Shader 图画布、模板创建菜单、手势历史与显式 Save/Revert；完整验收进行中。 |
 | [Inno.Editor.Hosting](Inno.Editor.Hosting.md) | 共享启动、EngineHost/Edit Session 与全部功能生命周期；平台产品注入后端、系统规则和构建组合。 |
 | [Inno.Build.Cli](../build/Inno.Build.Cli.md) | 与 Editor 共用作者端脚本 API 和构建服务的无界面入口。 |
+| [Inno.Editor.Assets.ImGui](Inno.Editor.Assets.ImGui.md) | Asset Browser 状态、图标发现和基础资源检查显示。 |
+| [Inno.Editor.Shaders.ImGui](Inno.Editor.Shaders.ImGui.md) | Shader 节点控件、Material Inspector 和预览呈现。 |
+| [Inno.Editor.Graph.ImGui](Inno.Editor.Graph.ImGui.md) | 不含 Shader 语义的坐标、网格、连线与命中测试。 |
 
 ## 依赖方向
 
@@ -61,10 +64,11 @@ flowchart TD
     Interactions --> Panels
     ImGui --> Panels
     Core --> Scripting["Inno.Editor.Scripting"]
-    ImGui --> Scripting
     Scripting --> PlayMode
     Scripting --> Exporting["Inno.Editor.Exporting"]
-    Settings --> Exporting
+    Exporting --> Workbench["Inno.Editor.Workbench"]
+    ImGui --> Workbench
+    Scripting --> Workbench
     Exporting --> Application
     PlayMode --> Application
     Audio --> Application

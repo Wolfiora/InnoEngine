@@ -1,14 +1,12 @@
 using System;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static partial class ImGuiWidget
+public sealed partial class ImGuiWidget
 {
     /// <summary>
     /// Draws a single-line search field with a stable identifier.
@@ -31,13 +29,14 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the query changed; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool SearchInput(
+    public bool SearchInput(
         string id,
         string hint,
         ref string query,
         nuint capacity = 256,
         float width = -1f
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         NativeImGui.SetNextItemWidth(width < 0f ? MathF.Max(1f, NativeImGui.GetContentRegionAvail().X) : width);
         return ImGuiUtf8Buffer.InputText($"##search_{id}", hint, ref query, capacity, ImGuiInputTextFlags.None);
@@ -64,13 +63,14 @@ public static partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when popup content should be drawn; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool BeginSearchPopup(
+    public bool BeginSearchPopup(
         string id,
         ref string query,
         string hint,
         nuint capacity = 256,
         float width = -1f
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (width < 0f)
             width = style.searchPopupWidth;
@@ -86,5 +86,5 @@ public static partial class ImGuiWidget
     /// <summary>
     /// Ends a popup opened by <see cref="BeginSearchPopup"/>.
     /// </summary>
-    public static void EndSearchPopup() => EndMenuPopup();
+    public void EndSearchPopup() => EndMenuPopup();
 }

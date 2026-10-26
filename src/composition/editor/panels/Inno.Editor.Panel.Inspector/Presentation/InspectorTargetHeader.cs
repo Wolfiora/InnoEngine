@@ -1,30 +1,22 @@
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using UiDrawing = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
-
 using Inno.Editor.Inspection;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using Inno.Native.ImGui;
-using Inno.Adapter.Presentation.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
-
 /// <summary>
 /// Draws the persistent identity header shared by every Inspector target type.
 /// </summary>
-internal sealed unsafe class InspectorTargetHeader
+internal sealed class InspectorTargetHeader
 {
     private const int C_NAME_BUFFER_SIZE = 512;
-
     private readonly InspectorLockControl m_lock = new();
-
     /// <summary>
     /// Resolves the target that should be presented after applying Inspector lock state.
     /// </summary>
@@ -41,7 +33,6 @@ internal sealed unsafe class InspectorTargetHeader
         EditorInteractions interactions,
         object? selectedTarget
     ) => m_lock.Resolve(interactions, selectedTarget);
-
     /// <summary>
     /// Draws the common framed header for a resolved Inspector target.
     /// </summary>
@@ -65,59 +56,53 @@ internal sealed unsafe class InspectorTargetHeader
     ) {
         ArgumentNullException.ThrowIfNull(drawer);
         ArgumentNullException.ThrowIfNull(context);
-        EditorWidget.HeaderSurface(
-            "##inspector_target_header",
-            () =>
+        EditorUI.current.widgets.HeaderSurface("##inspector_target_header", () =>
+        {
+            Ui.BeginDisabled(readOnly);
+            try
             {
-                NativeImGui.BeginDisabled(readOnly);
-                try
-                {
-                    DrawContent(drawer, context);
-                }
-                finally
-                {
-                    NativeImGui.EndDisabled();
-                }
-                if (notice is null)
-                    return;
-                NativeImGui.Spacing();
-                EditorWidget.HelpBox(
-                    notice,
-                    ImGuiIcon.CircleInfo,
-                    new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque));
-            },
-            spanWindowPadding: true);
+                DrawContent(drawer, context);
+            }
+            finally
+            {
+                Ui.EndDisabled();
+            }
+
+            if (notice is null)
+                return;
+            Ui.Spacing();
+            EditorUI.current.widgets.HelpBox(notice, ImGuiIcon.CircleInfo, new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque));
+        }, spanWindowPadding: true);
     }
 
     private void DrawContent(
         IInspectionDrawer drawer,
         InspectionDrawContext context
     ) {
-        NativeImGui.PushStyleVar((int)ImGuiStyleVar.ItemSpacing, EditorWidget.style.compactItemSpacing);
-        NativeImGui.PushStyleVar((int)ImGuiStyleVar.FramePadding, EditorWidget.style.compactFramePadding);
+        Ui.PushStyleVar(ImGuiStyleVar.ItemSpacing, EditorUI.current.widgets.style.compactItemSpacing);
+        Ui.PushStyleVar(ImGuiStyleVar.FramePadding, EditorUI.current.widgets.style.compactFramePadding);
         try
         {
-            float rowHeight = NativeImGui.GetFrameHeight();
-            float rowSpacing = EditorWidget.style.inspectorTargetHeaderRowSpacing;
+            float rowHeight = Ui.GetFrameHeight();
+            float rowSpacing = EditorUI.current.widgets.style.inspectorTargetHeaderRowSpacing;
             float headerContentHeight = rowHeight * 2f + rowSpacing;
             DrawIcon(drawer.GetIcon(context), headerContentHeight);
-            NativeImGui.SameLine(0f, -1f);
-
-            NativeImGui.BeginGroup();
+            Ui.SameLine(0f, -1f);
+            Ui.BeginGroup();
             try
             {
                 DrawNameRow(drawer, context, rowHeight);
-                NativeImGui.SetCursorPosY(NativeImGui.GetCursorPosY() + rowSpacing);
+                Ui.SetCursorPosY(Ui.GetCursorPosY() + rowSpacing);
                 DrawCustomRow(drawer, context, rowHeight);
             }
             finally
             {
-                NativeImGui.EndGroup();
+                Ui.EndGroup();
             }
         }
         finally
         {
-            NativeImGui.PopStyleVar(2);
+            Ui.PopStyleVar(2);
         }
     }
 
@@ -126,53 +111,42 @@ internal sealed unsafe class InspectorTargetHeader
         InspectionDrawContext context,
         float rowHeight
     ) {
-        Vector2 lockSize = EditorWidget.GetCompactIconSize();
-        float itemSpacing = NativeImGui.Raw.GetStyle()->ItemSpacing.X;
-        float nameWidth = MathF.Max(
-            1f,
-            NativeImGui.GetContentRegionAvail().X - lockSize.X - itemSpacing);
+        Vector2 lockSize = EditorUI.current.widgets.GetCompactIconSize();
+        float itemSpacing = UiDrawing.GetLayout().itemSpacing.X;
+        float nameWidth = MathF.Max(1f, Ui.GetContentRegionAvailable().X - lockSize.X - itemSpacing);
         (string name, Action<string>? nameSetter) = drawer.BindName(context);
         if (nameSetter is not null)
         {
-            NativeImGui.SetNextItemWidth(nameWidth);
-            if (EditorImGui.InputText(
-                    $"##inspector_target_name_{GetTargetId(context.target)}",
-                    ref name,
-                    C_NAME_BUFFER_SIZE,
-                    ImGuiInputTextFlags.None))
+            Ui.SetNextItemWidth(nameWidth);
+            if (EditorImGui.InputText($"##inspector_target_name_{GetTargetId(context.target)}", ref name, C_NAME_BUFFER_SIZE, ImGuiInputTextFlags.None))
             {
                 nameSetter(name);
             }
-            NativeImGui.SameLine(0f, itemSpacing);
+
+            Ui.SameLine(0f, itemSpacing);
         }
         else
         {
-            NativeImGui.AlignTextToFramePadding();
-            Vector2 textOrigin = NativeImGui.GetCursorScreenPos();
-            ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-            NativeVector2 clipMinimum = Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin);
-            NativeVector2 clipMaximum = Unsafe.BitCast<NumericsVector2, NativeVector2>(textOrigin + new Vector2(nameWidth, rowHeight));
-            NativeImGui.Raw.PushClipRect(
-                drawList,
-                &clipMinimum,
-                &clipMaximum,
-                1
-            );
+            Ui.AlignTextToFramePadding();
+            Vector2 textOrigin = Ui.GetCursorScreenPosition();
+            EditorDrawList drawList = EditorImGui.GetDrawList();
+            drawList.PushClip(textOrigin, textOrigin + new Vector2(nameWidth, rowHeight));
             try
             {
-                EditorImGui.DrawText(textOrigin, NativeImGui.GetColorU32((int)ImGuiCol.Text), name);
+                EditorImGui.DrawText(textOrigin, Ui.GetStyleColor(ImGuiCol.Text), name);
             }
             finally
             {
-                NativeImGui.Raw.PopClipRect(drawList);
+                drawList.PopClip();
             }
-            NativeImGui.Dummy(new Vector2(nameWidth, rowHeight));
-            NativeImGui.SameLine(0f, itemSpacing);
+
+            Ui.Dummy(new Vector2(nameWidth, rowHeight));
+            Ui.SameLine(0f, itemSpacing);
         }
 
         string lockIcon = m_lock.isLocked ? ImGuiIcon.Lock : ImGuiIcon.LockOpen;
         string tooltip = m_lock.isLocked ? "Unlock Inspector" : "Lock Inspector";
-        if (EditorWidget.ClickableIcon("inspector_target_lock", lockIcon, tooltip))
+        if (EditorUI.current.widgets.ClickableIcon("inspector_target_lock", lockIcon, tooltip))
             m_lock.Toggle(context.interactions, context.target);
     }
 
@@ -180,15 +154,14 @@ internal sealed unsafe class InspectorTargetHeader
         string icon,
         float slotSize
     ) {
-        Vector2 minimum = NativeImGui.GetCursorScreenPos();
-        EditorWidget.AddGlyphCentered(
-            NativeImGui.Raw.GetWindowDrawList(),
-            NativeImGui.Raw.GetFont(),
-            NativeImGui.GetFontSize() * EditorWidget.style.inspectorTargetIconScale,
+        Vector2 minimum = Ui.GetCursorScreenPosition();
+        EditorUI.current.widgets.AddGlyphCentered(
+            Ui.GetFontSize() * EditorUI.current.widgets.style.inspectorTargetIconScale,
             icon,
             minimum + new Vector2(slotSize * 0.5f),
-            NativeImGui.GetColorU32((int)ImGuiCol.Text));
-        NativeImGui.Dummy(new Vector2(slotSize));
+            Ui.GetStyleColor(ImGuiCol.Text)
+        );
+        Ui.Dummy(new Vector2(slotSize));
     }
 
     private static void DrawCustomRow(
@@ -196,14 +169,8 @@ internal sealed unsafe class InspectorTargetHeader
         InspectionDrawContext context,
         float rowHeight
     ) {
-        ImGuiWindowFlags flags = ImGuiWindowFlags.NoScrollbar |
-                                 ImGuiWindowFlags.NoScrollWithMouse |
-                                 ImGuiWindowFlags.NoSavedSettings;
-        bool visible = NativeImGui.BeginChild(
-            $"##inspector_target_custom_{GetTargetId(context.target)}",
-            new Vector2(0f, rowHeight),
-            (int)ImGuiChildFlags.None,
-            (int)flags);
+        ImGuiWindowFlags flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
+        bool visible = Ui.BeginChild($"##inspector_target_custom_{GetTargetId(context.target)}", new Vector2(0f, rowHeight), ImGuiChildFlags.None, flags);
         try
         {
             if (visible)
@@ -211,10 +178,9 @@ internal sealed unsafe class InspectorTargetHeader
         }
         finally
         {
-            NativeImGui.EndChild();
+            Ui.EndChild();
         }
     }
 
-    private static string GetTargetId(object target)
-        => $"{target.GetType().FullName}_{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(target)}";
+    private static string GetTargetId(object target) => $"{target.GetType().FullName}_{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(target)}";
 }

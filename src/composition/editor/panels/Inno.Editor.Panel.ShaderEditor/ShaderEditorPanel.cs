@@ -1,4 +1,4 @@
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
 using Inno.Assets;
@@ -8,11 +8,10 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Shaders;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Rendering;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
-
 [EditorPanel("rendering.shader-editor", "Shader Editor", order: 230, menuPath: "Authoring")]
 internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : EditorPanel
 {
@@ -28,6 +27,7 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
     /// Gets the preferred initial window size in logical editor units.
     /// </summary>
     public override Vector2 initialSize => new(960f, 640f);
+
     /// <summary>
     /// Draws this feature using the current editor presentation context.
     /// </summary>
@@ -40,24 +40,31 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
         if (documents.interactions.selection.selectedTarget is ShaderAsset shader)
             _ = documents.assets.TryGetFileSystemEntry(shader.assetPath, out entry);
         if (documents.interactions.selection.selectedTarget is ShaderInspectionSelection selection
-            && documents.assets.TryGetInfo(selection.assetId, out AssetInfo? info) && info is not null)
+            && documents.assets.TryGetInfo(
+            selection.assetId,
+            out AssetInfo? info
+        )
+            && info is not null)
             _ = documents.assets.TryGetFileSystemEntry(info.assetPath, out entry);
         if (entry is null || entry.isDirectory || !entry.assetPath.localPath.EndsWith(".ishader", StringComparison.OrdinalIgnoreCase))
         {
             ShaderEditorCanvas.DrawHeader(documents, null);
-            ImGuiWidget.CenteredWrappedText(
+            EditorUI.current.widgets.CenteredWrappedText(
                 "Select a Shader (.ishader) in the File Browser.",
-                Vector2.Max(Vector2.One, NativeImGui.GetContentRegionAvail()),
-                new Vector2(40f, 28f));
+                Vector2.Max(Vector2.One, Ui.GetContentRegionAvailable()),
+                new Vector2(40f, 28f)
+            );
             return;
         }
+
         try
         {
             new ShaderEditorCanvas(documents, documents.Open(entry)).Draw();
         }
-        catch (Exception failure) when ((failure is System.IO.IOException or InvalidOperationException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when ((failure is System.IO.IOException or InvalidOperationException or FormatException)
+            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
-            EditorWidget.WrappedText(failure.Message);
+            EditorUI.current.widgets.WrappedText(failure.Message);
         }
     }
 }

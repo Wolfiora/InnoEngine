@@ -1,4 +1,5 @@
-
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,6 @@ using Inno.Assets.Pipeline;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
 internal enum FileBrowserEntryTypeFilter
 {
     All,
@@ -26,8 +26,7 @@ internal readonly record struct FileBrowserDisplayEntry(
     string displayName,
     bool isPluginRoot = false
 );
-
-internal sealed class FileBrowserData(AssetEditorModule assets)
+internal sealed class FileBrowserData(AssetBrowserModule assets)
 {
     internal IReadOnlyList<FileBrowserDisplayEntry> CollectVisibleEntries(
         EditorContext context,
@@ -36,8 +35,7 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
         string searchFilter
     ) {
         List<FileBrowserDisplayEntry> entries = [];
-        if (assets.browser.root == AssetBrowserRoot.Plugins &&
-            string.IsNullOrEmpty(assets.browser.currentDirectory))
+        if (assets.browser.root == AssetBrowserRoot.Plugins && string.IsNullOrEmpty(assets.browser.currentDirectory))
         {
             CollectPluginRoots(entries, scopeFilter);
         }
@@ -49,7 +47,6 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
         }
         else
             CollectEntriesRecursive(assets.browser.currentDirectory, entries);
-
         ApplyTypeFilter(entries, typeFilter);
         ApplySearchFilter(entries, searchFilter);
         entries.Sort(static (
@@ -57,21 +54,11 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
             right
         ) =>
         {
-            int byName = string.Compare(
-                left.displayName,
-                right.displayName,
-                StringComparison.OrdinalIgnoreCase);
+            int byName = string.Compare(left.displayName, right.displayName, StringComparison.OrdinalIgnoreCase);
             if (byName != 0)
                 return byName;
-            int byExtension = string.Compare(
-                left.entry.extension,
-                right.entry.extension,
-                StringComparison.OrdinalIgnoreCase);
-            return byExtension != 0
-                ? byExtension
-                : string.CompareOrdinal(
-                    left.entry.assetPath.ToString(),
-                    right.entry.assetPath.ToString());
+            int byExtension = string.Compare(left.entry.extension, right.entry.extension, StringComparison.OrdinalIgnoreCase);
+            return byExtension != 0 ? byExtension : string.CompareOrdinal(left.entry.assetPath.ToString(), right.entry.assetPath.ToString());
         });
         return entries;
     }
@@ -98,8 +85,7 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
         string filter = searchFilter.Trim();
         if (!string.IsNullOrEmpty(filter))
         {
-            entries.RemoveAll(item =>
-                !item.displayName.Contains(filter, StringComparison.OrdinalIgnoreCase));
+            entries.RemoveAll(item => !item.displayName.Contains(filter, StringComparison.OrdinalIgnoreCase));
         }
     }
 
@@ -107,15 +93,15 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
         List<FileBrowserDisplayEntry> entries,
         FileBrowserEntryScopeFilter scopeFilter
     ) {
-        AssetSourceMount[] mounts = assets.pipeline.sourceMounts
-            .Where(mount => assets.IsPluginSource(mount.id))
-            .OrderBy(static mount => mount.id.value, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        AssetSourceMount[] mounts = assets.edits.pipeline.sourceMounts.Where(mount => assets.edits.IsPluginSource(mount.id)).OrderBy(
+            static mount => mount.id.value,
+            StringComparer.OrdinalIgnoreCase
+        ).ToArray();
         for (int i = 0; i < mounts.Length; i++)
         {
             AssetSourceMount mount = mounts[i];
             var rootPath = new AssetPath(mount.id, string.Empty);
-            if (!assets.pipeline.TryGetFileSystemEntry(rootPath, out AssetFileEntry root))
+            if (!assets.edits.pipeline.TryGetFileSystemEntry(rootPath, out AssetFileEntry root))
                 continue;
             entries.Add(new FileBrowserDisplayEntry(root, mount.id.value, isPluginRoot: true));
             if (scopeFilter == FileBrowserEntryScopeFilter.Recursive)
@@ -147,10 +133,7 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
         {
             if (left.isDirectory != right.isDirectory)
                 return left.isDirectory ? -1 : 1;
-            return string.Compare(
-                left.name,
-                right.name,
-                StringComparison.OrdinalIgnoreCase);
+            return string.Compare(left.name, right.name, StringComparison.OrdinalIgnoreCase);
         });
         return sorted;
     }
@@ -158,7 +141,7 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
     internal IReadOnlyList<AssetFileEntry> GetVisibleChildren(string relativePath)
     {
         AssetSourceId source = AssetPath.Parse(relativePath).source;
-        IReadOnlyList<AssetFileEntry> children = assets.pipeline.GetFileSystemChildren(AssetPath.Parse(relativePath));
+        IReadOnlyList<AssetFileEntry> children = assets.edits.pipeline.GetFileSystemChildren(AssetPath.Parse(relativePath));
         if (children.Count == 0)
             return children;
         List<AssetFileEntry> isolated = [];
@@ -167,6 +150,7 @@ internal sealed class FileBrowserData(AssetEditorModule assets)
             if (children[i].source == source)
                 isolated.Add(children[i]);
         }
+
         return isolated;
     }
 }
