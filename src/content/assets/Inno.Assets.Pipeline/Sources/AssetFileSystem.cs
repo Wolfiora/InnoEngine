@@ -31,6 +31,13 @@ public sealed class AssetFileSystem : IDisposable
     private bool m_identitiesActive;
     private bool m_disposed;
 
+    private readonly record struct SourceEntry(
+        AssetPath path,
+        Guid persistentId,
+        bool isReadOnly,
+        bool isDirectory
+    );
+
     /// <summary>
     /// Gets the absolute source asset root.
     /// </summary>
@@ -183,18 +190,68 @@ public sealed class AssetFileSystem : IDisposable
     }
 
     /// <summary>
-    /// Rebuilds the indexed source file snapshot.
+    /// Reconciles a complete source snapshot while preserving unchanged entry identities.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// The source filesystem has been disposed.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Source enumeration fails; the previous complete index and its identities remain active.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// A source directory cannot be read; the previous complete index remains active.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// Multiple source paths claim the same persistent entry identity.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A new entry identity cannot be registered; the previous index remains active.
+    /// </exception>
     public void Refresh()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
 
         lock (m_sync)
         {
-            UnregisterEntries();
+            List<SourceEntry> candidate = CollectEntries();
+            AssetFileEntry[] previous = m_entries.All().ToArray();
+            Dictionary<Guid, AssetFileEntry> existing = previous.ToDictionary(static entry => entry.identity.persistentId);
+            var prepared = new List<(SourceEntry source, AssetFileEntry entry)>(candidate.Count);
+            var registered = new List<AssetFileEntry>();
+            try
+            {
+                foreach (SourceEntry source in candidate)
+                {
+                    if (!existing.TryGetValue(source.persistentId, out AssetFileEntry? entry))
+                    {
+                        entry = new AssetFileEntry();
+                        if (m_identitiesActive)
+                        {
+                            if (!m_identities.Register(entry, source.persistentId))
+                                throw new InvalidOperationException($"Asset source entry '{source.path}' could not acquire its identity.");
+                            registered.Add(entry);
+                        }
+                        else
+                            m_identities.InitializePersistentIdentity(entry, source.persistentId);
+                    }
+                    prepared.Add((source, entry));
+                }
+            }
+            catch
+            {
+                foreach (AssetFileEntry entry in registered)
+                    _ = m_identities.Unregister(entry);
+                throw;
+            }
             m_entries.RemoveAll();
-            foreach (AssetSourceMount mount in m_mounts.Values.OrderBy(static value => value.id.value, StringComparer.Ordinal))
-                IndexDirectoryRecursive(mount, mount.rootPath, string.Empty);
+            foreach ((SourceEntry source, AssetFileEntry entry) in prepared)
+            {
+                IndexEntry(entry, source);
+                existing.Remove(source.persistentId);
+            }
+            if (m_identitiesActive)
+                foreach (AssetFileEntry removed in existing.Values)
+                    _ = m_identities.Unregister(removed);
         }
     }
 
@@ -435,54 +492,56 @@ public sealed class AssetFileSystem : IDisposable
         }
     }
 
-    private void IndexDirectoryRecursive(
-        AssetSourceMount mount,
-        string absoluteDirectoryPath,
-        string localDirectoryPath
-    ) {
-        string normalizedDirectory = NormalizeLocalPath(localDirectoryPath);
-        AddOrUpdateEntry(new AssetPath(mount.id, normalizedDirectory), mount.isReadOnly, isDirectory: true);
-
-        foreach (string absoluteChildDirectory in Directory.EnumerateDirectories(absoluteDirectoryPath))
+    private List<SourceEntry> CollectEntries()
+    {
+        var entries = new List<SourceEntry>();
+        var identities = new HashSet<Guid>();
+        foreach (AssetSourceMount mount in m_mounts.Values.OrderBy(static value => value.id.value, StringComparer.Ordinal))
         {
-            string name = Path.GetFileName(absoluteChildDirectory);
-            string childRelativePath = CombineLocalPath(normalizedDirectory, name);
-            if (m_sourcePolicy.IsIgnored(childRelativePath, isDirectory: true))
-                continue;
-            IndexDirectoryRecursive(mount, absoluteChildDirectory, childRelativePath);
+            var pending = new Stack<string>();
+            pending.Push(string.Empty);
+            while (pending.TryPop(out string? directory))
+            {
+                Add(new AssetPath(mount.id, directory), mount.isReadOnly, isDirectory: true);
+                string absoluteDirectory = mount.Resolve(directory);
+                foreach (string child in Directory.EnumerateDirectories(absoluteDirectory))
+                {
+                    string path = CombineLocalPath(directory, Path.GetFileName(child));
+                    if (!m_sourcePolicy.IsIgnored(path, isDirectory: true))
+                        pending.Push(path);
+                }
+                foreach (string child in Directory.EnumerateFiles(absoluteDirectory))
+                {
+                    string path = CombineLocalPath(directory, Path.GetFileName(child));
+                    if (!m_sourcePolicy.IsIgnored(path, isDirectory: false))
+                        Add(new AssetPath(mount.id, path), mount.isReadOnly, isDirectory: false);
+                }
+            }
         }
+        return entries;
 
-        foreach (string absoluteFile in Directory.EnumerateFiles(absoluteDirectoryPath))
-        {
-            string name = Path.GetFileName(absoluteFile);
-            string fileRelativePath = CombineLocalPath(normalizedDirectory, name);
-            if (m_sourcePolicy.IsIgnored(fileRelativePath, isDirectory: false))
-                continue;
-            AddOrUpdateEntry(new AssetPath(mount.id, fileRelativePath), mount.isReadOnly, isDirectory: false);
+        void Add(
+            AssetPath path,
+            bool isReadOnly,
+            bool isDirectory
+        ) {
+            Guid sourceId = m_persistentIdentityResolver?.Invoke(path) ?? CreateFallbackPersistentId(path.ToString());
+            Guid entryId = CreateEntryPersistentId(sourceId);
+            if (!identities.Add(entryId))
+                throw new InvalidDataException($"Asset source path '{path}' duplicates a persistent entry identity.");
+            entries.Add(new(path, entryId, isReadOnly, isDirectory));
         }
     }
 
-    private void AddOrUpdateEntry(
-        AssetPath assetPath,
-        bool isReadOnly,
-        bool isDirectory
+    private void IndexEntry(
+        AssetFileEntry existing,
+        SourceEntry source
     ) {
+        AssetPath assetPath = source.path;
+        bool isDirectory = source.isDirectory;
         string path = assetPath.ToString();
-        AssetFileEntry? existing = m_entries.First(m_pathKey, path);
-        if (existing is null)
-        {
-            existing = new AssetFileEntry();
-            Guid sourcePersistentId = m_persistentIdentityResolver?.Invoke(assetPath)
-                ?? CreateFallbackPersistentId(path);
-            Guid entryPersistentId = CreateEntryPersistentId(sourcePersistentId);
-            if (m_identitiesActive)
-                _ = m_identities.Register(existing, entryPersistentId);
-            else
-                m_identities.InitializePersistentIdentity(existing, entryPersistentId);
-        }
-
         existing.assetPath = assetPath;
-        existing.isReadOnly = isReadOnly;
+        existing.isReadOnly = source.isReadOnly;
         existing.isSample = isDirectory && AssetSample.IsRoot(assetPath);
         existing.isSampleContent = AssetSample.Contains(assetPath, isDirectory);
         existing.parentAssetPath = AssetPath.Parse(GetParentPath(path));

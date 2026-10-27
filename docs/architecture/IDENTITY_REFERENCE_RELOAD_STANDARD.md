@@ -108,6 +108,8 @@ Editor 的 identity-aware API 必须从当前明确 scope 解析 allocator；不
 
 ### 3.3 Registry 的唯一权威性
 
+资产文件索引的无内容变化刷新不能无条件注销、重建全部 runtime identity。`AssetFileSystem` 以完整候选对账当前 persistent entry ID，复用有效条目并退休真正移除的条目；普通枚举失败保留原索引。UI 继续通过 Core Identity 解析，不另建 path → live object 表，也不依赖每帧全量重建来维持正确性。
+
 - live object 的 `persistentId/runtimeId → instance` 解析以 `IdentityAllocator` 为唯一权威。
 - 领域可以建立 `path/semantic ID → persistentId` 的二级索引，但不得再维护长期的 `path/semantic ID → collectible object` 权威表。
 - 内部 dense/sparse array 可以优化 allocator；slot 必须带 generation，slot 复用后旧 runtime ID 必须失效。
