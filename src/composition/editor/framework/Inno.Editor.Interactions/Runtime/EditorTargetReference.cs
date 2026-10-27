@@ -29,8 +29,13 @@ internal sealed class EditorTargetReference
             return new EditorTargetReference(runtime, target.identity.persistentId, null, null);
         }
 
-        if (value is null or string || value.GetType().IsValueType && !value.GetType().Assembly.IsCollectible)
+        if (value is null or string or decimal or Guid or DateTime or DateTimeOffset
+            or DateOnly or TimeOnly or TimeSpan or Half or Int128 or UInt128)
             return new EditorTargetReference(null, Guid.Empty, value, null);
+        Type type = value.GetType();
+        if (type.IsPrimitive || type.IsEnum && !type.IsCollectible)
+            return new EditorTargetReference(null, Guid.Empty, value, null);
+        // A host-defined struct can still contain extension objects; boxing does not make it neutral.
         return new EditorTargetReference(null, Guid.Empty, null, new WeakReference<object>(value));
     }
 

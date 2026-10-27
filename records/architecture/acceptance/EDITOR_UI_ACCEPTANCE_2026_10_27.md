@@ -21,6 +21,8 @@ The implementation and local correctness checks are complete, including the fina
 - Rendering2D uses the current session and edit contract. Its package in FlappyBird was produced by the official exporter, never edited as an archive.
 
 - Pure identifier formatting moved out of session-bound widgets into `EditorDisplayNames` in Editor Core. Menu metadata can be queried without a native UI context. The old widget member was removed and every engine/plugin caller updated.
+- Non-identity targets retain only known neutral scalars strongly. Boxed host structs can contain extension objects, so selection, focus and snapshots hold those targets weakly. A failing GC regression reproduced the retention before the correction; the complete 121-case Interactions suite passed afterward.
+- The script SDK references reusable Assets, Shaders and Graph API owners directly. Hierarchy and Inspector remain direct SDK references for their own four public drop-target contracts. A fresh SDK output and a real EditorScripts probe verify these exports; no Panel is used only to carry another module's API.
 
 The full current file tree and execution flow are in the architecture document. Solution registration, project reference visibility, scripting exports, English XML and individual Editor Wiki pages were updated together.
 
@@ -30,18 +32,19 @@ Evidence owner: `D:/InnoEngine-Verification/editor-ui-2026-10-27`.
 
 | Check | Final result | Evidence |
 | --- | --- | --- |
-| Windows UI source build | Passed; zero compiler warnings/errors | `ui-tests2-build.log`, `contract-tests-build.log`, binlogs |
-| Shared UI contracts | 553 passed; 0 failed/skipped | `closed-tests/` TRX and execution summary |
-| Isolated contracts | 4 passed; 0 failed/skipped | One native retirement case in `closed-tests/`; three Core/compiler/build cases in `isolation-final-tests/` |
-| Rendering2D authoring | 42 passed, 0 failed/skipped | `rendering2d-final-tests/results/authoring.trx` |
+| Windows UI source build | Passed; zero compiler warnings/errors | `ui-boxed-build.log` and binlog |
+| Shared UI contracts | 558 passed; 0 failed/skipped | `boxed-suite/` TRX, with its earlier 150 architecture cases replaced by the final 152 in `architecture-sdk-owner-tests/` |
+| Isolated contracts | 4 passed; 0 failed/skipped | One native retirement case in `boxed-suite/`; three unchanged Core/compiler/build cases in `isolation-final-tests/` |
+| Rendering2D authoring | 42 passed, 0 failed/skipped against the fresh SDK output | `rendering2d-sdk-owner-tests/results/authoring.trx` |
 | Official package export | Passed | `rendering2d-export-accepted.log` |
 | Architecture and public XML | Passed; final Wiki graph also checks evaluated ownership | `architecture-final.log`, `xml-domain.log`; new public source compiles with XML warnings as errors |
-| SDK Wiki graph, signatures, links and examples | Passed; 241 project ownership evaluations, 34,493 API entries and 197 examples | `wiki-final-accepted.log`, `wiki-final-api.json`, `wiki-final-examples.json` |
-| Editor Debug and Release | Passed; zero errors, one automatic maintenance-budget warning each | `editor-debug-final.*`, `editor-release-final.*`; cold Release vendor warnings remain in `editor-release.log` |
-| FlappyBird product | Debug: 15,000 frames, 300 Play frames and Edit return; Release: 1,000 frames; D3D12 and Vulkan: 1,000 frames each; all orderly exits | `flappy-debug-closed*`, `flappy-Release-d3d11.log`, `flappy-Debug-d3d12.log`, `flappy-Debug-vulkan.log` |
+| SDK Wiki graph, signatures, links and examples | Passed; 241 project ownership evaluations, 34,493 API entries and 197 examples | `wiki-sdk-owner.log`, `wiki-sdk-owner-api.json`, `wiki-sdk-owner-examples.json` |
+| Editor Debug and Release | Passed; zero warnings/errors | `editor-Debug-boxed.*`, `editor-Release-boxed.*`; earlier maintenance deferrals and cold vendor warnings remain in their original logs |
+| Fresh formal SDK and public drop contracts | Passed; no old output directory required | `sdk-actual-owners.*`, `build-entry-sdk-owners.*`, `sdk-api-probe-after.log` |
+| FlappyBird product | Debug: 15,000 frames; Release: 5,000 frames; both complete 300 Play frames and return to Edit. D3D12 and Vulkan: 1,000 renderer frames each; all orderly exits | `flappy-Debug-boxed*`, `flappy-Release-boxed*`, `flappy-Debug-d3d12.log`, `flappy-Debug-vulkan.log` |
 | GitHub CI | Tracked separately on the pull request for this branch | Its exact head revision, run links and final results accompany delivery; this report does not claim an unexecuted remote pass |
 
-Initial failures remain in the evidence owner: the wrong native product context, a missing direct test annotation dependency, fixtures missing the new session/presentation boundary, and an EventHub whose dispatcher was not retained. Their corrective runs passed; these failures are not labeled as upstream BGCS defects. The full SourceDebug run interrupted during contract changes is not counted as a pass.
+Initial failures remain in the evidence owner: the wrong native product context, a missing direct test annotation dependency, fixtures missing the new session/presentation boundary, an EventHub whose dispatcher was not retained, and boxed target retention (`boxed-before/`). The SDK probe also rejected an exploratory removal of actual Panel contract owners (`sdk-api-probe-before.log`); their required direct references were restored before delivery. Their corrective runs passed; these failures are not labeled as upstream BGCS defects. The full SourceDebug run interrupted during contract changes is not counted as a pass. The 604 distinct local passes are 558 shared contracts, four isolated contracts and 42 Rendering2D cases; focused reruns are not added again.
 
 ## Performance and resource ownership
 
@@ -83,7 +86,7 @@ These assessments describe verified engineering properties. â€œEnterprise-gradeâ
 
 ## Unexecuted or limited acceptance
 
-- No macOS device is available; Metal and real macOS Editor behavior are unexecuted.
+- No local macOS device is available; local Metal and interactive macOS acceptance are unexecuted. Remote runner results are tracked separately and do not certify manual device journeys.
 - Computer Use captured the real FlappyBird Scene/Game view, but window activation failed twice. Following the tool's recovery limit, further manual input was stopped. Mouse interaction was not certified; the owned visual session was terminated. Separate bounded runs verify orderly exit.
 - Full accessibility, all focus/DPI combinations, audible audio quality, extended usability sessions and long-duration GPU/GC behavior are not certified by native layout tests or bounded smoke runs.
 - Existing engine issues outside this UI plan remain independently tracked. This refactor cannot establish that the entire engine is perfect.

@@ -52,6 +52,8 @@ src/composition/editor/
 
 普通菜单、快捷键、工具栏与 command search 消费同一 Action 的 Query/Execute；presentation 不能维护另一份 enabled/checked 业务规则。Action 索引按 active generation 失效。所有跨帧目标用 Core Identity 重新解析，不能保留 Component wrapper 或 collectible Type。
 
+非 Identity target 只有明确的中立标量可以强持有，其余对象使用弱引用，包括 boxed struct。宿主程序集的值类型仍可能包含插件对象，不能根据 `IsValueType` 或程序集不可回收就假定其内容中立。Selection、focus 与 snapshot 复用同一规则。
+
 连续输入在首个有效 sample 打开 EditorEditGesture，release 提交，Escape 回滚。显式 Selection 切换先提交当前输入，准备失败则保持原选择；关闭 owner 或未完成的控件消失时回滚。命令和 reload 边界同样使用已有 Core Events 准备通知。材质/Pipeline 不再自己维护 deferred gesture；SceneEdits 和 asset draft service 都立即记录。
 
 多选包含有序身份和 anchor；visible range 来自同一过滤/排序结果。批量源操作归一化最小 roots，先验证所有 owner，再由既有 History transaction 执行；失败不接受半批结果。共同属性使用 owner serialization context，保持各对象独立的 before 值。
@@ -65,6 +67,10 @@ ShaderEditor 是最大的领域专用 view，其 canvas、预览、菜单和文�
 ## 自动约束
 
 EditorUiBoundaryValidator 校验 feature 无 UI/native/Panel 引用、Panel 无相互引用、native 访问集中在 adapter、Graph 无 Rendering/Shader 依赖。公开 API 依赖分组、XML、逻辑脚本导出、Solution 和 Wiki 继续由仓库统一验证器验证。
+
+正式脚本 SDK 的 Build CLI 直接引用 Assets、Shaders、Graph 等导出 API 的实际 owner，不通过 FileBrowser、ShaderEditor、Hierarchy 或 Inspector Panel 间接携带编译 API。CLI 的这项引用边界同样受正反例约束。
+
+Hierarchy 与 Inspector 自己公开的 drop target 协议仍由它们各自声明并被 SDK 直接引用；这些是明确的 UI 扩展契约，不是其他模块 API 的传递载体。校验器解析真实的 assembly export 声明，空清单或注释中的声明都不能充当 owner 证明。
 
 
 ## 精确多选分量与 History 查询

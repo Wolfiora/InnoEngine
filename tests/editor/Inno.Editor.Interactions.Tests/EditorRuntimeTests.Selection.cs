@@ -10,6 +10,45 @@ namespace Inno.Editor.Interactions.Tests;
 public sealed partial class EditorRuntimeTests
 {
     [Fact]
+    public void BoxedTargetsDoNotKeepReferencedObjectsAliveThroughSelectionFocusOrSnapshots()
+    {
+        WeakReference reference = SelectBoxedReferenceTarget();
+        EditorSelectionSnapshot snapshot = m_runtime.interactions.selection.Capture();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.False(reference.IsAlive);
+        Assert.Null(m_runtime.interactions.selection.selectedTarget);
+        Assert.Null(m_runtime.interactions.focusedTarget);
+        Assert.Equal(0, snapshot.CopyTargets(m_runtime.interactions, new List<object>()));
+        GC.KeepAlive(snapshot);
+    }
+
+    [Fact]
+    public void NeutralScalarSelectionRemainsAvailableWithoutAnotherOwner()
+    {
+        Guid value = Guid.NewGuid();
+        SelectScalarTarget(value);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.Equal(value, Assert.IsType<Guid>(m_runtime.interactions.selection.selectedTarget));
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void SelectScalarTarget(Guid value) => m_runtime.interactions.SetSelection(value);
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private WeakReference SelectBoxedReferenceTarget()
+    {
+        var payload = new object();
+        object target = new KeyValuePair<string, object>("payload", payload);
+        m_runtime.interactions.SetSelection(target);
+        m_runtime.interactions.For("tests/boxed-target", target).Focus();
+        return new WeakReference(payload);
+    }
+
+    [Fact]
     public void RejectedDomainRetirementOnAnotherThreadPreservesTheRoutingLease()
     {
         var allocator = new IdentityAllocator();

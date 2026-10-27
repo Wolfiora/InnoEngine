@@ -56,4 +56,35 @@ public sealed class IntegrationBoundaryTests
                 Directory.Delete(root, recursive: true);
         }
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ScriptSdkReferencesPanelContractsOnlyWhenThePanelActuallyExportsThem(bool exportsContract)
+    {
+        string root = Path.Combine(Path.GetTempPath(), "InnoSdkOwnerTests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            string host = Path.Combine(root, "build/cli/Inno.Build.Cli");
+            string panel = Path.Combine(root, "src/composition/editor/panels/Inno.Editor.Panel.Probe");
+            Directory.CreateDirectory(host);
+            Directory.CreateDirectory(Path.Combine(panel, "Properties"));
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00");
+            string panelProject = Path.Combine(panel, "Inno.Editor.Panel.Probe.csproj");
+            File.WriteAllText(panelProject, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+            string include = Path.GetRelativePath(host, panelProject).Replace('\\', '/');
+            File.WriteAllText(Path.Combine(host, "Inno.Build.Cli.csproj"),
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup><ItemGroup><ProjectReference Include=\""
+                + include + "\" /></ItemGroup></Project>");
+            const string C_EXPORT_DECLARATION = "[assembly: Inno.Scripting.Api.ScriptingApiExport(typeof(System.String), Inno.Scripting.Api.ScriptingApiScope.Editor)]";
+            File.WriteAllText(Path.Combine(panel, "Properties/ScriptingApi.cs"), exportsContract ? C_EXPORT_DECLARATION : "// " + C_EXPORT_DECLARATION);
+            (_, string report) = ArchitectureCommandFixture.Run(root);
+            Assert.Equal(!exportsContract, report.Contains("script SDK host must reference API owners", StringComparison.Ordinal));
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
 }

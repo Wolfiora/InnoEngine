@@ -47,8 +47,10 @@ The final report must assess architecture, readability, state ownership, abstrac
 
 ## Closed local regressions
 
-- 553 shared Editor/tooling tests and one real isolated viewport-retirement fact passed. Three further isolated Core/compiler/build facts passed through the corrected SDK test runner. Rendering2D authoring has 42 passing tests.
+- 558 shared Editor/tooling tests and one real isolated viewport-retirement fact passed. Three further isolated Core/compiler/build facts passed through the corrected SDK test runner. Rendering2D authoring has 42 passing tests: 604 distinct local cases in total, excluding focused reruns.
 - Temporary Play identity routing now has an explicit Host lease and retains Missing selections when a domain retires. The real FlappyBird probe verified the same persistent ID in Edit/Play and restoration to the original domain.
 - Pure label formatting belongs to Editor Core; menu queries require no native drawing context. All engine/plugin callers use the shared formatter.
 - VSTest discovery errors are no longer treated as successful empty discovery; raw discovery logs are preserved.
 - Native vendor/cold SDK diagnostics and automatic maintenance-budget deferrals remain visible in their original logs. They were not suppressed.
+- Final lifetime review reproduced boxed structs retaining referenced objects through selection/focus/snapshots. Targets now retain only known neutral scalars strongly; all other non-identity objects use weak references. The failing-before regression and complete passing Interactions suite are retained separately.
+- The SDK directly references reusable API owners. Its Hierarchy/Inspector contract references remain because they explicitly export four drop targets; a fresh SDK and real script probe verify these public contracts. Non-exporting Panel carriers are rejected by syntax-aware ownership fixtures.

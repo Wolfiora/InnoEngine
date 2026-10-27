@@ -29,6 +29,8 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- verify .
 
 SDK 生成的 `Inno.Build.Cli.deps.json` 随开发入口复制。该清单属于 CLI 自己的显式创作闭包，使库宿主和开发入口发现同一组脚本契约；不在编译器中维护领域类型名单。
 
+Assets、Shaders 与通用 Graph 创作 API 直接引用其 feature 或可复用 presentation 项目，不引用具体 Panel 来间接携带脚本契约。命令行编译无需实例化这些 UI；实际绘制仍由 Editor 的 session 和 Panel 负责。
+
 CLI 与平台 Editor 组合库显式启用共同的 `InnoExposeRuntimeClosure` SDK 构建规则。清单与实际运行依赖随引用复制，不改变项目的 `PrivateAssets="compile"` 边界，也不扫描输出目录来猜测扩展。
 
 | 命令 | 行为 |

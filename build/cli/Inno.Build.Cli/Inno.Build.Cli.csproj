@@ -45,8 +45,11 @@
     <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Scene/Inno.Editor.Scene.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Rendering/Inno.Editor.Rendering.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.PlayMode/Inno.Editor.PlayMode.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.ShaderEditor/Inno.Editor.Panel.ShaderEditor.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Assets/Inno.Editor.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Shaders/Inno.Editor.Shaders.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Inno.Editor.Assets.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Shaders.ImGui/Inno.Editor.Shaders.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Graph.ImGui/Inno.Editor.Graph.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Inno.Editor.Panel.Hierarchy.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/Inno.Editor.Panel.Inspector.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
