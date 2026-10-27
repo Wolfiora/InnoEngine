@@ -87,10 +87,16 @@ internal sealed class ConsolePanel : EditorPanel
     protected override void OnDraw(EditorContext context)
     {
         Ui.BeginChild("ConsoleChild", Vector2.Zero, (ImGuiChildFlags.None), (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
-        DrawToolbar();
-        Ui.Separator();
-        DrawConsoleRegion();
-        Ui.EndChild();
+        try
+        {
+            DrawToolbar();
+            Ui.Separator();
+            DrawConsoleRegion();
+        }
+        finally
+        {
+            Ui.EndChild();
+        }
     }
 
 #endregion
@@ -157,20 +163,25 @@ internal sealed class ConsolePanel : EditorPanel
     private void DrawConsoleRegion()
     {
         Ui.BeginChild("ConsoleRegion", Vector2.Zero, 0, 0);
-        EditorConsoleSnapshot snapshot = m_console.Capture();
-        RemoveStaleOpenEntries(snapshot);
-        bool hasNewEntries = m_lastRevision >= 0 && snapshot.revision != m_lastRevision;
-        m_lastRevision = snapshot.revision;
-        bool scrollAtBottom = Ui.GetScrollY() >= Ui.GetScrollMaxY() - EditorUI.current.widgets.style.logAutoScrollTolerance;
-        bool shouldScrollToBottom = m_requestScrollToBottom || (hasNewEntries && scrollAtBottom);
-        DrawEntries(snapshot);
-        if (shouldScrollToBottom)
+        try
         {
-            Ui.SetScrollHereY(1f);
-            m_requestScrollToBottom = false;
+            EditorConsoleSnapshot snapshot = m_console.Capture();
+            RemoveStaleOpenEntries(snapshot);
+            bool hasNewEntries = m_lastRevision >= 0 && snapshot.revision != m_lastRevision;
+            m_lastRevision = snapshot.revision;
+            bool scrollAtBottom = Ui.GetScrollY() >= Ui.GetScrollMaxY() - EditorUI.current.widgets.style.logAutoScrollTolerance;
+            bool shouldScrollToBottom = m_requestScrollToBottom || (hasNewEntries && scrollAtBottom);
+            DrawEntries(snapshot);
+            if (shouldScrollToBottom)
+            {
+                Ui.SetScrollHereY(1f);
+                m_requestScrollToBottom = false;
+            }
         }
-
-        Ui.EndChild();
+        finally
+        {
+            Ui.EndChild();
+        }
     }
 
 #endregion
@@ -221,72 +232,94 @@ internal sealed class ConsolePanel : EditorPanel
     ) {
         (Vector4 levelColor, string levelIcon) = m_content.GetLevelVisual(entry.level);
         ConsoleEntryImGuiIdentity.Push(identity);
-        bool open = m_openEntries.Contains(identity);
-        if (!open)
+        try
         {
-            Vector4 collapsedCardBg = m_content.GetCollapsedBgColor();
-            Vector4 collapsedCardBorder = m_content.GetCollapsedBorderColor();
-            Ui.PushStyleColor((ImGuiCol.FrameBg), collapsedCardBg);
-            Ui.PushStyleColor((ImGuiCol.Border), collapsedCardBorder);
-            Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), UiDrawing.GetLayout().frameRounding);
-            Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), EditorUI.current.widgets.style.borderSize);
-            Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.framePadding);
-            ImGuiChildFlags collapsedChildFlags = ImGuiChildFlags.FrameStyle;
-            ImGuiWindowFlags collapsedChildWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
-            float collapsedHeight = Ui.GetFrameHeight() + UiDrawing.GetLayout().framePadding.Y * 2f;
-            if (Ui.BeginChild("##ConsoleEntryCard", new Vector2(0f, collapsedHeight), collapsedChildFlags, collapsedChildWindowFlags))
-            {
-                DrawHeader(entry, repeatCount, levelColor, levelIcon, false, collapsedCardBg, out bool toggled);
-                if (toggled)
-                    m_openEntries.Add(identity);
-            }
-
-            Ui.EndChild();
-            DrawEntryContextMenu(entry, repeatCount);
-            Ui.PopStyleVar(3);
-            Ui.PopStyleColor(2);
-            ConsoleEntryImGuiIdentity.Pop();
-            return;
+            DrawEntryCard(entry, occurrences, repeatCount, identity, levelColor, levelIcon);
         }
+        finally
+        {
+            ConsoleEntryImGuiIdentity.Pop();
+        }
+    }
 
-        Vector4 cardBg = m_content.GetExpandedBgColor(levelColor);
-        Vector4 cardBorder = EditorPalette.GetLogExpandedBorder(levelColor);
+    private void DrawEntryCard(
+        EditorConsoleOccurrence entry,
+        IReadOnlyList<EditorConsoleOccurrence> occurrences,
+        int repeatCount,
+        string identity,
+        Vector4 levelColor,
+        string levelIcon
+    ) {
+        bool open = m_openEntries.Contains(identity);
+        Vector4 cardBg = open ? m_content.GetExpandedBgColor(levelColor) : m_content.GetCollapsedBgColor();
+        Vector4 cardBorder = open ? EditorPalette.GetLogExpandedBorder(levelColor) : m_content.GetCollapsedBorderColor();
         Ui.PushStyleColor((ImGuiCol.FrameBg), cardBg);
         Ui.PushStyleColor((ImGuiCol.Border), cardBorder);
         Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), UiDrawing.GetLayout().frameRounding);
         Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), EditorUI.current.widgets.style.borderSize);
         Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.framePadding);
-        ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY;
-        ImGuiWindowFlags childWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
-        if (Ui.BeginChild("##ConsoleEntryCard", new Vector2(0f, 0f), childFlags, childWindowFlags))
+        try
         {
-            DrawHeader(entry, repeatCount, levelColor, levelIcon, true, cardBg, out bool toggled);
-            if (toggled)
-                m_openEntries.Remove(identity);
-            Ui.PushStyleColor((ImGuiCol.Separator), EditorPalette.GetLogSeparator(cardBg));
+            ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | (open ? ImGuiChildFlags.AutoResizeY : ImGuiChildFlags.None);
+            ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
+            float height = open ? 0f : Ui.GetFrameHeight() + UiDrawing.GetLayout().framePadding.Y * 2f;
+            bool visible = Ui.BeginChild("##ConsoleEntryCard", new Vector2(0f, height), childFlags, windowFlags);
             try
             {
-                Ui.Separator();
-                for (int i = 0; i < occurrences.Count; i++)
+                if (visible)
                 {
-                    if (i > 0)
-                        Ui.Separator();
-                    Ui.PushId(unchecked((int)occurrences[i].sequence));
-                    DrawDetail(occurrences[i]);
-                    Ui.PopId();
+                    DrawHeader(entry, repeatCount, levelColor, levelIcon, open, cardBg, out bool toggled);
+                    if (toggled)
+                    {
+                        if (open)
+                            m_openEntries.Remove(identity);
+                        else
+                            m_openEntries.Add(identity);
+                    }
+                    if (open)
+                        DrawOccurrences(occurrences, cardBg);
                 }
             }
             finally
             {
-                Ui.PopStyleColor();
+                Ui.EndChild();
+            }
+            DrawEntryContextMenu(entry, repeatCount);
+        }
+        finally
+        {
+            Ui.PopStyleVar(3);
+            Ui.PopStyleColor(2);
+        }
+    }
+
+    private static void DrawOccurrences(
+        IReadOnlyList<EditorConsoleOccurrence> occurrences,
+        Vector4 cardBackground
+    ) {
+        Ui.PushStyleColor(ImGuiCol.Separator, EditorPalette.GetLogSeparator(cardBackground));
+        try
+        {
+            Ui.Separator();
+            for (int i = 0; i < occurrences.Count; i++)
+            {
+                if (i > 0)
+                    Ui.Separator();
+                Ui.PushId(unchecked((int)occurrences[i].sequence));
+                try
+                {
+                    DrawDetail(occurrences[i]);
+                }
+                finally
+                {
+                    Ui.PopId();
+                }
             }
         }
-
-        Ui.EndChild();
-        DrawEntryContextMenu(entry, repeatCount);
-        Ui.PopStyleVar(3);
-        Ui.PopStyleColor(2);
-        ConsoleEntryImGuiIdentity.Pop();
+        finally
+        {
+            Ui.PopStyleColor();
+        }
     }
 
 #endregion
@@ -321,55 +354,63 @@ internal sealed class ConsolePanel : EditorPanel
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoPadInnerX | ImGuiTableFlags.NoSavedSettings;
         if (Ui.BeginTable("##HeaderTable", 3, flags, tableOuterSize))
         {
-            Ui.TableSetupColumn("##prefix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), prefixW);
-            Ui.TableSetupColumn("##content", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), contentW);
-            Ui.TableSetupColumn("##suffix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), suffixColW);
-            Ui.TableNextRow();
-            if (isOpen)
+            try
             {
-                uint headerBgU32 = Ui.ToPackedColor(headerBgColor);
-                Ui.TableSetBgColor((ImGuiTableBgTarget.RowBg0), headerBgU32);
-            }
+                Ui.TableSetupColumn("##prefix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), prefixW);
+                Ui.TableSetupColumn("##content", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), contentW);
+                Ui.TableSetupColumn("##suffix", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), suffixColW);
+                Ui.TableNextRow();
+                if (isOpen)
+                {
+                    uint headerBgU32 = Ui.ToPackedColor(headerBgColor);
+                    Ui.TableSetBgColor((ImGuiTableBgTarget.RowBg0), headerBgU32);
+                }
 
-            _ = Ui.TableSetColumnIndex(0);
-            Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.logDisclosurePadding);
-            Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), 0f);
-            Ui.PushStyleColor((ImGuiCol.Button), EditorPalette.logToggle);
-            Ui.PushStyleColor((ImGuiCol.ButtonHovered), EditorPalette.logToggleHovered);
-            Ui.PushStyleColor((ImGuiCol.ButtonActive), EditorPalette.logToggleActive);
-            if (Ui.SmallButton($"{toggleText}##HeaderToggle"))
-            {
-                toggled = true;
-            }
+                _ = Ui.TableSetColumnIndex(0);
+                Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.logDisclosurePadding);
+                Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), 0f);
+                Ui.PushStyleColor((ImGuiCol.Button), EditorPalette.logToggle);
+                Ui.PushStyleColor((ImGuiCol.ButtonHovered), EditorPalette.logToggleHovered);
+                Ui.PushStyleColor((ImGuiCol.ButtonActive), EditorPalette.logToggleActive);
+                try
+                {
+                    if (Ui.SmallButton($"{toggleText}##HeaderToggle"))
+                    {
+                        toggled = true;
+                    }
 
-            Ui.PopStyleColor(3);
-            Ui.PopStyleVar(2);
-            Ui.SameLine(0f, -1f);
-            Ui.PushStyleColor((ImGuiCol.Text), levelColor);
-            Ui.Text(prefix);
-            Ui.PopStyleColor();
-            _ = Ui.TableSetColumnIndex(1);
-            if (isOpen)
-            {
-                Ui.PushTextWrapPos(0f);
-                Ui.Text(content);
-                Ui.PopTextWrapPos();
-            }
-            else
-            {
-                Ui.Text(content);
-            }
+                }
+                finally
+                {
+                    Ui.PopStyleColor(3);
+                    Ui.PopStyleVar(2);
+                }
+                Ui.SameLine(0f, -1f);
+                EditorUI.current.widgets.ColoredText(levelColor, prefix);
+                _ = Ui.TableSetColumnIndex(1);
+                if (isOpen)
+                {
+                    EditorUI.current.widgets.WrappedText(content);
+                }
+                else
+                {
+                    Ui.Text(content);
+                }
 
-            _ = Ui.TableSetColumnIndex(2);
-            if (!string.IsNullOrEmpty(repeatText))
-            {
-                float remainW = Ui.GetContentRegionAvailable().X;
-                float suffixOffsetX = MathF.Max(0f, remainW - suffixW);
-                Ui.SetCursorPosX(Ui.GetCursorPosX() + suffixOffsetX);
-                Ui.Text(repeatText);
-            }
+                _ = Ui.TableSetColumnIndex(2);
+                if (!string.IsNullOrEmpty(repeatText))
+                {
+                    float remainW = Ui.GetContentRegionAvailable().X;
+                    float suffixOffsetX = MathF.Max(0f, remainW - suffixW);
+                    Ui.SetCursorPosX(Ui.GetCursorPosX() + suffixOffsetX);
+                    Ui.Text(repeatText);
+                }
 
-            Ui.EndTable();
+            }
+            finally
+            {
+                Ui.EndTable();
+            }
         }
     }
 
@@ -398,23 +439,27 @@ internal sealed class ConsolePanel : EditorPanel
         }
         else if (Ui.BeginTable("##ConsoleEntryDetails", 2, (ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings), new Vector2(availableWidth, 0)))
         {
-            Ui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
-            Ui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f);
-            DrawDetailFieldRow("Kind:", entry.kind.ToString());
-            DrawDetailFieldRow("File:", fileWithLineText);
-            DrawDetailFieldRow("Source:", sourceText);
-            if (entry.sessionId.isAssigned)
-                DrawDetailFieldRow("Session:", entry.sessionId.ToString());
-            DrawDetailFieldRow("Time:", timeText);
-            Ui.EndTable();
+            try
+            {
+                Ui.TableSetupColumn("##label", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), labelWidth);
+                Ui.TableSetupColumn("##value", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize), 1f);
+                DrawDetailFieldRow("Kind:", entry.kind.ToString());
+                DrawDetailFieldRow("File:", fileWithLineText);
+                DrawDetailFieldRow("Source:", sourceText);
+                if (entry.sessionId.isAssigned)
+                    DrawDetailFieldRow("Session:", entry.sessionId.ToString());
+                DrawDetailFieldRow("Time:", timeText);
+            }
+            finally
+            {
+                Ui.EndTable();
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(entry.stackTrace))
         {
             Ui.Separator();
-            Ui.PushTextWrapPos(0f);
-            Ui.Text(entry.stackTrace);
-            Ui.PopTextWrapPos();
+            EditorUI.current.widgets.WrappedText(entry.stackTrace);
         }
     }
 
@@ -445,9 +490,7 @@ internal sealed class ConsolePanel : EditorPanel
         _ = Ui.TableSetColumnIndex(0);
         EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
         _ = Ui.TableSetColumnIndex(1);
-        Ui.PushTextWrapPos(0f);
-        Ui.Text(value);
-        Ui.PopTextWrapPos();
+        EditorUI.current.widgets.WrappedText(value);
     }
 
     private static void DrawStackedField(
@@ -455,9 +498,7 @@ internal sealed class ConsolePanel : EditorPanel
         string value
     ) {
         EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
-        Ui.PushTextWrapPos(0f);
-        Ui.Text(value);
-        Ui.PopTextWrapPos();
+        EditorUI.current.widgets.WrappedText(value);
     }
 #endregion
 }

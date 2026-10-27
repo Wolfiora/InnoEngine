@@ -668,6 +668,7 @@ internal sealed partial class ShaderEditorCanvas(
             Vector2 clipMin = new(clipLeft, bodyTop);
             Vector2 clipMax = new(clipRight, rect.max.Y);
             draw.PushClip(clipMin, clipMax, true);
+            try
             {
                 draw.Text(
                     new(x, point.Y - 8 * zoom),
@@ -677,7 +678,10 @@ internal sealed partial class ShaderEditorCanvas(
                 );
             }
 
-            draw.PopClip();
+            finally
+            {
+                draw.PopClip();
+            }
             if (Vector2.DistanceSquared(point, ImGuiApi.GetMousePos()) <= 64)
                 EditorUI.current.widgets.DrawTooltip(port.type.id + (missing ? " · missing port; reconnect explicitly" : optional ? " · optional input" : port.direction == GraphPortDirection.Input ? " · required input" : ""));
         }

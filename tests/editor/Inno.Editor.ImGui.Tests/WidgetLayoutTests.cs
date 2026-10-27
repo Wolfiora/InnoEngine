@@ -16,6 +16,61 @@ using EditorImGui = Inno.Editor.ImGui.ImGui;
 namespace Inno.Editor.ImGui.Tests;
 public sealed unsafe class WidgetLayoutTests
 {
+    [Theory]
+    [InlineData("card-leading")]
+    [InlineData("card-trailing")]
+    [InlineData("card-menu")]
+    [InlineData("tree-content")]
+    [InlineData("tree-overlay")]
+    public void ExtensionDrawingFailureRestoresTheEnclosingWindow(string failure)
+    {
+        using NativeContext context = new(1f);
+        for (int frame = 0; frame < 2; frame++)
+        {
+            context.Frame(() =>
+            {
+                BeginWindow("Failure owner", new Vector2(400f, 300f));
+                nint window = (nint)NativeImGui.Raw.GetCurrentWindow();
+                int depth = NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth;
+                Vector2 padding = Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetStyle()->FramePadding);
+                var widgets = EditorUI.current.widgets;
+                Action rejected = () => throw new InvalidOperationException("Rejected extension draw");
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    if (failure.StartsWith("card-", StringComparison.Ordinal))
+                    {
+                        _ = widgets.CollapsingCard(
+                            "failed-card",
+                            "Extension",
+                            drawLeadingControl: failure == "card-leading" ? rejected : null,
+                            drawTrailingControl: failure == "card-trailing" ? rejected : null,
+                            dimmed: true,
+                            drawContextMenu: failure == "card-menu" ? rejected : null);
+                    }
+                    else
+                    {
+                        widgets.SetNextTreeNodeOpen(true);
+                        _ = widgets.TreeNode("failed-tree", _ =>
+                        {
+                            if (failure == "tree-content")
+                                rejected();
+                            EditorImGui.Text("Extension");
+                        }, new() { drawViewportOverlay = failure == "tree-overlay" ? rejected : null });
+                    }
+                });
+                Assert.Equal(window, (nint)NativeImGui.Raw.GetCurrentWindow());
+                Assert.Equal(depth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
+                Assert.Equal(padding, Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetStyle()->FramePadding));
+                widgets.SetNextTreeNodeOpen(true);
+                var next = widgets.TreeNode("next-tree", _ => EditorImGui.Text("Next valid row"), new());
+                Assert.True(next.isOpen);
+                NativeImGui.TreePop();
+                EditorImGui.GetDrawList().Line(new(30f, 30f), new(60f, 60f), uint.MaxValue);
+                NativeImGui.End();
+            });
+        }
+    }
+
     [Fact]
     public void DrawingBorrowRejectsAnotherWindowOrFrame()
     {

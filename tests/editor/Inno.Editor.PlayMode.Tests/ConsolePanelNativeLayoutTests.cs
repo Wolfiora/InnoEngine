@@ -24,6 +24,61 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed unsafe class ConsolePanelNativeLayoutTests
 {
+    [Fact]
+    public void SnapshotFailureQuarantinesTheConsoleWithoutLeakingChildWindows()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "InnoConsoleFailure", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        _ = Assembly.Load("Inno.Editor.Panel.Logging");
+        ImGuiNativeContext* nativeContext = ImGuiApi.Raw.CreateContext(null);
+        try
+        {
+            ImGuiIO* io = ImGuiApi.Raw.GetIO();
+            io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1200f, 800f));
+            io->DeltaTime = 1f / 60f;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            io->IniFilename = null;
+            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly) });
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+            using var logs = new LogRouter();
+            var diagnostics = new DiagnosticHub();
+            using IDisposable diagnosticScope = diagnostics.EnterScope();
+            using var ui = new EditorUiSession();
+            using var runtime = new EditorInteractionRuntime(
+                new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+                types,
+                logs,
+                [new RejectedConsole()]);
+            runtime.Start();
+            EditorPanelExtension panel = Assert.Single(runtime.panels, value => value.id == "diagnostics.console");
+            panel.isOpen = true;
+            using IDisposable scope = ui.Enter();
+            for (int frame = 0; frame < 2; frame++)
+            {
+                ImGuiApi.NewFrame();
+                ImGuiApi.SetNextWindowSize(new(800f, 600f));
+                using NativeStringLease title = Utf8Codec.EncodeNullTerminated("Failure parent", allowsNull: false);
+                _ = ImGuiApi.Raw.Begin((sbyte*)title.pointer, null, 0);
+                nint parent = (nint)ImGuiApi.Raw.GetCurrentWindow();
+                if (frame == 0)
+                {
+                    Assert.False(panel.Draw(runtime.context));
+                    Assert.False(panel.isOpen);
+                }
+                Assert.Equal(parent, (nint)ImGuiApi.Raw.GetCurrentWindow());
+                Inno.Editor.ImGui.ImGui.Text("Following valid drawing");
+                ImGuiApi.End();
+                ImGuiApi.Render();
+            }
+        }
+        finally
+        {
+            ImGuiApi.Raw.DestroyContext(nativeContext);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Theory]
     [InlineData(false, 1f)]
     [InlineData(true, 1f)]
@@ -118,6 +173,14 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             }
         }
         finally { ImGuiApi.Raw.DestroyContext(context); Directory.Delete(root, true); }
+    }
+
+    private sealed class RejectedConsole : IEditorConsole
+    {
+        public int capacity { get; set; }
+        public bool clearOnPlay { get; set; }
+        public EditorConsoleSnapshot Capture() => throw new InvalidOperationException("Snapshot source failed.");
+        public void Clear() { }
     }
 
     private sealed class InactivePlayMode : IEditorPlayMode
