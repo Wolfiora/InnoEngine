@@ -45,7 +45,7 @@ internal sealed class DocumentationSourceModels
         if (m_projectReferences is not null)
         {
             m_references = [];
-            m_frameworkReferences = m_projectReferences.GetFrameworkReferences(cancellationToken);
+            m_frameworkReferences = [];
             return;
         }
         var paths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -108,7 +108,9 @@ internal sealed class DocumentationSourceModels
     internal bool IsExcludedProduct(string projectDirectory)
         => m_projectReferences?.IsExcludedProduct(Directory.EnumerateFiles(projectDirectory, "*.csproj").Single()) == true;
 
-    internal IReadOnlyList<MetadataReference> frameworkReferences => m_frameworkReferences;
+    internal IReadOnlyList<MetadataReference> frameworkReferences => m_projectReferences is null
+        ? m_frameworkReferences
+        : m_projectReferences.GetFrameworkReferences(m_cancellation);
 
     internal SemanticModel? GetModel(string path)
     {

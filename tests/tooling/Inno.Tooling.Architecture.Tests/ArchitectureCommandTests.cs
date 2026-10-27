@@ -88,6 +88,7 @@ public sealed class ArchitectureCommandTests
             Assert.Contains(expected, output, StringComparison.Ordinal);
             Assert.True(File.Exists(graph));
             Assert.False(Directory.Exists(Path.Combine(project, "bin")));
+            Assert.False(Directory.Exists(Path.Combine(project, "obj")));
         }
         finally
         {
