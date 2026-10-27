@@ -45,6 +45,8 @@ Commands、Menus、DragDrop、Selection 和 Rename 状态属于 `Inno.Editor.Int
 | `EditorStatistics` | 当前帧发布、同 ID 替换和上一完成帧 handoff 的顺序无关交换。 |
 | `EditorRuntime` | 表现无关的 `Start`、`Update(EditorFrame)`、`Dispose` 抽象。 |
 
+`EditorStatistics.GetSnapshot()` 返回按稳定 group/item 顺序排列的不可变快照。内容和排序不变时复用同一实例，旧快照不会被后续发布修改。重复发布相同值不会迫使消费 Panel 重建分组；当前帧与上一完成帧的 handoff 仍保持，停止发布的项按原帧生命周期退出。发布和快照操作由同一内部同步边界保护，不保存扩展类型或回调。
+
 `EditorContext` 是由 Application host 创建并注入扩展的中立数据，不承担路由：
 
 ```csharp

@@ -185,8 +185,10 @@ public sealed class EditorStatistic
 public sealed class EditorStatistics
 {
     private readonly object m_sync = new();
-    private readonly Dictionary<EditorStatisticId, EditorStatistic> m_current = [];
+    private Dictionary<EditorStatisticId, EditorStatistic> m_current = [];
     private Dictionary<EditorStatisticId, EditorStatistic> m_completed = [];
+    private IReadOnlyList<EditorStatistic>? m_snapshot;
+    private bool m_snapshotDirty = true;
 
     /// <summary>
     /// Publishes or replaces one statistic for the current editor frame.
@@ -201,7 +203,12 @@ public sealed class EditorStatistics
     {
         ArgumentNullException.ThrowIfNull(statistic);
         lock (m_sync)
+        {
+            EditorStatistic? previous = m_current.GetValueOrDefault(statistic.id) ?? m_completed.GetValueOrDefault(statistic.id);
+            if (previous is null || !SameValue(previous, statistic))
+                m_snapshotDirty = true;
             m_current[statistic.id] = statistic;
+        }
     }
 
     /// <summary>
@@ -225,22 +232,28 @@ public sealed class EditorStatistics
     /// frame for providers that draw after their consumer.
     /// </summary>
     /// <returns>
-    /// A detached, sorted snapshot containing at most one value for each stable statistic ID.
+    /// An immutable, sorted snapshot containing at most one value for each stable statistic ID.
+    /// Unchanged content reuses the same snapshot; previously returned snapshots remain valid.
     /// </returns>
     public IReadOnlyList<EditorStatistic> GetSnapshot()
     {
         lock (m_sync)
         {
+            if (!m_snapshotDirty && m_snapshot is not null)
+                return m_snapshot;
             var merged = new Dictionary<EditorStatisticId, EditorStatistic>(m_completed);
             foreach ((EditorStatisticId id, EditorStatistic statistic) in m_current)
                 merged[id] = statistic;
-            return merged.Values
+            EditorStatistic[] values = merged.Values
                 .OrderBy(static value => value.groupOrder)
                 .ThenBy(static value => value.groupName, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static value => value.order)
                 .ThenBy(static value => value.label, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static value => value.id.value, StringComparer.Ordinal)
                 .ToArray();
+            m_snapshot = Array.AsReadOnly(values);
+            m_snapshotDirty = false;
+            return m_snapshot;
         }
     }
 
@@ -248,8 +261,26 @@ public sealed class EditorStatistics
     {
         lock (m_sync)
         {
-            m_completed = new Dictionary<EditorStatisticId, EditorStatistic>(m_current);
+            foreach (EditorStatisticId id in m_completed.Keys)
+            {
+                if (m_current.ContainsKey(id))
+                    continue;
+                m_snapshotDirty = true;
+                break;
+            }
+            (m_completed, m_current) = (m_current, m_completed);
             m_current.Clear();
         }
     }
+
+    private static bool SameValue(
+        EditorStatistic first,
+        EditorStatistic second
+    ) => ReferenceEquals(first, second)
+        || first.groupId == second.groupId
+        && first.groupOrder == second.groupOrder
+        && first.order == second.order
+        && string.Equals(first.groupName, second.groupName, StringComparison.Ordinal)
+        && string.Equals(first.label, second.label, StringComparison.Ordinal)
+        && string.Equals(first.value, second.value, StringComparison.Ordinal);
 }
