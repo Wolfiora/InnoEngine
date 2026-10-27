@@ -10,6 +10,8 @@ owned Restore 使用 NuGet 标准属性 `ExcludeRestorePackageImports=true`；Ta
 
 工程使用标准 PackageReference 和 SDK Restore。输入快照读取实际求值的 assets 路径及包内容，不回查另一配置的默认 obj；独立 ArtifactsPath 隔离所属还原与编译输出。工具保留其真实 SDK 输入，规则与更新方式见[依赖还原](DEPENDENCY_SUBMISSION.md)。
 
+最早的 Core.IO 引导采用独立、中立的 SDK 编译 scope。有调用方 `ArtifactsPath` 时，其位置为该 owner 下的 `.inno-task-foundation`；普通输出使用 Task artifacts 下固定的 `foundation`。它是按配置复用的 SDK 中间输出，不是每次操作发布一个新 generation。引导请求继续剥离产品 TFM、RID、Browser、AOT 和发布参数；不会以不同全局属性写入调用方同一个可变 Core.IO 输出。随后仍由原有 Core.IO 协议声明 publisher owner，并进行私有加载、冻结、校验和原子发布。
+
 ## 职责与边界
 
 这是 MSBuild 引导边界的库，负责协调 Task 运行闭包的编译、发布及退休，并在读取保护期间复制生成绑定。它依赖 Core IO、中立 Toolchains 与 MSBuild 契约，

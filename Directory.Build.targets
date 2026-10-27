@@ -84,13 +84,13 @@
 
   <Target Name="NormalizeInnoCompilerToolReferences" AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
     <PropertyGroup>
-      <_InnoCompilerToolPropertyPattern>(?i)(^|;)(?:$([System.String]::Copy('$(InnoCompilerToolExcludedProperties);BuildProjectReferences;InnoTaskBootstrapOwner').Replace(';', '|')))=[^;]*</_InnoCompilerToolPropertyPattern>
+      <_InnoCompilerToolPropertyPattern>(?i)(^|;)(?:$([System.String]::Copy('$(InnoCompilerToolExcludedProperties);BuildProjectReferences;InnoTaskBootstrapOwner;BuildingInsideVisualStudio').Replace(';', '|')))=[^;]*</_InnoCompilerToolPropertyPattern>
     </PropertyGroup>
     <ItemGroup>
       <_MSBuildProjectReferenceExistent Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_MSBuildProjectReferenceExistent.AdditionalPropertiesFromProject)', '&lt;IsRoslynComponent&gt;\s*(?i:true)\s*&lt;/IsRoslynComponent&gt;'))">
         <InnoCompilerTool>true</InnoCompilerTool>
         <AdditionalProperties>$([System.Text.RegularExpressions.Regex]::Replace('%(_MSBuildProjectReferenceExistent.AdditionalProperties)', '$(_InnoCompilerToolPropertyPattern)', ''))</AdditionalProperties>
-        <GlobalPropertiesToRemove>%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove);$(InnoCompilerToolExcludedProperties);BuildProjectReferences;InnoTaskBootstrapOwner</GlobalPropertiesToRemove>
+        <GlobalPropertiesToRemove>%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove);$(InnoCompilerToolExcludedProperties);BuildProjectReferences;InnoTaskBootstrapOwner;BuildingInsideVisualStudio</GlobalPropertiesToRemove>
       </_MSBuildProjectReferenceExistent>
     </ItemGroup>
   </Target>

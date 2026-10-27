@@ -14,8 +14,10 @@ namespace Inno.Build.Tests;
 
 public sealed class CompilerToolBuildScopeTests
 {
-    [Fact]
-    public async Task AnalyzerRuntimeAndTransitiveEdgesShareOneCompilerToolBuild()
+    [Theory]
+    [InlineData("Debug")]
+    [InlineData("Release")]
+    public async Task AnalyzerRuntimeAndTransitiveEdgesShareOneCompilerToolBuild(string configuration)
     {
         string repository = TestRepository.GetRoot(typeof(CompilerToolBuildScopeTests).Assembly);
         string root = Path.Combine(Path.GetTempPath(), "InnoCompilerToolScope", Guid.NewGuid().ToString("N"));
@@ -37,7 +39,7 @@ public sealed class CompilerToolBuildScopeTests
             WriteProject(root, "Runtime", """
                 <Project Sdk="Microsoft.NET.Sdk">
                   <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
-                  <ItemGroup><ProjectReference Include="../Tool/Tool.csproj" AdditionalProperties="BuildProjectReferences=true" PrivateAssets="compile" /></ItemGroup>
+                  <ItemGroup><ProjectReference Include="../Tool/Tool.csproj" AdditionalProperties="BuildProjectReferences=true;BuildingInsideVisualStudio=false" PrivateAssets="compile" /></ItemGroup>
                 </Project>
                 """);
             WriteProject(root, "Analyzer", """
@@ -57,11 +59,13 @@ public sealed class CompilerToolBuildScopeTests
                 """);
             string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-            for (int run = 0; run < 2; run++)
+            for (int run = 0; run < 3; run++)
             {
+                if (run == 2)
+                    File.AppendAllText(Path.Combine(root, "Tool", "Tool.cs"), "\npublic sealed class ChangedToolMarker { }\n");
                 string binlog = Path.Combine(root, run + ".binlog");
                 await ToolchainEnvironment.RunAsync(dotnet,
-                    ["build", "Root/Root.csproj", "--nologo", "-m:4", "-nodeReuse:false",
+                    ["build", "Root/Root.csproj", "--nologo", "-m:4", "-nodeReuse:false", "-c", configuration,
                         "-p:ArtifactsPath=" + Path.Combine(root, "managed"), "-p:InnoNativeTarget=fixture-target", "-bl:" + binlog],
                     root, timeout.Token, DotNetSdkEnvironment.Create(dotnet));
                 int compilations = 0;
@@ -77,6 +81,7 @@ public sealed class CompilerToolBuildScopeTests
                     Assert.DoesNotContain("InnoNativeTarget", project.GlobalProperties!.Keys);
                     Assert.DoesNotContain("BuildProjectReferences", project.GlobalProperties.Keys);
                     Assert.DoesNotContain("InnoTaskBootstrapOwner", project.GlobalProperties.Keys);
+                    Assert.DoesNotContain("BuildingInsideVisualStudio", project.GlobalProperties.Keys);
                     identities.Add(string.Join(";", project.GlobalProperties.OrderBy(static pair => pair.Key)
                         .Select(static pair => pair.Key + "=" + pair.Value)));
                 };
@@ -89,7 +94,7 @@ public sealed class CompilerToolBuildScopeTests
                 };
                 events.Replay(binlog);
                 Assert.Single(identities);
-                Assert.Equal(run == 0 ? 1 : 0, compilations);
+                Assert.Equal(run == 1 ? 0 : 1, compilations);
             }
         }
         finally
