@@ -6,6 +6,14 @@
 
 最新全仓深审见[四仓库核心验收报告](../../records/architecture/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md)。正式架构门禁通过不表示资源清理、错误原子性和热路径成本都已闭合。
 
+## 当前 Editor UI 计划缺口
+
+[2026-10-27 原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)是本分支 UI 完成状态的最新依据。菜单/快捷键 generation 索引、通用 Graph 节点与框选呈现、Console 搜索、Stats 趋势与快照复用尚未完整实现；键盘旅程、10k/2k 性能、100 次开关和 10 次 reload 验收不完整。全部 CI 通过不能关闭这些条目；PR #26 保持 Draft。
+
+F03 / [#13](https://github.com/Wolfiora/InnoEngine/issues/13) 已在本分支修复：History 先验证栈顶 ID 再 Pop，三种非 LIFO 拒绝回归在最终 Windows/macOS CI 通过，本次 121 项 Interactions 复跑也通过。等待 PR 合并后关闭 issue，不再把当前分支描述为仍在校验前弹栈。
+
+F09 / [#16](https://github.com/Wolfiora/InnoEngine/issues/16) 的固定默认 assets 读取已在当前源码及 master 中移除；测试读取 SDK Restore 实际返回的 ProjectAssetsFile。原 issue 的 package/load mismatch 等完整负向矩阵本次未重新证明，暂不将根因修正扩大为全部验收完成。
+
 ## 本轮已修复并验证
 
 F02/F08 已在 Core Coroutine owner 内统一修复：嵌套枚举器逆序释放，完成/停止/失败共用退休流程；重入停止失效 handle 后在回调返回安全点清理，不再改坏活动遍历。Debug/Release 各 40 项回归通过，Runtime 62 项通过。异常明确汇总，未增加第二套调度器或事件系统。
@@ -25,10 +33,9 @@ B02 / F09 的当前处理是使用标准 `.csproj` 依赖还原，不再维护�
 | R02 | Runtime coroutine 接入 | 私有 scheduler 只有创建、Tick、stop 和 Dispose，当前没有 admission 路径；需落地最小真实契约或删除未使用状态，不能宣称已集成。 |
 | T01/T02 | Browser 验收覆盖 | 非致命 console 404 尚未归因；最高分跨启动写入没有在有界游戏运行中触发，已各自提交 issue。 |
 | B01 | Native 构建诊断 | Windows native 源码编码告警仍需按组件 owner 处理；B02 的依赖还原范围独立验收。 |
-| F03 | History 拒绝操作的原子性 | 非 LIFO Commit 在校验 ID 前弹栈，public handler 反例确认内层修改无法随后回滚/Undo。不能用正常顺序用例通过关闭此项。 |
 | F04/F05 | 插件 UI / 2D 热路径 | UI 插件在纹理 GPU 命中前按 draw 完整复制像素；2D 模型的非空 viewContent 使完整帧缓存持续绕过。见全仓报告的分配实测和调用链，尚未修复。 |
 | F06/F07 | 热构建与缓存维护成本 | 暖 Native 准备反复读取约 4.5 GB；当前 5 秒 inventory 超时，30 秒 dry-run 可完成。内容/owner 正确性协议已存在，但没有以此证明日常维护必然收敛或性能足够。 |
-| O01 | macOS / Metal | 历史 revision 的两条 CI 在单线程 Metal surface 退休用例超时，根因未确认。本轮没有 Mac，不能关闭或直接归责 BGCS。 |
+| O01 | macOS / Metal | 历史 revision 的超时保留原记录；`2dc37114` 的 Mac 自动 CI 已通过。Metal refcount warning 仍存在且 master 也可见，根因未确认；人工 Mac 交互未执行，不能宣称无泄漏或归责 BGCS。 |
 | O02 | 完整构建性能 | 本轮有当前热构建采样及同 .NET 10 的路径解析实现对照，但没有完整改造前的空闲、同输入五次 Editor 基线。历史高负载耗时不作有效对照，不宣称整体提速或已排除全部回退。 |
 | O06 | XML / Wiki 语义 | 符号、签名和示例门禁不证明全部历史注释足够具体；部分历史参数说明仍需补充实际约束和失败语义。新增构建 API 的所有权、失败与生命周期单独说明。 |
 

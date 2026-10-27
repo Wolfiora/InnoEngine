@@ -4,6 +4,8 @@
 
 当前 Editor UI 的分层、Session、Selection、History、插件调用方及逐项质量评价见[Editor UI 验收](../../records/architecture/acceptance/EDITOR_UI_ACCEPTANCE_2026_10_27.md)和[当前 UI 架构](EDITOR_UI_ARCHITECTURE.md)。该报告分别列出自动验证、产品运行与未执行的人工/设备检查，不将此前数量累加为本次结果。
 
+**原计划尚未全部完成。** [逐项复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)确认菜单索引、Graph 抽取、Console/Stats 功能及规模/生命周期验收仍有缺口，PR #26 保持 Draft。源码 `2dc37114` 的 6/6 CI checks 已通过，包含真实 macOS ARM64 自动测试；不能继续把所有 Mac 自动验收说成未执行，也不能把 CI 通过等同于全部 UI 计划完成。本次另有 121 项 Interactions 复跑通过。
+
 当前依赖通过标准 `.csproj` / `PackageReference` 和 SDK Restore 解析，源码不保存独立依赖锁清单；本轮范围与证据见[标准 NuGet 还原验收](../../records/architecture/acceptance/STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md)。基线保持 .NET SDK 10.0.402、C# 14、BGCS 4.1.2。
 
 此前 BGCS 消费与三项优先修复的独立证据见[BGCS 4.1.2 消费验收](../../records/architecture/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)及[专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。历史通过数量不能当作当前源码已重跑。
@@ -28,9 +30,9 @@
 
 本轮构建专项合计 74 项通过，0 失败 / 跳过，不重复计入此前 Coroutine / Runtime 的 142 项。本次发现的旧 package content 与新 SDK DLL 混装由 owned Restore / compilation 求值隔离修复；初始失败、哈希证明及最终复验见报告。
 
-## 尚未完成的矩阵与问题
+## 此前 BGCS 专项的矩阵与问题
 
-- macOS / Metal 无设备，未执行。
+- 该次 BGCS 专项没有本地 macOS / Metal 设备验收；后续 Editor 的 Mac 自动 CI 结果见上方最新复审，人工设备检查仍未执行。
 - Windows Player 六条有界图形路径已通过；Editor Debug/Release、完整视觉、焦点、DPI、音频及长期运行矩阵未在本轮重跑。
 - 示例产品已观察存储读取，尚未触发新的最高分写入，不能宣称分数跨启动存储已验收。
 - 非致命 console 资源诊断仍待归因；自动维护预算、热构建成本及其他审计问题继续开放，均按报告链接进入 issue。

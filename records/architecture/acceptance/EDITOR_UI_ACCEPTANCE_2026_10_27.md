@@ -6,7 +6,9 @@
 
 This report covers the approved Editor UI refactor on `editor-ui`, starting at `b303d9f10cbaf5a905f7cb529e52cf8293b0d8bd`, together with the Rendering2D authoring caller updates and the officially exported FlappyBird package. It does not certify the entire engine, every platform or every interaction as perfect.
 
-The implementation and local correctness checks are complete, including the final SDK Wiki gate. Remote CI is tracked on the pull request for the committed branch; local results do not substitute for its complete matrix.
+The implemented subset passed its local correctness checks, including the final SDK Wiki gate. This is not completion of every requirement in the approved plan. The [plan-by-plan review](EDITOR_UI_PLAN_REVIEW_2026_10_27.md) supersedes the earlier completion assessment: menu indexing, generic graph presentation, Console/Stats workflows and the complete scale/lifecycle acceptance matrix remain incomplete. The results below retain their original scope.
+
+Remote CI subsequently passed all six checks at `2dc37114b7c9b5137e866efc057a66e0dfd72046`. The review records exact Windows/macOS outcomes and distinguishes those passes from plan requirements that CI does not exercise. PR #26 remains a draft pending that work.
 
 ## Implemented boundaries and behavior
 

@@ -2,6 +2,8 @@
 
 This ledger tracks the approved Editor UI plan against the current `editor-ui` branch. It is an implementation record, not acceptance evidence.
 
+Status correction: the [original-plan review](acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md) found incomplete implementation and acceptance requirements. The branch is not fully complete; PR #26 remains a draft. Previous stage labels described implemented subsets, not every requirement in the approved plan.
+
 Baseline: `b303d9f10cbaf5a905f7cb529e52cf8293b0d8bd`. Evidence owner: `D:/InnoEngine-Verification/editor-ui-2026-10-27`.
 
 ## Required outcomes
@@ -24,12 +26,12 @@ Baseline: `b303d9f10cbaf5a905f7cb529e52cf8293b0d8bd`. Evidence owner: `D:/InnoEn
 | --- | --- | --- |
 | Baseline and ownership | Recorded | External baseline inventory and SDK information |
 | History atomicity | Implemented; local regressions passed | LIFO rejection, shared gestures, immediate draft records and generation-only queries |
-| Domain and presentation boundaries | Implemented | Headless features; Assets/Shaders/Graph presentation; no Panel references |
-| UI session and styles | Implemented | Session/owner state, pointer-free facade, native borrow guards; 49 native tests passed |
+| Domain and presentation boundaries | Main boundaries implemented; graph extraction partial | Headless features and no Panel references; generic node/hit/box selection presentation remains incomplete |
+| UI session and styles | Session implemented; style and lifetime acceptance partial | Session/owner state and native borrow guards passed focused tests; domain metrics and full lifecycle matrix remain |
 | Selection, gestures and commands | Implemented; local regressions passed | Ordered identities, mixed values, precise scalar components and atomic batch operations |
-| Panel integration | Implemented | Inspector, Hierarchy, File Browser, SceneView, ShaderEditor and Workbench |
+| Panel integration | Partial | Core views integrated; Console search, keyboard journey proof and Stats trends remain incomplete |
 | Architecture, scripting and documentation | Passed locally | 241 SDK projects evaluated; current API mappings synchronized; final XML formatting, API signatures and compiled Wiki examples passed |
-| Product, performance and final acceptance | Local product checks passed | Final Debug/Release builds, 15,000-frame FlappyBird run, 300 Play frames and renderer matrix; isolated UTF-8 comparison recorded |
+| Product, performance and final acceptance | Bounded products passed; full plan acceptance incomplete | Final Debug/Release and FlappyBird checks passed; 10k/2k UI performance, 100-cycle, 10-reload and complete visual matrix are not established by the UTF-8 microbenchmark |
 
 ## Acceptance rules
 
@@ -55,3 +57,4 @@ The final report must assess architecture, readability, state ownership, abstrac
 - Final lifetime review reproduced boxed structs retaining referenced objects through selection/focus/snapshots. Targets now retain only known neutral scalars strongly; all other non-identity objects use weak references. The failing-before regression and complete passing Interactions suite are retained separately.
 - The SDK directly references reusable API owners. Its Hierarchy/Inspector contract references remain because they explicitly export four drop targets; a fresh SDK and real script probe verify these public contracts. Non-exporting Panel carriers are rejected by syntax-aware ownership fixtures.
 - Complete Windows/macOS CI at `61f855c0` exposed one remaining Build fixture using the old drawing host. Its real UI session, typed export owner and asynchronous retirement retry are now explicit; original assertions remain. Both platforms' other stages passed. Final CI must be evaluated on the replacement commit.
+- Replacement commit `2dc37114` passed all six checks, including complete Windows/macOS suites. The 2026-10-27 plan review additionally rebuilt and ran 121 Interactions tests successfully. These passes do not close the implementation/acceptance gaps listed above.
