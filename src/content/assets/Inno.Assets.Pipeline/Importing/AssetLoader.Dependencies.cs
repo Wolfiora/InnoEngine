@@ -307,12 +307,16 @@ sealed partial class AssetLoader
                 string sourcePath = GetSourcePath(NormalizeRelativePath(dependency.key));
                 if (!AssetSourceFileStamp.TryCapture(sourcePath, out AssetSourceFileStamp sourceStamp))
                     return "MISSING";
-                if (SourceStampMatches(dependency, sourceStamp))
+                bool stampChanged = !SourceStampMatches(dependency, sourceStamp);
+                if (GetMount(dependency.key).isReadOnly && !stampChanged)
                     return dependency.fingerprint;
-                byte[] sourceBytes = ReadStableSourceBytes(sourcePath, out sourceStamp);
-                ApplySourceStamp(ref dependency, sourceStamp);
-                metadataChanged = true;
-                return ComputeSha256Hex(sourceBytes);
+                string hash = ReadStableSourceHash(sourcePath, out sourceStamp);
+                if (stampChanged)
+                {
+                    ApplySourceStamp(ref dependency, sourceStamp);
+                    metadataChanged = true;
+                }
+                return hash;
             }
             case AssetImportDependencyKind.Artifact:
                 return Guid.TryParse(dependency.key, out Guid id) &&

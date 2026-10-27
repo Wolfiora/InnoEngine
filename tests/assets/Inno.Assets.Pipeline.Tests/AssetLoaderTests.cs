@@ -1050,7 +1050,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void CurrentCatalogStamp_LoadsArtifactWithoutOpeningSourceContent()
+    public void BlockedSourceVerificationRetainsLastGoodArtifactAndReportsImportFailure()
     {
         using TestWorkspace workspace = new();
         workspace.WriteText("Text/cached.txt", "cached");
@@ -1068,6 +1068,9 @@ public sealed class AssetLoaderTests : IDisposable
             loader.Load(AssetPath.Project("Text/cached.txt"), typeof(TextAsset)));
 
         Assert.Equal("cached", asset.content);
+        Assert.True(loader.TryGetInfo(AssetPath.Project("Text/cached.txt"), out AssetInfo? info));
+        Assert.Equal(AssetImportStatus.Failed, info!.status);
+        Assert.Contains(info.diagnostics, diagnostic => diagnostic.Contains("IOException", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1092,7 +1095,7 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void CurrentDependencyStamp_DoesNotOpenSourceDependencyContent()
+    public void BlockedDependencyVerificationRetainsLastGoodArtifactAndReportsImportFailure()
     {
         using TestWorkspace workspace = new();
         workspace.WriteText("Import/schema.inc", "schema");
@@ -1109,6 +1112,8 @@ public sealed class AssetLoaderTests : IDisposable
             loader.Load(AssetPath.Project("Import/root.importgraph"), typeof(ImportGraphAsset)));
 
         Assert.False(asset.isMissing);
+        Assert.True(loader.TryGetInfo(AssetPath.Project("Import/root.importgraph"), out AssetInfo? info));
+        Assert.Equal(AssetImportStatus.Failed, info!.status);
     }
 
     [Fact]
@@ -1136,7 +1141,32 @@ public sealed class AssetLoaderTests : IDisposable
     }
 
     [Fact]
-    public void StaleSource_ReimportsAndUpdatesCanonicalInstanceInPlace()
+    public void ChangedDependencyWithPreservedTimestampReimportsTheCanonicalAsset()
+    {
+        using TestWorkspace workspace = new();
+        workspace.WriteText("Import/schema.inc", "first");
+        workspace.WriteText("Import/root.importgraph", "Import/schema.inc");
+        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        ImportGraphAsset before = Assert.IsType<ImportGraphAsset>(
+            loader.Load(AssetPath.Project("Import/root.importgraph"), typeof(ImportGraphAsset)));
+        long version = before.contentVersion;
+        string dependency = workspace.SourcePath("Import/schema.inc");
+        DateTime timestamp = System.IO.File.GetLastWriteTimeUtc(dependency);
+        workspace.WriteText("Import/schema.inc", "other");
+        System.IO.File.SetLastWriteTimeUtc(dependency, timestamp);
+
+        ImportGraphAsset after = Assert.IsType<ImportGraphAsset>(
+            loader.Load(AssetPath.Project("Import/root.importgraph"), typeof(ImportGraphAsset)));
+
+        Assert.Same(before, after);
+        Assert.Equal(version + 1, after.contentVersion);
+        Assert.False(after.isMissing);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void StaleSource_ReimportsAndUpdatesCanonicalInstanceInPlace(bool preserveTimestamp)
     {
         using TestWorkspace workspace = new();
         workspace.WriteText("Text/reload.txt", "one");
@@ -1144,8 +1174,12 @@ public sealed class AssetLoaderTests : IDisposable
         TextAsset before = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/reload.txt"), typeof(TextAsset)));
         Guid persistentId = before.identity.persistentId;
         long version = before.contentVersion;
+        string sourcePath = workspace.SourcePath("Text/reload.txt");
+        DateTime sourceTime = System.IO.File.GetLastWriteTimeUtc(sourcePath);
 
         workspace.WriteText("Text/reload.txt", "two");
+        if (preserveTimestamp)
+            System.IO.File.SetLastWriteTimeUtc(sourcePath, sourceTime);
         TextAsset after = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/reload.txt"), typeof(TextAsset)));
 
         Assert.Same(before, after);

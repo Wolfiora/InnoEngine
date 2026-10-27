@@ -82,6 +82,8 @@ Authoring 启动与 Rescan 时，当前 source 的 `.imeta` 是“路径属于�
 
 运行时导出同时校验创作依赖：沿 Artifact 依赖递归检查当前导入状态和源指纹（包括 include/Source 输入）。Editor 可以继续使用 last-good，但失败、缺失或过期的必需创作输入不能认证 Player 构建。导出不在中途重导入，以免已编译的目标产物与新资产混用 generation；拒绝时报告完整依赖路径，需重导入后重新构建。
 
+可写创作源的路径 Load 和 Source 依赖重新验证实际内容，不把相同长度或修改时间当作内容未变的证明。验证使用标准库流式 SHA-256，避免只为检查有效性分配完整源文件字节数组。源被锁定或拒绝访问时走既有导入失败与 last-good 协议：保留可用产物、公开失败诊断，不能把它认证为当前成功输入；解除阻塞后再次 Load 可恢复。只读安装 mount 由已验证的不可变 generation 提供内容身份，仍可复用其有效 stamp。持久 ID、公开签名和源 sidecar 格式不变；这项完整性修复增加必要的源读取，不宣称为零成本优化。
+
 ### Source Mount 候选与共同 Recovery
 
 `PrepareSourceMounts` 返回未发布的 `AssetSourceMountTransaction`。`sourceMounts`、
