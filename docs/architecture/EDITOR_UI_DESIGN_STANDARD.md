@@ -97,6 +97,6 @@ Presentation 的准备、绘制与发布属于同一次 owner 操作；期间拒
 
 变更必须同步源码、调用方、项目引用、公开 XML、Wiki 和适用测试。使用真实公开契约与可替换边界，不使用 IVT、私有反射或测试后门。
 
-`tests/Invoke-EditorUiAcceptance.ps1` 编排既有 xUnit/VSTest，按 Contracts、Workflows、Visual、Lifecycle、Performance、Products 分组。每次保留独立 SDK、源码身份、TRX 和结果摘要；空发现不能视为成功。`-ArtifactsPath` 与 `-ResultsDirectory` 指定输出 owner；需要把大量临时文件放到其他卷时，使用 `-TemporaryDirectory` 明确指定较短的临时根。默认保留操作系统的 TEMP/TMP，不把它们隐式嵌套到深层结果目录。该参数同样传递给隔离测试入口，普通测试与独立进程使用同一临时 owner。
+`tests/Invoke-EditorUiAcceptance.ps1` 编排既有 xUnit/VSTest，按 Contracts、Workflows、Visual、Lifecycle、Performance、Products 分组。每次保留独立 SDK、源码身份、TRX 和结果摘要；空发现不能视为成功。Products 必须显式提供平台产品的 `-GraphicsApis` 和启动日志期望 `-BackendPattern`；共享入口不内嵌 backend 名称作为默认断言。`-ArtifactsPath` 与 `-ResultsDirectory` 指定输出 owner；需要把大量临时文件放到其他卷时，使用 `-TemporaryDirectory` 明确指定较短的临时根。默认保留操作系统的 TEMP/TMP，不把它们隐式嵌套到深层结果目录。该参数同样传递给隔离测试入口，普通测试与独立进程使用同一临时 owner。
 
 最终报告分别评价架构、组织、状态与生命周期、抽象、复用、样式、扩展、交互、Undo/Redo、菜单和颗粒度；每项列出证据与限制。目录整齐、测试数量或正常启动不能代替视觉、输入、重复 reload、资源收敛和成对性能验收。

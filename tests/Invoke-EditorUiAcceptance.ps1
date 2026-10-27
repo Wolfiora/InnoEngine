@@ -8,7 +8,7 @@ param(
     [string]$TemporaryDirectory,
     [string]$ProductProject,
     [string[]]$GraphicsApis = @(),
-    [string]$BackendPattern = 'BGFX',
+    [string]$BackendPattern,
     [switch]$NoBuild
 )
 
@@ -68,6 +68,10 @@ foreach ($selected in $profiles) {
             }
             if ($GraphicsApis.Count -eq 0) {
                 Save-Result $selected 'Blocked' 'Supply the explicit graphics API matrix for the selected product using -GraphicsApis.'
+                continue
+            }
+            if (-not $BackendPattern) {
+                Save-Result $selected 'Blocked' 'Supply the product initialization expectation using -BackendPattern.'
                 continue
             }
             if (-not $NoBuild) {
