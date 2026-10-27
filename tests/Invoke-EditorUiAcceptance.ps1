@@ -5,6 +5,7 @@ param(
     [string]$Dotnet = 'dotnet',
     [Parameter(Mandatory = $true)][string]$ResultsDirectory,
     [Parameter(Mandatory = $true)][string]$ArtifactsPath,
+    [string]$TemporaryDirectory,
     [string]$ProductProject,
     [string[]]$GraphicsApis = @(),
     [string]$BackendPattern = 'BGFX',
@@ -110,6 +111,7 @@ foreach ($selected in $profiles) {
         & (Join-Path $PSScriptRoot 'Invoke-IsolatedTests.ps1') -Dotnet $Dotnet -Solution $selection `
             -Configuration $Configuration -ResultsDirectory $stageRoot -ArtifactsPath $artifacts `
             -Target $product.InnoNativeTarget -ProductProperties $product.InnoProductBuildProperties -Filter $filter `
+            -TemporaryDirectory $TemporaryDirectory `
             *> (Join-Path $stageRoot 'execution.log')
         $executed = 0
         $observedSuites = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
