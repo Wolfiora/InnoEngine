@@ -36,6 +36,7 @@ Evidence owner: `D:/InnoEngine-Verification/editor-ui-2026-10-27`.
 | Shared UI contracts | 558 passed; 0 failed/skipped | `boxed-suite/` TRX, with its earlier 150 architecture cases replaced by the final 152 in `architecture-sdk-owner-tests/` |
 | Isolated contracts | 4 passed; 0 failed/skipped | One native retirement case in `boxed-suite/`; three unchanged Core/compiler/build cases in `isolation-final-tests/` |
 | Rendering2D authoring | 42 passed, 0 failed/skipped against the fresh SDK output | `rendering2d-sdk-owner-tests/results/authoring.trx` |
+| Export shutdown integration | Passed three consecutive runs; counted as one distinct case | `ci-export-retirement/export-retirement.trx`, `ci-export-retirement-repeat/` |
 | Official package export | Passed | `rendering2d-export-accepted.log` |
 | Architecture and public XML | Passed; final Wiki graph also checks evaluated ownership | `architecture-final.log`, `xml-domain.log`; new public source compiles with XML warnings as errors |
 | SDK Wiki graph, signatures, links and examples | Passed; 241 project ownership evaluations, 34,493 API entries and 197 examples | `wiki-sdk-owner.log`, `wiki-sdk-owner-api.json`, `wiki-sdk-owner-examples.json` |
@@ -44,7 +45,7 @@ Evidence owner: `D:/InnoEngine-Verification/editor-ui-2026-10-27`.
 | FlappyBird product | Debug: 15,000 frames; Release: 5,000 frames; both complete 300 Play frames and return to Edit. D3D12 and Vulkan: 1,000 renderer frames each; all orderly exits | `flappy-Debug-boxed*`, `flappy-Release-boxed*`, `flappy-Debug-d3d12.log`, `flappy-Debug-vulkan.log` |
 | GitHub CI | Tracked separately on the pull request for this branch | Its exact head revision, run links and final results accompany delivery; this report does not claim an unexecuted remote pass |
 
-Initial failures remain in the evidence owner: the wrong native product context, a missing direct test annotation dependency, fixtures missing the new session/presentation boundary, an EventHub whose dispatcher was not retained, and boxed target retention (`boxed-before/`). The SDK probe also rejected an exploratory removal of actual Panel contract owners (`sdk-api-probe-before.log`); their required direct references were restored before delivery. Their corrective runs passed; these failures are not labeled as upstream BGCS defects. The full SourceDebug run interrupted during contract changes is not counted as a pass. The 604 distinct local passes are 558 shared contracts, four isolated contracts and 42 Rendering2D cases; focused reruns are not added again.
+Initial failures remain in the evidence owner: the wrong native product context, a missing direct test annotation dependency, fixtures missing the new session/presentation boundary, an EventHub whose dispatcher was not retained, and boxed target retention (`boxed-before/`). The SDK probe also rejected an exploratory removal of actual Panel contract owners (`sdk-api-probe-before.log`); their required direct references were restored before delivery. Their corrective runs passed; these failures are not labeled as upstream BGCS defects. The full SourceDebug run interrupted during contract changes is not counted as a pass. The 605 distinct local passes are 558 shared contracts, four isolated contracts, 42 Rendering2D cases and the export shutdown integration case; focused reruns are not added again.
 
 ## Performance and resource ownership
 
@@ -112,6 +113,8 @@ One attempted Build-entry rebuild overlapped a running Wiki CLI and encountered 
 Explicit owner-aware cache maintenance reclaimed 20,782,799,012 logical bytes and protected 174,384,757 bytes while active verification was running. C: free space rose from about 92.5 to 95.5 GiB; logical bytes and physical volume recovery are different measurements. SDK and NuGet global caches were not cleaned.
 
 The full local SourceDebug build interrupted during contract changes remains uncounted. The final focused UI graph, three additional isolation projects and standard Debug/Release product entries passed; the complete SourceDebug matrix belongs to remote CI. No test filter excludes an unresolved UI failure.
+
+The first complete remote matrix at `61f855c0` passed both platforms' Debug/Release products, renderer smoke, BGCS identity, ten hot builds, Solution, architecture, Support Pack and Wiki. Its sole failing fact on both platforms was `EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices`: the Build fixture drew a modal without the new UI session and still selected an arbitrary module rather than the export service. The fixture now explicitly composes both owners, enters the session, resolves `EditorExportService` and retries the existing Pending retirement protocol after releasing the fake cleanup barrier. All original UI, cancellation, release and generation-readiness assertions remain. The production implementation and BGCS were not changed for this correction. The replacement commit's complete CI result is tracked on the PR, not inferred from the earlier head.
 
 
 ## Companion source commits

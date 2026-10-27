@@ -25,6 +25,7 @@ using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
 using Inno.Editor.Core;
+using Inno.Editor.Exporting;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Plugins.Authoring;
@@ -693,7 +694,10 @@ public sealed class BuildPipelineTests : IDisposable
         var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
         var buildSettings = new BuildSettingsStore(
             Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
-        m_engine.modules.Register("Tests.Exporting", [Assembly.Load(new AssemblyName("Inno.Editor.Exporting"))]);
+        m_engine.modules.Register("Tests.Exporting", [
+            typeof(EditorExportService).Assembly,
+            Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))
+        ]);
         var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
         using var runtime = new EditorInteractionRuntime(
             context, m_engine.types, m_engine.logs, [pipeline, buildSettings, m_settings]);
@@ -704,6 +708,8 @@ public sealed class BuildPipelineTests : IDisposable
         ImGuiNativeContext* imgui = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
             io->DisplaySize = new ImVec2C { X = 1200f, Y = 900f };
             io->DeltaTime = 1f / 60f;
@@ -737,14 +743,28 @@ public sealed class BuildPipelineTests : IDisposable
             Assert.True(plugin.TryGetPresentation(out EditorModalExtension.Presentation pluginPresentation));
             Assert.False(pluginPresentation.isVisible);
 
-            Assert.True(runtime.interactions.TryGetModule<EditorModule>(out EditorModule? module));
+            Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out EditorExportService? module));
             Assert.NotNull(module);
             Assert.Equal("Inno.Editor.Exporting", module.GetType().Assembly.GetName().Name);
             Assert.Throws<RetirementPendingException>(() => module.Stop(context));
             Assert.True(provisioner.canceled.Task.IsCompletedSuccessfully);
             Assert.False(provisioner.completed);
             provisioner.cleanup.SetResult();
-            runtime.Dispose();
+            var retirement = System.Diagnostics.Stopwatch.StartNew();
+            while (true)
+            {
+                try
+                {
+                    runtime.Dispose();
+                    break;
+                }
+                catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
+                {
+                    if (retirement.Elapsed >= TimeSpan.FromSeconds(5))
+                        throw;
+                    Thread.Sleep(1);
+                }
+            }
             Assert.True(provisioner.completed);
             m_engine.generations.EnsureReady("verify export retirement drained its services");
         }
