@@ -170,20 +170,20 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
             out AssetFileEntry entry
         ))
         {
-            EditorUI.current.widgets.ColoredText(EditorPalette.assetBreadcrumbText, "Node selection unavailable");
+            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, "Node selection unavailable");
             return;
         }
 
         if (!documents.TryOpen(entry, out ShaderEditorDocuments.Draft draft))
         {
-            EditorUI.current.widgets.ColoredText(EditorPalette.assetBreadcrumbText, "Waiting for Shader asset import…");
+            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, "Waiting for Shader asset import…");
             return;
         }
 
         if (target.nodes.Count == 1 && documents.Controller(draft).document.FindNode(target.nodes[0]) is GraphNodeRecord node)
-            EditorUI.current.widgets.ColoredText(EditorPalette.assetBreadcrumbText, "Node: " + new ShaderEditorCanvas(documents, draft).Title(node));
+            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, "Node: " + new ShaderEditorCanvas(documents, draft).Title(node));
         else
-            EditorUI.current.widgets.ColoredText(EditorPalette.assetBreadcrumbText, $"Nodes: {target.nodes.Count} selected");
+            EditorUI.current.widgets.ColoredText(EditorPalette.contextText, $"Nodes: {target.nodes.Count} selected");
     }
 
     /// <summary>

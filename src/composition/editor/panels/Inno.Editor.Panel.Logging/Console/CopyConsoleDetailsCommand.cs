@@ -1,9 +1,11 @@
 using Inno.Editor.Interactions;
+using Inno.Core.Input;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 [EditorAction(LoggingInteractionIds.C_COPY_DETAILS, LoggingInteractionIds.C_ENTRY_AREA)]
 [EditorMenu(LoggingInteractionIds.C_ENTRY_AREA, "Copy Full Entry", order: 110)]
+[EditorShortcut(LoggingInteractionIds.C_ENTRY_AREA, KeyCode.C, KeyModifier.Shift, primary: true)]
 internal sealed class CopyConsoleDetailsCommand : EditorAction<ConsoleEntryCopyTarget>
 {
     /// <summary>

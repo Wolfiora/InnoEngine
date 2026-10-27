@@ -83,11 +83,11 @@ public sealed unsafe partial class ImGuiWidget
             NativeImGui.Raw.GetWindowDrawList(),
             origin,
             origin + new Vector2(width, height),
-            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.hierarchySceneRow),
+            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.title),
             0,
             0
         );
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Separator), EditorPalette.inspectorSectionBorder);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Separator), EditorPalette.sectionBorder);
         try
         {
             NativeImGui.SeparatorText(title);
@@ -200,7 +200,7 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 origin = NativeImGui.GetCursorScreenPos();
         float width = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
         float frameHeight = NativeImGui.GetFrameHeight();
-        float paddingX = style.inspectorSectionPadding.X;
+        float paddingX = style.sectionPadding.X;
         float legendInset = style.sectionHeaderPadding.X;
         int sectionIndex = layout.sectionIndex++;
         uint stateId = NativeImGui.GetID($"##inspector_section_{sectionIndex}");
@@ -215,7 +215,7 @@ public sealed unsafe partial class ImGuiWidget
             if (drawLeadingControl is not null)
             {
                 drawLeadingControl();
-                NativeImGui.SameLine(0f, style.inspectorHeaderControlSpacing);
+                NativeImGui.SameLine(0f, style.headerControlSpacing);
             }
 
             titlePressed = ClickableText($"inspector_section_title_{sectionIndex}", title, new Vector2(MathF.Max(1f, titleSize.X), frameHeight), description);
@@ -236,18 +236,18 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 contentCursor = NativeImGui.GetCursorScreenPos();
         contentCursor.X = origin.X;
         float top = origin.Y + frameHeight * 0.5f;
-        float legendLeft = legendMin.X - style.inspectorSectionLegendGap;
-        float legendRight = legendMax.X + style.inspectorSectionLegendGap;
+        float legendLeft = legendMin.X - style.sectionLegendGap;
+        float legendRight = legendMax.X + style.sectionLegendGap;
         NativeImGui.SetCursorScreenPos(contentCursor);
         layout.contentVisible = open;
         if (!open)
         {
             DrawCollapsedSectionBorder(NativeImGui.Raw.GetWindowDrawList(), origin.X, origin.X + width, top, legendLeft, legendRight);
-            NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionSpacing));
+            NativeImGui.Dummy(new Vector2(0f, style.sectionSpacing));
             return false;
         }
 
-        NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionPadding.Y));
+        NativeImGui.Dummy(new Vector2(0f, style.sectionPadding.Y));
         NativeImGui.Indent(paddingX);
         layout.active = true;
         layout.left = origin.X;
@@ -266,7 +266,7 @@ public sealed unsafe partial class ImGuiWidget
         float legendLeft,
         float legendRight
     ) {
-        uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorSectionBorder);
+        uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.sectionBorder);
         DrawCappedSectionSegment(draw, left, MathF.Max(left, legendLeft), top, capAtStart: true, color);
         DrawCappedSectionSegment(draw, MathF.Min(right, legendRight), right, top, capAtStart: false, color);
     }
@@ -281,7 +281,7 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         float thickness = style.borderSize;
         float halfThickness = thickness * 0.5f;
-        float halfCap = style.inspectorCollapsedSectionCapLength * 0.5f;
+        float halfCap = style.collapsedSectionCapLength * 0.5f;
         float capX = capAtStart ? from : to;
         float innerX = capAtStart ? MathF.Min(to, capX + halfThickness) : MathF.Max(from, capX - halfThickness);
         ImGui.DrawNativeLine(draw, new Vector2(capX, centerY - halfCap), new Vector2(capX, centerY + halfCap), color, thickness);
@@ -292,12 +292,12 @@ public sealed unsafe partial class ImGuiWidget
     {
         if (!layout.active)
             return;
-        NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionPadding.Y));
-        NativeImGui.Unindent(style.inspectorSectionPadding.X);
+        NativeImGui.Dummy(new Vector2(0f, style.sectionPadding.Y));
+        NativeImGui.Unindent(style.sectionPadding.X);
         float bottom = MathF.Max(NativeImGui.GetCursorScreenPos().Y, layout.top + NativeImGui.GetFrameHeight());
-        uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorSectionBorder);
+        uint color = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.sectionBorder);
         ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
-        float radius = MathF.Min(style.inspectorSectionRounding, MathF.Max(0f, MathF.Min(layout.right - layout.left, bottom - layout.top) * 0.5f));
+        float radius = MathF.Min(style.sectionRounding, MathF.Max(0f, MathF.Min(layout.right - layout.left, bottom - layout.top) * 0.5f));
         float leftLegend = MathF.Max(layout.left + radius, layout.legendLeft);
         float rightLegend = MathF.Min(layout.right - radius, layout.legendRight);
         ImGui.DrawNativePathLine(draw, new Vector2(leftLegend, layout.top));
@@ -311,7 +311,7 @@ public sealed unsafe partial class ImGuiWidget
         ImGui.DrawNativePathQuadratic(draw, new Vector2(layout.right, layout.top), new Vector2(layout.right - radius, layout.top), 0);
         ImGui.DrawNativePathLine(draw, new Vector2(rightLegend, layout.top));
         NativeImGui.Raw.PathStroke(draw, color, (int)(ImDrawFlags.None), style.borderSize);
-        NativeImGui.Dummy(new Vector2(0f, style.inspectorSectionSpacing));
+        NativeImGui.Dummy(new Vector2(0f, style.sectionSpacing));
         layout.active = false;
         layout.contentVisible = true;
     }

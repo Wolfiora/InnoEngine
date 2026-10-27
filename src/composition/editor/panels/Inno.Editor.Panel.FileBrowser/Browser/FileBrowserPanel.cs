@@ -20,7 +20,12 @@ namespace Inno.Editor.Panel.FileBrowser;
 [EditorPanel("asset.file-browser", "File", order: 300, menuPath: "Content")]
 internal sealed partial class FileBrowserPanel : EditorPanel
 {
-    private IReadOnlyList<IdentityObject> m_visibleSelection = Array.Empty<IdentityObject>();
+    private IReadOnlyList<RuntimeIdentity> m_visibleSelection = Array.Empty<RuntimeIdentity>();
+    private RuntimeIdentity? m_keyboardFocus;
+    private RuntimeIdentity? m_requestedKeyboardFocus;
+    private RuntimeIdentity? m_drawKeyboardFocus;
+    private RuntimeIdentity? m_pendingActivation;
+    private bool m_keyboardHandled;
     private const int C_SEARCH_BUFFER_SIZE = 256;
     private const int C_GRID_LABEL_LINE_COUNT = 2;
     private const float C_GRID_ICON_HORIZONTAL_OPTICAL_OFFSET = -1f;
@@ -51,6 +56,8 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     /// Keeps scrolling inside the tree, entry list, and breadcrumb regions.
     /// </summary>
     public override bool allowScrolling => false;
+
+    private AssetBrowserStyle browserStyle => new(m_ui.widgets.style);
 
     /// <summary>
     /// Captures an immutable snapshot of the current observable state.
@@ -94,13 +101,13 @@ internal sealed partial class FileBrowserPanel : EditorPanel
         float restoredTreePaneRatio = state.Get("treePaneRatio", 0.5f);
         m_treePaneRatio = float.IsFinite(restoredTreePaneRatio) ? Math.Clamp(restoredTreePaneRatio, 0f, 1f) : 0.5f;
         m_gridScale = Math.Clamp(
-            state.Get("gridScale", m_ui.widgets.style.assetGridDefaultScale),
-            m_ui.widgets.style.assetGridMinimumScale,
-            m_ui.widgets.style.assetGridMaximumScale
+            state.Get("gridScale", browserStyle.gridDefaultScale),
+            browserStyle.gridMinimumScale,
+            browserStyle.gridMaximumScale
         );
         SetListColumnSeparators(
-            state.Get("listNameSeparator", m_ui.widgets.style.assetListNameSeparatorPosition),
-            state.Get("listTypeSeparator", m_ui.widgets.style.assetListTypeSeparatorPosition)
+            state.Get("listNameSeparator", browserStyle.listNameSeparatorPosition),
+            state.Get("listTypeSeparator", browserStyle.listTypeSeparatorPosition)
         );
     }
 
@@ -113,9 +120,10 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     ) {
         m_assets = assets;
         m_ui = ui ?? throw new ArgumentNullException(nameof(ui));
-        m_gridScale = ui.widgets.style.assetGridDefaultScale;
-        m_listNameSeparatorPosition = ui.widgets.style.assetListNameSeparatorPosition;
-        m_listTypeSeparatorPosition = ui.widgets.style.assetListTypeSeparatorPosition;
+        AssetBrowserStyle style = new(ui.widgets.style);
+        m_gridScale = style.gridDefaultScale;
+        m_listNameSeparatorPosition = style.listNameSeparatorPosition;
+        m_listTypeSeparatorPosition = style.listTypeSeparatorPosition;
         m_data = new FileBrowserData(assets);
         m_navigation = new FileBrowserNavigation(assets);
         m_dragDrop = new FileBrowserDragDrop(assets);

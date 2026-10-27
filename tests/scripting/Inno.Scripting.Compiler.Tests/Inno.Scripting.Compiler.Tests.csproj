@@ -10,6 +10,7 @@
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <ProjectReference Include="../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
     <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />
     <ProjectReference Include="../../../src/content/scene/Inno.Scene/Inno.Scene.csproj" />

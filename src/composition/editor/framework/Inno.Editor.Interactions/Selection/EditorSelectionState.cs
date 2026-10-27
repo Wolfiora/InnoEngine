@@ -11,6 +11,7 @@ public sealed class EditorSelectionState
 {
     private readonly EditorInteractions m_interactions;
     private EditorTargetReference[] m_targets = [];
+    private HashSet<RuntimeIdentity> m_identityMembership = [];
     private EditorTargetReference? m_anchor;
     private EditorSelectionSnapshot? m_snapshot;
     internal EditorSelectionState(EditorInteractions interactions)
@@ -48,6 +49,8 @@ public sealed class EditorSelectionState
     {
         if (target is null)
             return false;
+        if (target is IdentityObject identity)
+            return identity.identity.runtimeIdentity is RuntimeIdentity runtime && m_identityMembership.Contains(runtime);
         foreach (EditorTargetReference entry in m_targets)
         {
             if (entry.Matches(m_interactions, target))
@@ -157,7 +160,7 @@ public sealed class EditorSelectionState
             return;
         m_targets = entries.ToArray();
         m_anchor = nextAnchor;
-        Changed();
+        Changed(seen);
     }
 
     internal void Clear()
@@ -199,8 +202,16 @@ public sealed class EditorSelectionState
             Changed();
     }
 
-    private void Changed()
+    private void Changed(HashSet<RuntimeIdentity>? identities = null)
     {
+        if (identities is null)
+        {
+            identities = new HashSet<RuntimeIdentity>(m_targets.Length);
+            foreach (EditorTargetReference target in m_targets)
+                if (target.runtimeIdentity is RuntimeIdentity identity)
+                    identities.Add(identity);
+        }
+        m_identityMembership = identities;
         m_snapshot = null;
         version++;
     }

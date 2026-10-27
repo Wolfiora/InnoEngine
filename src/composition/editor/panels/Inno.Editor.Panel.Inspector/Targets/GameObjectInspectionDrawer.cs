@@ -107,13 +107,13 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
 
         Ui.SameLine(0f, -1f);
         Ui.Text("Active");
-        Ui.SameLine(0f, EditorUI.current.widgets.style.inspectorHeaderSectionSpacing);
+        Ui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
         float available = Ui.GetContentRegionAvailable().X;
         float tagLabelWidth = EditorUI.current.widgets.GetLabelChipSize("Tag").X;
         float layerLabelWidth = EditorUI.current.widgets.GetLabelChipSize("Layer").X;
-        float controlWidth = MathF.Max(1f, (available - tagLabelWidth - layerLabelWidth - EditorUI.current.widgets.style.inspectorHeaderSectionSpacing) * 0.5f);
+        float controlWidth = MathF.Max(1f, (available - tagLabelWidth - layerLabelWidth - EditorUI.current.widgets.style.headerSectionSpacing) * 0.5f);
         m_tagSelector.Draw([target], context.interactions, controlWidth);
-        Ui.SameLine(0f, EditorUI.current.widgets.style.inspectorHeaderSectionSpacing);
+        Ui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
         m_layerSelector.Draw([target], context.interactions, controlWidth);
     }
 
@@ -237,7 +237,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
             }
 
             m_cardControls.DrawComponentDropTarget(context.interactions, m_edits, component, i, cardMinimum, cardMaximum);
-            Ui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.inspectorCardSpacing));
+            Ui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.cardSpacing));
         }
     }
 
@@ -245,7 +245,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
         InspectionDrawContext context,
         GameObject gameObject
     ) {
-        if (EditorUI.current.widgets.CenteredButton("Add Component", EditorUI.current.widgets.style.inspectorAddButtonTopPadding))
+        if (EditorUI.current.widgets.CenteredButton("Add Component", EditorUI.current.widgets.style.addButtonTopPadding))
         {
             m_componentSearch = string.Empty;
             Ui.OpenPopup("##add_component_popup");

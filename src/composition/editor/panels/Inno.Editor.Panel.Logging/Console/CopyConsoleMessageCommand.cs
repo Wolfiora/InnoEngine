@@ -1,9 +1,11 @@
 using Inno.Editor.Interactions;
+using Inno.Core.Input;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 [EditorAction(LoggingInteractionIds.C_COPY_MESSAGE, LoggingInteractionIds.C_ENTRY_AREA)]
 [EditorMenu(LoggingInteractionIds.C_ENTRY_AREA, "Copy Message", order: 100)]
+[EditorShortcut(LoggingInteractionIds.C_ENTRY_AREA, KeyCode.C, primary: true)]
 internal sealed class CopyConsoleMessageCommand : EditorAction<ConsoleEntryCopyTarget>
 {
     /// <summary>

@@ -60,11 +60,11 @@ public sealed unsafe partial class ImGuiWidget
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.SpanAvailWidth | ImGuiTreeNodeFlags.AllowOverlap | ImGuiTreeNodeFlags.OpenOnArrow;
         if (defaultOpen)
             flags |= ImGuiTreeNodeFlags.DefaultOpen;
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.inspectorCardHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.inspectorCardHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.inspectorCardHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.cardHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.cardHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.cardHeader);
         NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.transparent);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inspectorCardHeaderPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.cardHeaderPadding);
         Vector2 itemHeaderMin;
         Vector2 headerMin;
         Vector2 headerMax;
@@ -80,7 +80,7 @@ public sealed unsafe partial class ImGuiWidget
                 NativeImGui.Raw.GetWindowDrawList(),
                 persistentHeaderMin,
                 persistentHeaderMax,
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader),
+                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardHeader),
                 0f,
                 0
             );
@@ -94,7 +94,7 @@ public sealed unsafe partial class ImGuiWidget
                 NativeImGui.Raw.GetWindowDrawList(),
                 headerMin,
                 headerMax,
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardBodyBorder),
+                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardBodyBorder),
                 0f,
                 (int)(ImDrawFlags.RoundCornersNone),
                 style.borderSize
@@ -115,7 +115,7 @@ public sealed unsafe partial class ImGuiWidget
             float trailingWidth = drawTrailingControl is null ? 0f : trailingControlWidth > 0f ? trailingControlWidth : NativeImGui.GetFrameHeight();
             float titleRight = headerMax.X - trailingWidth;
             if (drawTrailingControl is not null)
-                titleRight -= style.inspectorHeaderControlSpacing;
+                titleRight -= style.headerControlSpacing;
             NativeImGui.SetCursorScreenPos(new Vector2(contentX, contentY));
             bool dimmedColorPushed = false;
             bool groupStarted = false;
@@ -123,7 +123,7 @@ public sealed unsafe partial class ImGuiWidget
             {
                 if (dimmed)
                 {
-                    NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.inspectorCardDisabledText);
+                    NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.cardDisabledText);
                     dimmedColorPushed = true;
                 }
 
@@ -132,7 +132,7 @@ public sealed unsafe partial class ImGuiWidget
                 if (drawLeadingControl is not null)
                 {
                     drawLeadingControl();
-                    NativeImGui.SameLine(0f, style.inspectorHeaderControlSpacing);
+                    NativeImGui.SameLine(0f, style.headerControlSpacing);
                 }
 
                 NativeImGui.AlignTextToFramePadding();
@@ -210,7 +210,7 @@ public sealed unsafe partial class ImGuiWidget
                 drawList,
                 buttonMin,
                 buttonMax,
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardDisclosureHovered),
+                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardDisclosureHovered),
                 NativeImGui.Raw.GetStyle()->FrameRounding,
                 0
             );
@@ -219,7 +219,7 @@ public sealed unsafe partial class ImGuiWidget
         string indicator = open ? "▼" : "▶";
         Vector2 indicatorSize = NativeImGui.CalcTextSize(indicator);
         Vector2 indicatorPosition = buttonMin + (new Vector2(buttonSize) - indicatorSize) * 0.5f;
-        uint color = NativeImGui.ColorConvertFloat4ToU32(dimmed ? EditorPalette.inspectorCardDisabledText : EditorPalette.text);
+        uint color = NativeImGui.ColorConvertFloat4ToU32(dimmed ? EditorPalette.cardDisabledText : EditorPalette.text);
         ImGui.DrawNativeText(drawList, indicatorPosition, color, indicator);
     }
 
@@ -246,11 +246,11 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 originalCursor = NativeImGui.GetCursorScreenPos();
         (float cardLeft, float cardRight) = GetFullWidthCardBounds(originalCursor);
         NativeImGui.SetCursorScreenPos(new Vector2(cardLeft, originalCursor.Y));
-        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), EditorPalette.inspectorCardBody);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.inspectorCardBodyBorder);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), EditorPalette.cardBody);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.cardBodyBorder);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), NativeImGui.Raw.GetStyle()->FrameRounding);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), style.borderSize);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inspectorCardBodyPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.cardBodyPadding);
         ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY;
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
         bool visible = NativeImGui.BeginChild($"##card_body_{id}", new Vector2(MathF.Max(1f, cardRight - cardLeft), 0f), (int)(childFlags), (int)(windowFlags));

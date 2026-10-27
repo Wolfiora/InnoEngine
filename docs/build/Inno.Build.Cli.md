@@ -90,14 +90,60 @@ Support Pack 准备前缓存、缓存预算回收和完整性能矩阵尚未验�
 
 ## 当前源码公开 API 清单
 
-当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
-
-### `Inno.Build.Cli.BuildApplication`
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 <!-- api: T:Inno.Build.Cli.BuildApplication 5feb127b395302e89588037726f079518b465572b5636555e0e8d5f923b0f9f8 -->
 <!-- api: M:Inno.Build.Cli.BuildApplication.Run(System.String[],System.Threading.CancellationToken) 400f0d36b86664da5273e2b1f0f60687598f4e14cfe48080468bb8994a762531 -->
 
-| 声明 | 行为、参数与结果 |
+| API 与源码 | 契约与参数 | 返回值 | 重要异常 |
+| --- | --- | --- | --- |
+| <a id="api-df8e541fac90a97d"></a>[`public static class Inno.Build.Cli.BuildApplication`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L11) | Executes explicit engine and project build commands for a caller-owned development lifetime. | — | — |
+| <a id="api-93c6a267497d2f98"></a>[`public static System.Threading.Tasks.Task<int> Inno.Build.Cli.BuildApplication.Run(string[] arguments, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L28) | Runs one build command without taking ownership of the caller's cancellation source.<br>`arguments`: The command and its documented options; help prints the supported command names.<br>`cancellationToken`: Cancels owned work and preserves completed publications according to their pipeline contracts. | Zero on success, two on cancellation, or one on a command or execution failure. | `System.ArgumentNullException`: The argument array is absent. |
+
+## 项目依赖
+
+| 工程 | 边界 |
 | --- | --- |
-| <a id="api-93c6a267497d2f98"></a>[`public static System.Threading.Tasks.Task<int> Inno.Build.Cli.BuildApplication.Run(string[] arguments, System.Threading.CancellationToken cancellationToken)`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L28) | Runs one build command without taking ownership of the caller's cancellation source.<br>`arguments`：The command and its documented options; help prints the supported command names.<br>`cancellationToken`：Cancels owned work and preserves completed publications according to their pipeline contracts.<br>返回：Zero on success, two on cancellation, or one on a command or execution failure.<br>T:System.ArgumentNullException：The argument array is absent. |
-| <a id="api-df8e541fac90a97d"></a>[`public static class Inno.Build.Cli.BuildApplication`](../../build/cli/Inno.Build.Cli/BuildApplication.cs#L11) | Executes explicit engine and project build commands for a caller-owned development lifetime. |
+| `Inno.Build.Bindings` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Composition` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Toolchains` | 实现依赖；不传递 compile surface |
+| `Inno.Build` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Managed` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Distribution.Standard` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Toolchains.Bgfx` | 实现依赖；不传递 compile surface |
+| `Inno.Adapter.UI.RmlUi.Authoring` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Toolchains.Bgfx.Shaders` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Toolchains.Bgfx.Tools` | 实现依赖；不传递 compile surface |
+| `Inno.Adapter.Modules.DotNet` | 实现依赖；不传递 compile surface |
+| `Inno.Adapter.Serialization.DotNet` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Annotations` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Inspection` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Graph` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Scene` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Rendering` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.PlayMode` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Shaders` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Assets.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Shaders.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Graph.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Panel.Hierarchy` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Panel.Inspector` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Modules` | 实现依赖；不传递 compile surface |
+| `Inno.Assets.Pipeline` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Identity` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Plugins.Authoring` | 实现依赖；不传递 compile surface |
+| `Inno.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Scene.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Animation.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Audio.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Text.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.UI.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Scripting.Compiler` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Catalogs` | 实现依赖；不传递 compile surface |
+| `Inno.Tooling.Architecture` | 实现依赖；不传递 compile surface |

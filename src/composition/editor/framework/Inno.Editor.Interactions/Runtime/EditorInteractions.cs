@@ -62,6 +62,11 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// </summary>
     public EditorSelectionState selection { get; }
 
+    /// <summary>
+    /// Gets the immutable product keyboard policy used by commands and selection controls.
+    /// </summary>
+    public EditorKeyboardPolicy keyboard => m_editor.keyboard;
+
     object? IEditorSelectionCoordinator.selectedTarget => selection.selectedTarget;
     /// <summary>
     /// Gets the transactional Undo and Redo history owned by this editor runtime.
@@ -233,7 +238,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// Selects the inclusive visible range between the current anchor and the clicked target.
     /// </summary>
     /// <param name="orderedTargets">
-    /// Targets in the current visible sort and filter order.
+    /// Runtime identities in the current visible sort and filter order, resolved through Core Identity only when selected.
     /// </param>
     /// <param name="target">
     /// The clicked range endpoint, which becomes primary.
@@ -247,8 +252,11 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// <exception cref="ArgumentException">
     /// The endpoint is not in the visible target order.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A range identity is unavailable; the current selection remains unchanged.
+    /// </exception>
     public void SelectRange(
-        IReadOnlyList<IdentityObject> orderedTargets,
+        IReadOnlyList<RuntimeIdentity> orderedTargets,
         IdentityObject target,
         bool additive = false
     ) {
@@ -259,9 +267,9 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         int last = -1;
         for (int i = 0; i < orderedTargets.Count; i++)
         {
-            if (ReferenceEquals(orderedTargets[i], anchor))
+            if (orderedTargets[i] == anchor.identity.runtimeIdentity)
                 first = i;
-            if (ReferenceEquals(orderedTargets[i], target))
+            if (orderedTargets[i] == target.identity.runtimeIdentity)
                 last = i;
         }
 
@@ -276,10 +284,12 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         var values = new List<IdentityObject>();
         if (additive)
             _ = selection.CopyTargets(values);
+        var included = new HashSet<IdentityObject>(values, ReferenceEqualityComparer.Instance);
         for (int i = Math.Min(first, last); i <= Math.Max(first, last); i++)
         {
-            IdentityObject value = orderedTargets[i];
-            if (!ReferenceEquals(value, target) && !values.Contains(value))
+            if (!TryResolveIdentity(orderedTargets[i], out IdentityObject? value) || value is null)
+                throw new InvalidOperationException("The visible selection range contains an unavailable identity.");
+            if (!ReferenceEquals(value, target) && included.Add(value))
                 values.Add(value);
         }
 

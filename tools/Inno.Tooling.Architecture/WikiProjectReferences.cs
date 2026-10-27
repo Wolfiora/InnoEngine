@@ -17,15 +17,18 @@ internal sealed class WikiProjectReferences
     private readonly string m_configuration;
     private readonly string m_dotnetHost;
     private readonly string? m_target;
+    private readonly string? m_artifactsPath;
     private readonly Dictionary<string, CSharpCompilation> m_compilations = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string[]> m_sources = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> m_outputs = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<MetadataReference>? m_frameworkReferences;
 
     internal WikiProjectReferences(
         string root,
         string configuration,
         string dotnetHost,
-        string? target = null
+        string? target = null,
+        string? artifactsPath = null
     ) {
         if (!Path.IsPathFullyQualified(dotnetHost) || !File.Exists(dotnetHost))
             throw new ArgumentException("Wiki SDK inspection requires an existing absolute dotnet executable.", nameof(dotnetHost));
@@ -33,6 +36,7 @@ internal sealed class WikiProjectReferences
         m_configuration = configuration;
         m_dotnetHost = dotnetHost;
         m_target = target;
+        m_artifactsPath = artifactsPath;
     }
 
     internal bool IsExcludedProduct(string project)
@@ -41,6 +45,17 @@ internal sealed class WikiProjectReferences
             return false;
         string? target = XDocument.Load(project).Descendants("InnoProductTarget").FirstOrDefault()?.Value;
         return target is not null && !string.Equals(target, m_target, StringComparison.Ordinal);
+    }
+
+    internal IReadOnlyList<MetadataReference> GetFrameworkReferences(CancellationToken cancellationToken)
+    {
+        if (m_frameworkReferences is not null)
+            return m_frameworkReferences;
+        string project = RepositorySourceInventory.Files(Path.Combine(m_root, "src", "foundation"), "*.csproj")
+            .Where(path => XDocument.Load(path).Descendants("TargetFramework").Any(static item => item.Value == "net10.0"))
+            .Order(StringComparer.Ordinal).First();
+        _ = Evaluate(project, cancellationToken, frameworkOnly: true);
+        return m_frameworkReferences ?? throw new InvalidDataException("The selected SDK did not provide framework references.");
     }
 
     internal CSharpCompilation GetCompilation(
@@ -77,7 +92,8 @@ internal sealed class WikiProjectReferences
 
     private CSharpCompilation Evaluate(
         string project,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        bool frameworkOnly = false
     ) {
         if (m_compilations.TryGetValue(project, out CSharpCompilation? compilation))
             return compilation;
@@ -88,10 +104,11 @@ internal sealed class WikiProjectReferences
         {
             // Resolve compile references only. Design-time evaluation must never prepare native products.
             output = ToolchainEnvironment.CaptureOutputAsync(m_dotnetHost,
-                ["msbuild", project, "-nologo", "-m:1", "-nr:false", "-t:ResolveReferences",
+                ["msbuild", project, "-nologo", "-m:1", "-nr:false", "-t:ResolveReferences;AddImplicitDefineConstants",
                     "-getItem:ReferencePath,Compile", "-getProperty:TargetPath,DefineConstants,LangVersion,Nullable,AllowUnsafeBlocks",
                     "-p:DesignTimeBuild=true", "-p:BuildProjectReferences=false", "-p:InnoProductRestore=false",
-                    "-p:Configuration=" + m_configuration],
+                    "-p:Configuration=" + m_configuration,
+                    .. m_artifactsPath is null ? Array.Empty<string>() : new[] { "-p:ArtifactsPath=" + m_artifactsPath }],
                 m_root, bounded.Token, DotNetSdkEnvironment.Create(m_dotnetHost)).GetAwaiter().GetResult();
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -104,6 +121,17 @@ internal sealed class WikiProjectReferences
         string[] references = document.RootElement.GetProperty("Items").GetProperty("ReferencePath")
             .EnumerateArray().Select(static item => item.GetProperty("FullPath").GetString()!)
             .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (m_frameworkReferences is null)
+        {
+            string[] framework = document.RootElement.GetProperty("Items").GetProperty("ReferencePath").EnumerateArray()
+                .Where(static item => item.TryGetProperty("FrameworkReferenceName", out JsonElement name)
+                    && name.GetString() == "Microsoft.NETCore.App")
+                .Select(static item => item.GetProperty("FullPath").GetString()!).ToArray();
+            if (framework.Length != 0)
+                m_frameworkReferences = framework.Select(static path => (MetadataReference)MetadataReference.CreateFromFile(path)).ToArray();
+        }
+        if (frameworkOnly)
+            return CSharpCompilation.Create("WikiFramework", references: m_frameworkReferences);
         foreach (string reference in references)
             if (!File.Exists(reference))
                 throw new FileNotFoundException($"Wiki project '{project}' requires its evaluated compile reference: '{reference}'. Build this target/configuration before validation.", reference);

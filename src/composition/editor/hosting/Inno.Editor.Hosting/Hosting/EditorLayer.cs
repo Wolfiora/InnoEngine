@@ -22,6 +22,8 @@ internal sealed class EditorLayer : Layer
     private readonly EditorProjectDiagnosticPublisher m_diagnostics = new();
     private readonly EditorPlayModeLoop m_playModeLoop = new();
     private readonly ImGuiEditorRuntime m_runtime;
+    private readonly Action m_drawFrame;
+    private readonly Action m_prepareFrame;
     private readonly Logger m_log;
     private readonly LifetimeScope m_resources = new();
     private bool m_isShutdownPrepared;
@@ -39,6 +41,8 @@ internal sealed class EditorLayer : Layer
         m_log = logs.CreateLogger<EditorLayer>();
         m_resources.Own(m_diagnostics);
         m_runtime = m_resources.Own(new ImGuiEditorRuntime(context, types, logs, CreateHostServices(hostServices, m_playModeLoop)));
+        m_drawFrame = m_runtime.Draw;
+        m_prepareFrame = m_runtime.PrepareFrame;
     }
 
     internal int panelCount => m_runtime.panelCount;
@@ -85,7 +89,7 @@ internal sealed class EditorLayer : Layer
     public override void OnLateUpdate(float deltaTime)
     {
         m_runtime.Update(new EditorFrame(deltaTime, m_totalTime, isFocused));
-        m_presentation.RenderFrame(m_runtime.Draw);
+        m_presentation.RenderFrame(m_drawFrame, m_prepareFrame);
         SaveLayoutIfChanged();
     }
 

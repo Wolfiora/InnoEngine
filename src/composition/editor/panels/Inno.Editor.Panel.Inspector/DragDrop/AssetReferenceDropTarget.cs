@@ -3,8 +3,12 @@ using System;
 namespace Inno.Editor.Panel.Inspector;
 
 /// <summary>
-/// Provides an assignable asset-reference property drop target.
+/// Borrows an asset property's type and assignment callback for one synchronous drop request.
 /// </summary>
+/// <remarks>
+/// Recreate this target for each presentation request. Its type and callback must not be retained
+/// across frames or extension generations, or included in History or persistent state.
+/// </remarks>
 public sealed class AssetReferenceDropTarget
 {
     private readonly Action<Guid> m_assign;
@@ -21,9 +25,6 @@ public sealed class AssetReferenceDropTarget
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when either argument is <see langword="null"/>.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when the type does not belong to the active type catalog.
     /// </exception>
     public AssetReferenceDropTarget(
         Type expectedType,

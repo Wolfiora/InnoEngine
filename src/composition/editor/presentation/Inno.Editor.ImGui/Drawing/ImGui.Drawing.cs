@@ -65,9 +65,12 @@ public static unsafe partial class ImGui
     /// <returns>
     /// The table's horizontal bounds and current row's vertical bounds.
     /// </returns>
+    /// <exception cref="System.InvalidOperationException">
+    /// No valid drawing frame or active table exists.
+    /// </exception>
     public static (float minimumX, float maximumX, float rowMinimum, float rowMaximum) GetTableBounds()
     {
-        EditorUiSession.current.EnsureDrawing();
+        _ = EditorUiSession.current.RequireDrawingFrame();
         var table = NativeImGui.Raw.GetCurrentTable();
         if (table is null)
             throw new System.InvalidOperationException("A table row layout requires an active table.");
@@ -80,11 +83,30 @@ public static unsafe partial class ImGui
     /// <returns>
     /// Screen-space horizontal bounds and work maximum.
     /// </returns>
+    /// <exception cref="System.InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
     public static (float minimumX, float maximumX, Vector2 workMaximum, Vector2 padding) GetWindowBounds()
     {
-        EditorUiSession.current.EnsureDrawing();
+        _ = EditorUiSession.current.RequireDrawingFrame();
         var window = NativeImGui.Raw.GetCurrentWindow();
         return (window->InnerRect.Min.X, window->InnerRect.Max.X, FromNative(window->WorkRect.Max), FromNative(window->WindowPadding));
+    }
+
+    /// <summary>
+    /// Copies the current window's effective clip after parent and viewport clipping.
+    /// </summary>
+    /// <returns>
+    /// Screen-space minimum and maximum values for bounding frame-local submission work.
+    /// </returns>
+    /// <exception cref="System.InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public static (Vector2 minimum, Vector2 maximum) GetClipBounds()
+    {
+        _ = EditorUiSession.current.RequireDrawingFrame();
+        var clip = NativeImGui.Raw.GetCurrentWindow()->ClipRect;
+        return (FromNative(clip.Min), FromNative(clip.Max));
     }
 
     /// <summary>

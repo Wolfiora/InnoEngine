@@ -63,7 +63,7 @@ internal sealed class GameObjectTagSelector
         string preview = m_settings.tagCatalog.IsDefined(target.tag) ? target.tag : $"{target.tag} (Undefined)";
         if (mixed)
             preview = "Mixed values";
-        EditorUI.current.widgets.LabelChip("Tag", EditorPalette.inspectorTagLabel);
+        EditorUI.current.widgets.LabelChip("Tag", InspectorTargetStyle.tagLabel);
         Ui.SameLine(0f, 0f);
         float selectorWidth = MathF.Max(1f, width);
         if (!EditorUI.current.widgets.BeginMenuSelector($"game_object_tag_{target.identity.persistentId:N}", preview, selectorWidth, selectorWidth))

@@ -142,8 +142,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
                 if (Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true) card = window;
             }
             Assert.True(card != null);
-            using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("##HeaderTable", allowsNull: false);
-            ImGuiTable* header = ImGuiApi.Raw.TableFindByID(ImGuiApi.Raw.GetID(card, (sbyte*)nativeTestText1.pointer, null));
+            ImGuiTable* header = FindActiveTable(card, 3);
             Assert.True(header != null);
             Vector2 toggle = new(header->Columns.Data[0].WorkMinX + 6, header->RowPosY1 + ImGuiApi.GetFontSize() / 2);
             ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), toggle.X, toggle.Y);
@@ -157,9 +156,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             foreach (float width in new[] { 960f, 500f, 260f, 140f, 960f })
             {
                 Draw(width);
-                uint occurrenceId = ImGuiApi.Raw.GetID(card, unchecked((int)Assert.Single(console.Capture().occurrences).sequence));
-                using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("##ConsoleEntryDetails", allowsNull: false);
-                ImGuiTable* table = ImGuiApi.Raw.TableFindByID(ImGuiApi.Raw.ImHashStr((sbyte*)nativeTestText2.pointer, 0, occurrenceId));
+                ImGuiTable* table = FindActiveTable(card, 2);
                 bool details = table != null && table->LastFrameActive == ImGuiApi.GetFrameCount();
                 if (details)
                 {
@@ -173,6 +170,20 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             }
         }
         finally { ImGuiApi.Raw.DestroyContext(context); Directory.Delete(root, true); }
+    }
+
+    private static ImGuiTable* FindActiveTable(
+        ImGuiWindow* window,
+        int columns
+    ) {
+        ImGuiNativeContext* context = ImGuiApi.Raw.GetCurrentContext();
+        for (int index = 0; index < context->Tables.Buf.Size; index++)
+        {
+            ImGuiTable* table = &context->Tables.Buf.Data[index];
+            if (table->OuterWindow == window && table->ColumnsCount == columns && table->LastFrameActive == ImGuiApi.GetFrameCount())
+                return table;
+        }
+        return null;
     }
 
     private sealed class RejectedConsole : IEditorConsole

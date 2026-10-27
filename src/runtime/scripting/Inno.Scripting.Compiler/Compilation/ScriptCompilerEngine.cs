@@ -83,7 +83,7 @@ internal static class ScriptCompilerEngine
             : null;
         progress.Complete("Script API profile built.");
         progress.Begin("Resolving script references...");
-        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve(cancellationToken);
+        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve(options.compilationEnvironment, cancellationToken);
         ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(
             options, runtimeApi, environment, cancellationToken: cancellationToken);
         ScriptApiReferenceSet? editorApiReferences = editorApi is null
@@ -110,7 +110,7 @@ internal static class ScriptCompilerEngine
                 ? editorApiReferences ?? throw new InvalidOperationException(
                     "A runtime deployment cannot contain an editor script assembly.")
                 : runtimeApiReferences;
-            IReadOnlyList<string> defines = GetCompilationDefines(assembly, includeEditor);
+            IReadOnlyList<string> defines = GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols);
             assemblyKeys.Add(
                 assembly.name,
                 ComputeAssemblyBuildKey(
@@ -199,7 +199,7 @@ internal static class ScriptCompilerEngine
                 string.IsNullOrEmpty(assembly.ownerPluginId)
                     ? AssetSourceId.project.value
                     : assembly.ownerPluginId,
-                GetCompilationDefines(assembly, includeEditor),
+                GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols),
                 assembly.nullable,
                 assembly.allowUnsafe,
                 progress,
@@ -581,16 +581,17 @@ internal static class ScriptCompilerEngine
 
     private static IReadOnlyList<string> GetCompilationDefines(
         ScriptAssemblyInput assembly,
-        bool includeEditor
+        bool includeEditor,
+        IReadOnlyList<string> predefinedSymbols
     ) {
         ArgumentNullException.ThrowIfNull(assembly);
         return includeEditor
-            ? assembly.defines
+            ? assembly.defines.Concat(predefinedSymbols)
                 .Append(C_EDITOR_COMPILATION_SYMBOL)
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(static value => value, StringComparer.Ordinal)
                 .ToArray()
-            : assembly.defines;
+            : assembly.defines.Concat(predefinedSymbols).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
     }
 
     private static string ComputeGenerationBuildKey(

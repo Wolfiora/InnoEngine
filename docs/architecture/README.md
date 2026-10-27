@@ -15,6 +15,8 @@
 | [Web Player](WEB_PLAYER_ARCHITECTURE.md) | 浏览器启动、回调、链接与运行生命周期如何组合？ |
 | [Identity 与热重载](IDENTITY_REFERENCE_RELOAD_STANDARD.md) | 如何跨代定位对象、保留 Missing、退休旧模块？ |
 | [C# 开发规范](CSHARP_DEVELOPMENT_STANDARD.md) | 如何组织源码、公开契约、错误和注释？ |
+| [Editor UI 架构](EDITOR_UI_ARCHITECTURE.md) | Feature、Panel、presentation 和 Session 如何协作？ |
+| [Editor UI 设计规范](EDITOR_UI_DESIGN_STANDARD.md) | 样式、输入、选择、History、菜单和生命周期遵守什么契约？ |
 | [当前问题](CURRENT_ISSUES.md) | 哪些能力或证据仍未收口？ |
 | [当前验收](CURRENT_ACCEPTANCE.md) | 当前代码实际验证了什么，有哪些环境限制？ |
 

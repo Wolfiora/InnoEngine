@@ -648,7 +648,7 @@ internal sealed class SceneViewPanel : EditorPanel
     private bool DrawManipulationToolbar(ManipulationToolbarLayout layout)
     {
         EditorDrawList drawList = EditorImGui.GetDrawList();
-        Vector4 background = EditorPalette.inspectorTargetHeader;
+        Vector4 background = EditorPalette.targetHeader;
         background.W = EditorPalette.opacityMedium;
         EditorImGui.DrawFilledRectangle(layout.minimum, layout.maximum, Ui.ToPackedColor(background), EditorUI.current.widgets.style.frameRounding);
         float itemX = layout.minimum.X + layout.padding;

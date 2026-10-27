@@ -106,9 +106,9 @@ internal sealed partial class ShaderEditorCanvas
         m_miniMapGeometry.Clear();
         foreach (GraphNodeRecord node in Controller.document.nodes)
         {
-            GraphPosition position = draft.dragPreview.GetValueOrDefault(node.id, node.position);
+            GraphPosition position = draft.pointer.previewPositions.GetValueOrDefault(node.id, node.position);
             Vector2 nodeMinimum = new(position.x, position.y);
-            Vector2 nodeMaximum = nodeMinimum + new Vector2(NodeWidth(node), C_HEADER + Rows(node) * C_ROW + ControlHeight(node) + 20f);
+            Vector2 nodeMaximum = nodeMinimum + new Vector2(NodeWidth(node), C_HEADER + Rows(node) * C_ROW + 20f);
             m_miniMapGeometry.Add(node.id, new(nodeMinimum, nodeMaximum));
             worldMinimum = Vector2.Min(worldMinimum, nodeMinimum);
             worldMaximum = Vector2.Max(worldMaximum, nodeMaximum);

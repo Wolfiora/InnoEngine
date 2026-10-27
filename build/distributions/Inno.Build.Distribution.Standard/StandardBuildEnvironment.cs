@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Inno.Build.Composition;
 using Inno.Build.Toolchains;
 
@@ -20,7 +21,8 @@ public static class StandardBuildEnvironment
     /// The native target explicitly selected for executable build tools, independently of exported games.
     /// </param>
     /// <param name="dotnetHost">
-    /// An explicit managed SDK executable, or null to use the current tool process's selected host.
+    /// An explicit SDK executable, or null to use DOTNET_HOST_PATH, the loaded shared runtime's
+    /// muxer, then normal executable discovery when this process has no shared runtime installation.
     /// </param>
     /// <returns>
     /// A frozen execution context; publication targets must be selected independently.
@@ -36,8 +38,24 @@ public static class StandardBuildEnvironment
         BuildTargetId toolsTarget,
         string? dotnetHost = null
     ) {
-        string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+        BuildHostDescriptor buildHost = StandardBuildHosts.Capture();
+        string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
+            ?? CurrentRuntimeHost("dotnet" + buildHost.services.executableExtension);
         host = ToolchainEnvironment.ResolveExecutable(host);
-        return new BuildCompositionContext(host, applicationDirectory, StandardBuildHosts.Capture(), toolsTarget);
+        return new BuildCompositionContext(host, applicationDirectory, buildHost, toolsTarget);
+    }
+
+    private static string CurrentRuntimeHost(string executable)
+    {
+        // An IDE can launch an apphost directly without setting DOTNET_HOST_PATH.
+        // Resolve the muxer beside the runtime that actually loaded this process before consulting PATH.
+        var runtime = new DirectoryInfo(RuntimeEnvironment.GetRuntimeDirectory());
+        if (runtime.Parent?.Name == "Microsoft.NETCore.App" && runtime.Parent.Parent is { Name: "shared", Parent: { } installation })
+        {
+            string runtimeHost = Path.Combine(installation.FullName, executable);
+            if (File.Exists(runtimeHost))
+                return runtimeHost;
+        }
+        return executable;
     }
 }

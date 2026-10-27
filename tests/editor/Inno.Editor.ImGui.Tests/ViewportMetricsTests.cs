@@ -19,6 +19,111 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Editor.ImGui.Tests;
 public sealed unsafe class ViewportMetricsTests
 {
+    [Fact]
+    public void FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations()
+    {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations)))
+            return;
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
+        using var window = application.CreateWindow(new PlatformWindowOptions
+        {
+            title = "Prepared presentation frame", width = 320, height = 240, visible = false
+        });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var ui = new EditorUiSession();
+        context.SetIniFile(null);
+        int phase = 0;
+        context.RenderFrame(() =>
+        {
+            Assert.Equal(1, phase);
+            Assert.Equal(1, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
+            Assert.Equal(ui.widgets.style.fontScale, NativeImGui.Raw.GetStyle()->FontScaleMain);
+            phase = 2;
+        }, () =>
+        {
+            using IDisposable scope = ui.Enter();
+            Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
+            Assert.Equal(new Vector2(320f, 240f), Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize));
+            Assert.True(ui.widgets.style.SetZoom(1.25f));
+            ui.widgets.SetupStyle();
+            Assert.Throws<InvalidOperationException>(() => context.RenderFrame(static () => { }));
+            Assert.Throws<InvalidOperationException>(() => context.Dispose());
+            phase = 1;
+        });
+        Assert.Equal(2, phase);
+        Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
+    }
+
+    [Fact]
+    public void FailedPreparationDoesNotBeginOrPublishANativeFrame()
+    {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(FailedPreparationDoesNotBeginOrPublishANativeFrame)))
+            return;
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
+        using var window = application.CreateWindow(new PlatformWindowOptions
+        {
+            title = "Failed frame preparation", width = 320, height = 240, visible = false
+        });
+        var renderer = new FixtureRenderer();
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1), renderer);
+        context.SetIniFile(null);
+        bool drawn = false;
+        var failure = new InvalidOperationException("Frame preparation failed.");
+        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => context.RenderFrame(() => drawn = true, () => throw failure)));
+        Assert.False(drawn);
+        Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
+        context.RenderFrame(() => drawn = true);
+        Assert.True(drawn);
+    }
+
+    [Fact]
+    public void AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest()
+    {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest)))
+            return;
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
+        using var window = application.CreateWindow(new PlatformWindowOptions
+        {
+            title = "Failed presentation frame", width = 320, height = 240, visible = false
+        });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        context.SetIniFile(null);
+        var failure = new InvalidOperationException("The frame extension failed.");
+        try
+        {
+            Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => context.RenderFrame(() => throw failure)));
+            Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
+            context.RenderFrame(static () => { });
+        }
+        finally
+        {
+            if (NativeImGui.Raw.GetCurrentContext()->WithinFrameScope != 0)
+                NativeImGui.Raw.EndFrame();
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(bool supported)
+    {
+        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability) + "." + supported))
+            return;
+        using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
+        using var window = application.CreateWindow(new PlatformWindowOptions
+        {
+            title = "Renderer capability", width = 320, height = 240, visible = false
+        });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1), new FixtureRenderer { supportsVertexOffsets = supported });
+        context.SetIniFile(null);
+        context.RenderFrame(() => Assert.Equal(supported,
+            (NativeImGui.Raw.GetIO()->BackendFlags & (int)Inno.Native.ImGui.ImGuiBackendFlags.RendererHasVtxOffset) != 0));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -199,6 +304,7 @@ public sealed unsafe class ViewportMetricsTests
     {
         internal PlatformImGuiViewportTarget? target;
         public bool supportsViewports => true;
+        public bool supportsVertexOffsets { get; init; }
 
         public void RenderMain(IntPtr drawData)
         {

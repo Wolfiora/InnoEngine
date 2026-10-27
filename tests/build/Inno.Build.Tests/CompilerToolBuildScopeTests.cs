@@ -22,6 +22,7 @@ public sealed class CompilerToolBuildScopeTests
         Directory.CreateDirectory(root);
         try
         {
+            File.Copy(Path.Combine(repository, "global.json"), Path.Combine(root, "global.json"));
             foreach (string suffix in new[] { "props", "targets" })
                 File.WriteAllText(Path.Combine(root, "Directory.Build." + suffix),
                     "<Project><Import Project=\"" + SecurityElement.Escape(Path.Combine(repository, "Directory.Build." + suffix)) + "\" /></Project>");

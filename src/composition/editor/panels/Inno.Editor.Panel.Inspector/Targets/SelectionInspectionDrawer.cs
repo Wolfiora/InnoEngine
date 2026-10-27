@@ -127,7 +127,7 @@ internal sealed class SelectionInspectionDrawer(
         GameObject primary
     ) {
         var widgets = EditorUiSession.current.widgets;
-        if (widgets.CenteredButton("Add Component to Selection", widgets.style.inspectorAddButtonTopPadding))
+        if (widgets.CenteredButton("Add Component to Selection", widgets.style.addButtonTopPadding))
         {
             m_componentSearch = "";
             Inno.Editor.ImGui.ImGui.OpenPopup("selection.add-component");

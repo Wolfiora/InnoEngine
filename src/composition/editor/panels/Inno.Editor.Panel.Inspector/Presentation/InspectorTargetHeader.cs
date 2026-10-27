@@ -84,7 +84,7 @@ internal sealed class InspectorTargetHeader
         try
         {
             float rowHeight = Ui.GetFrameHeight();
-            float rowSpacing = EditorUI.current.widgets.style.inspectorTargetHeaderRowSpacing;
+            float rowSpacing = EditorUI.current.widgets.style.targetHeaderRowSpacing;
             float headerContentHeight = rowHeight * 2f + rowSpacing;
             DrawIcon(drawer.GetIcon(context), headerContentHeight);
             Ui.SameLine(0f, -1f);
@@ -156,7 +156,7 @@ internal sealed class InspectorTargetHeader
     ) {
         Vector2 minimum = Ui.GetCursorScreenPosition();
         EditorUI.current.widgets.AddGlyphCentered(
-            Ui.GetFontSize() * EditorUI.current.widgets.style.inspectorTargetIconScale,
+            Ui.GetFontSize() * EditorUI.current.widgets.style.targetIconScale,
             icon,
             minimum + new Vector2(slotSize * 0.5f),
             Ui.GetStyleColor(ImGuiCol.Text)

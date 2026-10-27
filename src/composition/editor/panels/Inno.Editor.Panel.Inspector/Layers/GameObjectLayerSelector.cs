@@ -64,7 +64,7 @@ internal sealed class GameObjectLayerSelector
         string preview = FormatLayerPreview(stack.GetName(target.layer));
         if (mixed)
             preview = "Mixed values";
-        EditorUI.current.widgets.LabelChip("Layer", EditorPalette.inspectorLayerLabel);
+        EditorUI.current.widgets.LabelChip("Layer", InspectorTargetStyle.layerLabel);
         Ui.SameLine(0f, 0f);
         float selectorWidth = MathF.Max(1f, width);
         if (!EditorUI.current.widgets.BeginMenuSelector($"game_object_layer_{target.identity.persistentId:N}", preview, selectorWidth, selectorWidth))

@@ -4,7 +4,7 @@
 
 当前 Editor UI 的分层、Session、Selection、History、插件调用方及逐项质量评价见[Editor UI 验收](../../records/architecture/acceptance/EDITOR_UI_ACCEPTANCE_2026_10_27.md)和[当前 UI 架构](EDITOR_UI_ARCHITECTURE.md)。该报告分别列出自动验证、产品运行与未执行的人工/设备检查，不将此前数量累加为本次结果。
 
-**原计划尚未全部完成。** [逐项复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)确认菜单索引、Graph 抽取、Console/Stats 功能及规模/生命周期验收仍有缺口，PR #26 保持 Draft。源码 `2dc37114` 的 6/6 CI checks 已通过，包含真实 macOS ARM64 自动测试；不能继续把所有 Mac 自动验收说成未执行，也不能把 CI 通过等同于全部 UI 计划完成。本次另有 121 项 Interactions 复跑通过。
+**原计划尚未全部完成。** 后续实现和实时证据以[issue 闭合台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)为准；菜单索引、Graph、Console、Stats 和大视图已有后续实现，完整矩阵仍在验收，原基线的当前 FlappyBird 同输入比较已复现为阻塞。PR #26 保持 Draft。`2dc37114` 等历史源码的 6/6 CI checks 包含 macOS ARM64 自动测试，只保留其对应 revision 的证明范围；不能把历史 CI 或局部用例算作最终候选已全部通过。
 
 当前依赖通过标准 `.csproj` / `PackageReference` 和 SDK Restore 解析，源码不保存独立依赖锁清单；本轮范围与证据见[标准 NuGet 还原验收](../../records/architecture/acceptance/STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md)。基线保持 .NET SDK 10.0.402、C# 14、BGCS 4.1.2。
 

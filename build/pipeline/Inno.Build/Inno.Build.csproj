@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/content/deployment/Inno.Content/Inno.Content.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" />
     <ProjectReference
@@ -30,12 +31,10 @@
     <ProjectReference
       Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj"
       PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj"
-      PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
     <ProjectReference Include="../../../src/runtime/plugins/Inno.Plugins/Inno.Plugins.csproj" />

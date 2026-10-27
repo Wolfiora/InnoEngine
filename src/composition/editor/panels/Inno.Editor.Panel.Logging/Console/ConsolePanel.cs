@@ -1,4 +1,3 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
@@ -17,13 +16,21 @@ namespace Inno.Editor.Panel.Logging;
 /// Displays append-only logs and current diagnostics in the unified editor Console.
 /// </summary>
 [EditorPanel("diagnostics.console", "Console", order: 400, menuPath: "Diagnostics")]
-internal sealed class ConsolePanel : EditorPanel
+internal sealed partial class ConsolePanel : EditorPanel
 {
 #region State
     private readonly ConsolePanelContent m_content = new();
     private readonly HashSet<LogLevel> m_filterLevels = Enum.GetValues<LogLevel>().ToHashSet();
     private readonly LogLevel[] m_levels = Enum.GetValues<LogLevel>();
     private readonly HashSet<string> m_openEntries = new(StringComparer.Ordinal);
+    private readonly ConsoleView m_view = new();
+    private string m_query = string.Empty;
+    private string? m_focusedKey;
+    private string? m_selectedKey;
+    private string? m_contextKey;
+    private bool m_requestContextMenu;
+    private bool m_keyboardHandled;
+    private object? m_focusedCopyTarget;
     private bool m_collapse = true;
     private long m_lastRevision = -1;
     private bool m_requestScrollToBottom = true;
@@ -78,6 +85,17 @@ internal sealed class ConsolePanel : EditorPanel
         m_collapse = state.Get("collapse", true);
     }
 
+    /// <inheritdoc />
+    protected override void OnDetach(EditorContext context)
+    {
+        ClearFocus();
+        m_view.Clear();
+        m_openEntries.Clear();
+        ClearLayout();
+        m_lastRevision = -1;
+        m_requestScrollToBottom = true;
+    }
+
     /// <summary>
     /// Draws this feature using the current editor presentation context.
     /// </summary>
@@ -101,8 +119,12 @@ internal sealed class ConsolePanel : EditorPanel
 
 #endregion
 #region Toolbar
+    private static ConsoleStyle consoleStyle => new(EditorUI.current.widgets.style);
+
     private void DrawToolbar()
     {
+        if (EditorUI.current.widgets.SearchInput("console", "Search messages, sources and files", ref m_query, 1024))
+            m_requestScrollToBottom = false;
         bool collapseChanged = Ui.Checkbox("Collapse", ref m_collapse);
         if (collapseChanged)
         {
@@ -121,6 +143,7 @@ internal sealed class ConsolePanel : EditorPanel
         {
             m_console.Clear();
             m_openEntries.Clear();
+            ClearFocus();
             m_requestScrollToBottom = true;
         }
     }
@@ -166,13 +189,29 @@ internal sealed class ConsolePanel : EditorPanel
         try
         {
             EditorConsoleSnapshot snapshot = m_console.Capture();
-            RemoveStaleOpenEntries(snapshot);
+            if (m_lastRevision != snapshot.revision)
+                RemoveStaleOpenEntries(snapshot);
+            bool viewChanged = m_view.Update(snapshot, m_query, m_filterLevels, m_collapse);
+            if (viewChanged)
+            {
+                int focused = m_view.FindIndex(m_focusedKey);
+                if (focused < 0)
+                {
+                    ClearFocus();
+                }
+                else if (m_interactions.focusedArea == LoggingInteractionIds.C_ENTRY_AREA)
+                    FocusRow(m_view.rows[focused], select: false);
+            }
             bool hasNewEntries = m_lastRevision >= 0 && snapshot.revision != m_lastRevision;
             m_lastRevision = snapshot.revision;
-            bool scrollAtBottom = Ui.GetScrollY() >= Ui.GetScrollMaxY() - EditorUI.current.widgets.style.logAutoScrollTolerance;
+            bool scrollAtBottom = Ui.GetScrollY() >= Ui.GetScrollMaxY() - consoleStyle.autoScrollTolerance;
             bool shouldScrollToBottom = m_requestScrollToBottom || (hasNewEntries && scrollAtBottom);
+            HandleKeyboardNavigation();
+            if (m_keyboardHandled)
+                m_requestScrollToBottom = false;
             DrawEntries(snapshot);
-            if (shouldScrollToBottom)
+            DrawEntryContextMenu();
+            if (shouldScrollToBottom && !m_keyboardHandled)
             {
                 Ui.SetScrollHereY(1f);
                 m_requestScrollToBottom = false;
@@ -186,105 +225,100 @@ internal sealed class ConsolePanel : EditorPanel
 
 #endregion
 #region Entries
+    private void ClearFocus()
+    {
+        m_focusedKey = null;
+        m_selectedKey = null;
+        m_focusedCopyTarget = null;
+        m_contextKey = null;
+        m_requestContextMenu = false;
+        if (m_interactions.focusedArea == LoggingInteractionIds.C_ENTRY_AREA)
+            m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA).Focus();
+    }
+
     private void DrawEntries(EditorConsoleSnapshot snapshot)
     {
         if (snapshot.occurrences.Count == 0)
         {
+            ClearLayout();
             m_content.DrawDisabledHint("No logs or diagnostics yet.");
             return;
         }
 
-        int visibleCount = 0;
-        if (m_collapse)
+        if (m_view.rows.Count == 0)
         {
-            for (int i = 0; i < snapshot.groups.Count; i++)
-            {
-                EditorConsoleGroup group = snapshot.groups[i];
-                if (!m_filterLevels.Contains(group.latest.level))
-                    continue;
-                visibleCount++;
-                DrawConsoleEntry(group.latest, group.occurrences, group.count, $"group/{group.identity}");
-            }
+            ClearLayout();
+            m_content.DrawDisabledHint("No entries match the current search and filters.");
+            return;
         }
-        else
-        {
-            for (int i = 0; i < snapshot.occurrences.Count; i++)
-            {
-                EditorConsoleOccurrence occurrence = snapshot.occurrences[i];
-                if (!m_filterLevels.Contains(occurrence.level))
-                    continue;
-                visibleCount++;
-                DrawConsoleEntry(occurrence, [occurrence], 1, $"occurrence/{occurrence.sequence}");
-            }
-        }
-
-        if (visibleCount == 0)
-            m_content.DrawDisabledHint("All logs are filtered out.");
+        DrawVisibleEntries();
     }
 
 #endregion
 #region Entry Card
-    private void DrawConsoleEntry(
-        EditorConsoleOccurrence entry,
-        IReadOnlyList<EditorConsoleOccurrence> occurrences,
-        int repeatCount,
-        string identity
+    private float DrawConsoleEntry(
+        ConsoleView.Row row,
+        bool measure
     ) {
-        (Vector4 levelColor, string levelIcon) = m_content.GetLevelVisual(entry.level);
-        ConsoleEntryImGuiIdentity.Push(identity);
-        try
-        {
-            DrawEntryCard(entry, occurrences, repeatCount, identity, levelColor, levelIcon);
-        }
-        finally
-        {
-            ConsoleEntryImGuiIdentity.Pop();
-        }
+        (Vector4 levelColor, string levelIcon) = m_content.GetLevelVisual(row.latest.level);
+        return DrawEntryCard(row, levelColor, levelIcon, measure);
     }
 
-    private void DrawEntryCard(
-        EditorConsoleOccurrence entry,
-        IReadOnlyList<EditorConsoleOccurrence> occurrences,
-        int repeatCount,
-        string identity,
+    private float DrawEntryCard(
+        ConsoleView.Row row,
         Vector4 levelColor,
-        string levelIcon
+        string levelIcon,
+        bool measure
     ) {
-        bool open = m_openEntries.Contains(identity);
+        bool open = m_openEntries.Contains(row.key);
         Vector4 cardBg = open ? m_content.GetExpandedBgColor(levelColor) : m_content.GetCollapsedBgColor();
-        Vector4 cardBorder = open ? EditorPalette.GetLogExpandedBorder(levelColor) : m_content.GetCollapsedBorderColor();
+        Vector4 cardBorder = row.key == m_selectedKey ? EditorPalette.contentAccent
+            : open ? ConsoleStyle.GetExpandedBorder(levelColor) : m_content.GetCollapsedBorderColor();
         Ui.PushStyleColor((ImGuiCol.FrameBg), cardBg);
         Ui.PushStyleColor((ImGuiCol.Border), cardBorder);
-        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), UiDrawing.GetLayout().frameRounding);
+        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), Ui.GetLayout().frameRounding);
         Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), EditorUI.current.widgets.style.borderSize);
         Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.framePadding);
         try
         {
             ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | (open ? ImGuiChildFlags.AutoResizeY : ImGuiChildFlags.None);
+            if (open && measure)
+                childFlags |= ImGuiChildFlags.AlwaysAutoResize;
             ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
-            float height = open ? 0f : Ui.GetFrameHeight() + UiDrawing.GetLayout().framePadding.Y * 2f;
-            bool visible = Ui.BeginChild("##ConsoleEntryCard", new Vector2(0f, height), childFlags, windowFlags);
+            float height = open ? 0f : Ui.GetFrameHeight() + Ui.GetLayout().framePadding.Y * 2f;
+            bool visible = Ui.BeginChild(AcquireCardWindow(row.key), new Vector2(0f, height), childFlags, windowFlags);
             try
             {
                 if (visible)
                 {
-                    DrawHeader(entry, repeatCount, levelColor, levelIcon, open, cardBg, out bool toggled);
-                    if (toggled)
+                    ConsoleEntryImGuiIdentity.Push(row.key);
+                    try
                     {
+                        DrawHeader(row.latest, row.occurrences.Count, levelColor, levelIcon, open, cardBg, out bool toggled);
+                        if (toggled)
+                            ToggleEntry(row.key);
                         if (open)
-                            m_openEntries.Remove(identity);
-                        else
-                            m_openEntries.Add(identity);
+                            DrawOccurrences(row.occurrences, cardBg);
                     }
-                    if (open)
-                        DrawOccurrences(occurrences, cardBg);
+                    finally
+                    {
+                        ConsoleEntryImGuiIdentity.Pop();
+                    }
                 }
             }
             finally
             {
                 Ui.EndChild();
             }
-            DrawEntryContextMenu(entry, repeatCount);
+            float measuredHeight = Ui.GetItemMaximum().Y - Ui.GetItemMinimum().Y;
+            if (Ui.IsItemClicked(ImGuiMouseButton.Left) || Ui.IsItemClicked(ImGuiMouseButton.Right))
+                FocusRow(row, select: true);
+            if (Ui.IsItemHovered() && Ui.IsMouseReleased(ImGuiMouseButton.Right))
+            {
+                m_contextKey = row.key;
+                m_requestContextMenu = true;
+            }
+            return measuredHeight;
         }
         finally
         {
@@ -297,7 +331,7 @@ internal sealed class ConsolePanel : EditorPanel
         IReadOnlyList<EditorConsoleOccurrence> occurrences,
         Vector4 cardBackground
     ) {
-        Ui.PushStyleColor(ImGuiCol.Separator, EditorPalette.GetLogSeparator(cardBackground));
+        Ui.PushStyleColor(ImGuiCol.Separator, ConsoleStyle.GetSeparator(cardBackground));
         try
         {
             Ui.Separator();
@@ -334,12 +368,12 @@ internal sealed class ConsolePanel : EditorPanel
         out bool toggled
     ) {
         toggled = false;
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         string content = isOpen ? entry.displayMessage : m_content.GetFirstLine(entry.displayMessage);
         string repeatText = repeatCount > 1 ? $" (x{repeatCount})" : string.Empty;
         string prefix = $"{levelIcon} [{entry.level}] ";
         string toggleText = isOpen ? "▼" : "▶";
-        float toggleW = Ui.MeasureText(toggleText).X + EditorUI.current.widgets.style.logDisclosurePadding.X * 2f;
+        float toggleW = Ui.MeasureText(toggleText).X + consoleStyle.disclosurePadding.X * 2f;
         float prefixW = Ui.MeasureText(prefix).X + toggleW + style.itemInnerSpacing.X;
         float suffixW = Ui.MeasureText(repeatText).X;
         float suffixColW = MathF.Max(1f, suffixW);
@@ -367,14 +401,14 @@ internal sealed class ConsolePanel : EditorPanel
                 }
 
                 _ = Ui.TableSetColumnIndex(0);
-                Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.logDisclosurePadding);
+                Ui.PushStyleVar((ImGuiStyleVar.FramePadding), consoleStyle.disclosurePadding);
                 Ui.PushStyleVar((ImGuiStyleVar.FrameBorderSize), 0f);
-                Ui.PushStyleColor((ImGuiCol.Button), EditorPalette.logToggle);
-                Ui.PushStyleColor((ImGuiCol.ButtonHovered), EditorPalette.logToggleHovered);
-                Ui.PushStyleColor((ImGuiCol.ButtonActive), EditorPalette.logToggleActive);
+                Ui.PushStyleColor((ImGuiCol.Button), ConsoleStyle.toggle);
+                Ui.PushStyleColor((ImGuiCol.ButtonHovered), ConsoleStyle.toggleHovered);
+                Ui.PushStyleColor((ImGuiCol.ButtonActive), ConsoleStyle.toggleActive);
                 try
                 {
-                    if (Ui.SmallButton($"{toggleText}##HeaderToggle"))
+                    if (Ui.SmallButton($"{toggleText}##HeaderToggle") && !m_keyboardHandled)
                     {
                         toggled = true;
                     }
@@ -428,7 +462,7 @@ internal sealed class ConsolePanel : EditorPanel
         // These cards may be culled between frames; do not rely on a previous frame's auto-fit width.
         float labelWidth = Ui.MeasureText("Session:").X;
         float availableWidth = Ui.GetContentRegionAvailable().X;
-        if (availableWidth < labelWidth + Ui.MeasureText("Diagnostic").X + UiDrawing.GetLayout().cellPadding.X * 4)
+        if (availableWidth < labelWidth + Ui.MeasureText("Diagnostic").X + Ui.GetLayout().cellPadding.X * 4)
         {
             DrawStackedField("Kind:", entry.kind.ToString());
             DrawStackedField("File:", fileWithLineText);
@@ -463,11 +497,69 @@ internal sealed class ConsolePanel : EditorPanel
         }
     }
 
-    private void DrawEntryContextMenu(
-        EditorConsoleOccurrence entry,
-        int repeatCount
+    private void HandleKeyboardNavigation()
+    {
+        int current = m_view.FindIndex(m_focusedKey);
+        int pageSize = Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / Math.Max(1f, Ui.GetFrameHeight())));
+        ListNavigationResult navigation = EditorUI.current.widgets.NavigateList(m_interactions, m_view.rows.Count, current, pageSize);
+        m_keyboardHandled = navigation.activate || navigation.selectionRequested || navigation.focusChanged;
+        m_scrollFocusedRow = navigation.focusChanged || navigation.activate;
+        if (navigation.focusedIndex >= 0 && (navigation.focusChanged || navigation.selectionRequested || navigation.activate))
+        {
+            ConsoleView.Row row = m_view.rows[navigation.focusedIndex];
+            FocusRow(row, navigation.selectionRequested || navigation.activate);
+            if (navigation.activate)
+            {
+                ToggleEntry(row.key);
+            }
+        }
+        if (navigation.cancel)
+            ClearFocus();
+    }
+
+    private void FocusRow(
+        ConsoleView.Row row,
+        bool select
     ) {
-        _ = EditorUI.current.menus.ContextMenu("##ConsoleEntryContextMenu", m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, new ConsoleEntryCopyTarget(entry, repeatCount)));
+        m_focusedKey = row.key;
+        if (select)
+            m_selectedKey = row.key;
+        // The view owns this neutral boxed payload while Core keeps only a weak action target.
+        m_focusedCopyTarget = row.copyTarget;
+        m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_focusedCopyTarget).Focus();
+    }
+
+    private void DrawEntryContextMenu()
+    {
+        const string popupId = "##ConsoleEntryContextMenu";
+        if (m_contextKey is null)
+            return;
+        int index = m_view.FindIndex(m_contextKey);
+        if (index < 0)
+        {
+            if (Ui.BeginPopup(popupId))
+            {
+                try
+                {
+                    Ui.CloseCurrentPopup();
+                }
+                finally
+                {
+                    Ui.EndPopup();
+                }
+            }
+            m_contextKey = null;
+            m_requestContextMenu = false;
+            return;
+        }
+        if (m_requestContextMenu)
+        {
+            Ui.OpenPopup(popupId);
+            m_requestContextMenu = false;
+        }
+        if (!EditorUI.current.menus.ContextMenu(popupId,
+                m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_view.rows[index].copyTarget)))
+            m_contextKey = null;
     }
 
     private void RemoveStaleOpenEntries(EditorConsoleSnapshot snapshot)

@@ -8,6 +8,11 @@ internal static class NativeWindowTestHost
 {
     private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
     {
+        ["ViewportMetricsTests.FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations"] = () => new ViewportMetricsTests().FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations(),
+        ["ViewportMetricsTests.FailedPreparationDoesNotBeginOrPublishANativeFrame"] = () => new ViewportMetricsTests().FailedPreparationDoesNotBeginOrPublishANativeFrame(),
+        ["ViewportMetricsTests.AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest"] = () => new ViewportMetricsTests().AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest(),
+        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.False"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(false),
+        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.True"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(true),
         ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.False"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(false),
         ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.True"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(true),
         ["ViewportMetricsTests.MetricRefreshPreservesRequestedViewportGeometry"] = () => new ViewportMetricsTests().MetricRefreshPreservesRequestedViewportGeometry(),

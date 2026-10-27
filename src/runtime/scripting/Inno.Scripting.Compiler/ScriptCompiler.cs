@@ -45,10 +45,12 @@ public sealed class ScriptCompiler
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(assets);
         ArgumentNullException.ThrowIfNull(plugins);
+        ArgumentNullException.ThrowIfNull(options.compilationEnvironment);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.projectRootDirectory);
         m_options = new ScriptCompilerOptions
         {
-            projectRootDirectory = System.IO.Path.GetFullPath(options.projectRootDirectory)
+            projectRootDirectory = System.IO.Path.GetFullPath(options.projectRootDirectory),
+            compilationEnvironment = options.compilationEnvironment
         };
         m_assets = assets;
         m_plugins = plugins;

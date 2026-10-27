@@ -4,10 +4,14 @@
 
 该项目同时订阅彼此独立的 `Inno.Core.Logging` 与 `Inno.Core.Diagnostics`，并把两种数据组合成统一的 Editor Console。目录和项目名使用 `Logging`，避免 `Log` 被 ignore 规则或输出目录约定误判。
 
+内部 `Styling/ConsoleStyle` 拥有等级颜色、日志卡片、展开按钮与自动滚动容差；通用 Palette 不再保存 Console 策略。这些内部值不属于脚本公开 API。可变高度测量和原生子窗口槽位由 Panel 维护，按内容、宽度、尺度和展开状态失效，退休记录不会按操作次数积累原生窗口。
+
 ## 组成
 
 - `EditorConsole`：位于 `Inno.Editor.Diagnostics`，拥有有界日志、当前诊断、全局 fingerprint 分组和 Play Session 保留策略。
 - `ConsolePanel`：只读取 `IEditorConsole` 的不可变 Snapshot，负责等级过滤、折叠、详情和操作表现。
+
+搜索采用不区分大小写的普通子串匹配，覆盖 message、source、file、code、category 和已有 stack trace；与等级过滤共同生效。派生视图只在 snapshot revision、查询或筛选变化时更新，不修改 Diagnostics 原始记录。Collapse 只统计匹配 occurrences，展开详情和 Copy Message/Copy Full Entry 指向同一匹配组。复制目标由当前视图拥有，Clear、过滤失去目标或 Panel 退休时释放；不会为每个可见行预先编码完整复制文本。当前选择支持键盘导航与 Enter 展开，主修饰键+C / 主修饰键+Shift+C 复用同一 Action。
 
 Console 根 Panel 与布局 Child 不滚动，仅 entry region 承担纵向滚动，避免父子同时显示滚动条。当滚动条原本位于底部时，新日志会继续滚到底部；用户向上浏览后不会抢夺滚动位置。按钮、折叠三角、行距与颜色全部来自 `ImGuiWidget`、`EditorStyleMetrics` 和 `EditorPalette`。相邻 card 只使用一次标准 `ItemSpacing`，不会再叠加额外占位元素，因此展开与收起状态都保持确定、均匀的外部间距。
 

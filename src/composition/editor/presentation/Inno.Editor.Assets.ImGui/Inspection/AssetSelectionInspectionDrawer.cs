@@ -76,7 +76,7 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     protected override void DrawHeader(
         InspectionDrawContext context,
         AssetFileEntry target
-    ) => EditorUI.current.widgets.ColoredText(EditorPalette.assetBreadcrumbText, target.assetPath.ToString());
+    ) => EditorUI.current.widgets.ColoredText(EditorPalette.contextText, target.assetPath.ToString());
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>

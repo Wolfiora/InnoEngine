@@ -12,6 +12,8 @@ using Ui = Inno.Editor.ImGui.ImGui;
 namespace Inno.Editor.Panel.Settings;
 internal sealed class SettingsPageView(SettingsEditSession session)
 {
+    private static SettingsStyle settingsStyle => new(EditorUI.current.widgets.style);
+
     internal void Draw(
         SettingsPage page,
         Action<SettingsPage> navigate
@@ -106,7 +108,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
     ) {
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX;
         float tableWidth = MathF.Max(1f, Ui.GetContentRegionAvailable().X);
-        Ui.PushStyleVar(ImGuiStyleVar.CellPadding, EditorUI.current.widgets.style.settingsFieldPadding);
+        Ui.PushStyleVar(ImGuiStyleVar.CellPadding, settingsStyle.fieldPadding);
         bool tableStarted = false;
         try
         {
@@ -131,7 +133,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         int fieldIndex
     ) {
         Ui.TableNextRow();
-        uint background = Ui.ToPackedColor(fieldIndex % 2 == 0 ? EditorPalette.settingsField : EditorPalette.settingsFieldAlternate);
+        uint background = Ui.ToPackedColor(fieldIndex % 2 == 0 ? SettingsStyle.field : SettingsStyle.alternateField);
         Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
         Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
         Ui.PushId(setting.path);

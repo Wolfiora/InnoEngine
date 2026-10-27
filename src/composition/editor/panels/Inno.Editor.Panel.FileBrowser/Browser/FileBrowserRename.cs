@@ -20,6 +20,7 @@ internal sealed class FileBrowserRename(AssetBrowserModule assets)
     private RuntimeIdentity? m_activeTarget;
     private FileBrowserPresentation m_lastPresentation = FileBrowserPresentation.List;
     private FileBrowserPresentation m_activePresentation;
+    internal RuntimeIdentity? activeTarget => m_activeTarget;
     internal void Update(EditorContext context)
     {
         AssetFileEntry? target = assets.edits.interactions.selection.selectedTarget as AssetFileEntry;

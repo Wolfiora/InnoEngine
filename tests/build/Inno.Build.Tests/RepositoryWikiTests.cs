@@ -160,7 +160,15 @@ public sealed class RepositoryWikiTests
             AssetSerializationContext.Create(assets));
         using var plugins = new PluginEnvironment(assets, settings, host.serialization, pluginsRoot,
             libraryRoot, scan, host.modules.generations);
-        var compiler = new ScriptCompiler(new ScriptCompilerOptions { projectRootDirectory = project }, assets, plugins);
+        string dotnetHost = Path.Combine(
+            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        var compiler = new ScriptCompiler(
+            new ScriptCompilerOptions
+            {
+                projectRootDirectory = project,
+                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, project)
+            }, assets, plugins);
         compiler.GenerateProjectFiles();
     }
 

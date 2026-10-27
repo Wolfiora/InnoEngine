@@ -8,6 +8,19 @@ using Xunit;
 namespace Inno.Editor.Graph.Tests;
 public sealed class GraphCanvasViewTests
 {
+    [Fact]
+    public void FrameProjectionDoesNotChangeWhenLaterNavigationMutatesItsSource()
+    {
+        var state = new GraphCanvasState();
+        var view = new GraphCanvasView(state, new(100f, 200f), new(800f, 600f));
+        state.SetViewport(new(50f, 75f), 2f);
+        Assert.Equal(new Vector2(110f, 220f), view.ToScreen(new(10f, 20f)));
+        Assert.Equal(1f, view.zoom);
+        var next = new GraphCanvasView(state, new(100f, 200f), new(800f, 600f));
+        Assert.Equal(new Vector2(170f, 315f), next.ToScreen(new(10f, 20f)));
+        Assert.Equal(2f, next.zoom);
+    }
+
     [Theory]
     [InlineData(0.1f)]
     [InlineData(1f)]

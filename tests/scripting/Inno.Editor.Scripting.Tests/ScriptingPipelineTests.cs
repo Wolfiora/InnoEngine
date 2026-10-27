@@ -2336,7 +2336,15 @@ internal sealed class ScriptingFixture : IDisposable
             AssetSerializationContext.Create(assets)
         );
         m_plugins = new PluginEnvironment(assets, m_settings, host.serialization, pluginRoot, libraryRoot, scan, host.modules.generations);
-        compiler = new ScriptCompiler(new ScriptCompilerOptions { projectRootDirectory = projectRoot }, assets, m_plugins);
+        string dotnetHost = Path.Combine(
+            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        compiler = new ScriptCompiler(
+            new ScriptCompilerOptions
+            {
+                projectRootDirectory = projectRoot,
+                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
+            }, assets, m_plugins);
     }
 
     internal string projectRoot { get; }

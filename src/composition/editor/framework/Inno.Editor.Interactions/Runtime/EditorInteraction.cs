@@ -3,8 +3,14 @@ using Inno.Core.Identity;
 
 namespace Inno.Editor.Interactions;
 /// <summary>
-/// Provides a lightweight fluent handle for one interaction area and optional target.
+/// Provides a fluent handle that borrows an optional target for a synchronous interaction request.
 /// </summary>
+/// <remarks>
+/// A target-bearing handle retains that target while it is in use. Do not cache it across frames,
+/// asynchronous work, or extension generations. Resolve live identity objects through Core Identity
+/// before creating a fresh handle. Focus and deferred routing capture their own identity or weak reference.
+/// Target-free handles can be reused within their owning interaction runtime.
+/// </remarks>
 public readonly struct EditorInteraction
 {
     private readonly EditorInteractions m_interactions;
@@ -24,7 +30,7 @@ public readonly struct EditorInteraction
     /// </summary>
     public string area { get; }
     /// <summary>
-    /// Gets the optional target represented by this handle.
+    /// Gets the borrowed target without extending its validity or resolving a replacement generation.
     /// </summary>
     public object? target { get; }
     /// <summary>

@@ -4,6 +4,8 @@
 
 该项目拥有 Hierarchy Panel、Scene/GameObject Action、上下文菜单以及 Scene/GameObject 拖放排序。Scene document 和可逆编辑实现位于独立的 `Inno.Editor.Scene`；Hierarchy 只把查询/工作流交给 `IEditorSceneWorkspace`，把可逆修改交给 `SceneEdits`，不维护图快照或 Undo 实现。
 
+内部 `Styling/HierarchyStyle` 拥有层级行距、重命名与空白拖放区域的尺寸，以及 inactive 行的颜色。可见行缓存只保存 Core runtime identity 和 depth，并由 Scene hierarchy revision 与展开状态更新；正常离屏行不提交完整控件。公开 drop target 是当前同步请求的借用，不可保存到后续帧、History 或 generation。
+
 ## 公共 API
 
 | API | 作用 |

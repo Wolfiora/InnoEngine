@@ -94,10 +94,25 @@ public sealed partial class PlatformImGuiContext : IDisposable
     /// <param name="drawFrame">
     /// Draw callback that issues ImGui commands for this frame.
     /// </param>
+    /// <param name="prepareFrame">
+    /// Optional preparation after context and display metrics selection, before native frame creation.
+    /// </param>
     /// <returns>
-    /// The native pointer to <c>ImDrawData</c> for the rendered frame.
+    /// Borrowed <c>ImDrawData</c> valid until the next frame or context retirement; the caller must not free it.
     /// </returns>
-    public partial IntPtr RenderFrame(Action drawFrame);
+    /// <exception cref="ObjectDisposedException">
+    /// This context has retired.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A frame operation is already active. Callbacks must balance their own drawing scopes.
+    /// </exception>
+    /// <exception cref="AggregateException">
+    /// A callback failed and its owned native frame also failed to retire.
+    /// </exception>
+    public partial IntPtr RenderFrame(
+        Action drawFrame,
+        Action? prepareFrame = null
+    );
 
     /// <summary>
     /// Draws a renderer-registered texture without exposing a native ImGui texture identifier.
@@ -127,5 +142,8 @@ public sealed partial class PlatformImGuiContext : IDisposable
     /// <summary>
     /// Releases all unmanaged/native resources associated with this ImGui context.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// A frame operation is still using this context. No resources are released by this rejection.
+    /// </exception>
     public partial void Dispose();
 }

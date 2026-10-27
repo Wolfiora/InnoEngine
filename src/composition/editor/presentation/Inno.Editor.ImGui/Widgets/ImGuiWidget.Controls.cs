@@ -163,7 +163,7 @@ public sealed unsafe partial class ImGuiWidget
         if (value)
         {
             ImGui.DrawNativeFilledRectangle(drawList, min, max, textColor, 1f, 0);
-            uint checkColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader);
+            uint checkColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardHeader);
             ImGui.DrawNativeLine(drawList, min + new Vector2(size * 0.22f, size * 0.52f), min + new Vector2(size * 0.43f, size * 0.72f), checkColor, 1.5f);
             ImGui.DrawNativeLine(drawList, min + new Vector2(size * 0.43f, size * 0.72f), min + new Vector2(size * 0.80f, size * 0.28f), checkColor, 1.5f);
         }

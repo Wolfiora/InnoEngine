@@ -8,11 +8,13 @@
 
 ## 当前 Editor UI 计划缺口
 
-[2026-10-27 原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)是本分支 UI 完成状态的最新依据。菜单/快捷键 generation 索引、通用 Graph 节点与框选呈现、Console 搜索、Stats 趋势与快照复用尚未完整实现；键盘旅程、10k/2k 性能、100 次开关和 10 次 reload 验收不完整。全部 CI 通过不能关闭这些条目；PR #26 保持 Draft。
+[原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)发现的缺口正在按[真实 issue 闭合台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)处理。菜单/快捷键 generation 索引、通用 Graph 呈现、Console 搜索、Stats 趋势与大视图裁剪已有实现；最终操作、视觉、生命周期和成对性能矩阵仍未全部闭合。深查发现的资产刷新身份问题按 [#43](https://github.com/Wolfiora/InnoEngine/issues/43)在所属索引修复，未在 UI 添加 fallback。PR #26 保持 Draft，不能用历史 CI 或局部测试代替最终验收。
+
+E11 的原重构前 FlappyBird 同输入比较存在已复现阻塞：原基线 `b303d9f1` 及其正式工具能够构建，但当前插件源码依赖其不存在的 `EditorUiSession`，正式脚本编译失败。原始日志保留在闭合验收 owner 的 `e11/original-flappy-projection.log`。不增加兼容层或替换输入来冒充同输入比较；中立 10k/2k 负载继续按相同冻结输入验收。
 
 F03 / [#13](https://github.com/Wolfiora/InnoEngine/issues/13) 已在本分支修复：History 先验证栈顶 ID 再 Pop，三种非 LIFO 拒绝回归在最终 Windows/macOS CI 通过，本次 121 项 Interactions 复跑也通过。等待 PR 合并后关闭 issue，不再把当前分支描述为仍在校验前弹栈。
 
-F09 / [#16](https://github.com/Wolfiora/InnoEngine/issues/16) 的固定默认 assets 读取已在当前源码及 master 中移除；测试读取 SDK Restore 实际返回的 ProjectAssetsFile。原 issue 的 package/load mismatch 等完整负向矩阵本次未重新证明，暂不将根因修正扩大为全部验收完成。
+F09 / [#16](https://github.com/Wolfiora/InnoEngine/issues/16) 的固定默认 assets 读取已在当前源码及 master 中移除；测试读取 SDK Restore 实际返回的 ProjectAssetsFile。本次四个真实 SDK／实际加载用例已通过：默认还原、独立 ArtifactsPath、损坏的默认 obj 干扰，以及测试自有副本中相同程序集名称与 MVID 但内容不同的负例；后者被内容校验拒绝，并验证 collectible context 严格回收。最终候选 CI 仍单独报告。
 
 ## 本轮已修复并验证
 

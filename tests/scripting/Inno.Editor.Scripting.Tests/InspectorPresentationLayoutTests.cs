@@ -13,6 +13,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 using Xunit;
 
 namespace Inno.Editor.Scripting.Tests;
+[Trait("Acceptance", "Visual")]
 public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
 {
     private readonly ImGuiNativeContext* m_context = NativeImGui.Raw.CreateContext(null);

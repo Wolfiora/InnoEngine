@@ -4,8 +4,13 @@ using System.Numerics;
 namespace Inno.Editor.ImGui;
 
 /// <summary>
-/// Defines named editor layout metrics used by widgets and feature panels.
+/// Defines reusable layout metrics and separates owned frame values from requested style changes.
 /// </summary>
+/// <remarks>
+/// Standalone instances apply changes immediately. Session-owned instances defer changes requested
+/// during native drawing until the next style preparation. They are mutable only on the owner thread
+/// and must not be modified after their session retires.
+/// </remarks>
 public sealed class EditorStyleMetrics
 {
     /// <summary>
@@ -23,11 +28,25 @@ public sealed class EditorStyleMetrics
     /// </summary>
     public const float C_ZOOM_STEP = 0.10f;
 
+    private readonly WeakReference<EditorUiSession>? m_owner;
+    private float m_requestedZoom = 1f;
+    private bool m_requestedCompactMode;
     private float m_zoom = 1f;
     private bool m_compactMode;
 
     /// <summary>
-    /// Gets the current editor UI zoom multiplier.
+    /// Creates independent metrics whose changes apply immediately without a native context.
+    /// </summary>
+    public EditorStyleMetrics() { }
+
+    internal EditorStyleMetrics(EditorUiSession owner)
+    {
+        ArgumentNullException.ThrowIfNull(owner);
+        m_owner = new(owner);
+    }
+
+    /// <summary>
+    /// Gets the effective zoom used by the current presentation frame.
     /// </summary>
     public float zoom => m_zoom;
 
@@ -37,66 +56,87 @@ public sealed class EditorStyleMetrics
     public bool isCompact => m_compactMode;
 
     /// <summary>
-    /// Switches between comfortable and compact editor density.
+    /// Gets the scaled height of a compact sampled-value trend plot.
+    /// </summary>
+    public float trendHeight => Scale(64f);
+
+    /// <summary>
+    /// Requests comfortable or compact density without changing an active session frame.
     /// </summary>
     /// <param name="value">
     /// <see langword="true"/> for compact density.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> when the density changed.
+    /// <see langword="true"/> when the requested density changed; owned drawing applies it at the next frame preparation.
     /// </returns>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning session has retired or is no longer available.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not the owning session's thread.
+    /// </exception>
     public bool SetCompactMode(bool value)
     {
-        if (m_compactMode == value)
-            return false;
-        m_compactMode = value;
-        return true;
+        bool defer = ShouldDeferChanges();
+        bool changed = m_requestedCompactMode != value;
+        m_requestedCompactMode = value;
+        if (!defer)
+            CommitPending();
+        return changed;
     }
 
     /// <summary>
-    /// Sets the editor UI zoom after clamping it to the supported range.
+    /// Requests a bounded zoom without changing metrics partway through an owned native frame.
     /// </summary>
     /// <param name="value">
     /// The requested UI zoom multiplier.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> when the effective zoom changed.
+    /// <see langword="true"/> when the requested zoom changed; owned drawing applies it at the next frame preparation.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="value"/> is not finite.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning session has retired or is no longer available.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The caller is not the owning session's thread.
     /// </exception>
     public bool SetZoom(float value)
     {
         if (!float.IsFinite(value))
             throw new ArgumentOutOfRangeException(nameof(value), value, "UI zoom must be finite.");
+        bool defer = ShouldDeferChanges();
         float clamped = Math.Clamp(value, C_MIN_ZOOM, C_MAX_ZOOM);
-        if (MathF.Abs(m_zoom - clamped) < 0.0001f)
-            return false;
-        m_zoom = clamped;
-        return true;
+        bool changed = MathF.Abs(m_requestedZoom - clamped) >= 0.0001f;
+        m_requestedZoom = clamped;
+        if (!defer)
+            CommitPending();
+        return changed;
     }
 
     /// <summary>
     /// Increases editor UI zoom by one bounded increment.
     /// </summary>
     /// <returns>
-    /// <see langword="true"/> when the zoom changed.
+    /// <see langword="true"/> when the requested zoom changed.
     /// </returns>
-    public bool ZoomIn() => SetZoom(m_zoom + C_ZOOM_STEP);
+    public bool ZoomIn() => SetZoom(m_requestedZoom + C_ZOOM_STEP);
 
     /// <summary>
     /// Decreases editor UI zoom by one bounded increment.
     /// </summary>
     /// <returns>
-    /// <see langword="true"/> when the zoom changed.
+    /// <see langword="true"/> when the requested zoom changed.
     /// </returns>
-    public bool ZoomOut() => SetZoom(m_zoom - C_ZOOM_STEP);
+    public bool ZoomOut() => SetZoom(m_requestedZoom - C_ZOOM_STEP);
 
     /// <summary>
     /// Restores the baseline editor UI zoom.
     /// </summary>
     /// <returns>
-    /// <see langword="true"/> when the zoom changed.
+    /// <see langword="true"/> when the requested zoom changed.
     /// </returns>
     public bool ResetZoom() => SetZoom(1f);
 
@@ -207,11 +247,6 @@ public sealed class EditorStyleMetrics
     public Vector2 compactItemSpacing => ScaleVector(new(4f, 2f));
 
     /// <summary>
-    /// Gets hierarchy item spacing.
-    /// </summary>
-    public Vector2 hierarchyItemSpacing => ScaleVector(new(3f, 2f));
-
-    /// <summary>
     /// Gets standard inner item spacing.
     /// </summary>
     public Vector2 itemInnerSpacing => ScaleVector(m_compactMode ? new(3f, 3f) : new(5f, 4f));
@@ -220,31 +255,6 @@ public sealed class EditorStyleMetrics
     /// Gets standard table cell padding.
     /// </summary>
     public Vector2 cellPadding => ScaleVector(m_compactMode ? new(3f, 1f) : new(5f, 3f));
-
-    /// <summary>
-    /// Gets the inner padding applied to one complete Settings field.
-    /// </summary>
-    public Vector2 settingsFieldPadding => ScaleVector(new(8f, 6f));
-
-    /// <summary>
-    /// Gets asset browser window padding.
-    /// </summary>
-    public Vector2 assetWindowPadding => ScaleVector(new(2f, 1f));
-
-    /// <summary>
-    /// Gets asset browser cell padding.
-    /// </summary>
-    public Vector2 assetCellPadding => ScaleVector(new(5f, 2f));
-
-    /// <summary>
-    /// Gets asset browser item spacing.
-    /// </summary>
-    public Vector2 assetItemSpacing => ScaleVector(new(2f, 2f));
-
-    /// <summary>
-    /// Gets asset browser frame rounding.
-    /// </summary>
-    public float assetFrameRounding => Scale(1f);
 
     /// <summary>
     /// Gets tree indentation.
@@ -272,79 +282,44 @@ public sealed class EditorStyleMetrics
     public float grabMinimumSize => Scale(m_compactMode ? 10f : 12f);
 
     /// <summary>
-    /// Gets the minimum visible width retained for either asset browser pane while its splitter is dragged.
+    /// Gets the minimum visible width retained for either resizable content pane while its splitter is dragged.
     /// </summary>
-    public float assetPaneMinimumVisibleWidth => Scale(16f);
+    public float paneMinimumVisibleWidth => Scale(16f);
 
     /// <summary>
-    /// Gets the minimum draggable asset browser splitter width.
+    /// Gets the minimum draggable resizable content splitter width.
     /// </summary>
-    public float assetSplitterMinimumWidth => Scale(2f);
+    public float splitterMinimumWidth => Scale(2f);
 
     /// <summary>
-    /// Gets asset breadcrumb bar height.
+    /// Gets spacing between cards.
     /// </summary>
-    public float assetBreadcrumbHeight => Scale(25f);
+    public float cardSpacing => Scale(3f);
 
     /// <summary>
-    /// Gets minimum asset grid cell size.
+    /// Gets the inner padding of the persistent target header.
     /// </summary>
-    public float assetGridMinimumCellSize => Scale(32f);
+    public Vector2 targetHeaderPadding => ScaleVector(new(6f, 4f));
 
     /// <summary>
-    /// Gets asset grid cell padding.
+    /// Gets spacing between the two rows of the persistent target header.
     /// </summary>
-    public float assetGridCellPadding => Scale(2f);
+    public float targetHeaderRowSpacing => Scale(1f);
 
     /// <summary>
-    /// Gets default asset grid scale.
+    /// Gets the font-size multiplier used by the large target icon.
     /// </summary>
-    public float assetGridDefaultScale => 3f;
+    public float targetIconScale => 1.65f;
 
     /// <summary>
-    /// Gets minimum asset grid scale.
+    /// Gets card body padding.
     /// </summary>
-    public float assetGridMinimumScale => 1f;
+    public Vector2 cardBodyPadding => ScaleVector(new(7f, 5f));
 
     /// <summary>
-    /// Gets maximum asset grid scale.
+    /// Gets card header padding.
     /// </summary>
-    public float assetGridMaximumScale => 10f;
-
-    /// <summary>
-    /// Gets spacing between asset list rows.
-    /// </summary>
-    public float assetListRowSpacing => Scale(2f);
-
-    /// <summary>
-    /// Gets spacing between inspector cards.
-    /// </summary>
-    public float inspectorCardSpacing => Scale(3f);
-
-    /// <summary>
-    /// Gets the inner padding of the persistent Inspector target header.
-    /// </summary>
-    public Vector2 inspectorTargetHeaderPadding => ScaleVector(new(6f, 4f));
-
-    /// <summary>
-    /// Gets spacing between the two rows of the persistent Inspector target header.
-    /// </summary>
-    public float inspectorTargetHeaderRowSpacing => Scale(1f);
-
-    /// <summary>
-    /// Gets the font-size multiplier used by the large Inspector target icon.
-    /// </summary>
-    public float inspectorTargetIconScale => 1.65f;
-
-    /// <summary>
-    /// Gets inspector card body padding.
-    /// </summary>
-    public Vector2 inspectorCardBodyPadding => ScaleVector(new(7f, 5f));
-
-    /// <summary>
-    /// Gets inspector card header padding.
-    /// </summary>
-    public Vector2 inspectorCardHeaderPadding => ScaleVector(new(4f, 1f));
+    public Vector2 cardHeaderPadding => ScaleVector(new(4f, 1f));
 
     /// <summary>
     /// Gets the shared padding around separator-style section titles.
@@ -354,17 +329,17 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets the inner padding of a framed Inspector section.
     /// </summary>
-    public Vector2 inspectorSectionPadding => ScaleVector(new(7f, 5f));
+    public Vector2 sectionPadding => ScaleVector(new(7f, 5f));
 
     /// <summary>
     /// Gets the gap between an Inspector section legend and its interrupted top border.
     /// </summary>
-    public float inspectorSectionLegendGap => itemSpacing.X;
+    public float sectionLegendGap => itemSpacing.X;
 
     /// <summary>
     /// Gets the length of each centered end cap on a collapsed Inspector section.
     /// </summary>
-    public float inspectorCollapsedSectionCapLength => Scale(10f);
+    public float collapsedSectionCapLength => Scale(10f);
 
     /// <summary>
     /// Gets the spacing around the separator between inline metadata and its value.
@@ -374,15 +349,15 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets the vertical distance after a framed Inspector section.
     /// </summary>
-    public float inspectorSectionSpacing => Scale(4f);
+    public float sectionSpacing => Scale(4f);
 
     /// <summary>
     /// Gets the subtle corner rounding used by framed content sections inside editor containers.
     /// </summary>
-    public float inspectorSectionRounding => Scale(3f);
+    public float sectionRounding => Scale(3f);
 
     /// <summary>
-    /// Gets inspector disclosure inset.
+    /// Gets card disclosure inset.
     /// </summary>
     public float disclosureButtonInset => Scale(2f);
 
@@ -390,16 +365,6 @@ public sealed class EditorStyleMetrics
     /// Gets property label width ratio.
     /// </summary>
     public float propertyLabelRatio => 0.40f;
-
-    /// <summary>
-    /// Gets the distance from the bottom treated as auto-scroll.
-    /// </summary>
-    public float logAutoScrollTolerance => Scale(1f);
-
-    /// <summary>
-    /// Gets log disclosure padding.
-    /// </summary>
-    public Vector2 logDisclosurePadding => ScaleVector(new(6f, 1f));
 
     /// <summary>
     /// Gets the default width of searchable editor popups.
@@ -419,7 +384,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets spacing between leading controls inside card headers.
     /// </summary>
-    public float inspectorHeaderControlSpacing => Scale(4f);
+    public float headerControlSpacing => Scale(4f);
 
     /// <summary>
     /// Gets the inner padding of compact colored label chips.
@@ -447,119 +412,29 @@ public sealed class EditorStyleMetrics
     public float typeBadgeSpacing => Scale(6f);
 
     /// <summary>
-    /// Gets the vertical padding inside one statistics row.
+    /// Gets spacing between distinct control groups in the target header row.
     /// </summary>
-    public float statisticRowPadding => Scale(3f);
+    public float headerSectionSpacing => Scale(10f);
 
     /// <summary>
-    /// Gets spacing between distinct control groups in an Inspector target header row.
+    /// Gets top padding above trailing add buttons.
     /// </summary>
-    public float inspectorHeaderSectionSpacing => Scale(10f);
+    public float addButtonTopPadding => Scale(7f);
 
     /// <summary>
-    /// Gets top padding above inspector add buttons.
+    /// Gets the tight resizable content toolbar spacing.
     /// </summary>
-    public float inspectorAddButtonTopPadding => Scale(7f);
+    public float toolbarTightSpacing => Scale(2f);
 
     /// <summary>
-    /// Gets the minimum inline hierarchy rename width.
+    /// Gets the regular resizable content toolbar spacing.
     /// </summary>
-    public float hierarchyRenameMinimumWidth => Scale(48f);
+    public float toolbarSpacing => Scale(4f);
 
     /// <summary>
-    /// Gets the hierarchy rename trailing-control gap.
+    /// Gets spacing between resizable content toolbar sections.
     /// </summary>
-    public float hierarchyRenameTrailingGap => Scale(8f);
-
-    /// <summary>
-    /// Gets the minimum height of the hierarchy blank drop area.
-    /// </summary>
-    public float hierarchyBlankMinimumHeight => Scale(24f);
-
-    /// <summary>
-    /// Gets the tight asset browser toolbar spacing.
-    /// </summary>
-    public float assetToolbarTightSpacing => Scale(2f);
-
-    /// <summary>
-    /// Gets the regular asset browser toolbar spacing.
-    /// </summary>
-    public float assetToolbarSpacing => Scale(4f);
-
-    /// <summary>
-    /// Gets spacing between asset browser toolbar sections.
-    /// </summary>
-    public float assetToolbarSectionSpacing => Scale(5f);
-
-    /// <summary>
-    /// Gets the default normalized position of the asset list name/type separator.
-    /// </summary>
-    public float assetListNameSeparatorPosition => 0.4f;
-
-    /// <summary>
-    /// Gets the default normalized position of the asset list type/source separator.
-    /// </summary>
-    public float assetListTypeSeparatorPosition => 0.7f;
-
-    /// <summary>
-    /// Gets the minimum normalized width reserved for each asset list column.
-    /// </summary>
-    public float assetListMinimumColumnRatio => 0.1f;
-
-    /// <summary>
-    /// Gets the horizontal hit width of an asset list column separator.
-    /// </summary>
-    public float assetListSeparatorHitWidth => Scale(8f);
-
-    /// <summary>
-    /// Gets the horizontal inset between an asset list separator and column content.
-    /// </summary>
-    public float assetListContentHorizontalPadding => Scale(6f);
-
-    /// <summary>
-    /// Gets horizontal padding for asset grid labels.
-    /// </summary>
-    public float assetGridLabelHorizontalPadding => Scale(6f);
-
-    /// <summary>
-    /// Gets bottom padding for asset grid labels.
-    /// </summary>
-    public float assetGridLabelBottomPadding => Scale(3f);
-
-    /// <summary>
-    /// Gets the additional vertical spacing between asset grid label lines.
-    /// </summary>
-    public float assetGridLabelLineSpacing => Scale(-2f);
-
-    /// <summary>
-    /// Gets fixed padding added to calculated asset grid cells.
-    /// </summary>
-    public float assetGridFixedCellPadding => Scale(8f);
-
-    /// <summary>
-    /// Gets the scale bias added to asset grid icons.
-    /// </summary>
-    public float assetGridScaleBias => 2f;
-
-    /// <summary>
-    /// Gets the top inset reserved above an asset grid icon.
-    /// </summary>
-    public float assetGridIconTopPadding => Scale(6f);
-
-    /// <summary>
-    /// Gets the horizontal inset that constrains an asset grid icon inside its card.
-    /// </summary>
-    public float assetGridIconHorizontalPadding => Scale(6f);
-
-    /// <summary>
-    /// Gets the vertical spacing between an asset grid icon and its label.
-    /// </summary>
-    public float assetGridIconLabelSpacing => Scale(4f);
-
-    /// <summary>
-    /// Gets spacing around breadcrumb separators.
-    /// </summary>
-    public float assetBreadcrumbSpacing => Scale(4f);
+    public float toolbarSectionSpacing => Scale(5f);
 
     /// <summary>
     /// Gets the minimum width of one axis value field.
@@ -625,6 +500,21 @@ public sealed class EditorStyleMetrics
     /// Gets the vertical offset of text decorations from the baseline.
     /// </summary>
     public float textDecorationOffset => Scale(2f);
+
+    internal void CommitPending()
+    {
+        m_zoom = m_requestedZoom;
+        m_compactMode = m_requestedCompactMode;
+    }
+
+    private bool ShouldDeferChanges()
+    {
+        if (m_owner is null)
+            return false;
+        if (!m_owner.TryGetTarget(out EditorUiSession? owner))
+            throw new ObjectDisposedException(nameof(EditorUiSession));
+        return owner.shouldDeferStyleChanges;
+    }
 
     private float Scale(float value) => value * m_zoom;
 

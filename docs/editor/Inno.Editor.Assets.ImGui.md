@@ -10,9 +10,13 @@ Asset 浏览呈现与图标发现。依赖 Assets 编辑 feature、Inspection、
 
 产品通过 `EditorProduct.props` 显式部署此程序集。由当前 TypeRegistry/Editor Registry 发现声明并在候选成功后切换；不扫描目录、不建立独立注册表或全局状态。
 
+标准产品组合 Workbench 的默认外观设置贡献。嵌入 Host 也必须组合所需的图标设置贡献；缺少 `Editor/Appearance/Icons/Folder` 等必需设置时明确失败，不从另一个 owner 隐式补齐配置。
+
 ## API 与扩展点
 
 AssetBrowserState、AssetBrowserRoot、AssetIconAttribute 和 AssetIconRegistry 提供当前浏览位置、来源、图标声明与查询。AssetBrowserModule 组合图标及无界面的 AssetEditingModule；BasicAssetInspectionDrawer 只做显示。
+
+`AssetBrowserStyle(EditorStyleMetrics)` 在一次绘制前冻结当前用户 Zoom，不保留 Session，也不再次乘上 DPI。默认值使用 100% Zoom。它包含 Browser 图标、网格、面包屑及列比例；通用 pane/splitter/toolbar 指标仍由共享 metrics 提供。尺度在帧边界更新后，调用方重新取得值快照。
 
 ## 工作流
 
@@ -60,6 +64,33 @@ AssetBrowserState、AssetBrowserRoot、AssetIconAttribute 和 AssetIconRegistry 
 <!-- api: M:Inno.Editor.Assets.ImGui.AssetBrowserState.Select(Inno.Editor.Core.EditorContext,System.String) 93116e16d53057741d1df770d65f727333e6e40ea4a613d9cf4ed3da5b339303 -->
 <!-- api: M:Inno.Editor.Assets.ImGui.AssetBrowserState.GetDirectory(Inno.Editor.Assets.ImGui.AssetBrowserRoot) fe33ce780404a67377c77d7fa433d87ab291a812c865bc938c8813e16a4e1c77 -->
 <!-- api: M:Inno.Editor.Assets.ImGui.AssetBrowserState.SetLocation(Inno.Editor.Assets.ImGui.AssetBrowserRoot,System.String) 2187f05b1dd429435c9767628cb17752c7ff94ec902f0217c55d11ca7759830a -->
+<!-- api: T:Inno.Editor.Assets.ImGui.AssetBrowserStyle ad35c1deec2700fa10b3e8cafa9afd9cd297547b8fa88cabea5cfe11a201535c -->
+<!-- api: M:Inno.Editor.Assets.ImGui.AssetBrowserStyle.#ctor(Inno.Editor.ImGui.EditorStyleMetrics) 18183ecaef92497ebd74e2ac4e31ad44e664ce84e3ca9a2578bc2630fbc4d529 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.windowPadding 2411320024008f91de6c1f7cb60a7cfe4ec1dadbe6fb0dade37dc31fd567c1d1 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.cellPadding 69f76c0d77c8ba95c993aa05110b249021752d11732eabf6ae2133d495ce2801 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.itemSpacing 040d68d12f944ce3f52198652cc254120cf6eb9c2b1b5d940ede6698e52a1dec -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.frameRounding 0e9373d34401d94d885b833df43b6f4905340476324834399921c9e9a14f3ee4 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.breadcrumbHeight cccb7f2cf62d7071d6914744b783389528d810f2fb70c68fea75e0f4d8d01931 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridMinimumCellSize e7c11984710ff279827869aa54ccdab1e46be040e7837ae0894e6da49519e862 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridCellPadding 339f6d829d645475913e9a9625ffa5300707c9a6199304fe540d22bfc8b6d317 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridDefaultScale 03f6620ac7ed31869db169526c373fc4a23a3092748b1ab5cb34a3ebd25063bc -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridMinimumScale b92c5339fe877a9e3bc76aca2363a68151ae8c18340978f4d9eec0ed38ab4c82 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridMaximumScale 9bc49e7142d9584bc515e2f4485e5a21ea67a76242fa038c0aa64bc5d4b2ce5d -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.listRowSpacing 0cfd5ba9f76ffad163b38ef0c2093b6611bdc9404c839dc0d257bb17603dc95e -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.listNameSeparatorPosition 85eb8bbcd41d202116923860f6773307194ab71b89a9996e652c935c143ca56c -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.listTypeSeparatorPosition 66e94bde6c7ff8449a0ecd835ae85e81344260c1da40524c0aaf97eddfcc4193 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.listMinimumColumnRatio 11f783c33a5a3dd246d14bc16449606d573cdedca58c1a4503f405c69fac38b2 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.listSeparatorHitWidth c88aa4c2f3c50040ec87604a749dd77eff4c88bae5e1db540059cd06d7dae9f7 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.listContentHorizontalPadding 57ea8ab3e8e4f37bea62e5bd81fbf6cbf40012f42da3be441e815c5c97494de6 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridLabelHorizontalPadding 3e3e3a7ec54db54e963ab590ecd337a4069027b2ef36b452fd217ff07da7331f -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridLabelBottomPadding d1d3d5a23fd3f98e54cc0f07be61340ba9a4b13fff413730af5bfd7ec8310eb9 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridLabelLineSpacing 49243f4b97a5a98e0a50bb16c461ece97e31896b1e2865df37e6c8830a92c8c6 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridFixedCellPadding 829046eb03c9721e5033480ba850eac37c82c227367e884cd4e68b542ad43fc1 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridScaleBias 4068bfeb70877a20f64a6ffb4b89a3227f7186edc5173e55149f7e95296f3609 -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridIconTopPadding b26135d2706c6ae465b9549fb5d46047d928126d546df1874c5bffd88b8a850e -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridIconHorizontalPadding a00b73aba21f45cfd1d92e14c7bcb4ec781f9252fbbc19c8c8829fad9889be6a -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridIconLabelSpacing 64d4b63243a541ac9263a304ea877d29bf6d9c47e6505ed5a0210fe970ea53ac -->
+<!-- api: P:Inno.Editor.Assets.ImGui.AssetBrowserStyle.breadcrumbSpacing 6e0e2dc6c18c33a081c3c615480d7f512072d999d4101216a74c36d070cfca9e -->
 
 | API 与源码 | 契约与参数 | 返回值 | 重要异常 |
 | --- | --- | --- | --- |
@@ -95,13 +126,40 @@ AssetBrowserState、AssetBrowserRoot、AssetIconAttribute 和 AssetIconRegistry 
 | <a id="api-955795c85ddae5e7"></a>[`public void Inno.Editor.Assets.ImGui.AssetBrowserState.Select(Inno.Editor.Core.EditorContext context, string? relativePath)`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Navigation/AssetBrowserState.cs#L158) | Selects an asset path through the editor-wide selection state, or clears Asset selection.<br>`context`: The shared editor context whose selection should be updated.<br>`relativePath`: The source-relative path to select, or an empty value to clear selection. | — | `System.ArgumentNullException`: Thrown when is . |
 | <a id="api-ec79f3e8dc4a3102"></a>[`public string Inno.Editor.Assets.ImGui.AssetBrowserState.GetDirectory(Inno.Editor.Assets.ImGui.AssetBrowserRoot targetRoot)`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Navigation/AssetBrowserState.cs#L184) | Gets the last visited isolated directory for a navigation root.<br>`targetRoot`: The root whose independent navigation position is requested. | The source-relative directory, or an empty string for the root. | — |
 | <a id="api-2470b55f6a175f5f"></a>[`public void Inno.Editor.Assets.ImGui.AssetBrowserState.SetLocation(Inno.Editor.Assets.ImGui.AssetBrowserRoot targetRoot, string directory)`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Navigation/AssetBrowserState.cs#L207) | Changes the displayed source root and its isolated navigation directory.<br>`targetRoot`: The navigation root that owns the requested directory.<br>`directory`: The isolated source-relative directory; empty selects the root. | — | `System.ArgumentException`: The directory belongs to a different source root. |
+| <a id="api-7c2c97482f9d641d"></a>[`public readonly struct Inno.Editor.Assets.ImGui.AssetBrowserStyle`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L11) | Freezes Browser-specific layout values from the shared UI scale without retaining a session. The default value uses the standard 100 percent scale. | — | — |
+| <a id="api-4b45cd9e30a1b949"></a>[`public Inno.Editor.Assets.ImGui.AssetBrowserStyle.AssetBrowserStyle(Inno.Editor.ImGui.EditorStyleMetrics metrics)`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L24) | Captures the current shared scale for one Browser presentation pass.<br>`metrics`: The existing session metrics; later mutations do not change this value. | — | `System.ArgumentNullException`: The metrics are null. |
+| <a id="api-c83dd929ea4e1f6c"></a>[`public System.Numerics.Vector2 Inno.Editor.Assets.ImGui.AssetBrowserStyle.windowPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L33) | Gets asset browser window padding. | — | — |
+| <a id="api-a8997555e27c1570"></a>[`public System.Numerics.Vector2 Inno.Editor.Assets.ImGui.AssetBrowserStyle.cellPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L38) | Gets asset browser cell padding. | — | — |
+| <a id="api-b15eca00e4b4cba1"></a>[`public System.Numerics.Vector2 Inno.Editor.Assets.ImGui.AssetBrowserStyle.itemSpacing { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L43) | Gets asset browser item spacing. | — | — |
+| <a id="api-da3bdd57282cde47"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.frameRounding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L48) | Gets asset browser frame rounding. | — | — |
+| <a id="api-e17c1f1a647b86b8"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.breadcrumbHeight { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L53) | Gets asset breadcrumb bar height. | — | — |
+| <a id="api-45ba9450ad9beff8"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridMinimumCellSize { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L58) | Gets minimum asset grid cell size. | — | — |
+| <a id="api-9dc97a7db078f5e0"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridCellPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L63) | Gets asset grid cell padding. | — | — |
+| <a id="api-be2bae0d68dae772"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridDefaultScale { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L68) | Gets default asset grid scale. | — | — |
+| <a id="api-b94d6096c5a72a37"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridMinimumScale { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L73) | Gets minimum asset grid scale. | — | — |
+| <a id="api-ca9048cb7b470b24"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridMaximumScale { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L78) | Gets maximum asset grid scale. | — | — |
+| <a id="api-bd655abef53aa1e1"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.listRowSpacing { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L83) | Gets spacing between asset list rows. | — | — |
+| <a id="api-3f9832ce53d89a36"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.listNameSeparatorPosition { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L88) | Gets the default normalized position of the asset list name/type separator. | — | — |
+| <a id="api-7a9c3e8b6a3e5795"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.listTypeSeparatorPosition { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L93) | Gets the default normalized position of the asset list type/source separator. | — | — |
+| <a id="api-cc2c6ad68f40d08a"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.listMinimumColumnRatio { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L98) | Gets the minimum normalized width reserved for each asset list column. | — | — |
+| <a id="api-ea34de16ea901e26"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.listSeparatorHitWidth { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L103) | Gets the horizontal hit width of an asset list column separator. | — | — |
+| <a id="api-c6844b83c01b9213"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.listContentHorizontalPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L108) | Gets the horizontal inset between an asset list separator and column content. | — | — |
+| <a id="api-ed5336845fa404df"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridLabelHorizontalPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L113) | Gets horizontal padding for asset grid labels. | — | — |
+| <a id="api-eae95d079958c257"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridLabelBottomPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L118) | Gets bottom padding for asset grid labels. | — | — |
+| <a id="api-914d7f1ae2c3de9a"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridLabelLineSpacing { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L123) | Gets the additional vertical spacing between asset grid label lines. | — | — |
+| <a id="api-28abd781b2787173"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridFixedCellPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L128) | Gets fixed padding added to calculated asset grid cells. | — | — |
+| <a id="api-a92b0cc639d93763"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridScaleBias { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L133) | Gets the scale bias added to asset grid icons. | — | — |
+| <a id="api-07fa7acba1dd0727"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridIconTopPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L138) | Gets the top inset reserved above an asset grid icon. | — | — |
+| <a id="api-d65142fc81ddf8b1"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridIconHorizontalPadding { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L143) | Gets the horizontal inset that constrains an asset grid icon inside its card. | — | — |
+| <a id="api-d312e513a6725382"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.gridIconLabelSpacing { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L148) | Gets the vertical spacing between an asset grid icon and its label. | — | — |
+| <a id="api-82f070daf8ed4fe2"></a>[`public float Inno.Editor.Assets.ImGui.AssetBrowserStyle.breadcrumbSpacing { get; }`](../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Styling/AssetBrowserStyle.cs#L153) | Gets spacing around breadcrumb separators. | — | — |
 
 ## 项目依赖
 
 | 工程 | 边界 |
 | --- | --- |
 | `Inno.Scripting.Api` | 实现依赖；不传递 compile surface |
-| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.ImGui` | 公开签名依赖 |
 | `Inno.Assets.Pipeline` | 公开签名依赖 |
 | `Inno.Core.Serialization` | 公开签名依赖 |
 | `Inno.Extensibility.Catalogs` | 公开签名依赖 |

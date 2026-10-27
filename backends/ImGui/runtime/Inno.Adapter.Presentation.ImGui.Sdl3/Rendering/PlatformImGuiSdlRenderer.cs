@@ -34,6 +34,9 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// </summary>
     public bool supportsViewports => false;
 
+    /// <inheritdoc />
+    public bool supportsVertexOffsets => true;
+
     /// <summary>
     /// Records ImGui draw data for the main application viewport.
     /// </summary>

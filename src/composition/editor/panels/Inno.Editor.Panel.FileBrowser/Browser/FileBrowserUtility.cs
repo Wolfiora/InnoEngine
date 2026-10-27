@@ -15,6 +15,8 @@ using Ui = Inno.Editor.ImGui.ImGui;
 namespace Inno.Editor.Panel.FileBrowser;
 internal static class FileBrowserUtility
 {
+    internal static AssetBrowserStyle CurrentBrowserStyle => new(EditorUI.current.widgets.style);
+
     internal readonly record struct BreadcrumbPart(
         string label,
         AssetBrowserRoot root,
@@ -22,23 +24,23 @@ internal static class FileBrowserUtility
     );
     internal static void PushBrowserStyle()
     {
-        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.assetText);
+        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contentText);
         Ui.PushStyleColor((ImGuiCol.WindowBg), EditorPalette.collectionHeader);
         Ui.PushStyleColor((ImGuiCol.ChildBg), EditorPalette.collectionHeader);
-        Ui.PushStyleColor((ImGuiCol.Border), EditorPalette.assetBorder);
+        Ui.PushStyleColor((ImGuiCol.Border), EditorPalette.contentBorder);
         Ui.PushStyleColor((ImGuiCol.TableHeaderBg), EditorPalette.collectionHeader);
-        Ui.PushStyleColor((ImGuiCol.TableBorderStrong), EditorPalette.assetBorder);
-        Ui.PushStyleColor((ImGuiCol.TableBorderLight), EditorPalette.assetBorderSoft);
+        Ui.PushStyleColor((ImGuiCol.TableBorderStrong), EditorPalette.contentBorder);
+        Ui.PushStyleColor((ImGuiCol.TableBorderLight), EditorPalette.contentBorderSoft);
         Ui.PushStyleColor((ImGuiCol.TableRowBg), EditorPalette.collectionRow);
         Ui.PushStyleColor((ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
-        Ui.PushStyleColor((ImGuiCol.Header), EditorPalette.assetAccent);
-        Ui.PushStyleColor((ImGuiCol.HeaderHovered), EditorPalette.assetAccent);
-        Ui.PushStyleColor((ImGuiCol.HeaderActive), EditorPalette.assetAccent);
-        Ui.PushStyleVar((ImGuiStyleVar.WindowPadding), EditorUI.current.widgets.style.assetWindowPadding);
+        Ui.PushStyleColor((ImGuiCol.Header), EditorPalette.contentAccent);
+        Ui.PushStyleColor((ImGuiCol.HeaderHovered), EditorPalette.contentAccent);
+        Ui.PushStyleColor((ImGuiCol.HeaderActive), EditorPalette.contentAccent);
+        Ui.PushStyleVar((ImGuiStyleVar.WindowPadding), CurrentBrowserStyle.windowPadding);
         Ui.PushStyleVar((ImGuiStyleVar.ChildBorderSize), EditorUI.current.widgets.style.borderSize);
-        Ui.PushStyleVar((ImGuiStyleVar.CellPadding), EditorUI.current.widgets.style.assetCellPadding);
-        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), EditorUI.current.widgets.style.assetItemSpacing);
-        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), EditorUI.current.widgets.style.assetFrameRounding);
+        Ui.PushStyleVar((ImGuiStyleVar.CellPadding), CurrentBrowserStyle.cellPadding);
+        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), CurrentBrowserStyle.itemSpacing);
+        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), CurrentBrowserStyle.frameRounding);
     }
 
     internal static void PopBrowserStyle()

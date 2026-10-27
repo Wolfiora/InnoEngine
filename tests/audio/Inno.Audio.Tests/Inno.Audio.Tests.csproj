@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/services/audio/Inno.Audio/Inno.Audio.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/services/audio/Inno.Audio.Runtime/Inno.Audio.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" PrivateAssets="compile" />

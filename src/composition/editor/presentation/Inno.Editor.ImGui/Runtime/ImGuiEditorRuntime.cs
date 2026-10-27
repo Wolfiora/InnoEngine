@@ -132,6 +132,23 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
     }
 
     /// <summary>
+    /// Applies pending style inputs with the owned context before the backend creates its native frame.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// This runtime has retired.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The owning native context is unavailable, incorrect, or already drawing.
+    /// </exception>
+    public void PrepareFrame()
+    {
+        using IDisposable uiScope = m_ui.Enter();
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        m_ui.RequireFramePreparation();
+        m_ui.widgets.ApplyPendingStyle();
+    }
+
+    /// <summary>
     /// Draws the complete editor frame through ImGui.
     /// </summary>
     public void Draw()

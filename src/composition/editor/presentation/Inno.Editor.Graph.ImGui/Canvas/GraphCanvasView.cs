@@ -8,9 +8,11 @@ namespace Inno.Editor.Graph.ImGui;
 /// <summary>
 /// Projects and presents an arbitrary graph viewport without owning document mutations or domain semantics.
 /// </summary>
-public readonly struct GraphCanvasView
+public readonly partial struct GraphCanvasView
 {
-    private readonly GraphCanvasState m_state;
+    private const int C_MAX_GRID_LINES_PER_AXIS = 2048;
+    private readonly GraphPosition m_pan;
+    private readonly float m_zoom;
     private readonly Vector2 m_origin;
     private readonly Vector2 m_size;
     /// <summary>
@@ -38,10 +40,19 @@ public readonly struct GraphCanvasView
             throw new ArgumentOutOfRangeException(nameof(origin));
         if (!float.IsFinite(size.X) || !float.IsFinite(size.Y) || size.X < 0f || size.Y < 0f)
             throw new ArgumentOutOfRangeException(nameof(size));
-        m_state = state;
+        m_pan = state.pan;
+        m_zoom = state.zoom;
         m_origin = origin;
         m_size = size;
     }
+
+    /// <summary>
+    /// Gets the graph-to-screen zoom captured for this frame, independently of later navigation changes.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The view was not initialized through its constructor.
+    /// </exception>
+    public float zoom => m_zoom > 0f ? m_zoom : throw new InvalidOperationException("A graph canvas view requires an initialized projection.");
 
     /// <summary>
     /// Projects a graph-space location into the current screen rectangle.
@@ -52,7 +63,7 @@ public readonly struct GraphCanvasView
     /// <returns>
     /// The corresponding screen coordinate.
     /// </returns>
-    public Vector2 ToScreen(GraphPosition point) => m_origin + new Vector2(m_state.pan.x, m_state.pan.y) + new Vector2(point.x, point.y) * m_state.zoom;
+    public Vector2 ToScreen(GraphPosition point) => m_origin + new Vector2(m_pan.x, m_pan.y) + new Vector2(point.x, point.y) * zoom;
     /// <summary>
     /// Converts a screen location back into graph coordinates.
     /// </summary>
@@ -62,7 +73,7 @@ public readonly struct GraphCanvasView
     /// <returns>
     /// The graph coordinate under the pointer.
     /// </returns>
-    public GraphPosition ToGraph(Vector2 point) => new((point.X - m_origin.X - m_state.pan.x) / m_state.zoom, (point.Y - m_origin.Y - m_state.pan.y) / m_state.zoom);
+    public GraphPosition ToGraph(Vector2 point) => new((point.X - m_origin.X - m_pan.x) / zoom, (point.Y - m_origin.Y - m_pan.y) / zoom);
     /// <summary>
     /// Draws a bounded graph-space grid through the current UI drawing context.
     /// </summary>
@@ -81,10 +92,10 @@ public readonly struct GraphCanvasView
     ) {
         if (!float.IsFinite(spacing) || spacing <= 0f)
             throw new ArgumentOutOfRangeException(nameof(spacing));
-        float step = MathF.Max(4f, spacing * m_state.zoom);
-        for (float x = ((m_state.pan.x % step) + step) % step; x < m_size.X; x += step)
+        float step = MathF.Max(MathF.Max(4f, spacing * zoom), MathF.Max(m_size.X, m_size.Y) / C_MAX_GRID_LINES_PER_AXIS);
+        for (float x = ((m_pan.x % step) + step) % step; x < m_size.X; x += step)
             CanvasDrawing.DrawLine(m_origin + new Vector2(x, 0f), m_origin + new Vector2(x, m_size.Y), color);
-        for (float y = ((m_state.pan.y % step) + step) % step; y < m_size.Y; y += step)
+        for (float y = ((m_pan.y % step) + step) % step; y < m_size.Y; y += step)
             CanvasDrawing.DrawLine(m_origin + new Vector2(0f, y), m_origin + new Vector2(m_size.X, y), color);
     }
 
@@ -103,14 +114,43 @@ public readonly struct GraphCanvasView
     /// <param name="thickness">
     /// The positive screen-space stroke width.
     /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// An endpoint or derived control point is nonfinite, or the stroke width is not positive and finite.
+    /// </exception>
     public void DrawConnection(
         Vector2 output,
         Vector2 input,
         uint color,
         float thickness = 2f
     ) {
+        _ = zoom;
+        if (!float.IsFinite(thickness) || thickness <= 0f)
+            throw new ArgumentOutOfRangeException(nameof(thickness));
+        if (!float.IsFinite(output.X) || !float.IsFinite(output.Y) || !float.IsFinite(input.X) || !float.IsFinite(input.Y))
+            throw new ArgumentOutOfRangeException(nameof(output), "Connection endpoints must be finite screen coordinates.");
+        if (m_size.X == 0f || m_size.Y == 0f)
+            return;
         float tangent = Tangent(output, input);
-        CanvasDrawing.DrawCubicCurve(output, output + new Vector2(tangent, 0f), input - new Vector2(tangent, 0f), input, color, thickness);
+        Vector2 first = output + new Vector2(tangent, 0f);
+        Vector2 second = input - new Vector2(tangent, 0f);
+        if (!float.IsFinite(first.X) || !float.IsFinite(second.X))
+            throw new ArgumentOutOfRangeException(nameof(input), "Connection controls exceed finite screen coordinates.");
+        var clip = CanvasDrawing.GetClipBounds();
+        Vector2 minimum = Vector2.Min(Vector2.Min(output, input), Vector2.Min(first, second)) - new Vector2(thickness);
+        Vector2 maximum = Vector2.Max(Vector2.Max(output, input), Vector2.Max(first, second)) + new Vector2(thickness);
+        if (maximum.X < MathF.Max(m_origin.X, clip.minimum.X) || minimum.X > MathF.Min(m_origin.X + m_size.X, clip.maximum.X)
+            || maximum.Y < MathF.Max(m_origin.Y, clip.minimum.Y) || minimum.Y > MathF.Min(m_origin.Y + m_size.Y, clip.maximum.Y))
+            return;
+        var draw = CanvasDrawing.GetDrawList();
+        draw.PushClip(m_origin, m_origin + m_size, true);
+        try
+        {
+            CanvasDrawing.DrawCubicCurve(output, first, second, input, color, thickness);
+        }
+        finally
+        {
+            draw.PopClip();
+        }
     }
 
     /// <summary>

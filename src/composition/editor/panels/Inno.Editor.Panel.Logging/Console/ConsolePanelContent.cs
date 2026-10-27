@@ -24,17 +24,17 @@ internal sealed class ConsolePanelContent
     {
         return level switch
         {
-            LogLevel.Debug => (EditorPalette.logDebug, C_ICON_BUG),
-            LogLevel.Info => (EditorPalette.logInfo, C_ICON_INFO),
-            LogLevel.Warn => (EditorPalette.logWarning, C_ICON_WARN),
-            LogLevel.Error => (EditorPalette.logError, C_ICON_ERROR),
-            LogLevel.Fatal => (EditorPalette.logFatal, C_ICON_FATAL),
+            LogLevel.Debug => (ConsoleStyle.debug, C_ICON_BUG),
+            LogLevel.Info => (ConsoleStyle.info, C_ICON_INFO),
+            LogLevel.Warn => (ConsoleStyle.warning, C_ICON_WARN),
+            LogLevel.Error => (ConsoleStyle.error, C_ICON_ERROR),
+            LogLevel.Fatal => (ConsoleStyle.fatal, C_ICON_FATAL),
             _ => (EditorPalette.text, C_ICON_DEFAULT)};
     }
 
-    internal Vector4 GetCollapsedBgColor() => EditorPalette.logCollapsedCard;
-    internal Vector4 GetCollapsedBorderColor() => EditorPalette.logCollapsedBorder;
-    internal Vector4 GetExpandedBgColor(Vector4 levelColor) => EditorPalette.GetLogExpandedCard(levelColor);
+    internal Vector4 GetCollapsedBgColor() => ConsoleStyle.collapsedCard;
+    internal Vector4 GetCollapsedBorderColor() => ConsoleStyle.collapsedBorder;
+    internal Vector4 GetExpandedBgColor(Vector4 levelColor) => ConsoleStyle.GetExpandedCard(levelColor);
     internal string GetFirstLine(string text)
     {
         if (string.IsNullOrEmpty(text))

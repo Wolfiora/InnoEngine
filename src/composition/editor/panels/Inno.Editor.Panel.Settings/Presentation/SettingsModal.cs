@@ -130,7 +130,7 @@ internal sealed class SettingsModal(
             if (!visible)
                 return;
             DrawNavigationButtons();
-            Ui.SameLine(0f, EditorUI.current.widgets.style.assetToolbarSectionSpacing);
+            Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarSectionSpacing);
             bool wasSearching = !string.IsNullOrWhiteSpace(m_query);
             Ui.SetNextItemWidth(-1f);
             bool queryChanged = EditorUI.current.widgets.SearchInput("settings", "Search settings", ref m_query, width: -1f);
@@ -226,7 +226,7 @@ internal sealed class SettingsModal(
 
         Vector2 minimum = Ui.GetItemMinimum();
         Vector2 maximum = Ui.GetItemMaximum();
-        System.Numerics.Vector4 color = active ? EditorPalette.assetAccent : hovered ? EditorPalette.assetBorder : EditorPalette.assetBorderSoft;
+        System.Numerics.Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
         float centerX = (minimum.X + maximum.X) * 0.5f;
         EditorImGui.DrawLine(new Vector2(centerX, minimum.Y), new Vector2(centerX, maximum.Y), Ui.ToPackedColor(color), EditorUI.current.widgets.style.borderSize);
     }
@@ -243,7 +243,7 @@ internal sealed class SettingsModal(
         float requested,
         float usable
     ) {
-        float minimum = MathF.Min(EditorUI.current.widgets.style.assetPaneMinimumVisibleWidth, usable * 0.5f);
+        float minimum = MathF.Min(EditorUI.current.widgets.style.paneMinimumVisibleWidth, usable * 0.5f);
         float maximum = MathF.Max(minimum, usable - minimum);
         return Math.Clamp(requested, minimum, maximum);
     }
@@ -282,7 +282,7 @@ internal sealed class SettingsModal(
         }
 
         Ui.EndDisabled();
-        Ui.SameLine(0f, EditorUI.current.widgets.style.assetToolbarTightSpacing);
+        Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarTightSpacing);
         Ui.BeginDisabled(!m_navigation.canGoForward);
         if (Ui.Button($"{Inno.Editor.ImGui.ImGuiIcon.AngleRight}##SettingsForward", buttonSize))
         {

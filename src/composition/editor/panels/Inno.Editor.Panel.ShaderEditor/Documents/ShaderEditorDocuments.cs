@@ -1,3 +1,4 @@
+using Inno.Editor.Graph.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -262,9 +263,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         if (draft.activeStage is GraphNodeId stage && controller.document.FindNode(stage) is null)
             draft.activeStage = null;
         draft.navigation.Cancel();
-        draft.dragging = draft.boxSelecting = false;
-        draft.dragPreview.Clear();
-        draft.canvas.CancelConnection();
+        draft.pointer.Cancel();
     }
 
     internal void Changed(Draft draft)
@@ -369,6 +368,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             templates = m_lifetime.Own(new ShaderGraphTemplateRegistry(m_types));
             targets = m_lifetime.Own(new ShaderTargetRegistry(m_types));
             _ = m_lifetime.Own(interactions.documents.RegisterProvider(new Provider(this)));
+            var operations = m_lifetime.Own(interactions.events.CreateHub(int.MaxValue - 1));
+            operations.Listen<EditorOperationPreparingEvent>(_ => CompleteCanvasEdits());
         }
         catch (Exception failure)
         {
@@ -464,6 +465,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         // Recovery is not an asset save. Closing the panel, shutdown and reload must not apply a draft.
         foreach (Draft draft in m_drafts.Values)
         {
+            CancelCanvasEdit(draft);
             if (Controller(draft).isDirty)
                 PreserveRecovery(draft, Controller(draft));
             ClearNodeDiagnostics(draft);
@@ -694,6 +696,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             if (File.Exists(recovery))
                 File.Delete(recovery);
             owner.RememberView(draft);
+            CancelCanvasEdit(draft);
             ClearNodeDiagnostics(draft);
             owner.ReleasePreview(draft);
             draft.navigation.Cancel();
@@ -743,14 +746,17 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         internal ShaderInspectionSelection? inspectionSelection;
         internal string valueGesture = Guid.NewGuid().ToString("N");
         internal readonly EditorPlanarNavigation navigation = new();
-        internal bool dragging;
-        internal bool boxSelecting;
+        private GraphCanvasPointerController? m_pointer;
+        internal GraphCanvasPointerController pointer => m_pointer ??= new(canvas);
+        internal IReadOnlyDictionary<GraphNodeId, GraphPosition>? pendingMove;
+        internal readonly GraphCanvasLayout layout = new();
+        internal ulong layoutRevision = ulong.MaxValue;
+        internal long layoutAssetRevision = long.MinValue;
+        internal long layoutTypeRevision = long.MinValue;
         internal GraphNodeId? resizingNode;
         internal float resizeStartWidth;
         internal float resizePreviewWidth;
-        internal System.Numerics.Vector2 pointerStart;
-        internal readonly Dictionary<GraphNodeId, GraphPosition> dragStart = [];
-        internal readonly Dictionary<GraphNodeId, GraphPosition> dragPreview = [];
+        internal System.Numerics.Vector2 resizePointerStart;
         internal ulong portRevision = ulong.MaxValue;
         internal long assetRevision = long.MinValue;
         internal long typeRevision = long.MinValue;

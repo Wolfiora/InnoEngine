@@ -11,6 +11,9 @@ public sealed partial class ImGuiWidget
     /// <summary>
     /// Draws a single-line search field with a stable identifier.
     /// </summary>
+    /// <remarks>
+    /// Escape clears a nonempty query before leaving text input on a subsequent press.
+    /// </remarks>
     /// <param name="id">
     /// The stable control identifier.
     /// </param>
@@ -39,7 +42,7 @@ public sealed partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         NativeImGui.SetNextItemWidth(width < 0f ? MathF.Max(1f, NativeImGui.GetContentRegionAvail().X) : width);
-        return ImGuiUtf8Buffer.InputText($"##search_{id}", hint, ref query, capacity, ImGuiInputTextFlags.None);
+        return ImGuiUtf8Buffer.InputText($"##search_{id}", hint, ref query, capacity, ImGuiInputTextFlags.EscapeClearsAll);
     }
 
     /// <summary>

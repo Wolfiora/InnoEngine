@@ -709,6 +709,21 @@ public static unsafe partial class ImGui
     }
 
     /// <summary>
+    /// Reads whether an open popup or modal currently prevents underlying canvas and list input.
+    /// </summary>
+    /// <returns>
+    /// True when any popup is open in this native context, independently of its identifier or nesting.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public static bool IsAnyPopupOpen()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        return RawImGui.IsPopupOpen(string.Empty, (int)(ImGuiPopupFlags.AnyPopupId | ImGuiPopupFlags.AnyPopupLevel));
+    }
+
+    /// <summary>
     /// Begins a disabled block.
     /// </summary>
     /// <param name="disabled">
@@ -924,6 +939,18 @@ public static unsafe partial class ImGui
     {
         EditorUiSession.current.EnsureDrawing();
         RawImGui.SetNextItemWidth(width);
+    }
+
+    /// <summary>
+    /// Requests keyboard focus for the next submitted item in the current frame and window.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// No matching owner-thread drawing session is active.
+    /// </exception>
+    public static void FocusNextItem()
+    {
+        EditorUiSession.current.EnsureDrawing();
+        RawImGui.SetKeyboardFocusHere();
     }
 
     /// <summary>

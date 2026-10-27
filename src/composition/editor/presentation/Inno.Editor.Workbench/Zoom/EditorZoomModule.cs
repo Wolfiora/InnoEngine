@@ -25,8 +25,8 @@ internal sealed class EditorZoomModule(
     private float m_actualSize = 1f;
     private int m_zoomStep;
     internal float zoom => ui.widgets.style.zoom;
-    internal bool canZoomIn => ResolveZoom(m_zoomStep + 1) > zoom + 0.0001f;
-    internal bool canZoomOut => ResolveZoom(m_zoomStep - 1) < zoom - 0.0001f;
+    internal bool canZoomIn => ResolveZoom(m_zoomStep + 1) > ResolveZoom(m_zoomStep) + 0.0001f;
+    internal bool canZoomOut => ResolveZoom(m_zoomStep - 1) < ResolveZoom(m_zoomStep) - 0.0001f;
     internal bool isActualSize => m_zoomStep == 0;
 
     internal bool ZoomIn() => SetStep(m_zoomStep + 1);
@@ -94,7 +94,7 @@ internal sealed class EditorZoomModule(
     private bool SetStep(int step)
     {
         float resolved = ResolveZoom(step);
-        if (MathF.Abs(resolved - zoom) < 0.0001f)
+        if (MathF.Abs(resolved - ResolveZoom(m_zoomStep)) < 0.0001f)
             return false;
         m_zoomStep = step;
         return ui.widgets.style.SetZoom(resolved);

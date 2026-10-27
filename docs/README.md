@@ -59,4 +59,4 @@
 
 平台构建接入新增独立标准产品库、Windows 宿主及三个平台 Build integration；各项目的当前公开契约和签名映射见对应分类索引。
 
-Editor UI 的程序集边界、当前文件树、手势、选择与基础能力复用见 [Editor UI 架构](architecture/EDITOR_UI_ARCHITECTURE.md)。[Editor 索引](editor/README.md) 包含 Assets.ImGui、Shaders.ImGui、Graph.ImGui 和 Workbench 的独立项目页。
+Editor UI 的程序集边界、当前文件树、手势、选择与基础能力复用见 [Editor UI 架构](architecture/EDITOR_UI_ARCHITECTURE.md)，具体交互与实现约束见 [Editor UI 设计规范](architecture/EDITOR_UI_DESIGN_STANDARD.md)。[Editor 索引](editor/README.md) 包含 Assets.ImGui、Shaders.ImGui、Graph.ImGui 和 Workbench 的独立项目页。

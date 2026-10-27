@@ -160,6 +160,7 @@ public sealed unsafe class ViewportRetirementTests
         internal bool failCreation;
 
         public bool supportsViewports => true;
+        public bool supportsVertexOffsets => false;
         public void RenderMain(IntPtr drawData) { }
         public void SynchronizeMainOutput(
             int pixelWidth,

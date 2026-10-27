@@ -14,14 +14,17 @@ internal sealed class ScriptCompilationEnvironment
     internal ScriptCompilationEnvironment(
         IReadOnlyList<MetadataReference> frameworkReferences,
         IReadOnlySet<string> frameworkAssemblyNames,
-        string fingerprint
+        string fingerprint,
+        ScriptCompilationInputs inputs
     ) {
         this.frameworkReferences = frameworkReferences;
         this.frameworkAssemblyNames = frameworkAssemblyNames;
         this.fingerprint = fingerprint;
+        this.inputs = inputs;
     }
 
     internal IReadOnlyList<MetadataReference> frameworkReferences { get; }
     internal IReadOnlySet<string> frameworkAssemblyNames { get; }
     internal string fingerprint { get; }
+    internal ScriptCompilationInputs inputs { get; }
 }

@@ -205,7 +205,7 @@ public sealed unsafe partial class ImGuiWidget
         EndMenuPopup();
     }
 
-    private bool IsPopupBlockingInteraction() => NativeImGui.IsPopupOpen(string.Empty, (int)(ImGuiPopupFlags.AnyPopupId | ImGuiPopupFlags.AnyPopupLevel));
+    private bool IsPopupBlockingInteraction() => ImGui.IsAnyPopupOpen();
     private void ConstrainContextMenu()
     {
         Vector2 workSize = ImGui.FromNative(NativeImGui.Raw.GetWindowViewport()->WorkSize);

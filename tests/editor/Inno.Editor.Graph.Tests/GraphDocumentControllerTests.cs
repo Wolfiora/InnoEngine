@@ -3,6 +3,7 @@ using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
 using Inno.Core.Graphs;
@@ -62,6 +63,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [Trait("Acceptance", "Lifecycle")]
     public void AssemblyPublicationPreservesNeutralGraphAndRollsBackLaterParticipantFailure(bool reject)
     {
         GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
@@ -73,16 +75,22 @@ public sealed class GraphDocumentControllerTests : IDisposable
         var rejection = new RejectionParticipant(reject);
         using IDisposable registration = m_reloads.Register(rejection);
         string directory = Path.Combine(AppContext.BaseDirectory, "Modules");
-        using (AssemblyReloadSession reload = m_modules.BeginReload([new DotNetModuleSource
+        for (int iteration = 0; iteration < 10; iteration++)
         {
-            artifactRootDirectory = Path.Combine(m_testRoot, "Assemblies"),
-            moduleName = "GraphRecovery", domain = AssemblyDomain.InnoPlugin, scope = AssemblyScope.Runtime,
-            mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
-            preloadAssemblyPaths = [Path.Combine(directory, "Reloadable.PrivateDependency.dll")]
-        }]))
-        {
-            if (reject) Assert.Throws<InvalidOperationException>(() => m_reloads.Execute(reload));
-            else _ = m_reloads.Execute(reload);
+            using (AssemblyReloadSession reload = m_modules.BeginReload([new DotNetModuleSource
+            {
+                artifactRootDirectory = Path.Combine(m_testRoot, "Assemblies"),
+                moduleName = "GraphRecovery", domain = AssemblyDomain.InnoPlugin, scope = AssemblyScope.Runtime,
+                mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
+                preloadAssemblyPaths = [Path.Combine(directory, "Reloadable.PrivateDependency.dll")]
+            }]))
+            {
+                if (reject) Assert.Throws<InvalidOperationException>(() => m_reloads.Execute(reload));
+                else _ = m_reloads.Execute(reload);
+            }
+            m_modules.generations.Wait();
+            Assert.Equal(GenerationState.Ready, m_modules.generations.state);
+            Assert.Equal(before, GraphDocumentCodec.Encode(controller.document, m_serialization));
         }
         m_modules.generations.Wait();
         Assert.Equal(before, GraphDocumentCodec.Encode(controller.document, m_serialization));
@@ -93,6 +101,37 @@ public sealed class GraphDocumentControllerTests : IDisposable
         Assert.Empty(controller.document.nodes);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.Single(controller.document.nodes);
+    }
+
+    [Fact]
+    [Trait("Acceptance", "Lifecycle")]
+    public void OneHundredDocumentCyclesReleasePayloadsAndRejectRetiredControllers()
+    {
+        GraphEditorModule module = Assert.IsType<GraphEditorModule>(m_sink.module);
+        Guid identity = Guid.NewGuid();
+        var retired = new List<(GraphDocumentController controller, WeakReference<GraphDocument> document)>();
+        for (int iteration = 0; iteration < 100; iteration++)
+            retired.Add(OpenAndClose());
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        foreach (var entry in retired)
+        {
+            Assert.False(entry.controller.isAvailable);
+            Assert.False(entry.document.TryGetTarget(out _));
+            Assert.Throws<InvalidOperationException>(() => entry.controller.AddNode("retired", default));
+        }
+        Assert.False(module.TryOpenDocument(identity, m_runtime.interactions.history, out _));
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        (GraphDocumentController, WeakReference<GraphDocument>) OpenAndClose()
+        {
+            var document = new GraphDocument();
+            GraphDocumentController controller = module.OpenDocument(identity, document, m_runtime.interactions.history);
+            controller.AddNode("missing.example", new(7f, 9f));
+            Assert.True(module.CloseDocument(identity));
+            return (controller, new WeakReference<GraphDocument>(document));
+        }
     }
 
     private sealed class RejectionParticipant(bool reject) : IEditorReloadParticipant, IGenerationChange

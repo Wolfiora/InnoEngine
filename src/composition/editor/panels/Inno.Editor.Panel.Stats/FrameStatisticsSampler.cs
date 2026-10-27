@@ -1,49 +1,76 @@
 using System;
-using System.Collections.Generic;
 
 namespace Inno.Editor.Panel.Stats;
 
 internal sealed class FrameStatisticsSampler
 {
-    private const float C_SAMPLE_WINDOW_SECONDS = 0.5f;
+    private const int C_SAMPLE_CAPACITY = 120;
+    private const float C_SAMPLE_INTERVAL_SECONDS = 0.5f;
     private const float C_SAMPLE_RESET_SECONDS = 1f;
-
-    private readonly Queue<float> m_frameDurations = [];
-    private double m_sampleDuration;
-    private float m_lastSampleTime = float.NaN;
+    private const float C_SAMPLE_WINDOW_SECONDS = 60f;
+    private readonly float[] m_frameTimes = new float[C_SAMPLE_CAPACITY];
+    private readonly float[] m_frameRates = new float[C_SAMPLE_CAPACITY];
+    private readonly float[] m_sampleTimes = new float[C_SAMPLE_CAPACITY];
+    private float m_lastFrameTime = float.NaN;
+    private float m_nextSampleTime;
+    private double m_duration;
+    private int m_frames;
+    private int m_count;
 
     internal float deltaTime { get; private set; }
     internal float framesPerSecond { get; private set; }
+    internal ReadOnlySpan<float> frameTimes => m_frameTimes.AsSpan(0, m_count);
+    internal ReadOnlySpan<float> frameRates => m_frameRates.AsSpan(0, m_count);
 
-    internal void Update(
+    internal bool Update(
         float totalTime,
         float frameDeltaTime
     ) {
-        if (!float.IsFinite(frameDeltaTime) || frameDeltaTime <= 0f)
-            return;
-
-        if (float.IsFinite(m_lastSampleTime) && totalTime - m_lastSampleTime > C_SAMPLE_RESET_SECONDS)
+        if (!float.IsFinite(totalTime) || !float.IsFinite(frameDeltaTime) || frameDeltaTime <= 0f)
+            return false;
+        if (float.IsFinite(m_lastFrameTime)
+            && (totalTime < m_lastFrameTime || totalTime - m_lastFrameTime > C_SAMPLE_RESET_SECONDS
+                || totalTime - m_lastFrameTime > frameDeltaTime * 1.5f + 0.0001f))
             Reset();
-        m_lastSampleTime = totalTime;
-
-        m_frameDurations.Enqueue(frameDeltaTime);
-        m_sampleDuration += frameDeltaTime;
-        while (m_frameDurations.Count > 1 &&
-               m_sampleDuration - m_frameDurations.Peek() >= C_SAMPLE_WINDOW_SECONDS)
-        {
-            m_sampleDuration -= m_frameDurations.Dequeue();
-        }
-
-        double averageFrameDuration = m_sampleDuration / m_frameDurations.Count;
-        deltaTime = (float)averageFrameDuration;
-        framesPerSecond = averageFrameDuration > 0d ? (float)(1d / averageFrameDuration) : 0f;
+        m_lastFrameTime = totalTime;
+        int expired = 0;
+        while (expired < m_count && m_sampleTimes[expired] < totalTime - C_SAMPLE_WINDOW_SECONDS)
+            expired++;
+        RemoveOldest(expired);
+        m_duration += frameDeltaTime;
+        m_frames++;
+        if (m_count > 0 && totalTime < m_nextSampleTime)
+            return false;
+        deltaTime = (float)(m_duration / m_frames);
+        framesPerSecond = (float)(m_frames / m_duration);
+        if (m_count == C_SAMPLE_CAPACITY)
+            RemoveOldest(1);
+        m_frameTimes[m_count] = deltaTime * 1000f;
+        m_frameRates[m_count] = framesPerSecond;
+        m_sampleTimes[m_count++] = totalTime;
+        m_nextSampleTime = totalTime + C_SAMPLE_INTERVAL_SECONDS;
+        m_frames = 0;
+        m_duration = 0d;
+        return true;
     }
 
-    private void Reset()
+    internal void Reset()
     {
-        m_frameDurations.Clear();
-        m_sampleDuration = 0d;
+        m_count = 0;
+        m_lastFrameTime = float.NaN;
+        m_frames = 0;
+        m_duration = 0d;
         deltaTime = 0f;
         framesPerSecond = 0f;
+    }
+
+    private void RemoveOldest(int count)
+    {
+        if (count == 0)
+            return;
+        m_count -= count;
+        Array.Copy(m_frameTimes, count, m_frameTimes, 0, m_count);
+        Array.Copy(m_frameRates, count, m_frameRates, 0, m_count);
+        Array.Copy(m_sampleTimes, count, m_sampleTimes, 0, m_count);
     }
 }

@@ -28,7 +28,7 @@ public sealed unsafe partial class ImGuiWidget
     /// Stable row identifier.
     /// </param>
     /// <param name="onDraw">
-    /// Content drawing callback that receives the native row geometry established by ImGui.
+    /// Frame-local content drawing for visible or explicitly preserved rows; clipped ordinary rows do not invoke it.
     /// </param>
     /// <param name="options">
     /// Tree row options.
@@ -36,7 +36,96 @@ public sealed unsafe partial class ImGuiWidget
     /// <returns>
     /// Interaction and row geometry for the submitted item.
     /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// An explicit flattened depth is negative.
+    /// </exception>
     public TreeNodeResult TreeNode(
+        string id,
+        Action<TreeNodeDrawContext> onDraw,
+        in TreeNodeOptions options
+    ) {
+        m_session.EnsureDrawing();
+        if (options.depth < 0)
+            throw new ArgumentOutOfRangeException(nameof(options), "A flattened tree depth cannot be negative.");
+        float indentation = (options.depth ?? 0) * NativeImGui.Raw.GetStyle()->IndentSpacing;
+        if (indentation > 0f)
+            NativeImGui.Indent(indentation);
+        try
+        {
+            return DrawTreeRow(id, onDraw, options);
+        }
+        finally
+        {
+            if (indentation > 0f)
+                NativeImGui.Unindent(indentation);
+        }
+    }
+
+    /// <summary>
+    /// Gets this window and owner's expansion change counter for invalidating neutral flattened views.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public ulong treeExpansionRevision
+    {
+        get
+        {
+            m_session.EnsureDrawing();
+            return GetTreeWindowState().expansionRevision;
+        }
+    }
+
+    /// <summary>
+    /// Reads a retained expansion value without submitting a native row or retaining domain objects.
+    /// </summary>
+    /// <param name="id">
+    /// The stable row identifier within this window and owner.
+    /// </param>
+    /// <returns>
+    /// True when the row was explicitly expanded; unknown rows are collapsed.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The row identifier is empty or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public bool IsTreeNodeOpen(string id)
+    {
+        m_session.EnsureDrawing();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        return m_openStatesById.GetValueOrDefault(id);
+    }
+
+    /// <summary>
+    /// Changes retained expansion before a flattened view is computed, without submitting a row.
+    /// </summary>
+    /// <param name="id">
+    /// The stable row identifier within this window and owner.
+    /// </param>
+    /// <param name="open">
+    /// The requested disclosure state.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The row identifier is empty or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public void SetTreeNodeOpen(
+        string id,
+        bool open
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        if (m_openStatesById.GetValueOrDefault(id) == open)
+            return;
+        m_openStatesById[id] = open;
+        GetTreeWindowState().expansionRevision++;
+    }
+
+    private TreeNodeResult DrawTreeRow(
         string id,
         Action<TreeNodeDrawContext> onDraw,
         in TreeNodeOptions options
@@ -46,12 +135,29 @@ public sealed unsafe partial class ImGuiWidget
         ArgumentNullException.ThrowIfNull(onDraw);
         bool isLeaf = options.isLeaf;
         BeginTreeFrameIfNeeded();
+        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+        Vector2 cursor = NativeImGui.GetCursorScreenPos();
+        TreeWidgetWindowState state = GetTreeWindowState();
+        bool visible = cursor.Y <= window->ClipRect.Max.Y
+            && cursor.Y + NativeImGui.GetFrameHeight() >= window->ClipRect.Min.Y;
+        bool drawContent = visible || options.requestFocus || options.keepContentActive
+            || state.activeContentOwner == id;
+        uint activeBefore = NativeImGui.Raw.GetCurrentContext()->ActiveId;
+        if (!drawContent)
+            return DrawTreeNode(id, onDraw, options, isLeaf, null, false);
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         NativeImGui.Raw.ChannelsSplit(drawList, 2);
         NativeImGui.Raw.ChannelsSetCurrent(drawList, 1);
         try
         {
-            return DrawTreeNode(id, onDraw, options, isLeaf, drawList);
+            TreeNodeResult result = DrawTreeNode(id, onDraw, options, isLeaf, drawList, true);
+            uint active = NativeImGui.Raw.GetCurrentContext()->ActiveId;
+            if (active != 0 && (active != activeBefore || active == NativeImGui.Raw.GetCurrentContext()->LastItemData.ID))
+            {
+                state.activeContentOwner = id;
+                state.activeContentId = active;
+            }
+            return result;
         }
         finally
         {
@@ -64,13 +170,14 @@ public sealed unsafe partial class ImGuiWidget
         Action<TreeNodeDrawContext> onDraw,
         in TreeNodeOptions options,
         bool isLeaf,
-        ImDrawList* drawList
+        ImDrawList* drawList,
+        bool drawContent
     ) {
         bool open = !isLeaf && m_openStatesById.TryGetValue(id, out bool storedOpen) && storedOpen;
         if (!isLeaf && m_hasNextTreeNodeOpen)
         {
             open = m_nextTreeNodeOpen;
-            m_openStatesById[id] = open;
+            SetTreeNodeOpen(id, open);
         }
 
         m_hasNextTreeNodeOpen = false;
@@ -82,33 +189,49 @@ public sealed unsafe partial class ImGuiWidget
             flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
         else
             flags |= ImGuiTreeNodeFlags.OpenOnArrow;
-        int depth = Math.Max(0, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
+        if (options.depth is not null)
+            flags |= ImGuiTreeNodeFlags.NoTreePushOnOpen;
+        int depth = options.depth ?? Math.Max(0, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
         PruneTreeNodeStack(depth);
         bool hasNextSibling = TrackSiblingState(id, depth);
-        if (!options.hideGuideLines)
+        if (drawContent && !options.hideGuideLines)
             DrawTreeGuideLines(nodeCursor, hasNextSibling, !isLeaf);
-        PushTransparentTreeNodeHeaderColors();
+        if (drawContent)
+            PushTransparentTreeNodeHeaderColors();
         bool isOpen;
         try
         {
+            if (options.requestFocus && NativeImGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.ChildWindows))
+                NativeImGui.SetKeyboardFocusHere();
             isOpen = NativeImGui.TreeNodeEx($"##{id}", (int)(flags));
+            GetTreeWindowState().navigationItemIds.Add(NativeImGui.Raw.GetCurrentContext()->LastItemData.ID);
         }
         finally
         {
-            NativeImGui.PopStyleColor(3);
+            if (drawContent)
+                NativeImGui.PopStyleColor(3);
         }
 
         float nativeRowMaxY = NativeImGui.GetItemRectMax().Y;
+        if (!drawContent)
+        {
+            ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+            if (isOpen && !isLeaf)
+                m_treeNodeStack.Add(new TreeWidgetNodeState { id = id, cursor = nodeCursor, rowMaxY = nativeRowMaxY, hasNextSibling = hasNextSibling });
+            return new TreeNodeResult(isOpen && !isLeaf, false, false, false,
+                new Vector2(window->Pos.X, nodeCursor.Y), new Vector2(window->WorkRect.Max.X, nativeRowMaxY),
+                new Vector2(nodeCursor.X + NativeImGui.GetTreeNodeToLabelSpacing(), nodeCursor.Y), false);
+        }
         try
         {
             if (!isLeaf && NativeImGui.IsItemToggledOpen())
-                m_openStatesById[id] = isOpen;
+                SetTreeNodeOpen(id, isOpen);
             TreeWidgetHighlightRect contentRect = DrawTreeNodeContentContainer(id, nodeCursor, nativeRowMaxY, onDraw, options.drawViewportOverlay, out Vector2 interactionMin);
             bool hovered = NativeImGui.IsItemHovered((int)(ImGuiHoveredFlags.AllowWhenOverlappedByItem));
             bool clicked = hovered && NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Left));
             bool doubleClicked = hovered && NativeImGui.IsMouseDoubleClicked((int)(ImGuiMouseButton.Left));
             if (!isLeaf && doubleClicked)
-                m_openStatesById[id] = !isOpen;
+                SetTreeNodeOpen(id, !isOpen);
             bool showHoverHighlight = hovered && !options.suppressHoverHighlight && NativeImGui.Raw.IsDragDropActive() == 0;
             if (options.selected || showHoverHighlight)
                 DrawTreeRowBackground(drawList, contentRect, NativeImGui.GetColorU32((int)(options.selected ? ImGuiCol.Header : ImGuiCol.HeaderHovered)));
@@ -119,11 +242,11 @@ public sealed unsafe partial class ImGuiWidget
                 m_treeNodeStack.Add(new TreeWidgetNodeState { id = id, cursor = nodeCursor, rowMaxY = contentRect.max.Y, hasNextSibling = hasNextSibling });
             }
 
-            return new TreeNodeResult(isOpen && !isLeaf, clicked, doubleClicked, hovered, contentRect.min, contentRect.max, interactionMin);
+            return new TreeNodeResult(isOpen && !isLeaf, clicked, doubleClicked, hovered, contentRect.min, contentRect.max, interactionMin, true);
         }
         catch
         {
-            if (isOpen && !isLeaf)
+            if (isOpen && !isLeaf && options.depth is null)
                 NativeImGui.TreePop();
             throw;
         }
@@ -236,6 +359,12 @@ public sealed unsafe partial class ImGuiWidget
         state.treeNodeStack.Clear();
         state.lastNodeIdsByDepth.Clear();
         state.lineSegments.Clear();
+        state.navigationItemIds.Clear();
+        if (state.activeContentId != NativeImGui.Raw.GetCurrentContext()->ActiveId)
+        {
+            state.activeContentId = 0;
+            state.activeContentOwner = null;
+        }
         m_lastFrame = frame;
     }
 
@@ -351,6 +480,21 @@ public readonly struct TreeNodeDrawContext
 public readonly struct TreeNodeOptions
 {
     /// <summary>
+    /// Gets explicit indentation for a flattened row, or null for a nested native tree.
+    /// Explicit-depth rows never push a native tree scope; callers must not call TreePop for them.
+    /// </summary>
+    public int? depth { get; init; }
+    /// <summary>
+    /// Gets whether this row should receive keyboard focus during this submission when its tree window is focused.
+    /// </summary>
+    public bool requestFocus { get; init; }
+
+    /// <summary>
+    /// Gets whether an active edit requires content submission even while its row is clipped.
+    /// </summary>
+    public bool keepContentActive { get; init; }
+
+    /// <summary>
     /// Gets whether the row is selected.
     /// </summary>
     public bool selected { get; init; }
@@ -393,7 +537,8 @@ public readonly struct TreeNodeResult
         bool isHovered,
         Vector2 min,
         Vector2 max,
-        Vector2 contentMin
+        Vector2 contentMin,
+        bool isSubmitted
     ) {
         this.isOpen = isOpen;
         this.isClicked = isClicked;
@@ -402,7 +547,13 @@ public readonly struct TreeNodeResult
         this.min = min;
         this.max = max;
         this.contentMin = contentMin;
+        this.isSubmitted = isSubmitted;
     }
+
+    /// <summary>
+    /// Gets whether row controls were submitted; ordinary clipped rows are false, while preserved active edits remain true.
+    /// </summary>
+    public bool isSubmitted { get; }
 
     /// <summary>
     /// Gets whether child content should be rendered.
@@ -437,6 +588,10 @@ public readonly struct TreeNodeResult
 
 internal sealed class TreeWidgetWindowState
 {
+    internal ulong expansionRevision;
+    internal uint activeContentId;
+    internal string? activeContentOwner;
+    internal readonly HashSet<uint> navigationItemIds = [];
     internal readonly List<TreeWidgetNodeState> treeNodeStack = [];
     internal readonly List<string> lastNodeIdsByDepth = [];
     internal readonly List<TreeWidgetLineSegment> lineSegments = [];

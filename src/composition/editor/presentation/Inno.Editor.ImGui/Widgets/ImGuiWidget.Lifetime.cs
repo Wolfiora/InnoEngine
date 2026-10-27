@@ -11,6 +11,7 @@ public sealed unsafe partial class ImGuiWidget
     internal ImGuiWidget(EditorUiSession session)
     {
         m_session = session ?? throw new ArgumentNullException(nameof(session));
+        style = new EditorStyleMetrics(session);
     }
 
     internal void RetireOwner(string owner)

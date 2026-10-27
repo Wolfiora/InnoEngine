@@ -42,6 +42,12 @@ internal sealed class DocumentationSourceModels
             .ToArray();
         m_projectNames = projects.Select(Path.GetFileNameWithoutExtension)
             .OfType<string>().ToHashSet(StringComparer.Ordinal);
+        if (m_projectReferences is not null)
+        {
+            m_references = [];
+            m_frameworkReferences = m_projectReferences.GetFrameworkReferences(cancellationToken);
+            return;
+        }
         var paths = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         string runtimeDirectory = RuntimeEnvironment.GetRuntimeDirectory().TrimEnd(Path.DirectorySeparatorChar);
         string frameworkReferences = Path.GetFullPath(Path.Combine(runtimeDirectory, "..", "..", "..",
@@ -63,11 +69,6 @@ internal sealed class DocumentationSourceModels
                 path.StartsWith(frameworkReferences + Path.DirectorySeparatorChar, pathComparison)
                 || path.StartsWith(runtimeDirectory + Path.DirectorySeparatorChar, pathComparison))
             .Select(static path => (MetadataReference)MetadataReference.CreateFromFile(path)).ToArray();
-        if (m_projectReferences is not null)
-        {
-            m_references = [];
-            return;
-        }
         var projectOutputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         foreach (string project in projects)
         {

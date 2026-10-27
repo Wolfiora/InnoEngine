@@ -1,8 +1,6 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,13 +21,17 @@ internal sealed partial class FileBrowserPanel
         EditorContext context,
         IReadOnlyList<FileBrowserDisplayEntry> entries
     ) {
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         float sliderHeight = Ui.GetFrameHeight() + style.windowPadding.Y * 2f + style.itemSpacing.Y;
         bool entriesVisible = Ui.BeginChild("##EntriesScroll", new Vector2(0f, -sliderHeight), ImGuiChildFlags.None);
         try
         {
             if (entriesVisible)
             {
+                float cellSize = GetGridCellSize();
+                int columns = Math.Max(1, (int)(Ui.GetContentRegionAvailable().X / cellSize));
+                int rows = Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / cellSize));
+                HandleEntryKeyboardNavigation(columns * rows);
                 DrawGrid(context, entries);
                 HandleBackgroundSelection(context);
                 m_contextMenu.DrawBackground(context, "##asset_grid_background_context", FileBrowserPresentation.Grid);
@@ -55,7 +57,7 @@ internal sealed partial class FileBrowserPanel
 
     private void DrawGridScaleSlider()
     {
-        m_gridScale = Math.Clamp(m_gridScale, EditorUI.current.widgets.style.assetGridMinimumScale, EditorUI.current.widgets.style.assetGridMaximumScale);
+        m_gridScale = Math.Clamp(m_gridScale, CurrentBrowserStyle.gridMinimumScale, CurrentBrowserStyle.gridMaximumScale);
         DrawFooterTopSplitter();
         Vector2 cursor = Ui.GetCursorPosition();
         float labelOffsetY = MathF.Max(0f, (Ui.GetFrameHeight() - Ui.GetTextLineHeight()) * 0.5f);
@@ -64,8 +66,8 @@ internal sealed partial class FileBrowserPanel
         Ui.SameLine(0f, -1f);
         Ui.SetCursorPosY(cursor.Y);
         Ui.SetNextItemWidth(-1f);
-        _ = Ui.SliderFloat("##GridScale", ref m_gridScale, EditorUI.current.widgets.style.assetGridMinimumScale, EditorUI.current.widgets.style.assetGridMaximumScale);
-        m_gridScale = Math.Clamp(m_gridScale, EditorUI.current.widgets.style.assetGridMinimumScale, EditorUI.current.widgets.style.assetGridMaximumScale);
+        _ = Ui.SliderFloat("##GridScale", ref m_gridScale, CurrentBrowserStyle.gridMinimumScale, CurrentBrowserStyle.gridMaximumScale);
+        m_gridScale = Math.Clamp(m_gridScale, CurrentBrowserStyle.gridMinimumScale, CurrentBrowserStyle.gridMaximumScale);
     }
 
     private void DrawGrid(
@@ -86,11 +88,28 @@ internal sealed partial class FileBrowserPanel
             return;
         try
         {
-            for (int i = 0; i < entries.Count; i++)
+            int rowCount = (entries.Count + columns - 1) / columns;
+            Span<int> preserved = stackalloc int[3];
+            int preservedCount = CollectPreservedEntryRows(entries, preserved, columns);
+            m_ui.widgets.ClippedRows(rowCount, -1f, (panel: this, context, entries, columns), static (
+                state,
+                start,
+                end
+            ) =>
             {
-                Ui.TableNextColumn();
-                DrawGridItem(context, entries[i]);
-            }
+                for (int row = start; row < end; row++)
+                {
+                    Ui.TableNextRow();
+                    for (int column = 0; column < state.columns; column++)
+                    {
+                        int index = row * state.columns + column;
+                        if (index >= state.entries.Count)
+                            break;
+                        _ = Ui.TableSetColumnIndex(column);
+                        state.panel.DrawGridItem(state.context, state.entries[index]);
+                    }
+                }
+            }, preserved[..preservedCount]);
         }
         finally
         {
@@ -102,13 +121,17 @@ internal sealed partial class FileBrowserPanel
         EditorContext context,
         FileBrowserDisplayEntry item
     ) {
-        AssetFileEntry entry = item.entry;
         float cellSize = GetGridCellSize();
+        if (!m_data.TryResolve(item, out AssetFileEntry? entry))
+        {
+            Ui.Dummy(new(cellSize, cellSize));
+            return;
+        }
         string icon = m_assets.GetIcon(entry);
         string name = item.isPluginRoot ? item.displayName : entry.name;
         bool selected = m_assets.browser.IsSelected(context, entry);
         bool editing = m_rename.IsEditing(context, entry.assetPath.ToString(), FileBrowserPresentation.Grid);
-        Vector2 itemSize = new(cellSize - EditorUI.current.widgets.style.assetGridCellPadding, cellSize - EditorUI.current.widgets.style.assetGridCellPadding);
+        Vector2 itemSize = new(cellSize - CurrentBrowserStyle.gridCellPadding, cellSize - CurrentBrowserStyle.gridCellPadding);
         Ui.PushId(entry.assetPath.ToString());
         Ui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
         Ui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
@@ -118,6 +141,7 @@ internal sealed partial class FileBrowserPanel
             ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.AllowDoubleClick;
             if (editing)
                 selectableFlags |= ImGuiSelectableFlags.AllowOverlap;
+            RequestEntryKeyboardFocus(entry);
             bool activated = Ui.Selectable("##GridItem", selected, selectableFlags, itemSize);
             bool itemHovered = Ui.IsItemHovered();
             bool itemActive = Ui.IsItemActive();
@@ -125,7 +149,7 @@ internal sealed partial class FileBrowserPanel
             Vector2 itemMax = Ui.GetItemMaximum();
             Vector2 layoutCursor = Ui.GetCursorScreenPosition();
             bool doubleClicked = itemHovered && Ui.IsMouseDoubleClicked(ImGuiMouseButton.Left);
-            if (activated)
+            if (activated && !m_keyboardHandled)
             {
                 HandleEntryActivation(context, entry, FileBrowserPresentation.Grid, doubleClicked);
             }
@@ -141,13 +165,13 @@ internal sealed partial class FileBrowserPanel
             DrawGridItemVisual(icon, name, selected, m_gridScale, itemHovered, itemActive, itemMin, itemMax, drawName: !editing);
             if (editing)
             {
-                float width = MathF.Max(1f, itemMax.X - itemMin.X - EditorUI.current.widgets.style.assetGridLabelHorizontalPadding);
+                float width = MathF.Max(1f, itemMax.X - itemMin.X - CurrentBrowserStyle.gridLabelHorizontalPadding);
                 float lineHeight = Ui.GetTextLineHeight();
-                float lineAdvance = MathF.Max(1f, lineHeight + EditorUI.current.widgets.style.assetGridLabelLineSpacing);
+                float lineAdvance = MathF.Max(1f, lineHeight + CurrentBrowserStyle.gridLabelLineSpacing);
                 float labelAreaHeight = lineHeight + lineAdvance * (C_GRID_LABEL_LINE_COUNT - 1);
-                float labelAreaTop = itemMax.Y - EditorUI.current.widgets.style.assetGridLabelBottomPadding - labelAreaHeight;
+                float labelAreaTop = itemMax.Y - CurrentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
                 float y = labelAreaTop + (labelAreaHeight - lineHeight) * 0.5f;
-                Ui.SetCursorScreenPosition(new Vector2(itemMin.X + EditorUI.current.widgets.style.assetGridLabelHorizontalPadding * 0.5f, y));
+                Ui.SetCursorScreenPosition(new Vector2(itemMin.X + CurrentBrowserStyle.gridLabelHorizontalPadding * 0.5f, y));
                 m_rename.Draw(context, $"grid_{entry.assetPath.ToString()}", entry.assetPath.ToString(), FileBrowserPresentation.Grid, width, lineHeight);
                 Ui.SetCursorScreenPosition(layoutCursor);
                 Ui.Dummy(Vector2.Zero);
@@ -172,27 +196,27 @@ internal sealed partial class FileBrowserPanel
         bool drawName
     ) {
         Vector2 size = max - min;
-        Vector4 bg = selected ? EditorPalette.assetAccent : EditorPalette.collectionHeader;
+        Vector4 bg = selected ? EditorPalette.contentAccent : EditorPalette.collectionHeader;
         if (active)
             bg = EditorPalette.GetActive(bg);
         else if (hovered)
             bg = EditorPalette.GetHovered(bg);
         uint bgColor = Ui.ToPackedColor(bg);
-        EditorImGui.DrawFilledRectangle(min, max, bgColor, EditorUI.current.widgets.style.assetFrameRounding);
+        Ui.DrawFilledRectangle(min, max, bgColor, CurrentBrowserStyle.frameRounding);
         float fontSize = Ui.GetFontSize();
         float iconFontSize = fontSize * scale;
         Vector4 iconBounds = EditorUI.current.widgets.GetGlyphVisualBounds(iconFontSize, icon);
         Vector2 iconSize = new(iconBounds.Z - iconBounds.X, iconBounds.W - iconBounds.Y);
-        string[] nameLines = FitTextToLines(name, MathF.Max(1f, size.X - EditorUI.current.widgets.style.assetGridLabelHorizontalPadding), C_GRID_LABEL_LINE_COUNT);
+        string[] nameLines = FitTextToLines(name, MathF.Max(1f, size.X - CurrentBrowserStyle.gridLabelHorizontalPadding), C_GRID_LABEL_LINE_COUNT);
         float lineHeight = Ui.GetTextLineHeight();
-        float lineAdvance = MathF.Max(1f, lineHeight + EditorUI.current.widgets.style.assetGridLabelLineSpacing);
+        float lineAdvance = MathF.Max(1f, lineHeight + CurrentBrowserStyle.gridLabelLineSpacing);
         float labelAreaHeight = lineHeight + lineAdvance * (C_GRID_LABEL_LINE_COUNT - 1);
-        float labelAreaTop = max.Y - EditorUI.current.widgets.style.assetGridLabelBottomPadding - labelAreaHeight;
+        float labelAreaTop = max.Y - CurrentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
         float labelHeight = lineHeight + lineAdvance * Math.Max(0, nameLines.Length - 1);
         float labelY = labelAreaTop + (labelAreaHeight - labelHeight) * 0.5f;
-        float iconAreaTop = min.Y + EditorUI.current.widgets.style.assetGridIconTopPadding;
-        float iconAreaBottom = MathF.Max(iconAreaTop + 1f, labelAreaTop - EditorUI.current.widgets.style.assetGridIconLabelSpacing);
-        float maximumIconWidth = MathF.Max(1f, size.X - EditorUI.current.widgets.style.assetGridIconHorizontalPadding * 2f);
+        float iconAreaTop = min.Y + CurrentBrowserStyle.gridIconTopPadding;
+        float iconAreaBottom = MathF.Max(iconAreaTop + 1f, labelAreaTop - CurrentBrowserStyle.gridIconLabelSpacing);
+        float maximumIconWidth = MathF.Max(1f, size.X - CurrentBrowserStyle.gridIconHorizontalPadding * 2f);
         float maximumIconHeight = MathF.Max(1f, iconAreaBottom - iconAreaTop);
         float fit = MathF.Min(1f, MathF.Min(maximumIconWidth / MathF.Max(1f, iconSize.X), maximumIconHeight / MathF.Max(1f, iconSize.Y)));
         if (fit < 1f)
@@ -204,14 +228,14 @@ internal sealed partial class FileBrowserPanel
 
         float horizontalCenter = min.X + size.X * 0.5f;
         Vector2 iconAreaCenter = new(horizontalCenter + C_GRID_ICON_HORIZONTAL_OPTICAL_OFFSET * EditorUI.current.widgets.style.zoom, iconAreaTop + maximumIconHeight * 0.5f);
-        uint textColor = Ui.ToPackedColor(EditorPalette.assetText);
+        uint textColor = Ui.ToPackedColor(EditorPalette.contentText);
         Ui.PushClipRect(min, max, true);
         EditorUI.current.widgets.AddGlyphCentered(iconFontSize, icon, iconAreaCenter, textColor);
         for (int i = 0; drawName && i < nameLines.Length; i++)
         {
             Vector2 lineSize = Ui.MeasureText(nameLines[i]);
             Vector2 linePosition = new(horizontalCenter - lineSize.X * 0.5f, labelY + lineAdvance * i);
-            EditorImGui.DrawText(linePosition, textColor, nameLines[i]);
+            Ui.DrawText(linePosition, textColor, nameLines[i]);
         }
 
         Ui.PopClipRect();
@@ -221,8 +245,8 @@ internal sealed partial class FileBrowserPanel
     {
         float fontSize = Ui.GetFontSize();
         return MathF.Max(
-            EditorUI.current.widgets.style.assetGridMinimumCellSize,
-            fontSize * (m_gridScale + EditorUI.current.widgets.style.assetGridScaleBias) + EditorUI.current.widgets.style.assetGridFixedCellPadding
+            CurrentBrowserStyle.gridMinimumCellSize,
+            fontSize * (m_gridScale + CurrentBrowserStyle.gridScaleBias) + CurrentBrowserStyle.gridFixedCellPadding
         );
     }
 }

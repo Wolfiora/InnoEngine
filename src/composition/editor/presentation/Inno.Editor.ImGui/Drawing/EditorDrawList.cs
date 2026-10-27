@@ -15,11 +15,9 @@ public readonly unsafe struct EditorDrawList
     private readonly uint m_window;
     internal EditorDrawList(EditorUiSession session)
     {
-        session.EnsureDrawing();
-        if (NativeImGui.Raw.GetCurrentContext()->WithinFrameScope == 0)
-            throw new InvalidOperationException("Drawing requires an active native frame.");
+        ImGuiNativeContext* context = session.RequireDrawingFrame();
         m_session = session;
-        m_frame = NativeImGui.GetFrameCount();
+        m_frame = context->FrameCount;
         m_window = NativeImGui.Raw.GetCurrentWindow()->ID;
     }
 
@@ -196,8 +194,8 @@ public readonly unsafe struct EditorDrawList
     {
         if (m_session is null)
             throw new InvalidOperationException("A default drawing borrow has no owner.");
-        m_session.EnsureDrawing();
-        if (NativeImGui.Raw.GetCurrentContext()->WithinFrameScope == 0 || NativeImGui.GetFrameCount() != m_frame || NativeImGui.Raw.GetCurrentWindow()->ID != m_window)
+        ImGuiNativeContext* context = m_session.RequireDrawingFrame();
+        if (context->FrameCount != m_frame || context->CurrentWindow->ID != m_window)
             throw new InvalidOperationException("The drawing borrow belongs to a different window or frame.");
         return NativeImGui.Raw.GetWindowDrawList();
     }

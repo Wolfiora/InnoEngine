@@ -170,9 +170,9 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 headerOrigin = contentCursor - parentPadding;
         float width = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X + parentPadding.X * 2f);
         NativeImGui.SetCursorScreenPos(headerOrigin);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), EditorPalette.inspectorTargetHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.inspectorTargetHeaderBorder);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inspectorTargetHeaderPadding);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), EditorPalette.targetHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.targetHeaderBorder);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.targetHeaderPadding);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), style.borderSize);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), 0f);
         try

@@ -34,10 +34,11 @@ src/composition/editor/
 ├── presentation/
 │   ├── Inno.Editor.ImGui/
 │   │   ├── Runtime/                        # Session, frame and owner lifetime
+│   │   │   ├── EditorUiSession.cs
+│   │   │   └── EditorMenuRenderer.cs        # Unified models to ImGui
 │   │   ├── Controls/                       # Pointer-free facade and borrows
 │   │   ├── Widgets/                        # Session-owned controls
-│   │   ├── Menus/                          # Unified models to ImGui
-│   │   └── Styling/                          # Palette and density metrics
+│   │   └── Styling/                        # Palette and density metrics
 │   ├── Inno.Editor.Assets.ImGui/            # Browser state, icons, basic Inspector
 │   ├── Inno.Editor.Shaders.ImGui/           # Material and node presentation
 │   ├── Inno.Editor.Graph.ImGui/             # Generic canvas geometry and hit tests

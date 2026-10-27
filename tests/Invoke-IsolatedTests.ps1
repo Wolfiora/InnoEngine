@@ -22,6 +22,12 @@ $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $solutionPath = [System.IO.Path]::GetFullPath($Solution, $repositoryRoot)
 $resultsRoot = [System.IO.Path]::GetFullPath($ResultsDirectory, $repositoryRoot)
 New-Item -ItemType Directory -Force -Path $resultsRoot | Out-Null
+$processTemp = Join-Path $resultsRoot 'process-temp'
+New-Item -ItemType Directory -Force -Path $processTemp | Out-Null
+$tempEnvironment = @('--environment', "TMP=$processTemp", '--environment', "TEMP=$processTemp",
+    '--environment', "TMPDIR=$processTemp")
+$sdkEnvironment += $tempEnvironment
+$assemblyEnvironment += $tempEnvironment
 $checks = [System.Collections.Generic.List[object]]::new()
 
 function Add-CheckResult(

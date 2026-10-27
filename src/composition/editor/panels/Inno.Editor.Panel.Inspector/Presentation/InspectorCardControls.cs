@@ -207,18 +207,18 @@ internal sealed class InspectorCardControls
         bool dimmed
     ) {
         Vector2 origin = Ui.GetCursorScreenPosition();
-        Vector2 padding = EditorUI.current.widgets.style.inspectorCardHeaderPadding;
+        Vector2 padding = EditorUI.current.widgets.style.cardHeaderPadding;
         Vector2 gripSize = Ui.MeasureText(ImGuiIcon.GripVertical);
         Vector2 titleSize = Ui.MeasureText(title);
         Vector2 size = new(
-            padding.X * 2f + gripSize.X + EditorUI.current.widgets.style.inspectorHeaderControlSpacing + titleSize.X,
+            padding.X * 2f + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing + titleSize.X,
             MathF.Max(gripSize.Y, titleSize.Y) + padding.Y * 2f
         );
-        EditorImGui.DrawFilledRectangle(origin, origin + size, Ui.ToPackedColor(EditorPalette.inspectorCardHeader), EditorUI.current.widgets.style.frameRounding);
-        uint color = Ui.ToPackedColor(dimmed ? EditorPalette.inspectorCardDisabledText : EditorPalette.text);
+        EditorImGui.DrawFilledRectangle(origin, origin + size, Ui.ToPackedColor(EditorPalette.cardHeader), EditorUI.current.widgets.style.frameRounding);
+        uint color = Ui.ToPackedColor(dimmed ? EditorPalette.cardDisabledText : EditorPalette.text);
         Vector2 textOrigin = origin + padding;
         EditorImGui.DrawText(textOrigin, color, ImGuiIcon.GripVertical);
-        EditorImGui.DrawText(new Vector2(textOrigin.X + gripSize.X + EditorUI.current.widgets.style.inspectorHeaderControlSpacing, textOrigin.Y), color, title);
+        EditorImGui.DrawText(new Vector2(textOrigin.X + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing, textOrigin.Y), color, title);
         Ui.Dummy(size);
     }
 

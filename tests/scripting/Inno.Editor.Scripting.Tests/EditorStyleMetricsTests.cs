@@ -27,6 +27,24 @@ namespace Inno.Editor.Scripting.Tests;
 public sealed unsafe class EditorStyleMetricsTests
 {
     [Fact]
+    public void BrowserLayoutCapturesTheSharedScaleWithoutRetainingMutableMetrics()
+    {
+        var metrics = new EditorStyleMetrics();
+        var browser = new Inno.Editor.Assets.ImGui.AssetBrowserStyle(metrics);
+        Assert.Equal(32f, browser.gridMinimumCellSize);
+        metrics.SetZoom(1.5f);
+        Assert.Equal(32f, browser.gridMinimumCellSize);
+        var scaled = new Inno.Editor.Assets.ImGui.AssetBrowserStyle(metrics);
+        Assert.Equal(48f, scaled.gridMinimumCellSize);
+        Assert.Equal(browser.gridDefaultScale, scaled.gridDefaultScale);
+        Assert.Equal(browser.listNameSeparatorPosition, scaled.listNameSeparatorPosition);
+        Assert.Equal(32f, default(Inno.Editor.Assets.ImGui.AssetBrowserStyle).gridMinimumCellSize);
+        Assert.Equal(7.5f, metrics.toolbarSectionSpacing);
+        Assert.Equal(24f, metrics.paneMinimumVisibleWidth);
+        Assert.Throws<ArgumentNullException>(() => new Inno.Editor.Assets.ImGui.AssetBrowserStyle(null!));
+    }
+
+    [Fact]
     public void ZoomScalesDimensionsAndFontWhilePreservingRatios()
     {
         var metrics = new EditorStyleMetrics();
@@ -37,7 +55,7 @@ public sealed unsafe class EditorStyleMetricsTests
         Assert.Equal(3f, metrics.frameRounding, 3);
         Assert.Equal(1.8f, metrics.fontScale, 3);
         Assert.Equal(0.4f, metrics.propertyLabelRatio, 3);
-        Assert.Equal(3f, metrics.assetGridDefaultScale, 3);
+        Assert.Equal(3f, new Inno.Editor.Assets.ImGui.AssetBrowserStyle(metrics).gridDefaultScale, 3);
         Assert.Equal(new Vector2(7.5f, 4.5f), metrics.cellPadding);
     }
 
@@ -898,14 +916,14 @@ public sealed unsafe class EditorStyleMetricsTests
             {
                 contentCursor = NativeImGui.GetCursorScreenPos();
                 NativeImGui.TextUnformatted("Scene_With_A_Name_That_Is_Intentionally_Wider_Than_The_Tree_Viewport");
-            }, new TreeNodeOptions { isLeaf = true, showBackground = true, backgroundColor = EditorPalette.hierarchySceneRow });
+            }, new TreeNodeOptions { isLeaf = true, showBackground = true, backgroundColor = EditorPalette.title });
             if (assertGeometry)
             {
                 ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
                 Assert.True(NativeImGui.GetScrollX() > 0f);
                 Assert.True((window->ScrollbarX != 0));
                 Assert.Equal(row.contentMin.X, contentCursor.X, 3);
-                AssertCurrentTreeBackgroundSpansViewport(window, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.hierarchySceneRow));
+                AssertCurrentTreeBackgroundSpansViewport(window, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.title));
             }
         }
 
@@ -981,7 +999,7 @@ public sealed unsafe class EditorStyleMetricsTests
         TreeNodeResult root = EditorUI.current.widgets.TreeNode(
             "current_background_root",
             static _ => NativeImGui.TextUnformatted("TestScene"),
-            new TreeNodeOptions { showBackground = true, backgroundColor = EditorPalette.hierarchySceneRow, suppressHoverHighlight = true }
+            new TreeNodeOptions { showBackground = true, backgroundColor = EditorPalette.title, suppressHoverHighlight = true }
         );
         if (root.isOpen)
         {
@@ -993,7 +1011,7 @@ public sealed unsafe class EditorStyleMetricsTests
             NativeImGui.TreePop();
         }
 
-        AssertCurrentDrawListContainsColor(NativeImGui.ColorConvertFloat4ToU32(EditorPalette.hierarchySceneRow), "The current frame did not submit the Scene row background.");
+        AssertCurrentDrawListContainsColor(NativeImGui.ColorConvertFloat4ToU32(EditorPalette.title), "The current frame did not submit the Scene row background.");
         AssertCurrentDrawListContainsColor(NativeImGui.GetColorU32((int)(ImGuiCol.Header)), "The current frame did not submit the selected row highlight.");
         NativeImGui.End();
         NativeImGui.Render();
@@ -1117,14 +1135,14 @@ public sealed unsafe class EditorStyleMetricsTests
                     Assert.Equal(NativeImGui.GetWindowPos() + EditorUI.current.widgets.style.windowPadding, NativeImGui.GetCursorScreenPos());
                 }
 
-                EditorUI.current.widgets.LabelChip("Tag", EditorPalette.inspectorTagLabel);
+                EditorUI.current.widgets.LabelChip("Tag", new Vector4(0.34f, 0.29f, 0.44f, 1f));
                 float tagMaximumX = NativeImGui.GetItemRectMax().X;
                 NativeImGui.SameLine(0f, 0f);
                 NativeImGui.Dummy(new Vector2(80f, NativeImGui.GetFrameHeight()));
                 if (assertHorizontalRange)
                     Assert.Equal(tagMaximumX, NativeImGui.GetItemRectMin().X, 3);
-                NativeImGui.SameLine(0f, EditorUI.current.widgets.style.inspectorHeaderSectionSpacing);
-                EditorUI.current.widgets.LabelChip("Layer", EditorPalette.inspectorLayerLabel);
+                NativeImGui.SameLine(0f, EditorUI.current.widgets.style.headerSectionSpacing);
+                EditorUI.current.widgets.LabelChip("Layer", new Vector4(0.24f, 0.34f, 0.40f, 1f));
                 float layerMaximumX = NativeImGui.GetItemRectMax().X;
                 NativeImGui.SameLine(0f, 0f);
                 NativeImGui.Dummy(new Vector2(80f, NativeImGui.GetFrameHeight()));

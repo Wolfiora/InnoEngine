@@ -13,7 +13,8 @@ internal static class PublicApiBoundaryValidator
     internal static void Validate(
         string root,
         string configuration,
-        ICollection<string> failures
+        ICollection<string> failures,
+        IReadOnlyDictionary<string, string>? evaluatedOutputs = null
     ) {
         Project[] projects = new[] { "entry", "src", "backends", "platforms", "build" }
             .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj"))
@@ -22,7 +23,7 @@ internal static class PublicApiBoundaryValidator
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("Bindings", StringComparer.Ordinal))
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("tests", StringComparer.Ordinal))
             .Where(path => !XDocument.Load(path).Descendants("OutputType").Any(static item => item.Value == "Exe"))
-            .Select(path => Project.Read(path, configuration)).ToArray();
+            .Select(path => Project.Read(path, configuration, evaluatedOutputs)).ToArray();
         var byName = projects.ToDictionary(project => project.name, StringComparer.Ordinal);
         var references = new Dictionary<string, PortableExecutableReference>(StringComparer.OrdinalIgnoreCase);
         string[] platform = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty).Split(Path.PathSeparator);
@@ -201,14 +202,18 @@ internal static class PublicApiBoundaryValidator
     ) {
         internal static Project Read(
             string path,
-            string configuration
+            string configuration,
+            IReadOnlyDictionary<string, string>? evaluatedOutputs
         ) {
             XDocument document = XDocument.Load(path);
             string name = document.Descendants("AssemblyName").FirstOrDefault()?.Value ?? Path.GetFileNameWithoutExtension(path);
             string framework = document.Descendants("TargetFramework").FirstOrDefault()?.Value ?? "net10.0";
             string? target = document.Descendants("InnoProductTarget").FirstOrDefault()?.Value;
-            return new Project(path, name, Path.Combine(Path.GetDirectoryName(path)!,
-                target is null ? "bin" : Path.Combine("bin", target), configuration, framework, name + ".dll"),
+            string output = evaluatedOutputs is null
+                ? Path.Combine(Path.GetDirectoryName(path)!, target is null ? "bin" : Path.Combine("bin", target),
+                    configuration, framework, name + ".dll")
+                : evaluatedOutputs.TryGetValue(Path.GetFullPath(path), out string? selected) ? selected : string.Empty;
+            return new Project(path, name, output,
                 document.Descendants("ProjectReference").ToArray(), document.Descendants("InnoProductId").Any());
         }
     }

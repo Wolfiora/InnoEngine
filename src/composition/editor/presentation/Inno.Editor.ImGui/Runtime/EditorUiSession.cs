@@ -18,6 +18,7 @@ public sealed unsafe class EditorUiSession : IDisposable
     private Scope? m_scope;
     private OwnerScope? m_ownerScope;
     private nint m_nativeContext;
+    private int m_styleInputFrame = -1;
     private bool m_disposed;
     private string m_owner = "root";
     /// <summary>
@@ -51,6 +52,19 @@ public sealed unsafe class EditorUiSession : IDisposable
     /// </summary>
     public bool isDisposed => m_disposed;
     internal string owner => m_owner;
+
+    internal bool shouldDeferStyleChanges
+    {
+        get
+        {
+            EnsureOwner();
+            ObjectDisposedException.ThrowIf(m_disposed, this);
+            if (m_nativeContext == 0)
+                return false;
+            ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
+            return context is null || (nint)context != m_nativeContext || context->WithinFrameScope != 0;
+        }
+    }
 
     /// <summary>
     /// Activates this session for a synchronous callback while preserving the enclosing scope.
@@ -120,7 +134,37 @@ public sealed unsafe class EditorUiSession : IDisposable
         menus.RetireOwner(owner);
     }
 
-    internal void EnsureDrawing()
+    internal void EnsureDrawing() => _ = RequireContext();
+
+    internal void PrepareStyleInput()
+    {
+        ImGuiNativeContext* context = RequireContext();
+        if (context->WithinFrameScope != 0)
+        {
+            if (m_styleInputFrame == context->FrameCount)
+                return;
+            m_styleInputFrame = context->FrameCount;
+        }
+        else
+            m_styleInputFrame = context->FrameCount + 1;
+        widgets.style.CommitPending();
+    }
+
+    internal void RequireFramePreparation()
+    {
+        if (RequireContext()->WithinFrameScope != 0)
+            throw new InvalidOperationException("Style preparation must run before native frame creation.");
+    }
+
+    internal ImGuiNativeContext* RequireDrawingFrame()
+    {
+        ImGuiNativeContext* context = RequireContext();
+        if (context->WithinFrameScope == 0 || context->CurrentWindow is null)
+            throw new InvalidOperationException("Drawing requires an active native frame and window.");
+        return context;
+    }
+
+    private ImGuiNativeContext* RequireContext()
     {
         EnsureOwner();
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -133,6 +177,7 @@ public sealed unsafe class EditorUiSession : IDisposable
             m_nativeContext = context;
         else if (m_nativeContext != context)
             throw new InvalidOperationException("The UI session belongs to a different ImGui context.");
+        return (ImGuiNativeContext*)context;
     }
 
     private void EnsureOwner()

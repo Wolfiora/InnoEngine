@@ -1,8 +1,7 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.Editor.Assets;
+using Inno.Core.Identity;
 using Inno.Editor.Assets.ImGui;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,7 +21,7 @@ internal sealed partial class FileBrowserPanel
     private void DrawBrowser(EditorContext context)
     {
         m_navigation.SyncExternalDirectoryChange(m_assets.browser.root, m_assets.browser.currentDirectory);
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         float breadcrumbBarHeight = GetBreadcrumbBarHeight(m_assets.browser.root, m_assets.browser.currentDirectory);
         Vector2 bodySize = new(0f, -(breadcrumbBarHeight + style.itemSpacing.Y));
         bool mainVisible = Ui.BeginChild("##FileBrowserMain", bodySize, ImGuiChildFlags.None, (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
@@ -76,7 +75,7 @@ internal sealed partial class FileBrowserPanel
 
     private static float GetTreeSplitterWidth(EditorUiLayout style)
     {
-        return MathF.Max(EditorUI.current.widgets.style.assetSplitterMinimumWidth, style.dockingSeparatorSize);
+        return MathF.Max(EditorUI.current.widgets.style.splitterMinimumWidth, style.dockingSeparatorSize);
     }
 
     private void DrawTreeSplitter(
@@ -103,8 +102,8 @@ internal sealed partial class FileBrowserPanel
 
         Vector2 min = Ui.GetItemMinimum();
         Vector2 max = Ui.GetItemMaximum();
-        Vector4 color = active ? EditorPalette.assetAccent : hovered ? EditorPalette.assetBorder : EditorPalette.assetBorderSoft;
-        EditorImGui.DrawFilledRectangle(min, max, Ui.ToPackedColor(color), 0f);
+        Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
+        Ui.DrawFilledRectangle(min, max, Ui.ToPackedColor(color), 0f);
     }
 
     private static float ClampTreeWidth(
@@ -113,7 +112,7 @@ internal sealed partial class FileBrowserPanel
         float splitterWidth
     ) {
         float combinedPaneWidth = MathF.Max(0f, availableWidth - splitterWidth);
-        float minimumPaneWidth = MathF.Min(EditorUI.current.widgets.style.assetPaneMinimumVisibleWidth, combinedPaneWidth * 0.5f);
+        float minimumPaneWidth = MathF.Min(EditorUI.current.widgets.style.paneMinimumVisibleWidth, combinedPaneWidth * 0.5f);
         float maximumTreeWidth = MathF.Max(minimumPaneWidth, combinedPaneWidth - minimumPaneWidth);
         return Math.Clamp(requestedWidth, minimumPaneWidth, maximumTreeWidth);
     }
@@ -141,7 +140,7 @@ internal sealed partial class FileBrowserPanel
         Ui.PushStyleColor(ImGuiCol.ChildBg, EditorPalette.collectionHeader);
         try
         {
-            EditorUiLayout style = UiDrawing.GetLayout();
+            EditorUiLayout style = Ui.GetLayout();
             Vector2 treePaneSize = new(-style.windowPadding.X, 0f);
             bool treeVisible = Ui.BeginChild("##TreePane", treePaneSize, ImGuiChildFlags.None, (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
             try
@@ -157,10 +156,8 @@ internal sealed partial class FileBrowserPanel
                             m_tree.PrepareOpenRequests();
                             try
                             {
-                                if (m_assets.browser.root == AssetBrowserRoot.Assets)
-                                    m_tree.DrawEntry(context, string.Empty, "Assets", true);
-                                else
-                                    m_tree.DrawPluginRoot(context, m_assets.edits.pipeline.sourceMounts);
+                                m_tree.Draw(context);
+                                m_tree.CompleteNavigation(context);
                             }
                             finally
                             {
@@ -197,7 +194,7 @@ internal sealed partial class FileBrowserPanel
     {
         AssetBrowserRoot nextRoot = m_assets.browser.root == AssetBrowserRoot.Assets ? AssetBrowserRoot.Plugins : AssetBrowserRoot.Assets;
         DrawFooterTopSplitter();
-        PushButtonColors(EditorPalette.assetAccent);
+        PushButtonColors(EditorPalette.contentAccent);
         try
         {
             if (Ui.Button($"Switch to {nextRoot}##FileBrowserRoot", new Vector2(-1f, 0f)))
@@ -223,7 +220,7 @@ internal sealed partial class FileBrowserPanel
                 if (contentVisible)
                 {
                     DrawToolbar(context);
-                    DrawEntriesRegion(context, m_data.CollectVisibleEntries(context, m_entryTypeFilter, m_entryScopeFilter, m_filter));
+                    DrawEntriesRegion(context, m_data.CollectVisibleEntries(m_entryTypeFilter, m_entryScopeFilter, m_filter));
                 }
             }
             finally
@@ -244,7 +241,10 @@ internal sealed partial class FileBrowserPanel
         EditorContext context,
         IReadOnlyList<FileBrowserDisplayEntry> entries
     ) {
-        m_visibleSelection = entries.Select(value => (Inno.Core.Identity.IdentityObject)value.entry).ToArray();
+        m_visibleSelection = m_data.visibleSelection;
+        m_drawKeyboardFocus = m_requestedKeyboardFocus;
+        m_requestedKeyboardFocus = null;
+        m_keyboardHandled = false;
         try
         {
             if (m_viewMode == ViewMode.List)
@@ -254,18 +254,25 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            m_visibleSelection = Array.Empty<Inno.Core.Identity.IdentityObject>();
+            m_visibleSelection = Array.Empty<Inno.Core.Identity.RuntimeIdentity>();
+            m_drawKeyboardFocus = null;
         }
+        RuntimeIdentity? activation = m_pendingActivation;
+        m_pendingActivation = null;
+        if (activation is RuntimeIdentity identity
+            && m_assets.edits.interactions.TryResolveIdentity(identity, out Inno.Core.Identity.IdentityObject? target)
+            && target is AssetFileEntry entry)
+            m_navigation.OpenEntry(context, entry, m_tree);
     }
 
     private static void DrawFooterTopSplitter()
     {
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         Vector2 cursor = Ui.GetCursorScreenPosition();
         float width = Ui.GetContentRegionAvailable().X;
         float lineY = cursor.Y + style.windowPadding.Y;
-        uint color = Ui.ToPackedColor(EditorPalette.assetBorder);
-        EditorImGui.DrawLine(new Vector2(cursor.X, lineY), new Vector2(cursor.X + width, lineY), color, EditorUI.current.widgets.style.borderSize);
+        uint color = Ui.ToPackedColor(EditorPalette.contentBorder);
+        Ui.DrawLine(new Vector2(cursor.X, lineY), new Vector2(cursor.X + width, lineY), color, EditorUI.current.widgets.style.borderSize);
         Ui.SetCursorPosY(Ui.GetCursorPosY() + style.windowPadding.Y * 2f);
     }
 
@@ -273,7 +280,7 @@ internal sealed partial class FileBrowserPanel
     {
         Vector2 min = Ui.GetWindowPos();
         Vector2 size = Ui.GetWindowSize();
-        uint color = Ui.ToPackedColor(EditorPalette.assetBorder);
-        EditorImGui.DrawLine(min, new Vector2(min.X + size.X, min.Y), color, EditorUI.current.widgets.style.borderSize);
+        uint color = Ui.ToPackedColor(EditorPalette.contentBorder);
+        Ui.DrawLine(min, new Vector2(min.X + size.X, min.Y), color, EditorUI.current.widgets.style.borderSize);
     }
 }

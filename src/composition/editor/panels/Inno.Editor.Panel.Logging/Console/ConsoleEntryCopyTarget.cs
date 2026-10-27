@@ -5,16 +5,18 @@ using Inno.Editor.Diagnostics;
 namespace Inno.Editor.Panel.Logging;
 internal readonly struct ConsoleEntryCopyTarget
 {
+    private readonly EditorConsoleOccurrence m_entry;
+    private readonly int m_repeatCount;
     internal ConsoleEntryCopyTarget(
         EditorConsoleOccurrence entry,
         int repeatCount
     ) {
-        message = entry.displayMessage;
-        fullText = FormatFullText(entry, repeatCount);
+        m_entry = entry;
+        m_repeatCount = repeatCount;
     }
 
-    internal string message { get; }
-    internal string fullText { get; }
+    internal string message => m_entry.displayMessage;
+    internal string fullText => FormatFullText(m_entry, m_repeatCount);
 
     private static string FormatFullText(
         EditorConsoleOccurrence entry,

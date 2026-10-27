@@ -1,4 +1,5 @@
 using Inno.Core.IO;
+using Inno.Build;
 using System;
 using System.IO;
 using System.Linq;
@@ -47,7 +48,8 @@ internal sealed class EditorAuthoringServices : IDisposable
 
     internal static EditorAuthoringServices Start(
         string projectDirectory,
-        EngineHost engineHost
+        EngineHost engineHost,
+        string dotnetHost
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectDirectory);
         ArgumentNullException.ThrowIfNull(engineHost);
@@ -114,7 +116,8 @@ internal sealed class EditorAuthoringServices : IDisposable
             var compiler = new ScriptCompiler(
                 new ScriptCompilerOptions
                 {
-                    projectRootDirectory = projectRoot
+                    projectRootDirectory = projectRoot,
+                    compilationEnvironment = new SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
                 },
                 assets,
                 plugins);

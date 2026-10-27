@@ -72,8 +72,15 @@ public sealed class AudioScriptingApiTests
                 Path.Combine(projectRoot, "Library"),
                 scan,
                 host.modules.generations);
+            string dotnetHost = Path.Combine(
+                Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
             var compiler = new ScriptCompiler(
-                new ScriptCompilerOptions { projectRootDirectory = projectRoot },
+                new ScriptCompilerOptions
+                {
+                    projectRootDirectory = projectRoot,
+                    compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
+                },
                 assets,
                 plugins);
             File.WriteAllText(Path.Combine(projectRoot, "Assets", "AudioProbe.cs"), """

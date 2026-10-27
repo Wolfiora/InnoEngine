@@ -50,6 +50,7 @@ public sealed unsafe partial class PlatformImGuiContext
     private readonly bool m_enableSmoothResize;
     private bool m_hasStartedFrame;
     private bool m_isFrameActive;
+    private bool m_isFrameOperationActive;
     private bool m_textInputActive;
     private bool m_disposed;
 
@@ -102,6 +103,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
             UpdateDisplayMetrics(io);
             m_renderer = renderer ?? new PlatformImGuiSdlRenderer(window);
+            if (m_renderer.supportsVertexOffsets)
+                io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasVtxOffset;
             m_viewports = enableViewports ? new PlatformImGuiViewportBackend(application, window, m_renderer) : null;
             RegisterClipboardCallbacks();
         }
@@ -658,35 +661,73 @@ public sealed unsafe partial class PlatformImGuiContext
     /// <param name="drawFrame">
     /// The callback invoked by render frame within the operation's owned lifetime.
     /// </param>
+    /// <param name="prepareFrame">
+    /// Optional callback invoked with the owned context before native frame creation.
+    /// </param>
     /// <returns>
-    /// The validated int ptr that represents the completed operation.
+    /// Borrowed native draw data for the completed frame, valid until the next frame or retirement.
     /// </returns>
-    public partial IntPtr RenderFrame(Action drawFrame)
-    {
+    public partial IntPtr RenderFrame(
+        Action drawFrame,
+        Action? prepareFrame
+    ) {
         ArgumentNullException.ThrowIfNull(drawFrame);
-        if (m_isFrameActive)
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (m_isFrameOperationActive || m_isFrameActive)
             throw new InvalidOperationException("An ImGui frame cannot be reentered.");
 
         var now = m_frameTimer.Elapsed;
         var deltaSeconds = (float)(now - m_lastFrameTime).TotalSeconds;
         m_lastFrameTime = now;
 
-        SynchronizePendingLiveResizeWindows();
-        BeginFrame(deltaSeconds);
+        m_isFrameOperationActive = true;
         try
         {
+            SynchronizePendingLiveResizeWindows();
+            BeginFrame(deltaSeconds, prepareFrame);
             drawFrame();
             return EndFrame();
         }
-        catch
+        catch (Exception failure)
+        {
+            try
+            {
+                AbortNativeFrame();
+            }
+            catch (Exception cleanupFailure)
+            {
+                throw new AggregateException("Presentation failed and its native frame could not retire.", failure, cleanupFailure);
+            }
+            throw;
+        }
+        finally
         {
             m_isFrameActive = false;
-            throw;
+            m_isFrameOperationActive = false;
         }
     }
 
-    private void BeginFrame(float deltaTimeSeconds)
+    private void AbortNativeFrame()
     {
+        if (m_disposed || m_context->WithinFrameScope == 0)
+            return;
+        ImGuiNativeContext* previous = ImGuiNative.Raw.GetCurrentContext();
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        try
+        {
+            ImGuiNative.Raw.EndFrame();
+        }
+        finally
+        {
+            if (previous != m_context)
+                ImGuiNative.Raw.SetCurrentContext(previous);
+        }
+    }
+
+    private void BeginFrame(
+        float deltaTimeSeconds,
+        Action? prepareFrame
+    ) {
         if (m_disposed)
         {
             throw new ObjectDisposedException(nameof(PlatformImGuiContext));
@@ -707,6 +748,7 @@ public sealed unsafe partial class PlatformImGuiContext
         UpdateTextInputState(io);
 
         m_viewports?.SynchronizeMetrics();
+        prepareFrame?.Invoke();
         m_isFrameActive = true;
         ImGuiNative.NewFrame();
 
@@ -800,14 +842,20 @@ public sealed unsafe partial class PlatformImGuiContext
     }
 
     /// <summary>
-    /// Releases the resources owned by this instance.
+    /// Retires the context and its owned resources after the current frame operation has completed.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// A frame operation still owns the context; the caller must retry after that operation completes.
+    /// </exception>
     public partial void Dispose()
     {
         if (m_disposed)
         {
             return;
         }
+
+        if (m_isFrameOperationActive)
+            throw new InvalidOperationException("A presentation context cannot retire during its frame operation.");
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         var io = ImGuiNative.Raw.GetIO();

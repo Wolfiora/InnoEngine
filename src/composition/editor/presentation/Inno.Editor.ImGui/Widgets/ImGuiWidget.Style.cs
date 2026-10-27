@@ -14,7 +14,7 @@ public sealed unsafe partial class ImGuiWidget
     /// <summary>
     /// Gets the centralized editor layout metrics shared by every widget and feature panel.
     /// </summary>
-    public EditorStyleMetrics style { get; } = new();
+    public EditorStyleMetrics style { get; }
 
     /// <summary>
     /// Applies the centralized editor layout metrics and palette to the current ImGui context.
@@ -22,6 +22,7 @@ public sealed unsafe partial class ImGuiWidget
     public void SetupStyle()
     {
         m_session.EnsureDrawing();
+        m_session.PrepareStyleInput();
         ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
         ApplyLayoutStyle(nativeStyle);
         EditorPalette.Apply(nativeStyle);
@@ -31,6 +32,7 @@ public sealed unsafe partial class ImGuiWidget
 
     internal void ApplyPendingStyle()
     {
+        m_session.PrepareStyleInput();
         if (float.IsNaN(m_appliedZoom) || MathF.Abs(m_appliedZoom - style.zoom) > 0.0001f || m_appliedCompactMode != style.isCompact)
             SetupStyle();
     }

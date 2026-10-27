@@ -39,11 +39,14 @@ using Inno.Rendering.Shaders;
 using Inno.Native.ImGui;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using Xunit;
+using Xunit.Abstractions;
 using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Scripting.Tests;
-public sealed class ShaderEditorWorkflowTests : IDisposable
+public sealed partial class ShaderEditorWorkflowTests : IDisposable
 {
+    private readonly ITestOutputHelper m_performanceOutput;
+
     private readonly EditorUI m_ui = new();
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoShaderEditorWorkflow", Guid.NewGuid().ToString("N"));
     private readonly IdentityAllocator m_identities = new();
@@ -65,8 +68,9 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     private Vector2 m_canvasMinimum;
     private Vector2 m_canvasMaximum;
     private Vector2 m_probeOffset;
-    public unsafe ShaderEditorWorkflowTests()
+    public unsafe ShaderEditorWorkflowTests(ITestOutputHelper output)
     {
+        m_performanceOutput = output;
         Directory.CreateDirectory(Path.Combine(m_root, "Assets"));
         m_logs.RegisterSink(m_messages);
         m_identityScope = m_identities.EnterScope();
@@ -274,6 +278,7 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
     [InlineData(1.25f, true)]
     [InlineData(1.5f, true)]
     [InlineData(2f, true)]
+    [Trait("Acceptance", "Visual")]
     public unsafe void NativeCanvasResizeCompletesLayoutAtFractionalUiScales(
         float scale,
         bool emptyGraph
@@ -416,6 +421,15 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
 
     private unsafe void DragProbe(Vector2 distance)
     {
+        BeginDragProbe(distance);
+        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, 0);
+        Draw();
+        Tick();
+        m_probeOffset += distance;
+    }
+
+    private unsafe void BeginDragProbe(Vector2 distance)
+    {
         // A single framed summary-only node is centered in the canvas (82 px tall).
         Vector2 start = (m_canvasMinimum + m_canvasMaximum) * 0.5f + new Vector2(0, -25) + m_probeOffset;
         Assert.True(start.X > 0 && start.Y > 0);
@@ -425,10 +439,56 @@ public sealed class ShaderEditorWorkflowTests : IDisposable
         Draw();
         ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), start.X + distance.X, start.Y + distance.Y);
         Draw();
-        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (false ? (byte)1 : (byte)0));
+    }
+
+    [Fact]
+    public unsafe void SaveDuringANativeDragCompletesOneDomainEditBeforeWriting()
+    {
+        AssetFileEntry entry = Create("SaveDrag.ishader");
+        SelectAndDraw(entry);
+        GraphDocumentController controller = Controller(entry);
+        var graph = new GraphDocument();
+        var node = new GraphNodeRecord(new("probe"), "tests.shader-ui-probe") { position = new(0f, 0f) };
+        graph.AddNode(node);
+        controller.ReplaceDocument(graph, "Prepare Save Probe");
+        Assert.True(m_runtime.interactions.For("panel/rendering.shader-editor", entry).Execute("shader/focus"));
         Draw();
-        Tick();
-        m_probeOffset += distance;
+        Draw();
+        GraphPosition original = controller.document.FindNode(node.id)!.position;
+        BeginDragProbe(new(52f, 37f));
+        Assert.Equal(original, controller.document.FindNode(node.id)!.position);
+        EditorDocumentContext document = Assert.Single(m_runtime.interactions.documents.documents);
+        Assert.True(m_runtime.interactions.documents.Save(document.documentId));
+        GraphPosition saved = controller.document.FindNode(node.id)!.position;
+        Assert.NotEqual(original, saved);
+        Assert.Equal(saved, ReadPosition(entry, node.id));
+        ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, 0);
+        Draw();
+        Assert.Equal(saved, controller.document.FindNode(node.id)!.position);
+        Assert.True(m_runtime.interactions.history.Undo().succeeded);
+        Assert.Equal(original, controller.document.FindNode(node.id)!.position);
+        Assert.Equal(saved, ReadPosition(entry, node.id));
+    }
+
+    [Fact]
+    [Trait("Acceptance", "Lifecycle")]
+    public void OneHundredActualShaderDocumentCyclesRetireTheirGraphOwners()
+    {
+        AssetFileEntry entry = Create("Lifecycle.ishader");
+        byte[] source = File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath));
+        for (int iteration = 0; iteration < 100; iteration++)
+        {
+            SelectAndDraw(entry);
+            GraphDocumentController controller = Controller(entry);
+            controller.AddNode("missing.lifecycle", new(iteration, iteration));
+            Tick();
+            EditorDocumentContext document = Assert.Single(m_runtime.interactions.documents.documents);
+            Assert.True(m_runtime.interactions.documents.Close(document.documentId, EditorDocumentCloseMode.Discard));
+            Assert.Empty(m_runtime.interactions.documents.documents);
+            Assert.False(controller.isAvailable);
+            Assert.False(m_sink.graphs!.TryOpenDocument(AssetId(entry), m_runtime.interactions.history, out _));
+        }
+        Assert.Equal(source, File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath)));
     }
 
     [Fact]

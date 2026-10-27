@@ -11,6 +11,8 @@ Settings
 └─ Build/...    → Settings.Build.inno
 ```
 
+Settings 专用字段底色与内边距由内部 `Styling/SettingsStyle` 维护。它只读取当前帧的共享尺度，不把 Settings 策略或 Session 引用放回公共 metrics。
+
 ## 窗口行为
 
 - 主菜单 `Edit/Settings...` 打开可移动、可缩放但不可 Dock/Collapse 的 Modal。

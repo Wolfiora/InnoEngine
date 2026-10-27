@@ -1,5 +1,12 @@
 # Inno.Tooling.Architecture
 
+## 独立输出目录的检查
+
+使用 `--dotnet <host>` 和 `--artifacts-path <absolute-output-root>` 检查独立 SDK 输出。求值图的 `TargetPath` 决定公开程序集的 owner，Wiki 的 `ReferencePath`、`Compile`、语言和符号也使用同一输出选择。不要把独立输出复制回默认 bin 来满足检查。
+
+`--configuration` 支持 `Debug`、`SourceDebug` 和 `Release`。`--artifacts-path` 要求显式 `--dotnet`；SDK 失败、缺失引用或取消均不能当作通过。
+
+
 [Tooling 索引](README.md)
 
 退休 catch 的 AST 规则拒绝直接捕获 `RetirementPendingException` / `RetirementTimeoutException`（包括全限定名）。
@@ -78,24 +85,7 @@ ProjectReference、Compile、程序集身份、产品与 Native target。不会�
 BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，与宿主输出不能相同或互相包含。
 此规则覆盖 managed binding 和 C++ bridge，避免任一生成器的原子目录替换删除另一目标的产物。
 
-## 当前源码公开 API 清单
 
-当前声明由源码语义清单核对，包含 public 和可供外部派生实现使用的 protected 成员。构建契约不作为游戏脚本导出；线程、失败与所有权要求见前文及每项 XML。
-
-### `Inno.Tooling.Architecture.ArchitectureValidator`
-
-<!-- api: T:Inno.Tooling.Architecture.ArchitectureValidator 3647c06158b3bf9362d2d341a8f2ef9e17b9d60c971a1578b3d17e29334db90a -->
-<!-- api: M:Inno.Tooling.Architecture.ArchitectureValidator.Execute(System.String[],System.Threading.CancellationToken) aafb5a4f0fe7db5e5d8991f1cad9ca334d0d0a12bd11fc30f9da266defaf1e25 -->
-
-| 声明 | 行为、参数与结果 |
-| --- | --- |
-| <a id="api-c7d46d4b90e3ee02"></a>[`public static int Inno.Tooling.Architecture.ArchitectureValidator.Execute(string[] arguments, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L61) | Executes repository validation or an explicitly requested documentation maintenance operation.<br>`arguments`：The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output, and Wiki inventories with explicitly selected runtime and editor script reference assemblies. --wiki-target limits product compilation to that explicit target; shared Wiki checks remain complete.<br>`cancellationToken`：Cancels owned SDK evaluation processes and drains them before returning.<br>返回：Zero when validation succeeds, or one when any invariant is violated.<br>T:System.ArgumentException：An option is unknown or more than one repository path is supplied.<br>T:System.IO.DirectoryNotFoundException：The requested path is not inside an engine checkout.<br>T:System.OperationCanceledException：The caller cancels evaluated SDK project inspection.<br>T:System.IO.InvalidDataException：A selected Wiki script reference is not the declared logical API assembly. |
-| <a id="api-9862893de0812526"></a>[`public static class Inno.Tooling.Architecture.ArchitectureValidator`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L16) | Checks repository dependency, API documentation and source ownership invariants. |
-
-## 项目依赖
-
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-- [Inno.Build.Toolchains](../build/Inno.Build.Toolchains.md)：实现依赖，PrivateAssets="compile"。
 
 ## 缺失目标契约的诊断
 
@@ -108,3 +98,22 @@ BGCS/Cpp2C target profile 必须显式声明 Native owner 内的输出目录，�
 ## 开发入口项目边界
 
 项目归属检查要求 entry 仅包含两个普通可执行项目：Editor 以宿主条件项目引用选择真实产品，Build 直接引用共享 CLI。共同生产层不得反向依赖 entry；backend、平台基础模块与 integration 的原有边界继续检查。
+
+## 当前源码公开 API 清单
+
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
+
+<!-- api: T:Inno.Tooling.Architecture.ArchitectureValidator 3647c06158b3bf9362d2d341a8f2ef9e17b9d60c971a1578b3d17e29334db90a -->
+<!-- api: M:Inno.Tooling.Architecture.ArchitectureValidator.Execute(System.String[],System.Threading.CancellationToken) aafb5a4f0fe7db5e5d8991f1cad9ca334d0d0a12bd11fc30f9da266defaf1e25 -->
+
+| API 与源码 | 契约与参数 | 返回值 | 重要异常 |
+| --- | --- | --- | --- |
+| <a id="api-9862893de0812526"></a>[`public static class Inno.Tooling.Architecture.ArchitectureValidator`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L16) | Checks repository dependency, API documentation and source ownership invariants. | — | — |
+| <a id="api-c7d46d4b90e3ee02"></a>[`public static int Inno.Tooling.Architecture.ArchitectureValidator.Execute(string[] arguments, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../tools/Inno.Tooling.Architecture/ArchitectureValidator.cs#L61) | Executes repository validation or an explicitly requested documentation maintenance operation.<br>`arguments`: The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output, and Wiki inventories with explicitly selected runtime and editor script reference assemblies. --wiki-target limits product compilation to that explicit target; shared Wiki checks remain complete.<br>`cancellationToken`: Cancels owned SDK evaluation processes and drains them before returning. | Zero when validation succeeds, or one when any invariant is violated. | `System.ArgumentException`: An option is unknown or more than one repository path is supplied.<br>`System.IO.DirectoryNotFoundException`: The requested path is not inside an engine checkout.<br>`System.OperationCanceledException`: The caller cancels evaluated SDK project inspection.<br>`System.IO.InvalidDataException`: A selected Wiki script reference is not the declared logical API assembly. |
+
+## 项目依赖
+
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |
+| `Inno.Build.Toolchains` | 实现依赖；不传递 compile surface |

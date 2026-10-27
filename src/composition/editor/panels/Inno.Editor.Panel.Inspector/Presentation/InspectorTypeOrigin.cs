@@ -12,7 +12,7 @@ internal static class InspectorTypeOrigin
     internal static void Draw(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.assetBreadcrumbText);
+        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contextText);
         try
         {
             EditorUI.current.widgets.WrappedText("Source: " + Describe(type));

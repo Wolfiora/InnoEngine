@@ -187,7 +187,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
             }
 
             m_cardControls.DrawSystemDropTarget(context.interactions, m_edits, scene, system, i, cardMinimum, cardMaximum);
-            Ui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.inspectorCardSpacing));
+            Ui.Dummy(new Vector2(0f, EditorUI.current.widgets.style.cardSpacing));
         }
     }
 
@@ -195,7 +195,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         InspectionDrawContext context,
         GameScene scene
     ) {
-        if (EditorUI.current.widgets.CenteredButton("Add System", EditorUI.current.widgets.style.inspectorAddButtonTopPadding))
+        if (EditorUI.current.widgets.CenteredButton("Add System", EditorUI.current.widgets.style.addButtonTopPadding))
         {
             m_systemSearch = string.Empty;
             Ui.OpenPopup("##add_system_popup");

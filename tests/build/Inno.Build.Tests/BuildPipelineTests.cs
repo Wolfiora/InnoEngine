@@ -103,7 +103,8 @@ public sealed class BuildPipelineTests : IDisposable
         m_compiler = new ScriptCompiler(
             new ScriptCompilerOptions
             {
-                projectRootDirectory = m_projectRoot
+                projectRootDirectory = m_projectRoot,
+                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(Path.Combine(Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()), OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"), m_projectRoot)
             },
             m_assets,
             m_plugins);

@@ -104,6 +104,9 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// </summary>
     public bool supportsViewports => m_bgfxDevice.supportsAdditionalSurfaces;
 
+    /// <inheritdoc />
+    public bool supportsVertexOffsets => true;
+
     /// <summary>
     /// Queues a compiled shader replacement that commits atomically at a frame safety point.
     /// </summary>

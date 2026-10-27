@@ -10,6 +10,44 @@ namespace Inno.Editor.Interactions.Tests;
 public sealed partial class EditorRuntimeTests
 {
     [Fact]
+    public void MissingIdentityRejectsTheEntireVisibleRangeWithoutChangingSelection()
+    {
+        var first = new SelectionQueueTarget();
+        var last = new SelectionQueueTarget();
+        Assert.True(m_identities.Register(first));
+        Assert.True(m_identities.Register(last));
+        m_runtime.interactions.SetSelection(first);
+        EditorSelectionSnapshot original = m_runtime.interactions.selection.Capture();
+        RuntimeIdentity firstId = first.identity.runtimeIdentity!.Value;
+        RuntimeIdentity missing = new(firstId.domainId, int.MaxValue);
+        Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SelectRange(
+            [firstId, missing, last.identity.runtimeIdentity!.Value], last));
+        Assert.Same(original, m_runtime.interactions.selection.Capture());
+        Assert.Same(first, m_runtime.interactions.selection.selectedTarget);
+    }
+
+    [Fact]
+    public void LargeIdentityRangesKeepOrderedPrimaryAndIndexedMembership()
+    {
+        var targets = new SelectionQueueTarget[10_000];
+        var order = new RuntimeIdentity[targets.Length];
+        for (int index = 0; index < targets.Length; index++)
+        {
+            targets[index] = new SelectionQueueTarget();
+            Assert.True(m_identities.Register(targets[index]));
+            order[index] = targets[index].identity.runtimeIdentity!.Value;
+        }
+        m_runtime.interactions.SetSelection(targets[0]);
+        m_runtime.interactions.SelectRange(order, targets[^1]);
+        Assert.Equal(targets.Length, m_runtime.interactions.selection.count);
+        Assert.Same(targets[^1], m_runtime.interactions.selection.selectedTarget);
+        foreach (SelectionQueueTarget target in targets)
+            Assert.True(m_runtime.interactions.selection.Contains(target));
+        m_runtime.interactions.SetSelection(targets[0]);
+        Assert.False(m_runtime.interactions.selection.Contains(targets[^1]));
+    }
+
+    [Fact]
     public void BoxedTargetsDoNotKeepReferencedObjectsAliveThroughSelectionFocusOrSnapshots()
     {
         WeakReference reference = SelectBoxedReferenceTarget();
@@ -150,13 +188,13 @@ public sealed partial class EditorRuntimeTests
         Assert.True(m_identities.Register(second));
         Assert.True(m_identities.Register(third));
         m_runtime.interactions.SetSelection(first);
-        m_runtime.interactions.SelectRange([first, second, third], third);
+        m_runtime.interactions.SelectRange([first.identity.runtimeIdentity!.Value, second.identity.runtimeIdentity!.Value, third.identity.runtimeIdentity!.Value], third);
         Assert.Equal(3, m_runtime.interactions.selection.count);
         m_runtime.interactions.ToggleSelection(second);
         Assert.False(m_runtime.interactions.selection.Contains(second));
         Assert.Same(first, m_runtime.interactions.selection.anchor);
         Assert.Same(third, m_runtime.interactions.selection.selectedTarget);
-        m_runtime.interactions.SelectRange([third, second, first], second);
+        m_runtime.interactions.SelectRange([third.identity.runtimeIdentity!.Value, second.identity.runtimeIdentity!.Value, first.identity.runtimeIdentity!.Value], second);
         var targets = new List<SelectionQueueTarget>();
         Assert.Equal(2, m_runtime.interactions.selection.CopyTargets(targets));
         Assert.Equal([first, second], targets);
