@@ -21,6 +21,8 @@ Solution 命令构建通过 `Directory.Solution.targets` 为同一次构建传�
 owner 表示本次执行的所有权，其随机值本身不进入完整 Task runtime 的输入指纹。请求求值仍保留该属性；若导入文件、源码选择或 `DefineConstants` 等实际编译输入由它改变，这些求值结果仍参与指纹，不能误用上次结果。Design-time Build 不准备 publisher。
 IDE 可以把已经求值的 `ProjectInstance` 交给另一个 MSBuild worker。worker 重建 `UsingTask` 注册时可能再次求值，因此不能假设其随机加载身份仍等于传入的普通属性。共同 targets 使用 SDK inline task 捕获任务注册阶段的加载身份，再令 publisher 复制、runtime 发布与后续输入使用该身份。加载路径仍按实际注册隔离，不依赖 IDE 设置、固定机器路径或预先存在的缓存。
 最小 owner 引导消费 SDK Build 实际返回的 Foundation 程序集路径，并保留调用方明确选择的 `ArtifactsPath`，不拼接目标框架或强制写入普通 bin。它从已构建文件读取字节执行公开协议，不让长寿命 IDE 构建宿主锁住 SDK 输出；下一次编译可以正常更新该文件。此阶段只交换 BCL 字符串与 Task，不把 Foundation 类型或委托保存到共享注册表。
+
+生成器通过 SDK `AdditionalTargetFrameworkInfoProperty` 声明自身的 `IsRoslynComponent` 角色。同一工具无论经 Analyzer、脚本编译器的私有运行引用，还是 SDK 追加的传递引用到达，都使用同一中立工具求值；产品参数、父级 `BuildProjectReferences` 和 Task 操作 owner 不属于工具编译输入。`ArtifactsPath` 和 Configuration 仍保留，正式源码与私有 Task 输出继续隔离。直接对生成器显式传入的 RID 仍由 SDK 正常求值，此规则只规范消费工具的项目引用，不改写用户的直接请求。
 `BuildTaskRuntimeTask` 使用同一 `artifacts/build-tools/tasks/workspaces/shared` 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
 私有 Task 编译明确禁用共享 C# compiler server；可复用源码 workspace 的 SDK 子进程同样使用 `--disable-build-servers`。编译完成后不会让另一个长寿命编译宿主持有 workspace 中的生成器 DLL。普通 IDE 的编译服务器配置不由此改变。
 SDK 与项目构建仍由当前 MSBuild engine 执行，保留明确属性和移除产品属性的机制，不创建第二个 CLI 或通过 PATH 重新选择 SDK。完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。
