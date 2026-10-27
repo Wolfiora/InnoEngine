@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Events;
+using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 
@@ -17,6 +18,7 @@ internal sealed class EditorActionRouter(
     private readonly HashSet<string> m_presentationFailures = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_queryFailures = new(StringComparer.Ordinal);
     private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]>? m_byId;
+    private Dictionary<(KeyCode key, KeyModifier modifiers, string area), string[]>? m_shortcutIndex;
     internal EditorActionState Query(
         string action,
         EditorActionContext context
@@ -143,7 +145,11 @@ internal sealed class EditorActionRouter(
         InvalidateDiscovery();
     }
 
-    internal void InvalidateDiscovery() => m_byId = null;
+    internal void InvalidateDiscovery()
+    {
+        m_byId = null;
+        m_shortcutIndex = null;
+    }
     internal void LosePresentationExcept(object? target)
     {
         var visited = new HashSet<EditorAction>(ReferenceEqualityComparer.Instance);
@@ -181,26 +187,40 @@ internal sealed class EditorActionRouter(
         string area,
         object? target
     ) {
-        var actionIds = new HashSet<string>(StringComparer.Ordinal);
-        foreach (EditorExtensionCatalog.ActionRegistration registration in catalog.extensions.actions)
-            _ = actionIds.Add(registration.id);
+        if (keyEvent.repeat)
+            return false;
+        m_shortcutIndex ??= BuildShortcutIndex();
+        KeyModifier modifiers = new HotKeyGesture(keyEvent.key, keyEvent.modifiers).normalizedModifiers;
+        _ = m_shortcutIndex.TryGetValue((keyEvent.key, modifiers, area), out string[]? exact);
+        _ = m_shortcutIndex.TryGetValue((keyEvent.key, modifiers, string.Empty), out string[]? global);
+        if (exact is null && global is null)
+            return false;
         var context = new EditorActionContext(editor, interactions, area, target);
         var candidates = new List<ShortcutCandidate>();
-        foreach (string action in actionIds)
+        for (int pass = 0; pass < 2; pass++)
         {
-            ResolvedAction? resolved = ResolveWithSpecificity(action, context);
-            if (resolved is null)
-            {
+            string[]? actionIds = pass == 0 ? exact : global;
+            if (actionIds is null)
                 continue;
-            }
-
-            foreach (EditorShortcutAttribute shortcut in GetApplicableShortcuts(resolved.Value.registration, area))
+            foreach (string action in actionIds)
             {
-                HotKeyGesture gesture = CreateGesture(shortcut);
-                if (!gesture.Matches(keyEvent))
+                if (pass == 1 && exact is not null && Array.IndexOf(exact, action) >= 0)
                     continue;
-                candidates.Add(new ShortcutCandidate(action, resolved.Value, gesture));
-                break;
+                ResolvedAction? resolved = ResolveWithSpecificity(action, context);
+                if (resolved is null)
+                    continue;
+                EditorExtensionCatalog.ActionRegistration registration = resolved.Value.registration;
+                bool hasExact = HasExactShortcut(registration, area);
+                foreach (EditorShortcutAttribute shortcut in registration.shortcuts)
+                {
+                    if (hasExact ? !string.Equals(shortcut.area, area, StringComparison.Ordinal) : !string.IsNullOrEmpty(shortcut.area))
+                        continue;
+                    HotKeyGesture gesture = CreateGesture(shortcut);
+                    if (!gesture.Matches(keyEvent))
+                        continue;
+                    candidates.Add(new ShortcutCandidate(action, resolved.Value, gesture));
+                    break;
+                }
             }
         }
 
@@ -235,15 +255,19 @@ internal sealed class EditorActionRouter(
         string area,
         out HotKeyGesture gesture
     ) {
-        EditorShortcutAttribute? best = registration is null ? null : GetApplicableShortcuts(registration, area).FirstOrDefault();
-        if (best is null)
+        if (registration is not null)
         {
-            gesture = default;
-            return false;
+            bool hasExact = HasExactShortcut(registration, area);
+            foreach (EditorShortcutAttribute shortcut in registration.shortcuts)
+            {
+                if (hasExact ? !string.Equals(shortcut.area, area, StringComparison.Ordinal) : !string.IsNullOrEmpty(shortcut.area))
+                    continue;
+                gesture = CreateGesture(shortcut);
+                return true;
+            }
         }
-
-        gesture = CreateGesture(best);
-        return true;
+        gesture = default;
+        return false;
     }
 
     private EditorExtensionCatalog.ActionRegistration? Resolve(
@@ -347,12 +371,35 @@ internal sealed class EditorActionRouter(
         shortcut.modifiers,
         editor.keyboard.superModifierLabel
     );
-    private static IEnumerable<EditorShortcutAttribute> GetApplicableShortcuts(
+    private Dictionary<(KeyCode key, KeyModifier modifiers, string area), string[]> BuildShortcutIndex()
+    {
+        var candidates = new Dictionary<(KeyCode key, KeyModifier modifiers, string area), HashSet<string>>();
+        foreach (EditorExtensionCatalog.ActionRegistration registration in catalog.extensions.actions)
+        {
+            foreach (EditorShortcutAttribute shortcut in registration.shortcuts)
+            {
+                HotKeyGesture gesture = CreateGesture(shortcut);
+                string area = string.IsNullOrEmpty(shortcut.area) ? registration.area ?? string.Empty : shortcut.area;
+                var key = (gesture.key, gesture.normalizedModifiers, area);
+                if (!candidates.TryGetValue(key, out HashSet<string>? actions))
+                    candidates.Add(key, actions = new(StringComparer.Ordinal));
+                actions.Add(registration.id);
+            }
+        }
+        return candidates.ToDictionary(static pair => pair.Key,
+            static pair => pair.Value.OrderBy(static value => value, StringComparer.Ordinal).ToArray());
+    }
+
+    private static bool HasExactShortcut(
         EditorExtensionCatalog.ActionRegistration registration,
         string area
     ) {
-        bool hasExact = registration.shortcuts.Any(shortcut => !string.IsNullOrEmpty(shortcut.area) && string.Equals(shortcut.area, area, StringComparison.Ordinal));
-        return registration.shortcuts.Where(shortcut => hasExact ? string.Equals(shortcut.area, area, StringComparison.Ordinal) : string.IsNullOrEmpty(shortcut.area));
+        foreach (EditorShortcutAttribute shortcut in registration.shortcuts)
+        {
+            if (!string.IsNullOrEmpty(shortcut.area) && string.Equals(shortcut.area, area, StringComparison.Ordinal))
+                return true;
+        }
+        return false;
     }
 
     private void TryCancel(

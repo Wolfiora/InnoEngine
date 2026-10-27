@@ -483,6 +483,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     internal void CompleteGenerationTransition()
     {
         Actions.InvalidateDiscovery();
+        m_menus?.InvalidateDiscovery();
         selection.Rebind();
         m_focus = m_focus?.Rebind(this);
         m_previousGenerationSelection = null;
@@ -494,6 +495,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     internal void Shutdown(IReadOnlyList<EditorExtensionCatalog.ActionRegistration> actions)
     {
         Actions.Clear(actions);
+        m_menus?.InvalidateDiscovery();
         Drops.Cancel();
         m_catalog = null;
         selection.Clear();

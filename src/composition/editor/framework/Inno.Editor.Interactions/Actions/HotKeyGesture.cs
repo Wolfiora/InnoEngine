@@ -108,6 +108,11 @@ public readonly record struct HotKeyGesture
            keyEvent.key == key &&
            Normalize(key, keyEvent.modifiers) == Normalize(key, modifiers);
 
+    /// <summary>
+    /// Gets the normalized modifiers used by generation-owned shortcut indexes.
+    /// </summary>
+    internal KeyModifier normalizedModifiers => Normalize(key, modifiers);
+
     private static KeyModifier Normalize(
         KeyCode key,
         KeyModifier value

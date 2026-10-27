@@ -52,6 +52,8 @@ src/composition/editor/
 
 普通菜单、快捷键、工具栏与 command search 消费同一 Action 的 Query/Execute；presentation 不能维护另一份 enabled/checked 业务规则。Action 索引按 active generation 失效。所有跨帧目标用 Core Identity 重新解析，不能保留 Component wrapper 或 collectible Type。
 
+静态菜单路径和结构在当前 generation 内冻结；快捷键按按键、规范化修饰键及 area 索引候选。缓存只保存声明事实，菜单状态和动态 source 仍按请求查询。动态菜单采用局部不可变结构合并，不把请求参数保存到静态模板。候选完成和 shutdown 明确清空索引；此处是内部执行机制，不增加项目作者配置。
+
 非 Identity target 只有明确的中立标量可以强持有，其余对象使用弱引用，包括 boxed struct。宿主程序集的值类型仍可能包含插件对象，不能根据 `IsValueType` 或程序集不可回收就假定其内容中立。Selection、focus 与 snapshot 复用同一规则。
 
 连续输入在首个有效 sample 打开 EditorEditGesture，release 提交，Escape 回滚。显式 Selection 切换先提交当前输入，准备失败则保持原选择；关闭 owner 或未完成的控件消失时回滚。命令和 reload 边界同样使用已有 Core Events 准备通知。材质/Pipeline 不再自己维护 deferred gesture；SceneEdits 和 asset draft service 都立即记录。
