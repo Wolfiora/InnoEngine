@@ -205,3 +205,11 @@ The native color candidate using ordinary integer conversion failed for NaN. The
 - PR #26 and the parent issue remain incomplete. Full workload/product/input/visual/lifetime acceptance must retain its actual limitations; automated fixture success does not certify physical devices or the entire original plan.
 
 Final working-tree verification: the twelve-project compilation, Core 49 / Scene 53, Workflows 305, Visual 136, Lifecycle 11, Editor Debug/Release, Build entry, six 300-frame FlappyBird renderer smokes, three official companion script/IDE projections, and the 241-project architecture/Wiki gate pass. Evidence uses `final-candidate*`, `products/final-candidate-*`, `companion-projections-final` and `wiki-final-candidate`. Controlled performance and the new committed-source CI remain separate pending gates; this does not close the parent or the original full acceptance matrix.
+
+## Committed correction and controlled measurements
+
+- Correction commit: `f7dce89c0d91ecb0f2333b8ca3117fefc71db96a`, pushed to editor-ui; author and committer Aaron Liao, no co-author.
+- The 30 alternating large-workload processes and five menu/statistics process pairs completed. All 12,778 frozen input/dependency files match before/after. Graph CPU/P95 no longer exceeds the 10% regression threshold; all three sampled workload allocations decrease.
+- Absolute hierarchy performance remains poor: 345.14 ms median, 402.69 ms P95 and 139.06 MB allocated per frame. New issue #46 owns the remaining complete-scene dirty-check bottleneck and the required correctness/invalidation design; no timer relaxation or partial cache is used.
+- Exact-commit managed Windows/macOS and NuGet dependency CI pass. Full native Windows/macOS CI is still running; no completion or Ready claim is made.
+- Full E08/E09/E10/E11 and the parent retain the limitations in the report. Relative performance improvement and focused green suites do not establish whole-plan completion.

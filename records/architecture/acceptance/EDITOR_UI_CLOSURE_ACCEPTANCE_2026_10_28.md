@@ -25,12 +25,28 @@
 | Canvas / Rendering2D / FlappyBird | 正式脚本编译及 IDE 投影通过；`companion-projections-final/*/generation.log`。未编辑派生代码或插件包。 |
 | 完整 Contracts | 前一修正候选 713 项通过，`unified-correction-final/cf4d562d8bf1413f945d8f23e5d1d712`。后续 Core / modifier 修正后的最终完整 CI 另行记录。 |
 | 最终 Wiki / 架构 | 通过；`wiki-final-candidate`，241/241 工程实际归属、API 清单与可编译示例门禁。网络 NU1900 警告原样保留。 |
-| 最终成对性能 | 待验收；必须在所有构建、测试和产品进程结束后单独采样。 |
-| CI | `660962a5` 的 Windows 及两个 Managed job 通过；ARM64 自动构建、renderer、架构、Wiki 通过，但有七个原生输入失败。已修正呈现边界与 fixture，待新提交 CI。 |
+| 最终成对性能 | 三类负载各五组交替原版/当前进程、共 30 次，以及菜单/统计五组对照均完成；输入与依赖 12,778 文件、583,137,380 bytes 前后完全一致。详见下方性能结果。完整 E11 产品/交互矩阵仍未闭合。 |
+| CI | `f7dce89c` 的 Windows/macOS Managed 与 NuGet job 通过；完整 Windows/macOS ARM64 job 已通过 Debug 及真实 renderer smoke，正在执行 Release/后续测试。旧 `660962a5` 的七个 Mac 输入失败已修正，仍须等待新提交的完整原生套件确认。 |
 
 Core 内部现在只在实际需要时创建回调、循环检测和恢复去重集合，复用 BCL reference equality；上下文仅在全部 owner 身份一致时复用。正式输出的同一属性 bytes 保持一致，分配测量为 fresh 1,888 / prepared 1,168 bytes，原 prepared 为 2,096。新公开边界回归先失败再通过；没有修改 `SerializationContext.With` 的新实例语义。该观察不是整帧或全产品 CPU 收益证明。
 
 原生 command-key 模式会在 ImGui 内交换 Control / Super。`EditorUiInput` 现在还原物理 Core 修饰键含义，列表选择复用该边界；原生文本控件保留自身配置。四个真实输入组合验证两种 primary modifier 与两种原生模式。共享 Editor 不增加 OS 检测或平台引用，fixtures 显式选择键盘配置。
+
+## 最终受控性能结果
+
+源码候选为 `f7dce89c0d91ecb0f2333b8ca3117fefc71db96a`；原生产基线为 `b303d9f10cbaf5a905f7cb529e52cf8293b0d8bd`，原版只移植验收 harness，不修改生产实现。两侧使用同一 .NET 10.0.402、Debug 配置、机器、冻结数据和 Native command-validation 方法；各进程预热五帧，再采样十帧，五组进程交替顺序运行，没有构建/测试/产品并发。原始各组数据保留在 [性能证据目录](editor-ui-performance-2026-10-28/README.md)。
+
+| 负载 | 原版 median / P95 | 当前 median / P95 | 原版 → 当前分配/帧 |
+| --- | --- | --- | --- |
+| 10,000 对象层级 | 5117.21 / 5594.09 ms | 345.14 / 402.69 ms | 709.02 → 139.06 MB |
+| 10,000 资源目录 | 4104.39 / 4320.28 ms | 18.73 / 27.58 ms | 249.23 → 0.98 MB |
+| 2,000 Shader 节点 | 29.01 / 33.17 ms | 28.78 / 33.39 ms | 4.36 → 3.63 MB |
+
+这里 MB 使用十进制字节。图负载的 P95 为 +0.65%，CPU 中位数相同，前次超过 10% 的回退已消除；三类负载均通过本次相对回退与分配门槛。菜单打开的每次分配 8544.29 → 4240.14 bytes，时间 10.61 → 6.18 µs；无变化统计读取 16792 → 400 bytes，时间 30.40 → 0.24 µs。后两项是公开菜单/统计契约负载，不能等同完整产品帧收益。
+
+**绝对表现仍有严重限制：345 ms/帧、139 MB/帧的大层级负载不能称为优秀。** 当前 `IsDirty` 仍周期性序列化完整 Scene 再散列，检查超过既有 100 ms 周期时会持续占用后续帧。[#46](https://github.com/Wolfiora/InnoEngine/issues/46) 已记录真实调用链、职责、设计约束和验收要求；没有用延长周期、隐藏检查或不完整 mutation cache 掩盖。#45 的 Core 改良不代表 #46 或完整 E07/E11 已完成。
+
+本次是 Native command-validation / headless public-contract 比较，不是 GPU 或完整 FlappyBird 产品帧性能认证。原版与当前 FlappyBird API 输入不相容，以及滚动、搜索、属性拖动、冷启动等完整性能矩阵仍按对应 issue 保持未闭合。
 
 证据根目录：`D:/InnoEngine-Verification/editor-ui-closure-2026-10-27`。表中的路径均相对此目录。日志、TRX、binlog、截图和大规模输入不进入源码仓库；本记录与执行台账提供可追溯索引。
 
@@ -185,6 +201,8 @@ tests/fixtures/editor-ui/PanelLifecycle.editor.cs
 ## 资源、提交与后续结果
 
 大型输入、baseline、binlog、TRX 与截图集中在 D 盘。保留现行有效产物和活动 reader，维护通过既有 owner/lease 协议进行，不手删协调锁或全局依赖缓存。完成时核对实际磁盘空间、companion/BGCS 状态、最终提交和 CI，并在此追加精确结果。
+
+最终采样后通过正式 cache clean 先 dry-run 再执行：逻辑 inventory 10,787,641,712 bytes，保护 174,384,757，退休 10,613,256,955，skipped 0。C 盘实际可用从 92.090 增至 93.501 GiB，D 盘约 97.782 GiB；hardlink 的逻辑回收量不能当作实际卷空间。日志为 `cache-after-final-preview.log` 与 `cache-after-final-maintenance.log`。没有清理 SDK/NuGet 全局缓存或用户内容。
 
 本环境没有 `/System/Library/Sounds/Glass.aiff`，不能播放指定提示音。
 

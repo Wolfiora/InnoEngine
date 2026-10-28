@@ -1,0 +1,1642 @@
+[
+  {
+    "source": "original",
+    "workload": "hierarchy",
+    "pair": 0,
+    "started": "2026-10-28T16:03:42.5737556+08:00",
+    "finished": "2026-10-28T16:04:57.5770970+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            4544.1741,
+            4577.1725,
+            4505.1724,
+            4545.2887,
+            4529.2605,
+            4478.4727,
+            4515.6421,
+            4527.4402,
+            4504.702,
+            4564.9014
+          ],
+          "median": 4528.350350000001,
+          "p95": 4577.1725,
+          "allocatedBytes": 7090186312,
+          "totalAllocatedBytes": 7090266264,
+          "cpuMilliseconds": 45265.625,
+          "gen0Collections": 827,
+          "gen1Collections": 108,
+          "gen2Collections": 14
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-0-original"
+  },
+  {
+    "source": "current",
+    "workload": "hierarchy",
+    "pair": 0,
+    "started": "2026-10-28T16:04:57.5968582+08:00",
+    "finished": "2026-10-28T16:05:08.5999727+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            359.7007,
+            342.8073,
+            318.4149,
+            363.1619,
+            331.1138,
+            353.3101,
+            317.5365,
+            347.4637,
+            299.6789,
+            347.9906
+          ],
+          "median": 345.1355,
+          "p95": 363.1619,
+          "allocatedBytes": 1390615488,
+          "totalAllocatedBytes": 1390700048,
+          "cpuMilliseconds": 3390.625,
+          "gen0Collections": 146,
+          "gen1Collections": 51,
+          "gen2Collections": 14
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-0-current"
+  },
+  {
+    "source": "current",
+    "workload": "hierarchy",
+    "pair": 1,
+    "started": "2026-10-28T16:05:08.6037632+08:00",
+    "finished": "2026-10-28T16:05:19.4986513+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            352.2365,
+            304.302,
+            402.6929,
+            301.7208,
+            333.3494,
+            353.3288,
+            307.5506,
+            351.763,
+            332.1294,
+            355.3793
+          ],
+          "median": 342.5562,
+          "p95": 402.6929,
+          "allocatedBytes": 1390612064,
+          "totalAllocatedBytes": 1390690504,
+          "cpuMilliseconds": 3437.5,
+          "gen0Collections": 145,
+          "gen1Collections": 53,
+          "gen2Collections": 13
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-1-current"
+  },
+  {
+    "source": "original",
+    "workload": "hierarchy",
+    "pair": 1,
+    "started": "2026-10-28T16:05:19.5010919+08:00",
+    "finished": "2026-10-28T16:06:48.9566882+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            6580.8696,
+            7101.9513,
+            5058.1122,
+            5646.3278,
+            5532.3301,
+            6175.6381,
+            5559.743,
+            6030.9225,
+            5810.8294,
+            5679.6545
+          ],
+          "median": 5745.24195,
+          "p95": 7101.9513,
+          "allocatedBytes": 7090198928,
+          "totalAllocatedBytes": 7090284544,
+          "cpuMilliseconds": 58625,
+          "gen0Collections": 828,
+          "gen1Collections": 112,
+          "gen2Collections": 15
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-1-original"
+  },
+  {
+    "source": "original",
+    "workload": "hierarchy",
+    "pair": 2,
+    "started": "2026-10-28T16:06:48.9598849+08:00",
+    "finished": "2026-10-28T16:08:13.7292672+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            5015.7623,
+            5201.5373,
+            5103.3021,
+            5015.0432,
+            5089.7225,
+            5287.1732,
+            5257.3071,
+            5290.2842,
+            5083.1108,
+            5131.1104
+          ],
+          "median": 5117.206249999999,
+          "p95": 5290.2842,
+          "allocatedBytes": 7090167352,
+          "totalAllocatedBytes": 7090241640,
+          "cpuMilliseconds": 51203.125,
+          "gen0Collections": 826,
+          "gen1Collections": 116,
+          "gen2Collections": 13
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-2-original"
+  },
+  {
+    "source": "current",
+    "workload": "hierarchy",
+    "pair": 2,
+    "started": "2026-10-28T16:08:13.7319446+08:00",
+    "finished": "2026-10-28T16:08:24.7942640+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            360.0098,
+            341.4601,
+            364.5159,
+            299.3946,
+            336.7417,
+            359.6279,
+            316.2664,
+            329.1443,
+            334.2019,
+            306.258
+          ],
+          "median": 335.47180000000003,
+          "p95": 364.5159,
+          "allocatedBytes": 1390614232,
+          "totalAllocatedBytes": 1390680048,
+          "cpuMilliseconds": 3500,
+          "gen0Collections": 142,
+          "gen1Collections": 51,
+          "gen2Collections": 11
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-2-current"
+  },
+  {
+    "source": "current",
+    "workload": "hierarchy",
+    "pair": 3,
+    "started": "2026-10-28T16:08:24.7966407+08:00",
+    "finished": "2026-10-28T16:08:37.4379711+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            368.1309,
+            319.0127,
+            414.3714,
+            306.6487,
+            380.56,
+            411.0422,
+            329.4236,
+            365.7039,
+            372.9448,
+            319.5688
+          ],
+          "median": 366.9174,
+          "p95": 414.3714,
+          "allocatedBytes": 1390612128,
+          "totalAllocatedBytes": 1390690400,
+          "cpuMilliseconds": 3671.875,
+          "gen0Collections": 145,
+          "gen1Collections": 51,
+          "gen2Collections": 13
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-3-current"
+  },
+  {
+    "source": "original",
+    "workload": "hierarchy",
+    "pair": 3,
+    "started": "2026-10-28T16:08:37.4419288+08:00",
+    "finished": "2026-10-28T16:10:03.9240682+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            5058.1373,
+            5728.451,
+            5414.9813,
+            5606.8391,
+            4959.2011,
+            4908.2882,
+            5291.0175,
+            5129.1555,
+            5090.3556,
+            5101.146
+          ],
+          "median": 5115.15075,
+          "p95": 5728.451,
+          "allocatedBytes": 7090190832,
+          "totalAllocatedBytes": 7090265120,
+          "cpuMilliseconds": 52062.5,
+          "gen0Collections": 826,
+          "gen1Collections": 110,
+          "gen2Collections": 13
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-3-original"
+  },
+  {
+    "source": "original",
+    "workload": "hierarchy",
+    "pair": 4,
+    "started": "2026-10-28T16:10:03.9270355+08:00",
+    "finished": "2026-10-28T16:11:28.2924597+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            5383.1875,
+            5594.0916,
+            5071.3082,
+            5463.9791,
+            5070.7983,
+            5478.7259,
+            5091.3866,
+            5214.7863,
+            5295.1281,
+            5398.5025
+          ],
+          "median": 5339.1578,
+          "p95": 5594.0916,
+          "allocatedBytes": 7090199904,
+          "totalAllocatedBytes": 7090296848,
+          "cpuMilliseconds": 52953.125,
+          "gen0Collections": 830,
+          "gen1Collections": 122,
+          "gen2Collections": 17
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-4-original"
+  },
+  {
+    "source": "current",
+    "workload": "hierarchy",
+    "pair": 4,
+    "started": "2026-10-28T16:11:28.2963797+08:00",
+    "finished": "2026-10-28T16:11:39.7952066+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-hierarchy-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            359.7635,
+            312.2592,
+            422.9317,
+            326.3216,
+            343.9195,
+            362.283,
+            322.3128,
+            389.681,
+            385.7471,
+            387.7434
+          ],
+          "median": 361.02325,
+          "p95": 422.9317,
+          "allocatedBytes": 1390621520,
+          "totalAllocatedBytes": 1390699864,
+          "cpuMilliseconds": 3703.125,
+          "gen0Collections": 145,
+          "gen1Collections": 53,
+          "gen2Collections": 13
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\hierarchy-4-current"
+  },
+  {
+    "source": "original",
+    "workload": "assets",
+    "pair": 0,
+    "started": "2026-10-28T16:11:39.7982345+08:00",
+    "finished": "2026-10-28T16:13:56.5309264+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            4109.2795,
+            4088.6515,
+            3999.0073,
+            4162.9321,
+            4084.1437,
+            4214.3914,
+            4099.5033,
+            4152.8808,
+            4179.1978,
+            4091.9468
+          ],
+          "median": 4104.3914,
+          "p95": 4214.3914,
+          "allocatedBytes": 2492323840,
+          "totalAllocatedBytes": 2492330088,
+          "cpuMilliseconds": 40984.375,
+          "gen0Collections": 297,
+          "gen1Collections": 7,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-0-original"
+  },
+  {
+    "source": "current",
+    "workload": "assets",
+    "pair": 0,
+    "started": "2026-10-28T16:13:56.5340317+08:00",
+    "finished": "2026-10-28T16:15:07.2815735+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            20.3641,
+            16.7308,
+            18.9641,
+            19.7994,
+            19.392,
+            17.2206,
+            17.007,
+            23.9667,
+            18.5614,
+            19.3518
+          ],
+          "median": 19.15795,
+          "p95": 23.9667,
+          "allocatedBytes": 9801832,
+          "totalAllocatedBytes": 9802824,
+          "cpuMilliseconds": 218.75,
+          "gen0Collections": 1,
+          "gen1Collections": 1,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-0-current"
+  },
+  {
+    "source": "current",
+    "workload": "assets",
+    "pair": 1,
+    "started": "2026-10-28T16:15:07.2838128+08:00",
+    "finished": "2026-10-28T16:16:22.0548770+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            19.1997,
+            21.0307,
+            17.9876,
+            17.6283,
+            18.2606,
+            22.8607,
+            21.9787,
+            28.6163,
+            17.9572,
+            17.7507
+          ],
+          "median": 18.730150000000002,
+          "p95": 28.6163,
+          "allocatedBytes": 9801832,
+          "totalAllocatedBytes": 9802824,
+          "cpuMilliseconds": 218.75,
+          "gen0Collections": 1,
+          "gen1Collections": 1,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-1-current"
+  },
+  {
+    "source": "original",
+    "workload": "assets",
+    "pair": 1,
+    "started": "2026-10-28T16:16:22.0576549+08:00",
+    "finished": "2026-10-28T16:18:34.9130369+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            4154.0909,
+            4011.8881,
+            4245.3433,
+            4236.046,
+            4023.3207,
+            4050.0702,
+            4020.5302,
+            4189.9033,
+            5159.6965,
+            4401.8816
+          ],
+          "median": 4171.9971000000005,
+          "p95": 5159.6965,
+          "allocatedBytes": 2492321744,
+          "totalAllocatedBytes": 2492328064,
+          "cpuMilliseconds": 41937.5,
+          "gen0Collections": 297,
+          "gen1Collections": 6,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-1-original"
+  },
+  {
+    "source": "original",
+    "workload": "assets",
+    "pair": 2,
+    "started": "2026-10-28T16:18:34.9153885+08:00",
+    "finished": "2026-10-28T16:20:46.3904341+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            4228.8878,
+            4023.8318,
+            4147.0834,
+            4063.2924,
+            4153.7989,
+            4136.9028,
+            4071.6927,
+            4018.7011,
+            4066.1196,
+            4062.0817
+          ],
+          "median": 4068.90615,
+          "p95": 4228.8878,
+          "allocatedBytes": 2492324328,
+          "totalAllocatedBytes": 2492330648,
+          "cpuMilliseconds": 40843.75,
+          "gen0Collections": 297,
+          "gen1Collections": 6,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-2-original"
+  },
+  {
+    "source": "current",
+    "workload": "assets",
+    "pair": 2,
+    "started": "2026-10-28T16:20:46.3928668+08:00",
+    "finished": "2026-10-28T16:21:57.1447238+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            18.4949,
+            18.1745,
+            17.7758,
+            18.112,
+            19.1794,
+            19.7925,
+            17.578,
+            27.5775,
+            18.8044,
+            17.5712
+          ],
+          "median": 18.334699999999998,
+          "p95": 27.5775,
+          "allocatedBytes": 9801832,
+          "totalAllocatedBytes": 9802824,
+          "cpuMilliseconds": 203.125,
+          "gen0Collections": 1,
+          "gen1Collections": 1,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-2-current"
+  },
+  {
+    "source": "current",
+    "workload": "assets",
+    "pair": 3,
+    "started": "2026-10-28T16:21:57.1472311+08:00",
+    "finished": "2026-10-28T16:23:09.7396555+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            20.2968,
+            25.8852,
+            18.8486,
+            17.9423,
+            17.6235,
+            17.8499,
+            18.368,
+            19.702,
+            19.7826,
+            17.9619
+          ],
+          "median": 18.6083,
+          "p95": 25.8852,
+          "allocatedBytes": 9801832,
+          "totalAllocatedBytes": 9802488,
+          "cpuMilliseconds": 218.75,
+          "gen0Collections": 1,
+          "gen1Collections": 0,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-3-current"
+  },
+  {
+    "source": "original",
+    "workload": "assets",
+    "pair": 3,
+    "started": "2026-10-28T16:23:09.7418381+08:00",
+    "finished": "2026-10-28T16:25:22.3243487+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            4106.8955,
+            4131.254,
+            4041.1692,
+            4076.6107,
+            4034.3314,
+            4288.4148,
+            4320.2758,
+            4173.3871,
+            4073.8151,
+            4132.8669
+          ],
+          "median": 4119.07475,
+          "p95": 4320.2758,
+          "allocatedBytes": 2492317408,
+          "totalAllocatedBytes": 2492318064,
+          "cpuMilliseconds": 41250,
+          "gen0Collections": 296,
+          "gen1Collections": 4,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-3-original"
+  },
+  {
+    "source": "original",
+    "workload": "assets",
+    "pair": 4,
+    "started": "2026-10-28T16:25:22.3265446+08:00",
+    "finished": "2026-10-28T16:27:37.6558499+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "EE19B2630EDB373B87DF53EF3C59E718DF24ED94168E54FA22453580E9EF89CA",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            4030.6327,
+            4482.4197,
+            4233.7477,
+            3995.7064,
+            4112.4682,
+            4059.7616,
+            4055.1546,
+            4094.5436,
+            4105.3343,
+            4057.1702
+          ],
+          "median": 4077.1526,
+          "p95": 4482.4197,
+          "allocatedBytes": 2492451848,
+          "totalAllocatedBytes": 2492458096,
+          "cpuMilliseconds": 41031.25,
+          "gen0Collections": 297,
+          "gen1Collections": 5,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-4-original"
+  },
+  {
+    "source": "current",
+    "workload": "assets",
+    "pair": 4,
+    "started": "2026-10-28T16:27:37.6581447+08:00",
+    "finished": "2026-10-28T16:28:48.6853168+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "assemblySha256": "CC9BE56906B16F2DDA9A9D392C364E0DF9B06BC28C83F92B6FE4F1753E2D2152",
+    "measurement": {
+      "workload": "10000-asset-directory-rows",
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            18.2745,
+            20.0993,
+            19.7436,
+            18.9603,
+            19.0007,
+            18.9517,
+            27.968,
+            19.594,
+            18.4732,
+            18.5726
+          ],
+          "median": 18.9805,
+          "p95": 27.968,
+          "allocatedBytes": 9801832,
+          "totalAllocatedBytes": 9802824,
+          "cpuMilliseconds": 218.75,
+          "gen0Collections": 1,
+          "gen1Collections": 1,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1000x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\assets-4-current"
+  },
+  {
+    "source": "original",
+    "workload": "shader",
+    "pair": 0,
+    "started": "2026-10-28T16:28:48.6890063+08:00",
+    "finished": "2026-10-28T16:28:52.5429390+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "18E566F57495ECA1E83C263B062E8E080164CB5FC784446826D3FF7AF221CEB1",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            30.5814,
+            29.5842,
+            33.1747,
+            29.47,
+            28.9357,
+            24.9811,
+            26.6448,
+            25.1961,
+            29.6176,
+            28.205
+          ],
+          "vertices": [
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260
+          ],
+          "indices": [
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183
+          ],
+          "median": 29.202849999999998,
+          "p95": 33.1747,
+          "allocatedBytes": 43650008,
+          "totalAllocatedBytes": 43655608,
+          "cpuMilliseconds": 296.875,
+          "gen0Collections": 5,
+          "gen1Collections": 1,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-0-original"
+  },
+  {
+    "source": "current",
+    "workload": "shader",
+    "pair": 0,
+    "started": "2026-10-28T16:28:52.5458715+08:00",
+    "finished": "2026-10-28T16:28:56.4131971+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "0617697D54B6FD939873F019D85C50A89000BEDA249ED31D560FAA1F40E97DA0",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            27.7437,
+            25.2206,
+            26.6718,
+            26.9135,
+            27.2015,
+            29.138,
+            28.4928,
+            26.8191,
+            31.3695,
+            28.8592
+          ],
+          "vertices": [
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030
+          ],
+          "indices": [
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625
+          ],
+          "median": 27.4726,
+          "p95": 31.3695,
+          "allocatedBytes": 36299208,
+          "totalAllocatedBytes": 36299864,
+          "cpuMilliseconds": 312.5,
+          "gen0Collections": 4,
+          "gen1Collections": 0,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-0-current"
+  },
+  {
+    "source": "current",
+    "workload": "shader",
+    "pair": 1,
+    "started": "2026-10-28T16:28:56.4160231+08:00",
+    "finished": "2026-10-28T16:29:00.0548846+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "0617697D54B6FD939873F019D85C50A89000BEDA249ED31D560FAA1F40E97DA0",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            27.7515,
+            27.2683,
+            32.7437,
+            29.2941,
+            26.7266,
+            38.1894,
+            29.7327,
+            26.9976,
+            23.8018,
+            24.024
+          ],
+          "vertices": [
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030
+          ],
+          "indices": [
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625
+          ],
+          "median": 27.509900000000002,
+          "p95": 38.1894,
+          "allocatedBytes": 36299208,
+          "totalAllocatedBytes": 36299864,
+          "cpuMilliseconds": 328.125,
+          "gen0Collections": 4,
+          "gen1Collections": 0,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-1-current"
+  },
+  {
+    "source": "original",
+    "workload": "shader",
+    "pair": 1,
+    "started": "2026-10-28T16:29:00.0582048+08:00",
+    "finished": "2026-10-28T16:29:03.7091488+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "18E566F57495ECA1E83C263B062E8E080164CB5FC784446826D3FF7AF221CEB1",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            29.1145,
+            28.8873,
+            28.1969,
+            32.0744,
+            27.8212,
+            26.8951,
+            27.6526,
+            28.6891,
+            30.5919,
+            28.656
+          ],
+          "vertices": [
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260
+          ],
+          "indices": [
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183
+          ],
+          "median": 28.67255,
+          "p95": 32.0744,
+          "allocatedBytes": 43644720,
+          "totalAllocatedBytes": 43645376,
+          "cpuMilliseconds": 343.75,
+          "gen0Collections": 4,
+          "gen1Collections": 0,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-1-original"
+  },
+  {
+    "source": "original",
+    "workload": "shader",
+    "pair": 2,
+    "started": "2026-10-28T16:29:03.7118566+08:00",
+    "finished": "2026-10-28T16:29:07.3934812+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "18E566F57495ECA1E83C263B062E8E080164CB5FC784446826D3FF7AF221CEB1",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            28.076,
+            29.9392,
+            27.0486,
+            30.9332,
+            33.9416,
+            27.8708,
+            30.0089,
+            27.3673,
+            29.9677,
+            25.878
+          ],
+          "vertices": [
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260
+          ],
+          "indices": [
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183
+          ],
+          "median": 29.0076,
+          "p95": 33.9416,
+          "allocatedBytes": 43649968,
+          "totalAllocatedBytes": 43655568,
+          "cpuMilliseconds": 328.125,
+          "gen0Collections": 5,
+          "gen1Collections": 1,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-2-original"
+  },
+  {
+    "source": "current",
+    "workload": "shader",
+    "pair": 2,
+    "started": "2026-10-28T16:29:07.3959883+08:00",
+    "finished": "2026-10-28T16:29:11.1072652+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "0617697D54B6FD939873F019D85C50A89000BEDA249ED31D560FAA1F40E97DA0",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            30.1302,
+            28.672,
+            29.3068,
+            28.8909,
+            30.6755,
+            32.4223,
+            28.1081,
+            28.5942,
+            27.2028,
+            27.2339
+          ],
+          "vertices": [
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030
+          ],
+          "indices": [
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625
+          ],
+          "median": 28.78145,
+          "p95": 32.4223,
+          "allocatedBytes": 36299208,
+          "totalAllocatedBytes": 36299864,
+          "cpuMilliseconds": 312.5,
+          "gen0Collections": 4,
+          "gen1Collections": 0,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-2-current"
+  },
+  {
+    "source": "current",
+    "workload": "shader",
+    "pair": 3,
+    "started": "2026-10-28T16:29:11.1109802+08:00",
+    "finished": "2026-10-28T16:29:14.7454997+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "0617697D54B6FD939873F019D85C50A89000BEDA249ED31D560FAA1F40E97DA0",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            32.3963,
+            31.3383,
+            35.4828,
+            38.1821,
+            34.0223,
+            35.9638,
+            27.1198,
+            26.995,
+            23.6151,
+            23.7369
+          ],
+          "vertices": [
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030
+          ],
+          "indices": [
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625
+          ],
+          "median": 31.8673,
+          "p95": 38.1821,
+          "allocatedBytes": 36299208,
+          "totalAllocatedBytes": 36299864,
+          "cpuMilliseconds": 375,
+          "gen0Collections": 4,
+          "gen1Collections": 0,
+          "gen2Collections": 0
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-3-current"
+  },
+  {
+    "source": "original",
+    "workload": "shader",
+    "pair": 3,
+    "started": "2026-10-28T16:29:14.7483684+08:00",
+    "finished": "2026-10-28T16:29:18.3034075+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "18E566F57495ECA1E83C263B062E8E080164CB5FC784446826D3FF7AF221CEB1",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            29.8139,
+            29.3704,
+            29.569,
+            28.2562,
+            29.527,
+            29.4158,
+            28.9626,
+            27.2142,
+            31.9686,
+            24.1255
+          ],
+          "vertices": [
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260
+          ],
+          "indices": [
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183
+          ],
+          "median": 29.3931,
+          "p95": 31.9686,
+          "allocatedBytes": 43649648,
+          "totalAllocatedBytes": 43655248,
+          "cpuMilliseconds": 281.25,
+          "gen0Collections": 5,
+          "gen1Collections": 1,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-3-original"
+  },
+  {
+    "source": "original",
+    "workload": "shader",
+    "pair": 4,
+    "started": "2026-10-28T16:29:18.3068835+08:00",
+    "finished": "2026-10-28T16:29:21.8302222+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "18E566F57495ECA1E83C263B062E8E080164CB5FC784446826D3FF7AF221CEB1",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            26.2107,
+            25.7971,
+            28.3931,
+            26.3431,
+            29.1429,
+            27.2567,
+            26.4123,
+            24.9495,
+            35.8829,
+            32.7815
+          ],
+          "vertices": [
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260,
+            182260
+          ],
+          "indices": [
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183,
+            456183
+          ],
+          "median": 26.8345,
+          "p95": 35.8829,
+          "allocatedBytes": 43648952,
+          "totalAllocatedBytes": 43659568,
+          "cpuMilliseconds": 312.5,
+          "gen0Collections": 6,
+          "gen1Collections": 2,
+          "gen2Collections": 2
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-4-original"
+  },
+  {
+    "source": "current",
+    "workload": "shader",
+    "pair": 4,
+    "started": "2026-10-28T16:29:21.8339628+08:00",
+    "finished": "2026-10-28T16:29:25.9175380+08:00",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.Scripting.Tests\\debug\\Inno.Editor.Scripting.Tests.dll",
+    "assemblySha256": "0617697D54B6FD939873F019D85C50A89000BEDA249ED31D560FAA1F40E97DA0",
+    "measurement": {
+      "workload": "2000-shader-nodes",
+      "nodeCount": 2000,
+      "edgeCount": 1003,
+      "configuration": "Debug",
+      "samples": [
+        {
+          "repetition": 0,
+          "milliseconds": [
+            30.3504,
+            27.9832,
+            31.2512,
+            32.0933,
+            32.527,
+            30.7038,
+            29.6007,
+            30.5141,
+            33.3918,
+            28.7334
+          ],
+          "vertices": [
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030,
+            184030
+          ],
+          "indices": [
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625,
+            458625
+          ],
+          "median": 30.60895,
+          "p95": 33.3918,
+          "allocatedBytes": 36305672,
+          "totalAllocatedBytes": 36311656,
+          "cpuMilliseconds": 312.5,
+          "gen0Collections": 5,
+          "gen1Collections": 1,
+          "gen2Collections": 1
+        }
+      ],
+      "framework": ".NET 10.0.13",
+      "viewport": "1200x800",
+      "warmupFrames": 5,
+      "measuredFramesPerRepetition": 10,
+      "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\shader-graph",
+      "consumer": "native-command-offset-validation",
+      "supportsVertexOffsets": true
+    },
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-f78ce703511e45d28d031a7617df2d8b\\shader-4-current"
+  }
+]
