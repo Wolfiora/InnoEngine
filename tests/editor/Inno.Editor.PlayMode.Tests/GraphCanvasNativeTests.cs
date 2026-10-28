@@ -84,8 +84,9 @@ public sealed unsafe class GraphCanvasNativeTests
                         controller.MoveNodes(positions);
                     if (result.output is GraphEndpoint output && result.input is GraphEndpoint input)
                         _ = controller.Connect(output, input);
+                    var draw = Ui.GetDrawList();
                     foreach (GraphCanvasNode node in layout.nodes)
-                        _ = view.DrawNode(node, 0xFF504030, state.selectedNodes.Contains(node.id),
+                        _ = view.DrawNode(draw, node, 0xFF504030, state.selectedNodes.Contains(node.id),
                             previewPosition: pointer.previewPositions.TryGetValue(node.id, out GraphPosition position) ? position : null);
                 }
                 finally
@@ -116,17 +117,18 @@ public sealed unsafe class GraphCanvasNativeTests
                 {
                     ImGuiWindow* window = NativeGui.Raw.GetCurrentWindow();
                     int clipDepth = window->DrawList->ClipRectStack.Size;
+                    var draw = Ui.GetDrawList();
                     var view = new GraphCanvasView(state, new(40f, 60f), new(540f, 300f));
                     var failure = new InvalidOperationException("Workflow node extension failed.");
-                    Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => view.DrawNode(node, 0xFF504030, true,
+                    Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => view.DrawNode(draw, node, 0xFF504030, true,
                         () => throw failure)));
                     Assert.Equal(clipDepth, window->DrawList->ClipRectStack.Size);
-                    Assert.True(view.DrawNode(node, 0xFF504030, false));
+                    Assert.True(view.DrawNode(draw, node, 0xFF504030, false));
                     var offscreen = new GraphCanvasNode(new("workflow.hidden"), new(5000f, 5000f), new(200f, 100f), 24f, "Hidden", []);
-                    Assert.False(view.DrawNode(offscreen, 0xFF504030, false, () => throw new InvalidOperationException("Culled content must not run.")));
+                    Assert.False(view.DrawNode(draw, offscreen, 0xFF504030, false, () => throw new InvalidOperationException("Culled content must not run.")));
                     var outsideWindow = new GraphCanvasNode(new("workflow.clipped-parent"), new(900f, 900f), new(200f, 100f), 24f, "Clipped by parent", []);
                     var oversized = new GraphCanvasView(state, new(40f, 60f), new(1800f, 1800f));
-                    Assert.False(oversized.DrawNode(outsideWindow, 0xFF504030, false, () => throw new InvalidOperationException("Parent-clipped content must not run.")));
+                    Assert.False(oversized.DrawNode(draw, outsideWindow, 0xFF504030, false, () => throw new InvalidOperationException("Parent-clipped content must not run.")));
                     Assert.Equal(clipDepth, window->DrawList->ClipRectStack.Size);
                 }
                 finally

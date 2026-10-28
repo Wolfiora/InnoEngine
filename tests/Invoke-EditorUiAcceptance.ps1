@@ -55,8 +55,7 @@ if (-not $product.InnoNativeTarget -or -not $product.InnoToolTarget -or
 }
 $buildArguments = @("-p:ArtifactsPath=$artifacts", "-p:InnoNativeTarget=$($product.InnoNativeTarget)",
     "-p:InnoToolTarget=$($product.InnoToolTarget)",
-    "-p:InnoProductBuildProperties=$($product.InnoProductBuildProperties)",
-    "-p:InnoTestNativeTarget=$($product.InnoNativeTarget)", '-p:InnoTestNativeProduct=editor')
+    "-p:InnoProductBuildProperties=$($product.InnoProductBuildProperties)")
 $profiles = if ($AcceptanceProfile -eq 'All') { @('Contracts', 'Workflows', 'Visual', 'Lifecycle', 'Performance', 'Products') } else { @($AcceptanceProfile) }
 
 foreach ($selected in $profiles) {

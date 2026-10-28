@@ -12,7 +12,7 @@ public readonly struct EditorUiInput
     /// </summary>
     public bool alt { get; }
     /// <summary>
-    /// Gets whether Control is held.
+    /// Gets whether the physical Control modifier is held, independently of native shortcut conventions.
     /// </summary>
     public bool control { get; }
     /// <summary>
@@ -20,7 +20,7 @@ public readonly struct EditorUiInput
     /// </summary>
     public bool shift { get; }
     /// <summary>
-    /// Gets whether the platform super key is held.
+    /// Gets whether the physical Super modifier is held, independently of native shortcut conventions.
     /// </summary>
     public bool super { get; }
     /// <summary>
@@ -47,9 +47,10 @@ public readonly struct EditorUiInput
     internal unsafe EditorUiInput(ImGuiIO* io)
     {
         alt = io->KeyAlt != 0;
-        control = io->KeyCtrl != 0;
+        bool swapsModifiers = io->ConfigMacOsxBehaviors != 0;
+        control = (swapsModifiers ? io->KeySuper : io->KeyCtrl) != 0;
         shift = io->KeyShift != 0;
-        super = io->KeySuper != 0;
+        super = (swapsModifiers ? io->KeyCtrl : io->KeySuper) != 0;
         wantsText = io->WantTextInput != 0;
         mouseDelta = ImGui.FromNative(io->MouseDelta);
         framebufferScale = ImGui.FromNative(io->DisplayFramebufferScale);

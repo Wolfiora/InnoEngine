@@ -1,5 +1,7 @@
 using System;
 using System.Numerics;
+using Inno.Core.Input;
+using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Native.ImGui;
 using Xunit;
@@ -10,10 +12,19 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed unsafe class TreeKeyboardOwnershipNativeTests
 {
-    [Fact]
-    public void ListActivationDoesNotToggleDisclosureOrStealAnOverlayButton()
-    {
-        using var host = new NativePanelHost();
+    [Theory]
+    [InlineData(false, KeyModifier.Control)]
+    [InlineData(true, KeyModifier.Control)]
+    [InlineData(false, KeyModifier.Super)]
+    [InlineData(true, KeyModifier.Super)]
+    public void ListActivationDoesNotToggleDisclosureOrStealAnOverlayButton(
+        bool commandKeyBehavior,
+        KeyModifier primaryModifier
+    ) {
+        using var host = new NativePanelHost(false, new EditorKeyboardPolicy(primaryModifier, "Super"));
+        ImGuiIO* io = NativeImGui.Raw.GetIO();
+        io->ConfigMacOsxBehaviors = commandKeyBehavior ? (byte)1 : (byte)0;
+        ImGuiKey primaryKey = primaryModifier == KeyModifier.Super ? ImGuiKey.ImGuiModSuper : ImGuiKey.ImGuiModCtrl;
         bool rowFocus = true;
         bool overlayFocus = false;
         bool open = false;
@@ -66,15 +77,21 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
         host.Frame(draw);
         host.Frame(draw);
         rowFocus = false;
-        ImGuiIO* io = NativeImGui.Raw.GetIO();
-        NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModCtrl, 1);
+        NativeImGui.Raw.AddKeyEvent(io, primaryKey, 1);
         NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.Space, 1);
         host.Frame(draw);
         Assert.True(open);
         Assert.Equal(1, toggles);
         Assert.Equal(0, overlayPresses);
+        host.Frame(() =>
+        {
+            var input = Ui.GetInput();
+            Assert.Equal(primaryModifier == KeyModifier.Control, input.control);
+            Assert.Equal(primaryModifier == KeyModifier.Super, input.super);
+            draw();
+        });
         NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.Space, 0);
-        NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModCtrl, 0);
+        NativeImGui.Raw.AddKeyEvent(io, primaryKey, 0);
         host.Frame(draw);
         overlayFocus = true;
         host.Frame(draw);

@@ -39,7 +39,7 @@ using Inno.Scripting.Reload;
 using Xunit;
 
 namespace Inno.Editor.Scripting.Tests;
-public sealed class ScriptingPipelineTests : IDisposable
+public sealed partial class ScriptingPipelineTests : IDisposable
 {
     private readonly ScriptingFixture m_fixture = new();
     public void Dispose() => m_fixture.Dispose();
@@ -1254,6 +1254,7 @@ public sealed class ScriptingPipelineTests : IDisposable
     }
 
     [Fact]
+    [Trait("Acceptance", "Lifecycle")]
     public void SuccessfulReloadActivatesCandidateAndFailedCompilationRetainsIt()
     {
         m_fixture.WriteVersionedBehavior(1);
@@ -1262,20 +1263,23 @@ public sealed class ScriptingPipelineTests : IDisposable
         ScriptCompilationResult firstResult = m_fixture.CompilePending(reload);
         Assert.True(firstResult.success, FormatDiagnostics(firstResult));
         Assert.True(reload.ApplyPendingReload());
-        WeakReference first = CaptureActiveType(m_fixture, "VersionedBehavior", expectedVersion: 1);
-        m_fixture.WriteVersionedBehavior(2);
-        ScriptCompilationResult secondResult = m_fixture.CompilePending(reload);
-        Assert.True(secondResult.success, FormatDiagnostics(secondResult));
-        Assert.True(reload.ApplyPendingReload());
-        CompleteUnloadVerification(reload);
-        Assert.False(first.IsAlive, "The first script generation remained reachable after its reload barrier.");
-        Type second = m_fixture.ResolveActiveType("VersionedBehavior");
-        Assert.Equal(2, ReadVersion(second));
-        m_fixture.Write("VersionedBehavior.cs", "using InnoEngine.Scene; public sealed class VersionedBehavior : GameBehavior {");
-        ScriptCompilationResult failed = m_fixture.CompilePending(reload);
-        Assert.False(failed.success);
-        Assert.False(reload.ApplyPendingReload());
-        Assert.Same(second, m_fixture.ResolveActiveType("VersionedBehavior"));
+        WeakReference active = CaptureActiveType(m_fixture, "VersionedBehavior", expectedVersion: 1);
+        for (int version = 2; version <= 11; version++)
+        {
+            m_fixture.Write("VersionedBehavior.cs", "using InnoEngine.Scene; public sealed class VersionedBehavior : GameBehavior {");
+            ScriptCompilationResult failed = m_fixture.CompilePending(reload);
+            Assert.False(failed.success);
+            Assert.False(reload.ApplyPendingReload());
+            AssertRetainedActiveType(m_fixture, active, version - 1);
+
+            m_fixture.WriteVersionedBehavior(version);
+            ScriptCompilationResult replacement = m_fixture.CompilePending(reload);
+            Assert.True(replacement.success, FormatDiagnostics(replacement));
+            Assert.True(reload.ApplyPendingReload());
+            CompleteUnloadVerification(reload);
+            Assert.False(active.IsAlive, "The previous script generation remained reachable after its reload barrier.");
+            active = CaptureActiveType(m_fixture, "VersionedBehavior", version);
+        }
     }
 
     [Fact]
@@ -1362,6 +1366,7 @@ public sealed class ScriptingPipelineTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [Trait("Acceptance", "Lifecycle")]
     public void RemovedOrBrokenUpdatedPluginCommitsUnavailableGenerationAndRecovers(bool updateInPlace)
     {
         using var fixture = new ScriptingFixture(WriteUnavailableGenerationPlugin);
@@ -1395,38 +1400,43 @@ public sealed class ScriptingPipelineTests : IDisposable
         string installedPlugin = Path.Combine(fixture.projectRoot, "Plugins", "unavailability.iplugin");
         string detachedPlugin = Path.Combine(fixture.projectRoot, "UnavailabilityPlugin.detached");
         byte[] validPluginPackage = File.ReadAllBytes(installedPlugin);
-        if (updateInPlace)
+        for (int cycle = 0; cycle < 10; cycle++)
         {
-            WriteUnavailableGenerationPlugin(fixture.projectRoot, fixture.host.serialization, "this Plugin update is deliberately invalid C#");
-        }
-        else
-        {
-            File.Move(installedPlugin, detachedPlugin);
-        }
+            if (updateInPlace)
+            {
+                WriteUnavailableGenerationPlugin(fixture.projectRoot, fixture.host.serialization, "this Plugin update is deliberately invalid C#");
+            }
+            else
+            {
+                File.Move(installedPlugin, detachedPlugin);
+            }
 
-        Assert.True(fixture.RefreshPlugins());
-        ScriptCompilationResult unavailable = fixture.CompilePendingPluginReload(reload);
-        Assert.False(unavailable.success);
-        Assert.Contains(unavailable.diagnostics, static diagnostic => diagnostic.severity == DiagnosticSeverity.Error);
-        Assert.True(reload.ApplyPendingReload());
-        Assert.DoesNotContain(fixture.host.modules.modules, static module => module.domain is AssemblyDomain.InnoPlugin or AssemblyDomain.InnoScripting);
-        Assert.Equal(updateInPlace ? 1 : 0, fixture.activePlugins.Count);
-        MissingGameComponent missingPlugin = Assert.IsType<MissingGameComponent>(state.pluginOwner.GetComponents().Single(component => component is not Transform));
-        MissingGameComponent missingScript = Assert.IsType<MissingGameComponent>(state.scriptOwner.GetComponents().Single(component => component is not Transform));
-        Assert.Equal(state.pluginComponentId, missingPlugin.identity.persistentId);
-        Assert.Equal(state.scriptComponentId, missingScript.identity.persistentId);
-        Assert.Equal("UnavailabilityPlugin.PluginBehavior", missingPlugin.missingTypeName);
-        Assert.Equal("DependentBehavior", missingScript.missingTypeName);
-        CompleteUnloadVerification(reload);
-        if (updateInPlace)
-            File.WriteAllBytes(installedPlugin, validPluginPackage);
-        else
-            File.Move(detachedPlugin, installedPlugin);
-        Assert.True(fixture.RefreshPlugins());
-        ScriptCompilationResult recoveredCompilation = fixture.CompilePendingPluginReload(reload);
-        Assert.True(recoveredCompilation.success, FormatDiagnostics(recoveredCompilation));
-        Assert.True(reload.ApplyPendingReload());
-        AssertRecoveredAvailability(state);
+            Assert.True(fixture.RefreshPlugins());
+            ScriptCompilationResult unavailable = fixture.CompilePendingPluginReload(reload);
+            Assert.False(unavailable.success);
+            Assert.Contains(unavailable.diagnostics, static diagnostic => diagnostic.severity == DiagnosticSeverity.Error);
+            Assert.True(reload.ApplyPendingReload());
+            Assert.DoesNotContain(fixture.host.modules.modules, static module => module.domain is AssemblyDomain.InnoPlugin or AssemblyDomain.InnoScripting);
+            Assert.Equal(updateInPlace ? 1 : 0, fixture.activePlugins.Count);
+            MissingGameComponent missingPlugin = Assert.IsType<MissingGameComponent>(state.pluginOwner.GetComponents().Single(component => component is not Transform));
+            MissingGameComponent missingScript = Assert.IsType<MissingGameComponent>(state.scriptOwner.GetComponents().Single(component => component is not Transform));
+            Assert.Equal(state.pluginComponentId, missingPlugin.identity.persistentId);
+            Assert.Equal(state.scriptComponentId, missingScript.identity.persistentId);
+            Assert.Equal("UnavailabilityPlugin.PluginBehavior", missingPlugin.missingTypeName);
+            Assert.Equal("DependentBehavior", missingScript.missingTypeName);
+            CompleteUnloadVerification(reload);
+            if (updateInPlace)
+                File.WriteAllBytes(installedPlugin, validPluginPackage);
+            else
+                File.Move(detachedPlugin, installedPlugin);
+            Assert.True(fixture.RefreshPlugins());
+            ScriptCompilationResult recoveredCompilation = fixture.CompilePendingPluginReload(reload);
+            Assert.True(recoveredCompilation.success, FormatDiagnostics(recoveredCompilation));
+            Assert.True(reload.ApplyPendingReload());
+            AssertRecoveredAvailability(state);
+            CompleteUnloadVerification(reload);
+            Assert.Equal(GenerationState.Ready, fixture.host.modules.generations.state);
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -1668,6 +1678,7 @@ public sealed class ScriptingPipelineTests : IDisposable
     }
 
     [Fact]
+    [Trait("Acceptance", "Lifecycle")]
     public void ContentPlayStopReloadPlaySoakRetiresEverySessionBeforeTheNextGeneration()
     {
         using var fixture = new ScriptingFixture(WriteUnavailableGenerationPlugin);
@@ -1694,7 +1705,7 @@ public sealed class ScriptingPipelineTests : IDisposable
             fixture.host.logs
         );
         using IDisposable registration = reloads.RegisterGuard(play);
-        for (int iteration = 0; iteration < 8; iteration++)
+        for (int iteration = 0; iteration < 10; iteration++)
         {
             Assert.True(play.EnterPlayMode());
             play.AdvanceTransition();
@@ -1899,6 +1910,18 @@ public sealed class ScriptingPipelineTests : IDisposable
     }
 
     private static int ReadVersion(Type type) => (int)type.GetProperty("version")!.GetValue(Activator.CreateInstance(type))!;
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void AssertRetainedActiveType(
+        ScriptingFixture fixture,
+        WeakReference expected,
+        int expectedVersion
+    ) {
+        Type active = fixture.ResolveActiveType("VersionedBehavior");
+        Assert.Same(expected.Target, active);
+        Assert.Equal(expectedVersion, ReadVersion(active));
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference CaptureActiveType(
         ScriptingFixture fixture,

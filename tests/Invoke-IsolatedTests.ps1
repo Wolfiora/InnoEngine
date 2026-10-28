@@ -77,7 +77,7 @@ if ($Target) {
         $ToolTarget = $selectedTool[0].Trim()
     }
     $productArguments += @("-p:InnoNativeTarget=$Target", "-p:InnoToolTarget=$ToolTarget",
-        "-p:InnoProductBuildProperties=$ProductProperties", "-p:InnoTestNativeTarget=$Target", '-p:InnoTestNativeProduct=editor')
+        "-p:InnoProductBuildProperties=$ProductProperties")
 }
 
 # Process-global Native state and deliberately retained Faulted owners require separate hosts.

@@ -101,4 +101,10 @@ Presentation 的准备、绘制与发布属于同一次 owner 操作；期间拒
 
 Settings 的一次 Apply 复用单一 History transaction，所有 dirty owner 成功后才接受新基线。失败先尝试回滚并保留草稿；可恢复的文件/校验错误在窗口内反馈并记录完整诊断。History 完整性丢失后禁止继续 Apply，不能把错误吞掉后重试。打开的设置窗口借用当前 generation 的编辑对象，使用现有 admission guard 延迟 reload，关闭后恢复许可；不为此建立另一套状态恢复或 History 系统。
 
+验收编排从正式 Editor 入口取得实际 Native target、tool target 和产品属性，不全局覆盖 `InnoTestNativeProduct`。需要原生部署的测试工程声明自己的产品及目标；纯契约测试不会因传递引用包含 Native 程序集而自动承担完整产品准备。普通执行、隔离发现和隔离执行使用相同的 SDK 输入。
+
+原生借用验证与纯值转换必须按实际契约区分：`EditorDrawList` 每次操作验证原窗口、帧、Context 和线程；颜色转换保留既有 Session／Context／线程准入。颜色格式的饱和、取整及非有限值行为通过实际原生 oracle 验证，不用普通数值相等推断所有边界一致。
+
+`EditorUiInput` 的 Control/Super 表示物理修饰键，不继承原生控件内部的快捷键归一化。呈现边界依据当前 Context 的键盘配置还原这些值，列表选择复用同一快照语义，平台仍通过 `EditorKeyboardPolicy` 选择 primary modifier。原生文本控件继续使用该 Context 的输入习惯；测试必须显式声明自己的键盘配置，并覆盖 Control/Super 与两种原生模式的组合，不能依赖 runner 的默认值。
+
 最终报告分别评价架构、组织、状态与生命周期、抽象、复用、样式、扩展、交互、Undo/Redo、菜单和颗粒度；每项列出证据与限制。目录整齐、测试数量或正常启动不能代替视觉、输入、重复 reload、资源收敛和成对性能验收。

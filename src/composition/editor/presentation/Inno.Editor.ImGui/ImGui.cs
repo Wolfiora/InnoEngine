@@ -1130,7 +1130,9 @@ public static unsafe partial class ImGui
     public static uint ToPackedColor(Vector4 color)
     {
         EditorUiSession.current.EnsureDrawing();
-        return RawImGui.ColorConvertFloat4ToU32(color);
+        return Channel(color.X) | Channel(color.Y) << 8 | Channel(color.Z) << 16 | Channel(color.W) << 24;
+
+        static uint Channel(float value) => unchecked((uint)float.ConvertToIntegerNative<int>(Math.Clamp(value, 0f, 1f) * 255f + 0.5f));
     }
 
     /// <summary>

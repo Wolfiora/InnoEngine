@@ -154,7 +154,7 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     /// <summary>
-    /// Captures one persistent property as independently restorable neutral bytes.
+    /// Captures one persistent property as independently restorable neutral bytes without reading unrelated members.
     /// </summary>
     /// <param name="value">
     /// The serializable object containing the requested property.
@@ -609,5 +609,12 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     private SerializationContext CreateContext(SerializationContext? context)
-        => (context ?? SerializationContext.empty).With(m_types).With(this).With<ISerializationMetadataSource>(m_metadata);
+    {
+        context ??= SerializationContext.empty;
+        if (context.TryGet<TypeCatalog>(out TypeCatalog? types) && ReferenceEquals(types, m_types)
+            && context.TryGet<SerializationRegistry>(out SerializationRegistry? registry) && ReferenceEquals(registry, this)
+            && context.TryGet<ISerializationMetadataSource>(out ISerializationMetadataSource? metadata) && ReferenceEquals(metadata, m_metadata))
+            return context;
+        return context.With(m_types).With(this).With<ISerializationMetadataSource>(m_metadata);
+    }
 }

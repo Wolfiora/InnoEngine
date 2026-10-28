@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Inno.Core.Serialization;
@@ -13,7 +12,7 @@ internal static class BinarySerializationFormat
 
     internal static byte[] Encode(SerializationNode root)
     {
-        using var stream = new MemoryStream(16 * 1024);
+        using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         writer.Write(C_MAGIC);
         WriteNode(writer, root);
@@ -65,7 +64,8 @@ internal static class BinarySerializationFormat
                 return;
             case ObjectSerializationNode objectNode:
                 writer.Write((byte)NodeKind.Object);
-                string[] names = [.. objectNode.values.Keys.OrderBy(static name => name, StringComparer.Ordinal)];
+                string[] names = [.. objectNode.values.Keys];
+                Array.Sort(names, StringComparer.Ordinal);
                 writer.Write(names.Length);
                 for (int i = 0; i < names.Length; i++)
                 {

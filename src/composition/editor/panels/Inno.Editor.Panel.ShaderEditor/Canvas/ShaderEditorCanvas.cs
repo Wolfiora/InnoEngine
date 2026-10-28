@@ -99,7 +99,7 @@ internal sealed partial class ShaderEditorCanvas(
             Groups(draw);
             Edges(draw);
             foreach (GraphNodeRecord node in Controller.document.nodes)
-                Node(draw, node);
+                Node(draw, node, mouse);
             Pointer(hovered && !miniMapHovered);
             if (draft.pointer.isBoxSelecting)
             {
@@ -575,7 +575,8 @@ internal sealed partial class ShaderEditorCanvas(
 
     private void Node(
         EditorDrawList draw,
-        GraphNodeRecord node
+        GraphNodeRecord node,
+        Vector2 mouse
     ) {
         var rect = Rect(node);
         if (rect.max.X < m_origin.X || rect.min.X > m_origin.X + m_size.X || rect.max.Y < m_origin.Y || rect.min.Y > m_origin.Y + m_size.Y)
@@ -583,7 +584,7 @@ internal sealed partial class ShaderEditorCanvas(
         float zoom = Canvas.zoom;
         if (!draft.layout.TryGetNode(node.id, out GraphCanvasNode? presentation))
             return;
-        _ = View.DrawNode(presentation, ImGuiApi.ToPackedColor(NodeHeaderColor(node)), Canvas.selectedNodes.Contains(node.id),
+        _ = View.DrawNode(draw, presentation, ImGuiApi.ToPackedColor(NodeHeaderColor(node)), Canvas.selectedNodes.Contains(node.id),
             previewPosition: draft.pointer.previewPositions.TryGetValue(node.id, out GraphPosition preview) ? preview : null);
         ShaderNodePort[] nodePorts = draft.ports[node.id];
         if (UsesSplitPortLayout(nodePorts))
@@ -598,7 +599,7 @@ internal sealed partial class ShaderEditorCanvas(
             var endpoint = new GraphEndpoint(node.id, new GraphPortId(port.id));
             if (!TryPortPosition(endpoint, port.direction, out Vector2 point))
                 continue;
-            if (Vector2.DistanceSquared(point, ImGuiApi.GetMousePos()) <= 64f)
+            if (Vector2.DistanceSquared(point, mouse) <= 64f)
             {
                 bool missing = draft.missingPorts.Contains(endpoint);
                 bool optional = port.direction == GraphPortDirection.Input && !port.required;
@@ -781,7 +782,7 @@ internal sealed partial class ShaderEditorCanvas(
             Vector2 b,
             bool selected = false
         ) {
-            View.DrawConnection(a, b, selected ? Color(0.87f, 0.72f, 1f) : Color(0.59f, 0.46f, 0.82f), selected ? 3f : 2f);
+            View.DrawConnection(draw, a, b, selected ? Color(0.87f, 0.72f, 1f) : Color(0.59f, 0.46f, 0.82f), selected ? 3f : 2f);
         }
     }
 

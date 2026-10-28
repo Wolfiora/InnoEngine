@@ -143,6 +143,9 @@ public readonly partial struct GraphCanvasView
     /// <summary>
     /// Draws a visible neutral node and its ports, borrowing optional content only for this call.
     /// </summary>
+    /// <param name="draw">
+    /// The current window's frame-local drawing borrow; it is neither retained nor released by this call.
+    /// </param>
     /// <param name="node">
     /// The immutable geometric and textual node input.
     /// </param>
@@ -161,7 +164,14 @@ public readonly partial struct GraphCanvasView
     /// <returns>
     /// True when the node intersects the canvas and effective window clip and was submitted; false when culled.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The node is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The canvas is uninitialized or a visible node uses an expired or mismatched drawing borrow.
+    /// </exception>
     public bool DrawNode(
+        EditorDrawList draw,
         GraphCanvasNode node,
         uint headerColor,
         bool selected,
@@ -178,7 +188,6 @@ public readonly partial struct GraphCanvasView
         if (maximum.X < clip.minimum.X || minimum.X > clip.maximum.X || maximum.Y < clip.minimum.Y || minimum.Y > clip.maximum.Y)
             return false;
         float zoom = this.zoom;
-        EditorDrawList draw = CanvasDrawing.GetDrawList();
         draw.PushClip(Vector2.Max(m_origin, minimum - new Vector2(6f * zoom)),
             Vector2.Min(m_origin + m_size, maximum + new Vector2(6f * zoom)), true);
         try
@@ -200,14 +209,14 @@ public readonly partial struct GraphCanvasView
                 Vector2 labelMinimum = minimum + labelBounds.minimum * zoom;
                 Vector2 labelMaximum = minimum + labelBounds.maximum * zoom;
                 float padding = 12f * zoom;
-                string label = FitLabel(port.label, labelMaximum.X - labelMinimum.X - padding * 2f, zoom);
+                var label = FitLabel(port.label, labelMaximum.X - labelMinimum.X - padding * 2f, zoom);
                 float textX = port.direction == GraphPortDirection.Input ? labelMinimum.X + padding
-                    : labelMaximum.X - padding - CanvasDrawing.MeasureText(label).X * zoom;
+                    : labelMaximum.X - padding - label.width;
                 draw.PushClip(labelMinimum, labelMaximum, true);
                 try
                 {
                     draw.Text(new Vector2(textX, point.Y - 8f * zoom),
-                        CanvasDrawing.ToPackedColor(port.isOptional ? EditorPalette.textDisabled : EditorPalette.text), label, zoom);
+                        CanvasDrawing.ToPackedColor(port.isOptional ? EditorPalette.textDisabled : EditorPalette.text), label.text, zoom);
                 }
                 finally
                 {
@@ -223,16 +232,17 @@ public readonly partial struct GraphCanvasView
         return true;
     }
 
-    private static string FitLabel(
+    private static (string text, float width) FitLabel(
         string label,
         float width,
         float zoom
     ) {
-        if (CanvasDrawing.MeasureText(label).X * zoom <= width)
-            return label;
+        float measuredWidth = CanvasDrawing.MeasureText(label).X * zoom;
+        if (measuredWidth <= width)
+            return (label, measuredWidth);
         const string ellipsis = "…";
         if (CanvasDrawing.MeasureText(ellipsis).X * zoom > width)
-            return string.Empty;
+            return (string.Empty, 0f);
         int low = 0;
         int high = label.Length;
         while (low < high)
@@ -246,7 +256,8 @@ public readonly partial struct GraphCanvasView
         // Avoid splitting a UTF-16 surrogate pair when a label contains supplementary characters.
         if (low > 0 && low < label.Length && char.IsHighSurrogate(label[low - 1]))
             low--;
-        return label[..low] + ellipsis;
+        string text = label[..low] + ellipsis;
+        return (text, CanvasDrawing.MeasureText(text).X * zoom);
     }
 
     private static bool Contains(

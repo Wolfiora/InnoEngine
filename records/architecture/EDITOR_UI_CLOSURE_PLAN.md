@@ -160,3 +160,48 @@ No item above closes its issue by itself. The PR remains Draft until the complet
 - `e16/loaded-package-shared.trx`: 3 passed; the isolated loaded-package mismatch contract also passed. Negative content belongs only to test-owned copies, never global NuGet or BGCS files.
 - The first full Contracts attempt was interrupted and is invalid: a test output was missing its native deployment and an overlapping test compilation encountered the live testhost's file handle. The unified builder now supplies the actual test product selection. The diagnostic dump was retired after preserving its text analysis; no production assertion, timeout or file-lock protocol was relaxed.
 - The Console eviction premise was corrected to its actual minimum capacity. Both real clear/evict cases pass against the existing focus logic; a speculative production focus change was withdrawn.
+
+
+## Settings and output-owner correction (2026-10-28)
+
+- `e053be5b`: test-owned SDK metadata records the actual late-evaluated artifacts owner; repository architecture and Wiki share this input. Six public SDK/metadata cases pass. The registration fixture now consumes actual Foundation TargetOutputs; its official targeted rerun passes.
+- `a4d975ab`: fixes the real cross-owner Settings Apply failure through existing History, plus staged retry, Faulted semantics, current-generation reload admission and unexpected Drawer retirement. Four real-native cases pass, including one hundred normal cycles and a red/green Drawer failure regression. The drawn-value weak test is not private Session/ALC leak proof.
+- The completed `af6eac31` Contracts operation remains Failed (two real test-owner failures). A corrected-owner Wiki rerun found one new explicit XML omission, now fixed. Final builds/profiles/Wiki/CI are running; do not treat a checkpoint commit as whole-plan completion.
+- Two actual CLI roots select the same SDK-owned 167 references despite an interference pack directory; an incompatible .NET 9-only host fails explicitly. This is not evidence of two different installed .NET 10 SDK patches.
+- E11 remains blocked for same-input original FlappyBird: current plugin source needs the later EditorUiSession API. No legacy adapter, changed input or synthetic benchmark substitutes for that product requirement.
+
+## Controlled performance and SDK follow-up (2026-10-28)
+
+- Two actual supported SDK patches (10.0.401 and 10.0.402), their 167 real references, Runtime/actual IDE agreement and same-project SDK switching are verified in e19-dual-sdk/verified-current-result.json. Root-only tests remain separately scoped.
+- The first clean five-pair graph matrix fails the CPU/P95 threshold. Issue #34 retains that failure; draw-borrow, label-width and frame-input reuse are being verified without removing native lifetime checks.
+- New #45 owns the Core allocation defect and unrelated getter capture. Four red cases reproduce it; all 46 Core serialization cases pass after correction. Final product and controlled performance verification remain required.
+- Under #37, existing reload fixtures are being extended to ten real cycles without weakening the strict unload barrier.
+- The parent issue and Draft PR remain incomplete. Whole-product same-input original FlappyBird performance is blocked by the documented original API/input mismatch.
+
+## Current correction candidate gates (2026-10-28)
+
+| Gate | State | Evidence and limits |
+| --- | --- | --- |
+| Twelve-project SDK compilation | 通过 | final-owned-native-suites.log/binlog; zero compile errors; environment NU1900 warnings are preserved |
+| Native color oracle and owner retirement | 通过 | e45/color-final-owned.trx; 4,387 numeric vectors and rejection after owner disposal |
+| Core serialization and Scene | 通过 | e45/serialization-scene.trx; 46 + 53 cases across both real assemblies |
+| Workflows | 通过 | unified-correction-final/88902e2955954ce8aa0169c2fffb84c3; 302 cases, including the isolated real Action/menu reload loop |
+| Visual automated profile | 通过 | unified-correction-final/19006ef0cc77448b8de9ec2fd06b2a76; 136 cases; native simulated metrics are not physical-display certification |
+| Lifecycle automated profile | 通过 | 11 cases in unified-correction-final; per-panel resource inventory remains separately tracked |
+| Full Contracts | 通过 | 713 cases on the pre-final correction candidate, cf4d562d8bf1413f945d8f23e5d1d712; later Core/modifier corrections require final verification; earlier failed operations remain Failed |
+| Controlled final performance | 待验收 | Must run without overlapping builds/tests; original/current first clean graph regression remains recorded |
+| Original FlappyBird common-input comparison | 阻塞 | Current plugin source requires APIs absent from the original production baseline; no compatibility shim or substituted input |
+| macOS physical/manual acceptance | 待验收 | Not executed: no local Mac; remote automated CI is reported separately and does not replace manual acceptance |
+
+Native deployment ownership is recorded by the actual SDK in native-test-ownership.json: four of the selected twelve projects declare the Editor native product. Shared builders do not override project declarations. Earlier initial Pending rows above are the execution baseline, not a claim that the corresponding implementations are absent.
+
+The native color candidate using ordinary integer conversion failed for NaN. The standard native-conversion correction passed all numeric comparisons; a separate overstrict test assertion was corrected to the actual owned-context lifetime. Production admission was not weakened.
+
+## Final Core and native input boundary verification
+
+- The complete formal Core suite passes 49 cases after the second allocation correction. A prepared context previously allocated the same 2,096 bytes per property capture as a fresh context. The official output now measures 1,888 fresh / 1,168 prepared with identical payload bytes; this is an allocation observation, not a controlled CPU claim. Scratch collections remain operation-owned, and foreign contexts rebind all required owners without mutating caller services.
+- The copied diagnostic Core harness failed TypeRef registration even with unchanged production source. It is not production acceptance evidence; the actual SDK project passes TypeRef and all remaining Core tests.
+- macOS CI at 660962a5 passed builds, renderer smoke, architecture and Wiki, but failed seven native input cases. Windows and both managed CI jobs passed. Native ImGui swaps Control/Super internally in command-key mode; presentation snapshots now restore physical Core semantics and list navigation consumes that same boundary. Fixtures declare their native convention, and a four-case real-input matrix covers both primary modifiers and both native modes. Final verification and ARM64 CI are pending.
+- PR #26 and the parent issue remain incomplete. Full workload/product/input/visual/lifetime acceptance must retain its actual limitations; automated fixture success does not certify physical devices or the entire original plan.
+
+Final working-tree verification: the twelve-project compilation, Core 49 / Scene 53, Workflows 305, Visual 136, Lifecycle 11, Editor Debug/Release, Build entry, six 300-frame FlappyBird renderer smokes, three official companion script/IDE projections, and the 241-project architecture/Wiki gate pass. Evidence uses `final-candidate*`, `products/final-candidate-*`, `companion-projections-final` and `wiki-final-candidate`. Controlled performance and the new committed-source CI remain separate pending gates; this does not close the parent or the original full acceptance matrix.

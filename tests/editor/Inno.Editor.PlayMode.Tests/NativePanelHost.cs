@@ -39,6 +39,12 @@ internal sealed unsafe class NativePanelHost : IDisposable
     internal NativePanelHost(
         bool supportsVertexOffsets,
         params string[] assemblies
+    ) : this(supportsVertexOffsets, new EditorKeyboardPolicy(KeyModifier.Control, "Super"), assemblies) { }
+
+    internal NativePanelHost(
+        bool supportsVertexOffsets,
+        EditorKeyboardPolicy keyboard,
+        params string[] assemblies
     ) {
         m_validateVertexOffsets = supportsVertexOffsets;
         m_ownsServices = true;
@@ -52,7 +58,7 @@ internal sealed unsafe class NativePanelHost : IDisposable
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         console = new EditorConsole(logs, diagnostics, new InactivePlayMode());
         console.Start();
-        runtime = new EditorInteractionRuntime(new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")), m_types, logs, [console]);
+        runtime = new EditorInteractionRuntime(new EditorContext(m_root, keyboard), m_types, logs, [console]);
         runtime.Start();
         ui = new EditorUiSession();
         m_nativeContext = CreateNativeContext(ui, supportsVertexOffsets);
@@ -178,6 +184,8 @@ internal sealed unsafe class NativePanelHost : IDisposable
         if (supportsVertexOffsets)
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasVtxOffset;
         io->ConfigFlags |= (int)ImGuiConfigFlags.NavEnableKeyboard;
+        // Fixture input uses an explicit Control convention on every runner.
+        io->ConfigMacOsxBehaviors = 0;
         io->Fonts->RendererHasTextures = 1;
         io->IniFilename = null;
         using (ui.Enter())

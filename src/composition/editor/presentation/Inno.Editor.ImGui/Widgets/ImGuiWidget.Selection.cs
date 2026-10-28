@@ -147,14 +147,15 @@ public sealed unsafe partial class ImGuiWidget
         EditorKeyboardPolicy keyboard,
         ImGuiIO* io
     ) {
+        var input = new EditorUiInput(io);
         KeyModifier modifiers = KeyModifier.None;
-        if (io->KeyCtrl != 0)
+        if (input.control)
             modifiers |= KeyModifier.Control;
-        if (io->KeySuper != 0)
+        if (input.super)
             modifiers |= KeyModifier.Super;
-        if (io->KeyAlt != 0)
+        if (input.alt)
             modifiers |= KeyModifier.Alt;
-        if (io->KeyShift != 0)
+        if (input.shift)
             modifiers |= KeyModifier.Shift;
         return (modifiers & keyboard.primaryModifier) == keyboard.primaryModifier;
     }

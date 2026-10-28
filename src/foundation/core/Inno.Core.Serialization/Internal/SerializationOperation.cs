@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Inno.Core.Serialization;
 
 internal sealed class SerializationOperation
 {
     private readonly ConverterRegistryLease m_converters;
-    private readonly List<Action> m_completionCallbacks = [];
-    private readonly HashSet<object> m_scheduledObjects = new(ReferenceComparer.instance);
-    private readonly List<object> m_scheduledObjectOrder = [];
-    private readonly Dictionary<object, string> m_capturePaths = new(ReferenceComparer.instance);
+    private List<Action>? m_completionCallbacks;
+    private HashSet<object>? m_scheduledObjects;
+    private List<object>? m_scheduledObjectOrder;
+    private Dictionary<object, string>? m_capturePaths;
     private bool m_isActive = true;
 
     internal SerializationOperation(
@@ -43,19 +42,19 @@ internal sealed class SerializationOperation
     {
         ArgumentNullException.ThrowIfNull(callback);
         EnsureActive();
-        m_completionCallbacks.Add(callback);
+        (m_completionCallbacks ??= []).Add(callback);
     }
 
     internal void ScheduleRestoredObject(ISerializable value)
     {
         EnsureActive();
-        if (!m_scheduledObjects.Add(value))
+        if (!(m_scheduledObjects ??= new(ReferenceEqualityComparer.Instance)).Add(value))
             return;
-        m_scheduledObjectOrder.Add(value);
+        (m_scheduledObjectOrder ??= []).Add(value);
 
         Action<object, SerializationContext>? callback = GetMetadata(value.GetType()).restored;
         if (callback is not null)
-            m_completionCallbacks.Add(() => callback(value, context));
+            (m_completionCallbacks ??= []).Add(() => callback(value, context));
     }
 
     internal void EnterCapture(
@@ -63,49 +62,49 @@ internal sealed class SerializationOperation
         string path
     ) {
         EnsureActive();
-        if (m_capturePaths.TryGetValue(value, out string? existingPath))
+        Dictionary<object, string> captures = m_capturePaths ??= new(ReferenceEqualityComparer.Instance);
+        if (captures.TryGetValue(value, out string? existingPath))
         {
             throw new InvalidOperationException(
                 $"Serialization cycle detected at '{path}'. The same object is already being written at '{existingPath}'.");
         }
 
-        m_capturePaths.Add(value, path);
+        captures.Add(value, path);
     }
 
     internal Checkpoint CreateCheckpoint()
     {
         EnsureActive();
-        return new Checkpoint(m_completionCallbacks.Count, m_scheduledObjectOrder.Count);
+        return new Checkpoint(m_completionCallbacks?.Count ?? 0, m_scheduledObjectOrder?.Count ?? 0);
     }
 
     internal void Rollback(Checkpoint checkpoint)
     {
         EnsureActive();
         if (checkpoint.callbackCount < 0 ||
-            checkpoint.callbackCount > m_completionCallbacks.Count ||
+            checkpoint.callbackCount > (m_completionCallbacks?.Count ?? 0) ||
             checkpoint.scheduledObjectCount < 0 ||
-            checkpoint.scheduledObjectCount > m_scheduledObjectOrder.Count)
+            checkpoint.scheduledObjectCount > (m_scheduledObjectOrder?.Count ?? 0))
         {
             throw new InvalidOperationException("The serialization operation checkpoint is invalid.");
         }
 
-        if (m_completionCallbacks.Count > checkpoint.callbackCount)
+        if (m_completionCallbacks is { } callbacks && callbacks.Count > checkpoint.callbackCount)
+            callbacks.RemoveRange(checkpoint.callbackCount, callbacks.Count - checkpoint.callbackCount);
+        if (m_scheduledObjectOrder is { } order)
         {
-            m_completionCallbacks.RemoveRange(
-                checkpoint.callbackCount,
-                m_completionCallbacks.Count - checkpoint.callbackCount);
-        }
-        for (int i = m_scheduledObjectOrder.Count - 1; i >= checkpoint.scheduledObjectCount; i--)
-        {
-            m_scheduledObjects.Remove(m_scheduledObjectOrder[i]);
-            m_scheduledObjectOrder.RemoveAt(i);
+            for (int i = order.Count - 1; i >= checkpoint.scheduledObjectCount; i--)
+            {
+                m_scheduledObjects!.Remove(order[i]);
+                order.RemoveAt(i);
+            }
         }
     }
 
     internal void ExitCapture(object value)
     {
         if (m_isActive)
-            m_capturePaths.Remove(value);
+            m_capturePaths?.Remove(value);
     }
 
     internal void Complete()
@@ -113,16 +112,17 @@ internal sealed class SerializationOperation
         EnsureActive();
         try
         {
-            for (int i = 0; i < m_completionCallbacks.Count; i++)
-                m_completionCallbacks[i]();
+            if (m_completionCallbacks is { } callbacks)
+                for (int i = 0; i < callbacks.Count; i++)
+                    callbacks[i]();
         }
         finally
         {
             m_isActive = false;
-            m_completionCallbacks.Clear();
-            m_scheduledObjects.Clear();
-            m_scheduledObjectOrder.Clear();
-            m_capturePaths.Clear();
+            m_completionCallbacks?.Clear();
+            m_scheduledObjects?.Clear();
+            m_scheduledObjectOrder?.Clear();
+            m_capturePaths?.Clear();
         }
     }
 
@@ -132,10 +132,10 @@ internal sealed class SerializationOperation
             return;
 
         m_isActive = false;
-        m_completionCallbacks.Clear();
-        m_scheduledObjects.Clear();
-        m_scheduledObjectOrder.Clear();
-        m_capturePaths.Clear();
+        m_completionCallbacks?.Clear();
+        m_scheduledObjects?.Clear();
+        m_scheduledObjectOrder?.Clear();
+        m_capturePaths?.Clear();
     }
 
     internal readonly record struct Checkpoint(
@@ -143,36 +143,4 @@ internal sealed class SerializationOperation
         int scheduledObjectCount
     );
 
-    private sealed class ReferenceComparer : IEqualityComparer<object>
-    {
-        internal static ReferenceComparer instance { get; } = new();
-
-        /// <summary>
-        /// Determines whether this value and the supplied value represent the same logical state.
-        /// </summary>
-        /// <param name="x">
-        /// The horizontal or first component.
-        /// </param>
-        /// <param name="y">
-        /// The vertical or second component.
-        /// </param>
-        /// <returns>
-        /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
-        /// </returns>
-        public new bool Equals(
-            object? x,
-            object? y
-        ) => ReferenceEquals(x, y);
-
-        /// <summary>
-        /// Computes a hash code consistent with the implemented equality contract.
-        /// </summary>
-        /// <param name="obj">
-        /// The object compared with this value.
-        /// </param>
-        /// <returns>
-        /// The scalar result calculated from the supplied inputs.
-        /// </returns>
-        public int GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
-    }
 }

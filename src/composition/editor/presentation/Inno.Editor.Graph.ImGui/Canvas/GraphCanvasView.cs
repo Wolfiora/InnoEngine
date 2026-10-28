@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Inno.Core.Graphs;
 using Inno.Editor.Graph;
+using Inno.Editor.ImGui;
 using CanvasDrawing = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Graph.ImGui;
@@ -102,6 +103,9 @@ public readonly partial struct GraphCanvasView
     /// <summary>
     /// Draws a horizontal-tangent connection using the same curve used for hit testing.
     /// </summary>
+    /// <param name="draw">
+    /// The current window's frame-local drawing borrow; it is neither retained nor released by this call.
+    /// </param>
     /// <param name="output">
     /// The output endpoint in screen space.
     /// </param>
@@ -117,7 +121,11 @@ public readonly partial struct GraphCanvasView
     /// <exception cref="ArgumentOutOfRangeException">
     /// An endpoint or derived control point is nonfinite, or the stroke width is not positive and finite.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The canvas is uninitialized or a visible connection uses an expired or mismatched drawing borrow.
+    /// </exception>
     public void DrawConnection(
+        EditorDrawList draw,
         Vector2 output,
         Vector2 input,
         uint color,
@@ -141,7 +149,6 @@ public readonly partial struct GraphCanvasView
         if (maximum.X < MathF.Max(m_origin.X, clip.minimum.X) || minimum.X > MathF.Min(m_origin.X + m_size.X, clip.maximum.X)
             || maximum.Y < MathF.Max(m_origin.Y, clip.minimum.Y) || minimum.Y > MathF.Min(m_origin.Y + m_size.Y, clip.maximum.Y))
             return;
-        var draw = CanvasDrawing.GetDrawList();
         draw.PushClip(m_origin, m_origin + m_size, true);
         try
         {

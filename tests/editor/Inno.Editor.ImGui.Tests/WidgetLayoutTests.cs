@@ -17,6 +17,45 @@ namespace Inno.Editor.ImGui.Tests;
 public sealed unsafe class WidgetLayoutTests
 {
     [Fact]
+    public void PackedColorConversionMatchesNativeSaturationRoundingAndChannelOrder()
+    {
+        using (NativeContext context = new(1f))
+        {
+            context.Frame(() =>
+            {
+                BeginWindow("Color format contract", new(400f, 300f));
+                try
+                {
+                    float[] boundaries = [float.NegativeInfinity, -1f, -0f, 0f, 0.5f, 1f, 2f, float.PositiveInfinity, float.NaN];
+                    foreach (float value in boundaries)
+                    {
+                        Verify(new(value, 0f, 0f, 0f));
+                        Verify(new(0f, value, 0f, 0f));
+                        Verify(new(0f, 0f, value, 0f));
+                        Verify(new(0f, 0f, 0f, value));
+                    }
+                    for (int channel = 0; channel < 255; channel++)
+                    {
+                        float half = (channel + 0.5f) / 255f;
+                        Verify(new(MathF.BitDecrement(half), half, MathF.BitIncrement(half), 1f));
+                    }
+                    var random = new Random(0x2DCA);
+                    for (int index = 0; index < 4096; index++)
+                        Verify(new(random.NextSingle() * 3f - 1f, random.NextSingle() * 3f - 1f,
+                            random.NextSingle() * 3f - 1f, random.NextSingle() * 3f - 1f));
+                }
+                finally
+                {
+                    NativeImGui.End();
+                }
+            });
+        }
+
+        Assert.Throws<InvalidOperationException>(() => EditorImGui.ToPackedColor(Vector4.One));
+        static void Verify(Vector4 value) => Assert.Equal(NativeImGui.ColorConvertFloat4ToU32(value), EditorImGui.ToPackedColor(value));
+    }
+
+    [Fact]
     public void StandaloneMetricsApplyImmediatelyAndRetainedMetricsDoNotRootTheirRetiredSession()
     {
         var standalone = new EditorStyleMetrics();
