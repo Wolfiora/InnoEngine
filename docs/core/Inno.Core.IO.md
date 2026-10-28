@@ -14,6 +14,10 @@
 
 `IByteDocumentStore` 仅用于小型文档。`FileByteDocumentStore` 复用 AtomicFile；`ReadOnlyByteDocumentStore` 捕获 owned bytes，写入明确失败。它不是 Asset catalog 或事件协议。
 
+`AtomicFile` 只发布已经完整写入的同目录候选。`overwrite: false` 的冲突检查和发布必须是同一个文件系统操作，不能先检查不存在再 rename。Windows 使用系统的不可覆盖移动；Unix 使用公开 POSIX `link` 原语原子创建目标，再退休候选，不调用 SDK 私有导出。此处只选择宿主文件系统原语，不选择引擎 target、backend 或产品平台。Unix 文件系统必须支持同目录 hard link；不支持时明确抛出 `IOException`，不回退成可能暴露部分内容的复制。不能提供该宿主原语的执行环境明确抛出 `PlatformNotSupportedException`，其 inner exception 保留能力缺失原因；不维护引擎平台名单。普通原子替换不受影响。
+
+`Install` 在发布失败时保留调用方候选；发布成功后移除候选。若目标已经发布而候选删除失败，异常明确说明目标完整存在，调用方不能重试覆盖他人的目标。`WriteAllBytes` 自己拥有 staging 并负责在退出时清理。空的现有文档也属于已有目标，不能因为长度为零而覆盖。父目录和候选仍需要调用方的所有权保护；原子发布不抵御非合作进程替换整棵父目录。
+
 `AtomicDirectory.Publish` 只向不存在的目标发布完整 staging。需要替换目录时使用 `Install`，由调用方先协调全部读写 owner；这两个原子目录入口不会自行取得读取 lease。提交后的旧目录清理失败与提交前失败具有不同结果，不能把清理异常解释为新产物未安装。
 
 `DirectoryCleanupException` 只表示提交后的 backup 删除失败；`installedDirectory` 指向已经完整安装的新目录，`backupDirectory` 指向保留的旧目录。消费方记录独立清理诊断并继续使用已提交输出，不重试安装、不回滚新目录。其他 IO 异常仍表示安装阶段失败，遵循原来的恢复语义。

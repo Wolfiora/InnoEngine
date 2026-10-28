@@ -20,6 +20,13 @@ public static class AtomicFile
     /// <param name="overwrite">
     /// Whether an existing destination may be replaced; false atomically rejects name collisions.
     /// </param>
+    /// <exception cref="IOException">
+    /// Publication or cleanup fails, the destination already exists in create-only mode, or the
+    /// filesystem cannot atomically publish a complete file. No copy fallback exposes partial content.
+    /// </exception>
+    /// <exception cref="PlatformNotSupportedException">
+    /// The host does not provide an atomic create-only filesystem primitive.
+    /// </exception>
     public static void WriteAllBytes(
         string path,
         ReadOnlySpan<byte> data,
@@ -61,6 +68,19 @@ public static class AtomicFile
     /// <param name="overwrite">
     /// Whether an existing destination may be replaced; false never overwrites an external creator.
     /// </param>
+    /// <remarks>
+    /// A failed create-only publication preserves the candidate. After successful publication the
+    /// candidate is removed; a subsequent cleanup failure reports that the complete target exists.
+    /// Unix create-only publication requires same-directory hard-link support. The caller must own
+    /// the candidate and parent directory until the operation completes.
+    /// </remarks>
+    /// <exception cref="IOException">
+    /// Publication fails, create-only mode finds an existing destination, or candidate retirement
+    /// fails after the complete destination has been published.
+    /// </exception>
+    /// <exception cref="PlatformNotSupportedException">
+    /// The host does not provide an atomic create-only filesystem primitive.
+    /// </exception>
     public static void Install(
         string source,
         string destination,
