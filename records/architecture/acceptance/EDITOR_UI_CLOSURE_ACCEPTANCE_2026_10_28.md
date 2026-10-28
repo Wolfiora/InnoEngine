@@ -17,21 +17,34 @@
 | 范围 | 状态与证据 |
 | --- | --- |
 | 完整十二工程测试图 | 通过；`final-candidate-suites.log/binlog`，0 编译错误；保留 NU1900 漏洞服务网络警告。 |
-| Core / Scene | 通过；49 + 53 项，`final-candidate/core-scene-final.trx`。 |
+| Core / Scene | 当前编码及并发改良后 59 + 53 项通过，`e46/core-scene-current.trx`；独立 Release Core 59 项通过。 |
 | Workflows | 通过；305 项，`final-candidate/9409749fa03d4badb6f3b34c99a3dcdc`。 |
 | Visual / Lifecycle | 通过；分别 136、11 项，`final-candidate` 中对应 profile 的 summary / TRX。套件有交叠，不能直接相加。 |
 | Editor Debug / Release、Build 入口 | 通过；`final-candidate-editor-*.log/binlog`、`final-candidate-build-entry.log/binlog`，0 编译错误。 |
 | FlappyBird 产品 | 通过；独立的当前 Samples 源码副本，Debug/Release × D3D11/D3D12/Vulkan 六组，每组 300 帧、正常退出；`products/final-candidate-*.log`。该 smoke 不替代完整人工旅程。 |
 | Canvas / Rendering2D / FlappyBird | 正式脚本编译及 IDE 投影通过；`companion-projections-final/*/generation.log`。未编辑派生代码或插件包。 |
-| 完整 Contracts | 前一修正候选 713 项通过，`unified-correction-final/cf4d562d8bf1413f945d8f23e5d1d712`。后续 Core / modifier 修正后的最终完整 CI 另行记录。 |
+| 完整 Contracts | `e2e6ca32` 普通及隔离执行 721 项通过，另有 2 个 Windows 不适用的 Unix link 用例跳过；`closure-final/5c4cfef780fe4107bf0822dbff8a8432`。本轮后续 SDK 输出修复另有 9 项真实 SDK 专项通过。 |
 | 最终 Wiki / 架构 | 通过；`wiki-final-candidate`，241/241 工程实际归属、API 清单与可编译示例门禁。网络 NU1900 警告原样保留。 |
 | 最终成对性能 | 三类负载各五组交替原版/当前进程、共 30 次，以及菜单/统计五组对照均完成；输入与依赖 12,778 文件、583,137,380 bytes 前后完全一致。详见下方性能结果。完整 E11 产品/交互矩阵仍未闭合。 |
-| CI | `f7dce89c` 的 Windows/macOS Managed 与 NuGet job 通过；完整 Windows/macOS ARM64 job 已通过 Debug 及真实 renderer smoke，正在执行 Release/后续测试。旧 `660962a5` 的七个 Mac 输入失败已修正，仍须等待新提交的完整原生套件确认。 |
+| CI | `f7dce89c` 的完整 Windows、macOS ARM64、两端 Managed 和 NuGet 检查全部通过，完整 job 含 tests、Support Pack 和 Wiki；[workflow 40653896090](https://github.com/Wolfiora/InnoEngine/actions/runs/40653896090)。后续本轮提交尚需其自身 CI，不能借用旧 head 的绿灯。 |
 
 Core 内部现在只在实际需要时创建回调、循环检测和恢复去重集合，复用 BCL reference equality；上下文仅在全部 owner 身份一致时复用。正式输出的同一属性 bytes 保持一致，分配测量为 fresh 1,888 / prepared 1,168 bytes，原 prepared 为 2,096。新公开边界回归先失败再通过；没有修改 `SerializationContext.With` 的新实例语义。该观察不是整帧或全产品 CPU 收益证明。
 
 原生 command-key 模式会在 ImGui 内交换 Control / Super。`EditorUiInput` 现在还原物理 Core 修饰键含义，列表选择复用该边界；原生文本控件保留自身配置。四个真实输入组合验证两种 primary modifier 与两种原生模式。共享 Editor 不增加 OS 检测或平台引用，fixtures 显式选择键盘配置。
 
+
+## 本轮收尾复验与深层自查
+
+- `6df06585`：二进制编码先计算精确长度，直接写入最终 caller-owned buffer；wire bytes、字符串边界、特殊数值与错误语义由独立 BinaryWriter oracle 验证。1 MB 值的旧编码分配测试先失败，改良后通过。Converter lookup 继续属于同一个 generation，热命中使用 ConcurrentDictionary，首次构造由原 owner 锁保证唯一，最后一个 lease 才能退休类型和实例；没有全局 converter cache。
+- `e2e6ca32`：Shader settings 六处行 ID 和一处 capability tree 采用局部 finally；合并 30 个重复 alias、176 个语义符号引用，删除 3 段重复 XML summary。AST 防线仅覆盖明确模式，不伪称证明任意动态 scope。相关 source-contract 16 项通过。
+- `closure-final`：Contracts 721、Workflows 305、Visual 136、Lifecycle 11 项通过；各 profile 有交叠。Core/Scene 的后续专项为 59/53 项，不与 profile 计数相加。
+- 新增的真实 SDK 输出回归先以两项 ArtifactsPath 失败复现，普通 Debug/Release 两项通过；修复后初始四项全部通过。扩展后的 `e40/output-entry-final.trx` 共 9 项通过，覆盖 Debug/Release、普通/独立输出、真实 RID、工具中立、工具/产品/fingerprint 输入、等价 props 路径、IDE execution 属性、并行编译、编译器工具引用和入口 owned restore。
+- 全双入口构建暴露了两个关联问题：中立/产品实例争写 DLL，以及入口直接引用先于产品还原。前者使用 SDK ArtifactsProjectName 的早期选择，后者复用 RestoreOwnedProjectTask 和 Core IO lease；没有串行构建、手拷 DLL、借用默认 obj、删除 RID 或增加平台名单。`e40/two-entry-restore-fixed.log/binlog` 已通过，0 编译错误，NU1900 原样保留。规范化路径修正后的全新输出复验与最终 CI 另行记录。
+- 实际 FlappyBird D3D12 运行 15,000 帧，9 个实际 Panel 各关闭/打开 100 次，完整退出与 sRGB 检查通过。两份完成 TSV 必须存在，不能只依赖进程退出。`products/closure-panel-lifecycle-resources.tsv` 在 0/10/.../100 次 closed-state 进行 Full GC → finalizers → Full GC：Selection 始终 0、Scene 1、History resident/disk 0、Core pending events 0；managed 从 26,168,896 到 26,179,976 bytes，private 从 880,267,264 降至 864,219,136 bytes。该结果是公开状态和内存观察，不证明每一个私有 native owner。
+- 最初短 smoke 的期望字符串写错，未产生 fixture 完成标记，因此没有计入通过。增强 fixture 通过公开 Workspace API 打开实际 FlappyBird 源场景，不让引擎为验收自动创建 Untitled。测试辅助方法曾有一次编译错误，已修正，后续构建 0 错误、专项 9 项通过；失败日志保留。
+- 并发序列化对照 `e46/parallel/summary.json`：同输入、五组交替进程，8 workers / 80,000 次 decode 的中位 wall 55.46 → 42.63 ms，CPU 375 → 265.625 ms，分配基本相同；1 worker 的 10,000 次为 25.11 → 23.36 ms。Monitor contention 计数不代表所有锁种类，因此收益以独立 wall/CPU 结果说明。此负载不等同完整 UI 帧性能，完整 Scene dirty-scan 的 #46 仍 Open。
+
+自查已深入执行链：平台策略仍由平台贡献；入口只声明选中的产品；Restore 与 compilation 保留隔离；共享层使用 SDK 求值路径；History、Identity、Core Events、Serialization 与 IO 没有平行实现；新的 converter 缓存仍由 generation/lease 拥有。BGCS、NuGet 包、第三方及生成绑定未修改。没有因本轮通过项而宣布 E08–E12 或整个引擎已经完美；下方未完成矩阵仍然有效。
 ## 最终受控性能结果
 
 源码候选为 `f7dce89c0d91ecb0f2333b8ca3117fefc71db96a`；原生产基线为 `b303d9f10cbaf5a905f7cb529e52cf8293b0d8bd`，原版只移植验收 harness，不修改生产实现。两侧使用同一 .NET 10.0.402、Debug 配置、机器、冻结数据和 Native command-validation 方法；各进程预热五帧，再采样十帧，五组进程交替顺序运行，没有构建/测试/产品并发。原始各组数据保留在 [性能证据目录](editor-ui-performance-2026-10-28/README.md)。

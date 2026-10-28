@@ -17,6 +17,12 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);$(MSBuildProjectDirectory)/obj/**;$(MSBuildProjectDirectory)/bin/**</DefaultItemExcludes>
   </PropertyGroup>
 
+  <PropertyGroup Condition="('$(UseArtifactsOutput)' == 'true' or '$(ArtifactsPath)' != '') and '$(IsRoslynComponent)' != 'true' and ('$(InnoNativeTarget)' != '' or '$(InnoToolTarget)' != '' or '$(InnoProductBuildProperties)' != '')">
+    <!-- Select the restore owner before SDK defaults; keep its configuration, TFM and RID pivots intact. -->
+    <_InnoManagedProductPropertiesPath Condition="'$(InnoProductBuildProperties)' != ''">$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '$(InnoProductBuildProperties)'))</_InnoManagedProductPropertiesPath>
+    <ArtifactsProjectName Condition="'$(ArtifactsProjectName)' == ''">$(MSBuildProjectName).$([MSBuild]::StableStringHash('$(InnoNativeTarget)|$(InnoToolTarget)|$(_InnoManagedProductPropertiesPath)|$(InnoNativeBuildFingerprint)', 'Sha256'))</ArtifactsProjectName>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">
     <BaseIntermediateOutputPath>obj/$(InnoNativeTarget)/</BaseIntermediateOutputPath>
     <BaseOutputPath>bin/$(InnoNativeTarget)/</BaseOutputPath>

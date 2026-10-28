@@ -42,6 +42,10 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 需要验证全新托管输出或并行验收时，可对 `Invoke-ManagedChecks.ps1` 指定独立的 `-ArtifactsPath`；构建、普通测试、隔离发现和隔离执行共用该 SDK 输出 owner。
 
+共同 props 在 SDK 默认输出路径建立前，为具有产品输入的工程选择独立 `ArtifactsProjectName`：身份覆盖 Native target、工具 target、产品 props 和 Native build fingerprint。中立工程与 Roslyn 工具保持中立，SDK 自身的 configuration、TFM 和 RID pivots 不变；还原和编译消费同一 owner。调用者显式设置的 SDK 输出属性仍由调用者负责，构建工具必须读取求值后的实际路径，不能拼接 `ArtifactsPath/bin/<project>`。这避免两个正式开发入口在同一个 SDK 构建图中争写共享工程的 DLL；不靠串行构建或清空真实 RID 规避。
+
+Editor 开发入口只声明需要还原其宿主路由选中的产品工程。共享 `RestoreProductTargetGraph` 使用已有 `RestoreOwnedProjectTask`、Core IO lease 和 Restore/compilation 隔离，先完成该闭包，再开始入口的直接及传递引用构建。平台产品独立构建仍按同一协议准备自身；入口不保存平台名单或另建依赖解析器。
+
 Reload fixture 使用普通 `ProjectReference` 声明构建依赖，通过 SDK 的 `OutputItemType` 接收实际产物，再部署到测试宿主的 Modules 目录；不拼接 `bin/<configuration>/<tfm>`，也不从另一输出 owner 借用 fixture。
 
 Wiki 脚本 fixture 从测试工程实际求值的 framework `ReferencePath` 编译，并在所属输出目录保存构建清单；运行测试的 runtime 补丁与 SDK reference pack 可以不同，不按 runtime 补丁号推导 reference pack 路径。

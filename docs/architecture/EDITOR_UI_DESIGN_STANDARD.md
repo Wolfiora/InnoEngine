@@ -87,6 +87,8 @@ Missing 形成可恢复 barrier，不移动 Undo/Redo 栈，不丢原始 bytes�
 
 Begin/End、Push/Pop、Child、Table、Popup、Clip 和样式遵守各自真实配对规则，并用局部 `try/finally` 释放本次所有权。扩展异常保留原始诊断，后续合法帧必须能够继续绘制。不能清空其他 owner 的状态来恢复当前 Panel。
 
+循环行的 ID 生命周期必须覆盖异常、提前退出和普通完成；移除条目后的 break 也通过同一 finally 释放，不在分支中手工重复 PopId。架构源码门禁检查这一已确认的回归模式，并检查重复呈现别名及失效 XML 说明；真实绘制、失效借用和跨 owner 异常仍由各自 Native 契约验收。
+
 Presentation 的准备、绘制与发布属于同一次 owner 操作；期间拒绝重入和退休。准备失败不创建 Native frame；绘制失败只结束所属 Context 的失败帧，不发布部分 draw data。调用方仍须平衡自己打开的窗口和栈，后端不伪造修复其他 owner 的作用域。
 
 关闭 Panel 退休其暂态控件；关闭文档退休文档状态。generation 切换不能保留旧 Type、delegate、扩展实例或 collectible 引用。旧 ALC 退休严格执行既有 GC/finalizer/weak-monitor barrier；timeout 进入 Faulted，不能清空 monitor 继续。

@@ -1,13 +1,13 @@
 # Inno.Tooling.Architecture
 
+[Tooling 索引](README.md) · [Wiki 首页](../README.md)
+
 ## 独立输出目录的检查
 
 使用 `--dotnet <host>` 和 `--artifacts-path <absolute-output-root>` 检查独立 SDK 输出。求值图的 `TargetPath` 决定公开程序集的 owner，Wiki 的 `ReferencePath`、`Compile`、语言和符号也使用同一输出选择。不要把独立输出复制回默认 bin 来满足检查。
 
 `--configuration` 支持 `Debug`、`SourceDebug` 和 `Release`。`--artifacts-path` 要求显式 `--dotnet`；SDK 失败、缺失引用或取消均不能当作通过。
 
-
-[Tooling 索引](README.md)
 
 退休 catch 的 AST 规则拒绝直接捕获 `RetirementPendingException` / `RetirementTimeoutException`（包括全限定名）。
 应捕获 Exception，并用 Core `RetirementPendingException.Find` 检查整棵异常树后原样传播。
@@ -21,6 +21,8 @@ Registry 派生实现不得直接调用 `OnCleanupFailed` 代替退休失败传�
 未知选项、重复配置和多个根抛出 `ArgumentException`。
 默认检查手写源码的多参数声明：逐参数换行、右括号对齐，以及紧随参数列表的 `) {`。
 检查基于 C# 语法节点，覆盖方法、构造函数、委托、主构造函数、局部函数和 Lambda，不改写源码。
+
+Editor 源码还检查同类型重复别名、重复 XML summary，以及循环中依赖手动 PopId 收尾的 ImGui ID 作用域。循环行必须在局部 finally 中释放 ID，确保异常、break 和正常完成均保持配对。该 AST 门禁识别已确认的源码模式，不替代其他 Begin/End、Push/Pop 的所有权审查或真实 Native 异常测试；分组取得与包装方法仍需沿实际调用方核对。
 
 ## 检查范围
 

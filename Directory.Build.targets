@@ -225,14 +225,18 @@
     <Error Condition="'@(_BindGenCompileSources->Count())' != '1'" Text="The native component must compile exactly one selected Bindings.cs source: @(_BindGenCompileSources)" />
   </Target>
 
+  <PropertyGroup Condition="'$(InnoProductId)' != ''">
+    <InnoProductRestoreProject Condition="'$(InnoProductRestoreProject)' == ''">$(MSBuildProjectFullPath)</InnoProductRestoreProject>
+  </PropertyGroup>
+
   <Target
     Name="RestoreProductTargetGraph"
     BeforeTargets="PrepareForBuild"
     DependsOnTargets="PrepareInnoTaskPublisher"
-    Condition="'$(InnoProductId)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoProductRestore)' != 'false'">
+    Condition="'$(InnoProductRestoreProject)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoProductRestore)' != 'false'">
     <Inno.Build.TaskHosting.RestoreOwnedProjectTask
-      Projects="$(MSBuildProjectFullPath)"
-      Properties="InnoNativeTarget=$(InnoProductTarget);InnoToolTarget=$(InnoToolTarget);InnoProductRestore=false"
+      Projects="$(InnoProductRestoreProject)"
+      Properties="InnoNativeTarget=$(InnoNativeTarget);InnoToolTarget=$(InnoToolTarget);InnoProductBuildProperties=$(InnoProductBuildProperties);InnoProductRestore=false"
       LockPath="$(MSBuildThisFileDirectory)artifacts/managed/restore-graphs/write.lock" />
   </Target>
 

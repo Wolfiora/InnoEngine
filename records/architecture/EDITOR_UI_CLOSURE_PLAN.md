@@ -213,3 +213,13 @@ Final working-tree verification: the twelve-project compilation, Core 49 / Scene
 - Absolute hierarchy performance remains poor: 345.14 ms median, 402.69 ms P95 and 139.06 MB allocated per frame. New issue #46 owns the remaining complete-scene dirty-check bottleneck and the required correctness/invalidation design; no timer relaxation or partial cache is used.
 - Exact-commit managed Windows/macOS and NuGet dependency CI pass. Full native Windows/macOS CI is still running; no completion or Ready claim is made.
 - Full E08/E09/E10/E11 and the parent retain the limitations in the report. Relative performance improvement and focused green suites do not establish whole-plan completion.
+
+## Closure follow-up evidence
+
+- `6df06585` bounds binary encoding buffers and generation-owned converter lookup contention; Core 59 / Scene 53 and independent Release Core 59 pass. It does not close the full-scene dirty-scan issue #46.
+- `e2e6ca32` balances six Shader settings row scopes and one tree scope, removes duplicate aliases/XML summaries, and adds limited AST checks; source-contract tests pass 16 cases.
+- `closure-final`: Contracts 721 passes plus two platform-inapplicable link cases; Workflows 305, Visual 136, Lifecycle 11. Profiles overlap.
+- The extra two-entry SDK build reproduced CS2012, then missing assets exposed the entry/product restore ordering. Existing owned restore and early SDK output-owner selection address the actual chain; no BGCS or platform workaround. Initial red/green evidence is preserved; expanded real SDK tests pass 9 cases in `e40/output-entry-final.trx`.
+- The actual FlappyBird source extension completed 100 close/open cycles for all nine panels during 15,000 D3D12 frames. Eleven full-GC resource samples preserve Selection/Scene/History/pending-event invariants and show stable managed memory. This is not a proof of every private owner.
+- Workflow 40653896090 for f7dce89c completed all four native/managed jobs successfully; NuGet passed separately. Later source changes require their own CI.
+- The full original-product baseline incompatibility and unclosed E08/E09/E10/E11 matrix remain explicitly tracked. The PR stays Draft until all applicable gates are satisfied.

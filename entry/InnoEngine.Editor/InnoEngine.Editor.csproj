@@ -8,6 +8,7 @@
     <InnoNativeTarget Condition="'$(InnoNativeTarget)' == ''">$(InnoDevelopmentTarget)</InnoNativeTarget>
     <InnoToolTarget Condition="'$(InnoToolTarget)' == ''">$(InnoDevelopmentTarget)</InnoToolTarget>
     <InnoProductBuildProperties Condition="'$(InnoProductBuildProperties)' == ''">$(InnoDevelopmentEditorBuildProperties)</InnoProductBuildProperties>
+    <InnoProductRestoreProject>$(InnoDevelopmentEditorProject)</InnoProductRestoreProject>
     <OutputType>Exe</OutputType>
     <AssemblyName>InnoEngine.Editor</AssemblyName>
     <RootNamespace>InnoEngine.Editor</RootNamespace>

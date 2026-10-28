@@ -154,7 +154,7 @@ public sealed class OrderedState : ISerializable
 
 ### 跨 generation 的独立成员恢复
 
-逐成员快照用于热重载和其他需要容忍 schema 演进的流程，不会改变普通 `Serialize` / `Deserialize` / `Restore` 的严格行为：
+逐成员快照用于当前会话中的扩展重载、成员暂时 Missing 及恢复；普通 `Serialize` / `Deserialize` / `Restore` 仍保持严格的当前格式：
 
 ```csharp
 using System.Collections.Generic;
@@ -175,7 +175,7 @@ static SerializationPropertyRestoreResult RestoreMatchingProperties(
 
 `SerializationPropertyRestoreMode.Strict` 在第一个匹配但不可解码的成员处抛异常。`Compatible` 使用独立的 operation checkpoint 跳过该成员，撤销它注册的 completion callback，保留目标对象构造后的默认值，并在 `failures` 中记录旧类型、新类型和错误信息。
 
-Editor History 等需要跨 assembly generation 保留数据的系统应使用 `CapturePropertyData` / `RestorePropertiesData`。该格式包含 property key 与原声明类型信息，但不包含 owning object 引用；调用方必须用 persistent ID 在当前 generation 解析目标。格式严格检查当前 magic、长度与 trailing bytes，损坏数据不会被部分接受。
+Editor History 等需要跨 assembly generation 保留数据的系统应使用 `CapturePropertyData` / `RestorePropertiesData`。该格式保存 property key 与独立编码的值节点，不保存 CLR Type 或 owning object；恢复时由当前目标的 metadata 决定声明类型。内存中的 `SerializationPropertySnapshot.propertyType` 只属于其创建代际，不能据此长期持有 collectible 类型。调用方必须用 persistent ID 在当前 generation 解析目标。格式严格检查当前 magic、长度与 trailing bytes，损坏数据不会被部分接受。
 
 已删除成员计入 `ignoredCount`，新增成员自然保持默认值。所有兼容成员完成后，目标的 `[OnSerializableRestored]` 仍只执行一次；对象级 restore hook 失败属于严重错误，不会被 compatible 模式吞掉。
 
@@ -300,6 +300,8 @@ static (float x, float y)[] RoundTripPoints(
 - 序列化层只实现当前二进制契约，不包含旧 schema 的兼容读取或迁移分支。不兼容数据会直接失败。
 
 单属性快照 CapturePropertyData 只读取指定的持久属性；其他 getter 不会因捕获该属性而执行。二进制节点编码先计算确定大小，再用标准库 BinaryWriter 写入独立的结果数组，避免增长缓冲区及最终复制。当前 magic、字段顺序、UTF-8 长度编码和调用方拥有的 bytes 语义保持一致；这是非公开实现，不增加格式或缓存协议。
+
+已解析 Converter 的查找复用当前 generation 自有的并发缓存；首次解析及实例创建仍受同一个 owner 协调，最后一个 lease 释放后才清空缓存并退休实例。冻结 generation 的并行调用仍要求 Converter 和被读写数据自身满足相应线程约束，调用方应在所有操作完成后释放 lease。这些内部查找改良不改变 Registry、Context 或业务对象的所有权。
 
 内部序列化操作仅在需要时创建回调、恢复去重与循环检测集合；不使用跨操作对象池。已有上下文只有在 TypeCatalog、Registry 和 metadata source 均属于当前 owner 时才复用，否则重新绑定这些依赖并保留调用方服务。`SerializationContext.With` 仍返回新的不可变上下文，确定性键排序和当前二进制格式保持不变。
 
