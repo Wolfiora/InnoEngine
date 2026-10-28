@@ -299,7 +299,7 @@ static (float x, float y)[] RoundTripPoints(
 - Compatible property restore 只跳过单个成员的数据/类型不兼容；对象结构或 restore hook 错误仍由上层事务处理。
 - 序列化层只实现当前二进制契约，不包含旧 schema 的兼容读取或迁移分支。不兼容数据会直接失败。
 
-单属性快照 CapturePropertyData 只读取指定的持久属性；其他 getter 不会因捕获该属性而执行。二进制格式与完整对象捕获保持一致，缓冲区按实际内容增长。
+单属性快照 CapturePropertyData 只读取指定的持久属性；其他 getter 不会因捕获该属性而执行。二进制节点编码先计算确定大小，再用标准库 BinaryWriter 写入独立的结果数组，避免增长缓冲区及最终复制。当前 magic、字段顺序、UTF-8 长度编码和调用方拥有的 bytes 语义保持一致；这是非公开实现，不增加格式或缓存协议。
 
 内部序列化操作仅在需要时创建回调、恢复去重与循环检测集合；不使用跨操作对象池。已有上下文只有在 TypeCatalog、Registry 和 metadata source 均属于当前 owner 时才复用，否则重新绑定这些依赖并保留调用方服务。`SerializationContext.With` 仍返回新的不可变上下文，确定性键排序和当前二进制格式保持不变。
 

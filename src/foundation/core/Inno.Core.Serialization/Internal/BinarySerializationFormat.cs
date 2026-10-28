@@ -5,20 +5,13 @@ using System.Text;
 
 namespace Inno.Core.Serialization;
 
-internal static class BinarySerializationFormat
+internal static partial class BinarySerializationFormat
 {
     private const string C_MAGIC = "INNO-BINARY-CURRENT";
     private const int C_MAX_COLLECTION_COUNT = 16_777_216;
 
     internal static byte[] Encode(SerializationNode root)
-    {
-        using var stream = new MemoryStream();
-        using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
-        writer.Write(C_MAGIC);
-        WriteNode(writer, root);
-        writer.Flush();
-        return stream.ToArray();
-    }
+        => Encode(root, includeMagic: true);
 
     internal static SerializationNode Decode(ReadOnlySpan<byte> bytes)
     {
@@ -235,12 +228,23 @@ internal static class BinarySerializationFormat
     ) => path == "$" ? $"$.{name}" : $"{path}.{name}";
 
     private static byte[] EncodeNode(SerializationNode node)
-    {
-        using var stream = new MemoryStream();
+        => Encode(node, includeMagic: false);
+
+    private static byte[] Encode(
+        SerializationNode node,
+        bool includeMagic
+    ) {
+        int length = checked(GetEncodedSize(node) + (includeMagic ? GetEncodedStringSize(C_MAGIC) : 0));
+        var data = new byte[length];
+        using var stream = new MemoryStream(data, writable: true);
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
+        if (includeMagic)
+            writer.Write(C_MAGIC);
         WriteNode(writer, node);
         writer.Flush();
-        return stream.ToArray();
+        if (stream.Position != length)
+            throw new InvalidDataException("The serialization encoder did not fill its calculated output size.");
+        return data;
     }
 
     private static int CompareBytes(

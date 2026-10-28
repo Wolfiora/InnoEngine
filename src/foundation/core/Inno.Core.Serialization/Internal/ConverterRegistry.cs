@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -242,19 +243,6 @@ internal sealed class ConverterRegistry : IDisposable
             }
         }
 
-        internal ConverterInvoker? Resolve(Type valueType)
-        {
-            ConverterRegistrySnapshot snapshot = current;
-            lock (snapshot.sync)
-            {
-                if (snapshot.cache.TryGetValue(valueType, out ConverterInvoker? cached))
-                    return cached;
-                ConverterInvoker? resolved = ResolveSnapshot(snapshot, valueType);
-                snapshot.cache.Add(valueType, resolved);
-                return resolved;
-            }
-        }
-
         /// <summary>
         /// Builds a validated result from the current immutable input snapshot.
         /// </summary>
@@ -303,8 +291,8 @@ internal sealed class ConverterRegistry : IDisposable
     )
     {
         private TypeCacheSnapshot? m_types = types;
-        internal readonly object sync = new();
-        internal readonly Dictionary<Type, ConverterInvoker?> cache = [];
+        internal readonly Lock sync = new();
+        internal readonly ConcurrentDictionary<Type, ConverterInvoker?> cache = new();
         internal readonly Dictionary<Type, object> converterInstances = [];
         internal IReadOnlyList<Type> registrations = registrations;
         private int m_referenceCount = 1;
@@ -385,12 +373,15 @@ internal sealed class ConverterRegistryLease : IDisposable
         ConverterRegistry.ConverterRegistrySnapshot snapshot = m_snapshot
             ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease));
         Type normalizedType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+        if (snapshot.cache.TryGetValue(normalizedType, out ConverterInvoker? cached))
+            return cached;
         lock (snapshot.sync)
         {
-            if (snapshot.cache.TryGetValue(normalizedType, out ConverterInvoker? cached))
+            if (snapshot.cache.TryGetValue(normalizedType, out cached))
                 return cached;
             ConverterInvoker? resolved = ConverterRegistry.ResolveSnapshot(snapshot, normalizedType);
-            snapshot.cache.Add(normalizedType, resolved);
+            if (!snapshot.cache.TryAdd(normalizedType, resolved))
+                throw new InvalidOperationException("The serialization converter resolution was published twice.");
             return resolved;
         }
     }
