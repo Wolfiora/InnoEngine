@@ -84,8 +84,11 @@ foreach ($selected in $profiles) {
                 & (Join-Path $PSScriptRoot 'Invoke-EditorSmoke.ps1') -Dotnet $Dotnet -EditorAssembly $product.TargetPath `
                     -ProjectDirectory $ProductProject -GraphicsApi $api -BackendPattern $BackendPattern -Frames 300 `
                     *> (Join-Path $stageRoot "$api.log")
+                & (Join-Path $PSScriptRoot 'Invoke-EditorUiProductJourney.ps1') -Dotnet $Dotnet -EditorAssembly $product.TargetPath `
+                    -ProjectDirectory $ProductProject -GraphicsApi $api -ResultsDirectory (Join-Path $stageRoot "journey-$api") `
+                    *> (Join-Path $stageRoot "journey-$api.log")
             }
-            Save-Result $selected 'Passed' 'Editor rendering smoke completed; interactive journeys remain separately tracked.'
+            Save-Result $selected 'Passed' 'Renderer smoke and eight actual-product feature workflows completed; native input and physical-device experience remain separately tracked.'
             continue
         }
         $names = switch ($selected) {

@@ -302,19 +302,33 @@ internal sealed partial class EditorSceneWorkspace
         }
     }
 
-    private byte[] ComputeSceneHash(GameScene scene)
-    {
+    private byte[] ComputeSceneHash(
+        GameScene scene,
+        SceneDocument? document = null
+    ) {
         var dependencies = new AssetDependencyCollection(includeLastKnownPaths: false);
         SerializationContext context = AssetSerializationContext.Create(m_assets, dependencies);
-        byte[] payload = m_serialization.Serialize(scene, context);
-        return SHA256.HashData(payload);
+        SerializationSnapshot captured = m_serialization.CaptureSnapshot(scene, context, document?.observedSnapshot);
+        if (document is not null && ReferenceEquals(captured, document.observedSnapshot))
+            return document.observedHash!;
+        using var algorithm = SHA256.Create();
+        using (var digest = new CryptoStream(Stream.Null, algorithm, CryptoStreamMode.Write, leaveOpen: true))
+        using (var output = new BufferedStream(digest, 64 * 1024))
+            captured.WriteTo(output);
+        byte[] hash = algorithm.Hash ?? throw new InvalidOperationException("Scene content hashing did not complete.");
+        if (document is not null)
+        {
+            document.observedSnapshot = captured;
+            document.observedHash = hash;
+        }
+        return hash;
     }
 
     private bool HasSerializedChanges(
         GameScene scene,
         SceneDocument document
     )
-        => !ComputeSceneHash(scene).AsSpan().SequenceEqual(document.savedHash);
+        => !ComputeSceneHash(scene, document).AsSpan().SequenceEqual(document.savedHash);
 
     private string CreateUniquePath(
         string directory,
@@ -376,6 +390,9 @@ internal sealed partial class EditorSceneWorkspace
         Guid sourceAssetId,
         byte[] savedHash
     ) {
+        internal SerializationSnapshot? observedSnapshot;
+        internal byte[]? observedHash;
+
         /// <summary>
         /// The scene value used as part of this type's public representation.
         /// </summary>

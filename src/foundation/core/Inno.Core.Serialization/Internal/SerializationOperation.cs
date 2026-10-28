@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Inno.Extensibility.Types;
 
 namespace Inno.Core.Serialization;
 
@@ -11,17 +12,33 @@ internal sealed class SerializationOperation
     private List<object>? m_scheduledObjectOrder;
     private Dictionary<object, string>? m_capturePaths;
     private bool m_isActive = true;
+    private int m_writerGeneration;
 
     internal SerializationOperation(
         SerializationContext context,
-        ConverterRegistryLease converters
+        ConverterRegistryLease converters,
+        bool snapshotCapture = false
     ) {
         ArgumentNullException.ThrowIfNull(converters);
         this.context = context;
         m_converters = converters;
+        isSnapshotCapture = snapshotCapture;
     }
 
     internal SerializationContext context { get; }
+    internal bool isSnapshotCapture { get; }
+    internal int writerGeneration => m_writerGeneration;
+    internal TypeCacheSnapshot types => m_converters.types;
+
+    internal void RetireCaptureMember()
+    {
+        EnsureActive();
+        m_writerGeneration = checked(m_writerGeneration + 1);
+        m_completionCallbacks?.Clear();
+        m_scheduledObjects?.Clear();
+        m_scheduledObjectOrder?.Clear();
+        m_capturePaths?.Clear();
+    }
 
     internal SerializationTypeMetadata GetMetadata(Type type)
         => context.GetRequired<ISerializationMetadataSource>().GetMetadata(type);
@@ -36,6 +53,15 @@ internal sealed class SerializationOperation
     {
         if (!m_isActive)
             throw new InvalidOperationException("The serialization reader or writer is no longer active.");
+    }
+
+    internal BinarySerializationNode CapturePropertyData(
+        ISerializable value,
+        SerializationContext context,
+        BinarySerializationNode? previous
+    ) {
+        EnsureActive();
+        return PropertySnapshotPipeline.CaptureData(value, context, m_converters, previous);
     }
 
     internal void AddCompletionCallback(Action callback)

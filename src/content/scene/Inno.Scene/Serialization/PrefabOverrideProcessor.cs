@@ -559,7 +559,7 @@ internal static class PrefabOverrideProcessor
             if (component is not null)
                 ids[component] = sourceId;
         }
-        return new SceneGraphReferenceMap(scene, allObjects, ids);
+        return new SceneGraphReferenceMap(scene, ids);
     }
 
     private static SceneGraphReferenceMap CreateTargetReferences(

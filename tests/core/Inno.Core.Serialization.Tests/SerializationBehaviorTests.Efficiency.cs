@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Extensibility.Types;
 using Xunit;
@@ -7,6 +9,25 @@ namespace Inno.Core.Serialization.Tests;
 
 public sealed partial class SerializationBehaviorTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ReplacingContextServicesReleasesTheReplacedValueAtEveryDepth(bool nested)
+    {
+        (SerializationContext context, WeakReference replaced) = ReplaceContextService(nested);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.False(replaced.IsAlive);
+        Assert.NotNull(context.GetRequired<object>());
+        if (nested)
+        {
+            Assert.Equal("marker", context.GetRequired<string>());
+            Assert.Equal(new[] { 1, 2 }, context.GetRequired<IReadOnlyList<int>>());
+        }
+        GC.KeepAlive(context);
+    }
+
     [Fact]
     public void PreparedSerializationContextsAvoidRepeatedOwnerCopies()
     {
@@ -17,7 +38,8 @@ public sealed partial class SerializationBehaviorTests
         long fresh = Measure(null);
         long inherited = Measure(prepared);
 
-        Assert.True(inherited + 256 <= fresh, $"Prepared context allocated {inherited} bytes; fresh context allocated {fresh} bytes.");
+        Assert.True(inherited < fresh && inherited <= 1024,
+            $"Prepared context allocated {inherited} bytes; fresh context allocated {fresh} bytes.");
 
         long Measure(SerializationContext? context)
         {
@@ -159,4 +181,15 @@ public sealed partial class SerializationBehaviorTests
         public int ignored { get; set; }
         public int unrelatedReadCount => m_unrelatedReads;
     }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static (SerializationContext, WeakReference) ReplaceContextService(bool nested)
+    {
+        var replaced = new object();
+        SerializationContext context = SerializationContext.empty.With(replaced);
+        if (nested)
+            context = context.With("marker").With<IReadOnlyList<int>>(new[] { 1, 2 });
+        return (context.With(new object()), new WeakReference(replaced));
+    }
+
 }

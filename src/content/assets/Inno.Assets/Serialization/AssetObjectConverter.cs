@@ -31,7 +31,7 @@ internal sealed class AssetObjectConverter : SerializationConverter<AssetObject>
         Guid persistentId = value.identity.persistentId;
         if (persistentId == Guid.Empty)
             throw new InvalidOperationException($"Asset '{value.GetType().FullName}' has no persistent identity at '{writer.path}'.");
-        TypeCatalog types = writer.context.GetRequired<TypeCatalog>();
+        TypeCacheSnapshot types = writer.typeSnapshot;
         if (!types.TryGetTypeRef(value.GetType(), out TypeRef typeRef))
         {
             throw new InvalidOperationException(
@@ -40,13 +40,14 @@ internal sealed class AssetObjectConverter : SerializationConverter<AssetObject>
 
         bool hasDependencies = writer.context.TryGet(out AssetDependencyCollection? dependencies) &&
                                dependencies is not null;
+        string lastKnownPath = !hasDependencies || dependencies!.includeLastKnownPaths
+            ? value.assetPath.ToString()
+            : string.Empty;
         writer.Write(C_PERSISTENT_ID, persistentId);
         writer.Write(C_STABLE_TYPE_ID, typeRef.stableId);
-        writer.Write(
-            C_LAST_KNOWN_PATH,
-            !hasDependencies || dependencies!.includeLastKnownPaths ? value.assetPath.ToString() : string.Empty);
+        writer.Write(C_LAST_KNOWN_PATH, lastKnownPath);
         if (hasDependencies)
-            dependencies!.Add(value, types);
+            dependencies!.Add(new AssetDependency(persistentId, typeRef, lastKnownPath));
     }
 
     /// <summary>

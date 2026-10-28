@@ -10,6 +10,7 @@ using Inno.Core.Input;
 using Inno.Core.IO;
 using Inno.Core.Logging;
 using Inno.Core.Settings;
+using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Diagnostics;
 using Inno.Editor.ImGui;
@@ -95,6 +96,7 @@ internal sealed class NativeProjectPanelHost : IDisposable
     internal EditorReloadCoordinator reloads { get; }
     internal ProjectSettingsStore projectSettings => m_settings;
     internal AssetPipeline assets { get; }
+    internal SerializationRegistry serialization => m_engine.serialization;
     internal string projectRoot => m_root;
     internal EditorInteractionRuntime runtime { get; }
     internal IEditorSceneWorkspace workspace { get; }

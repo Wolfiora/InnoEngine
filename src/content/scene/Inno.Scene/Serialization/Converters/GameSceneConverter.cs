@@ -31,14 +31,22 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
 
         SceneStructureSnapshot snapshot = value.CaptureStructure();
         IReadOnlyList<GameSystem> systems = value.GetSystems();
-        EngineObject[] engineObjects = snapshot.objects
-            .SelectMany(static entry => entry.components.Cast<EngineObject>().Prepend(entry.gameObject))
-            .Concat(systems)
-            .ToArray();
-        var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
-        for (int i = 0; i < engineObjects.Length; i++)
-            sourceIds.Add(engineObjects[i], engineObjects[i].identity.persistentId);
-        var references = new SceneGraphReferenceMap(value, engineObjects, sourceIds);
+        int count = systems.Count;
+        foreach (SceneObjectStructureSnapshot entry in snapshot.objects)
+            count = checked(count + entry.components.Count + 1);
+        var sourceIds = new Dictionary<EngineObject, Guid>(count, ReferenceEqualityComparer.Instance);
+        foreach (SceneObjectStructureSnapshot entry in snapshot.objects)
+        {
+            sourceIds.Add(entry.gameObject, entry.gameObject.identity.persistentId);
+            for (int index = 0; index < entry.components.Count; index++)
+            {
+                GameComponent component = entry.components[index];
+                sourceIds.Add(component, component.identity.persistentId);
+            }
+        }
+        foreach (GameSystem system in systems)
+            sourceIds.Add(system, system.identity.persistentId);
+        var references = new SceneGraphReferenceMap(value, sourceIds);
 
         writer.Write(SceneGraphSerialization.C_SCENE_ID_KEY, value.identity.persistentId);
         writer.Write(SceneGraphSerialization.C_NAME_KEY, value.name);
@@ -48,6 +56,7 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
                 writer,
                 snapshot.objects,
                 sourceIds,
+                gameObject => sourceIds.ContainsKey(gameObject),
                 preserveRootSiblingOrder: true);
             SceneGraphSerialization.WriteSystems(writer, systems, sourceIds);
         }

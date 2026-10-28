@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Inno.Core.Execution;
 
 using Inno.Scene;
@@ -10,32 +11,20 @@ internal sealed class SceneGraphReferenceMap
 {
     private static readonly ExecutionSlot<SceneGraphReferenceMap> C_CURRENT = new("scene graph references");
 
-    private readonly Dictionary<EngineObject, Guid> m_sourceIdByObject = new(ReferenceEqualityComparer.Instance);
+    private readonly IReadOnlyDictionary<EngineObject, Guid>? m_sourceIdByObject;
     private readonly Dictionary<Guid, EngineObject> m_objectBySourceId = new();
-    private readonly HashSet<EngineObject> m_allowedObjects = new(ReferenceEqualityComparer.Instance);
     private readonly GameScene m_scene;
     private readonly GameObject? m_captureRoot;
 
     internal SceneGraphReferenceMap(
         GameScene scene,
-        IEnumerable<EngineObject>? allowedObjects = null,
         IReadOnlyDictionary<EngineObject, Guid>? sourceIds = null,
         GameObject? captureRoot = null
     ) {
         m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
         m_captureRoot = captureRoot;
-        if (allowedObjects is null)
-            return;
-
-        foreach (EngineObject engineObject in allowedObjects)
-        {
-            m_allowedObjects.Add(engineObject);
-            m_sourceIdByObject.Add(
-                engineObject,
-                sourceIds is not null && sourceIds.TryGetValue(engineObject, out Guid sourceId)
-                    ? sourceId
-                    : engineObject.identity.persistentId);
-        }
+        // Capture callers own the complete map and keep it fixed for this synchronous scope.
+        m_sourceIdByObject = sourceIds;
     }
 
     internal static SceneGraphReferenceMap current => C_CURRENT.current;
@@ -60,8 +49,7 @@ internal sealed class SceneGraphReferenceMap
         string path
     ) {
         ArgumentNullException.ThrowIfNull(engineObject);
-        if (engineObject.isDestroyed ||
-            !m_allowedObjects.Contains(engineObject) ||
+        if (engineObject.isDestroyed || m_sourceIdByObject is null ||
             !m_sourceIdByObject.TryGetValue(engineObject, out Guid sourceId))
         {
             throw new InvalidOperationException(

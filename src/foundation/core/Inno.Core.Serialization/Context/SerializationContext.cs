@@ -8,9 +8,9 @@ namespace Inno.Core.Serialization;
 /// </summary>
 public sealed class SerializationContext
 {
-    private readonly IReadOnlyDictionary<Type, object> m_values;
+    private readonly KeyValuePair<Type, object>[] m_values;
 
-    private SerializationContext(IReadOnlyDictionary<Type, object> values)
+    private SerializationContext(KeyValuePair<Type, object>[] values)
     {
         m_values = values;
     }
@@ -18,7 +18,7 @@ public sealed class SerializationContext
     /// <summary>
     /// Gets an empty serialization context.
     /// </summary>
-    public static SerializationContext empty { get; } = new(new Dictionary<Type, object>());
+    public static SerializationContext empty { get; } = new([]);
 
     /// <summary>
     /// Returns a new context containing the supplied value under its declared context type.
@@ -38,11 +38,21 @@ public sealed class SerializationContext
     public SerializationContext With<TContext>(TContext value) where TContext : class
     {
         ArgumentNullException.ThrowIfNull(value);
-        var values = new Dictionary<Type, object>(m_values)
+        Type key = typeof(TContext);
+        for (int index = 0; index < m_values.Length; index++)
         {
-            [typeof(TContext)] = value
-        };
-        return new SerializationContext(values);
+            if (m_values[index].Key != key)
+                continue;
+            if (ReferenceEquals(m_values[index].Value, value))
+                return new SerializationContext(m_values);
+            var updated = (KeyValuePair<Type, object>[])m_values.Clone();
+            updated[index] = new(key, value);
+            return new SerializationContext(updated);
+        }
+        var expanded = new KeyValuePair<Type, object>[m_values.Length + 1];
+        m_values.CopyTo(expanded, 0);
+        expanded[^1] = new(key, value);
+        return new SerializationContext(expanded);
     }
 
     /// <summary>
@@ -59,10 +69,13 @@ public sealed class SerializationContext
     /// </returns>
     public bool TryGet<TContext>(out TContext? value) where TContext : class
     {
-        if (m_values.TryGetValue(typeof(TContext), out object? candidate) && candidate is TContext typed)
+        foreach (KeyValuePair<Type, object> pair in m_values)
         {
-            value = typed;
-            return true;
+            if (pair.Key == typeof(TContext) && pair.Value is TContext typed)
+            {
+                value = typed;
+                return true;
+            }
         }
 
         value = null;

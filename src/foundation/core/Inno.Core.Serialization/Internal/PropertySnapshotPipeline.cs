@@ -5,6 +5,55 @@ namespace Inno.Core.Serialization;
 
 internal static class PropertySnapshotPipeline
 {
+    internal static BinarySerializationNode CaptureData(
+        ISerializable value,
+        SerializationContext context,
+        ConverterRegistryLease converters,
+        BinarySerializationNode? previous
+    ) {
+        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(value.GetType()).members;
+        KeyValuePair<string, SerializationNode>[]? before = previous?.properties?.members;
+        List<KeyValuePair<string, SerializationNode>>? captured = before is null ? [] : null;
+        int count = 0;
+        var operation = new SerializationOperation(context, converters, snapshotCapture: previous is not null);
+        try
+        {
+            for (int index = 0; index < members.Count; index++)
+            {
+                SerializationMemberMetadata member = members[index];
+                if ((member.visibility & PropertyVisibility.Serialize) == 0)
+                    continue;
+                SerializationNode? prior = before is not null && count < before.Length &&
+                                           string.Equals(before[count].Key, member.name, StringComparison.Ordinal)
+                    ? before[count].Value
+                    : null;
+                SerializationNode node = ValuePipeline.Write(member.GetValue(value), member.type, operation,
+                    prior?.capturePath ?? AppendPath(member.name), allowDefaultObject: false, prior);
+                operation.RetireCaptureMember();
+                if (captured is null && !ReferenceEquals(node, prior))
+                {
+                    captured = new(before!);
+                    captured.RemoveRange(count, captured.Count - count);
+                }
+                captured?.Add(new(member.name, node));
+                count++;
+            }
+        }
+        finally
+        {
+            operation.Fail();
+        }
+        if (captured is null && before is not null && count == before.Length)
+            return previous!;
+        if (captured is null)
+        {
+            captured = new(before!);
+            captured.RemoveRange(count, captured.Count - count);
+        }
+        var state = new PropertyDataCapture([.. captured]);
+        return new BinarySerializationNode(PropertySnapshotBinaryFormat.Encode(state.members)) { properties = state };
+    }
+
     internal static SerializationPropertySnapshot CaptureProperty(
         ISerializable value,
         string propertyName,

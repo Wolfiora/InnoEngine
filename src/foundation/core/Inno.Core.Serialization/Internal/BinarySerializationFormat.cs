@@ -13,6 +13,16 @@ internal static partial class BinarySerializationFormat
     internal static byte[] Encode(SerializationNode root)
         => Encode(root, includeMagic: true);
 
+    internal static void WriteTo(
+        Stream destination,
+        SerializationNode root
+    ) {
+        using var writer = new BinaryWriter(destination, Encoding.UTF8, leaveOpen: true);
+        writer.Write(C_MAGIC);
+        WriteNode(writer, root);
+        writer.Flush();
+    }
+
     internal static SerializationNode Decode(ReadOnlySpan<byte> bytes)
     {
         try

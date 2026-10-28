@@ -1,0 +1,15 @@
+using InnoEngine.Reflection;
+using InnoEngine.Scene;
+using InnoEngine.Serialization;
+
+[StableTypeId("e669c627-771a-4d3c-a09d-307dcd6b457e")]
+[AllowMultipleComponent]
+public sealed class WorkflowState : GameBehavior
+{
+    [SerializableProperty] public float number;
+    [SerializableProperty] public GameObject? reference;
+    [SerializableProperty] public int ticks;
+
+    /// <inheritdoc />
+    protected override void Update() => ticks++;
+}

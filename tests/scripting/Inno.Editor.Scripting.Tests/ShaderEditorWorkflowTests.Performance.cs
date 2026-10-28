@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Inno.Assets;
@@ -103,7 +104,10 @@ public sealed partial class ShaderEditorWorkflowTests
         m_performanceOutput.WriteLine(JsonSerializer.Serialize(new
         {
             workload = "2000-shader-nodes", nodeCount = controller.document.nodes.Count,
-            edgeCount = controller.document.edges.Count, configuration = "Debug", samples,
+            edgeCount = controller.document.edges.Count,
+            configuration = typeof(ShaderEditorWorkflowTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration
+                ?? throw new InvalidOperationException("The benchmark assembly has no SDK configuration metadata."),
+            samples,
             framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
             viewport = "1200x800", warmupFrames = 5, measuredFramesPerRepetition = 10,
             sharedInput = input, consumer = "native-command-offset-validation", supportsVertexOffsets = true

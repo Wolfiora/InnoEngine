@@ -64,7 +64,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
             foreach (EngineObject target in engineObjects)
                 sourceIds.Add(target, target.identity.persistentId);
-            var references = new SceneGraphReferenceMap(scene, engineObjects, sourceIds);
+            var references = new SceneGraphReferenceMap(scene, sourceIds);
             var states = new List<ObjectState>();
             using (references.Enter())
             {

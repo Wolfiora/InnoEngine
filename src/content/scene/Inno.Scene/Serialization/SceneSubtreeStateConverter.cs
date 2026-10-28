@@ -41,7 +41,7 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
         var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
         for (int i = 0; i < allObjects.Length; i++)
             sourceIds.Add(allObjects[i], allObjects[i].identity.persistentId);
-        var references = new SceneGraphReferenceMap(scene, allObjects, sourceIds, root);
+        var references = new SceneGraphReferenceMap(scene, sourceIds, root);
 
         writer.Write(C_ROOT_ID_KEY, root.identity.persistentId);
         using (references.Enter())
@@ -50,6 +50,7 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
                 writer,
                 entries,
                 sourceIds,
+                included.Contains,
                 preserveRootSiblingOrder: true);
         }
     }

@@ -68,7 +68,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                     : Guid.NewGuid());
         }
 
-        var references = new SceneGraphReferenceMap(value.scene, engineObjects, sourceIds, value);
+        var references = new SceneGraphReferenceMap(value.scene, sourceIds, value);
         writer.Write(C_SOURCE_ROOT_ID_KEY, sourceIds[value]);
         using (references.Enter())
         {
@@ -76,6 +76,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                 writer,
                 entries,
                 sourceIds,
+                included.Contains,
                 preserveRootSiblingOrder: false);
         }
     }

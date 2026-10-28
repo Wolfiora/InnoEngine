@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Assets.ImGui;
@@ -35,10 +37,17 @@ public sealed class ListPanelKeyboardNativeTests
         Assert.Same(current, host.runtime.interactions.selection.selectedTarget);
     }
 
-    [Fact]
-    public void HierarchyUsesVisibleRangeAndKeepsTextEditingExclusive()
-    {
+    [Theory]
+    [MemberData(nameof(VisualScaleMatrixTests.Metrics), MemberType = typeof(VisualScaleMatrixTests))]
+    [Trait("Acceptance", "Visual")]
+    public void HierarchyUsesVisibleRangeAndKeepsTextEditingExclusive(
+        float zoom,
+        float framebufferScale,
+        float width,
+        float height
+    ) {
         using var host = new NativeProjectPanelHost();
+        host.native.SetDisplayMetrics(new(width, height), framebufferScale, zoom);
         GameScene scene = host.CreateScene();
         GameObject[] objects = Enumerable.Range(0, 12).Select(index => scene.CreateObject("Object " + index.ToString("D2"))).ToArray();
         GameObject child = scene.CreateObject("Collapsed child");
@@ -76,11 +85,17 @@ public sealed class ListPanelKeyboardNativeTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void BrowserUsesTheFocusedVisibleOrderAndActivatesFoldersAfterTraversal(bool tree)
-    {
+    [MemberData(nameof(BrowserMetrics))]
+    [Trait("Acceptance", "Visual")]
+    public void BrowserUsesTheFocusedVisibleOrderAndActivatesFoldersAfterTraversal(
+        bool tree,
+        float zoom,
+        float framebufferScale,
+        float width,
+        float height
+    ) {
         using var host = new NativeProjectPanelHost();
+        host.native.SetDisplayMetrics(new(width, height), framebufferScale, zoom);
         AssetFileEntry[] entries = Enumerable.Range(0, 12).Select(index =>
         {
             AssetPath path = AssetPath.Project("Folder " + index.ToString("D2"));
@@ -117,5 +132,12 @@ public sealed class ListPanelKeyboardNativeTests
         Assert.True(interactions.TryGetModule<AssetBrowserModule>(out var browser));
         Assert.Equal(entries[^1].assetPath.ToString(), browser!.browser.currentDirectory);
         Assert.False(interactions.history.canUndo);
+    }
+
+    public static IEnumerable<object[]> BrowserMetrics()
+    {
+        foreach (bool tree in new[] { false, true })
+            foreach (object[] metric in VisualScaleMatrixTests.Metrics())
+                yield return [tree, .. metric];
     }
 }

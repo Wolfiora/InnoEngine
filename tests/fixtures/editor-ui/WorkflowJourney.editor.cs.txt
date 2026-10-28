@@ -1,0 +1,289 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using InnoEngine.Mathematics;
+using InnoEngine.Scene;
+using InnoEditor.Core;
+using InnoEditor.Interactions;
+using InnoEditor.PlayMode;
+using InnoEditor.Scene;
+
+/// <summary>Drives ordinary feature protocols while the actual product draws every intermediate state.</summary>
+[EditorModule("tests.editor-ui.workflow-journey", order: 10000)]
+public sealed class WorkflowJourney(
+    IEditorSceneWorkspace workspace,
+    SceneEdits edits,
+    EditorInteractions interactions,
+    IEditorPlayMode play
+) : EditorModule
+{
+    private readonly List<string> m_verified = [];
+    private Guid m_sceneId;
+    private Guid m_firstId;
+    private Guid m_secondId;
+    private Guid m_componentId;
+    private Guid m_duplicateId;
+    private string m_scenePath = string.Empty;
+    private int m_step;
+    private int m_playFrames;
+    private bool m_finished;
+
+    /// <inheritdoc />
+    protected override void OnUpdate(EditorContext context)
+    {
+        try
+        {
+            Advance(context);
+        }
+        catch (Exception failure)
+        {
+            string directory = Path.Combine(context.projectDirectory, "Library", "Acceptance");
+            Directory.CreateDirectory(directory);
+            File.WriteAllText(Path.Combine(directory, "workflow-failure.txt"), failure.ToString());
+            throw;
+        }
+    }
+
+    private void Advance(EditorContext context)
+    {
+        if (m_finished)
+            return;
+        if (m_step > 0)
+        {
+            Require(interactions.TryGetPanelState("scene.inspector", out bool inspector) && inspector,
+                "The actual Inspector was quarantined or closed during the journey.");
+            Require(interactions.TryGetPanelState("scene.hierarchy", out bool hierarchy) && hierarchy,
+                "The actual Hierarchy was quarantined or closed during the journey.");
+        }
+        if (play.lastFailure is not null)
+            throw new InvalidOperationException(play.lastFailure);
+        if (m_step == 0)
+        {
+            foreach (string id in new[] { "scene.inspector", "scene.hierarchy", "asset.file-browser" })
+                Require(interactions.OpenPanel(id), "The product could not open " + id);
+            _ = workspace.Open("FlappyBird/FlappyBird.iscene");
+            GameScene created = edits.CreateScene();
+            edits.RenameScene(created, "UI Workflow Acceptance");
+            GameObject first = edits.CreateGameObject(created);
+            GameObject second = edits.CreateGameObject(created);
+            edits.RenameGameObject(first, "Workflow First");
+            edits.RenameGameObject(second, "Workflow Second");
+            first.transform.localPosition = new Vector3(0, 2, 3);
+            second.transform.localPosition = new Vector3(0, 5, 6);
+            m_sceneId = created.identity.persistentId;
+            m_firstId = first.identity.persistentId;
+            m_secondId = second.identity.persistentId;
+            m_componentId = edits.AddComponent(first, typeof(WorkflowState)).identity.persistentId;
+            m_duplicateId = edits.AddComponent(first, typeof(WorkflowState)).identity.persistentId;
+            interactions.SetSelection([first, second], first);
+            m_step++;
+            return;
+        }
+        if (m_step == 20)
+        {
+            Require(interactions.selection.selectedTarget is null, "Closing a document retained a live target.");
+            GameScene reopened = workspace.Open(m_scenePath);
+            GameObject first = reopened.GetObjects().Single(value => value.name == "Workflow First");
+            GameObject second = reopened.GetObjects().Single(value => value.name == "Workflow Second");
+            WorkflowState state = first.GetComponents().OfType<WorkflowState>().Single(value => value.number == 7);
+            Require(first.GetComponents().OfType<WorkflowState>().Count() == 2 && state.reference == second,
+                "Save and reopen lost component order, values or references.");
+            m_sceneId = reopened.identity.persistentId;
+            m_firstId = first.identity.persistentId;
+            m_secondId = second.identity.persistentId;
+            m_componentId = state.identity.persistentId;
+            interactions.SetSelection(first);
+            m_verified.Add("actual File Browser and Inspector: save, close, reopen and reference restoration");
+            m_step++;
+            return;
+        }
+        if (m_step >= 21)
+        {
+            AdvancePlayJourney(context);
+            return;
+        }
+        GameScene scene = workspace.scenes.Single(value => value.identity.persistentId == m_sceneId);
+        GameObject? firstObject = scene.GetObjects().SingleOrDefault(value => value.identity.persistentId == m_firstId);
+        GameObject? secondObject = scene.GetObjects().SingleOrDefault(value => value.identity.persistentId == m_secondId);
+        WorkflowState? component = FindComponent(scene, m_componentId) as WorkflowState;
+        switch (m_step)
+        {
+            case 1:
+                Require(interactions.selection.count == 2, "Multi-selection was not preserved through actual drawing.");
+                m_verified.Add("actual Inspector and Hierarchy: mixed multi-selection, duplicate components");
+                interactions.SetSelection(firstObject);
+                break;
+            case 2:
+                using (var gesture = new EditorEditGesture(interactions.history, "First drag"))
+                {
+                    for (int sample = 1; sample <= 3; sample++)
+                    {
+                        int value = sample;
+                        edits.ChangeProperty(component!, nameof(WorkflowState.number), () => component!.number = value,
+                            "First drag", gesture.mergeKey);
+                    }
+                    gesture.Commit();
+                }
+                break;
+            case 3:
+                Require(interactions.history.Undo().succeeded && component!.number == 0, "One drag did not undo as one entry.");
+                break;
+            case 4:
+                Require(interactions.history.Redo().succeeded && component!.number == 3, "Drag Redo failed.");
+                using (var gesture = new EditorEditGesture(interactions.history, "Second drag"))
+                {
+                    edits.ChangeProperty(component!, nameof(WorkflowState.number), () => component!.number = 7,
+                        "Second drag", gesture.mergeKey);
+                    gesture.Commit();
+                }
+                break;
+            case 5:
+                Require(interactions.history.Undo().succeeded && component!.number == 3, "Separate drags were merged.");
+                break;
+            case 6:
+                Require(interactions.history.Undo().succeeded && component!.number == 0, "The first drag was lost.");
+                Require(interactions.history.Redo().succeeded && interactions.history.Redo().succeeded,
+                    "The two independent drags could not be redone.");
+                break;
+            case 7:
+                using (var gesture = new EditorEditGesture(interactions.history, "Cancelled drag"))
+                {
+                    edits.ChangeProperty(component!, nameof(WorkflowState.number), () => component!.number = 99,
+                        "Cancelled drag", gesture.mergeKey);
+                    Require(gesture.Cancel().succeeded && component!.number == 7, "Cancellation did not restore the start.");
+                }
+                m_verified.Add("actual Inspector: continuous edits, independent Undo/Redo and gesture cancellation");
+                break;
+            case 8:
+                edits.SetGameObjectActive(firstObject!, false);
+                edits.SetGameObjectActive(firstObject!, true);
+                Require(interactions.history.Undo().succeeded && !firstObject!.activeSelf, "Boolean edits were merged.");
+                Require(interactions.history.Undo().succeeded && firstObject!.activeSelf, "Boolean Undo lost the initial value.");
+                break;
+            case 9:
+                edits.ChangeProperty(component!, nameof(WorkflowState.reference), () => component!.reference = secondObject,
+                    "Assign reference");
+                interactions.SetSelection(component);
+                break;
+            case 10:
+                Require(component!.reference == secondObject, "The reference was not assigned.");
+                Require(interactions.history.Undo().succeeded && component.reference is null, "Reference clearing through Undo failed.");
+                Require(interactions.history.Redo().succeeded && component.reference == secondObject, "Reference Redo failed.");
+                m_verified.Add("actual Inspector: discrete booleans, assigned and unassigned references");
+                break;
+            case 11:
+                interactions.SetSelection([firstObject!, secondObject!], firstObject);
+                edits.ChangeProperties([firstObject!.transform, secondObject!.transform], "localPosition",
+                    () => firstObject.transform.localPosition = new Vector3(11, 2, 3), "Move X", componentName: "x");
+                break;
+            case 12:
+                Require(firstObject!.transform.localPosition.x == 11 && secondObject!.transform.localPosition.x == 11,
+                    "The common X edit was not applied.");
+                Require(firstObject.transform.localPosition.y == 2 && secondObject!.transform.localPosition.y == 5,
+                    "A single-axis edit overwrote a mixed axis.");
+                Require(interactions.history.Undo().succeeded && firstObject.transform.localPosition.x == 0 &&
+                    secondObject!.transform.localPosition.x == 0, "Multi-selection Undo failed.");
+                m_verified.Add("actual Inspector: mixed transforms preserve unedited axes");
+                break;
+            case 13:
+                interactions.SetSelection(firstObject);
+                edits.SetComponentIndex(FindComponent(scene, m_duplicateId)!, 1);
+                break;
+            case 14:
+                Require(firstObject!.GetComponentIndex(FindComponent(scene, m_duplicateId)!) == 1,
+                    "Duplicate component ordering selected the wrong instance.");
+                Require(interactions.history.Undo().succeeded &&
+                    firstObject.GetComponentIndex(FindComponent(scene, m_duplicateId)!) == 2, "Component order Undo failed.");
+                Require(edits.RemoveComponent(FindComponent(scene, m_duplicateId)!), "Component removal failed.");
+                break;
+            case 15:
+                Require(FindComponent(scene, m_duplicateId) is null, "The removed component remained attached.");
+                Require(interactions.history.Undo().succeeded && FindComponent(scene, m_duplicateId) is WorkflowState,
+                    "Component restoration lost identity or type.");
+                m_verified.Add("actual Inspector: duplicate instance order, removal and identity-preserving restoration");
+                break;
+            case 16:
+                edits.DeleteGameObjects([firstObject!, secondObject!]);
+                break;
+            case 17:
+                Require(firstObject is null && secondObject is null, "Batch delete was incomplete.");
+                Require(interactions.history.Undo().succeeded, "Batch delete Undo failed.");
+                break;
+            case 18:
+                Require(firstObject is not null && secondObject is not null && component!.reference == secondObject,
+                    "Batch recovery lost an object or cross-object reference.");
+                bool rejected = false;
+                try
+                {
+                    edits.ChangeProperty(component!, nameof(WorkflowState.number), () =>
+                    {
+                        component!.number = 99;
+                        throw new InvalidOperationException("Expected workflow rejection.");
+                    }, "Rejected mutation");
+                }
+                catch (InvalidOperationException exception) when (exception.Message == "Expected workflow rejection.")
+                {
+                    rejected = true;
+                }
+                Require(rejected && component!.number == 7, "A rejected mutation was not rolled back.");
+                m_verified.Add("actual Hierarchy and Inspector: atomic batch delete/recovery and failed mutation rollback");
+                m_scenePath = workspace.Save(scene, string.Empty);
+                break;
+            case 19:
+                Require(!workspace.IsDirty(scene), "The saved document remained dirty.");
+                Require(edits.CloseScene(scene), "The saved scene could not close.");
+                m_step++;
+                return;
+        }
+        m_step++;
+    }
+
+    private void AdvancePlayJourney(EditorContext context)
+    {
+        switch (m_step)
+        {
+            case 21:
+                Require(play.EnterPlayMode(), "The product refused Play.");
+                break;
+            case 22:
+                if (!play.isPlaying)
+                    return;
+                if (++m_playFrames < 60)
+                    return;
+                Require(workspace.scenes.SelectMany(static scene => scene.GetObjects())
+                    .SelectMany(static value => value.GetComponents()).OfType<WorkflowState>().Any(static value => value.ticks > 0),
+                    "Play did not advance the ordinary script behavior.");
+                Require(play.ExitPlayMode(), "The product refused Stop.");
+                break;
+            case 23:
+                if (play.isPlaying)
+                    return;
+                Require(workspace.canPersist, "Stop did not restore Edit persistence.");
+                Require(workspace.scenes.Single(value => value.identity.persistentId == m_sceneId)
+                    .GetObjects().SelectMany(static value => value.GetComponents()).OfType<WorkflowState>()
+                    .All(static value => value.ticks == 0), "Play mutations leaked into the Edit document.");
+                m_verified.Add("actual Game view: Play, frame advancement, Stop and restored Edit");
+                string directory = Path.Combine(context.projectDirectory, "Library", "Acceptance");
+                Directory.CreateDirectory(directory);
+                File.WriteAllLines(Path.Combine(directory, "workflow-journey.tsv"), m_verified);
+                m_finished = true;
+                break;
+        }
+        m_step++;
+    }
+
+    private static GameComponent? FindComponent(
+        GameScene scene,
+        Guid persistentId
+    ) => scene.GetObjects().SelectMany(static value => value.GetComponents())
+        .SingleOrDefault(value => value.identity.persistentId == persistentId);
+
+    private static void Require(
+        bool condition,
+        string message
+    ) {
+        if (!condition)
+            throw new InvalidOperationException(message);
+    }
+}

@@ -297,6 +297,8 @@ internal sealed class ConverterRegistry : IDisposable
         internal IReadOnlyList<Type> registrations = registrations;
         private int m_referenceCount = 1;
 
+        internal TypeCacheSnapshot types => m_types ?? throw new ObjectDisposedException(nameof(ConverterRegistrySnapshot));
+
         internal object CreateInstance(Type type)
             => (m_types ?? throw new ObjectDisposedException(nameof(ConverterRegistrySnapshot))).CreateInstance(type);
 
@@ -367,6 +369,8 @@ internal sealed class ConverterRegistryLease : IDisposable
         m_snapshot = snapshot;
     }
 
+    internal TypeCacheSnapshot types => (m_snapshot ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease))).types;
+
     internal ConverterInvoker? Resolve(Type valueType)
     {
         ArgumentNullException.ThrowIfNull(valueType);
@@ -424,7 +428,8 @@ internal abstract class ConverterInvoker
         SerializationOperation operation,
         string path,
         Type valueType,
-        object value
+        object value,
+        SerializationNode? previous
     );
 
     internal abstract object Read(
@@ -460,7 +465,8 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         SerializationOperation operation,
         string path,
         Type valueType,
-        object value
+        object value,
+        SerializationNode? previous
     ) {
         if (value is not T typed)
         {
@@ -468,9 +474,9 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
                 $"Converter '{converterType.FullName}' cannot write runtime value '{value.GetType().FullName}' at '{path}'.");
         }
 
-        var node = new ObjectSerializationNode();
-        m_converter.Write(new SerializationWriter(operation, node, path, valueType), typed);
-        return node;
+        var writer = new SerializationWriter(operation, previous as ObjectSerializationNode, path, valueType);
+        m_converter.Write(writer, typed);
+        return writer.Complete();
     }
 
     internal override object Read(

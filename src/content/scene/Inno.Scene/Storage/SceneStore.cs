@@ -64,6 +64,7 @@ internal sealed class SceneStore
     private readonly Dictionary<int, object> m_typedComponentQueryCache = [];
     private readonly Dictionary<ComponentQueryKey, ReadOnlyCollection<GameObject>> m_objectQueryCache = [];
     private GameObject[]? m_objectSnapshotCache;
+    private SceneStructureSnapshot? m_structureSnapshotCache;
     private long m_nextObjectOrder;
     private long m_structureRevision;
     private int m_executionDepth;
@@ -449,6 +450,7 @@ internal sealed class SceneStore
             return;
         record.components.RemoveAt(currentIndex);
         record.components.Insert(targetIndex, component);
+        m_structureSnapshotCache = null;
     }
 
     internal IReadOnlyList<TComponent> GetComponents<TComponent>(
@@ -572,10 +574,12 @@ internal sealed class SceneStore
                 "A scene cannot be captured during an execution phase with uncommitted structural changes.");
         }
 
+        if (m_structureSnapshotCache is not null)
+            return m_structureSnapshotCache;
         SceneObjectStructureSnapshot[] objects = GetObjects()
             .Select(gameObject => new SceneObjectStructureSnapshot(gameObject, GetComponents(gameObject)))
             .ToArray();
-        return new SceneStructureSnapshot(objects);
+        return m_structureSnapshotCache = new SceneStructureSnapshot(objects);
     }
 
     internal void InvalidateTypeCaches()
@@ -767,6 +771,7 @@ internal sealed class SceneStore
     {
         m_structureRevision = unchecked(m_structureRevision + 1);
         m_objectSnapshotCache = null;
+        m_structureSnapshotCache = null;
         InvalidateTypeCaches();
     }
 

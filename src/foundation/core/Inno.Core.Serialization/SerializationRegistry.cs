@@ -218,8 +218,7 @@ public sealed class SerializationRegistry : IDisposable
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
-        return PropertySnapshotBinaryFormat.Encode(
-            PropertySnapshotPipeline.Capture(value, CreateContext(context), converters));
+        return PropertySnapshotPipeline.CaptureData(value, CreateContext(context), converters, null).value;
     }
 
     /// <summary>
@@ -371,6 +370,60 @@ public sealed class SerializationRegistry : IDisposable
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
         return Serialize(value, converters, context);
+    }
+
+    /// <summary>
+    /// Captures complete serialized state while sharing unchanged neutral values with a previous capture.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The exact concrete root type, interpreted by the current converter generation.
+    /// </typeparam>
+    /// <param name="value">
+    /// The non-null root whose getters and converters are evaluated in full.
+    /// </param>
+    /// <param name="context">
+    /// The complete owner context, including required reference resolvers.
+    /// </param>
+    /// <param name="previous">
+    /// An optional immutable capture to reuse; it is never changed or retained by this registry.
+    /// </param>
+    /// <returns>
+    /// The previous instance when all captured values can be reused, otherwise a new immutable snapshot.
+    /// Reference equality proves unchanged bytes; different instances may still encode identically.
+    /// Ordinary serialization and snapshot encoding produce identical bytes. Capture failure publishes no snapshot.
+    /// </returns>
+    /// <remarks>
+    /// Writers borrowed by a snapshot converter belong to its synchronous callback and must not be used after it returns.
+    /// Every capture still evaluates getters and converters; this is not a mutation-notification cache.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// The source value is null.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The registry has been disposed.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A converter, unsupported value or reference context prevents capture.
+    /// </exception>
+    [ScriptingApiIgnore]
+    public SerializationSnapshot CaptureSnapshot<T>(
+        T value,
+        SerializationContext? context = null,
+        SerializationSnapshot? previous = null
+    ) where T : class, ISerializable {
+        EnsureInitialized();
+        ArgumentNullException.ThrowIfNull(value);
+        using ConverterRegistryLease converters = m_converters.Capture();
+        var operation = new SerializationOperation(CreateContext(context), converters, snapshotCapture: true);
+        try
+        {
+            SerializationNode root = ValuePipeline.WriteRoot(value, typeof(T), operation, previous?.root);
+            return ReferenceEquals(root, previous?.root) ? previous! : new SerializationSnapshot(root);
+        }
+        finally
+        {
+            operation.Fail();
+        }
     }
 
     internal byte[] Serialize<T>(
@@ -529,9 +582,9 @@ public sealed class SerializationRegistry : IDisposable
         var operation = new SerializationOperation(CreateContext(context), converters);
         try
         {
-            var root = new ObjectSerializationNode();
-            write(new SerializationWriter(operation, root, "$", typeof(object)));
-            return BinarySerializationFormat.Encode(root);
+            var writer = new SerializationWriter(operation, null, "$", typeof(object));
+            write(writer);
+            return BinarySerializationFormat.Encode(writer.Complete());
         }
         finally
         {

@@ -189,7 +189,10 @@ public static class ScenePropertySerialization
         for (int i = 0; i < systems.Count; i++)
             objects.Add(systems[i]);
 
-        var references = new SceneGraphReferenceMap(scene, objects);
+        var sourceIds = new Dictionary<EngineObject, Guid>(objects.Count, ReferenceEqualityComparer.Instance);
+        foreach (EngineObject value in objects)
+            sourceIds.Add(value, value.identity.persistentId);
+        var references = new SceneGraphReferenceMap(scene, sourceIds);
         for (int i = 0; i < objects.Count; i++)
             references.Register(objects[i].identity.persistentId, objects[i]);
         if (aliases is not null)

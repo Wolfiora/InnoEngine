@@ -33,6 +33,7 @@ internal sealed unsafe class NativePanelHost : IDisposable
     private readonly bool m_ownsServices;
     private readonly bool m_validateVertexOffsets;
     private float m_time;
+    private Vector2 m_panelSize = new(1000f, 800f);
 
     internal NativePanelHost(params string[] assemblies) : this(false, assemblies) { }
 
@@ -121,6 +122,18 @@ internal sealed unsafe class NativePanelHost : IDisposable
         }
     }
 
+    internal void SetDisplayMetrics(
+        Vector2 logicalSize,
+        float framebufferScale,
+        float zoom
+    ) {
+        ImGuiIO* io = NativeImGui.Raw.GetIO();
+        io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(logicalSize);
+        io->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new(framebufferScale));
+        m_panelSize = Vector2.Min(new(1000f, 800f), logicalSize - new Vector2(40f));
+        ui.widgets.style.SetZoom(zoom);
+    }
+
     internal void DrawPanel(
         EditorPanelExtension panel,
         Action? afterDraw = null,
@@ -129,7 +142,7 @@ internal sealed unsafe class NativePanelHost : IDisposable
         Frame(() =>
         {
             NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)ImGuiCond.Always);
-            NativeImGui.SetNextWindowSize(new Vector2(1000f, 800f), (int)ImGuiCond.Always);
+            NativeImGui.SetNextWindowSize(m_panelSize, (int)ImGuiCond.Always);
             bool open = true;
             _ = NativeImGui.Begin("Panel acceptance", ref open, (int)ImGuiWindowFlags.NoSavedSettings);
             try
