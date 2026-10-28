@@ -1,10 +1,8 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using Inno.Core.Mathematics;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 using NumericsVector4 = System.Numerics.Vector4;
 
@@ -13,7 +11,7 @@ internal static unsafe class ComponentFieldDrawer
 {
     internal static float GetWidth(int count)
     {
-        float spacing = UiDrawing.GetLayout().itemSpacing.X;
+        float spacing = Ui.GetLayout().itemSpacing.X;
         return MathF.Max(1f, (Ui.GetContentRegionAvailable().X - spacing * (count - 1)) / count);
     }
 
@@ -250,7 +248,7 @@ internal sealed unsafe class ColorPropertyDrawer : IPropertyDrawer
         Color value = context.GetValue() is Color current ? current : default;
         var nativeValue = new NumericsVector4(value.r, value.g, value.b, value.a);
         var flags = context.hdrColor ? Inno.Editor.ImGui.ImGuiColorEditFlags.Hdr | Inno.Editor.ImGui.ImGuiColorEditFlags.Float | Inno.Editor.ImGui.ImGuiColorEditFlags.InputRgb | Inno.Editor.ImGui.ImGuiColorEditFlags.DisplayRgb : Inno.Editor.ImGui.ImGuiColorEditFlags.None;
-        if (EditorImGui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
+        if (Ui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
         {
             context.SetValue(new Color(nativeValue.X, nativeValue.Y, nativeValue.Z, nativeValue.W));
         }

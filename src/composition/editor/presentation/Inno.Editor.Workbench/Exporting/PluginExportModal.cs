@@ -1,11 +1,9 @@
 using Inno.Editor.ImGui;
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
@@ -77,7 +75,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     private void DrawButtons()
     {
         Ui.Spacing();
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         float closeWidth = Ui.MeasureText("Close").X + style.framePadding.X * 2f;
         string primaryLabel = window.isPluginBusy ? "Cancel" : "Export";
         float exportWidth = Ui.MeasureText(primaryLabel).X + style.framePadding.X * 2f;
@@ -111,7 +109,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     ) {
         Ui.Text(label);
         Ui.SetNextItemWidth(-1f);
-        if (EditorImGui.InputText($"##{id}", ref value, C_TEXT_CAPACITY))
+        if (Ui.InputText($"##{id}", ref value, C_TEXT_CAPACITY))
             apply(value);
         else
             apply(value);

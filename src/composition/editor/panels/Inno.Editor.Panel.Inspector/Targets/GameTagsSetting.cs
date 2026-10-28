@@ -1,4 +1,3 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
@@ -8,7 +7,6 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
 using Inno.Scene;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -18,9 +16,6 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
     private const int C_TAG_BUFFER_SIZE = 128;
     private string m_error = string.Empty;
     private string m_newTag = string.Empty;
-    /// <summary>
-    /// Gets the stable project-setting identity used for discovery and persistence.
-    /// </summary>
     /// <summary>
     /// Gets the presentation section that groups this setting.
     /// </summary>
@@ -47,10 +42,10 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
 
     private void DrawAddRow(GameTagCatalog setting)
     {
-        float spacing = UiDrawing.GetLayout().itemSpacing.X;
+        float spacing = Ui.GetLayout().itemSpacing.X;
         float actionWidth = EditorUI.current.widgets.GetCompactIconSize().X;
         Ui.SetNextItemWidth(MathF.Max(1f, Ui.GetContentRegionAvailable().X - actionWidth - spacing));
-        bool submit = EditorImGui.InputTextWithHint("##new_project_tag", "New tag", ref m_newTag, C_TAG_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue);
+        bool submit = Ui.InputTextWithHint("##new_project_tag", "New tag", ref m_newTag, C_TAG_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue);
         Ui.SameLine(0f, spacing);
         submit |= EditorUI.current.widgets.ClickableIcon("add_project_tag", ImGuiIcon.Plus, "Add project tag");
         if (!submit || string.IsNullOrWhiteSpace(m_newTag))
@@ -139,5 +134,5 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
         Ui.Text(label);
     }
 
-    private static void InsetPlainCell() => Ui.SetCursorPosX(Ui.GetCursorPosX() + UiDrawing.GetLayout().framePadding.X);
+    private static void InsetPlainCell() => Ui.SetCursorPosX(Ui.GetCursorPosX() + Ui.GetLayout().framePadding.X);
 }

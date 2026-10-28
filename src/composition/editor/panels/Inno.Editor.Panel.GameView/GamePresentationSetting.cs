@@ -9,9 +9,6 @@ namespace Inno.Editor.Panel.GameView;
 internal sealed class GamePresentationSetting : ProjectSettingEditor<GamePresentationSettings>
 {
     /// <summary>
-    /// Gets the stable project-setting identity edited by this presentation.
-    /// </summary>
-    /// <summary>
     /// Gets the section that groups Player presentation controls.
     /// </summary>
     public override string section => "Display";

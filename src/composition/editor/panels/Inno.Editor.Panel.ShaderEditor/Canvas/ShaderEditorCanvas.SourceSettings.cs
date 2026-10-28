@@ -7,7 +7,6 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Rendering.Assets;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using ImGuiApi = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -19,28 +18,28 @@ internal sealed partial class ShaderEditorCanvas
             return;
         InspectorRow("source.actions", "Source", () =>
         {
-            if (ImGuiApi.SmallButton("Show in File Browser")
+            if (EditorImGui.SmallButton("Show in File Browser")
                 && owner.interactions.TryGetModule<Inno.Editor.Assets.ImGui.AssetBrowserModule>(out var browser)
                 && browser is not null)
                 RevealShaderFunction.Reveal(owner, browser, sourceId);
-            ImGuiApi.SameLine(0f, -1f);
-            if (ImGuiApi.SmallButton("Import Settings…"))
+            EditorImGui.SameLine(0f, -1f);
+            if (EditorImGui.SmallButton("Import Settings…"))
             {
                 LoadSourceSettings(info.assetPath, sourceId);
-                ImGuiApi.OpenPopup("##source-settings");
+                EditorImGui.OpenPopup("##source-settings");
             }
         });
-        ImGuiApi.SetNextWindowSize(new(580, 470), (ImGuiCond.Appearing));
-        if (!ImGuiApi.BeginPopup("##source-settings"))
+        EditorImGui.SetNextWindowSize(new(580, 470), (ImGuiCond.Appearing));
+        if (!EditorImGui.BeginPopup("##source-settings"))
             return;
         try
         {
-            ImGuiApi.Text(info.assetPath.ToString());
-            ImGuiApi.Separator();
+            EditorImGui.Text(info.assetPath.ToString());
+            EditorImGui.Separator();
             if (draft.settingsSource != sourceId)
                 LoadSourceSettings(info.assetPath, sourceId);
             bool readOnly = !owner.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry) || entry.isReadOnly;
-            ImGuiApi.BeginDisabled(readOnly);
+            EditorImGui.BeginDisabled(readOnly);
             try
             {
                 var settings = owner.serialization.Deserialize<ShaderSourceImportSettings>(draft.sourceSettings, owner.context);
@@ -52,7 +51,7 @@ internal sealed partial class ShaderEditorCanvas
                     try
                     {
                         foreach (string language in owner.frontends.languageIds)
-                            if (ImGuiApi.Selectable(language, settings.languageId == language))
+                            if (EditorImGui.Selectable(language, settings.languageId == language))
                             {
                                 settings.languageId = language;
                                 changed = true;
@@ -83,7 +82,7 @@ internal sealed partial class ShaderEditorCanvas
 
                 int catalogOrder = settings.catalogOrder;
                 bool orderChanged = false;
-                InspectorRow("source.catalog-order", "Catalog Order", () => orderChanged = ImGuiApi.InputInt("##catalog-order", ref catalogOrder, 1, 100, 0));
+                InspectorRow("source.catalog-order", "Catalog Order", () => orderChanged = EditorImGui.InputInt("##catalog-order", ref catalogOrder, 1, 100, 0));
                 if (orderChanged)
                 {
                     settings.catalogOrder = catalogOrder;
@@ -91,36 +90,40 @@ internal sealed partial class ShaderEditorCanvas
                 }
 
                 EditorUI.current.widgets.WrappedText("Catalog paths are declared by the source library and group its exported functions in Shader creation tools. They do not affect compilation or runtime assets.");
-                ImGuiApi.SeparatorText("Exported Functions");
+                EditorImGui.SeparatorText("Exported Functions");
                 for (int i = 0; i < settings.exports.Length; i++)
                 {
-                    ImGuiApi.PushId("export." + i);
-                    string function = settings.exports[i];
-                    bool functionChanged = false, remove = false;
-                    InspectorRow("source.export", "Function " + (i + 1), () =>
+                    EditorImGui.PushId("export." + i);
+                    try
                     {
-                        functionChanged = EditorImGui.InputText("##name", ref function, 256);
-                        ImGuiApi.SameLine(0f, -1f);
-                        remove = ImGuiApi.SmallButton("Remove");
-                    });
-                    if (functionChanged)
-                    {
-                        settings.exports[i] = function;
-                        changed = true;
-                    }
+                        string function = settings.exports[i];
+                        bool functionChanged = false, remove = false;
+                        InspectorRow("source.export", "Function " + (i + 1), () =>
+                        {
+                            functionChanged = EditorImGui.InputText("##name", ref function, 256);
+                            EditorImGui.SameLine(0f, -1f);
+                            remove = EditorImGui.SmallButton("Remove");
+                        });
+                        if (functionChanged)
+                        {
+                            settings.exports[i] = function;
+                            changed = true;
+                        }
 
-                    if (remove)
-                    {
-                        settings.exports = settings.exports.Where((
-                            _,
-                            index
-                        ) => index != i).ToArray();
-                        changed = true;
-                        ImGuiApi.PopId();
-                        break;
+                        if (remove)
+                        {
+                            settings.exports = settings.exports.Where((
+                                _,
+                                index
+                            ) => index != i).ToArray();
+                            changed = true;
+                            break;
+                        }
                     }
-
-                    ImGuiApi.PopId();
+                    finally
+                    {
+                        EditorImGui.PopId();
+                    }
                 }
 
                 if (CenteredAddButton("Add Export"))
@@ -130,56 +133,60 @@ internal sealed partial class ShaderEditorCanvas
                 }
 
                 EditorUI.current.widgets.WrappedText("Every listed name is exported as an independent graph function. All other functions remain private helpers. Ports are parsed from each exported declaration; alternative implementations must expose matching interfaces.");
-                ImGuiApi.SeparatorText("Alternative Implementations");
+                EditorImGui.SeparatorText("Alternative Implementations");
                 for (int i = 0; i < settings.implementations.Length; i++)
                 {
-                    ImGuiApi.PushId(i);
-                    ShaderFunctionAsset? current = settings.implementations[i];
-                    bool remove = false;
-                    InspectorRow("source.implementation", "Implementation " + (i + 1), () =>
+                    EditorImGui.PushId(i);
+                    try
                     {
-                        if (EditorUI.current.widgets.BeginBoundedCombo("##implementation", current?.assetPath.ToString() ?? "Missing source"))
+                        ShaderFunctionAsset? current = settings.implementations[i];
+                        bool remove = false;
+                        InspectorRow("source.implementation", "Implementation " + (i + 1), () =>
                         {
-                            try
+                            if (EditorUI.current.widgets.BeginBoundedCombo("##implementation", current?.assetPath.ToString() ?? "Missing source"))
                             {
-                                foreach (AssetFileEntry source in owner.assets.GetFileSystemEntries(includeDirectories: false))
-                                    if (source.extension == ".ishadersource"
-                                        && source.assetPath != info.assetPath
-                                        && ImGuiApi.Selectable(
-                                        source.assetPath.ToString(),
-                                        current?.assetPath == source.assetPath
-                                    )
-                                        && owner.assets.TryLoad(
-                                        source.assetPath,
-                                        out ShaderFunctionAsset? replacement
-                                    )
-                                        && replacement is not null)
-                                    {
-                                        settings.implementations[i] = replacement;
-                                        changed = true;
-                                    }
+                                try
+                                {
+                                    foreach (AssetFileEntry source in owner.assets.GetFileSystemEntries(includeDirectories: false))
+                                        if (source.extension == ".ishadersource"
+                                            && source.assetPath != info.assetPath
+                                            && EditorImGui.Selectable(
+                                            source.assetPath.ToString(),
+                                            current?.assetPath == source.assetPath
+                                        )
+                                            && owner.assets.TryLoad(
+                                            source.assetPath,
+                                            out ShaderFunctionAsset? replacement
+                                        )
+                                            && replacement is not null)
+                                        {
+                                            settings.implementations[i] = replacement;
+                                            changed = true;
+                                        }
+                                }
+                                finally
+                                {
+                                    EditorUI.current.widgets.EndBoundedCombo();
+                                }
                             }
-                            finally
-                            {
-                                EditorUI.current.widgets.EndBoundedCombo();
-                            }
+
+                            EditorImGui.SameLine(0f, -1f);
+                            remove = EditorImGui.SmallButton("Remove");
+                        });
+                        if (remove)
+                        {
+                            settings.implementations = settings.implementations.Where((
+                                _,
+                                index
+                            ) => index != i).ToArray();
+                            changed = true;
+                            break;
                         }
-
-                        ImGuiApi.SameLine(0f, -1f);
-                        remove = ImGuiApi.SmallButton("Remove");
-                    });
-                    if (remove)
-                    {
-                        settings.implementations = settings.implementations.Where((
-                            _,
-                            index
-                        ) => index != i).ToArray();
-                        changed = true;
-                        ImGuiApi.PopId();
-                        break;
                     }
-
-                    ImGuiApi.PopId();
+                    finally
+                    {
+                        EditorImGui.PopId();
+                    }
                 }
 
                 if (CenteredAddButton("Add Implementation"))
@@ -190,8 +197,8 @@ internal sealed partial class ShaderEditorCanvas
 
                 if (changed)
                     draft.sourceSettings = owner.serialization.Serialize(settings, owner.context);
-                ImGuiApi.Separator();
-                if (ImGuiApi.Button("Apply Import Settings"))
+                EditorImGui.Separator();
+                if (EditorImGui.Button("Apply Import Settings"))
                 {
                     bool imported = owner.importSettings.Apply(info.assetPath, settings, draft.sourceSettingsFingerprint);
                     LoadSourceSettings(info.assetPath, sourceId);
@@ -201,11 +208,11 @@ internal sealed partial class ShaderEditorCanvas
             }
             finally
             {
-                ImGuiApi.EndDisabled();
+                EditorImGui.EndDisabled();
             }
 
-            ImGuiApi.SameLine(0f, -1f);
-            if (ImGuiApi.Button("Reload"))
+            EditorImGui.SameLine(0f, -1f);
+            if (EditorImGui.Button("Reload"))
                 LoadSourceSettings(info.assetPath, sourceId);
             if (readOnly)
                 EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Installed source settings are read-only.");
@@ -220,7 +227,7 @@ internal sealed partial class ShaderEditorCanvas
         }
         finally
         {
-            ImGuiApi.EndPopup();
+            EditorImGui.EndPopup();
         }
     }
 

@@ -1,5 +1,4 @@
 using Inno.Editor.ImGui;
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
@@ -66,7 +65,7 @@ internal abstract class IconSetting : EditorSetting
 
                         Vector2 minimum = Ui.GetItemMinimum();
                         Vector2 maximum = Ui.GetItemMaximum();
-                        EditorUiLayout style = UiDrawing.GetLayout();
+                        EditorUiLayout style = Ui.GetLayout();
                         float lineHeight = Ui.GetTextLineHeight();
                         DrawIconTextAt(
                             Ui.GetDrawList(),
@@ -118,7 +117,7 @@ internal abstract class IconSetting : EditorSetting
         string text,
         float iconSlotWidth
     ) {
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         float fontSize = Ui.GetFontSize();
         float lineHeight = Ui.GetTextLineHeight();
         uint color = Ui.GetStyleColor(ImGuiCol.Text);

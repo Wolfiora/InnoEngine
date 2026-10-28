@@ -18,6 +18,7 @@ internal static class CSharpStyleValidator
     ) {
         SyntaxTree tree = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp14));
         SourceText text = tree.GetText();
+        EditorPresentationSourceValidator.Validate(relativePath, tree, failures);
         foreach (ParameterListSyntax parameters in tree.GetRoot().DescendantNodes().OfType<ParameterListSyntax>())
         {
             if (parameters.Parameters.Count <= 1)

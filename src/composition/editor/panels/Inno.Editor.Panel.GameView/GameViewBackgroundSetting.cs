@@ -1,7 +1,6 @@
 using System.Numerics;
 using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.GameView;
@@ -33,7 +32,7 @@ internal sealed class GameViewBackgroundSetting : EditorSetting
     {
         Vector4 value = ReadVector(setting);
         Ui.SetNextItemWidth(-1f);
-        if (EditorImGui.ColorEditLinear4("##game_view_background", ref value))
+        if (Ui.ColorEditLinear4("##game_view_background", ref value))
             setting.SetAsSingleArray("value", [value.X, value.Y, value.Z, value.W]);
     }
 

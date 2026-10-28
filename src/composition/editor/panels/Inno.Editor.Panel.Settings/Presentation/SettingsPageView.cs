@@ -1,7 +1,5 @@
 using System.Numerics;
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,7 +138,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         try
         {
             _ = Ui.TableSetColumnIndex(0);
-            Ui.SetCursorPosX(Ui.GetCursorPosX() + UiDrawing.GetLayout().windowPadding.X);
+            Ui.SetCursorPosX(Ui.GetCursorPosX() + Ui.GetLayout().windowPadding.X);
             EditorUI.current.widgets.PropertyLabel(setting.label, setting.description);
             _ = Ui.TableSetColumnIndex(1);
             bool groupStarted = false;
@@ -172,8 +170,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 
     private static void DrawFieldBackgroundGutters(uint background)
     {
-        var table = UiDrawing.GetTableBounds();
-        var window = UiDrawing.GetWindowBounds();
+        var table = Ui.GetTableBounds();
+        var window = Ui.GetWindowBounds();
         float tableMinimumX = table.minimumX;
         float tableMaximumX = table.maximumX;
         float rowMinimumY = table.rowMinimum;
@@ -182,18 +180,18 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         float windowMaximumX = window.maximumX;
         if (rowMaximumY <= rowMinimumY)
             return;
-        EditorDrawList drawList = EditorImGui.GetDrawList();
+        EditorDrawList drawList = Ui.GetDrawList();
         drawList.PushClip(new Vector2(windowMinimumX, rowMinimumY), new Vector2(windowMaximumX, rowMaximumY), false);
         try
         {
             if (tableMinimumX > windowMinimumX)
             {
-                EditorImGui.DrawFilledRectangle(new System.Numerics.Vector2(windowMinimumX, rowMinimumY), new System.Numerics.Vector2(tableMinimumX, rowMaximumY), background, 0);
+                Ui.DrawFilledRectangle(new System.Numerics.Vector2(windowMinimumX, rowMinimumY), new System.Numerics.Vector2(tableMinimumX, rowMaximumY), background, 0);
             }
 
             if (tableMaximumX < windowMaximumX)
             {
-                EditorImGui.DrawFilledRectangle(new System.Numerics.Vector2(tableMaximumX, rowMinimumY), new System.Numerics.Vector2(windowMaximumX, rowMaximumY), background, 0);
+                Ui.DrawFilledRectangle(new System.Numerics.Vector2(tableMaximumX, rowMinimumY), new System.Numerics.Vector2(windowMaximumX, rowMaximumY), background, 0);
             }
         }
         finally
@@ -204,13 +202,13 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 
     private static float GetResetColumnWidth()
     {
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         return style.itemSpacing.X + Ui.MeasureText("Reset").X + style.framePadding.X * 2f + style.windowPadding.X;
     }
 
     private static bool DrawResetButton(bool enabled)
     {
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         Ui.SetCursorPosX(Ui.GetCursorPosX() + style.itemSpacing.X);
         Ui.BeginDisabled(!enabled);
         try
@@ -223,5 +221,5 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         }
     }
 
-    private static void PushDisabledText() => Ui.PushStyleColor(ImGuiCol.Text, UiDrawing.GetStyleColorValue(ImGuiCol.TextDisabled));
+    private static void PushDisabledText() => Ui.PushStyleColor(ImGuiCol.Text, Ui.GetStyleColorValue(ImGuiCol.TextDisabled));
 }

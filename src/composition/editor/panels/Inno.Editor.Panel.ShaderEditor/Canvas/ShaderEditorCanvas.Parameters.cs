@@ -8,7 +8,6 @@ using Inno.Rendering.Shaders;
 using Inno.Editor.Shaders;
 using Inno.Editor.Shaders.ImGui;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using ImGuiApi = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -16,15 +15,15 @@ internal sealed partial class ShaderEditorCanvas
 {
     private bool StoragePopup(ref ShaderGraphType type)
     {
-        ImGuiApi.SetNextWindowSize(new(490, 390), (ImGuiCond.Appearing));
-        if (!ImGuiApi.BeginPopup("##storage"))
+        EditorImGui.SetNextWindowSize(new(490, 390), (ImGuiCond.Appearing));
+        if (!EditorImGui.BeginPopup("##storage"))
             return false;
         bool changed = false;
         try
         {
             bool image = type.isImage;
             bool imageChanged = false;
-            InspectorRow("storage.image", "Storage Image", () => imageChanged = ImGuiApi.Checkbox("##image", ref image));
+            InspectorRow("storage.image", "Storage Image", () => imageChanged = EditorImGui.Checkbox("##image", ref image));
             if (imageChanged)
             {
                 type.isImage = image;
@@ -62,7 +61,7 @@ internal sealed partial class ShaderEditorCanvas
 
                 bool array = type.isArray;
                 bool arrayChanged = false;
-                InspectorRow("storage.array", "Array Layers", () => arrayChanged = ImGuiApi.Checkbox("##array", ref array));
+                InspectorRow("storage.array", "Array Layers", () => arrayChanged = EditorImGui.Checkbox("##array", ref array));
                 if (arrayChanged)
                 {
                     type.isArray = array;
@@ -96,7 +95,7 @@ internal sealed partial class ShaderEditorCanvas
                         }
 
                         )
-                            if (ImGuiApi.Selectable(candidate, current == candidate))
+                            if (EditorImGui.Selectable(candidate, current == candidate))
                                 selected = candidate;
                     }
                     finally
@@ -118,7 +117,7 @@ internal sealed partial class ShaderEditorCanvas
         }
         finally
         {
-            ImGuiApi.EndPopup();
+            EditorImGui.EndPopup();
         }
 
         return changed;
@@ -165,7 +164,7 @@ internal sealed partial class ShaderEditorCanvas
                 bool color = property.type == ShaderPropertyType.Color;
                 InspectorRow("parameter.color", "Color", () =>
                 {
-                    if (ImGuiApi.Checkbox("##color", ref color))
+                    if (EditorImGui.Checkbox("##color", ref color))
                     {
                         property.type = color ? ShaderPropertyType.Color : ShaderPropertyType.Vector4;
                         MaterialValue converted = property.defaultValue;
@@ -220,7 +219,7 @@ internal sealed partial class ShaderEditorCanvas
         bool visible = presentation.visible;
         InspectorRow("parameter.visible", "Visible in Material", () =>
         {
-            if (ImGuiApi.Checkbox("##visible", ref visible))
+            if (EditorImGui.Checkbox("##visible", ref visible))
             {
                 presentation.visible = visible;
                 SavePresentation(false);
@@ -231,7 +230,7 @@ internal sealed partial class ShaderEditorCanvas
             bool range = presentation.hasRange;
             InspectorRow("parameter.range", "Range", () =>
             {
-                if (ImGuiApi.Checkbox("##range", ref range))
+                if (EditorImGui.Checkbox("##range", ref range))
                 {
                     presentation.hasRange = range;
                     SavePresentation(false);
@@ -278,7 +277,7 @@ internal sealed partial class ShaderEditorCanvas
             bool continuous
         ) {
             definition.properties[index] = value;
-            CommitDefinition(definition, "Edit Shader Parameter", continuous && ImGuiApi.IsAnyItemActive());
+            CommitDefinition(definition, "Edit Shader Parameter", continuous && EditorImGui.IsAnyItemActive());
         }
     }
 

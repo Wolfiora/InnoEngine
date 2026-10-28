@@ -6,7 +6,6 @@ using Inno.Core.Graphs;
 using Inno.Rendering;
 using Inno.Rendering.Shaders;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using ImGuiApi = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -16,14 +15,14 @@ internal sealed partial class ShaderEditorCanvas
         GraphNodeRecord node,
         ShaderGraphStageSettings stage
     ) {
-        ImGuiApi.SetNextWindowSize(new(540, 600), (ImGuiCond.Appearing));
-        if (!ImGuiApi.BeginPopup("##stage-settings"))
+        EditorImGui.SetNextWindowSize(new(540, 600), (ImGuiCond.Appearing));
+        if (!EditorImGui.BeginPopup("##stage-settings"))
             return;
         try
         {
             ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
             bool definitionChanged = false;
-            ImGuiApi.SeparatorText("Shader");
+            EditorImGui.SeparatorText("Shader");
             string name = definition.name;
             bool nameChanged = false;
             InspectorRow("settings.name", "Name", () => nameChanged = EditorImGui.InputText("##name", ref name, 256));
@@ -34,7 +33,7 @@ internal sealed partial class ShaderEditorCanvas
             }
 
             Gesture();
-            ImGuiApi.SeparatorText(stage.stage + " Interface");
+            EditorImGui.SeparatorText(stage.stage + " Interface");
             ShaderGraphPassProgram[] programs = ShaderGraphPrograms.Read(Controller.document, owner.serialization, owner.context);
             string activePass = draft.inspectedPass;
             if (!definition.passes.Any(pass => pass.name == activePass))
@@ -46,7 +45,7 @@ internal sealed partial class ShaderEditorCanvas
                 try
                 {
                     foreach (ShaderPassDefinition available in definition.passes)
-                        if (ImGuiApi.Selectable(available.name, activePass == available.name))
+                        if (EditorImGui.Selectable(available.name, activePass == available.name))
                         {
                             activePass = available.name;
                             draft.inspectedPass = activePass;
@@ -61,7 +60,7 @@ internal sealed partial class ShaderEditorCanvas
             bool assigned = assignment.stages?.Contains(node.id.value, StringComparer.Ordinal) == true;
             bool assignmentChanged = false;
             if (activePass.Length != 0)
-                InspectorRow("settings.shared-stage", "Shared Stage", () => assignmentChanged = ImGuiApi.Checkbox("##shared-stage", ref assigned));
+                InspectorRow("settings.shared-stage", "Shared Stage", () => assignmentChanged = EditorImGui.Checkbox("##shared-stage", ref assigned));
             if (assignmentChanged)
             {
                 var stageIds = (assignment.stages ?? []).Where(id => id != node.id.value).Select(static id => new GraphNodeId(id)).ToList();
@@ -77,65 +76,70 @@ internal sealed partial class ShaderEditorCanvas
 
             for (int i = 0; i < stage.outputs.Length; i++)
             {
-                ImGuiApi.PushId(i);
-                ShaderGraphOutput output = stage.outputs[i];
-                bool changed = false;
-                string id = output.id;
-                bool idChanged = false;
-                InspectorRow("output.id", "Port ID", () => idChanged = EditorImGui.InputText("##port-id", ref id, 128));
-                if (idChanged)
+                EditorImGui.PushId(i);
+                try
                 {
-                    output.id = id;
-                    changed = true;
-                }
+                    ShaderGraphOutput output = stage.outputs[i];
+                    bool changed = false;
+                    string id = output.id;
+                    bool idChanged = false;
+                    InspectorRow("output.id", "Port ID", () => idChanged = EditorImGui.InputText("##port-id", ref id, 128));
+                    if (idChanged)
+                    {
+                        output.id = id;
+                        changed = true;
+                    }
 
-                Gesture();
-                ShaderIrOutputKind kind = output.kind;
-                if (EnumControl("Destination", ref kind))
+                    Gesture();
+                    ShaderIrOutputKind kind = output.kind;
+                    if (EnumControl("Destination", ref kind))
+                    {
+                        output.kind = kind;
+                        changed = true;
+                    }
+
+                    string semantic = output.semantic ?? "";
+                    bool semanticChanged = false;
+                    InspectorRow("output.semantic", "Semantic", () => semanticChanged = EditorImGui.InputText("##semantic", ref semantic, 128));
+                    if (semanticChanged)
+                    {
+                        output.semantic = semantic;
+                        changed = true;
+                    }
+
+                    Gesture();
+                    int location = output.location;
+                    bool locationChanged = false;
+                    InspectorRow("output.location", "Location", () => locationChanged = EditorImGui.InputInt("##location", ref location, 1, 100, 0));
+                    if (locationChanged)
+                    {
+                        output.location = location;
+                        changed = true;
+                    }
+
+                    Gesture();
+                    if (changed)
+                    {
+                        stage.outputs[i] = output;
+                        Set(node, "settings", stage, true);
+                    }
+
+                    if (EditorImGui.SmallButton("Remove Output"))
+                    {
+                        stage.outputs = stage.outputs.Where((
+                            _,
+                            index
+                        ) => index != i).ToArray();
+                        Set(node, "settings", stage);
+                        break;
+                    }
+
+                    EditorImGui.Separator();
+                }
+                finally
                 {
-                    output.kind = kind;
-                    changed = true;
+                    EditorImGui.PopId();
                 }
-
-                string semantic = output.semantic ?? "";
-                bool semanticChanged = false;
-                InspectorRow("output.semantic", "Semantic", () => semanticChanged = EditorImGui.InputText("##semantic", ref semantic, 128));
-                if (semanticChanged)
-                {
-                    output.semantic = semantic;
-                    changed = true;
-                }
-
-                Gesture();
-                int location = output.location;
-                bool locationChanged = false;
-                InspectorRow("output.location", "Location", () => locationChanged = ImGuiApi.InputInt("##location", ref location, 1, 100, 0));
-                if (locationChanged)
-                {
-                    output.location = location;
-                    changed = true;
-                }
-
-                Gesture();
-                if (changed)
-                {
-                    stage.outputs[i] = output;
-                    Set(node, "settings", stage, true);
-                }
-
-                if (ImGuiApi.SmallButton("Remove Output"))
-                {
-                    stage.outputs = stage.outputs.Where((
-                        _,
-                        index
-                    ) => index != i).ToArray();
-                    Set(node, "settings", stage);
-                    ImGuiApi.PopId();
-                    break;
-                }
-
-                ImGuiApi.Separator();
-                ImGuiApi.PopId();
             }
 
             if (CenteredAddButton("Add Output"))
@@ -153,7 +157,7 @@ internal sealed partial class ShaderEditorCanvas
             }
 
             int passIndex = Array.FindIndex(definition.passes, pass => pass.name == activePass);
-            if (passIndex >= 0 && ImGuiApi.CollapsingHeader("Pass State"))
+            if (passIndex >= 0 && EditorImGui.CollapsingHeader("Pass State"))
             {
                 ShaderPassDefinition pass = definition.passes[passIndex];
                 ShaderRenderState state = pass.renderState;
@@ -188,8 +192,8 @@ internal sealed partial class ShaderEditorCanvas
 
                 bool depthWrite = state.depthWrite, multisampling = state.multisampling;
                 bool depthWriteChanged = false, multisamplingChanged = false;
-                InspectorRow("state.depth-write", "Depth Write", () => depthWriteChanged = ImGuiApi.Checkbox("##depth-write", ref depthWrite));
-                InspectorRow("state.multisampling", "Multisampling", () => multisamplingChanged = ImGuiApi.Checkbox("##multisampling", ref multisampling));
+                InspectorRow("state.depth-write", "Depth Write", () => depthWriteChanged = EditorImGui.Checkbox("##depth-write", ref depthWrite));
+                InspectorRow("state.multisampling", "Multisampling", () => multisamplingChanged = EditorImGui.Checkbox("##multisampling", ref multisampling));
                 if (depthWriteChanged)
                 {
                     state.depthWrite = depthWrite;
@@ -208,25 +212,25 @@ internal sealed partial class ShaderEditorCanvas
                         return;
                     try
                     {
-                        if (ImGuiApi.Selectable("Opaque"))
+                        if (EditorImGui.Selectable("Opaque"))
                         {
                             state.blend = RenderBlendState.opaque;
                             changed = true;
                         }
 
-                        if (ImGuiApi.Selectable("Alpha"))
+                        if (EditorImGui.Selectable("Alpha"))
                         {
                             state.blend = RenderBlendState.alpha;
                             changed = true;
                         }
 
-                        if (ImGuiApi.Selectable("Premultiplied"))
+                        if (EditorImGui.Selectable("Premultiplied"))
                         {
                             state.blend = RenderBlendState.premultiplied;
                             changed = true;
                         }
 
-                        if (ImGuiApi.Selectable("Additive"))
+                        if (EditorImGui.Selectable("Additive"))
                         {
                             state.blend = RenderBlendState.additive;
                             changed = true;
@@ -239,7 +243,7 @@ internal sealed partial class ShaderEditorCanvas
                 });
                 int mask = state.colorWriteMask;
                 bool maskChanged = false;
-                InspectorRow("state.write-mask", "RGBA Write Mask", () => maskChanged = ImGuiApi.InputInt("##write-mask", ref mask, 1, 100, 0));
+                InspectorRow("state.write-mask", "RGBA Write Mask", () => maskChanged = EditorImGui.InputInt("##write-mask", ref mask, 1, 100, 0));
                 if (maskChanged)
                 {
                     state.colorWriteMask = (byte)Math.Clamp(mask, 0, 15);
@@ -247,11 +251,11 @@ internal sealed partial class ShaderEditorCanvas
                 }
 
                 RenderBlendState blend = state.blend;
-                if (ImGuiApi.TreeNode("Custom Blending", 0))
+                if (EditorImGui.TreeNode("Custom Blending", 0))
                 {
                     bool enabled = blend.enabled;
                     bool enabledChanged = false;
-                    InspectorRow("blend.enabled", "Enabled", () => enabledChanged = ImGuiApi.Checkbox("##enabled", ref enabled));
+                    InspectorRow("blend.enabled", "Enabled", () => enabledChanged = EditorImGui.Checkbox("##enabled", ref enabled));
                     if (enabledChanged)
                     {
                         blend.enabled = enabled;
@@ -296,7 +300,7 @@ internal sealed partial class ShaderEditorCanvas
                         changed = true;
                     }
 
-                    ImGuiApi.TreePop();
+                    EditorImGui.TreePop();
                 }
 
                 state.blend = blend;
@@ -316,69 +320,73 @@ internal sealed partial class ShaderEditorCanvas
             }
 
             definitionChanged |= TechniqueControls(definition);
-            if (ImGuiApi.CollapsingHeader("Variants"))
+            if (EditorImGui.CollapsingHeader("Variants"))
             {
                 for (int i = 0; i < definition.keywords.Length; i++)
                 {
-                    ImGuiApi.PushId("keyword-" + i);
-                    ShaderKeywordDefinition keyword = definition.keywords[i];
-                    string id = keyword.id;
-                    bool keywordChanged = false;
-                    InspectorRow("variant.keyword", "Keyword", () => keywordChanged = EditorImGui.InputText("##keyword", ref id, 128));
-                    if (keywordChanged)
+                    EditorImGui.PushId("keyword-" + i);
+                    try
                     {
-                        keyword.id = id;
-                        definitionChanged = true;
-                    }
-
-                    Gesture();
-                    for (int j = 0; j < keyword.options.Length; j++)
-                    {
-                        string option = keyword.options[j];
-                        bool optionChanged = false, remove = false;
-                        InspectorRow("variant.option", "Option " + (j + 1), () =>
+                        ShaderKeywordDefinition keyword = definition.keywords[i];
+                        string id = keyword.id;
+                        bool keywordChanged = false;
+                        InspectorRow("variant.keyword", "Keyword", () => keywordChanged = EditorImGui.InputText("##keyword", ref id, 128));
+                        if (keywordChanged)
                         {
-                            optionChanged = EditorImGui.InputText("##option", ref option, 128);
-                            ImGuiApi.SameLine(0f, -1f);
-                            remove = ImGuiApi.SmallButton("Remove");
-                        });
-                        if (optionChanged)
-                        {
-                            keyword.options[j] = option;
+                            keyword.id = id;
                             definitionChanged = true;
                         }
 
                         Gesture();
-                        if (remove)
+                        for (int j = 0; j < keyword.options.Length; j++)
                         {
-                            keyword.options = keyword.options.Where((
+                            string option = keyword.options[j];
+                            bool optionChanged = false, remove = false;
+                            InspectorRow("variant.option", "Option " + (j + 1), () =>
+                            {
+                                optionChanged = EditorImGui.InputText("##option", ref option, 128);
+                                EditorImGui.SameLine(0f, -1f);
+                                remove = EditorImGui.SmallButton("Remove");
+                            });
+                            if (optionChanged)
+                            {
+                                keyword.options[j] = option;
+                                definitionChanged = true;
+                            }
+
+                            Gesture();
+                            if (remove)
+                            {
+                                keyword.options = keyword.options.Where((
+                                    _,
+                                    index
+                                ) => index != j).ToArray();
+                                definitionChanged = true;
+                                break;
+                            }
+                        }
+
+                        if (CenteredAddButton("Add Option"))
+                        {
+                            keyword.options = [..keyword.options, "Option" + keyword.options.Length];
+                            definitionChanged = true;
+                        }
+
+                        definition.keywords[i] = keyword;
+                        if (EditorImGui.SmallButton("Remove Keyword"))
+                        {
+                            definition.keywords = definition.keywords.Where((
                                 _,
                                 index
-                            ) => index != j).ToArray();
+                            ) => index != i).ToArray();
                             definitionChanged = true;
                             break;
                         }
                     }
-
-                    if (CenteredAddButton("Add Option"))
+                    finally
                     {
-                        keyword.options = [..keyword.options, "Option" + keyword.options.Length];
-                        definitionChanged = true;
+                        EditorImGui.PopId();
                     }
-
-                    definition.keywords[i] = keyword;
-                    if (ImGuiApi.SmallButton("Remove Keyword"))
-                    {
-                        definition.keywords = definition.keywords.Where((
-                            _,
-                            index
-                        ) => index != i).ToArray();
-                        definitionChanged = true;
-                        ImGuiApi.PopId();
-                        break;
-                    }
-
-                    ImGuiApi.PopId();
                 }
 
                 if (CenteredAddButton("Add Keyword"))
@@ -395,13 +403,13 @@ internal sealed partial class ShaderEditorCanvas
                     ShaderGraphDocument.definitionKey,
                     ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
                 );
-                Controller.ReplaceDocument(candidate, "Edit Shader Settings", ImGuiApi.IsAnyItemActive() ? draft.valueGesture : null);
+                Controller.ReplaceDocument(candidate, "Edit Shader Settings", EditorImGui.IsAnyItemActive() ? draft.valueGesture : null);
                 owner.Changed(draft);
             }
         }
         finally
         {
-            ImGuiApi.EndPopup();
+            EditorImGui.EndPopup();
         }
     }
 
@@ -420,7 +428,7 @@ internal sealed partial class ShaderEditorCanvas
             try
             {
                 foreach (T candidate in Enum.GetValues<T>())
-                    if (ImGuiApi.Selectable(candidate.ToString(), candidate.Equals(current)))
+                    if (EditorImGui.Selectable(candidate.ToString(), candidate.Equals(current)))
                     {
                         current = candidate;
                         changed = true;

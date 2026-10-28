@@ -1,4 +1,3 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using Inno.Core.Mathematics;
@@ -146,7 +145,7 @@ internal sealed class TransformInspectionDrawer(
     ) {
         EditorUI.current.widgets.PropertyRow("transform." + label, label, () =>
         {
-            float width = MathF.Max(1f, (Ui.GetContentRegionAvailable().X - UiDrawing.GetLayout().itemSpacing.X * 2f) / 3f);
+            float width = MathF.Max(1f, (Ui.GetContentRegionAvailable().X - Ui.GetLayout().itemSpacing.X * 2f) / 3f);
             bool changed = EditorUI.current.widgets.AxisDragFloat(label, "X", ref value.x, width);
             Ui.SameLine(0f, -1f);
             changed |= EditorUI.current.widgets.AxisDragFloat(label, "Y", ref value.y, width);

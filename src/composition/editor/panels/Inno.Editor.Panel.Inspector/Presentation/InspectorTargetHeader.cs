@@ -1,4 +1,3 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
@@ -6,7 +5,6 @@ using Inno.Editor.Inspection;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -112,13 +110,13 @@ internal sealed class InspectorTargetHeader
         float rowHeight
     ) {
         Vector2 lockSize = EditorUI.current.widgets.GetCompactIconSize();
-        float itemSpacing = UiDrawing.GetLayout().itemSpacing.X;
+        float itemSpacing = Ui.GetLayout().itemSpacing.X;
         float nameWidth = MathF.Max(1f, Ui.GetContentRegionAvailable().X - lockSize.X - itemSpacing);
         (string name, Action<string>? nameSetter) = drawer.BindName(context);
         if (nameSetter is not null)
         {
             Ui.SetNextItemWidth(nameWidth);
-            if (EditorImGui.InputText($"##inspector_target_name_{GetTargetId(context.target)}", ref name, C_NAME_BUFFER_SIZE, ImGuiInputTextFlags.None))
+            if (Ui.InputText($"##inspector_target_name_{GetTargetId(context.target)}", ref name, C_NAME_BUFFER_SIZE, ImGuiInputTextFlags.None))
             {
                 nameSetter(name);
             }
@@ -129,11 +127,11 @@ internal sealed class InspectorTargetHeader
         {
             Ui.AlignTextToFramePadding();
             Vector2 textOrigin = Ui.GetCursorScreenPosition();
-            EditorDrawList drawList = EditorImGui.GetDrawList();
+            EditorDrawList drawList = Ui.GetDrawList();
             drawList.PushClip(textOrigin, textOrigin + new Vector2(nameWidth, rowHeight));
             try
             {
-                EditorImGui.DrawText(textOrigin, Ui.GetStyleColor(ImGuiCol.Text), name);
+                Ui.DrawText(textOrigin, Ui.GetStyleColor(ImGuiCol.Text), name);
             }
             finally
             {

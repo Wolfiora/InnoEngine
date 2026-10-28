@@ -1,6 +1,4 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Inno.References;
 using System;
 using System.Collections.Generic;
@@ -81,7 +79,7 @@ internal sealed class GameViewPanel : EditorPanel
         if (available.X <= 0f || available.Y <= 0f)
             return;
         RefreshPresentationSettings();
-        float framebufferScale = UiDrawing.GetInput().framebufferScale.X;
+        float framebufferScale = Ui.GetInput().framebufferScale.X;
         if (!float.IsFinite(framebufferScale) || framebufferScale <= 0f)
             framebufferScale = 1f;
         GameViewportLayout layout = CalculateLayout(available, m_presentation, framebufferScale);
@@ -94,7 +92,7 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 mouse = Ui.GetMousePos();
         Vector2 local = mouse - outputOrigin;
         bool inside = local.X >= 0f && local.Y >= 0f && local.X < layout.size.X && local.Y < layout.size.Y;
-        var viewport = UiDrawing.GetViewport();
+        var viewport = Ui.GetViewport();
         bool gameViewFocused = m_playMode.isPlaying && Ui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
         bool imageHovered = inside && Ui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
         bool focused = m_inputCapture.Report(viewport.id, outputOrigin - viewport.position, layout.size, gameViewFocused, imageHovered);
@@ -110,7 +108,7 @@ internal sealed class GameViewPanel : EditorPanel
         bool leftReleased = m_leftPointerActive && Ui.IsMouseReleased(ImGuiMouseButton.Left);
         if (leftReleased || !focused)
             m_leftPointerActive = false;
-        var io = UiDrawing.GetInput();
+        var io = Ui.GetInput();
         KeyModifier modifiers = KeyModifier.None;
         if (io.alt)
             modifiers |= KeyModifier.Alt;
@@ -149,7 +147,7 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 origin = Ui.GetCursorScreenPosition();
         if (m_presentation.preserveAspectRatio)
         {
-            EditorImGui.DrawFilledRectangle(origin, origin + available, Ui.ToPackedColor(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)), 0);
+            Ui.DrawFilledRectangle(origin, origin + available, Ui.ToPackedColor(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)), 0);
         }
 
         Ui.SetCursorScreenPosition(origin + layout.offset);
@@ -218,7 +216,7 @@ internal sealed class GameViewPanel : EditorPanel
         string message
     ) {
         Vector2 minimum = Ui.GetCursorScreenPosition();
-        EditorImGui.DrawFilledRectangle(minimum, minimum + size, Ui.ToPackedColor(m_backgroundColor), 0);
+        Ui.DrawFilledRectangle(minimum, minimum + size, Ui.ToPackedColor(m_backgroundColor), 0);
         Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {

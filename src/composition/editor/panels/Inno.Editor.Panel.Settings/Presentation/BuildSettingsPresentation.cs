@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using Inno.Build;
 using Inno.Build.Managed;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
@@ -168,7 +167,7 @@ internal sealed class BuildSettingsField
         Action<string> apply
     ) {
         Ui.SetNextItemWidth(-1f);
-        if (!EditorImGui.InputText("##value", ref value, C_TEXT_CAPACITY))
+        if (!Ui.InputText("##value", ref value, C_TEXT_CAPACITY))
             return false;
         apply(value);
         return true;

@@ -1,4 +1,3 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,6 @@ using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
 using Inno.Scene.Layers;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
@@ -21,9 +19,6 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
     private readonly string[] m_nameBuffers = new string[GameLayer.C_MAX_COUNT];
     private string m_error = string.Empty;
     private string? []? m_observedNames;
-    /// <summary>
-    /// Gets the stable project-setting identity used for discovery and persistence.
-    /// </summary>
     /// <summary>
     /// Gets the presentation section that groups this setting.
     /// </summary>
@@ -139,7 +134,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         Ui.PushStyleColor(ImGuiCol.FrameBgActive, EditorPalette.transparent);
         try
         {
-            bool submitted = EditorImGui.InputTextWithHint(id, hint, ref value, C_LAYER_NAME_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue);
+            bool submitted = Ui.InputTextWithHint(id, hint, ref value, C_LAYER_NAME_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue);
             return submitted || Ui.IsItemDeactivatedAfterEdit();
         }
         finally
@@ -153,7 +148,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         string? [] names,
         int definedCount
     ) {
-        float spacing = UiDrawing.GetLayout().itemSpacing.X;
+        float spacing = Ui.GetLayout().itemSpacing.X;
         EditorUI.current.widgets.LabelChip("Defined", EditorPalette.collectionRowAlternate);
         Ui.SameLine(0f, 0f);
         DrawReadOnlyCount($"{definedCount} / {GameLayer.C_MAX_COUNT}", 78f * EditorUI.current.widgets.style.zoom);
@@ -165,15 +160,15 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         string value,
         float width
     ) {
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         Vector2 minimum = Ui.GetCursorScreenPosition();
         Vector2 size = new(MathF.Max(1f, width), Ui.GetFrameHeight());
         Ui.Dummy(size);
         Vector2 maximum = minimum + size;
-        EditorImGui.DrawFilledRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.FrameBg), style.frameRounding);
-        EditorImGui.DrawRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.Border), style.frameRounding, EditorUI.current.widgets.style.borderSize);
+        Ui.DrawFilledRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.FrameBg), style.frameRounding);
+        Ui.DrawRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.Border), style.frameRounding, EditorUI.current.widgets.style.borderSize);
         Vector2 textSize = Ui.MeasureText(value);
-        EditorImGui.DrawText(minimum + (size - textSize) * 0.5f, Ui.GetStyleColor(ImGuiCol.Text), value);
+        Ui.DrawText(minimum + (size - textSize) * 0.5f, Ui.GetStyleColor(ImGuiCol.Text), value);
     }
 
     private static void DrawLayerTableHeader()
@@ -196,7 +191,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
         Ui.Text(label);
     }
 
-    private static void InsetPlainCell() => Ui.SetCursorPosX(Ui.GetCursorPosX() + UiDrawing.GetLayout().framePadding.X);
+    private static void InsetPlainCell() => Ui.SetCursorPosX(Ui.GetCursorPosX() + Ui.GetLayout().framePadding.X);
     private void DrawAddLayer(
         GameLayerCatalog setting,
         string? [] names,

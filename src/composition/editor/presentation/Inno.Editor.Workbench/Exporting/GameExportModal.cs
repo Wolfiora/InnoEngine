@@ -1,4 +1,3 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
@@ -6,7 +5,6 @@ using Inno.Build;
 using Inno.Build.Managed;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
@@ -182,7 +180,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     {
         Ui.Spacing();
         string primaryLabel = "Export";
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         float closeWidth = Ui.MeasureText("Close").X + style.framePadding.X * 2f;
         float primaryWidth = Ui.MeasureText(primaryLabel).X + style.framePadding.X * 2f;
         Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - closeWidth - style.itemSpacing.X - primaryWidth));
@@ -201,7 +199,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
     ) {
         BeginField(label);
         Ui.SetNextItemWidth(-1f);
-        _ = EditorImGui.InputText($"##{id}", ref value, C_TEXT_CAPACITY);
+        _ = Ui.InputText($"##{id}", ref value, C_TEXT_CAPACITY);
         apply(value);
     }
 }

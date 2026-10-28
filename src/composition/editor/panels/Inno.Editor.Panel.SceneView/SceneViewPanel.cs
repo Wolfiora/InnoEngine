@@ -1,6 +1,4 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Inno.References;
 using Inno.Core.Identity;
 using System;
@@ -125,7 +123,7 @@ internal sealed class SceneViewPanel : EditorPanel
         bool viewportClicked = Ui.IsItemClicked(ImGuiMouseButton.Left);
         toolbar = CreateManipulationToolbarLayout(minimum, maximum);
         toolbarHovered = IsManipulationToolbarHovered(toolbar);
-        EditorDrawList drawList = EditorImGui.GetDrawList();
+        EditorDrawList drawList = Ui.GetDrawList();
         IReadOnlyList<(Vector2 center, EditorGizmoIcon icon)> icons;
         bool toolbarOwnsPointer;
         bool gizmoOwnsPointer;
@@ -145,7 +143,7 @@ internal sealed class SceneViewPanel : EditorPanel
         }
 
         bool iconOwnsPointer = SelectGizmoIcons(icons, viewportClicked && !toolbarOwnsPointer && !gizmoOwnsPointer && !navigationOwnsPointer);
-        if (!viewportClicked || toolbarOwnsPointer || gizmoOwnsPointer || iconOwnsPointer || navigationOwnsPointer || UiDrawing.GetInput().alt)
+        if (!viewportClicked || toolbarOwnsPointer || gizmoOwnsPointer || iconOwnsPointer || navigationOwnsPointer || Ui.GetInput().alt)
             return;
         Vector2 mouse = Ui.GetMousePos();
         float x = (mouse.X - minimum.X) / Math.Max(1f, maximum.X - minimum.X);
@@ -274,15 +272,15 @@ internal sealed class SceneViewPanel : EditorPanel
         int height = Math.Max(1, (int)(maximum.Y - minimum.Y));
         EditorGizmoFrame frame = m_rendering.CollectGizmos(C_VIEWPORT_ID, width, height);
         EngineMatrix worldToClip = space.projectionMatrix * space.viewMatrix;
-        EditorDrawList draw = EditorImGui.GetDrawList();
+        EditorDrawList draw = Ui.GetDrawList();
         uint white = Ui.ToPackedColor(Vector4.One);
         uint outline = Ui.ToPackedColor(new Vector4(0f, 0f, 0f, 0.75f));
         foreach (EditorGizmoLine line in frame.lines)
         {
             if (!TryProject(line.start, out Vector2 start) || !TryProject(line.end, out Vector2 end))
                 continue;
-            EditorImGui.DrawLine(start + Vector2.One, end + Vector2.One, outline, 3.5f);
-            EditorImGui.DrawLine(start, end, white, 2.5f);
+            Ui.DrawLine(start + Vector2.One, end + Vector2.One, outline, 3.5f);
+            Ui.DrawLine(start, end, white, 2.5f);
         }
 
         float iconSize = 24f * EditorUI.current.widgets.style.zoom;
@@ -294,7 +292,7 @@ internal sealed class SceneViewPanel : EditorPanel
             displayIcons.Add((center, icon));
             string glyph = GizmoIconGlyph(icon.iconId);
             float fontScale = iconSize / Ui.GetFontSize();
-            Vector2 size = EditorImGui.MeasureText(glyph, fontScale);
+            Vector2 size = Ui.MeasureText(glyph, fontScale);
             Vector2 origin = center - size * 0.5f;
             draw.Text(origin + Vector2.One, outline, glyph, fontScale);
             draw.Text(origin, white, glyph, fontScale);
@@ -387,7 +385,7 @@ internal sealed class SceneViewPanel : EditorPanel
 
         if (!SupportsMode(profile, navigation.mode))
             navigation.mode = profile.defaultMode;
-        EditorUiInput io = UiDrawing.GetInput();
+        EditorUiInput io = Ui.GetInput();
         if (m_navigationDrag != NavigationDrag.None && !Ui.IsMouseButtonDown(m_navigationDragButton))
         {
             m_navigationDrag = NavigationDrag.None;
@@ -631,8 +629,8 @@ internal sealed class SceneViewPanel : EditorPanel
     ) {
         Vector2 minimum = Ui.GetCursorScreenPosition();
         Vector2 maximum = minimum + size;
-        EditorDrawList drawList = EditorImGui.GetDrawList();
-        EditorImGui.DrawFilledRectangle(minimum, maximum, Ui.ToPackedColor(m_backgroundColor), 0);
+        EditorDrawList drawList = Ui.GetDrawList();
+        Ui.DrawFilledRectangle(minimum, maximum, Ui.ToPackedColor(m_backgroundColor), 0);
         Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {
@@ -647,10 +645,10 @@ internal sealed class SceneViewPanel : EditorPanel
     private static Inno.Core.Mathematics.Color ToEngineColor(Vector4 value) => new(value.X, value.Y, value.Z, value.W);
     private bool DrawManipulationToolbar(ManipulationToolbarLayout layout)
     {
-        EditorDrawList drawList = EditorImGui.GetDrawList();
+        EditorDrawList drawList = Ui.GetDrawList();
         Vector4 background = EditorPalette.targetHeader;
         background.W = EditorPalette.opacityMedium;
-        EditorImGui.DrawFilledRectangle(layout.minimum, layout.maximum, Ui.ToPackedColor(background), EditorUI.current.widgets.style.frameRounding);
+        Ui.DrawFilledRectangle(layout.minimum, layout.maximum, Ui.ToPackedColor(background), EditorUI.current.widgets.style.frameRounding);
         float itemX = layout.minimum.X + layout.padding;
         float itemY = layout.minimum.Y + layout.padding;
         try
@@ -674,7 +672,7 @@ internal sealed class SceneViewPanel : EditorPanel
 
             itemY += layout.itemSize.Y + layout.sectionSpacing;
             float separatorY = itemY - layout.sectionSpacing * 0.5f;
-            EditorImGui.DrawLine(
+            Ui.DrawLine(
                 new Vector2(layout.minimum.X + layout.padding, separatorY),
                 new Vector2(layout.maximum.X - layout.padding, separatorY),
                 Ui.ToPackedColor(Vector4.One),
@@ -743,7 +741,7 @@ internal sealed class SceneViewPanel : EditorPanel
             Vector2 minimum = Ui.GetItemMinimum();
             Vector2 maximum = Ui.GetItemMaximum();
             float thickness = EditorUI.current.widgets.style.interactionOverlayThickness;
-            EditorImGui.DrawFilledRectangle(minimum, new Vector2(minimum.X + thickness, maximum.Y), Ui.ToPackedColor(Vector4.One), 0);
+            Ui.DrawFilledRectangle(minimum, new Vector2(minimum.X + thickness, maximum.Y), Ui.ToPackedColor(Vector4.One), 0);
         }
 
         return pressed;

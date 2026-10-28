@@ -1,5 +1,4 @@
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
 using System.Numerics;
 using Inno.Core.Identity;
@@ -214,11 +213,11 @@ internal sealed class InspectorCardControls
             padding.X * 2f + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing + titleSize.X,
             MathF.Max(gripSize.Y, titleSize.Y) + padding.Y * 2f
         );
-        EditorImGui.DrawFilledRectangle(origin, origin + size, Ui.ToPackedColor(EditorPalette.cardHeader), EditorUI.current.widgets.style.frameRounding);
+        Ui.DrawFilledRectangle(origin, origin + size, Ui.ToPackedColor(EditorPalette.cardHeader), EditorUI.current.widgets.style.frameRounding);
         uint color = Ui.ToPackedColor(dimmed ? EditorPalette.cardDisabledText : EditorPalette.text);
         Vector2 textOrigin = origin + padding;
-        EditorImGui.DrawText(textOrigin, color, ImGuiIcon.GripVertical);
-        EditorImGui.DrawText(new Vector2(textOrigin.X + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing, textOrigin.Y), color, title);
+        Ui.DrawText(textOrigin, color, ImGuiIcon.GripVertical);
+        Ui.DrawText(new Vector2(textOrigin.X + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing, textOrigin.Y), color, title);
         Ui.Dummy(size);
     }
 

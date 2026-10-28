@@ -2,7 +2,6 @@ using Inno.Editor.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Globalization;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
@@ -81,7 +80,7 @@ internal sealed class NumericPropertyDrawer : IPropertyDrawer
 
         _ = context.TryGetTextState(C_TEXT_STATE, out string? text);
         text ??= Convert.ToString(rawValue, CultureInfo.InvariantCulture) ?? "0";
-        if (EditorImGui.InputText($"##{context.path}", ref text, C_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue))
+        if (Ui.InputText($"##{context.path}", ref text, C_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue))
         {
             if (TryConvert(text, type, out object? converted))
             {
