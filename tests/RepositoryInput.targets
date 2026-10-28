@@ -3,4 +3,11 @@
     <AssemblyMetadata Include="Inno.Testing.RepositoryRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)source/Inno.Testing.Source/Inno.Testing.Source.csproj" PrivateAssets="compile" />
   </ItemGroup>
+
+  <Target Name="RecordInnoTestArtifactsOwner" BeforeTargets="GetAssemblyAttributes" Condition="'$(ArtifactsPath)' != ''">
+    <ItemGroup>
+      <AssemblyMetadata Remove="Inno.Testing.ArtifactsPath" />
+      <AssemblyMetadata Include="Inno.Testing.ArtifactsPath" Value="$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(ArtifactsPath)'))" />
+    </ItemGroup>
+  </Target>
 </Project>

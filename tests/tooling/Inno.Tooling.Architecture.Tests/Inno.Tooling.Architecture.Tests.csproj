@@ -11,10 +11,6 @@
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
-    <AssemblyMetadata Include="Inno.Testing.ArtifactsPath" Value="$(ArtifactsPath)" Condition="'$(ArtifactsPath)' != ''" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" />
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
