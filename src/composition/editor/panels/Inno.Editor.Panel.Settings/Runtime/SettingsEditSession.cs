@@ -71,7 +71,7 @@ internal sealed class SettingsField
     internal BuildSettingsField? build => m_build;
 }
 
-internal sealed class SettingsEditSession
+internal sealed class SettingsEditSession : IDisposable
 {
     private readonly EditorSettings m_editorSettings;
     private readonly ProjectSettingsEditor m_projectSettings;
@@ -92,6 +92,7 @@ internal sealed class SettingsEditSession
     private BuildSettings m_buildDefault;
     private BuildSettings m_buildOriginal;
     private BuildSettings m_buildValue;
+    private EditorHistoryTransaction? m_applyTransaction;
 
     internal SettingsEditSession(
         EditorSettings editorSettings,
@@ -149,6 +150,13 @@ internal sealed class SettingsEditSession
         pages = BuildPages(editorSettings.definitions, definitions);
     }
 
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        m_applyTransaction?.Dispose();
+        m_applyTransaction = null;
+    }
+
     internal long editorCatalogRevision { get; }
     internal long projectCatalogRevision { get; }
     internal IReadOnlyList<SettingsField> definitions { get; }
@@ -156,6 +164,8 @@ internal sealed class SettingsEditSession
     internal bool isEditorDirty => m_editorModified.Count > 0 || m_editorResets.Count > 0;
     internal bool isProjectDirty => m_projectModified.Count > 0 || m_projectResets.Count > 0;
     internal bool isBuildDirty => !BuildSettingsField.ValuesEqual(m_buildValue, m_buildOriginal);
+    internal bool canApply => m_applyTransaction is null && !m_history.isFaulted;
+    internal bool isHistoryFaulted => m_history.isFaulted;
     internal bool isDirty => isEditorDirty || isProjectDirty || isBuildDirty;
 
     internal bool Draw(SettingsField field)
@@ -278,13 +288,45 @@ internal sealed class SettingsEditSession
 
     internal bool Apply()
     {
+        if (!canApply)
+            throw new InvalidOperationException("Settings cannot be applied while their previous transaction or History requires recovery.");
+        bool editorDirty = isEditorDirty;
+        bool projectDirty = isProjectDirty;
+        bool buildDirty = isBuildDirty;
         bool changed = false;
-        if (isEditorDirty)
-            changed |= ApplyEditor();
-        if (isProjectDirty)
-            changed |= ApplyProject();
-        if (isBuildDirty)
-            changed |= ApplyBuild();
+        m_applyTransaction = m_history.BeginTransaction("Apply Settings");
+        try
+        {
+            if (editorDirty)
+                changed |= ApplyEditor();
+            if (projectDirty)
+                changed |= ApplyProject();
+            if (buildDirty)
+                changed |= ApplyBuild();
+            m_applyTransaction.Commit();
+            m_applyTransaction = null;
+        }
+        catch (Exception failure)
+        {
+            try
+            {
+                Dispose();
+            }
+            catch (Exception rollbackFailure)
+            {
+                throw new AggregateException(
+                    "Settings Apply failed and its History transaction could not retire. Recovery is required before further editing.",
+                    failure,
+                    rollbackFailure);
+            }
+            throw;
+        }
+        if (editorDirty)
+            AcceptEditorValues();
+        if (projectDirty)
+            AcceptProjectValues();
+        if (buildDirty)
+            AcceptBuildValues();
         return changed;
     }
 
@@ -294,7 +336,11 @@ internal sealed class SettingsEditSession
             path => path,
             path => m_editorValues[path],
             StringComparer.Ordinal);
-        bool changed = m_editorSettings.Apply(values, m_editorResets);
+        return m_editorSettings.Apply(values, m_editorResets);
+    }
+
+    private void AcceptEditorValues()
+    {
         m_editorModified.Clear();
         m_editorInitiallyNonDefault.Clear();
         m_editorResetIntent.Clear();
@@ -307,13 +353,16 @@ internal sealed class SettingsEditSession
             if (!definition.IsDefault(value))
                 m_editorInitiallyNonDefault.Add(field.path);
         }
-        return changed;
     }
 
     private bool ApplyProject()
     {
         var values = m_projectModified.ToDictionary(id => id, id => m_projectValues[id]);
-        bool changed = m_projectSettings.Apply(values, m_projectResets);
+        return m_projectSettings.Apply(values, m_projectResets);
+    }
+
+    private void AcceptProjectValues()
+    {
         m_projectModified.Clear();
         m_projectInitiallyNonDefault.Clear();
         m_projectResetIntent.Clear();
@@ -330,7 +379,6 @@ internal sealed class SettingsEditSession
             if (!definition.ValuesEqual(value, m_projectSettings.GetComposedDefault(definition)))
                 m_projectInitiallyNonDefault.Add(definition.settingId);
         }
-        return changed;
     }
 
     private bool ApplyBuild()
@@ -349,10 +397,14 @@ internal sealed class SettingsEditSession
             throw;
         }
 
-        m_buildDefault = m_buildSettings.defaultSettings;
-        m_buildOriginal = m_buildSettings.Load();
-        m_buildValue = m_buildOriginal.Copy();
         return true;
+    }
+
+    private void AcceptBuildValues()
+    {
+        m_buildDefault = m_buildSettings.defaultSettings;
+        m_buildOriginal = m_buildValue.Copy();
+        m_buildValue = m_buildOriginal.Copy();
     }
 
     private static void UpdateDirty<T>(

@@ -33,8 +33,11 @@ internal sealed class NativeProjectPanelHost : IDisposable
     private readonly ProjectSettingsStore m_settings;
     private readonly PluginEnvironment m_plugins;
 
-    internal NativeProjectPanelHost(bool supportsVertexOffsets = false)
-    {
+    internal NativeProjectPanelHost(
+        bool supportsVertexOffsets = false,
+        bool includeSettings = false,
+        IByteDocumentStore? settingsDocument = null
+    ) {
         _ = Assembly.Load("Inno.Editor.Panel.Hierarchy");
         _ = Assembly.Load("Inno.Editor.Panel.FileBrowser");
         _ = Assembly.Load("Inno.Editor.Workbench");
@@ -58,16 +61,28 @@ internal sealed class NativeProjectPanelHost : IDisposable
         var identities = new IdentityAllocator();
         assets = new AssetPipeline(m_engine.modules, m_engine.types, m_engine.serialization, identities,
             m_engine.diagnostics, m_engine.logs, AssetPipelineOptions.Create(source, library) with { enableFileSystemWatcher = false });
-        m_settings = new ProjectSettingsStore(new FileByteDocumentStore(Path.Combine(m_root, "Settings.Project.inno")),
+        m_settings = new ProjectSettingsStore(settingsDocument ?? new FileByteDocumentStore(Path.Combine(m_root, "Settings.Project.inno")),
             m_engine.types, m_engine.serialization, new ProjectId("tests.native-panels"), AssetSerializationContext.Create(assets));
         var pluginSources = new PluginSourceService(m_engine.serialization, pluginRoot, library);
         m_plugins = new PluginEnvironment(assets, m_settings, m_engine.serialization, pluginRoot, library, pluginSources.Scan(), m_engine.modules.generations);
         m_console = new EditorConsole(m_engine.logs, m_engine.diagnostics, new NativePanelHost.InactivePlayMode());
         m_console.Start();
         var ui = new EditorUiSession();
-        var reloads = new EditorReloadCoordinator();
-        runtime = new EditorInteractionRuntime(new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
-            m_engine.types, m_engine.logs, [m_engine.types, m_engine.serialization, m_session, identities, m_session.identities, assets, m_plugins, m_settings, reloads, ui, m_console]);
+        reloads = new EditorReloadCoordinator();
+        SettingsPanelServices? settingsServices = includeSettings
+            ? new SettingsPanelServices(m_root, assets, m_plugins, m_settings, m_engine)
+            : null;
+        if (includeSettings)
+            _ = Assembly.Load("Inno.Editor.Panel.Settings");
+        runtime = new EditorInteractionRuntime(
+            new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
+            m_engine.types,
+            m_engine.logs,
+            [
+                m_engine.types, m_engine.serialization, m_session, identities, m_session.identities,
+                assets, m_plugins, m_settings, reloads, ui, m_console,
+                .. (settingsServices?.services ?? [])
+            ]);
         runtime.Start();
         _ = runtime.panelCount;
         Assert.True(runtime.interactions.TryGetModule<NativeProjectPanelProbe>(out var probe));
@@ -77,6 +92,8 @@ internal sealed class NativeProjectPanelHost : IDisposable
         native = new NativePanelHost(runtime, ui, m_console, m_engine.logs, m_engine.diagnostics, supportsVertexOffsets);
     }
 
+    internal EditorReloadCoordinator reloads { get; }
+    internal ProjectSettingsStore projectSettings => m_settings;
     internal AssetPipeline assets { get; }
     internal string projectRoot => m_root;
     internal EditorInteractionRuntime runtime { get; }
@@ -86,6 +103,7 @@ internal sealed class NativeProjectPanelHost : IDisposable
     internal NativePanelHost native { get; }
 
     internal GameScene CreateScene() => m_session.scenes.LoadNewSceneAdditive();
+    internal void RefreshTypes() => m_engine.types.Rebuild();
 
     public void Dispose()
     {

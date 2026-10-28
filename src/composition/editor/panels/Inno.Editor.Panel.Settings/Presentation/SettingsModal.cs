@@ -1,13 +1,12 @@
-using UiDrawing = Inno.Editor.ImGui.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Numerics;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
+using Inno.Core.Logging;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
@@ -15,14 +14,17 @@ namespace Inno.Editor.Panel.Settings;
 internal sealed class SettingsModal(
     EditorSettings editorSettings,
     ProjectSettingsEditor projectSettings,
-    SettingsWindowModule window
+    SettingsWindowModule window,
+    LogRouter logs
 ) : EditorModal
 {
     private readonly SettingsNavigation m_navigation = new();
     private readonly SettingsTree m_tree = new();
-    private SettingsEditSession? m_navigationSession;
+    private long m_navigationRevision = -1;
     private string m_query = string.Empty;
     private float m_treePaneRatio = 0.25f;
+    private readonly Logger m_log = logs.CreateLogger<SettingsModal>();
+    private string m_applyError = string.Empty;
     /// <summary>
     /// Gets whether this implementation is visible.
     /// </summary>
@@ -56,6 +58,26 @@ internal sealed class SettingsModal(
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
+        try
+        {
+            DrawWindow();
+        }
+        catch (Exception failure)
+        {
+            try
+            {
+                window.FailPresentation();
+            }
+            catch (Exception retirementFailure)
+            {
+                throw new AggregateException("Settings presentation and its owned retirement failed.", failure, retirementFailure);
+            }
+            throw;
+        }
+    }
+
+    private void DrawWindow()
+    {
         SettingsEditSession? session = window.session;
         if (session is null)
             return;
@@ -68,15 +90,25 @@ internal sealed class SettingsModal(
         }
 
         IReadOnlyList<SettingsPage> pages = session.pages;
-        EnsureNavigationSession(session, pages);
+        EnsureNavigationSession(pages);
         SettingsPage? selected = SettingsTree.FindPage(pages, m_navigation.currentPath);
         selected ??= SettingsTree.FindFirstMatch(pages, m_query);
         if (selected is not null)
             m_navigation.Replace(selected.path);
-        float footerHeight = Ui.GetFrameHeightWithSpacing() + UiDrawing.GetLayout().itemSpacing.Y;
+        float footerHeight = Ui.GetFrameHeightWithSpacing() + Ui.GetLayout().itemSpacing.Y;
+        if (m_applyError.Length != 0)
+            footerHeight += Ui.GetFrameHeightWithSpacing();
         Vector2 available = Ui.GetContentRegionAvailable();
         DrawBody(session, pages, new Vector2(available.X, MathF.Max(1f, available.Y - footerHeight)));
         Ui.Separator();
+        if (m_applyError.Length != 0)
+        {
+            EditorUiSession.current.widgets.ColoredText(EditorPalette.error,
+                session.isHistoryFaulted ? "History integrity was lost. Restart the Editor."
+                    : session.canApply ? "Apply failed. Edits remain staged; retry or Cancel."
+                    : "Settings recovery is required. See Console for details.");
+            EditorUiSession.current.widgets.DrawItemTooltip(m_applyError);
+        }
         DrawButtons(session);
     }
 
@@ -86,7 +118,7 @@ internal sealed class SettingsModal(
         Vector2 size
     ) {
         ImGuiTableFlags flags = ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoKeepColumnsVisible | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings;
-        float splitterWidth = MathF.Max(5f * EditorUI.current.widgets.style.zoom, UiDrawing.GetLayout().dockingSeparatorSize);
+        float splitterWidth = MathF.Max(5f * EditorUiSession.current.widgets.style.zoom, Ui.GetLayout().dockingSeparatorSize);
         float treeWidth = ResolveTreeWidth(size.X, splitterWidth);
         Ui.PushStyleVar(ImGuiStyleVar.CellPadding, Vector2.Zero);
         bool tableStarted = false;
@@ -130,10 +162,10 @@ internal sealed class SettingsModal(
             if (!visible)
                 return;
             DrawNavigationButtons();
-            Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarSectionSpacing);
+            Ui.SameLine(0f, EditorUiSession.current.widgets.style.toolbarSectionSpacing);
             bool wasSearching = !string.IsNullOrWhiteSpace(m_query);
             Ui.SetNextItemWidth(-1f);
-            bool queryChanged = EditorUI.current.widgets.SearchInput("settings", "Search settings", ref m_query, width: -1f);
+            bool queryChanged = EditorUiSession.current.widgets.SearchInput("settings", "Search settings", ref m_query, width: -1f);
             if (queryChanged)
             {
                 SettingsPage? first = SettingsTree.FindFirstMatch(pages, m_query);
@@ -228,7 +260,7 @@ internal sealed class SettingsModal(
         Vector2 maximum = Ui.GetItemMaximum();
         System.Numerics.Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
         float centerX = (minimum.X + maximum.X) * 0.5f;
-        EditorImGui.DrawLine(new Vector2(centerX, minimum.Y), new Vector2(centerX, maximum.Y), Ui.ToPackedColor(color), EditorUI.current.widgets.style.borderSize);
+        Ui.DrawLine(new Vector2(centerX, minimum.Y), new Vector2(centerX, maximum.Y), Ui.ToPackedColor(color), EditorUiSession.current.widgets.style.borderSize);
     }
 
     private float ResolveTreeWidth(
@@ -243,20 +275,20 @@ internal sealed class SettingsModal(
         float requested,
         float usable
     ) {
-        float minimum = MathF.Min(EditorUI.current.widgets.style.paneMinimumVisibleWidth, usable * 0.5f);
+        float minimum = MathF.Min(EditorUiSession.current.widgets.style.paneMinimumVisibleWidth, usable * 0.5f);
         float maximum = MathF.Max(minimum, usable - minimum);
         return Math.Clamp(requested, minimum, maximum);
     }
 
     private void DrawButtons(SettingsEditSession session)
     {
-        EditorUiLayout style = UiDrawing.GetLayout();
+        EditorUiLayout style = Ui.GetLayout();
         if (!session.isDirty)
         {
             float okWidth = Ui.MeasureText("OK").X + style.framePadding.X * 2f;
             Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - okWidth));
             if (Ui.Button("OK"))
-                window.Close();
+                TryClose();
             return;
         }
 
@@ -265,11 +297,51 @@ internal sealed class SettingsModal(
         float totalWidth = cancelWidth + style.itemSpacing.X + applyWidth;
         Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - totalWidth));
         if (Ui.Button("Cancel"))
-            window.Close();
+            TryClose();
         Ui.SameLine(0f, -1f);
-        if (Ui.Button("Apply"))
-            _ = session.Apply();
+        Ui.BeginDisabled(!session.canApply);
+        try
+        {
+            if (Ui.Button("Apply"))
+            {
+                try
+                {
+                    _ = session.Apply();
+                    m_applyError = string.Empty;
+                }
+                catch (Exception failure) when (IsOperationalFailure(failure))
+                {
+                    ReportFailure(failure);
+                }
+            }
+        }
+        finally
+        {
+            Ui.EndDisabled();
+        }
     }
+
+    private void TryClose()
+    {
+        try
+        {
+            window.Close();
+            m_applyError = string.Empty;
+        }
+        catch (Exception failure) when (IsOperationalFailure(failure))
+        {
+            ReportFailure(failure);
+        }
+    }
+
+    private void ReportFailure(Exception failure)
+    {
+        m_applyError = failure.Message;
+        m_log.Write(LogLevel.Error, "Settings operation failed; edits and History ownership were retained: {0}", [failure]);
+    }
+
+    private static bool IsOperationalFailure(Exception failure)
+        => failure is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or AggregateException;
 
     private void DrawNavigationButtons()
     {
@@ -282,7 +354,7 @@ internal sealed class SettingsModal(
         }
 
         Ui.EndDisabled();
-        Ui.SameLine(0f, EditorUI.current.widgets.style.toolbarTightSpacing);
+        Ui.SameLine(0f, EditorUiSession.current.widgets.style.toolbarTightSpacing);
         Ui.BeginDisabled(!m_navigation.canGoForward);
         if (Ui.Button($"{Inno.Editor.ImGui.ImGuiIcon.AngleRight}##SettingsForward", buttonSize))
         {
@@ -292,13 +364,12 @@ internal sealed class SettingsModal(
         Ui.EndDisabled();
     }
 
-    private void EnsureNavigationSession(
-        SettingsEditSession session,
-        IReadOnlyList<SettingsPage> pages
-    ) {
-        if (ReferenceEquals(m_navigationSession, session))
+    private void EnsureNavigationSession(IReadOnlyList<SettingsPage> pages)
+    {
+        if (m_navigationRevision == window.sessionRevision)
             return;
-        m_navigationSession = session;
+        m_navigationRevision = window.sessionRevision;
+        m_applyError = string.Empty;
         SettingsPage? first = SettingsTree.FindFirstMatch(pages, m_query);
         m_navigation.Reset(first?.path ?? string.Empty);
     }

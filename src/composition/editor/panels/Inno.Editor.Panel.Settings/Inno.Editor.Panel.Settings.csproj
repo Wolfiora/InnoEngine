@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />

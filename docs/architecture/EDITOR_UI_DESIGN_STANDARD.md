@@ -99,4 +99,6 @@ Presentation 的准备、绘制与发布属于同一次 owner 操作；期间拒
 
 `tests/Invoke-EditorUiAcceptance.ps1` 编排既有 xUnit/VSTest，按 Contracts、Workflows、Visual、Lifecycle、Performance、Products 分组。每次保留独立 SDK、源码身份、TRX 和结果摘要；空发现不能视为成功。Products 必须显式提供平台产品的 `-GraphicsApis` 和启动日志期望 `-BackendPattern`；共享入口不内嵌 backend 名称作为默认断言。`-ArtifactsPath` 与 `-ResultsDirectory` 指定输出 owner；需要把大量临时文件放到其他卷时，使用 `-TemporaryDirectory` 明确指定较短的临时根。默认保留操作系统的 TEMP/TMP，不把它们隐式嵌套到深层结果目录。该参数同样传递给隔离测试入口，普通测试与独立进程使用同一临时 owner。
 
+Settings 的一次 Apply 复用单一 History transaction，所有 dirty owner 成功后才接受新基线。失败先尝试回滚并保留草稿；可恢复的文件/校验错误在窗口内反馈并记录完整诊断。History 完整性丢失后禁止继续 Apply，不能把错误吞掉后重试。打开的设置窗口借用当前 generation 的编辑对象，使用现有 admission guard 延迟 reload，关闭后恢复许可；不为此建立另一套状态恢复或 History 系统。
+
 最终报告分别评价架构、组织、状态与生命周期、抽象、复用、样式、扩展、交互、Undo/Redo、菜单和颗粒度；每项列出证据与限制。目录整齐、测试数量或正常启动不能代替视觉、输入、重复 reload、资源收敛和成对性能验收。
