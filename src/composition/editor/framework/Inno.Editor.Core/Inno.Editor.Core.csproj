@@ -11,6 +11,9 @@
 
   <ItemGroup>
     <ProjectReference
+      Include="../../../../foundation/core/Inno.Core.IO/Inno.Core.IO.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
       Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj"
       PrivateAssets="compile" />
     <ProjectReference

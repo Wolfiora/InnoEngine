@@ -115,6 +115,7 @@
 - 保存、打开、选择等纯工作流操作默认不进入数据 Undo；它们只有在确实修改项目数据时才记录对应的数据部分。
 - 跨启动的项目语义状态直接属于 Module/Panel；它们使用 Attribute 中必填、稳定且全局唯一的 ID，并通过 protected `Capture(EditorState)` / `Restore(EditorState)` hooks 参与持久化。扩展只调用参数对象的 `Get` / `Set`，不得在公开或 protected API 中暴露 JSON 实现。未 override Capture 的类型不进入状态 IO；不得恢复独立 Workspace interface、reader/writer 或第二个状态 ID。持久值只允许可重新解析的中立数据。
 - `editor.ini` 是统一且可读的项目级 Editor settings 文档：标准 ImGui section 保存 layout；每个 Module/Panel 分别使用 `[InnoEditor][Module.<id>]` / `[InnoEditor][Panel.<id>]`；Panel 开关使用 `[InnoEditor][Panels]`。禁止用 Base64 或单一 opaque payload 包装全部 Workspace。Undo 栈、dirty Scene 内容、runtime 引用和编译中间态不得持久化。
+- 新项目的默认 layout 由标准 Host 的嵌入资源提供，Core 只接收中立初始文档并复用 Core IO 原子写入。仅文件不存在时初始化，不能覆盖已有或刻意留空的 `editor.ini`；模板不得带入示例场景、Asset ID、插件状态、Selection、History 或临时弹窗。
 - Editor Selection 是当前 session 的瞬时交互状态，不得写入 `editor.ini`。Workspace 可以保存可独立解释的导航位置、已打开文档和 active document，但启动后不得自动恢复 Asset、Scene、GameObject、Component 或 System selection。
 - Editor 正常退出时必须先捕获全部有状态的 Module/Panel，再捕获最新 ImGui layout，最后在 Module 停止和 Scene 卸载前强制原子写入一次完整 `editor.ini`。运行期间仍可节流保存，但不能把它当作退出保存的替代品。
 - Editor Scene 修改统一进入 `Inno.Editor.Scene.SceneEdits`。普通属性只保存单 property bytes；Component/System 保存 element identity/type/index/state；GameObject 删除保存最小 subtree；层级只保存受影响 placement；禁止为小修改序列化或恢复完整 Scene。

@@ -61,4 +61,7 @@
     <ProjectReference Include="../../../../runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
     <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Layout/DefaultEditorLayout.ini" LogicalName="Inno.Editor.Hosting.DefaultEditorLayout.ini" />
+  </ItemGroup>
 </Project>

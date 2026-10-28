@@ -8,6 +8,8 @@
 
 当前依赖通过标准 `.csproj` / `PackageReference` 和 SDK Restore 解析，源码不保存独立依赖锁清单；本轮范围与证据见[标准 NuGet 还原验收](../../records/architecture/acceptance/STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md)。基线保持 .NET SDK 10.0.402、C# 14、BGCS 4.1.2。
 
+新项目的默认 `editor.ini` 已完成本地专项验收，见[默认布局报告](../../records/architecture/acceptance/EDITOR_DEFAULT_LAYOUT_ACCEPTANCE_2026_10_29.md)。标准 Host 提供布局，Core 复用原子文档写入；已有文件不被默认值重置。该结果不替代完整 UI 原计划或最终提交的 CI。
+
 此前 BGCS 消费与三项优先修复的独立证据见[BGCS 4.1.2 消费验收](../../records/architecture/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)及[专项报告](../../records/architecture/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。历史通过数量不能当作当前源码已重跑。
 
 以下表格保留此前 BGCS 消费验收的独立范围和数量；不与本轮标准还原检查重复累计，也不代表本轮重跑完整产品矩阵。

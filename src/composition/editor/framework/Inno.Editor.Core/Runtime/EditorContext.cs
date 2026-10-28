@@ -21,23 +21,34 @@ public sealed class EditorContext
     /// <param name="keyboard">
     /// The explicit immutable conventions selected by product composition.
     /// </param>
+    /// <param name="initialLayoutDocument">
+    /// An optional host-owned initial settings document, installed atomically only when
+    /// <c>editor.ini</c> does not exist. Existing documents, including empty files, are preserved.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// The keyboard policy is null.
     /// </exception>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="projectDirectory"/> is empty.
     /// </exception>
+    /// <exception cref="IOException">
+    /// The current document cannot be read or its initial document cannot be installed.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// The caller cannot access or initialize the project settings document.
+    /// </exception>
     [ScriptingApiIgnore]
     public EditorContext(
         string projectDirectory,
-        EditorKeyboardPolicy keyboard
+        EditorKeyboardPolicy keyboard,
+        string? initialLayoutDocument = null
     ) {
         if (string.IsNullOrWhiteSpace(projectDirectory))
             throw new ArgumentException("A project directory is required.", nameof(projectDirectory));
         ArgumentNullException.ThrowIfNull(keyboard);
         this.keyboard = keyboard;
         this.projectDirectory = Path.GetFullPath(projectDirectory);
-        layout = new EditorLayoutSettings(this.projectDirectory);
+        layout = new EditorLayoutSettings(this.projectDirectory, initialLayoutDocument);
         statistics = new EditorStatistics();
     }
 

@@ -8,6 +8,14 @@
 
 `src/composition/editor/EditorProduct.props` 是内置 Editor 功能、Panel 和呈现程序集的唯一产品依赖声明。Windows、macOS 产品共同导入它，保证仅由 attribute 发现、没有 CLR 调用引用的扩展仍进入部署目录和产品依赖清单。Hosting 的项目引用仅承担自身实现或公开契约所需依赖，不通过类型锚点、运行时目录扫描或重复平台列表补齐产品。
 
+## 新项目默认布局
+
+`Layout/DefaultEditorLayout.ini` 是标准 Host 拥有的嵌入资源，初始化 `EditorContext` 时传入，随后才由 presentation 加载。新项目首次打开会立即获得可读的 `editor.ini`；已有文件始终优先，不因升级或打开项目自动覆盖。
+
+默认排列使用标准停靠结构：左上 Scene/Game 并排、左下 File，中间 Hierarchy，右上 Inspector/Shader Editor 标签，右下 Stats/Console 标签。初始比例由正常 ImGui dock tree 表达，现有呈现逻辑适应实际窗口尺寸。
+
+模板仅包含八个标准窗口、停靠数据和标准面板开关；不包含示例场景、Shader ID、导航状态、Plugin 窗口、Selection、History、编译或导出弹窗。默认文件不是另一个 Workspace 系统，后续保存仍归现有统一生命周期。
+
 ## 组合、生命周期与扩展
 
 公开入口为 `EditorApplication.RunAsync(EditorLaunchOptions, CancellationToken)`。产品传入项目、catalog、selection、窗口、帧驱动、键盘约定、distribution、明确初始导出目标、SDK上下文、模块/序列化来源与日志工厂。

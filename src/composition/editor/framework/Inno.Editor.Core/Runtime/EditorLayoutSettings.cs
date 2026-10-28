@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Inno.Core.IO;
 
 namespace Inno.Editor.Core;
 
@@ -26,14 +27,19 @@ internal sealed class EditorLayoutSettings
     /// <param name="projectDirectory">
     /// The project root that owns <c>editor.ini</c>.
     /// </param>
+    /// <param name="initialDocument">
+    /// The optional initial document supplied by the composition owner, never a replacement for an existing file.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// Thrown when <paramref name="projectDirectory"/> is empty.
     /// </exception>
-    internal EditorLayoutSettings(string projectDirectory)
-    {
+    internal EditorLayoutSettings(
+        string projectDirectory,
+        string? initialDocument
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectDirectory);
         m_path = Path.Combine(Path.GetFullPath(projectDirectory), "editor.ini");
-        string document = File.Exists(m_path) ? File.ReadAllText(m_path) : string.Empty;
+        string document = ReadDocument(initialDocument);
         Parse(document, out m_imguiLayout, out m_sections);
         m_lastSavedDocument = Compose(m_imguiLayout, m_sections);
     }
@@ -200,24 +206,25 @@ internal sealed class EditorLayoutSettings
 
     private void WriteDocument(string document)
     {
-        string? directory = Path.GetDirectoryName(m_path);
-        if (!string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
-        string temporaryPath = m_path + ".tmp";
-        using (var stream = new FileStream(
-                   temporaryPath,
-                   FileMode.Create,
-                   FileAccess.Write,
-                   FileShare.None,
-                   4096,
-                   FileOptions.WriteThrough))
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(document);
-            stream.Write(bytes);
-            stream.Flush(flushToDisk: true);
-        }
-        File.Move(temporaryPath, m_path, overwrite: true);
+        AtomicFile.WriteAllBytes(m_path, Encoding.UTF8.GetBytes(document));
         m_lastSavedDocument = document;
+    }
+
+    private string ReadDocument(string? initialDocument)
+    {
+        if (File.Exists(m_path))
+            return File.ReadAllText(m_path);
+        if (initialDocument is null)
+            return string.Empty;
+        try
+        {
+            AtomicFile.WriteAllBytes(m_path, Encoding.UTF8.GetBytes(initialDocument), overwrite: false);
+        }
+        catch (IOException) when (File.Exists(m_path))
+        {
+            // A concurrent creator owns the completed document; never overwrite its settings.
+        }
+        return File.ReadAllText(m_path);
     }
 
     private static void Parse(

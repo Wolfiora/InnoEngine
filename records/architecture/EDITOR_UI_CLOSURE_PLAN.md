@@ -10,6 +10,7 @@ Every work item below is a real GitHub issue created before implementation. Issu
 
 | Work | Issue | Owner | State |
 | --- | --- | --- | --- |
+| New-project default layout | [#47](https://github.com/Wolfiora/InnoEngine/issues/47) | Standard Hosting resource and Core document owner | Local 9 focused / 150 related / 131 Interactions / 10 Hosting cases pass; hidden first-run Host and 241-project Wiki pass; final committed CI pending |
 | E01 scopes and failures | [#28](https://github.com/Wolfiora/InnoEngine/issues/28) | ImGui adapter and concrete presentation | Focused native scopes passed; final graph/lifecycle coverage pending |
 | E02 command indexes | [#29](https://github.com/Wolfiora/InnoEngine/issues/29) | Interactions generation catalog | Implemented; focused contracts passed; final retirement/performance pending |
 | E03 styles | [#30](https://github.com/Wolfiora/InnoEngine/issues/30) | Shared and domain presentation | Domain styles moved to their actual owners; same-frame style deferral and foreign-context contracts passed; complete physical visual matrix pending |

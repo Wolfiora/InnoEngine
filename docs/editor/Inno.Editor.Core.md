@@ -49,6 +49,10 @@ Commands、Menus、DragDrop、Selection 和 Rename 状态属于 `Inno.Editor.Int
 
 `EditorContext` 是由 Application host 创建并注入扩展的中立数据，不承担路由：
 
+Host 构造入口为 `EditorContext(string projectDirectory, EditorKeyboardPolicy keyboard, string? initialLayoutDocument = null)`；该构造函数不导出给脚本。可选初始文档由组合层提供，Core 不内置标准面板、停靠比例或任何项目内容。仅当 `editor.ini` 不存在时通过 Core IO `AtomicFile` 创建，已有文件（包括空文件）保持原始内容及时间戳；并发创建不覆盖先完成者。读取、权限或创建失败明确传播。未提供初始文档时，Context 保持被动，不在构造时创建文件。
+
+普通保存继续使用同一份可读文档和原子替换；没有第二套 Writer、模板 Reader 或格式兼容分支。
+
 ```csharp
 using System;
 using Inno.Editor.Core;
@@ -342,7 +346,7 @@ Editor 模块更新与 Reload 事务使用 Edit Session；Play Tick 和运行对
 <!-- api: M:Inno.Editor.Core.IEditorReloadParticipant.Capture(Inno.Extensibility.Modules.AssemblyReloadContext) a97e1e82330a341126e70b26056ca9bc4b3fbe28a1db68c0451e07c328a8c68b -->
 <!-- api: M:Inno.Editor.Core.IEditorReloadParticipant.RefreshDiagnostics aa986d97059e4d2caed90a1ea09007d4e85bf3640ac4bae22dcc27e7f6413e86 -->
 <!-- api: T:Inno.Editor.Core.EditorContext 2ab755a33912446f2a8ce3d84771ede1755d46f9cddc7f8cd6eb189b485ec517 -->
-<!-- api: M:Inno.Editor.Core.EditorContext.#ctor(System.String,Inno.Editor.Core.EditorKeyboardPolicy) 8d1a42ee558b59f0d4af487594839b84cad46e9c52c8701a019cd7d2a8b6d974 -->
+<!-- api: M:Inno.Editor.Core.EditorContext.#ctor(System.String,Inno.Editor.Core.EditorKeyboardPolicy,System.String) 8a7575b093c02f1b667fddb42a2a655221e3c1bc97ba768ee2532b954cd040bd -->
 <!-- api: P:Inno.Editor.Core.EditorContext.projectDirectory 0e4a7d632f8da73e02ef47aff686d69bb379251a227f9e4434c1001227dc778b -->
 <!-- api: P:Inno.Editor.Core.EditorContext.keyboard e05c2786e601cf36e8a5b9195251f7d8a8b40bf88555ff8ca53a4647aa9b755a -->
 <!-- api: P:Inno.Editor.Core.EditorContext.statistics c0b2ae92df07f8a75a39c9b46f3df2d7879192b44ed47fdc60440774ae633a06 -->

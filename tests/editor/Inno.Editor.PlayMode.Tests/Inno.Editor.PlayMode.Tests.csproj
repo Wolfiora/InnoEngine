@@ -33,6 +33,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="../../../src/composition/editor/hosting/Inno.Editor.Hosting/Layout/DefaultEditorLayout.ini"
+          Link="Fixtures/DefaultEditorLayout.ini" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference
       Include="../../../src/foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj"
       OutputItemType="Analyzer"

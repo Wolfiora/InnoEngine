@@ -435,7 +435,7 @@ internal sealed class EditorHost : ShellHost
                 presentation,
                 reloadCoordinator),
             static service => service.Dispose());
-        var editorContext = new EditorContext(projectDirectory, m_launch.keyboard);
+        var editorContext = new EditorContext(projectDirectory, m_launch.keyboard, EditorDefaultLayout.document);
         presentation.SetLayoutFile(null);
         presentation.LoadLayout(editorContext.imguiLayout);
         var playOptions = new RuntimeSessionOptions
