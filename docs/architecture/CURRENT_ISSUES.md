@@ -10,7 +10,7 @@
 
 [原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)发现的缺口正在按[真实 issue 闭合台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)处理。菜单/快捷键 generation 索引、通用 Graph 呈现、Console 搜索、Stats 趋势与大视图裁剪已有实现；最终操作、视觉、生命周期和成对性能矩阵仍未全部闭合。深查发现的资产刷新身份问题按 [#43](https://github.com/Wolfiora/InnoEngine/issues/43)在所属索引修复，未在 UI 添加 fallback。PR #26 保持 Draft，不能用历史 CI 或局部测试代替最终验收。
 
-E11 的原重构前 FlappyBird 同输入比较存在已复现阻塞：原基线 `b303d9f1` 及其正式工具能够构建，但当前插件源码依赖其不存在的 `EditorUiSession`，正式脚本编译失败。原始日志保留在闭合验收 owner 的 `e11/original-flappy-projection.log`。不增加兼容层或替换输入来冒充同输入比较；中立 10k/2k 负载继续按相同冻结输入验收。
+E11 的原重构前 指定样例 同输入比较存在已复现阻塞：原基线 `b303d9f1` 及其正式工具能够构建，但当前插件源码依赖其不存在的 `EditorUiSession`，正式脚本编译失败。原始日志保留在闭合验收 owner 的 `e11/original-flappy-projection.log`。不增加兼容层或替换输入来冒充同输入比较；中立 10k/2k 负载继续按相同冻结输入验收。
 
 F03 / [#13](https://github.com/Wolfiora/InnoEngine/issues/13) 已在本分支修复：History 先验证栈顶 ID 再 Pop，三种非 LIFO 拒绝回归在最终 Windows/macOS CI 通过，本次 121 项 Interactions 复跑也通过。等待 PR 合并后关闭 issue，不再把当前分支描述为仍在校验前弹栈。
 
