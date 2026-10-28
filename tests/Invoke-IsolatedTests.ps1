@@ -3,6 +3,7 @@ param(
     [string]$ResultsDirectory = 'artifacts/acceptance/ci-tests',
     [string]$Dotnet = 'dotnet',
     [string]$Target,
+    [string]$ToolTarget,
     [string]$ProductProperties,
     [string]$ArtifactsPath,
     [string]$Filter,
@@ -67,7 +68,15 @@ if ($Filter) {
 }
 if ($Target) {
     if (-not $ProductProperties) { throw 'A target test build requires explicit product properties.' }
-    $productArguments += @("-p:InnoNativeTarget=$Target", "-p:InnoToolTarget=$Target",
+    if (-not $ToolTarget) {
+        $entry = Join-Path $repositoryRoot 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj'
+        $selectedTool = @(& $Dotnet msbuild $entry -nologo -getProperty:InnoToolTarget)
+        if ($LASTEXITCODE -ne 0 -or $selectedTool.Count -ne 1 -or -not $selectedTool[0]) {
+            throw 'The SDK-selected development host did not provide a tool target.'
+        }
+        $ToolTarget = $selectedTool[0].Trim()
+    }
+    $productArguments += @("-p:InnoNativeTarget=$Target", "-p:InnoToolTarget=$ToolTarget",
         "-p:InnoProductBuildProperties=$ProductProperties", "-p:InnoTestNativeTarget=$Target", '-p:InnoTestNativeProduct=editor')
 }
 

@@ -46,13 +46,15 @@ function Save-Result(
 
 $entry = Join-Path $repository 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj'
 $evaluated = @(& $Dotnet msbuild $entry -nologo "-p:Configuration=$Configuration" "-p:ArtifactsPath=$artifacts" `
-    '-getProperty:InnoNativeTarget,InnoProductBuildProperties,TargetPath')
+    '-getProperty:InnoNativeTarget,InnoToolTarget,InnoProductBuildProperties,TargetPath')
 if ($LASTEXITCODE -ne 0) { throw 'The official Editor entry could not select its product owner.' }
 $product = ($evaluated -join [Environment]::NewLine | ConvertFrom-Json).Properties
-if (-not $product.InnoNativeTarget -or -not (Test-Path -LiteralPath $product.InnoProductBuildProperties)) {
+if (-not $product.InnoNativeTarget -or -not $product.InnoToolTarget -or
+    -not (Test-Path -LiteralPath $product.InnoProductBuildProperties)) {
     throw 'The selected development host does not provide an Editor product.'
 }
 $buildArguments = @("-p:ArtifactsPath=$artifacts", "-p:InnoNativeTarget=$($product.InnoNativeTarget)",
+    "-p:InnoToolTarget=$($product.InnoToolTarget)",
     "-p:InnoProductBuildProperties=$($product.InnoProductBuildProperties)",
     "-p:InnoTestNativeTarget=$($product.InnoNativeTarget)", '-p:InnoTestNativeProduct=editor')
 $profiles = if ($AcceptanceProfile -eq 'All') { @('Contracts', 'Workflows', 'Visual', 'Lifecycle', 'Performance', 'Products') } else { @($AcceptanceProfile) }
@@ -114,7 +116,7 @@ foreach ($selected in $profiles) {
         }
         & (Join-Path $PSScriptRoot 'Invoke-IsolatedTests.ps1') -Dotnet $Dotnet -Solution $selection `
             -Configuration $Configuration -ResultsDirectory $stageRoot -ArtifactsPath $artifacts `
-            -Target $product.InnoNativeTarget -ProductProperties $product.InnoProductBuildProperties -Filter $filter `
+            -Target $product.InnoNativeTarget -ToolTarget $product.InnoToolTarget -ProductProperties $product.InnoProductBuildProperties -Filter $filter `
             -TemporaryDirectory $TemporaryDirectory `
             *> (Join-Path $stageRoot 'execution.log')
         $executed = 0
