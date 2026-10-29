@@ -91,11 +91,12 @@ public sealed class NuGetLoadedIdentityTests
             File.Copy(runtime, mismatch);
             await using (FileStream altered = new(mismatch, FileMode.Append, FileAccess.Write))
                 await altered.WriteAsync(new byte[] { 0x49, 0x4E, 0x4E, 0x4F }, cancellation.Token);
-            WeakReference retired = LoadMismatchedContent(runtime, mismatch, loaded);
+            (WeakReference retired, WeakReference retiredAssembly) = LoadMismatchedContent(runtime, mismatch, loaded);
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
             Assert.False(retired.IsAlive);
+            Assert.False(retiredAssembly.IsAlive);
         }
         finally
         {
@@ -104,7 +105,7 @@ public sealed class NuGetLoadedIdentityTests
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private static WeakReference LoadMismatchedContent(
+    private static (WeakReference context, WeakReference assembly) LoadMismatchedContent(
         string expected,
         string mismatch,
         Assembly loaded
@@ -116,7 +117,7 @@ public sealed class NuGetLoadedIdentityTests
             Assert.Equal(loaded.GetName().FullName, different.GetName().FullName);
             Assert.Equal(loaded.ManifestModule.ModuleVersionId, different.ManifestModule.ModuleVersionId);
             Assert.Throws<Xunit.Sdk.EqualException>(() => AssertLoadedContent(expected, different));
-            return new WeakReference(context);
+            return (new WeakReference(context), new WeakReference(different));
         }
         finally
         {
