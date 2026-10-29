@@ -112,6 +112,8 @@ internal sealed partial class FileBrowserTree
 
     private void BeginNavigation()
     {
+        if (Ui.IsWindowFocused())
+            m_rename.MarkInteraction(FileBrowserPresentation.Tree);
         ClearNavigationFrame();
         m_drawKeyboardFocus = m_requestedKeyboardFocus;
         m_drawRootFocus = m_requestedRootFocus;

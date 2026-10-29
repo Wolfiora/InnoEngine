@@ -117,7 +117,7 @@ public sealed partial class LargePanelPerformanceTests
         ImGuiWindow* window = FindInteractionWindow(windowName);
         Assert.True(window->ScrollMax.Y > window->Size.Y * 20f);
         NativeGui.Raw.AddMousePosEvent(NativeGui.Raw.GetIO(), window->Pos.X + window->Size.X * 0.7f, window->Pos.Y + 140f);
-        NativeGui.Raw.AddMouseWheelEvent(NativeGui.Raw.GetIO(), 0f, 1000f);
+        NativeGui.Raw.AddMouseWheelEvent(NativeGui.Raw.GetIO(), 0f, 100_000f);
         host.native.DrawPanel(panel);
         host.native.DrawPanel(panel);
         Assert.Equal(0f, window->Scroll.Y);

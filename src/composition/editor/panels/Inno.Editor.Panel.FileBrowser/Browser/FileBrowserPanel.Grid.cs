@@ -28,6 +28,8 @@ internal sealed partial class FileBrowserPanel
         {
             if (entriesVisible)
             {
+                if (Ui.IsWindowFocused())
+                    m_rename.MarkInteraction(FileBrowserPresentation.Grid);
                 float cellSize = GetGridCellSize();
                 int columns = Math.Max(1, (int)(Ui.GetContentRegionAvailable().X / cellSize));
                 int rows = Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / cellSize));

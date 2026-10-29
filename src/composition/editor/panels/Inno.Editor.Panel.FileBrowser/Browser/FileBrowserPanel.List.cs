@@ -26,6 +26,8 @@ internal sealed partial class FileBrowserPanel
         {
             if (entriesVisible)
             {
+                if (Ui.IsWindowFocused())
+                    m_rename.MarkInteraction(FileBrowserPresentation.List);
                 float rowHeight = Ui.GetTextLineHeight() + Ui.GetLayout().cellPadding.Y * 2f + CurrentBrowserStyle.listRowSpacing;
                 HandleEntryKeyboardNavigation(Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / rowHeight)));
                 DrawEntriesTable(context, entries, m_assets.browser.currentDirectory);

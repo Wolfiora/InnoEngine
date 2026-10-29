@@ -128,6 +128,7 @@ internal static class TextAssetIcons
 
 - 快速双击调用 AssetEditor 的 Open。
 - Rename 只能从 entry 的右键菜单、F2 快捷键或 Create Folder 的创建完成流程启动；单击、延迟单击和双击都不会进入重命名。
+- 树、列表与网格根据当前键盘焦点更新重命名的呈现位置。纯键盘导航后，输入框仍属于同一个区域，不要求先点击条目，也不复用另一个区域的旧鼠标位置。
 - F2 会使用当前正在操作的 Tree、List 或 Grid 展示位置绘制输入框。
 - Create Folder 完成后会选中新目录并自动进入重命名。
 - Rename Action 自己持有输入/验证状态；Tree/List/Grid 只调用 `Present` 绘制 inline editor。
