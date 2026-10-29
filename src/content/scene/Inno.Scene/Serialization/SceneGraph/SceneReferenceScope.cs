@@ -11,6 +11,18 @@ internal abstract class SceneReferenceScope
     private static readonly ExecutionSlot<SceneReferenceScope> C_CURRENT = new("scene graph references");
     private readonly GameObject? m_captureRoot;
 
+    /// <summary>
+    /// Associates a synchronous reference boundary with its owning Scene.
+    /// </summary>
+    /// <param name="scene">
+    /// The Scene whose object references this boundary may describe.
+    /// </param>
+    /// <param name="captureRoot">
+    /// The optional frozen subtree root used in diagnostics, or null for a Scene-wide scope.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The owning Scene is null.
+    /// </exception>
     protected SceneReferenceScope(
         GameScene scene,
         GameObject? captureRoot = null
@@ -20,6 +32,9 @@ internal abstract class SceneReferenceScope
     }
 
     internal static SceneReferenceScope current => C_CURRENT.current;
+    /// <summary>
+    /// Gets the Scene that owns the references admitted by this boundary.
+    /// </summary>
     protected GameScene scene { get; }
 
     internal static bool TryGetCurrent(out SceneReferenceScope? references)
@@ -80,11 +95,35 @@ internal abstract class SceneReferenceScope
         return engineObject;
     }
 
+    /// <summary>
+    /// Looks up the identifier assigned to an object by this reference boundary.
+    /// </summary>
+    /// <param name="engineObject">
+    /// The non-null object being captured within the synchronous owner operation.
+    /// </param>
+    /// <param name="sourceId">
+    /// The admitted identifier, or the empty GUID when the boundary rejects the object.
+    /// </param>
+    /// <returns>
+    /// True when the boundary maps the object; false when it lies outside the admitted scope.
+    /// </returns>
     protected abstract bool TryGetSourceId(
         EngineObject engineObject,
         out Guid sourceId
     );
 
+    /// <summary>
+    /// Resolves one identifier within the frozen or current owner boundary.
+    /// </summary>
+    /// <param name="sourceId">
+    /// The reference identifier from the current serialized payload.
+    /// </param>
+    /// <param name="engineObject">
+    /// The mapped object, or null when the boundary cannot resolve the identifier.
+    /// </param>
+    /// <returns>
+    /// True when the boundary contains the identifier; false without publishing a replacement object.
+    /// </returns>
     protected abstract bool TryResolve(
         Guid sourceId,
         out EngineObject? engineObject

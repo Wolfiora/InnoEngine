@@ -37,6 +37,10 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
         }
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// The current allocator must still own the Scene and the exact registered object in that Scene.
+    /// </remarks>
     protected override bool TryGetSourceId(
         EngineObject engineObject,
         out Guid sourceId
@@ -50,6 +54,10 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
         return true;
     }
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// Neutral aliases resolve to current Core identities; destroyed or foreign Scene objects are rejected.
+    /// </remarks>
     protected override bool TryResolve(
         Guid sourceId,
         out EngineObject? engineObject
@@ -58,8 +66,11 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
         if (!HasCurrentOwner())
             return false;
         Guid target = m_aliases is not null && m_aliases.TryGetValue(sourceId, out Guid alias) ? alias : sourceId;
-        engineObject = m_identities.Get<EngineObject>(target);
-        return engineObject is not null && BelongsToScene(engineObject);
+        EngineObject? candidate = m_identities.Get<EngineObject>(target);
+        if (candidate is null || !BelongsToScene(candidate))
+            return false;
+        engineObject = candidate;
+        return true;
     }
 
     private bool HasCurrentOwner()
