@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
     <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows.Host/Inno.Build.Windows.Host.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx/Inno.Integration.WindowsX64.Bgfx.csproj" PrivateAssets="compile" />

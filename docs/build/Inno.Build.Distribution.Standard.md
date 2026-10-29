@@ -2,6 +2,10 @@
 
 [分类索引](README.md) · [Wiki 首页](../README.md) · [平台归属与扩展](../architecture/PLATFORM_EXTENSION_GUIDE.md)
 
+## Shader 编译工作区
+
+`StandardBuildCaches.CreateShaderWorkspaceAsync` 在明确登记的 `artifacts/build-tools/shaders/requests` 创建 Core 进程目录。Task 与 CLI 持有同一契约至导入、编译和校验全部完成；结束释放 payload，claim 和叶锁由既有缓存维护的独占 owner 协议退休。编译库只消费借用工作区，不选择全局临时目录，也不另外实现清理器。
+
 ## 职责与边界
 
 唯一标准发行注册入口，将已实现的平台贡献、共享 DotNet 托管部署和产品 Native 闭包组合起来。它是具体组合，不是中立领域。
@@ -60,6 +64,7 @@ Windows Editor 导出 Browser 游戏时，离线工具仍需能在 Windows 执�
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 <!-- api: T:Inno.Build.Distribution.Standard.StandardBuildCaches 1c1e788f0e8f2cc952295abf34db06accb94ec27cfae698207cdea979dbbbc02 -->
+<!-- api: M:Inno.Build.Distribution.Standard.StandardBuildCaches.CreateShaderWorkspaceAsync(System.String,System.Threading.CancellationToken) 46af978540d88dbeb4aa3e8e0b6f20393208562ed9a6816e0465ce410dfce449 -->
 <!-- api: M:Inno.Build.Distribution.Standard.StandardBuildCaches.CreateOwners(System.String,System.Collections.Generic.IReadOnlyList{Inno.Build.Toolchains.NativeComponentDescriptor}) 25ef827f97b70d2a13cec2c8e2d2dafd0e76faa6a876191173548f040605ac31 -->
 <!-- api: T:Inno.Build.Distribution.Standard.StandardBuildDistribution 30950658a0f6e43303b5fa9aaece0172f155d97f5afa911a82f07da7b2d28a45 -->
 <!-- api: P:Inno.Build.Distribution.Standard.StandardBuildDistribution.build ef7c994c8a067a0f2d5e137f23cda77f86bd61400062ca75382c414934f6031c -->
@@ -72,6 +77,7 @@ Windows Editor 导出 Browser 游戏时，离线工具仍需能在 Windows 执�
 
 | API 与源码 | 契约与参数 | 返回值 | 重要异常 |
 | --- | --- | --- | --- |
+| <a id="api-920b0a8e19a3d7cd"></a>[`public static System.Threading.Tasks.ValueTask<Inno.Core.IO.ProcessOwnedDirectory> Inno.Build.Distribution.Standard.StandardBuildCaches.CreateShaderWorkspaceAsync(string engineRoot, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildCaches.cs#L39) | Creates a shader compilation workspace in the registered process-owned build cache.<br>`engineRoot`: The checkout owning cache maintenance and the source-independent compiler request.<br>`cancellationToken`: Cancels registration or ownership acquisition before compilation begins. | A fresh directory lease; the caller must retain it until compilation finishes and dispose it afterward. Remaining claim metadata is retired by the same cache maintenance service. | `System.IO.IOException`: The cache boundary or operation ownership cannot be established.<br>`System.OperationCanceledException`: The request was canceled before workspace ownership was returned.<br>`System.ArgumentException`: The checkout root is blank or relative. |
 | <a id="api-ea6d9e002cae9c43"></a>[`public static class Inno.Build.Distribution.Standard.StandardBuildCaches`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildCaches.cs#L12) | Registers the standard distribution's actual immutable artifact publishers for coordinated cleanup. | — | — |
 | <a id="api-b6b67ab9377b97be"></a>[`public static System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.BuildCacheOwnerDescriptor> Inno.Build.Distribution.Standard.StandardBuildCaches.CreateOwners(string engineRoot, System.Collections.Generic.IReadOnlyList<Inno.Build.Toolchains.NativeComponentDescriptor> components)`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildCaches.cs#L30) | Registers exact Native, binding and Support Pack ownership recorded by their publishers. Unrecorded directories remain outside the cleanup authority.<br>`engineRoot`: The absolute engine checkout containing the artifact roots.<br>`components`: The actual registered component owners; shared toolchain roots are registered once. | Immutable owner registrations with current-generation and transitive dependency protection. | `System.ArgumentException`: The root is blank or relative. |
 | <a id="api-a86fde7406b2e1bb"></a>[`public sealed class Inno.Build.Distribution.Standard.StandardBuildDistribution`](../../build/distributions/Inno.Build.Distribution.Standard/StandardBuildDistribution.cs#L23) | Binds platform publication and backend configuration once at the standard distribution boundary. | — | — |
@@ -101,3 +107,5 @@ Windows Editor 导出 Browser 游戏时，离线工具仍需能在 Windows 执�
 | `Inno.Integration.BrowserWasm32.Build` | 实现依赖；不传递 compile surface |
 | `Inno.Build.Toolchains.Bgfx` | 公开签名依赖 |
 | `Inno.Build.Toolchains` | 公开签名依赖 |
+
+本轮新增公开工作区返回值直接使用 [Inno.Core.IO](../core/Inno.Core.IO.md) 的目录所有权契约；对应工程直接声明该公开依赖。

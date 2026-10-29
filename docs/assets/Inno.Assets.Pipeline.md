@@ -23,6 +23,10 @@ Tombstone 保留中立 property bytes、依赖描述与 last-successful artifact
 
 [Assets 索引](README.md) · [Runtime Assets](Inno.Assets.md) · [Plugins](../plugins/Inno.Plugins.Authoring.md)
 
+## 原子发布与源发现
+
+源过滤直接复用 Core IO 的 `AtomicFile.IsCandidatePath`，不把尚未发布的候选文件导入为资产。永久 `.imeta` 继续属于导入设置；构建源快照必须包含它，不能因为资产目录列表不展示 metadata 就从构建身份中排除。
+
 ## 职责与边界
 
 该 authoring project 拥有 Source Mount、文件索引/watcher、Importer、Build Processor、`.imeta`、依赖图、Catalog、CAS Artifact、canonical authoring object 和 runtime closure export。Player 不引用它。

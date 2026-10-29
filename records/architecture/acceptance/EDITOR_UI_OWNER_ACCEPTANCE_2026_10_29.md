@@ -40,3 +40,29 @@ The execution-chain review preserves current owners, Core reuse, SDK output isol
 4. Finish matching visual evidence and all original-plan rows, update each issue's actual checklist/evidence, then produce the eleven-dimension final assessment and exact-head CI result.
 
 PR #26 and parent #27 remain incomplete while these gates are open. No physical Mac/manual display claim is made. Previously rejected cleanup of four diagnostic runtime copies remains unperformed; automatic approval review returned `blocked by policy` without a detailed reason. User/SDK/NuGet global data is untouched.
+
+
+## Exact-candidate continuation
+
+At `564e00d0`, ordinary Release Workflows passed 699 and Lifecycle passed 15. Debug and Release official Editor builds succeeded; each reported that automatic cache maintenance exceeded its five-second budget and retired no artifact. This warning is retained, not reported as a zero-warning product build.
+
+The complete Contracts source build failed on a live `Vertex.ishadersource.imeta.staging-<operation>` file. New issue #52 fixes actual source ownership: Core IO recognizes only its reserved candidate naming; source policy reuses it; shader build captures permanent sources and import metadata, hashes the same neutral declarations used by the Task, copies into a `ProcessOwnedDirectory`, and imports only the copy. Complete source inventory/content is verified before publication. Generic Native hashing still includes explicitly declared candidate-shaped files.
+
+Initial ordinary-SDK #52 checks: shader input cases 7 passed, Core IO suite 37 passed, build zero warnings/errors. Complete concurrent build and final Wiki acceptance remain pending. Related test-entry review also fixes a local product-evaluation variable overwriting its test solution selection.
+
+The strengthened #16 identity regression passed ten normal/isolated groups (40 executions), observing both loaded Assembly and collectible Context retirement. One historical test-copy deletion denial remains unexplained and preserved; no cleanup suppression, increased timeout or retry is added.
+
+A diagnostic catalog-only assignment prototype separately measures the existing `TryGetInfo` boundary for document path/status instead of importing source contents during a label query. It remains outside production pending semantic tests and controlled measurements. Its noisy complete inspection median is 31.24 ms, with an initial 123 ms P95; it does not meet #46 and is not closure evidence.
+
+
+### Shader input boundary refinement
+
+The frozen shader identity includes permanent directory inventory as well as source/import-setting bytes. Empty authored directories are preserved; transient atomic file names and derived artifacts remain excluded. The Task consumes the backend-owned frozen fingerprint, not its physical file list. Core IO candidate-name recognition does not authorize deletion and general Native input hashing remains unchanged.
+
+The compiler now borrows an explicit `ProcessOwnedDirectory` supplied by actual callers. Standard distribution registers `artifacts/build-tools/shaders/requests`; Task/CLI retain the directory through completion, and existing owner-exclusive maintenance retires absent payload claims and leaf locks. There is no new unmanaged global temporary owner. Workspace retirement precedes authoritative Task publication.
+
+Nine updated focused cases pass using actual SDK compilation plus an evidence-owned copy of the already built native test runtime (`e52/frozen-input-workspace.trx`); this is distinct from a complete final normal build. Normal shader-library build and focused test compilation report no warnings/errors. Initial full workspace build passed with four xUnit blocking-operation warnings; the tests now use async/await, and the frozen compilation has no such warnings. The earlier eight-case run and all initial failures are retained.
+
+The first simultaneous source/Editor experiment is not a concurrency pass: source build passed, while Debug correctly rejected changed `bgfx-tools` inputs after the Core IO source was edited during the build. `NativeBuildRecipe.Create` explicitly includes `AtomicFile.cs`; the strict post-wait validation is retained. Re-run with a complete frozen source inventory. Cache maintenance inspected 29,060,240,489 logical bytes, protected 5,345,891,157, reclaimed zero under the current budget and skipped 441; no unknown data was deleted. C free space subsequently measured 83.27 GiB, D 29.66 GiB.
+
+The Contracts source prerequisite now selects the existing `SourceDebug` / `SourceRelease` Solution configuration, preserving a neutral graph and preparing selected product references separately. Product evaluation no longer overwrites the test-solution path. Final SDK/contract and Wiki checks remain required.

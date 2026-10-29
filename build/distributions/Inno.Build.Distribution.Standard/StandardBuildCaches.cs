@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Inno.Core.IO;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Distribution.Standard;
@@ -11,6 +14,40 @@ namespace Inno.Build.Distribution.Standard;
 /// </summary>
 public static class StandardBuildCaches
 {
+    /// <summary>
+    /// Creates a shader compilation workspace in the registered process-owned build cache.
+    /// </summary>
+    /// <param name="engineRoot">
+    /// The checkout owning cache maintenance and the source-independent compiler request.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels registration or ownership acquisition before compilation begins.
+    /// </param>
+    /// <returns>
+    /// A fresh directory lease; the caller must retain it until compilation finishes and dispose it afterward.
+    /// Remaining claim metadata is retired by the same cache maintenance service.
+    /// </returns>
+    /// <exception cref="System.IO.IOException">
+    /// The cache boundary or operation ownership cannot be established.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The request was canceled before workspace ownership was returned.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The checkout root is blank or relative.
+    /// </exception>
+    public static ValueTask<ProcessOwnedDirectory> CreateShaderWorkspaceAsync(
+        string engineRoot,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
+        if (!Path.IsPathFullyQualified(engineRoot))
+            throw new ArgumentException("Shader workspaces require an absolute checkout root.", nameof(engineRoot));
+        string root = Path.Combine(engineRoot, "artifacts", "build-tools", "shaders", "requests");
+        BuildCacheOwnerCatalog.Register(engineRoot, root, "shader-requests", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellationToken);
+        return ProcessOwnedDirectory.CreateAsync(root, cancellationToken);
+    }
+
     /// <summary>
     /// Registers exact Native, binding and Support Pack ownership recorded by their publishers.
     /// Unrecorded directories remain outside the cleanup authority.
@@ -40,6 +77,7 @@ public static class StandardBuildCaches
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact), "native"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact), "bindings"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "support-packs"), BuildCacheArtifactRole.ImmutableArtifact), "support-packs"),
+            Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "shaders", "requests"), BuildCacheArtifactRole.ProcessWorkingDirectory), "shader-requests"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "managed", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace), "managed-workspaces"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "evaluators"), BuildCacheArtifactRole.ImmutableArtifact), "managed-evaluators"),
             Describe(new BuildCachePublisher(Path.Combine(engineRoot, "artifacts", "build-tools", "managed-inputs", "requests"), BuildCacheArtifactRole.ProcessWorkingDirectory), "managed-input-requests"),

@@ -18,6 +18,8 @@
 
 `Install` 在发布失败时保留调用方候选；发布成功后移除候选。若目标已经发布而候选删除失败，异常明确说明目标完整存在，调用方不能重试覆盖他人的目标。`WriteAllBytes` 自己拥有 staging 并负责在退出时清理。空的现有文档也属于已有目标，不能因为长度为零而覆盖。父目录和候选仍需要调用方的所有权保护；原子发布不抵御非合作进程替换整棵父目录。
 
+`AtomicFile.IsCandidatePath` 只识别本 publisher 保留的完整 staging 文件名，供 source discovery 排除尚未发布的临时 bytes。识别名称不授予读取、清理或删除权限。
+
 `AtomicDirectory.Publish` 只向不存在的目标发布完整 staging。需要替换目录时使用 `Install`，由调用方先协调全部读写 owner；这两个原子目录入口不会自行取得读取 lease。提交后的旧目录清理失败与提交前失败具有不同结果，不能把清理异常解释为新产物未安装。
 
 `DirectoryCleanupException` 只表示提交后的 backup 删除失败；`installedDirectory` 指向已经完整安装的新目录，`backupDirectory` 指向保留的旧目录。消费方记录独立清理诊断并继续使用已提交输出，不重试安装、不回滚新目录。其他 IO 异常仍表示安装阶段失败，遵循原来的恢复语义。
@@ -89,11 +91,13 @@ AtomicFile.Install 要求两个 parent 的规范拼写完全一致；候选与�
 ### `Inno.Core.IO.AtomicFile`
 
 <!-- api: T:Inno.Core.IO.AtomicFile 1e80794d7c609d4533a84d84795da5c6be12b01a22e69c34825e0ebddbec963e -->
+<!-- api: M:Inno.Core.IO.AtomicFile.IsCandidatePath(System.String) 2f9da434b609dea5e0c9e112ee4dbcd00f7c0c352c4e5ccbb79ef4926ec5bc13 -->
 <!-- api: M:Inno.Core.IO.AtomicFile.WriteAllBytes(System.String,System.ReadOnlySpan{System.Byte},System.Boolean) 752a360022972a45a702098a150364da63a8b2d9f3e5cbd52ffe27d8db5f5a88 -->
 <!-- api: M:Inno.Core.IO.AtomicFile.Install(System.String,System.String,System.Boolean) 8822ceeac332cd33204d41099512f0c18d843ccf4a2f6248fc818155ba6a4a48 -->
 
 | 声明 | 行为、参数与结果 |
 | --- | --- |
+| <a id="api-04775fa99d9edfd9"></a>[`public static bool Inno.Core.IO.AtomicFile.IsCandidatePath(string path)`](../../src/foundation/core/Inno.Core.IO/AtomicFile.cs#L20) | Recognizes the reserved complete atomic-publication candidate name.<br>`path`: File name or path; no file is opened.<br>Returns true only for a nonempty destination plus the exact marker and 32-digit hexadecimal identity. Does not establish ownership or authorize cleanup.<br>`ArgumentNullException`: The path is null. |
 | <a id="api-5d7c305f369e5c62"></a>[`public static void Inno.Core.IO.AtomicFile.Install(string source, string destination, bool overwrite = true)`](../../src/foundation/core/Inno.Core.IO/AtomicFile.cs#L64) | Atomically installs an existing same-directory candidate file.<br>`source`：The complete candidate file beside the destination.<br>`destination`：The destination file path beside the candidate.<br>`overwrite`：Whether an existing destination may be replaced; false never overwrites an external creator. |
 | <a id="api-131b9c8a528b9757"></a>[`public static void Inno.Core.IO.AtomicFile.WriteAllBytes(string path, System.ReadOnlySpan<byte> data, bool overwrite = true)`](../../src/foundation/core/Inno.Core.IO/AtomicFile.cs#L23) | Writes a complete byte payload and atomically installs it at the destination.<br>`path`：The destination file path.<br>`data`：The complete file payload.<br>`overwrite`：Whether an existing destination may be replaced; false atomically rejects name collisions. |
 | <a id="api-50bb21c877feddc1"></a>[`public static class Inno.Core.IO.AtomicFile`](../../src/foundation/core/Inno.Core.IO/AtomicFile.cs#L9) | Provides durable same-directory file replacement without exposing partial destination content. |

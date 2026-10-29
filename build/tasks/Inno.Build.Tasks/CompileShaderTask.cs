@@ -197,12 +197,13 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             throw new ArgumentException("A shader product must be published inside its owned Outputs directory.", nameof(OutputFile));
         string directory = Path.GetDirectoryName(outputs)!;
         string runtime = Path.GetDirectoryName(typeof(CompileShaderTask).Assembly.Location)!;
-        NativeBuildInput[] inputs = [new("shader-source", Path.GetFullPath(AssetRoot)),
-            .. Directory.EnumerateFiles(runtime, "*.dll").Order(StringComparer.Ordinal)
-                .Select(path => new NativeBuildInput("compiler-runtime/" + Path.GetFileName(path), path))];
-        string[] declarations = [compilerFingerprint, platform.id, platform.Resolve(renderer).key, Renderer, Configuration, ShaderPath, Path.GetFileName(output)];
         using FileLease lease = FileLease.AcquireAsync(directory + ".lock", Timeout.InfiniteTimeSpan, cancellationToken)
             .GetAwaiter().GetResult();
+        ShaderBuildInputs source = ShaderBuildInputs.Capture(AssetRoot, cancellationToken);
+        string[] declarations = [source.fingerprint, compilerFingerprint, platform.id, platform.Resolve(renderer).key,
+            Renderer, Configuration, ShaderPath, Path.GetFileName(output)];
+        NativeBuildInput[] inputs = Directory.EnumerateFiles(runtime, "*.dll").Order(StringComparer.Ordinal)
+            .Select(path => new NativeBuildInput("compiler-runtime/" + Path.GetFileName(path), path)).ToArray();
         string fingerprint = NativeBuildFingerprint.Create(declarations, inputs, cancellationToken);
         if (BuildArtifactManifest.IsComplete(directory, fingerprint, ["Outputs", "Metadata"]))
         {
@@ -216,8 +217,13 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         Directory.CreateDirectory(candidateOutputs);
         try
         {
-            ShaderArtifactBuilder.CompileGraphicsProgram(AssetRoot, ShaderPath, platform, renderer,
-                Path.Combine(candidateOutputs, Path.GetFileName(output)), tools, cancellationToken);
+            using (ProcessOwnedDirectory compilation = StandardBuildCaches.CreateShaderWorkspaceAsync(EngineRoot, cancellationToken)
+                       .AsTask().GetAwaiter().GetResult())
+            {
+                ShaderArtifactBuilder.CompileGraphicsProgram(source, compilation, ShaderPath, platform, renderer,
+                    Path.Combine(candidateOutputs, Path.GetFileName(output)), tools, cancellationToken);
+            }
+            source.VerifyUnchanged(cancellationToken);
             if (NativeBuildFingerprint.Create(declarations, inputs, cancellationToken) != fingerprint)
                 throw new InvalidDataException("Shader inputs changed during compilation; the candidate was not published.");
             BuildArtifactManifest.Write(candidate, fingerprint, ["Outputs", "Metadata"]);

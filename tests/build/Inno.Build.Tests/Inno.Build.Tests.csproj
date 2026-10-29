@@ -17,6 +17,7 @@
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows.Host/Inno.Build.Windows.Host.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Build/Inno.Integration.WindowsX64.Build.csproj" PrivateAssets="compile" />

@@ -1,3 +1,9 @@
+## Current verification checkpoint (2026-10-29, shader input ownership)
+
+At clean candidate `564e00d0`, Workflows passed 699 cases and Lifecycle passed 15; ordinary Debug and Release Editor builds succeeded with a cache-maintenance budget warning. Contracts failed before tests because shader input hashing included a live metadata publication candidate. Issue #52 owns the actual fix; the parent and PR remain incomplete.
+
+Next: finish #52 frozen-input/copy/cancellation/concurrent-build and Wiki acceptance, rerun complete Contracts at the corrected source, then complete the actual FlappyBird product/lifecycle matrix, #46 absolute latency, controlled original/current performance and matching visual evidence. Existing passed rows are scoped evidence, not substitute final-source closure. No computer use or approval questions.
+
 # Editor UI closure execution ledger
 
 [Original-plan review](acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md) · [Parent issue #27](https://github.com/Wolfiora/InnoEngine/issues/27) · [PR #26](https://github.com/Wolfiora/InnoEngine/pull/26)

@@ -117,17 +117,18 @@ foreach ($selected in $profiles) {
             ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $selection -Encoding utf8
         if (-not $NoBuild) {
             if ($selected -eq 'Contracts') {
-                & $Dotnet build (Join-Path $repository 'InnoEngine.sln') -c $Configuration "-p:ArtifactsPath=$artifacts" `
+                $sourceConfiguration = "Source$Configuration"
+                & $Dotnet build (Join-Path $repository 'InnoEngine.sln') -c $sourceConfiguration "-p:ArtifactsPath=$artifacts" `
                     *> (Join-Path $stageRoot 'source-build.log')
                 if ($LASTEXITCODE -ne 0) { throw 'The complete neutral source graph required by repository architecture and Wiki checks did not build.' }
                 $contracts = @()
                 foreach ($candidate in Get-ChildItem -LiteralPath (Join-Path $repository 'platforms') -Filter '*.csproj' -Recurse) {
                     $declaration = [xml](Get-Content -LiteralPath $candidate.FullName -Raw)
                     if (-not $declaration.SelectSingleNode('//InnoProductTarget')) { continue }
-                    $selection = @(& $Dotnet msbuild $candidate.FullName -nologo "-p:Configuration=$Configuration" "-p:ArtifactsPath=$artifacts" `
+                    $productEvaluation = @(& $Dotnet msbuild $candidate.FullName -nologo "-p:Configuration=$Configuration" "-p:ArtifactsPath=$artifacts" `
                         '-getProperty:InnoProductTarget,TargetPath,MSBuildProjectName')
                     if ($LASTEXITCODE -ne 0) { throw "The SDK could not evaluate the declared product '$($candidate.FullName)'." }
-                    $contract = ($selection -join [Environment]::NewLine | ConvertFrom-Json).Properties
+                    $contract = ($productEvaluation -join [Environment]::NewLine | ConvertFrom-Json).Properties
                     if ($contract.InnoProductTarget -ne $product.InnoNativeTarget) { continue }
                     $contracts += [pscustomobject]@{ project = $candidate.FullName; target = $contract.InnoProductTarget; output = $contract.TargetPath }
                     & $Dotnet build $candidate.FullName -c $Configuration "-p:ArtifactsPath=$artifacts" `

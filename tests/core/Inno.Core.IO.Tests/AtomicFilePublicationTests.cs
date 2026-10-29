@@ -18,6 +18,21 @@ public sealed class AtomicFilePublicationTests : IDisposable
     public AtomicFilePublicationTests() => Directory.CreateDirectory(m_root);
 
     [Theory]
+    [InlineData("document.imeta.staging-0123456789abcdef0123456789ABCDEF", true)]
+    [InlineData("document.staging-0123456789abcdef0123456789abcdef.more", false)]
+    [InlineData("document.staging-0123456789abcdef0123456789abcdeg", false)]
+    [InlineData("document.staging-", false)]
+    [InlineData(".staging-0123456789abcdef0123456789abcdef", false)]
+    [InlineData("ordinary.imeta", false)]
+    public void PublicationRecognitionRequiresTheCompleteReservedName(
+        string name,
+        bool expected
+    ) {
+        Assert.Equal(expected, AtomicFile.IsCandidatePath(name));
+        Assert.Equal(expected, AtomicFile.IsCandidatePath(Path.Combine(m_root, name)));
+    }
+
+    [Theory]
     [InlineData("")]
     [InlineData("external document")]
     public void CreateOnlyPreservesAnExistingFileAndTheLosingCandidate(string document)
