@@ -6,6 +6,21 @@ Baseline: `30d18489fbf68763229cd8ed35a7005f543019ad`. Evidence owner: `D:/InnoEn
 
 Every work item below is a real GitHub issue created before implementation. Issues remain open after branch verification. Only completely verified items receive an individual `Fixes #N` in PR #26; they close on merge. The broader #18 uses `Refs #18`. No automatic merge is authorized.
 
+## Current continuation checkpoint (2026-10-29)
+
+The sections below retain dated execution history; this checkpoint is the current remaining-work authority. No intermediate pass completes the parent.
+
+| Order | Remaining work | Current evidence / next gate |
+| --- | --- | --- |
+| 1 | Complete source/contract ownership gates | 0b0a821c Workflows 484, Visual 306 and Lifecycle 12 passed. Its Contracts failure exposed missing neutral source prerequisites; the corrected entry first built the entire neutral Release solution with zero warnings/errors, then the selected product graph. The full Contracts execution is running. Later source changes require a final frozen rerun. |
+| 2 | Finish actual owner corrections | #49/#51 committed in e3f02ebe and 23f0ceb2; 12 ordinary SDK native regressions passed. #50 retains assigned Missing source state through Asset Pipeline reconciliation; recovery/rename/Save/reopen and explicit SaveToDirectory receive formal coverage. |
+| 3 | Finish quantitative #46 work | Five earlier independent processes measured 41–43 ms and 8.37 MB per due inspection, still failing latency. The scalar ordinal prototype passes Core 74; the Scene record backlink passes Scene 53 and retains the same indexed owner. Metadata-only timings are diagnostic, not complete-frame acceptance. Final source builds, correctness and controlled pairs remain required. |
+| 4 | Execute the complete automated UI matrix | Apply native style during display preparation; cover Console/Shader input/layout across independent zoom, density and size combinations. Contracts/Lifecycle now include the actual ImGui fixture. Products reuses the existing runner for eight workflows and every panel's 100-cycle/full-GC resource series, with unattended windows hidden. |
+| 5 | Complete original/current measurements | The historical producer combination and actual hidden FlappyBird preflight now work. Run all five alternating product pairs only after compilation/testing load stops; retain producer/input differences and raw measurements. |
+| 6 | Reassess every issue and final architecture | Review all checklist rows, Core reuse, source ownership, failure/retirement and actual extension consumers. Update eleven quality dimensions and PR #26 only with verified evidence. Exact-head CI and physical-display/Mac limitations remain distinct. |
+
+The current APIs remain platform neutral at their existing boundaries. Context ownership stays in the shared SDL/ImGui backend; Scene attachment is a backlink to the existing Core-indexed record, not a new object registry. BGCS, third-party source and generated bindings are untouched. No new global/implicit imports, compatibility paths, event buses or serializers are introduced.
+
 ## Issue execution map
 
 | Work | Issue | Owner | State |
