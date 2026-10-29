@@ -95,7 +95,7 @@ internal sealed partial class HierarchyPanel : EditorPanel
         m_requestedKeyboardFocus = null;
         m_pendingSelection = null;
         m_visibleRowIndex = 0;
-        m_selection.Prune(context);
+        m_selection.Prune();
         RevealSelection();
         Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), hierarchyStyle.itemSpacing);
         Ui.PushStyleVar((ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.compactFramePadding);
@@ -181,7 +181,7 @@ internal sealed partial class HierarchyPanel : EditorPanel
         bool selected = m_interactions.selection.Contains(scene);
         TreeNodeResult result = EditorUI.current.widgets.TreeNode(
             $"scene_{id}",
-            drawContext => DrawSceneRowContent(context, scene, id, drawContext.rowHeight),
+            drawContext => DrawSceneRowContent(scene, id, drawContext.rowHeight),
             new TreeNodeOptions {
                 depth = depth, selected = selected, requestFocus = scene.identity.runtimeIdentity == m_drawKeyboardFocus,
                 keepContentActive = m_interactions.For(HierarchyInteractionIds.C_AREA, scene).IsActive(HierarchyInteractionIds.C_RENAME),
@@ -280,7 +280,6 @@ internal sealed partial class HierarchyPanel : EditorPanel
     }
 
     private void DrawSceneRowContent(
-        EditorContext context,
         GameScene scene,
         string id,
         float rowHeight
@@ -288,7 +287,7 @@ internal sealed partial class HierarchyPanel : EditorPanel
         EditorInteraction interaction = m_interactions.For(HierarchyInteractionIds.C_AREA, scene);
         if (!interaction.IsActive(HierarchyInteractionIds.C_RENAME))
         {
-            m_selection.DrawSceneRowContent(context, scene);
+            m_selection.DrawSceneRowContent(scene);
             return;
         }
 
