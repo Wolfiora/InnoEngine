@@ -114,7 +114,7 @@ internal static class SceneGraphSerialization
                         connection,
                         gameObject.scene,
                         objectWriter.context,
-                        SceneGraphReferenceMap.current);
+                        SceneReferenceScope.current);
                     WritePrefabConnection(
                         objectWriter,
                         connection,

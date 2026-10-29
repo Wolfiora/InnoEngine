@@ -22,7 +22,7 @@ internal static class SerializedPropertyValueCodec
         SerializationMemberMetadata member,
         GameComponent component,
         SerializationContext context,
-        SceneGraphReferenceMap references
+        SceneReferenceScope references
     ) {
         ArgumentNullException.ThrowIfNull(member);
         ArgumentNullException.ThrowIfNull(component);
@@ -39,7 +39,7 @@ internal static class SerializedPropertyValueCodec
         GameComponent component,
         ReadOnlySpan<byte> bytes,
         SerializationContext context,
-        SceneGraphReferenceMap references
+        SceneReferenceScope references
     ) {
         ArgumentNullException.ThrowIfNull(member);
         ArgumentNullException.ThrowIfNull(component);

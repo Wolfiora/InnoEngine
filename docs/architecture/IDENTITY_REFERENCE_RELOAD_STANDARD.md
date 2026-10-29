@@ -697,6 +697,7 @@ resolved
 - Undo 创建/删除 Missing Component/System/Asset reference。
 - redo branch、transaction compensation 和 disk-spilled payload 保持中立。
 - Scene/Asset history 始终获得完整 Asset/reference Serialization Context。
+- 局部 Scene 属性与元素状态通过所属 Core Identity domain 按需解析当前引用；禁止为每次标量编辑重建整场景的 live object 双向索引。同步作用域固定 Scene owner，拒绝过期、错误 domain、跨 Scene 和类型不匹配的引用；异常与嵌套回调必须恢复原作用域。元素别名只保留经校验的中立 Guid 映射。完整图、Prefab、子树与 reload 候选的冻结局部 ID 映射仍属于各自的当前图事务，不承担当前属性的 live object authority。
 - `Remove ScriptComponent → remove Plugin/Asset → Undo → recover → Redo` 全链通过。
 
 ### 13.5 GC barrier

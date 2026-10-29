@@ -9,6 +9,12 @@ PR #26 remains Draft. Every issue remains Open until merge. The retained checkpo
 - The historical native UI capture now includes both real GPU viewport textures through the public render graph/readback SPI. Its replay has **zero** unavailable texture commands and unexecuted callbacks. The final current capture and normal shutdown are still being verified. Diagnostic API/phase errors and incomplete runs remain retained. This is replayed native UI data and real sampled pixels, not a final backbuffer or physical screenshot.
 - Deep API review added the actual null-state exception to `GraphCanvasView` XML and its Wiki. Runtime behavior and signatures are unchanged.
 
+## Additional confirmed editing-path prerequisite: #54
+
+The actual continuous-edit preflight still pays two complete Scene reference-map constructions. #54 separates the existing frozen graph map from synchronous property references resolved through the owning Core allocator, sharing one internal scope/protocol. No public API, second identity registry or persistent cache is introduced. The isolated implementation passes 66 Scene cases, including ten new allocation/reference/alias/kind/asset/nested-failure cases. The same public allocation regression fails the official prior Scene producer at 26,823,728 bytes for ten captures with 5,000 unrelated objects (56,480 bytes in a small Scene). Its negative runtime is test-owned and does not change shared outputs or packages.
+
+This correction is isolated while the prior main candidate finishes its full suite. Documentation, main-branch integration, actual edit measurements and final full products/CI must still close; it is not marked complete on these focused results.
+
 ## Remaining execution order
 
 1. Complete current full suites; investigate any failure and retain its original evidence. Recompile the changed performance fixture in the final test graph and validate current Wiki/API signatures.

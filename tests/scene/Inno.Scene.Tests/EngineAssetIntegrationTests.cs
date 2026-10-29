@@ -16,7 +16,7 @@ using Xunit;
 namespace Inno.Scene.Tests;
 
 [Collection(SceneTestsCollection.NAME)]
-public sealed class EngineAssetIntegrationTests : IDisposable
+public sealed partial class EngineAssetIntegrationTests : IDisposable
 {
     private readonly string m_root = Path.Combine(
         Path.GetTempPath(),
@@ -45,8 +45,7 @@ public sealed class EngineAssetIntegrationTests : IDisposable
             fixture.diagnostics,
             fixture.logs,
             options);
-        m_assetSerializationContext = SerializationContext.empty
-            .With<IAssetReferenceResolver>(m_assets);
+        m_assetSerializationContext = AssetSerializationContext.Create(m_assets);
     }
 
     public void Dispose()

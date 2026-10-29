@@ -283,6 +283,14 @@ History 通过 SceneEdits 捕获这些 bytes，不直接使用上面的 Host 工
 缺少 owner/Handler、身份冲突、错误 payload 或补偿失败仍明确阻断且保持栈位置。普通元素恢复失败必须移除所有半创建状态；
 不可逆退休失败属于 Fault。已保存 Scene 的自动 Missing/Recovery 不产生 dirty 或伪 History entry。
 
+## 局部属性的引用作用域
+
+`ScenePropertySerialization` 和元素状态恢复使用所属 Scene 的 Core Identity domain。对象、Component、System 引用在转换时解析当前注册实例，并检查所属 Scene、代际及预期类型；已销毁、脱离、跨 Scene 或跨 domain 的引用明确失败。纯值属性不会枚举无关对象，也不会为每次前后快照建立整场景双向引用表。调用方仍提供完整的 Asset resolver，资产引用保持 Catalog 的规范实例。
+
+完整 Scene、Prefab、子树和 reload 候选仍需要自己的冻结图边界与局部 ID 映射。它们和当前属性定位是不同的操作：前者描述正在捕获或构造的完整图，后者通过 Core 解析当前存活对象。内部共用同一同步引用作用域，不建立第二个 live object authority；这些内部类型不是公开扩展 API。
+
+恢复别名仅为本次元素状态的中立 `Guid → Guid` 映射；目标必须能在同一 owner 中解析，身份冲突、缺失目标或损坏的别名数据都会拒绝。嵌套序列化和 getter/converter 异常退出时恢复先前作用域，不把它保存在快照、History 或插件状态中。公开签名及 reference token 的持久形状不变。
+
 ## Editor Scene 名称与资产路径
 
 已保存 Scene 的 Inspector 名称可以编辑。名称变化立即使文档进入 dirty 状态；保存时同目录 SceneAsset 被事务式重命名，`.imeta`、persistent ID、canonical instance 和 artifact identity 保持不变。目标文件已存在时保存会给出冲突错误，不覆盖另一个资产。

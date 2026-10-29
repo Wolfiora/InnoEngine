@@ -16,7 +16,7 @@ internal static class PrefabOverrideProcessor
         PrefabConnectionRecord connection,
         GameScene scene,
         SerializationContext context,
-        SceneGraphReferenceMap storageReferences
+        SceneReferenceScope storageReferences
     ) {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(scene);
@@ -150,7 +150,7 @@ internal static class PrefabOverrideProcessor
         SerializationContext context,
         SceneGraphReferenceMap currentReferences,
         SceneGraphReferenceMap sourceReferences,
-        SceneGraphReferenceMap storageReferences,
+        SceneReferenceScope storageReferences,
         PrefabOverrideSet overrides
     ) {
         foreach ((Guid sourceId, Guid sourceRuntimeId) in sourceConnection.componentIdentities)
@@ -611,7 +611,7 @@ internal static class PrefabOverrideProcessor
             .With(sourceAsset);
         try
         {
-            using (SceneGraphReferenceMap.Suspend())
+            using (SceneReferenceScope.Suspend())
             {
                 GameObject sourceRoot = context.GetRequired<SerializationRegistry>().Deserialize<GameObject>(
                     sourceAsset.runtimePayload.Span,

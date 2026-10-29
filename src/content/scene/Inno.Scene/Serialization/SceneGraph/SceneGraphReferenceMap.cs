@@ -1,104 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Inno.Core.Execution;
 
 using Inno.Scene;
 
 namespace Inno.Scene;
 
-internal sealed class SceneGraphReferenceMap
+/// <summary>
+/// Freezes local identities for graph construction without indexing live property access.
+/// </summary>
+internal sealed class SceneGraphReferenceMap : SceneReferenceScope
 {
-    private static readonly ExecutionSlot<SceneGraphReferenceMap> C_CURRENT = new("scene graph references");
-
     private readonly IReadOnlyDictionary<EngineObject, Guid>? m_sourceIdByObject;
     private readonly Dictionary<Guid, EngineObject> m_objectBySourceId = new();
-    private readonly GameScene m_scene;
-    private readonly GameObject? m_captureRoot;
 
     internal SceneGraphReferenceMap(
         GameScene scene,
         IReadOnlyDictionary<EngineObject, Guid>? sourceIds = null,
         GameObject? captureRoot = null
-    ) {
-        m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
-        m_captureRoot = captureRoot;
+    ) : base(scene, captureRoot) {
         // Capture callers own the complete map and keep it fixed for this synchronous scope.
         m_sourceIdByObject = sourceIds;
-    }
-
-    internal static SceneGraphReferenceMap current => C_CURRENT.current;
-
-    internal static bool TryGetCurrent(out SceneGraphReferenceMap? references)
-    {
-        return C_CURRENT.TryGet(out references);
-    }
-
-    internal IDisposable Enter()
-    {
-        return C_CURRENT.Enter(this, threadAffine: true);
-    }
-
-    internal static IDisposable Suspend()
-    {
-        return C_CURRENT.Suspend();
-    }
-
-    internal EngineReferenceToken Capture(
-        EngineObject engineObject,
-        string path
-    ) {
-        ArgumentNullException.ThrowIfNull(engineObject);
-        if (engineObject.isDestroyed || m_sourceIdByObject is null ||
-            !m_sourceIdByObject.TryGetValue(engineObject, out Guid sourceId))
-        {
-            throw new InvalidOperationException(
-                $"Reference to '{engineObject.GetType().FullName}' with identity " +
-                $"'{engineObject.identity.persistentId}' at '{path}' is outside the serialized graph boundary" +
-                (m_captureRoot is null
-                    ? "."
-                    : $" rooted at GameObject '{m_captureRoot.name}' ({m_captureRoot.identity.persistentId})."));
-        }
-
-        GameScene ownerScene = engineObject switch
-        {
-            GameObject gameObject => gameObject.scene,
-            GameComponent component => component.gameObject.scene,
-            GameSystem system => system.ownerScene
-                ?? throw new InvalidOperationException($"Detached GameSystem reference at '{path}' cannot be serialized."),
-            _ => throw new InvalidOperationException(
-                $"Engine object type '{engineObject.GetType().FullName}' cannot be serialized as a scene reference at '{path}'.")
-        };
-        if (!ReferenceEquals(ownerScene, m_scene))
-            throw new InvalidOperationException($"Cross-scene object reference at '{path}' cannot be serialized.");
-
-        EngineReferenceKind kind = engineObject switch
-        {
-            GameObject => EngineReferenceKind.GameObject,
-            GameComponent => EngineReferenceKind.GameComponent,
-            GameSystem => EngineReferenceKind.GameSystem,
-            _ => throw new InvalidOperationException($"Unsupported scene reference at '{path}'.")
-        };
-        return new EngineReferenceToken(kind, sourceId);
-    }
-
-    internal EngineObject Resolve(
-        EngineReferenceToken token,
-        Type expectedType,
-        string path
-    ) {
-        if (!m_objectBySourceId.TryGetValue(token.sourceId, out EngineObject? engineObject))
-        {
-            throw new InvalidOperationException(
-                $"Scene graph reference '{token.sourceId}' at '{path}' could not be resolved.");
-        }
-        if (!expectedType.IsInstanceOfType(engineObject))
-        {
-            throw new InvalidOperationException(
-                $"Scene graph reference '{token.sourceId}' at '{path}' resolves to " +
-                $"'{engineObject.GetType().FullName}', expected '{expectedType.FullName}'.");
-        }
-        return engineObject;
     }
 
     internal void Register(
@@ -129,4 +50,17 @@ internal sealed class SceneGraphReferenceMap
             ? engineObject
             : throw new InvalidOperationException(
                 $"Scene graph reference alias target '{sourceId}' could not be resolved.");
+
+    protected override bool TryGetSourceId(
+        EngineObject engineObject,
+        out Guid sourceId
+    ) {
+        sourceId = default;
+        return m_sourceIdByObject is not null && m_sourceIdByObject.TryGetValue(engineObject, out sourceId);
+    }
+
+    protected override bool TryResolve(
+        Guid sourceId,
+        out EngineObject? engineObject
+    ) => m_objectBySourceId.TryGetValue(sourceId, out engineObject);
 }
