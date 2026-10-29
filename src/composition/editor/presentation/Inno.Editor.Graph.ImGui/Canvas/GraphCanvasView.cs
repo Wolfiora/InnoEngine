@@ -28,6 +28,9 @@ public readonly partial struct GraphCanvasView
     /// <param name="size">
     /// The finite nonnegative canvas extent.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The document-owned navigation state is null.
+    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// The canvas geometry is invalid.
     /// </exception>

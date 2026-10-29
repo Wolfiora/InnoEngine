@@ -1,26 +1,30 @@
-## Current verification checkpoint (2026-10-29, complete capture inputs)
+# Current closure checkpoint — 2026-10-29
 
-The checkpoints below are retained history. Current continuation: #53 implements the reviewed Core-owned neutral capture-key capability for #46. The first ordinary SDK correctness runs pass Core 90 and Scene 56. A preliminary native run passes the three assigned-source cases and the complete due-inspection case; it overlaps a build and is not performance acceptance. Initial due medians are 7.8–9.1 ms, with approximately 2.16 MB per inspection, but concurrent P95 outliers remain unaccepted. Five quiet independent process groups, full suites and final product/CI reruns are still required.
+PR #26 remains Draft. Every issue remains Open until merge. The retained checkpoints below are execution history, not a final completion declaration.
 
-At the previous product candidate, all six Debug/Release × D3D11/D3D12/Vulkan FlappyBird smoke/workflow/panel-lifecycle runs passed. The corrected complete Wiki case passed in `e52/wiki-corrected`. Those results do not substitute for the final #53 candidate. The matching original/current native UI replay explicitly marks two unavailable external GPU textures; it is not a physical screenshot. PR #26 remains Draft while quantitative or original-plan gates remain open.
+- Production candidate `2434cd96`: the complete SourceRelease solution, selected Windows Player contract and twelve Release test projects built successfully. Ordinary Core Serialization **97** and Scene **56** cases passed. The full Contracts/Workflows/Visual/Lifecycle run is still active.
+- The ordinary Debug Editor and test graph built successfully. Its transient Copy retry and deferred automatic cache-maintenance warning are retained; neither is described as a warning-free build. The ordinary Release Editor also built with no compiler errors; inspect its full log when summarizing warnings.
+- E11 review found missing interactive performance coverage. New public native wheel/search cases and a continuous production Scene edit/History gesture plus actual Hierarchy drawing now pass **four current and four historical producer preflights**. The search fixture originally settled too few native input frames; its failed TRX remains retained. These overlapped other work and are not controlled performance results. The original producer uses its own public History transaction in the test-owned harness, without production compatibility code.
+- A new Debug D3D11 product run completed all **eight** workflow checkpoints but exceeded the unchanged **600-second** process deadline. It remains **Failed**. The concurrent compiler/diagnostic load is a condition to investigate, not an established explanation or a reason to relax the deadline. Repeat the complete product matrix in an otherwise quiet environment.
+- The historical native UI capture now includes both real GPU viewport textures through the public render graph/readback SPI. Its replay has **zero** unavailable texture commands and unexecuted callbacks. The final current capture and normal shutdown are still being verified. Diagnostic API/phase errors and incomplete runs remain retained. This is replayed native UI data and real sampled pixels, not a final backbuffer or physical screenshot.
+- Deep API review added the actual null-state exception to `GraphCanvasView` XML and its Wiki. Runtime behavior and signatures are unchanged.
 
-Core owns current identity checks, exact key comparison and transient neutral storage. Scene owns complete mutation revisions; the DotNet metadata adapter owns reflection proof; Editor reads catalog path/status rather than importing source data during a label/dirty query. No domain revision API, independent identity table, serializer, event bus, backend/platform whitelist or test backdoor is introduced. Ordinary serialization and unsupported/plugin/Missing/Prefab capture retain their existing authoritative path.
+## Remaining execution order
 
-## Previous verification checkpoint (shader input ownership)
+1. Complete current full suites; investigate any failure and retain its original evidence. Recompile the changed performance fixture in the final test graph and validate current Wiki/API signatures.
+2. Stop overlapping local builds, test processes and graphics producers before quantitative acceptance. Record immutable input/runtime hashes; run five independent idle/edit inspection pairs, five original/current pairs for the three static workloads, four input/edit workloads, menus/Stats and actual FlappyBird startup/frame phases. Keep all samples and outliers; apply the original allocation/latency/regression gates.
+3. Repeat Debug/Release × D3D11/D3D12/Vulkan smoke, eight journeys and every actual panel's 100-cycle/full-GC series on the same production candidate. Do not weaken timeout, reload or resource assertions.
+4. Finish matched visual replay review, companion development/installation and SDK projection evidence. Separate public native metrics, actual GPU data and physical/manual checks.
+5. Reconcile every original requirement and issue checklist, changed API semantics, Core reuse, owner/thread/failure/generation boundaries and all eleven quality dimensions. Synchronize current documentation and exact-head CI.
+6. Only completely verified issues receive individual `Fixes` lines. Keep #18 partial. Mark PR #26 Ready only after the applicable gates close; do not merge automatically. Continue after every review that still finds independently actionable work.
 
-The deeper E01 review also reproduced an open native Table when a public game-target label getter fails in the export form. The local form now balances all three tables, including column preparation. The new actual native modal regression passes; a separate test-owned runtime using the officially built prior Workbench producer fails at the exact open-Table assertion. The test retires only its own leaked table before reporting the expected negative result. Initial enum ambiguity and an unflushed asynchronous log assertion are retained failed fixture attempts; ordinary current SDK compilation reports zero warnings/errors.
+The production capture refinement remains within Core Serialization's existing Writer/snapshot/canonical encoder, with complete Scene-owned array-row keys, a bounded 64 KiB immutable encoding memo and Core Identity guards. Root/order/Systems and unsupported rows retain authoritative writing. No new registry, event bus, serializer, platform branch, legacy reader or test-only production API is introduced. BGCS/vendor/package/generated bindings are unchanged.
 
-The frozen #53 neutral source and selected Player contract builds passed. Its twelve-suite build then failed the added export fixture's ambiguous enum imports, now corrected. Full final profiles remain pending. Five independent idle inspection processes now measure medians 5.72–6.02 ms, fifty-sample P95 17.84–19.57 ms and approximately 563 KB per inspection; every raw group and 33.9–35.4 ms maximum is retained. Changed-state inspection still measures 68.6–71.1 ms and ~16.8 MB per operation, so the editing/performance work remains open. Do not close #46/#53 using idle results alone.
-
-At candidate `329568ba`, ordinary Debug and Release Editor builds and the neutral/selected product contract prerequisites passed. An exclusive atomic metadata candidate overlapped two independent output owners; all ten permanent shader input hashes remained unchanged. Contracts executed 816 passing cases and one Wiki content-boundary failure, with two platform fixture skips reported separately. The external consumer name in the engine Wiki has been corrected without weakening its validator; the focused complete Wiki rerun is pending.
-
-The first actual product lifecycle run exceeded its 4 MiB growth limit because its baseline preceded first panel/resource preparation. Raw evidence and diagnostic heap observations are retained. The fixture now records that preparation separately, draws every actual panel for 120 frames, and then performs the unchanged 100 cycles/full-GC protocol and 4 MiB limit. Ordinary Debug D3D11 and D3D12 product workflows and lifecycle runs passed; the other configuration/API combinations continue.
-
-Next: complete Wiki and the remaining product matrix, #46 absolute latency, controlled original/current performance and matching visual evidence. Core revision/context/converter experiments remain outside production because latency has not passed and their public boundary requires further review. Existing passed rows are scoped evidence, not substitute final-source closure. No computer use or approval questions.
+---
 
 # Editor UI closure execution ledger
 
-## Current element-capture refinement
+## Retained element-capture refinement
 
 The property-only prototype is archived, not retained as a production path. #53 now reuses the existing Writer/array capture at element granularity. The optional `WriteObjectArray` key callback and exact Guid input are the necessary public additions; no compatibility overload exists. Scene declares complete object/component, source/parent ID and sibling inputs. Missing/Prefab/untracked rows retain the same writer. Core prevents enclosing key reuse when nested converters execute, propagating only a neutral effect marker from independent property payloads. No type/delegate/source is retained in keys or encoding blocks.
 
@@ -32,7 +36,7 @@ Baseline: `30d18489fbf68763229cd8ed35a7005f543019ad`. Evidence owner: `D:/InnoEn
 
 Every work item below is a real GitHub issue created before implementation. Issues remain open after branch verification. Only completely verified items receive an individual `Fixes #N` in PR #26; they close on merge. The broader #18 uses `Refs #18`. No automatic merge is authorized.
 
-## Current continuation checkpoint (2026-10-29)
+## Retained continuation checkpoint (2026-10-29)
 
 The sections below retain dated execution history; this checkpoint is the current remaining-work authority. No intermediate pass completes the parent.
 

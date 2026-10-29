@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Inno.Editor.PlayMode.Tests;
 
-public sealed class LargePanelPerformanceTests(ITestOutputHelper output)
+public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
 {
     [Fact]
     [Trait("Acceptance", "Performance")]

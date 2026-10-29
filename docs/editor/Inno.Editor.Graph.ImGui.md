@@ -26,6 +26,8 @@
 
 ## 错误、生命周期与热重载
 
+`GraphCanvasView` 构造函数拒绝空的文档导航状态（`ArgumentNullException`）及非有限或负的画布几何（`ArgumentOutOfRangeException`）；它不会修正调用方的非法输入。
+
 控件只在当前 EditorUiSession 的 owner thread、作用域与原生上下文中使用。跨帧只保留稳定 ID 和中立状态；Missing、只读和未赋值状态保持区别。手势失败保留 History 所有权和诊断；扩展在所属 generation 退休，不保留插件 Type、delegate 或实例。
 
 所有公开签名的当前映射见本页 API 清单；内部实现不构成稳定扩展契约。
