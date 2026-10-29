@@ -44,8 +44,8 @@ internal sealed partial class EditorSceneWorkspace
             GameScene scene = document.scene;
             if (scene.isDestroyed)
                 continue;
-            SynchronizeSource(scene, document);
-            bool wasDirty = string.IsNullOrEmpty(document.sourcePath) ||
+            bool sourceAvailable = SynchronizeSource(scene, document);
+            bool wasDirty = !sourceAvailable || string.IsNullOrEmpty(document.sourcePath) ||
                             !string.Equals(
                                 scene.name,
                                 GetAssetName(document.sourcePath),

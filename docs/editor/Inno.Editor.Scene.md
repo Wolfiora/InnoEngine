@@ -26,6 +26,12 @@ flowchart LR
 - Scene feature 通过 [Inno.Editor.Core](Inno.Editor.Core.md) 中 `EditorReloadCoordinator` 的中立 participant contract 接入 assembly reload，并自行拥有 Scene migration、Coroutine 清理和 Missing/reload diagnostics；`Inno.Editor.Scripting` 不引用 Scene 项目或 Scene 类型。
 - `EditorReloadCoordinator.Register` 返回的 registration lease 强持有 participant，而 Coordinator 只保留弱引用。只要 Workspace 持有 lease，GC 就不能移除 Scene migration；Workspace Dispose 会注销并释放 participant，避免新 TypeCache 激活后仍遗留旧 collectible `Type` 的 Component/System。该所有权契约适用于所有 Editor reload feature，不是 Scene 私有补丁。
 
+## 已分配源暂时不可用
+
+已保存文档的源文件或当前 Asset 候选暂时不可用时，Workspace 保留其 persistent asset identity、已知源路径、内存数据及保存基线，并发布 `SCENE-SOURCE-MISSING` 诊断。此时 `IsDirty` 保守返回 `true`，`TryGetSourcePath` 仍返回原分配路径；不会把 Missing 误改成未分配的新文档。普通 Save 拒绝覆盖不可用的原分配源，显式保存到另一个目录仍使用既有 SaveToDirectory 工作流。
+
+相同 identity 的源恢复后自动清除诊断，重新比较真实内容；原本的未保存修改仍保留。后续源重命名、保存和关闭重开沿用统一资产与文档协议，不引入另一套路径解析器或恢复缓存。
+
 ## 公共 API
 
 ### IEditorSceneWorkspace

@@ -48,14 +48,15 @@ internal sealed partial class EditorSceneWorkspace
         SceneDocument document = GetOrCreateDocument(scene);
         try
         {
-            SynchronizeSource(scene, document);
-            m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
+            if (!SynchronizeSource(scene, document))
+                return true;
         }
         catch (Exception exception)
         {
             document.isDirty = true;
             if (m_diagnostics.PublishSynchronizationFailure(scene, exception))
                 m_log.Write(LogLevel.Error, "Scene document synchronization failed: {0}", [exception]);
+            return true;
         }
         if (string.IsNullOrEmpty(document.sourcePath))
             return true;
@@ -260,6 +261,10 @@ internal sealed partial class EditorSceneWorkspace
         GameScene scene,
         string relativePath
     ) {
+        SceneDocument document = GetOrCreateDocument(scene);
+        if (document.sourceAssetId != Guid.Empty &&
+            string.Equals(document.sourcePath, relativePath, StringComparison.Ordinal) && !SynchronizeSource(scene, document))
+            throw new InvalidOperationException($"Scene source '{relativePath}' is unavailable. Restore its source or explicitly save to another directory.");
         scene.name = GetAssetName(relativePath);
         bool exists = m_assets.TryLoad(AssetPath.Parse(relativePath), out SceneAsset? sceneAsset);
         sceneAsset ??= new SceneAsset();
@@ -271,7 +276,6 @@ internal sealed partial class EditorSceneWorkspace
             throw new InvalidOperationException($"No asset importer could save scene '{relativePath}'.");
 
         byte[] savedHash = ComputeSceneHash(scene);
-        SceneDocument document = GetOrCreateDocument(scene);
         document.sourcePath = relativePath;
         document.sourceAssetId = sceneAsset.identity.persistentId;
         document.savedHash = savedHash;
