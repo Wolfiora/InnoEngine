@@ -17,6 +17,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
     {
         private readonly Sdl3PlatformApplication m_application;
         private IDisposable? m_registration;
+        private bool m_isRetiring;
 
         internal ImGuiState(Sdl3PlatformApplication application)
         {
@@ -24,10 +25,20 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         }
 
         internal Dictionary<uint, PlatformImGuiContext> contexts { get; } = [];
+        internal bool isRetiring => m_isRetiring;
 
         internal void Register()
         {
             m_registration = m_application.RegisterExtension(this);
+        }
+
+        internal void Release(
+            uint windowId,
+            PlatformImGuiContext context
+        ) {
+            if (!contexts.TryGetValue(windowId, out PlatformImGuiContext? registered) || !ReferenceEquals(registered, context))
+                throw new InvalidOperationException("The retired ImGui context no longer owns its application registration.");
+            contexts.Remove(windowId);
         }
 
         void ISdl3ApplicationExtension.ProcessNativeEvent(
@@ -54,9 +65,11 @@ public static class Sdl3PlatformApplicationImGuiExtensions
 
         void ISdl3ApplicationExtension.OnApplicationDisposing(Sdl3PlatformApplication application)
         {
-            foreach (PlatformImGuiContext context in contexts.Values)
+            m_isRetiring = true;
+            var retiring = new PlatformImGuiContext[contexts.Count];
+            contexts.Values.CopyTo(retiring, 0);
+            foreach (PlatformImGuiContext context in retiring)
                 context.Dispose();
-            contexts.Clear();
             s_states.Remove(application);
             m_registration?.Dispose();
             m_registration = null;
@@ -115,11 +128,15 @@ public static class Sdl3PlatformApplicationImGuiExtensions
             throw new ArgumentException("The window must belong to the supplied SDL application.", nameof(window));
 
         ImGuiState state = s_states.GetValue(application, CreateState);
+        if (state.isRetiring)
+            throw new InvalidOperationException("The application presentation state is retiring and cannot create another context.");
         if (state.contexts.ContainsKey(window.windowId))
             throw new InvalidOperationException("This window already owns an ImGui context.");
 
-        var context = new PlatformImGuiContext(application, window, contextFlags, interaction, renderer);
-        state.contexts[window.windowId] = context;
+        uint windowId = window.windowId;
+        var context = new PlatformImGuiContext(application, window, contextFlags, interaction, renderer,
+            retired => state.Release(windowId, retired));
+        state.contexts[windowId] = context;
         return context;
     }
 
@@ -150,7 +167,6 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         if (!state.contexts.TryGetValue(window.windowId, out PlatformImGuiContext? context))
             return;
         context.Dispose();
-        state.contexts.Remove(window.windowId);
     }
 
     private static ImGuiState CreateState(Sdl3PlatformApplication application)

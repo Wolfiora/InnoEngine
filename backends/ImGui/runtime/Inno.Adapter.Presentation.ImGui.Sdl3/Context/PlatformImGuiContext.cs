@@ -41,6 +41,8 @@ public sealed unsafe partial class PlatformImGuiContext
     private SDLWindow* m_textInputWindow = null;
     private TimeSpan m_lastFrameTime;
     private TimeSpan m_lastLiveResizeLockTime;
+    private Action<PlatformImGuiContext>? m_releaseRegistration;
+    private byte[]? m_supplementalFontData;
     private IntPtr m_iniFilename;
     private uint m_liveResizeLockedWindowId;
     private uint m_mousePendingLeaveWindowId;
@@ -59,8 +61,10 @@ public sealed unsafe partial class PlatformImGuiContext
         Sdl3PlatformWindow window,
         ImGuiContextFlags contextFlags,
         ImGuiInteractionOptions interaction,
-        IPlatformImGuiRenderer? renderer
+        IPlatformImGuiRenderer? renderer,
+        Action<PlatformImGuiContext> releaseRegistration
     ) {
+        m_releaseRegistration = releaseRegistration ?? throw new ArgumentNullException(nameof(releaseRegistration));
         var enableViewports = (contextFlags & ImGuiContextFlags.EnableViewports) != 0;
         var enableDocking = (contextFlags & ImGuiContextFlags.EnableDocking) != 0;
         m_enableSmoothResize = (contextFlags & ImGuiContextFlags.EnableSmoothResize) != 0;
@@ -98,7 +102,8 @@ public sealed unsafe partial class PlatformImGuiContext
             io->MouseDrawCursor = 0;
             io->Fonts->RendererHasTextures = 1;
             ConfigureKeyRepeat(io);
-            ConfigureFonts(m_context, io);
+            m_supplementalFontData = ReadSupplementalFontData();
+            ConfigureFonts(m_context, io, m_supplementalFontData);
             ImGuiPackedColor.EnsureInitialized();
 
             UpdateDisplayMetrics(io);
@@ -113,6 +118,8 @@ public sealed unsafe partial class PlatformImGuiContext
             m_viewports?.Dispose();
             ImGuiFont.UnregisterContext(m_context);
             ImGuiNative.Raw.DestroyContext(m_context);
+            GC.KeepAlive(m_supplementalFontData);
+            m_supplementalFontData = null;
             if (renderer is null)
                 m_renderer?.Dispose();
             throw;
@@ -316,6 +323,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
         ResolveFontPaths(out _, out List<string> iconFontPaths);
         MergeIconFontsIntoCurrentBaseFont(io->Fonts, iconFontPaths);
+        MergeSupplementalFont(io->Fonts, m_supplementalFontData!);
         ImGuiFont.RegisterStyle(m_context, style, (nint)loadedFont);
         if (style == ImGuiFontStyle.Regular)
             io->FontDefault = loadedFont;
@@ -323,7 +331,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static void ConfigureFonts(
         ImGuiNativeContext* context,
-        ImGuiIO* io
+        ImGuiIO* io,
+        byte[] supplementalFontData
     ) {
         var fonts = io->Fonts;
         ImGuiNative.Raw.Clear(fonts);
@@ -341,6 +350,7 @@ public sealed unsafe partial class PlatformImGuiContext
             }
 
             MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
+            MergeSupplementalFont(fonts, supplementalFontData);
             styleFonts[GetFontStyle(fontPaths[i])] = (nint)loadedFont;
             if (i == preferredIndex)
             {
@@ -358,6 +368,7 @@ public sealed unsafe partial class PlatformImGuiContext
             if (defaultFont != null)
             {
                 MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
+                MergeSupplementalFont(fonts, supplementalFontData);
             }
         }
 
@@ -844,6 +855,10 @@ public sealed unsafe partial class PlatformImGuiContext
     /// <summary>
     /// Retires the context and its owned resources after the current frame operation has completed.
     /// </summary>
+    /// <remarks>
+    /// Successful retirement removes this context's application registration and releases its borrowed font data.
+    /// Pending or failed retirement preserves both registration and ownership for a subsequent retry.
+    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// A frame operation still owns the context; the caller must retry after that operation completes.
     /// </exception>
@@ -894,12 +909,17 @@ public sealed unsafe partial class PlatformImGuiContext
         m_renderer.Dispose();
         ImGuiFont.UnregisterContext(m_context);
         ImGuiNative.Raw.DestroyContext(m_context);
+        GC.KeepAlive(m_supplementalFontData);
+        m_supplementalFontData = null;
         if (m_iniFilename != IntPtr.Zero)
         {
             Marshal.FreeCoTaskMem(m_iniFilename);
             m_iniFilename = IntPtr.Zero;
         }
         m_disposed = true;
+        Action<PlatformImGuiContext>? releaseRegistration = m_releaseRegistration;
+        m_releaseRegistration = null;
+        releaseRegistration?.Invoke(this);
     }
 
     private void UpdateDisplayMetrics(ImGuiIO* io)

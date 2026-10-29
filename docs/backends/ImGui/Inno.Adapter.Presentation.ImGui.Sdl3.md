@@ -42,6 +42,14 @@ CreateImGuiContext 必须显式传入 ImGuiInteractionOptions，窗口必须属�
 
 关闭回调只解除路由/登记和 callback 数据，调用 RetireViewport 后保留原生 SDL 窗口。在下一 managed 安全点检查 Task，成功才销毁一次；失败保留 owner 并报告。Context 成功创建后接管 renderer；失败创建由调用者保留 renderer，重复创建明确拒绝。最终 Context Dispose 调用 drain，成功后释放 Native Context 与 renderer。Application 在成功退休前保留 context 登记。内部文件按 Context/Viewports/Rendering/Interop 组织；不存在另一份窗口目录或事件总线。
 
+## 文本字体与 Context 退休
+
+四种默认字形保留 JetBrains Mono 与 Font Awesome 图标，并合并随产品分发的 Noto Sans CJK SC 2.004。补充字体的来源、SIL Open Font License 与内容身份位于 `BuiltIn/Fonts/Supplemental`。只读取产品自己的字体资源，不探测系统安装目录；缺失、长度错误或内容身份错误立即拒绝创建 Context。
+
+每个 Context 只持有一份固定内存的补充字体 bytes，四种 face 共享借用至 Native Context 销毁。应用不长期缓存字体数据；自定义字体注册同样补齐 CJK。该资源属于共享呈现 backend，不把文字支持下放为平台分支。
+
+直接调用 Context 的 `Dispose()` 与 `DestroyImGuiContext()` 使用同一完成路径。全部 viewport、renderer 和 native callback 成功退休后才移除该 Context 的精确应用登记并释放字体；Pending 或失败保留登记和依赖，供合法的后续退休操作重试。应用退出先冻结其 Context 集合，成功退休逐个解除登记，退休开始后拒绝新建 Context。关闭的 Context 不会因仍存活的另一个窗口而长期驻留。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
