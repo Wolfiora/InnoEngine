@@ -82,20 +82,23 @@ foreach ($selected in $profiles) {
             if (-not (Test-Path -LiteralPath $product.TargetPath)) { throw 'The SDK-selected Editor output is unavailable.' }
             foreach ($api in $GraphicsApis) {
                 & (Join-Path $PSScriptRoot 'Invoke-EditorSmoke.ps1') -Dotnet $Dotnet -EditorAssembly $product.TargetPath `
-                    -ProjectDirectory $ProductProject -GraphicsApi $api -BackendPattern $BackendPattern -Frames 300 `
+                    -ProjectDirectory $ProductProject -GraphicsApi $api -BackendPattern $BackendPattern -Frames 300 -HiddenWindow `
                     *> (Join-Path $stageRoot "$api.log")
                 & (Join-Path $PSScriptRoot 'Invoke-EditorUiProductJourney.ps1') -Dotnet $Dotnet -EditorAssembly $product.TargetPath `
                     -ProjectDirectory $ProductProject -GraphicsApi $api -ResultsDirectory (Join-Path $stageRoot "journey-$api") `
                     *> (Join-Path $stageRoot "journey-$api.log")
+                & (Join-Path $PSScriptRoot 'Invoke-EditorUiProductJourney.ps1') -Dotnet $Dotnet -EditorAssembly $product.TargetPath `
+                    -ProjectDirectory $ProductProject -GraphicsApi $api -Scenario Lifecycle -ResultsDirectory (Join-Path $stageRoot "lifecycle-$api") `
+                    *> (Join-Path $stageRoot "lifecycle-$api.log")
             }
-            Save-Result $selected 'Passed' 'Renderer smoke and eight actual-product feature workflows completed; native input and physical-device experience remain separately tracked.'
+            Save-Result $selected 'Passed' 'Hidden renderer smoke, eight product workflows and 100 cycles per actual panel completed; physical-device experience remains separately tracked.'
             continue
         }
         $names = switch ($selected) {
-            'Contracts' { @('Inno.Editor.Interactions.Tests', 'Inno.Editor.Graph.Tests', 'Inno.Editor.Inspection.Tests', 'Inno.Scripting.Compiler.Tests', 'Inno.Build.Tests', 'Inno.Tooling.Architecture.Tests') }
+            'Contracts' { @('Inno.Editor.Interactions.Tests', 'Inno.Editor.ImGui.Tests', 'Inno.Editor.Graph.Tests', 'Inno.Editor.Inspection.Tests', 'Inno.Scripting.Compiler.Tests', 'Inno.Build.Tests', 'Inno.Tooling.Architecture.Tests') }
             'Workflows' { @('Inno.Editor.PlayMode.Tests', 'Inno.Editor.Scripting.Tests', 'Inno.Editor.Hosting.Tests') }
             'Visual' { @('Inno.Editor.ImGui.Tests', 'Inno.Editor.PlayMode.Tests', 'Inno.Editor.Scripting.Tests') }
-            'Lifecycle' { @('Inno.Editor.Graph.Tests', 'Inno.Editor.PlayMode.Tests', 'Inno.Editor.Scripting.Tests') }
+            'Lifecycle' { @('Inno.Editor.ImGui.Tests', 'Inno.Editor.Graph.Tests', 'Inno.Editor.PlayMode.Tests', 'Inno.Editor.Scripting.Tests') }
             'Performance' { @('Inno.Editor.Interactions.Tests', 'Inno.Editor.PlayMode.Tests', 'Inno.Editor.Scripting.Tests') }
         }
         $filter = switch ($selected) {
@@ -113,6 +116,27 @@ foreach ($selected in $profiles) {
         @{ solution = @{ path = (Join-Path $repository 'InnoEngine.sln'); projects = @($projects) } } |
             ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $selection -Encoding utf8
         if (-not $NoBuild) {
+            if ($selected -eq 'Contracts') {
+                & $Dotnet build (Join-Path $repository 'InnoEngine.sln') -c $Configuration "-p:ArtifactsPath=$artifacts" `
+                    *> (Join-Path $stageRoot 'source-build.log')
+                if ($LASTEXITCODE -ne 0) { throw 'The complete neutral source graph required by repository architecture and Wiki checks did not build.' }
+                $contracts = @()
+                foreach ($candidate in Get-ChildItem -LiteralPath (Join-Path $repository 'platforms') -Filter '*.csproj' -Recurse) {
+                    $declaration = [xml](Get-Content -LiteralPath $candidate.FullName -Raw)
+                    if (-not $declaration.SelectSingleNode('//InnoProductTarget')) { continue }
+                    $selection = @(& $Dotnet msbuild $candidate.FullName -nologo "-p:Configuration=$Configuration" "-p:ArtifactsPath=$artifacts" `
+                        '-getProperty:InnoProductTarget,TargetPath,MSBuildProjectName')
+                    if ($LASTEXITCODE -ne 0) { throw "The SDK could not evaluate the declared product '$($candidate.FullName)'." }
+                    $contract = ($selection -join [Environment]::NewLine | ConvertFrom-Json).Properties
+                    if ($contract.InnoProductTarget -ne $product.InnoNativeTarget) { continue }
+                    $contracts += [pscustomobject]@{ project = $candidate.FullName; target = $contract.InnoProductTarget; output = $contract.TargetPath }
+                    & $Dotnet build $candidate.FullName -c $Configuration "-p:ArtifactsPath=$artifacts" `
+                        *> (Join-Path $stageRoot "source-product-$($contract.MSBuildProjectName).log")
+                    if ($LASTEXITCODE -ne 0) { throw "The selected product contract '$($candidate.FullName)' did not build." }
+                }
+                $contracts | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $stageRoot 'product-contracts.json') -Encoding utf8
+                if ($contracts.Count -eq 0) { throw 'No declared product contract matches the selected target.' }
+            }
             & $Dotnet build $selection -c $Configuration @buildArguments *> (Join-Path $stageRoot 'build.log')
             if ($LASTEXITCODE -ne 0) { throw 'The selected test graph did not build.' }
         }

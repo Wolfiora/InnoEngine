@@ -268,19 +268,13 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     }
 
     [Theory]
-    [InlineData(1f, false)]
-    [InlineData(1.1f, false)]
-    [InlineData(1.25f, false)]
-    [InlineData(1.5f, false)]
-    [InlineData(2f, false)]
-    [InlineData(1f, true)]
-    [InlineData(1.1f, true)]
-    [InlineData(1.25f, true)]
-    [InlineData(1.5f, true)]
-    [InlineData(2f, true)]
+    [MemberData(nameof(CanvasMetrics))]
     [Trait("Acceptance", "Visual")]
     public unsafe void NativeCanvasResizeCompletesLayoutAtFractionalUiScales(
-        float scale,
+        float zoom,
+        float density,
+        float width,
+        float height,
         bool emptyGraph
     ) {
         AssetFileEntry entry = Create("Resize.ishader");
@@ -290,10 +284,12 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             controller.ReplaceDocument(new GraphDocument(), "Prepare Empty Canvas");
         ulong revision = controller.revision;
         byte[] disk = File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath));
-        ImGuiApi.Raw.GetStyle()->ItemSpacing = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(6, 4) * scale);
-        ImGuiApi.Raw.GetStyle()->WindowPadding = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(8, 7) * scale);
-        ImGuiApi.Raw.GetIO()->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(scale));
-        Vector2[] sizes = [new(1200, 800), new(640, 400), new(280, 220), new(96, 64), new(32, 32), new(1200, 32), new(32, 800), new(1200, 800)];
+        ImGuiApi.Raw.GetIO()->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new(width, height));
+        ImGuiApi.Raw.GetIO()->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new(density));
+        m_ui.widgets.style.SetZoom(zoom);
+        using (m_ui.Enter())
+            m_ui.widgets.SetupStyle();
+        Vector2[] sizes = [new(width, height), new(640, 400), new(280, 220), new(96, 64), new(32, 32), new(width, 32), new(32, height), new(width, height)];
         for (int cycle = 0; cycle < 3; cycle++)
             foreach (Vector2 size in sizes)
             {

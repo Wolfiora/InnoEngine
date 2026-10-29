@@ -15,10 +15,17 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed unsafe class ConsoleSearchNativeTests
 {
-    [Fact]
-    public void ActualConsoleFiltersMessagesFilesSourcesAndLongUnicodeQueries()
-    {
+    [Theory]
+    [MemberData(nameof(VisualScaleMatrixTests.Metrics), MemberType = typeof(VisualScaleMatrixTests))]
+    [Trait("Acceptance", "Visual")]
+    public void ActualConsoleFiltersMessagesFilesSourcesAndLongUnicodeQueries(
+        float zoom,
+        float density,
+        float width,
+        float height
+    ) {
         using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        host.SetDisplayMetrics(new(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)
@@ -45,10 +52,17 @@ public sealed unsafe class ConsoleSearchNativeTests
         Assert.Equal(4, CountCards());
     }
 
-    [Fact]
-    public void FilteredKeyboardTargetCopiesTheSameGroupAndClearReleasesIt()
-    {
+    [Theory]
+    [MemberData(nameof(VisualScaleMatrixTests.Metrics), MemberType = typeof(VisualScaleMatrixTests))]
+    [Trait("Acceptance", "Visual")]
+    public void FilteredKeyboardTargetCopiesTheSameGroupAndClearReleasesIt(
+        float zoom,
+        float density,
+        float width,
+        float height
+    ) {
         using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        host.SetDisplayMetrics(new(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)

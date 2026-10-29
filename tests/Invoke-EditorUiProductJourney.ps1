@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$ResultsDirectory,
     [string]$Dotnet = 'dotnet',
     [Parameter(Mandatory)][string]$GraphicsApi,
+    [ValidateSet('Workflows', 'Lifecycle')][string]$Scenario = 'Workflows',
     [int]$Frames = 30000,
     [int]$TimeoutSeconds = 600
 )
@@ -32,8 +33,9 @@ Copy-Item -LiteralPath (Join-Path $repository 'src/composition/editor/hosting/In
     -Destination (Join-Path $project 'editor.ini')
 $fixtures = Join-Path $project 'Assets/Acceptance'
 New-Item -ItemType Directory -Force -Path $fixtures | Out-Null
-foreach ($name in @('WorkflowState.cs', 'WorkflowJourney.editor.cs')) {
-    Copy-Item -LiteralPath (Join-Path $PSScriptRoot "fixtures/editor-ui/$name.txt") -Destination (Join-Path $fixtures $name)
+$fixtureNames = if ($Scenario -eq 'Lifecycle') { @('PanelLifecycle.editor.cs') } else { @('WorkflowState.cs.txt', 'WorkflowJourney.editor.cs.txt') }
+foreach ($name in $fixtureNames) {
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot "fixtures/editor-ui/$name") -Destination (Join-Path $fixtures ($name -replace '\.txt$', ''))
 }
 Get-ChildItem -LiteralPath $project -File -Recurse | ForEach-Object {
     [pscustomobject]@{ path = [IO.Path]::GetRelativePath($project, $_.FullName); sha256 = (Get-FileHash -LiteralPath $_.FullName).Hash }
@@ -61,10 +63,23 @@ try {
     if (-not $process.WaitForExit($TimeoutSeconds * 1000)) { throw 'The owned Editor journey exceeded its deadline.' }
     $code = $process.ExitCode
     if ($code -ne 0) { throw "The owned Editor exited with code $code." }
-    $evidence = Join-Path $project 'Library/Acceptance/workflow-journey.tsv'
+    $evidence = Join-Path $project $(if ($Scenario -eq 'Lifecycle') { 'Library/Acceptance/panel-lifecycle.tsv' } else { 'Library/Acceptance/workflow-journey.tsv' })
     if (-not (Test-Path -LiteralPath $evidence)) { throw 'The source extension did not complete the journey.' }
     $verified = @(Get-Content -LiteralPath $evidence)
-    if ($verified.Count -ne 8) { throw "Expected eight completed workflow stages, got $($verified.Count)." }
+    if ($Scenario -eq 'Workflows') {
+        if ($verified.Count -ne 8) { throw "Expected eight completed workflow stages, got $($verified.Count)." }
+    } else {
+        $panels = @(Import-Csv -LiteralPath $evidence -Delimiter "`t" | Where-Object panel -ne 'protocol')
+        if ($panels.Count -lt 9 -or @($panels | Where-Object 'completed-open-close-cycles' -ne '100').Count -ne 0) {
+            throw 'Every actual product panel must complete 100 open/close cycles.'
+        }
+        $resources = @(Import-Csv -LiteralPath (Join-Path $project 'Library/Acceptance/panel-lifecycle-resources.tsv') -Delimiter "`t")
+        if ($resources.Count -ne 11 -or [int]$resources[0].'completed-cycles' -ne 0 -or [int]$resources[-1].'completed-cycles' -ne 100) {
+            throw 'The lifecycle run did not record its complete full-GC resource series.'
+        }
+        $growth = [long]$resources[-1].'managed-bytes-after-full-gc' - [long]$resources[0].'managed-bytes-after-full-gc'
+        if ($growth -gt 4MB) { throw "Panel lifecycle retained $growth bytes beyond its 4 MiB final live-memory budget." }
+    }
 }
 catch { $failure = $_ }
 finally {
@@ -84,11 +99,11 @@ finally {
     [pscustomobject]@{
         revision = (& git -C $repository rev-parse HEAD).Trim()
         workingChanges = @(& git -C $repository status --porcelain=v1)
-        editor = $editor; graphicsApi = $GraphicsApi; frames = $Frames; exitCode = $code
+        editor = $editor; graphicsApi = $GraphicsApi; frames = $Frames; exitCode = $code; scenario = $Scenario
         status = $(if ($failure) { 'Failed' } else { 'Passed' })
-        diagnostic = $(if ($failure) { $failure.Exception.Message } else { 'Eight actual-product feature workflows completed.' })
+        diagnostic = $(if ($failure) { $failure.Exception.Message } elseif ($Scenario -eq 'Lifecycle') { 'Every actual product panel completed 100 cycles and eleven full-GC resource observations.' } else { 'Eight actual-product feature workflows completed.' })
         limitation = 'Public feature commands with real panel drawing; native pointer/keyboard contracts and physical-device experience are separate evidence.'
     } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $results 'result.json') -Encoding utf8
 }
 if ($failure) { throw $failure }
-Write-Output "Verified eight product workflow stages: $results"
+Write-Output "Verified product ${Scenario}: $results"

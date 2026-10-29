@@ -132,6 +132,8 @@ internal sealed unsafe class NativePanelHost : IDisposable
         io->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new(framebufferScale));
         m_panelSize = Vector2.Min(new(1000f, 800f), logicalSize - new Vector2(40f));
         ui.widgets.style.SetZoom(zoom);
+        using IDisposable scope = ui.Enter();
+        ui.widgets.SetupStyle();
     }
 
     internal void DrawPanel(
