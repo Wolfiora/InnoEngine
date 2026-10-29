@@ -10,6 +10,8 @@ Host 可以使用 `CaptureSnapshot(value, context, previous)` 捕获不可变 `S
 
 该入口不导出到脚本。快照是 owner 所属的瞬时观察值，不是第二种文件格式，也不进入 History、Workspace 或资源元数据。比较失败时不发布新快照，旧快照保持有效。快照捕获期间，Converter 借用的 Writer 只属于其同步回调；不要在回调返回后继续写入。
 
+内部 Writer 对同序、同类型且 converter 选择不变的标量复用一次位置查询，不重复查找相同节点；重复 member 仍明确失败。对象 keys 的现有二进制规范顺序保持不变，因此 Converter 调整写入次序不会改变规范 bytes，数组顺序仍属于数据。所有优化共用当前编码器与 generation lease，不缓存业务对象或绕过自定义 Converter。
+
 `SerializationWriter.WritePropertiesData(name, value, context)` 将同一 generation 的独立属性快照写为现有 binary member，供 Scene 等需要保留独立恢复边界的 Converter 使用。它与 `CapturePropertiesData` 的 bytes 一致，并在重复捕获时复用未变化的属性节点和编码结果；传入的 context 必须保留 owner 的引用解析能力。普通序列化、保存与 Missing 恢复继续使用同一 pipeline，不建立领域专用 serializer。
 
 ## 初始化

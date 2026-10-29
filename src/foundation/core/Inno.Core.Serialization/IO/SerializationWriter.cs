@@ -93,11 +93,16 @@ public sealed class SerializationWriter
     ) {
         ValidateName(name);
         EnsureActive();
-        if (Previous(name) is ScalarSerializationNode scalar && scalar.value.GetType() == typeof(TValue) &&
-            m_operation.ResolveConverter(typeof(TValue)) is null && SerializationNodeReuse.SameScalar(value, scalar.value))
+        if (m_previous is not null && m_previous.values.Count <= 64 && m_writtenCount < m_previous.values.Count)
         {
-            AddNode(name, scalar);
-            return;
+            KeyValuePair<string, SerializationNode> entry = m_previous.values.GetAt(m_writtenCount);
+            if (string.Equals(entry.Key, name, StringComparison.Ordinal) && entry.Value is ScalarSerializationNode scalar &&
+                scalar.value.GetType() == typeof(TValue) && m_operation.ResolveConverter(typeof(TValue)) is null &&
+                SerializationNodeReuse.SameScalar(value, scalar.value))
+            {
+                MarkWritten(name, m_writtenCount);
+                return;
+            }
         }
         Write(name, value, typeof(TValue));
     }
@@ -277,10 +282,10 @@ public sealed class SerializationWriter
         if (m_previous is not null && (m_node is not null || m_writtenCount != m_previous.values.Count))
         {
             EnsureMutable();
-            for (int index = 0; index < m_previous!.values.Count; index++)
+            for (int index = 0; index < m_previous.values.Count; index++)
             {
-                string name = m_previous!.values.GetAt(index).Key;
-                if (m_previous!.values.Count <= 64 ? (m_writtenMask & (1UL << index)) == 0 : m_writtenNames?.Contains(name) != true)
+                string name = m_previous.values.GetAt(index).Key;
+                if (m_previous.values.Count <= 64 ? (m_writtenMask & (1UL << index)) == 0 : m_writtenNames?.Contains(name) != true)
                     m_node!.values.Remove(name);
             }
         }
@@ -292,8 +297,8 @@ public sealed class SerializationWriter
     private SerializationNode? Previous(string name)
     {
         if (m_previous is not null && m_writtenCount < m_previous.values.Count &&
-            string.Equals(m_previous!.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal))
-            return m_previous!.values.GetAt(m_writtenCount).Value;
+            string.Equals(m_previous.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal))
+            return m_previous.values.GetAt(m_writtenCount).Value;
         return m_previous is not null && m_previous.values.TryGetValue(name, out SerializationNode? value) ? value : null;
     }
 
@@ -310,18 +315,31 @@ public sealed class SerializationWriter
             return;
         }
         int index = -1;
-        if (m_previous!.values.Count <= 64)
+        if (m_previous.values.Count <= 64)
         {
-            if (m_previous is not null && m_writtenCount < m_previous.values.Count &&
-                string.Equals(m_previous!.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal))
+            if (m_writtenCount < m_previous.values.Count &&
+                string.Equals(m_previous.values.GetAt(m_writtenCount).Key, name, StringComparison.Ordinal))
                 index = m_writtenCount;
             else
-                index = m_previous!.values.IndexOf(name);
+                index = m_previous.values.IndexOf(name);
         }
-        bool duplicate;
-        if (index >= 0)
+        SerializationNode? previous = index >= 0 ? m_previous.values.GetAt(index).Value : Previous(name);
+        MarkWritten(name, index);
+        if (!ReferenceEquals(previous, node))
         {
-            ulong bit = 1UL << index;
+            EnsureMutable();
+            m_node!.values[name] = node;
+        }
+    }
+
+    private void MarkWritten(
+        string name,
+        int previousIndex
+    ) {
+        bool duplicate;
+        if (previousIndex >= 0)
+        {
+            ulong bit = 1UL << previousIndex;
             duplicate = (m_writtenMask & bit) != 0;
             m_writtenMask |= bit;
         }
@@ -329,13 +347,7 @@ public sealed class SerializationWriter
             duplicate = !(m_writtenNames ??= new(StringComparer.Ordinal)).Add(name);
         if (duplicate)
             throw new InvalidOperationException($"Serialization object '{path}' already contains key '{name}'.");
-        SerializationNode? previous = index >= 0 ? m_previous!.values.GetAt(index).Value : Previous(name);
         m_writtenCount++;
-        if (!ReferenceEquals(previous, node))
-        {
-            EnsureMutable();
-            m_node!.values[name] = node;
-        }
     }
 
     private void EnsureMutable()

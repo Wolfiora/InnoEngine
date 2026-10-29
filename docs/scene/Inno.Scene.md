@@ -8,6 +8,8 @@
 
 ## 多 Scene
 
+内部存活校验读取对象对既有 `SceneObjectRecord` 的反向借用；记录仍由同一 SceneStore 和 Core IndexedObjectStore 持有。注册成功后才建立借用，移除和 Clear 解除精确 owner，跨 Scene 转移及失败回滚重新连接对应记录。它不构成另一份对象目录，不跨 generation 保存 live object；外部身份解析继续经过 Core Identity。此机制不属于公开 API，也不改变序列化数据。
+
 `GameScene.hierarchyRevision` 是当前 live Scene 的只读变更计数。对象注册、移除、重设父级和 sibling 排序使其失效；它只用于刷新派生视图，不是持久 ID 或文件格式。内部层级 owner 同时维护有序 roots 和派生位置索引，Editor 不保存第二份 live 层级。名字、属性及 active 状态不由这个计数描述，呈现仍在提交行时解析当前对象。
 
 Scene reload 的旧 element 普通退休失败会聚合抛出，且仍尝试其余旧 element；统一 generation 的不可逆 Complete 阶段据此 Fault。RetirementPendingException 则保持 owner、立即阻止后续清理并交给共享 gate Fault。不能只发布 Warning 后继续报告成功，也不能撤销已经提交的新 generation 假装回滚。

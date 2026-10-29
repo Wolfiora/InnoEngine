@@ -20,6 +20,7 @@ public sealed class GameObject : EngineObject, ISerializable
     public const string defaultTag = "Untagged";
 
     private GameScene? m_scene;
+    private SceneObjectRecord? m_attachment;
     private Transform? m_transform;
     private PrefabInstanceInfo? m_prefabInstance;
     private PrefabConnectionRecord? m_prefabConnection;
@@ -402,6 +403,27 @@ public sealed class GameObject : EngineObject, ISerializable
     }
     internal void SetActiveSelfDirect(bool value) => m_activeSelf = value;
     internal void SetActiveInHierarchyDirect(bool value) => m_activeInHierarchy = value;
+
+    /// <summary>
+    /// Borrows the existing indexed attachment for this exact store, without creating another object authority.
+    /// </summary>
+    internal SceneObjectRecord? GetAttachment(SceneStore store)
+        => m_attachment is { } record && ReferenceEquals(record.store, store) ? record : null;
+
+    internal void AttachRecord(SceneObjectRecord record)
+    {
+        if (m_attachment is not null)
+            throw new InvalidOperationException("The object already owns a scene-store attachment.");
+        m_attachment = record;
+    }
+
+    internal void ReleaseRecord(SceneObjectRecord record)
+    {
+        if (!ReferenceEquals(m_attachment, record))
+            throw new InvalidOperationException("The object no longer owns the retiring scene-store attachment.");
+        m_attachment = null;
+    }
+
     internal void SetSceneDirect(GameScene scene) => m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
     internal void SetPrefabInstanceDirect(PrefabInstanceInfo? value) => m_prefabInstance = value;
     internal void SetPrefabConnectionDirect(PrefabConnectionRecord? value) => m_prefabConnection = value;

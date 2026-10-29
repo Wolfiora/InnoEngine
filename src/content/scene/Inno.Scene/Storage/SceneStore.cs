@@ -18,15 +18,15 @@ internal enum SceneStoreRemovalKind
     /// <summary>
     /// The none key.
     /// </summary>
-None,
+    None,
     /// <summary>
     /// The canceled pending addition key.
     /// </summary>
-CanceledPendingAddition,
+    CanceledPendingAddition,
     /// <summary>
     /// The removed committed key.
     /// </summary>
-RemovedCommitted,
+    RemovedCommitted,
 }
 
 internal readonly record struct SceneStoreRemovedComponent(
@@ -117,7 +117,7 @@ internal sealed class SceneStore
                 $"GameObject '{gameObject.identity.persistentId}' is already owned by this scene store.");
         }
 
-        var record = new SceneObjectRecord(gameObject);
+        var record = new SceneObjectRecord(this, gameObject);
         long order = m_nextObjectOrder;
         m_nextObjectOrder = checked(m_nextObjectOrder + 1);
         try
@@ -130,6 +130,7 @@ internal sealed class SceneStore
                 .Set(m_objectLayerKey, gameObject.storedLayer)
                 .Set(m_objectCommittedKey, false)
                 .Set(m_objectOrderKey, order);
+            gameObject.AttachRecord(record);
         }
         catch
         {
@@ -261,6 +262,7 @@ internal sealed class SceneStore
             return Array.Empty<SceneStoreRemovedComponent>();
 
         record.isAlive = false;
+        gameObject.ReleaseRecord(record);
         GameComponent[] attached = [.. record.components];
         var removed = new SceneStoreRemovedComponent[attached.Length];
         for (int i = 0; i < attached.Length; i++)
@@ -285,7 +287,7 @@ internal sealed class SceneStore
         return removed;
     }
 
-    internal bool Contains(GameObject gameObject) => TryGetRecord(gameObject, out SceneObjectRecord? record) && record!.isAlive;
+    internal bool Contains(GameObject gameObject) => gameObject.GetAttachment(this)?.isAlive == true;
 
     internal IReadOnlyList<GameObject> GetObjects()
     {
@@ -796,6 +798,14 @@ internal sealed class SceneStore
         m_pendingComponentAdditions.Clear();
         m_pendingComponentRemovals.Clear();
         m_components.RemoveAll();
+        foreach (SceneObjectRecord record in m_objects.AllFast())
+        {
+            if (record.isAlive)
+            {
+                record.isAlive = false;
+                record.gameObject.ReleaseRecord(record);
+            }
+        }
         m_objects.RemoveAll();
         m_nextObjectOrder = 0;
         m_clearRequested = false;
