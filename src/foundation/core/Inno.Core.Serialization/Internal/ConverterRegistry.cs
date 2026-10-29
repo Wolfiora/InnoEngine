@@ -291,6 +291,7 @@ internal sealed class ConverterRegistry : IDisposable
     )
     {
         private TypeCacheSnapshot? m_types = types;
+        internal readonly Guid captureIdentity = Guid.NewGuid();
         internal readonly Lock sync = new();
         internal readonly ConcurrentDictionary<Type, ConverterInvoker?> cache = new();
         internal readonly Dictionary<Type, object> converterInstances = [];
@@ -362,6 +363,7 @@ internal sealed class ConverterRegistry : IDisposable
 
 internal sealed class ConverterRegistryLease : IDisposable
 {
+    private ConcurrentDictionary<SerializationTypeMetadata, (ISerializationMetadataSource source, bool eligible)>? m_revisionPlans;
     private ConverterRegistry.ConverterRegistrySnapshot? m_snapshot;
 
     internal ConverterRegistryLease(ConverterRegistry.ConverterRegistrySnapshot snapshot)
@@ -370,7 +372,50 @@ internal sealed class ConverterRegistryLease : IDisposable
     }
 
     internal TypeCacheSnapshot types => (m_snapshot ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease))).types;
+    internal Guid captureIdentity => (m_snapshot ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease))).captureIdentity;
 
+    internal bool CanReuseRevision(
+        SerializationTypeMetadata metadata,
+        ISerializationMetadataSource source
+    ) {
+        var plans = Volatile.Read(ref m_revisionPlans);
+        if (plans is null)
+        {
+            var created = new ConcurrentDictionary<SerializationTypeMetadata, (ISerializationMetadataSource source, bool eligible)>();
+            plans = Interlocked.CompareExchange(ref m_revisionPlans, created, null) ?? created;
+        }
+        if (plans.TryGetValue(metadata, out var known) && ReferenceEquals(known.source, source))
+            return known.eligible;
+        bool eligible = !metadata.requiresConverter;
+        foreach (SerializationMemberMetadata member in metadata.members)
+        {
+            if (!eligible)
+                break;
+            if ((member.visibility & PropertyVisibility.Serialize) == 0)
+                continue;
+            if (!IsKnownDefault(member.type))
+            {
+                eligible = false;
+                break;
+            }
+            if (ValuePipeline.IsPrimitive(member.type) || member.type.IsEnum)
+                continue;
+            SerializationTypeMetadata nested = source.GetMetadata(member.type);
+            if (!nested.hasPureFieldAccess)
+            {
+                eligible = false;
+                break;
+            }
+            foreach (SerializationMemberMetadata field in nested.members)
+                if ((field.visibility & PropertyVisibility.Serialize) != 0 && !IsKnownDefault(field.type))
+                {
+                    eligible = false;
+                    break;
+                }
+        }
+        plans[metadata] = (source, eligible);
+        return eligible;
+    }
     internal ConverterInvoker? Resolve(Type valueType)
     {
         ArgumentNullException.ThrowIfNull(valueType);
@@ -396,9 +441,19 @@ internal sealed class ConverterRegistryLease : IDisposable
     public void Dispose()
     {
         ConverterRegistry.ConverterRegistrySnapshot? snapshot = Interlocked.Exchange(ref m_snapshot, null);
+        m_revisionPlans?.Clear();
         snapshot?.Release();
     }
 
+    private bool IsKnownDefault(Type type)
+    {
+        ConverterRegistry.ConverterRegistrySnapshot snapshot = m_snapshot
+            ?? throw new ObjectDisposedException(nameof(ConverterRegistryLease));
+        Type normalized = Nullable.GetUnderlyingType(type) ?? type;
+        // Reuse only facts established by the authoritative resolver. A key query must not
+        // construct converters, change their execution order, or introduce another resolver.
+        return snapshot.cache.TryGetValue(normalized, out ConverterInvoker? converter) && converter is null;
+    }
 }
 
 internal abstract class ConverterInvoker
@@ -474,9 +529,50 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
                 $"Converter '{converterType.FullName}' cannot write runtime value '{value.GetType().FullName}' at '{path}'.");
         }
 
-        var writer = new SerializationWriter(operation, previous as ObjectSerializationNode, path, valueType);
+        ObjectSerializationNode? prior = previous as ObjectSerializationNode;
+        SerializationCaptureAttempt attempt = CaptureKey(prior?.captureKey);
+        attempt.ValidateIdentities();
+        SerializationCaptureKey? key = attempt.key;
+        if (key is not null && ReferenceEquals(key, prior?.captureKey))
+            return prior!;
+        var writer = new SerializationWriter(operation, prior, path, valueType);
         m_converter.Write(writer, typed);
-        return writer.Complete();
+        ObjectSerializationNode result = writer.Complete();
+        if (key is not null)
+        {
+            attempt.ValidateIdentities();
+            SerializationCaptureAttempt after = CaptureKey(key);
+            after.ValidateIdentities();
+            if (after.key is null || !key.HasSameInputs(after.key))
+                throw new InvalidOperationException("The declared serialization capture inputs changed during the write.");
+            // Providers may return fresh equivalent metadata rather than stable declarations.
+            // Preserve ordinary capture, but do not publish a reusable hint for that provider.
+            if (!ReferenceEquals(after.key, key))
+                key = null;
+        }
+        if (!ReferenceEquals(result.captureKey, key))
+        {
+            if (ReferenceEquals(result, prior))
+                result = SerializationNodeReuse.CopyObject(result);
+            result.captureKey = key;
+        }
+        return result;
+
+        SerializationCaptureAttempt CaptureKey(SerializationCaptureKey? before)
+        {
+            if (!operation.isSnapshotCapture || value is not Inno.Core.Identity.IdentityObject identified ||
+                identified.identity.runtimeIdentity is null)
+                return SerializationCaptureAttempt.empty;
+            var builder = new SerializationCaptureKeyBuilder(operation, valueType, identified.identity, before);
+            try
+            {
+                return m_converter.CaptureKey(typed, builder) ? builder.Complete() : SerializationCaptureAttempt.empty;
+            }
+            finally
+            {
+                builder.Retire();
+            }
+        }
     }
 
     internal override object Read(

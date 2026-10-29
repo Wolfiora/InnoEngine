@@ -29,6 +29,8 @@ static ISerializationMetadataSource CreateMetadata()
 
 来源按 `Type` 弱缓存元数据，不把 collectible 类型保存在强静态表中。成员顺序、重复键检查、属性可见性和恢复回调验证与静态来源遵循相同契约。恢复通知在完整操作成功后提交；构造或回调失败传播到调用方事务。
 
+可选 `SerializationRevisionAttribute` 由本来源解析为 Core 的 `WithCaptureRevision` 声明：只接受 sealed serializable Core identity 对象的可读非静态 ulong/nullable ulong 成员，禁止持久化该计数。属性读取失败传播原始异常。纯值证明只来自实际 primitive 字段，不把任意 getter 当作无副作用读取；自定义 Converter 的资格仍由 Core 当前 generation 判定。缺少证明只影响捕获复用，不改变普通序列化。Core 不读取反射成员，不引用本 adapter。
+
 ## 验证入口
 
 `Inno.Core.Serialization.Tests` 验证动态来源的现有序列化行为；`Inno.Runtime.Generators.Tests` 验证生成访问器的编译、私有成员、结构体、闭合集合、跨程序集继承及无效声明诊断。

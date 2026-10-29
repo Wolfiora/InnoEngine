@@ -1,5 +1,7 @@
 # Inno.Scene
 
+完整 Scene 捕获可通过 Core Serialization 的显式中立 key 复用未变化的根节点。Scene 自己拥有结构、层级、对象元数据与 Transform 写入的失效责任；本地/世界变换、层级保持变换和属性恢复均更新计数。计数不序列化、不导出为领域 API，耗尽后继续完整捕获。任意插件属性、自定义 Converter、Missing 和 Prefab 等无法完整证明的状态保留现有 writer；不按 UI 通知猜测场景是否变化。详细借用与失败语义见 [Serialization](../core/Inno.Core.Serialization.md)。
+
 [Engine 索引](README.md) · [Scene Assets](Inno.Scene.Assets.md) · [Wiki 首页](../README.md)
 
 `Inno.Scene` 提供 Scene、GameObject、Component、Transform hierarchy、GameBehavior 和 GameSystem 的运行时模型。`GameBehavior` 是唯一具有独立启停和帧生命周期的 Component 基类，统一负责 `enabled`、`isActiveAndEnabled`、`Awake`、`Start`、`OnEnable`、`OnDisable`、`Update`、`FixedUpdate`、`LateUpdate` 与 `OnDestroy`。Project Script、Renderer、Camera、Light 等场景功能都直接继承 `GameBehavior`，不存在第二层 `Behavior` 类型或兼容 façade。

@@ -23,3 +23,6 @@ using Inno.Core.Serialization.Converters;
 [assembly: ScriptingApiExport(typeof(SerializationConverter<>), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(SerializationReader), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(SerializationWriter), ScriptingApiScope.Runtime)]
+
+[assembly: ScriptingApiExport(typeof(SerializationCaptureKeyBuilder), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(SerializationRevisionAttribute), ScriptingApiScope.Runtime)]

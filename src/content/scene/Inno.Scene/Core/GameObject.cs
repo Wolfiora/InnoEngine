@@ -19,6 +19,7 @@ public sealed class GameObject : EngineObject, ISerializable
     /// </summary>
     public const string defaultTag = "Untagged";
 
+    private ulong? m_serializationRevision = 0;
     private GameScene? m_scene;
     private SceneObjectRecord? m_attachment;
     private Transform? m_transform;
@@ -67,6 +68,7 @@ public sealed class GameObject : EngineObject, ISerializable
             string requestedName = value ?? string.Empty;
             if (string.Equals(m_name, requestedName, StringComparison.Ordinal))
                 return;
+            AdvanceCaptureRevision();
             m_name = requestedName;
             owner.NotifyObjectMetadataChanged(this);
         }
@@ -95,6 +97,7 @@ public sealed class GameObject : EngineObject, ISerializable
             string requestedTag = NormalizeTag(value);
             if (string.Equals(m_tag, requestedTag, StringComparison.Ordinal))
                 return;
+            AdvanceCaptureRevision();
             m_tag = requestedTag;
             owner.NotifyObjectMetadataChanged(this);
         }
@@ -119,6 +122,7 @@ public sealed class GameObject : EngineObject, ISerializable
             GameScene owner = EnsureAlive();
             if (m_layer == value)
                 return;
+            AdvanceCaptureRevision();
             m_layer = value;
             owner.NotifyObjectMetadataChanged(this);
         }
@@ -364,6 +368,7 @@ public sealed class GameObject : EngineObject, ISerializable
         return EnsureAlive().RemoveComponent(this, component);
     }
 
+    internal ulong? captureRevision => m_serializationRevision;
     internal string storedName => m_name;
     internal string storedTag => m_tag;
     internal GameLayer storedLayer => m_layer;
@@ -381,6 +386,7 @@ public sealed class GameObject : EngineObject, ISerializable
         string requestedName = value ?? string.Empty;
         if (string.Equals(m_name, requestedName, StringComparison.Ordinal))
             return;
+        AdvanceCaptureRevision();
         m_name = requestedName;
         m_scene?.NotifyObjectMetadataChanged(this);
     }
@@ -390,6 +396,7 @@ public sealed class GameObject : EngineObject, ISerializable
         string requestedTag = NormalizeTag(value);
         if (string.Equals(m_tag, requestedTag, StringComparison.Ordinal))
             return;
+        AdvanceCaptureRevision();
         m_tag = requestedTag;
         m_scene?.NotifyObjectMetadataChanged(this);
     }
@@ -398,10 +405,16 @@ public sealed class GameObject : EngineObject, ISerializable
     {
         if (m_layer == value)
             return;
+        AdvanceCaptureRevision();
         m_layer = value;
         m_scene?.NotifyObjectMetadataChanged(this);
     }
-    internal void SetActiveSelfDirect(bool value) => m_activeSelf = value;
+
+    internal void SetActiveSelfDirect(bool value)
+    {
+        AdvanceCaptureRevision();
+        m_activeSelf = value;
+    }
     internal void SetActiveInHierarchyDirect(bool value) => m_activeInHierarchy = value;
 
     /// <summary>
@@ -461,4 +474,11 @@ public sealed class GameObject : EngineObject, ISerializable
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return value.Trim();
     }
+    private void AdvanceCaptureRevision()
+    {
+        if (m_serializationRevision is { } revision)
+            m_serializationRevision = revision == ulong.MaxValue ? null : revision + 1;
+    }
+
+
 }

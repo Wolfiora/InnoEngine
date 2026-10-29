@@ -505,7 +505,7 @@ internal static class ValuePipeline
         }
     }
 
-    private static bool IsPrimitive(Type type)
+    internal static bool IsPrimitive(Type type)
         => type == typeof(bool) ||
            type == typeof(byte) ||
            type == typeof(sbyte) ||

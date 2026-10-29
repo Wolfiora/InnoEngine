@@ -35,6 +35,7 @@ internal sealed record BinarySerializationNode(byte[] value) : SerializationNode
 
 internal sealed record ObjectSerializationNode : SerializationNode
 {
+    internal SerializationCaptureKey? captureKey { get; set; }
     internal OrderedDictionary<string, SerializationNode> values { get; } = new(StringComparer.Ordinal);
 }
 

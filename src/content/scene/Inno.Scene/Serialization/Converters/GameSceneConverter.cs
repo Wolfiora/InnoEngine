@@ -97,6 +97,8 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         }
     }
 
+
+
     /// <summary>
     /// Restores the supplied snapshot while preserving current invariants.
     /// </summary>
@@ -135,6 +137,37 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         }
     }
 
+    /// <inheritdoc />
+    protected override bool TryCaptureKey(
+        GameScene value,
+        SerializationCaptureKeyBuilder key
+    ) {
+        if (value.isDestroyed)
+            return false;
+        SceneStructureSnapshot snapshot = value.CaptureStructure();
+        IReadOnlyList<GameSystem> systems = value.GetSystems();
+        int count = 5 + systems.Count;
+        foreach (SceneObjectStructureSnapshot entry in snapshot.objects)
+            count = checked(count + entry.components.Count + 1);
+        key.EnsureCapacity(count);
+        if (!key.TryAddOwner(value, unchecked((ulong)value.structureRevision)))
+            return false;
+        key.AddValue(value.hierarchyRevision);
+        key.AddText(value.name);
+        foreach (SceneObjectStructureSnapshot entry in snapshot.objects)
+        {
+            if (entry.gameObject.prefabInstance is not null || !key.TryAddOwner(entry.gameObject, entry.gameObject.captureRevision))
+                return false;
+            foreach (GameComponent component in entry.components)
+                if (component is MissingGameComponent || !key.TryAddProperties(component))
+                    return false;
+        }
+        foreach (GameSystem system in systems)
+            if (system is MissingGameSystem || !key.TryAddProperties(system))
+                return false;
+        return true;
+    }
+
     private static void RestoreSceneGraph(
         GameScene scene,
         SerializationReader reader,
@@ -171,4 +204,5 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
                 serialization.RestorePropertiesData(system, state, context: reader.context);
         }
     }
+
 }

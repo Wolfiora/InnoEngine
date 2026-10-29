@@ -15,7 +15,7 @@ using Xunit;
 namespace Inno.Scene.Tests;
 
 [Collection(SceneTestsCollection.NAME)]
-public sealed class SceneSerializationTests : IDisposable
+public sealed partial class SceneSerializationTests : IDisposable
 {
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;

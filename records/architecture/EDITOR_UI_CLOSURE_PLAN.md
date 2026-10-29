@@ -1,4 +1,12 @@
-## Current verification checkpoint (2026-10-29, shader input ownership)
+## Current verification checkpoint (2026-10-29, complete capture inputs)
+
+The checkpoints below are retained history. Current continuation: #53 implements the reviewed Core-owned neutral capture-key capability for #46. The first ordinary SDK correctness runs pass Core 90 and Scene 56. A preliminary native run passes the three assigned-source cases and the complete due-inspection case; it overlaps a build and is not performance acceptance. Initial due medians are 7.8–9.1 ms, with approximately 2.16 MB per inspection, but concurrent P95 outliers remain unaccepted. Five quiet independent process groups, full suites and final product/CI reruns are still required.
+
+At the previous product candidate, all six Debug/Release × D3D11/D3D12/Vulkan FlappyBird smoke/workflow/panel-lifecycle runs passed. The corrected complete Wiki case passed in `e52/wiki-corrected`. Those results do not substitute for the final #53 candidate. The matching original/current native UI replay explicitly marks two unavailable external GPU textures; it is not a physical screenshot. PR #26 remains Draft while quantitative or original-plan gates remain open.
+
+Core owns current identity checks, exact key comparison and transient neutral storage. Scene owns complete mutation revisions; the DotNet metadata adapter owns reflection proof; Editor reads catalog path/status rather than importing source data during a label/dirty query. No domain revision API, independent identity table, serializer, event bus, backend/platform whitelist or test backdoor is introduced. Ordinary serialization and unsupported/plugin/Missing/Prefab capture retain their existing authoritative path.
+
+## Previous verification checkpoint (shader input ownership)
 
 At candidate `329568ba`, ordinary Debug and Release Editor builds and the neutral/selected product contract prerequisites passed. An exclusive atomic metadata candidate overlapped two independent output owners; all ten permanent shader input hashes remained unchanged. Contracts executed 816 passing cases and one Wiki content-boundary failure, with two platform fixture skips reported separately. The external consumer name in the engine Wiki has been corrected without weakening its validator; the focused complete Wiki rerun is pending.
 
@@ -28,6 +36,8 @@ The sections below retain dated execution history; this checkpoint is the curren
 | 6 | Reassess every issue and final architecture | Review all checklist rows, Core reuse, source ownership, failure/retirement and actual extension consumers. Update eleven quality dimensions and PR #26 only with verified evidence. Exact-head CI and physical-display/Mac limitations remain distinct. |
 
 The current APIs remain platform neutral at their existing boundaries. Context ownership stays in the shared SDL/ImGui backend; Scene attachment is a backlink to the existing Core-indexed record, not a new object registry. BGCS, third-party source and generated bindings are untouched. No new global/implicit imports, compatibility paths, event buses or serializers are introduced.
+
+The first twelve-suite SDK build completed with zero warnings/errors. The next repeat was explicitly canceled for the measured scratch-allocation refinement and remains canceled evidence. Quiet preliminary sampling still had one 39.6 ms P95 despite ~7 ms medians. Core now borrows and clears BCL identity-check storage within the callback, validates before unchanged-node reuse and copies checks only for an actual write. Core 90 passes again. No sample or timer policy was changed; final-source performance remains pending.
 
 ## Issue execution map
 

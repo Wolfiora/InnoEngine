@@ -4,6 +4,7 @@ using System.Threading;
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
+using Inno.Core.Mathematics;
 using Inno.Extensibility.Types;
 using Inno.Scene;
 using Xunit;
@@ -12,6 +13,41 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed class SceneDirtyCaptureTests
 {
+    [Fact]
+    public void OwnedRevisionCaptureKeepsDirtyStateExactAcrossHistoryRestoreAndDirectWrites()
+    {
+        using var host = new NativeProjectPanelHost();
+        GameScene scene = host.CreateScene();
+        GameObject value = scene.CreateObject("Original");
+        host.workspace.Save(scene, string.Empty);
+        byte[] saved = Hash(host, scene);
+        Check(false);
+        host.edits.RenameGameObject(value, "Changed");
+        Check(true);
+        Assert.True(host.runtime.interactions.history.Undo().succeeded);
+        Check(false);
+        Assert.True(host.runtime.interactions.history.Redo().succeeded);
+        Check(true);
+        Assert.True(host.runtime.interactions.history.Undo().succeeded);
+        Check(false);
+        Assert.True(host.edits.ChangeProperty(value.transform, "localPosition",
+            () => value.transform.localPosition = new Vector3(3, 4, 5), "Move"));
+        Check(true);
+        Assert.True(host.runtime.interactions.history.Undo().succeeded);
+        Check(false);
+        Assert.True(host.runtime.interactions.history.Redo().succeeded);
+        Check(true);
+        value.transform.localPosition = Vector3.ZERO;
+        Check(false);
+
+        void Check(bool expected)
+        {
+            Thread.Sleep(120);
+            Assert.Equal(expected, !Hash(host, scene).AsSpan().SequenceEqual(saved));
+            Assert.Equal(expected, host.workspace.IsDirty(scene));
+        }
+    }
+
     [Fact]
     public void CompleteSceneCapturesReuseOnlyUnchangedNeutralState()
     {

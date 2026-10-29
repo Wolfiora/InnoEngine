@@ -379,7 +379,7 @@ public sealed class SerializationRegistry : IDisposable
     /// The exact concrete root type, interpreted by the current converter generation.
     /// </typeparam>
     /// <param name="value">
-    /// The non-null root whose getters and converters are evaluated in full.
+    /// The non-null root captured through its current converter and declared complete inputs.
     /// </param>
     /// <param name="context">
     /// The complete owner context, including required reference resolvers.
@@ -394,7 +394,9 @@ public sealed class SerializationRegistry : IDisposable
     /// </returns>
     /// <remarks>
     /// Writers borrowed by a snapshot converter belong to its synchronous callback and must not be used after it returns.
-    /// Every capture still evaluates getters and converters; this is not a mutation-notification cache.
+    /// Default capture evaluates getters and converters in full. An explicitly opted-in converter may
+    /// reuse its prior node only after every current capture-key input has been verified. Ordinary
+    /// serialization never uses these keys; incomplete or unavailable declarations retain complete capture.
     /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// The source value is null.

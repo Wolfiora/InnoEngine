@@ -25,6 +25,7 @@ internal sealed class SerializationOperation
         isSnapshotCapture = snapshotCapture;
     }
 
+    internal ConverterRegistryLease converters => m_converters;
     internal SerializationContext context { get; }
     internal bool isSnapshotCapture { get; }
     internal int writerGeneration => m_writerGeneration;

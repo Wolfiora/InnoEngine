@@ -36,9 +36,9 @@ internal sealed partial class EditorSceneWorkspace
             m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
             return true;
         }
-        if (!m_assets.TryLoad(document.sourceAssetId, out SceneAsset? asset) ||
+        if (!m_assets.TryGetInfo(document.sourceAssetId, out AssetInfo? asset) ||
             asset is null ||
-            asset.isMissing)
+            asset.status == AssetImportStatus.Missing)
         {
             document.isDirty = true;
             m_diagnostics.PublishSourceUnavailable(scene, document.sourcePath);

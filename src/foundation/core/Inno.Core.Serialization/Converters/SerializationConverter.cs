@@ -62,5 +62,31 @@ public abstract class SerializationConverter<T> : SerializationConverter
         => throw new NotSupportedException(
             $"Serialization converter '{GetType().FullName}' does not support restoring existing '{typeof(T).FullName}' values.");
 
+    /// <summary>
+    /// Optionally declares every input to a snapshot capture without writing data.
+    /// </summary>
+    /// <param name="value">
+    /// The current registered identity source.
+    /// </param>
+    /// <param name="key">
+    /// The borrowed Core key builder, valid only during this synchronous callback.
+    /// </param>
+    /// <returns>
+    /// True only when the complete output is covered; false retains ordinary authoritative capture.
+    /// </returns>
+    /// <remarks>
+    /// This callback must be pure and complete. It runs only for CaptureSnapshot; ordinary Serialize never uses it.
+    /// After a changed key, Core verifies the key again before publishing. Default converters do not opt in.
+    /// </remarks>
+    protected virtual bool TryCaptureKey(
+        T value,
+        SerializationCaptureKeyBuilder key
+    ) => false;
+
+    internal bool CaptureKey(
+        T value,
+        SerializationCaptureKeyBuilder key
+    ) => TryCaptureKey(value, key);
+
     internal sealed override ConverterInvoker CreateInvoker() => new ConverterInvoker<T>(this, GetType());
 }
