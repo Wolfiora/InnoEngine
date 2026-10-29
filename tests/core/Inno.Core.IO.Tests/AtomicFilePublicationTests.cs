@@ -158,12 +158,13 @@ public sealed class AtomicFilePublicationTests : IDisposable
             await WaitUntil(() => Directory.GetFiles(m_root, "start.ready-*").Length == creators.Length);
             File.WriteAllText(gate, "start");
             await WaitUntil(() => File.Exists(destination));
-            byte[] winner = File.ReadAllBytes(destination);
+            var document = new FileByteDocumentStore(destination);
+            byte[] winner = Assert.IsType<byte[]>(document.Read());
             Assert.Equal(1024 * 1024, winner.Length);
             Assert.InRange(winner[0], (byte)1, (byte)8);
             Assert.All(winner, value => Assert.Equal(winner[0], value));
             for (int read = 0; read < 16; read++)
-                Assert.Equal(winner, File.ReadAllBytes(destination));
+                Assert.Equal(winner, document.Read());
             await Task.WhenAll(creators.Select(process => process.WaitForExitAsync())).WaitAsync(TimeSpan.FromSeconds(30));
             Assert.Single(creators.Where(process => process.ExitCode == 0));
             Assert.All(creators, process => Assert.True(process.ExitCode is 0 or 17));
