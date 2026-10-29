@@ -24,11 +24,15 @@ public sealed class SerializationSnapshot
     public byte[] ToArray() => BinarySerializationFormat.Encode(root);
 
     /// <summary>
-    /// Streams this capture in the ordinary deterministic binary format without allocating the complete output payload.
+    /// Streams this capture in the ordinary deterministic binary format without requiring a contiguous complete-output buffer.
     /// </summary>
     /// <param name="destination">
     /// The writable caller-owned stream, which remains open.
     /// </param>
+    /// <remarks>
+    /// Immutable keyed objects may retain canonical encoded blocks of at most 64 KiB each. Larger
+    /// objects remain streamed, and cached bytes never contain source objects or generation references.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// The destination is null.
     /// </exception>

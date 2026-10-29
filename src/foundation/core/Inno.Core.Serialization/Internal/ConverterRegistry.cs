@@ -413,7 +413,10 @@ internal sealed class ConverterRegistryLease : IDisposable
                     break;
                 }
         }
-        plans[metadata] = (source, eligible);
+        // An unresolved fact can become known through an ordinary write in this same operation.
+        // Cache only positive proofs; a key query still never invokes the resolver itself.
+        if (eligible)
+            plans[metadata] = (source, true);
         return eligible;
     }
     internal ConverterInvoker? Resolve(Type valueType)
@@ -530,8 +533,9 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         }
 
         ObjectSerializationNode? prior = previous as ObjectSerializationNode;
-        SerializationCaptureAttempt attempt = CaptureKey(prior?.captureKey);
-        attempt.ValidateIdentities();
+        operation.RecordConverterWrite();
+        long converterWrites = operation.converterWrites;
+        SerializationCaptureAttempt attempt = SerializationCaptureAttempt.Capture(operation, valueType, typed, prior?.captureKey, m_converter);
         SerializationCaptureKey? key = attempt.key;
         if (key is not null && ReferenceEquals(key, prior?.captureKey))
             return prior!;
@@ -541,38 +545,11 @@ internal sealed class ConverterInvoker<T> : ConverterInvoker
         if (key is not null)
         {
             attempt.ValidateIdentities();
-            SerializationCaptureAttempt after = CaptureKey(key);
-            after.ValidateIdentities();
-            if (after.key is null || !key.HasSameInputs(after.key))
-                throw new InvalidOperationException("The declared serialization capture inputs changed during the write.");
-            // Providers may return fresh equivalent metadata rather than stable declarations.
-            // Preserve ordinary capture, but do not publish a reusable hint for that provider.
-            if (!ReferenceEquals(after.key, key))
+            key = attempt.Verify(SerializationCaptureAttempt.Capture(operation, valueType, typed, key, m_converter));
+            if (operation.converterWrites != converterWrites)
                 key = null;
         }
-        if (!ReferenceEquals(result.captureKey, key))
-        {
-            if (ReferenceEquals(result, prior))
-                result = SerializationNodeReuse.CopyObject(result);
-            result.captureKey = key;
-        }
-        return result;
-
-        SerializationCaptureAttempt CaptureKey(SerializationCaptureKey? before)
-        {
-            if (!operation.isSnapshotCapture || value is not Inno.Core.Identity.IdentityObject identified ||
-                identified.identity.runtimeIdentity is null)
-                return SerializationCaptureAttempt.empty;
-            var builder = new SerializationCaptureKeyBuilder(operation, valueType, identified.identity, before);
-            try
-            {
-                return m_converter.CaptureKey(typed, builder) ? builder.Complete() : SerializationCaptureAttempt.empty;
-            }
-            finally
-            {
-                builder.Retire();
-            }
-        }
+        return SerializationNodeReuse.WithCaptureKey(result, prior, key);
     }
 
     internal override object Read(

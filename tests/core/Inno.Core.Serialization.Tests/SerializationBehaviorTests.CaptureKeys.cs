@@ -41,6 +41,20 @@ public sealed partial class SerializationBehaviorTests
     }
 
     [Fact]
+    public void AParentKeyCannotImplicitlyCertifyANestedConverterState()
+    {
+        var identities = new IdentityAllocator();
+        var value = new CaptureKeyRoot { converted = new CaptureConvertedValue { number = 4 } };
+        Assert.True(identities.Register(value));
+        SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
+        int calls = CaptureConvertedValueConverter.calls;
+        SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: before);
+        Assert.Equal(calls + 1, CaptureConvertedValueConverter.calls);
+        Assert.NotEqual(before.ToArray(), changed.ToArray());
+        Assert.Equal(2, value.writeCalls);
+    }
+
+    [Fact]
     public void CaptureKeysIncludeContextInputsAndCurrentConverterGeneration()
     {
         var identities = new IdentityAllocator();
@@ -347,6 +361,7 @@ internal sealed class CaptureKeyRoot : IdentityObject, ISerializable
     internal int writeCalls;
     internal int keyCalls;
     internal ISerializable? properties;
+    internal CaptureConvertedValue? converted;
     internal Action? onWrite;
     internal Action<SerializationCaptureKeyBuilder>? onKey;
     internal SerializationCaptureKeyBuilder? savedBuilder;
@@ -374,6 +389,8 @@ internal sealed class CaptureKeyRootConverter : SerializationConverter<CaptureKe
         writer.Write("context", writer.context.TryGet(out CaptureKeyContext? context) ? context!.value : 0UL);
         if (value.properties is not null)
             writer.WritePropertiesData("properties", value.properties);
+        if (value.converted.HasValue)
+            writer.Write("converted", value.converted.Value);
     }
 
     public override CaptureKeyRoot Read(SerializationReader reader) => throw new NotSupportedException();

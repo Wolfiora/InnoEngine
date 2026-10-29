@@ -10,6 +10,8 @@ internal static partial class BinarySerializationFormat
 {
     private static int GetEncodedSize(SerializationNode node)
     {
+        if (node is ObjectSerializationNode { encodedCapture: { } encoded })
+            return encoded.Length;
         int payload = node switch
         {
             NullSerializationNode => 0,

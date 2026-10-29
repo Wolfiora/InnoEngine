@@ -20,6 +20,12 @@ Next: complete Wiki and the remaining product matrix, #46 absolute latency, cont
 
 # Editor UI closure execution ledger
 
+## Current element-capture refinement
+
+The property-only prototype is archived, not retained as a production path. #53 now reuses the existing Writer/array capture at element granularity. The optional `WriteObjectArray` key callback and exact Guid input are the necessary public additions; no compatibility overload exists. Scene declares complete object/component, source/parent ID and sibling inputs. Missing/Prefab/untracked rows retain the same writer. Core prevents enclosing key reuse when nested converters execute, propagating only a neutral effect marker from independent property payloads. No type/delegate/source is retained in keys or encoding blocks.
+
+The same canonical encoder may memoize immutable keyed-object blocks up to 64 KiB; larger nodes remain streamed. This addresses measured repeated sorting/encoding, not a speculative global cache. Guid writing uses a borrowed Span with unchanged bytes. Core 97 passes, Scene 56 passes before the final encoding refinement, and a diagnostic composition of the official SourceRelease graph plus the latest SDK-built Core passes ten native correctness/performance cases. Preliminary edit medians are 12.8–14.7 ms / ~2.51 MB, idle ~9.5 ms / ~2.36 MB. First-group spikes remain visible. These are not final five-process pairs or whole-product acceptance. The complete SourceRelease graph previously passed zero warnings/errors; the current final graph, API/Wiki, product, lifecycle, companion and exact-head CI still need verification.
+
 [Original-plan review](acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md) · [Parent issue #27](https://github.com/Wolfiora/InnoEngine/issues/27) · [PR #26](https://github.com/Wolfiora/InnoEngine/pull/26)
 
 Baseline: `30d18489fbf68763229cd8ed35a7005f543019ad`. Evidence owner: `D:/InnoEngine-Verification/editor-ui-closure-2026-10-27`. The original UI plan's hash recorded by the review is `a55f25b76db09befd6cdd2db06a607d0e2a70d660dca6ca5429c64f3d5623646`. The desktop file now contains the approved issue-driven closure plan, SHA-256 `cbb7d50a26a08e4a0d50c7e0f9aabe6c8538ae3fbe229957d2094a4b60325d9e`; these are different documents.

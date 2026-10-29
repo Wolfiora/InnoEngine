@@ -6,6 +6,20 @@ namespace Inno.Core.Serialization;
 
 internal static class SerializationNodeReuse
 {
+    internal static ObjectSerializationNode WithCaptureKey(
+        ObjectSerializationNode result,
+        ObjectSerializationNode? previous,
+        SerializationCaptureKey? key
+    ) {
+        if (!ReferenceEquals(result.captureKey, key))
+        {
+            if (ReferenceEquals(result, previous))
+                result = CopyObject(result);
+            result.captureKey = key;
+        }
+        return result;
+    }
+
     internal static bool SameScalar<T>(
         T value,
         object previous

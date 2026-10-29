@@ -50,7 +50,8 @@ internal static partial class BinarySerializationFormat
 
     private static void WriteNode(
         BinaryWriter writer,
-        SerializationNode node
+        SerializationNode node,
+        bool useObjectCache = true
     ) {
         switch (node)
         {
@@ -66,6 +67,11 @@ internal static partial class BinarySerializationFormat
                 writer.Write(binary.value);
                 return;
             case ObjectSerializationNode objectNode:
+                if (useObjectCache && TryGetEncodedCapture(objectNode) is { } encoded)
+                {
+                    writer.Write(encoded.AsSpan());
+                    return;
+                }
                 writer.Write((byte)NodeKind.Object);
                 string[] names = [.. objectNode.values.Keys];
                 Array.Sort(names, StringComparer.Ordinal);
@@ -150,7 +156,12 @@ internal static partial class BinarySerializationFormat
             case double typed: writer.Write((byte)NodeKind.Double); writer.Write(typed); return;
             case decimal typed: writer.Write((byte)NodeKind.Decimal); writer.Write(typed); return;
             case string typed: writer.Write((byte)NodeKind.String); writer.Write(typed); return;
-            case Guid typed: writer.Write((byte)NodeKind.Guid); writer.Write(typed.ToByteArray()); return;
+            case Guid typed:
+                Span<byte> bytes = stackalloc byte[16];
+                _ = typed.TryWriteBytes(bytes);
+                writer.Write((byte)NodeKind.Guid);
+                writer.Write(bytes);
+                return;
             default:
                 throw new InvalidDataException($"Unsupported scalar runtime type '{value.GetType().FullName}'.");
         }
@@ -242,7 +253,8 @@ internal static partial class BinarySerializationFormat
 
     private static byte[] Encode(
         SerializationNode node,
-        bool includeMagic
+        bool includeMagic,
+        bool useObjectCache = true
     ) {
         int length = checked(GetEncodedSize(node) + (includeMagic ? GetEncodedStringSize(C_MAGIC) : 0));
         var data = new byte[length];
@@ -250,7 +262,7 @@ internal static partial class BinarySerializationFormat
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         if (includeMagic)
             writer.Write(C_MAGIC);
-        WriteNode(writer, node);
+        WriteNode(writer, node, useObjectCache);
         writer.Flush();
         if (stream.Position != length)
             throw new InvalidDataException("The serialization encoder did not fill its calculated output size.");

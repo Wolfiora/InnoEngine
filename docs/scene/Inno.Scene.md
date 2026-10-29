@@ -1,6 +1,6 @@
 # Inno.Scene
 
-完整 Scene 捕获可通过 Core Serialization 的显式中立 key 复用未变化的根节点。Scene 自己拥有结构、层级、对象元数据与 Transform 写入的失效责任；本地/世界变换、层级保持变换和属性恢复均更新计数。计数不序列化、不导出为领域 API，耗尽后继续完整捕获。任意插件属性、自定义 Converter、Missing 和 Prefab 等无法完整证明的状态保留现有 writer；不按 UI 通知猜测场景是否变化。详细借用与失败语义见 [Serialization](../core/Inno.Core.Serialization.md)。
+完整 Scene 捕获通过 Core Serialization 的显式中立 key 复用未变化的对象条目。Scene 自己拥有结构、层级、对象元数据与 Transform 写入的失效责任；每个条目同时覆盖精确 source/parent ID、sibling 位置与组件属性。本地/世界变换、层级保持变换和属性恢复均更新计数。计数不序列化、不导出为领域 API，耗尽后继续完整捕获。任意插件属性、自定义 Converter、Missing 和 Prefab 等无法完整证明的状态保留现有 writer；不按 UI 通知猜测场景是否变化。结构、根属性、别名和 System 仍执行既有写入流程。详细借用与失败语义见 [Serialization](../core/Inno.Core.Serialization.md)。
 
 [Engine 索引](README.md) · [Scene Assets](Inno.Scene.Assets.md) · [Wiki 首页](../README.md)
 

@@ -44,13 +44,17 @@ internal static class PropertySnapshotPipeline
             operation.Fail();
         }
         if (captured is null && before is not null && count == before.Length)
-            return previous!;
+            return previous!.properties!.hasConverters == (operation.converterWrites != 0) ? previous
+                : new BinarySerializationNode(previous.value)
+                {
+                    properties = new(before) { hasConverters = operation.converterWrites != 0 }
+                };
         if (captured is null)
         {
             captured = new(before!);
             captured.RemoveRange(count, captured.Count - count);
         }
-        var state = new PropertyDataCapture([.. captured]);
+        var state = new PropertyDataCapture([.. captured]) { hasConverters = operation.converterWrites != 0 };
         return new BinarySerializationNode(PropertySnapshotBinaryFormat.Encode(state.members)) { properties = state };
     }
 

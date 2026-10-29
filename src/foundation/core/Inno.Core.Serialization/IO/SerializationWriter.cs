@@ -182,13 +182,30 @@ public sealed class SerializationWriter
     /// <param name="writeElement">
     /// The callback that fills each element object.
     /// </param>
+    /// <param name="captureKey">
+    /// An optional pure callback covering every element output and contextual input. It must declare
+    /// a current Core identity owner and return true only for a complete proof. Snapshot capture alone
+    /// can reuse a matching element; ordinary serialization always executes writeElement.
+    /// </param>
+    /// <remarks>
+    /// The key builder belongs only to its synchronous callback. Uncertified rows and rows that invoke
+    /// nested converters execute the ordinary element writer on every capture. Callback failures and
+    /// changed declared inputs abort publication without modifying a previous snapshot.
+    /// </remarks>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when an argument is null.
+    /// Values or writeElement is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The member name is null, empty or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The writer has retired, a member is duplicated, or declared capture inputs change during writing.
     /// </exception>
     public void WriteObjectArray<TValue>(
         string name,
         IEnumerable<TValue> values,
-        Action<SerializationWriter, TValue> writeElement
+        Action<SerializationWriter, TValue> writeElement,
+        Func<TValue, SerializationCaptureKeyBuilder, bool>? captureKey = null
     ) {
         ArgumentNullException.ThrowIfNull(values);
         ArgumentNullException.ThrowIfNull(writeElement);
@@ -211,10 +228,31 @@ public sealed class SerializationWriter
 
         void WriteElement(TValue value)
         {
-            var child = new SerializationWriter(m_operation, array.Next as ObjectSerializationNode,
+            ObjectSerializationNode? prior = array.Next as ObjectSerializationNode;
+            SerializationCaptureAttempt attempt = captureKey is null ? SerializationCaptureAttempt.empty
+                : SerializationCaptureAttempt.Capture(m_operation, typeof(TValue), value, prior?.captureKey, captureKey: captureKey);
+            SerializationCaptureKey? key = attempt.key;
+            if (key is not null && ReferenceEquals(key, prior?.captureKey))
+            {
+                array.Add(prior!);
+                index++;
+                return;
+            }
+            var child = new SerializationWriter(m_operation, prior,
                 array.Next?.capturePath ?? $"{AppendPath(name)}[{index}]", typeof(TValue));
+            long converterWrites = m_operation.converterWrites;
             writeElement(child, value);
-            array.Add(child.Complete());
+            ObjectSerializationNode result = child.Complete();
+            if (key is not null)
+            {
+                attempt.ValidateIdentities();
+                key = attempt.Verify(SerializationCaptureAttempt.Capture(m_operation, typeof(TValue), value, key, captureKey: captureKey));
+                if (m_operation.converterWrites != converterWrites)
+                    key = null;
+            }
+            if (ReferenceEquals(result, prior) && prior!.captureKey is null)
+                key = null;
+            array.Add(SerializationNodeReuse.WithCaptureKey(result, prior, key));
             index++;
         }
     }

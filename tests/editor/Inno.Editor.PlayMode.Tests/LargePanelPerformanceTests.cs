@@ -29,6 +29,21 @@ public sealed class LargePanelPerformanceTests(ITestOutputHelper output)
 
     [Fact]
     [Trait("Acceptance", "Performance")]
+    public void ChangedDirtyInspectionsMeasureTheCompleteSavedSceneTraversal()
+    {
+        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        GameScene scene = LoadSavedHierarchy(host);
+        GameObject value = scene.GetObjects()[0];
+        int revision = 0;
+        Measure(host, null, "10000-hierarchy-dirty-edits", () =>
+        {
+            value.transform.localPosition = new Inno.Core.Mathematics.Vector3(++revision % 2 + 1, 0, 0);
+            Assert.True(host.workspace.IsDirty(scene));
+        }, static () => Thread.Sleep(110), consumer: "complete-authoritative-dirty-inspection-after-each-owned-write");
+    }
+
+    [Fact]
+    [Trait("Acceptance", "Performance")]
     public void NeutralCaptureSeparatesSerializationFromSourceFreshness()
     {
         using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);

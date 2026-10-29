@@ -2,6 +2,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using Inno.Core.Identity;
+using Inno.Core.Serialization.Converters;
 
 namespace Inno.Core.Serialization;
 
@@ -18,6 +19,7 @@ public sealed class SerializationCaptureKeyBuilder
     private const byte C_VALUE = 2;
     private const byte C_TEXT = 3;
     private const byte C_GUARD = 4;
+    internal const byte C_GUID = 5;
 
     private readonly int m_threadId = Environment.CurrentManagedThreadId;
     private SerializationCaptureIdentity[] m_identities = [];
@@ -34,17 +36,23 @@ public sealed class SerializationCaptureKeyBuilder
         Type rootType,
         Inno.Core.Identity.Identity source,
         SerializationCaptureKey? previous
-    ) {
-        m_operation = operation;
-        m_previous = previous;
+    ) : this(operation, previous) {
         if (source.runtimeIdentity is not { } identity)
         {
             m_unavailable = true;
             return;
         }
         Add(new(C_GUARD, identity, 0, operation.GetMetadata(rootType).captureIdentity, null));
-        Add(new(C_GUARD, default, 0, operation.converters.captureIdentity, null));
         AddIdentity(new(source, identity));
+    }
+
+    internal SerializationCaptureKeyBuilder(
+        SerializationOperation operation,
+        SerializationCaptureKey? previous
+    ) {
+        m_operation = operation;
+        m_previous = previous;
+        Add(new(C_GUARD, default, 0, operation.converters.captureIdentity, null));
     }
 
     /// <summary>
@@ -162,6 +170,17 @@ public sealed class SerializationCaptureKeyBuilder
     public void AddValue(ulong value) => Add(new(C_VALUE, default, value, default, null));
 
     /// <summary>
+    /// Adds an exact neutral identifier without hashing or allocating text.
+    /// </summary>
+    /// <param name="value">
+    /// The current identifier input, including an empty identifier when meaningful.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The callback has retired or is accessed from another thread.
+    /// </exception>
+    public void AddValue(Guid value) => Add(new(C_GUID, default, 0, value, null));
+
+    /// <summary>
     /// Adds exact ordinal text, preserving the distinction between null and empty.
     /// </summary>
     /// <param name="value">
@@ -175,7 +194,7 @@ public sealed class SerializationCaptureKeyBuilder
     internal SerializationCaptureAttempt Complete()
     {
         RequireOperation();
-        if (m_unavailable)
+        if (m_unavailable || m_identityCount == 0)
             return SerializationCaptureAttempt.empty;
         SerializationCaptureKey key = m_parts is null && m_previous is not null && m_previous.parts.Length == m_count
             ? m_previous
@@ -263,7 +282,8 @@ internal sealed record SerializationCaptureKey(SerializationCaptureKeyPart[] par
             SerializationCaptureKeyPart before = parts[index];
             SerializationCaptureKeyPart after = other.parts[index];
             if (before.kind != after.kind || before.identity != after.identity ||
-                before.revision != after.revision || !string.Equals(before.text, after.text, StringComparison.Ordinal))
+                before.revision != after.revision || !string.Equals(before.text, after.text, StringComparison.Ordinal) ||
+                before.kind == SerializationCaptureKeyBuilder.C_GUID && before.metadata != after.metadata)
                 return false;
         }
         return true;
@@ -275,6 +295,42 @@ internal sealed record SerializationCaptureAttempt(
     SerializationCaptureIdentity[] identities
 ) {
     internal static readonly SerializationCaptureAttempt empty = new(null, []);
+
+    internal static SerializationCaptureAttempt Capture<T>(
+        SerializationOperation operation,
+        Type valueType,
+        T value,
+        SerializationCaptureKey? previous,
+        SerializationConverter<T>? converter = null,
+        Func<T, SerializationCaptureKeyBuilder, bool>? captureKey = null
+    ) {
+        if (!operation.isSnapshotCapture)
+            return empty;
+        SerializationCaptureKeyBuilder builder;
+        if (captureKey is not null)
+            builder = new(operation, previous);
+        else if (value is IdentityObject identified && identified.identity.runtimeIdentity is not null)
+            builder = new(operation, valueType, identified.identity, previous);
+        else
+            return empty;
+        try
+        {
+            bool complete = captureKey is not null ? captureKey(value, builder) : converter!.CaptureKey(value, builder);
+            return complete ? builder.Complete() : empty;
+        }
+        finally
+        {
+            builder.Retire();
+        }
+    }
+
+    internal SerializationCaptureKey? Verify(SerializationCaptureAttempt after)
+    {
+        if (key is null || after.key is null || !key.HasSameInputs(after.key))
+            throw new InvalidOperationException("The declared serialization capture inputs changed during the write.");
+        // Fresh equivalent metadata preserves ordinary capture without publishing a reusable hint.
+        return ReferenceEquals(after.key, key) ? key : null;
+    }
 
     internal void ValidateIdentities()
     {

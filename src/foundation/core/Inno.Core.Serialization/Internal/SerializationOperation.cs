@@ -13,6 +13,7 @@ internal sealed class SerializationOperation
     private Dictionary<object, string>? m_capturePaths;
     private bool m_isActive = true;
     private int m_writerGeneration;
+    private long m_converterWrites;
 
     internal SerializationOperation(
         SerializationContext context,
@@ -29,6 +30,7 @@ internal sealed class SerializationOperation
     internal SerializationContext context { get; }
     internal bool isSnapshotCapture { get; }
     internal int writerGeneration => m_writerGeneration;
+    internal long converterWrites => m_converterWrites;
     internal TypeCacheSnapshot types => m_converters.types;
 
     internal void RetireCaptureMember()
@@ -56,13 +58,18 @@ internal sealed class SerializationOperation
             throw new InvalidOperationException("The serialization reader or writer is no longer active.");
     }
 
+    internal void RecordConverterWrite() => m_converterWrites = checked(m_converterWrites + 1);
+
     internal BinarySerializationNode CapturePropertyData(
         ISerializable value,
         SerializationContext context,
         BinarySerializationNode? previous
     ) {
         EnsureActive();
-        return PropertySnapshotPipeline.CaptureData(value, context, m_converters, previous);
+        BinarySerializationNode captured = PropertySnapshotPipeline.CaptureData(value, context, m_converters, previous);
+        if (captured.properties?.hasConverters == true)
+            RecordConverterWrite();
+        return captured;
     }
 
     internal void AddCompletionCallback(Action callback)

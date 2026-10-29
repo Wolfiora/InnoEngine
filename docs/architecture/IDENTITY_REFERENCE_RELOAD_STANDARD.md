@@ -768,4 +768,4 @@ Contributor snapshot、scratch、内容读取流与异步 clip 准备属于各�
 
 Core Serialization 的可选捕获 key 仅保存中立 runtime identity/domain、计数和当前 metadata/generation stamp，用于同一进程的不可变状态观察；这些值不写入编码结果、History、Scene、Workspace 或插件状态。跨 callback 的临时 identity 验证复用 Core Identity 的弱 registry 绑定，不创建对象回查表。Builder 在同步回调退出时清空 context、metadata、临时 identity 检查与存储；持有快照或已退休 builder 不得阻止真实 Assembly/ALC 退休。
 
-Scene 可声明其实际 owner 所维护的完整写入 revision。未跟踪字段、自定义 Converter、可变引用、Missing 和 Prefab 等不完整证明仍执行权威 capture，不能以 UI 通知或局部 revision 跳过状态。变化期间输入不稳定或 identity 退休时拒绝发布新快照，原捕获保持有效。普通保存、Undo payload 与 Missing 恢复共用原二进制 writer/reader；捕获 key 不建立第二种数据格式或恢复协议。此处能力的完整失败和线程契约见 [Serialization](../core/Inno.Core.Serialization.md)。
+Scene 在现有结构化对象数组中声明每个 owner 的完整写入 revision，以及精确 source/parent ID、sibling 位置和组件属性。结构、顺序、根属性、别名与 System 仍由原 writer 处理。未跟踪字段、自定义 Converter、可变引用、Missing 和 Prefab 等不完整证明仍执行权威 capture，不能以 UI 通知或局部 revision 跳过状态。Core 也禁止以父节点的局部 key 隐式证明嵌套 Converter 的状态，并从独立属性 payload 传播中立执行标记。变化期间输入不稳定或 identity 退休时拒绝发布新快照，原捕获保持有效。普通保存、Undo payload 与 Missing 恢复共用原二进制 writer/reader；捕获 key 不建立第二种数据格式或恢复协议。此处能力的完整失败和线程契约见 [Serialization](../core/Inno.Core.Serialization.md)。
