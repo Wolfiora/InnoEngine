@@ -45,27 +45,48 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         Ui.SeparatorText("Application");
         if (BeginFields("##application_fields"))
         {
-            DrawReadOnly("Application ID", window.gameApplicationId);
-            DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
-            DrawText("Persistent Data Folder", "game_data", window.gamePersistentDataPath, value => window.gamePersistentDataPath = value);
-            DrawText("Startup Scene", "game_scene", window.gameStartupScene, value => window.gameStartupScene = value);
-            Ui.EndTable();
+            try
+            {
+                EditorUI.current.widgets.SetupPropertyColumns();
+                DrawReadOnly("Application ID", window.gameApplicationId);
+                DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
+                DrawText("Persistent Data Folder", "game_data", window.gamePersistentDataPath, value => window.gamePersistentDataPath = value);
+                DrawText("Startup Scene", "game_scene", window.gameStartupScene, value => window.gameStartupScene = value);
+            }
+            finally
+            {
+                Ui.EndTable();
+            }
         }
 
         Ui.SeparatorText("Window and Platform");
         if (BeginFields("##platform_fields"))
         {
-            DrawWindowSize();
-            DrawTarget();
-            DrawManagedDeployment();
-            Ui.EndTable();
+            try
+            {
+                EditorUI.current.widgets.SetupPropertyColumns();
+                DrawWindowSize();
+                DrawTarget();
+                DrawManagedDeployment();
+            }
+            finally
+            {
+                Ui.EndTable();
+            }
         }
 
         Ui.SeparatorText("Output");
         if (BeginFields("##output_fields"))
         {
-            DrawText("Output Directory", "game_output", window.gameOutputDirectory, value => window.gameOutputDirectory = value);
-            Ui.EndTable();
+            try
+            {
+                EditorUI.current.widgets.SetupPropertyColumns();
+                DrawText("Output Directory", "game_output", window.gameOutputDirectory, value => window.gameOutputDirectory = value);
+            }
+            finally
+            {
+                Ui.EndTable();
+            }
         }
 
         Ui.Spacing();
@@ -80,16 +101,12 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
         DrawButtons();
     }
 
-    private static bool BeginFields(string id)
-    {
-        if (!Ui.BeginTable(id, 2, (ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX), default(System.Numerics.Vector2), 0f))
-        {
-            return false;
-        }
-
-        EditorUI.current.widgets.SetupPropertyColumns();
-        return true;
-    }
+    private static bool BeginFields(string id) => Ui.BeginTable(
+        id,
+        2,
+        ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX,
+        default(Vector2),
+        0f);
 
     private static void BeginField(string label)
     {

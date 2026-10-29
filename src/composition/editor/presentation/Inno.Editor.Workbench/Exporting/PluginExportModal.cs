@@ -109,9 +109,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     ) {
         Ui.Text(label);
         Ui.SetNextItemWidth(-1f);
-        if (Ui.InputText($"##{id}", ref value, C_TEXT_CAPACITY))
-            apply(value);
-        else
-            apply(value);
+        _ = Ui.InputText($"##{id}", ref value, C_TEXT_CAPACITY);
+        apply(value);
     }
 }

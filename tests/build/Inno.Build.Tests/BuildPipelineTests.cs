@@ -39,7 +39,7 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 namespace Inno.Build.Tests;
 
 [Collection("Build pipeline serialization")]
-public sealed class BuildPipelineTests : IDisposable
+public sealed partial class BuildPipelineTests : IDisposable
 {
     private readonly AssetPipeline m_assets;
     private readonly EngineHost m_engine;
