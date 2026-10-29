@@ -6,6 +6,9 @@ using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
 
+/// <summary>
+/// Owns validated supplemental font data and its lifetime when borrowed by the native atlas.
+/// </summary>
 public sealed unsafe partial class PlatformImGuiContext
 {
     private const string C_SUPPLEMENTAL_FONT_FILE = "NotoSansCJKsc-Regular.otf";
