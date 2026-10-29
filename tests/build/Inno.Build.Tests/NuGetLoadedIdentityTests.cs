@@ -18,6 +18,11 @@ namespace Inno.Build.Tests;
 
 public sealed class NuGetLoadedIdentityTests
 {
+    private const string C_EXPECTED_RUNTIME = "INNO_PACKAGE_IDENTITY_EXPECTED_RUNTIME";
+    private const string C_MISMATCH_RUNTIME = "INNO_PACKAGE_IDENTITY_MISMATCH_RUNTIME";
+    private const string C_PROBE_RESULT = "INNO_PACKAGE_IDENTITY_PROBE_RESULT";
+    private const string C_VERIFIED_PROBE = "loaded-content-mismatch-rejected;context-collected;assembly-collected";
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
@@ -29,7 +34,24 @@ public sealed class NuGetLoadedIdentityTests
 
     [Fact]
     [Trait("ProcessIsolation", "Required")]
-    public Task IsolatedHostRejectsARealLoadedPayloadMismatch() => VerifyScope(true, true);
+    public Task IsolatedHostRejectsARealLoadedPayloadMismatch()
+    {
+        string? expected = Environment.GetEnvironmentVariable(C_EXPECTED_RUNTIME);
+        if (expected is null)
+            return VerifyScope(true, true);
+        string mismatch = Environment.GetEnvironmentVariable(C_MISMATCH_RUNTIME)
+            ?? throw new InvalidOperationException("The loaded-package probe has no owned mismatch input.");
+        string result = Environment.GetEnvironmentVariable(C_PROBE_RESULT)
+            ?? throw new InvalidOperationException("The loaded-package probe has no result owner.");
+        (WeakReference retired, WeakReference retiredAssembly) = LoadMismatchedContent(expected, mismatch, typeof(Utf8Codec).Assembly);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.False(retired.IsAlive);
+        Assert.False(retiredAssembly.IsAlive);
+        File.WriteAllText(result, C_VERIFIED_PROBE);
+        return Task.CompletedTask;
+    }
 
     private static async Task VerifyScope(
         bool isolated,
@@ -88,20 +110,37 @@ public sealed class NuGetLoadedIdentityTests
 
             string mismatch = Path.Combine(root, "mismatched", "BGCS.Runtime.dll");
             Directory.CreateDirectory(Path.GetDirectoryName(mismatch)!);
-            File.Copy(runtime, mismatch);
+            File.WriteAllBytes(mismatch, File.ReadAllBytes(runtime));
             await using (FileStream altered = new(mismatch, FileMode.Append, FileAccess.Write))
                 await altered.WriteAsync(new byte[] { 0x49, 0x4E, 0x4E, 0x4F }, cancellation.Token);
-            (WeakReference retired, WeakReference retiredAssembly) = LoadMismatchedContent(runtime, mismatch, loaded);
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-            GC.Collect();
-            Assert.False(retired.IsAlive);
-            Assert.False(retiredAssembly.IsAlive);
+            await RunLoadedMismatchProbeAsync(sdk, runtime, mismatch, root, cancellation.Token);
         }
         finally
         {
             Directory.Delete(root, recursive: true);
         }
+    }
+
+    private static async Task RunLoadedMismatchProbeAsync(
+        string sdk,
+        string expected,
+        string mismatch,
+        string root,
+        CancellationToken cancellationToken
+    ) {
+        string result = Path.Combine(root, "loaded-package-probe.txt");
+        string output = await ToolchainEnvironment.CaptureOutputAsync(sdk,
+            ["test", typeof(NuGetLoadedIdentityTests).Assembly.Location,
+                "--filter", "FullyQualifiedName=" + typeof(NuGetLoadedIdentityTests).FullName + "." + nameof(IsolatedHostRejectsARealLoadedPayloadMismatch),
+                "--results-directory", Path.Combine(root, "probe-results"),
+                "--logger", "trx;LogFileName=loaded-package.trx",
+                "--environment", C_EXPECTED_RUNTIME + "=" + expected,
+                "--environment", C_MISMATCH_RUNTIME + "=" + mismatch,
+                "--environment", C_PROBE_RESULT + "=" + result],
+            root, cancellationToken, DotNetSdkEnvironment.Create(sdk));
+        Assert.True(File.Exists(result), output);
+        Assert.Equal(C_VERIFIED_PROBE, File.ReadAllText(result));
+        // The physical image belongs to the probe process; normal cleanup follows its complete exit.
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
