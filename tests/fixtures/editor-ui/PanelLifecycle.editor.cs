@@ -25,6 +25,7 @@ public sealed class PanelLifecycle(
 ) : EditorModule
 {
     private readonly List<string> m_resources = ["completed-cycles\tmanaged-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"];
+    private readonly List<string> m_preparationResources = ["phase\tmanaged-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"];
     private string[] m_panels = [];
     private bool[] m_originalOpenStates = [];
     private string? m_undoName;
@@ -34,6 +35,7 @@ public sealed class PanelLifecycle(
     private int m_selectionCount;
     private int m_sceneCount;
     private int m_warmup;
+    private int m_preparationFrames;
     private int m_frame;
     private int m_cycles;
     private bool m_baselineCaptured;
@@ -56,12 +58,24 @@ public sealed class PanelLifecycle(
             if (m_panels.Length < 8)
                 throw new InvalidOperationException("The complete Editor product must expose its eight standard panels.");
             m_originalOpenStates = new bool[m_panels.Length];
+            m_preparationResources.Add(CaptureResourceRow("before-first-panel-draw"));
             for (int index = 0; index < m_panels.Length; index++)
             {
                 string panel = m_panels[index];
-                if (!interactions.TryGetPanelState(panel, out m_originalOpenStates[index]) || !interactions.ClosePanel(panel))
-                    throw new InvalidOperationException("The product could not close panel '" + panel + "'.");
+                if (!interactions.TryGetPanelState(panel, out m_originalOpenStates[index]) || !interactions.OpenPanel(panel))
+                    throw new InvalidOperationException("The product could not open panel '" + panel + "' for preparation.");
             }
+            m_preparationFrames = 120;
+            return;
+        }
+        if (m_preparationFrames > 0)
+        {
+            if (--m_preparationFrames > 0)
+                return;
+            foreach (string panel in m_panels)
+                if (!interactions.ClosePanel(panel))
+                    throw new InvalidOperationException("The product could not close panel '" + panel + "' after preparation.");
+            m_preparationResources.Add(CaptureResourceRow("after-120-drawn-frames"));
             return;
         }
         bool expectedOpen = (m_frame++ & 1) != 0;
@@ -92,6 +106,7 @@ public sealed class PanelLifecycle(
                 new[] { "panel\tcompleted-open-close-cycles", "protocol\tpublic EditorInteractions / actual product drawing" }
                     .Concat(m_panels.Select(static panel => panel + "\t100")));
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-resources.tsv"), m_resources);
+            File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-preparation.tsv"), m_preparationResources);
             m_completed = true;
             return;
         }
@@ -123,12 +138,15 @@ public sealed class PanelLifecycle(
     }
 
     private void CaptureResources()
+        => m_resources.Add(CaptureResourceRow(m_cycles.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+    private string CaptureResourceRow(string observation)
     {
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         long managed = GC.GetTotalMemory(forceFullCollection: false);
         using Process process = Process.GetCurrentProcess();
-        m_resources.Add(FormattableString.Invariant($"{m_cycles}\t{managed}\t{process.PrivateMemorySize64}\t{interactions.selection.count}\t{workspace.scenes.Count}\t{interactions.history.residentBytes}\t{interactions.history.diskBytes}\t{interactions.events.pendingCount}"));
+        return FormattableString.Invariant($"{observation}\t{managed}\t{process.PrivateMemorySize64}\t{interactions.selection.count}\t{workspace.scenes.Count}\t{interactions.history.residentBytes}\t{interactions.history.diskBytes}\t{interactions.events.pendingCount}");
     }
 }

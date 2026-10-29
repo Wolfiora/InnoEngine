@@ -10,7 +10,7 @@
 
 [原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)发现的缺口正在按[真实 issue 闭合台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)处理。菜单/快捷键 generation 索引、通用 Graph 呈现、Console 搜索、Stats 趋势与大视图裁剪已有实现；最终操作、视觉、生命周期和成对性能矩阵仍未全部闭合。深查发现的资产刷新身份问题按 [#43](https://github.com/Wolfiora/InnoEngine/issues/43)在所属索引修复，未在 UI 添加 fallback。PR #26 保持 Draft，不能用历史 CI 或局部测试代替最终验收。
 
-E11 的原产品 producer 已恢复：引擎 `b303d9f1`、对应 Rendering2D Editor 源与 Samples 包组成可运行的历史输入，30,000 帧隐藏产品预检已观察到 idle、菜单、Play 和返回 Edit。运行资产与玩法保持一致，Editor 源及包身份差异单独记录；未添加兼容层。旧脚本 API 不匹配的失败日志保留为历史尝试，不再作为当前阻塞。五组成对产品性能和最终候选复验仍待执行。
+E11 的原产品 producer 已恢复：引擎 `b303d9f1`、对应插件的 Editor 源与示例包组成可运行的历史输入，30,000 帧隐藏产品预检已观察到 idle、菜单、Play 和返回 Edit。运行资产与玩法保持一致，Editor 源及包身份差异单独记录于仓库验收记录；未添加兼容层。旧脚本 API 不匹配的失败日志保留为历史尝试，不再作为当前阻塞。五组成对产品性能和最终候选复验仍待执行。
 
 大场景完整 dirty 检查按 [#46](https://github.com/Wolfiora/InnoEngine/issues/46)继续处理。中立不可变捕获复用已有 Core Serialization，仍完整读取 getter/converter，且不改变 100 ms 策略；41–43 ms 的已测中位数仍超出绝对预算。后续附件记录与标量写入实验的局部收益不能代替最终完整负载验收。
 

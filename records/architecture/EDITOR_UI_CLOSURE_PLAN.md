@@ -1,8 +1,10 @@
 ## Current verification checkpoint (2026-10-29, shader input ownership)
 
-At clean candidate `564e00d0`, Workflows passed 699 cases and Lifecycle passed 15; ordinary Debug and Release Editor builds succeeded with a cache-maintenance budget warning. Contracts failed before tests because shader input hashing included a live metadata publication candidate. Issue #52 owns the actual fix; the parent and PR remain incomplete.
+At candidate `329568ba`, ordinary Debug and Release Editor builds and the neutral/selected product contract prerequisites passed. An exclusive atomic metadata candidate overlapped two independent output owners; all ten permanent shader input hashes remained unchanged. Contracts executed 816 passing cases and one Wiki content-boundary failure, with two platform fixture skips reported separately. The external consumer name in the engine Wiki has been corrected without weakening its validator; the focused complete Wiki rerun is pending.
 
-Next: finish #52 frozen-input/copy/cancellation/concurrent-build and Wiki acceptance, rerun complete Contracts at the corrected source, then complete the actual FlappyBird product/lifecycle matrix, #46 absolute latency, controlled original/current performance and matching visual evidence. Existing passed rows are scoped evidence, not substitute final-source closure. No computer use or approval questions.
+The first actual product lifecycle run exceeded its 4 MiB growth limit because its baseline preceded first panel/resource preparation. Raw evidence and diagnostic heap observations are retained. The fixture now records that preparation separately, draws every actual panel for 120 frames, and then performs the unchanged 100 cycles/full-GC protocol and 4 MiB limit. Ordinary Debug D3D11 and D3D12 product workflows and lifecycle runs passed; the other configuration/API combinations continue.
+
+Next: complete Wiki and the remaining product matrix, #46 absolute latency, controlled original/current performance and matching visual evidence. Core revision/context/converter experiments remain outside production because latency has not passed and their public boundary requires further review. Existing passed rows are scoped evidence, not substitute final-source closure. No computer use or approval questions.
 
 # Editor UI closure execution ledger
 

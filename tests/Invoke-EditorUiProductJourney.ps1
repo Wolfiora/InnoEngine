@@ -74,11 +74,18 @@ try {
             throw 'Every actual product panel must complete 100 open/close cycles.'
         }
         $resources = @(Import-Csv -LiteralPath (Join-Path $project 'Library/Acceptance/panel-lifecycle-resources.tsv') -Delimiter "`t")
+        $preparation = @(Import-Csv -LiteralPath (Join-Path $project 'Library/Acceptance/panel-lifecycle-preparation.tsv') -Delimiter "`t")
+        if ($preparation.Count -ne 2 -or $preparation[0].phase -ne 'before-first-panel-draw' -or $preparation[1].phase -ne 'after-120-drawn-frames') {
+            throw 'The lifecycle run must record cold resource preparation separately from its repeated open/close baseline.'
+        }
         if ($resources.Count -ne 11 -or [int]$resources[0].'completed-cycles' -ne 0 -or [int]$resources[-1].'completed-cycles' -ne 100) {
             throw 'The lifecycle run did not record its complete full-GC resource series.'
         }
         $growth = [long]$resources[-1].'managed-bytes-after-full-gc' - [long]$resources[0].'managed-bytes-after-full-gc'
         if ($growth -gt 4MB) { throw "Panel lifecycle retained $growth bytes beyond its 4 MiB final live-memory budget." }
+        if (@($resources | Where-Object { [long]$_.'pending-events' -ne 0 }).Count -ne 0) {
+            throw 'Panel lifecycle retained pending events after closed-frame reconciliation.'
+        }
     }
 }
 catch { $failure = $_ }
