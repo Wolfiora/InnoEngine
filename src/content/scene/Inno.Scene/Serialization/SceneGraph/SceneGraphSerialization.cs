@@ -142,8 +142,9 @@ internal static class SceneGraphSerialization
             key.AddValue(GetSourceId(sourceIds, gameObject));
             key.AddValue(parentIsIncluded ? GetSourceId(sourceIds, parent!.gameObject) : Guid.Empty);
             key.AddValue((ulong)(parentIsIncluded || preserveRootSiblingOrder ? gameObject.transform.siblingIndex : 0));
-            foreach (GameComponent component in entry.components)
+            for (int componentIndex = 0; componentIndex < entry.components.Count; componentIndex++)
             {
+                GameComponent component = entry.components[componentIndex];
                 if (component is MissingGameComponent || !key.TryAddProperties(component))
                     return false;
                 key.AddValue(GetSourceId(sourceIds, component));

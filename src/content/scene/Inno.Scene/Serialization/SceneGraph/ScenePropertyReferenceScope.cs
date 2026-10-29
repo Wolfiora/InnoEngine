@@ -86,4 +86,3 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
             _ => false
         };
 }
-

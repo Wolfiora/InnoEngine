@@ -290,7 +290,7 @@ internal sealed record SerializationCaptureKey(SerializationCaptureKeyPart[] par
     }
 }
 
-internal sealed record SerializationCaptureAttempt(
+internal readonly record struct SerializationCaptureAttempt(
     SerializationCaptureKey? key,
     SerializationCaptureIdentity[] identities
 ) {
@@ -334,6 +334,8 @@ internal sealed record SerializationCaptureAttempt(
 
     internal void ValidateIdentities()
     {
+        if (identities is null)
+            return;
         foreach (SerializationCaptureIdentity identity in identities)
             identity.Validate();
     }

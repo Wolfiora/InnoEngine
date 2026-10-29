@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Scene.Layers;
@@ -9,6 +10,27 @@ namespace Inno.Scene.Tests;
 
 public sealed partial class SceneSerializationTests
 {
+    [Fact]
+    public void StructuralCaptureDoesNotRetainRemovedSystemsWhileTheSceneRemainsAlive()
+    {
+        var scene = new GameScene("System capture lifetime");
+        scene.CreateObject("Root");
+        SceneManager.LoadScene(scene);
+        WeakReference removed = CaptureAndRemoveSystem(scene);
+        SceneManager.Update(0.016f);
+        SceneManager.LateUpdate(0.016f);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        Assert.False(removed.IsAlive);
+
+        var replacement = scene.AddSystem<OrderSerializationSystemB>();
+        SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(scene, m_serializationContext);
+        Assert.Same(replacement, Assert.Single(scene.GetSystems()));
+        Assert.Equal(m_serialization.Serialize(scene, m_serializationContext), snapshot.ToArray());
+        GC.KeepAlive(scene);
+    }
+
     [Fact]
     public void CompleteSceneCapturesObserveAllOwnedMetadataTransformAndStructureWrites()
     {
@@ -98,5 +120,14 @@ public sealed partial class SceneSerializationTests
         component.targetObject = null;
         SerializationSnapshot restored = m_serialization.CaptureSnapshot(scene, m_serializationContext, changed);
         Assert.Equal(before.ToArray(), restored.ToArray());
+    }
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private WeakReference CaptureAndRemoveSystem(GameScene scene)
+    {
+        var system = scene.AddSystem<OrderSerializationSystemA>();
+        SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(scene, m_serializationContext);
+        Assert.Equal(m_serialization.Serialize(scene, m_serializationContext), snapshot.ToArray());
+        Assert.True(scene.RemoveSystem(system));
+        return new WeakReference(system);
     }
 }

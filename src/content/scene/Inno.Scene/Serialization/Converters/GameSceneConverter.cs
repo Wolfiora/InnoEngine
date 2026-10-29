@@ -31,21 +31,7 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
 
         SceneStructureSnapshot snapshot = value.CaptureStructure();
         IReadOnlyList<GameSystem> systems = value.GetSystems();
-        int count = systems.Count;
-        foreach (SceneObjectStructureSnapshot entry in snapshot.objects)
-            count = checked(count + entry.components.Count + 1);
-        var sourceIds = new Dictionary<EngineObject, Guid>(count, ReferenceEqualityComparer.Instance);
-        foreach (SceneObjectStructureSnapshot entry in snapshot.objects)
-        {
-            sourceIds.Add(entry.gameObject, entry.gameObject.identity.persistentId);
-            for (int index = 0; index < entry.components.Count; index++)
-            {
-                GameComponent component = entry.components[index];
-                sourceIds.Add(component, component.identity.persistentId);
-            }
-        }
-        foreach (GameSystem system in systems)
-            sourceIds.Add(system, system.identity.persistentId);
+        var sourceIds = new SceneGraphSourceIds(snapshot.CaptureObjectSourceIds(), systems);
         var references = new SceneGraphReferenceMap(value, sourceIds);
 
         writer.Write(SceneGraphSerialization.C_SCENE_ID_KEY, value.identity.persistentId);

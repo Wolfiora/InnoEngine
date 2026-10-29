@@ -4,6 +4,8 @@
 
 [Engine 索引](README.md) · [Scene Assets](Inno.Scene.Assets.md) · [Wiki 首页](../README.md)
 
+内部完整图写入复用 `SceneStore` 已有结构快照中的对象/组件 source-ID 投影。每次捕获仍逐项检查当前 Core persistent ID；不一致时创建新的只读投影，已经借用旧投影的同步写入不受替换影响。结构变化由原 owner 使快照失效。System 归独立生命周期 owner，其身份只在本次写入冻结，不进入结构快照缓存。该投影只表达序列化成员关系，不提供 live-object 解析；Subtree/Prefab 保持各自精确边界，外部引用仍通过 Core Identity 与完整序列化上下文处理。以上均为内部实现，不增加公开配置或持久化字段。
+
 `Inno.Scene` 提供 Scene、GameObject、Component、Transform hierarchy、GameBehavior 和 GameSystem 的运行时模型。`GameBehavior` 是唯一具有独立启停和帧生命周期的 Component 基类，统一负责 `enabled`、`isActiveAndEnabled`、`Awake`、`Start`、`OnEnable`、`OnDisable`、`Update`、`FixedUpdate`、`LateUpdate` 与 `OnDestroy`。Project Script、Renderer、Camera、Light 等场景功能都直接继承 `GameBehavior`，不存在第二层 `Behavior` 类型或兼容 façade。
 
 `Transform` 除了便捷的 local/world TRS 外，还公开精确的 `localToWorldMatrix`、`worldToLocalMatrix`、`TransformPoint`、`InverseTransformPoint` 与原子 `SetWorldTransform`。`worldPosition` 与点变换统一由完整层级矩阵确定。旋转且非均匀缩放的多级层级可能包含不能由单一 world TRS 无损表示的 shear；渲染、包围盒和空间查询应优先使用矩阵/点变换 API，Inspector 与 Gizmo 的 TRS 编辑则使用原子 setter 避免三次中间重算。零缩放层级不可逆，世界到本地转换和保持世界值的重设父级会明确失败，不会静默使用 identity inverse。
