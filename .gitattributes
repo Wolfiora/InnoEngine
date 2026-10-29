@@ -5,3 +5,6 @@
 
 # Preserve the SDK's exact native payload bytes and their recorded integrity hashes.
 backends/**/native/**/Native/Generated/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Preserve the upstream supplemental-font license content identity on every host.
+backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/BuiltIn/Fonts/Supplemental/LICENSE -text
