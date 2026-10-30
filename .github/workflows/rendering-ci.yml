@@ -63,7 +63,40 @@ env:
   CMAKE_BUILD_PARALLEL_LEVEL: "2"
 
 jobs:
+  scope:
+    name: Validation scope
+    runs-on: ubuntu-latest
+    outputs:
+      profile: ${{ steps.select.outputs.profile }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Test and select validation scope
+        id: select
+        shell: pwsh
+        env:
+          BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          FORCE_FULL: ${{ github.event_name == 'workflow_dispatch' }}
+          IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
+        run: |
+          ./tests/ci/Test-ValidationScope.ps1
+          if ($env:FORCE_FULL -eq 'true' -or $env:BASE_REVISION -match '^0+$') {
+            $selection = ./tests/ci/Select-ValidationScope.ps1 -Full
+          } else {
+            git fetch --no-tags origin $env:BASE_REVISION $env:HEAD_REVISION
+            if ($LASTEXITCODE -ne 0) { throw 'The exact validation comparison could not be fetched.' }
+            $selection = ./tests/ci/Select-ValidationScope.ps1 -BaseRevision $env:BASE_REVISION -HeadRevision $env:HEAD_REVISION `
+              -PullRequest:($env:IS_PULL_REQUEST -eq 'true')
+          }
+          "profile=$($selection.profile)" >> $env:GITHUB_OUTPUT
+          '## Selected validation scope' >> $env:GITHUB_STEP_SUMMARY
+          ($selection | ConvertTo-Json -Depth 5) >> $env:GITHUB_STEP_SUMMARY
+
   managed:
+    needs: scope
+    if: needs.scope.outputs.profile == 'full'
     name: Managed / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
@@ -103,6 +136,7 @@ jobs:
           if-no-files-found: error
 
   rendering:
+    needs: scope
     if: github.event_name != 'workflow_dispatch' || inputs.native_product_acceptance
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
@@ -170,6 +204,7 @@ jobs:
         run: |
           dotnet restore entry/InnoEngine.Editor/InnoEngine.Editor.csproj -p:Configuration=Debug --disable-parallel -nr:false
           if ($LASTEXITCODE -ne 0) { throw 'The Debug Editor dependency restore failed.' }
+          if ('${{ needs.scope.outputs.profile }}' -eq 'editor') { exit 0 }
           dotnet restore entry/InnoEngine.Editor/InnoEngine.Editor.csproj -p:Configuration=Release --disable-parallel -nr:false
           if ($LASTEXITCODE -ne 0) { throw 'The Release Editor dependency restore failed.' }
           dotnet restore '${{ matrix.player_project }}' -p:Configuration=Release `
@@ -217,7 +252,7 @@ jobs:
 
       - name: Build host Editor Release
         id: native_release
-        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
+        if: ${{ !cancelled() && needs.scope.outputs.profile == 'full' && steps.native_debug.outcome == 'success' }}
         shell: pwsh
         run: |
           dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
@@ -246,7 +281,12 @@ jobs:
         if: ${{ !cancelled() && steps.build_entry.outcome == 'success' }}
         shell: pwsh
         run: |
-          dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
+          $source = 'InnoEngine.sln'
+          if ('${{ needs.scope.outputs.profile }}' -eq 'editor') {
+            $source = Join-Path $PWD 'artifacts/acceptance/ci-build/production.slnf'
+            ./tests/ci/New-ProductionSolutionFilter.ps1 -OutputPath $source
+          }
+          dotnet build $source --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
             -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/source-debug.binlog' 2>&1 |
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/source-debug.log'
           if ($LASTEXITCODE -ne 0) { throw 'SourceDebug build failed.' }
@@ -267,7 +307,7 @@ jobs:
         run: dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- verify .
 
       - name: Run complete test suite
-        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
+        if: ${{ needs.scope.outputs.profile == 'full' && !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
         shell: pwsh
         run: |
           $properties = Join-Path $PWD '${{ matrix.product_properties }}'
@@ -287,6 +327,16 @@ jobs:
             Tee-Object -FilePath 'artifacts/acceptance/ci-tests/target-build.log'
           if ($LASTEXITCODE -ne 0) { throw "Target test closure compilation failed." }
           ./tests/Invoke-IsolatedTests.ps1 -Configuration SourceDebug -Target '${{ matrix.build_target }}' -ProductProperties $properties
+
+      - name: Run affected Editor contract and workflow suites
+        if: ${{ needs.scope.outputs.profile == 'editor' && !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $output = Join-Path $env:RUNNER_TEMP 'InnoEditorChecks'
+          foreach ($profile in @('Contracts', 'Workflows')) {
+            ./tests/Invoke-EditorUiAcceptance.ps1 -Profile $profile -EditorOnly `
+              -ArtifactsPath $output -ResultsDirectory 'artifacts/acceptance/ci-tests'
+          }
 
       - name: Generate source-independent Player Support Pack
         if: ${{ !cancelled() && steps.native_release.outcome == 'success' }}

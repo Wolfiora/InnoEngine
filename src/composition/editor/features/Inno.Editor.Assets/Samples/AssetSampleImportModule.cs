@@ -17,7 +17,7 @@ namespace Inno.Editor.Assets;
 /// Owns sample import validation, publication and rollback independently of its progress window.
 /// </summary>
 [EditorModule("asset-sample-import", order: 110)]
-public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptCompilationProgress>
+public sealed class AssetSampleImportModule : EditorModule
 {
     private readonly object m_progressLock = new();
     private readonly AssetEditingModule m_assets;
@@ -30,8 +30,9 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
     private bool m_validating;
     private bool m_canceled;
     private bool m_faulted;
-    private string m_status = string.Empty;
-    private float m_progress;
+    private AssetSampleImportProgress m_progress = new(0, 0f, string.Empty, false);
+    private long m_operation;
+    private bool m_acceptProgress;
     internal AssetSampleImportModule(
         AssetEditingModule assets,
         ScriptCompiler compiler,
@@ -58,21 +59,9 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
     public bool canImport => !m_faulted && !isBusy && m_scripting.state is EditorScriptCompilationState.Ready or EditorScriptCompilationState.Failed;
 
     /// <summary>
-    /// Gets an immutable progress message captured under the progress owner lock.
+    /// Gets a complete immutable progress snapshot under the existing owner lock.
     /// </summary>
-    public string status
-    {
-        get
-        {
-            lock (m_progressLock)
-                return m_status;
-        }
-    }
-
-    /// <summary>
-    /// Gets the most recent validation progress fraction.
-    /// </summary>
-    public float progress
+    public AssetSampleImportProgress progress
     {
         get
         {
@@ -96,26 +85,38 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
             throw new InvalidOperationException("Sample import requires an idle authoring generation.");
         m_import = m_assets.pipeline.PrepareSampleImport(source);
         m_canceled = false;
-        SetProgress(0f, "Preparing sample assets...");
+        lock (m_progressLock)
+        {
+            m_acceptProgress = true;
+            m_progress = new(++m_operation, 0f, "Preparing sample assets...", false);
+        }
     }
 
     /// <summary>
     /// Requests cancellation without releasing work that has not retired.
     /// </summary>
-    public void Cancel()
+    private void CancelCurrent()
     {
+        if (m_import is null)
+            return;
         m_canceled = true;
-        m_import?.Cancel();
-        SetProgress(progress, "Canceling sample import...");
+        lock (m_progressLock)
+            m_progress = m_progress with { status = "Canceling sample import...", cancellationRequested = true };
+        m_import.Cancel();
     }
 
     /// <summary>
-    /// Receives asynchronous compilation progress without accessing live Editor state.
+    /// Cancels only the import observed by the presentation.
     /// </summary>
-    /// <param name="value">
-    /// The compiler stage and completion fraction.
+    /// <param name="operationId">
+    /// The current import identity captured by the caller.
     /// </param>
-    public void Report(ScriptCompilationProgress value) => SetProgress(0.2f + value.fraction * 0.6f, value.stage);
+    public void Cancel(long operationId)
+    {
+        if (progress.operationId == operationId)
+            CancelCurrent();
+    }
+
     /// <summary>
     /// Advances completed background phases and publishes the validated import at a frame safe point.
     /// </summary>
@@ -143,15 +144,16 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
                 SetProgress(0.2f, "Validating sample scripts...");
                 string physicalSource = Path.Combine(m_assets.pipeline.assetRoot, import.target.localPath);
                 string targetPath = import.target.ToString();
+                long operation = progress.operationId;
                 import.BeginValidation(async (
                     sources,
                     cancellationToken
                 ) =>
                 {
-                    ScriptCompilationResult result = await m_compiler.CompileAuthoringGenerationAsync(this, cancellationToken, sources).ConfigureAwait(false);
+                    ScriptCompilationResult result = await m_compiler.CompileAuthoringGenerationAsync(new ImportProgress(this, operation), cancellationToken, sources).ConfigureAwait(false);
                     if (!result.success)
                         throw new InvalidOperationException("Sample script preflight failed:" + Environment.NewLine + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message)));
-                    SetProgress(0.85f, "Preparing sample history...");
+                    SetProgress(0.85f, "Preparing sample history...", operation);
                     m_historyPayload = await Task.Run(() =>
                     {
                         byte[] archive = AssetSourceArchive.CapturePhysical(physicalSource, isDirectory: true, cancellationToken);
@@ -185,7 +187,7 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
         catch (Exception failure)
         {
             m_failure = failure;
-            Cancel();
+            CancelCurrent();
             if (m_import?.isFaulted == true)
                 ReportFault(failure);
         }
@@ -199,7 +201,7 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
     /// </param>
     protected override void OnStop(EditorContext context)
     {
-        Cancel();
+        CancelCurrent();
         RetireImport();
     }
 
@@ -219,8 +221,17 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
 
     private void ClearImport()
     {
-        m_import = null;
         m_historyPayload?.Dispose();
+        lock (m_progressLock)
+        {
+            m_acceptProgress = false;
+            m_progress = m_progress with
+            {
+                fraction = m_canceled || m_failure is not null ? m_progress.fraction : 1f,
+                status = m_failure?.Message ?? (m_canceled ? "Sample import canceled." : "Sample import completed.")
+            };
+        }
+        m_import = null;
         m_historyPayload = null;
         m_failure = null;
         m_validating = false;
@@ -236,12 +247,23 @@ public sealed class AssetSampleImportModule : EditorModule, IProgress<ScriptComp
 
     private void SetProgress(
         float progress,
-        string status
+        string status,
+        long? operationId = null
     ) {
         lock (m_progressLock)
         {
-            m_progress = progress;
-            m_status = status;
+            if (!m_acceptProgress || m_progress.cancellationRequested || (operationId is long expected && expected != m_progress.operationId))
+                return;
+            m_progress = m_progress with { fraction = progress, status = status };
         }
+    }
+
+    private sealed class ImportProgress(
+        AssetSampleImportModule owner,
+        long operation
+    ) : IProgress<ScriptCompilationProgress>
+    {
+        /// <inheritdoc />
+        public void Report(ScriptCompilationProgress value) => owner.SetProgress(0.2f + value.fraction * 0.6f, value.stage, operation);
     }
 }

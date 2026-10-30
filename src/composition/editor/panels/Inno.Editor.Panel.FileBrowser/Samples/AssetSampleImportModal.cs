@@ -1,33 +1,34 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System.Numerics;
 using Inno.Editor.Core;
-
+using Inno.Editor.ImGui;
+using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Assets;
 namespace Inno.Editor.Panel.FileBrowser;
 [EditorModal("asset-sample-import.progress", "Importing Sample", order: 110)]
 internal sealed class AssetSampleImportModal(AssetSampleImportModule imports) : EditorModal
 {
-    /// <summary>
-    /// Shows progress while the import owns pending background work.
-    /// </summary>
+    private DialogPresentation m_content;
+    private DialogLayout m_layout;
+    private long m_operation;
+    /// <inheritdoc />
     public override bool isVisible => imports.isBusy;
-    /// <summary>
-    /// Blocks unrelated interaction until import publication or cancellation completes.
-    /// </summary>
-    public override bool blocksInteraction => true;
-
-    /// <summary>
-    /// Draws progress and cancellation through the shared Editor modal widgets.
-    /// </summary>
-    /// <param name="context">
-    /// The current Editor frame and interaction services.
-    /// </param>
+    /// <inheritdoc />
+    public override bool allowScrolling => false;
+    /// <inheritdoc />
+    protected override Vector2? OnPrepare(
+        EditorContext context,
+        Vector2 availableContentSize
+    ) {
+        var snapshot = imports.progress;
+        m_operation = snapshot.operationId;
+        m_content = new(snapshot.status, snapshot.fraction, actionLabel: "Cancel", actionEnabled: !snapshot.cancellationRequested, cancelOnEscape: true);
+        m_layout = EditorUiSession.current.widgets.MeasureDialog(m_content, availableContentSize);
+        return m_layout.size;
+    }
+    /// <inheritdoc />
     protected override void OnDraw(EditorContext context)
     {
-        EditorUI.current.widgets.WrappedText(imports.status);
-        EditorUI.current.widgets.CenteredProgressBar(imports.progress, new Vector2(-1f, 0f), $"{imports.progress:P0}");
-        if (EditorUI.current.widgets.CenteredButton("Cancel", EditorUI.current.widgets.style.itemSpacing.Y))
-            imports.Cancel();
+        if (EditorUiSession.current.widgets.DrawDialog(m_content, m_layout))
+            imports.Cancel(m_operation);
     }
 }

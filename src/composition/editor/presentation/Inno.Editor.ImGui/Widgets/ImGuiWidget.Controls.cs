@@ -234,15 +234,8 @@ public sealed unsafe partial class ImGuiWidget
             throw new ArgumentOutOfRangeException(nameof(topPadding), topPadding, "Top padding cannot be negative.");
         }
 
-        if (topPadding > 0f)
-        {
-            NativeImGui.SetCursorPosY(NativeImGui.GetCursorPosY() + topPadding);
-        }
-
-        float width = NativeImGui.CalcTextSize(label).X + NativeImGui.Raw.GetStyle()->FramePadding.X * 2f;
-        float offset = MathF.Max(0f, (NativeImGui.GetContentRegionAvail().X - width) * 0.5f);
-        NativeImGui.SetCursorPosX(NativeImGui.GetCursorPosX() + offset);
-        return NativeImGui.Button(label);
+        float width = ImGuiUtf8Buffer.MeasureText(label, -1f).X + NativeImGui.Raw.GetStyle()->FramePadding.X * 2f;
+        return DrawCenteredButton(label, NativeImGui.GetCursorScreenPos() + new Vector2(0f, topPadding), NativeImGui.GetContentRegionAvail().X, width);
     }
 
     /// <summary>
@@ -267,11 +260,24 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(overlay);
-        NativeImGui.ProgressBar(fraction, size, string.Empty);
+        ImVec2C nativeSize = ImGui.ToNative(size);
+        ReadOnlySpan<byte> emptyOverlay = "\0"u8;
+        fixed (byte* empty = emptyOverlay)
+            NativeImGui.Raw.ProgressBar(fraction, &nativeSize, (sbyte*)empty);
         Vector2 minimum = NativeImGui.GetItemRectMin();
         Vector2 maximum = NativeImGui.GetItemRectMax();
         Vector2 textSize = NativeImGui.CalcTextSize(overlay);
         Vector2 textPosition = minimum + (maximum - minimum - textSize) * 0.5f;
         ImGui.DrawNativeText(NativeImGui.Raw.GetWindowDrawList(), textPosition, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), overlay);
+    }
+
+    private static bool DrawCenteredButton(
+        string label,
+        Vector2 origin,
+        float availableWidth,
+        float width
+    ) {
+        NativeImGui.SetCursorScreenPos(origin + new Vector2(MathF.Max(0f, (availableWidth - width) * 0.5f), 0f));
+        return NativeImGui.Button(label);
     }
 }

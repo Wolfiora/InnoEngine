@@ -37,9 +37,9 @@ internal sealed class ExportWindowModule(
     internal ManagedDeploymentId? gameManagedDeployment { get; set; }
     internal IReadOnlyList<ManagedDeploymentId> availableManagedDeployments => m_exports.GetManagedDeployments(gameTarget);
     internal IReadOnlyList<BuildTargetId> availableGameTargets => m_exports.availableGameTargets;
-    internal string status => m_exports.status;
-    internal string error => m_formError.Length == 0 ? m_exports.error : m_formError;
-    internal float gameProgress => m_exports.gameProgress;
+    internal EditorExportProgress progress => m_exports.progress;
+    internal string status => progress.status;
+    internal string error => m_formError.Length == 0 ? m_exports.progress.error : m_formError;
     internal bool includePluginDependencies { get; set; }
 
     internal string GetGameTargetDisplayName(BuildTargetId target) => m_exports.GetGameTargetDisplayName(target);
@@ -87,19 +87,19 @@ internal sealed class ExportWindowModule(
         m_gameProgressVisible = true;
     }
 
-    internal void CancelPluginExport() => m_exports.Cancel();
-    internal void CancelGameExport() => m_exports.Cancel();
+    internal void CancelPluginExport(long operationId) => m_exports.Cancel(operationId);
+    internal void CancelGameExport(long operationId) => m_exports.Cancel(operationId);
     internal void ClosePlugin()
     {
         if (isPluginBusy)
-            m_exports.Cancel();
+            m_exports.Cancel(m_exports.progress.operationId);
         isPluginVisible = false;
     }
 
     internal void CloseGame()
     {
         if (isGameBusy)
-            m_exports.Cancel();
+            m_exports.Cancel(m_exports.progress.operationId);
         isGameVisible = false;
     }
 

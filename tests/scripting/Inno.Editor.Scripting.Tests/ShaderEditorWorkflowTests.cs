@@ -179,6 +179,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             _ = ImGuiApi.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
             try
             {
+                Assert.True(modal.TryPrepare(m_runtime.context, presentation, new Vector2(1100, 700), out _));
                 Assert.True(modal.Draw(m_runtime.context));
             }
             finally
@@ -187,6 +188,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
                 ImGuiApi.Render();
             }
 
+            m_runtime.Update(new EditorFrame(0.01f, frame * 0.01f, true));
             Thread.Sleep(5);
             Assert.True(modal.TryGetPresentation(out presentation));
         }

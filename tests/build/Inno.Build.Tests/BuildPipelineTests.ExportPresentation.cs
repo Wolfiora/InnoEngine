@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using ImGuiEditorRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
 using System.Numerics;
 using System.Reflection;
 using System.Threading;
@@ -71,6 +73,85 @@ public sealed partial class BuildPipelineTests
             m_engine.logs.UnregisterSink(logs);
             NativeGui.Raw.DestroyContext(native);
         }
+    }
+
+    [Theory]
+    [InlineData(1280, 720, 1f)]
+    [InlineData(320, 480, 2f)]
+    [Trait("ExternalDependency", "NativeProduct")]
+    public unsafe void ExportPresentationUsesTheDeclaredWidthAndRealOverflow(
+        int width,
+        int height,
+        float dpi
+    ) {
+        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
+        var settings = new BuildSettingsStore(Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
+        m_engine.modules.Register("Tests.ExportPresentation", [typeof(EditorExportService).Assembly,
+            Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))]);
+        var native = NativeGui.Raw.CreateContext(null);
+        try
+        {
+            var io = NativeGui.Raw.GetIO();
+            io->DisplaySize = new ImVec2C { X = width, Y = height };
+            io->DeltaTime = 0.2f;
+            io->IniFilename = null;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            using var runtime = new ImGuiEditorRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
+                m_engine.types, m_engine.logs, [m_pipeline, settings, m_settings]);
+            runtime.Start();
+            Assert.True(runtime.interactions.For("editor/main-menu").Execute("export/plugin"));
+            NativeGui.Raw.GetStyle()->FontScaleDpi = dpi;
+            for (int frame = 0; frame < 4; frame++)
+            {
+                runtime.PrepareFrame();
+                NativeGui.NewFrame();
+                runtime.Draw();
+                NativeGui.Render();
+            }
+            using var title = BGCS.Runtime.Utf8Codec.EncodeNullTerminated("Export as Plugin##export.plugin", allowsNull: false);
+            var window = NativeGui.Raw.FindWindowByName((sbyte*)title.pointer);
+            Assert.True(window != null && window->WasActive != 0);
+            Assert.True(window->Size.X <= width && window->Size.Y <= height);
+            if (width == 1280)
+            {
+                Assert.Equal(680f, window->Size.X);
+                Assert.InRange(window->ScrollMax.X, 0f, 0.01f);
+                Assert.InRange(window->ScrollMax.Y, 0f, 0.01f);
+            }
+            else
+                Assert.True(window->ScrollMax.Y > 0f);
+            Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out var exports));
+            Assert.False(exports!.progress.isBusy);
+        }
+        finally
+        {
+            NativeGui.Raw.DestroyContext(native);
+        }
+    }
+
+    [Fact]
+    public void ExportPresentationKeepsUnknownProgressAndRejectsStaleCancellation()
+    {
+        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
+        var settings = new BuildSettingsStore(Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
+        m_engine.modules.Register("Tests.ExportProgress", [typeof(EditorExportService).Assembly]);
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl"));
+        using var runtime = new Inno.Editor.Interactions.EditorInteractionRuntime(context, m_engine.types, m_engine.logs,
+            [m_pipeline, settings, m_settings]);
+        runtime.Start();
+        Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out var exports));
+        exports!.StartGame(new GameBuildRequest { profile = CreateProfile(new BuildTargetId("macos-arm64")),
+            outputDirectory = Path.Combine(m_root, "ProgressOutput") });
+        var observed = exports.progress;
+        Assert.Null(observed.fraction);
+        Assert.True(observed.isBusy);
+        exports.Cancel(observed.operationId - 1);
+        Assert.False(exports.progress.cancellationRequested);
+        exports.Cancel(observed.operationId);
+        Assert.True(exports.progress.cancellationRequested);
+        Assert.False(observed.cancellationRequested);
+        exports.Stop(context);
     }
 
     private static unsafe bool DrawExportFrame(

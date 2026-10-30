@@ -52,11 +52,14 @@ public sealed class ScriptReloadHost : IDisposable
     private AssemblyModuleHandle? m_editorScriptModule;
     private string? m_activeCompilationDirectory;
     private readonly Dictionary<string, string> m_activeModuleFingerprints = new(StringComparer.Ordinal);
-    private string m_compilationStatus = "Waiting for script changes.";
+    private ScriptReloadProgress m_progress = new(0, 0f, "Waiting for script changes.", false);
+    private long m_progressOperation;
+    private long m_activeProgressOperation;
+    private long m_retiringProgressOperation;
+    private bool m_acceptCompilerProgress;
     private long m_lastCompileRequestTimestamp;
     private long m_compilationStartedTimestamp;
     private TimeSpan m_lastCompilationElapsed;
-    private float m_compilationProgress;
     private ScriptReloadRequest m_requestedReload;
     private bool m_initialCompileRequested;
     private bool m_publishingGeneration;
@@ -175,23 +178,9 @@ public sealed class ScriptReloadHost : IDisposable
     }
 
     /// <summary>
-    /// Gets the current compilation progress in the inclusive range from zero to one.
+    /// Gets one atomically published operation, fraction, stage and cancellation snapshot.
     /// </summary>
-    public float compilationProgress => Volatile.Read(ref m_compilationProgress);
-
-    /// <summary>
-    /// Gets a short description of the current compilation stage.
-    /// </summary>
-    public string compilationStatus
-    {
-        get
-        {
-            string status = Volatile.Read(ref m_compilationStatus);
-            return isCompilationTakingLong
-                ? $"Long-running compilation ({compilationElapsed.TotalSeconds:F1}s). {status}"
-                : status;
-        }
-    }
+    public ScriptReloadProgress progress => Volatile.Read(ref m_progress);
 
     /// <summary>
     /// Gets the elapsed duration of the active or most recently completed compilation.
@@ -279,8 +268,9 @@ public sealed class ScriptReloadHost : IDisposable
                         : ScriptReloadRequest.ReloadScripting;
                 m_initialCompileRequested = true;
                 m_lastCompileRequestTimestamp = Environment.TickCount64;
+                Volatile.Write(ref m_progress, new ScriptReloadProgress(++m_progressOperation, 0f,
+                    "Initial scripting cache probe queued.", false));
             }
-            SetCompilationProgress(0f, "Initial scripting cache probe queued.");
         }
     }
 
@@ -293,12 +283,21 @@ public sealed class ScriptReloadHost : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the manager has been disposed.
     /// </exception>
-    public bool CancelCompilation()
+    /// <param name="operationId">
+    /// The observed request; a stale cancellation is rejected.
+    /// </param>
+    public bool CancelCompilation(long operationId)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         CancellationTokenSource? cancellation;
         lock (m_sync)
+        {
+            if (operationId != m_progress.operationId || operationId != m_activeProgressOperation)
+                return false;
             cancellation = m_activeCompilationCancellation;
+            if (cancellation is not null)
+                SetCompilationProgress(m_progress.fraction, "Canceling script compilation...", operationId, cancellationRequested: true);
+        }
         if (cancellation is null)
             return false;
         try
@@ -309,7 +308,6 @@ public sealed class ScriptReloadHost : IDisposable
         {
             return false;
         }
-        SetCompilationProgress(compilationProgress, "Canceling script compilation...");
         return true;
     }
 
@@ -364,6 +362,7 @@ public sealed class ScriptReloadHost : IDisposable
         }
         admission!.Dispose();
         ScriptReloadRequest request;
+        long operation;
         lock (m_sync)
         {
             ThrowIfFaultedLocked();
@@ -381,6 +380,7 @@ public sealed class ScriptReloadHost : IDisposable
                 return false;
             }
             request = m_requestedReload;
+            operation = m_progress.operationId;
             m_requestedReload = ScriptReloadRequest.None;
             m_initialCompileRequested = false;
         }
@@ -389,13 +389,14 @@ public sealed class ScriptReloadHost : IDisposable
         PluginUnavailabilityPlan? unavailability = request == ScriptReloadRequest.ReloadPlugins
             ? CapturePluginUnavailabilityPlan()
             : null;
-        compilation = CompileAsync(request, unavailability).AsTask();
+        compilation = CompileAsync(request, unavailability, operation).AsTask();
         return true;
     }
 
     private async ValueTask<ScriptCompilationResult> CompileAsync(
         ScriptReloadRequest request,
         PluginUnavailabilityPlan? unavailability,
+        long operation,
         CancellationToken cancellationToken = default
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -411,8 +412,12 @@ public sealed class ScriptReloadHost : IDisposable
             Volatile.Write(ref m_isCompiling, 1);
             Volatile.Write(ref m_compilationStartedTimestamp, Environment.TickCount64);
             lock (m_sync)
+            {
                 m_activeCompilationCancellation = linkedCancellation;
-            SetCompilationProgress(0f, "Preparing script compilation...");
+                m_activeProgressOperation = operation;
+                m_acceptCompilerProgress = true;
+            }
+            SetCompilationProgress(0f, "Preparing script compilation...", operation, canCancel: true);
             ScriptCompilationResult result;
             try
             {
@@ -423,7 +428,8 @@ public sealed class ScriptReloadHost : IDisposable
                             status
                         ) => SetCompilationProgress(
                             progress * C_COMPILATION_PROGRESS_SHARE,
-                            status)),
+                            progress >= 1f ? "Compilation finished; waiting for generation activation and state recovery." : status,
+                            operation, isCompilerUpdate: true)),
                         effectiveCancellation)
                     .ConfigureAwait(false);
             }
@@ -446,6 +452,7 @@ public sealed class ScriptReloadHost : IDisposable
             {
                 if (!m_disposed)
                 {
+                    m_acceptCompilerProgress = false;
                     m_lastCompilation = result;
                     if (m_requestedReload != ScriptReloadRequest.None)
                     {
@@ -458,18 +465,19 @@ public sealed class ScriptReloadHost : IDisposable
                         m_pendingCompilation = new PendingReload(
                             result,
                             request,
+                            operation,
                             result.success ? null : unavailability);
                     }
                     SetCompilationProgress(
-                        result.success ? C_COMPILATION_PROGRESS_SHARE : 1f,
+                        result.success || unavailability is not null ? C_COMPILATION_PROGRESS_SHARE : progress.fraction,
                         m_requestedReload != ScriptReloadRequest.None
                             ? "Compilation superseded by a queued reload request."
                             : result.success
-                                ? "Script compilation completed."
+                                ? "Script compilation completed; waiting for generation activation and state recovery."
                                 : unavailability is not null
                                     ? "Compilation failed after a Plugin availability change; the unavailable " +
                                       "generation is ready to activate."
-                                : "Script compilation failed.");
+                                : "Script compilation failed.", operation);
                 }
             }
             return result;
@@ -485,7 +493,10 @@ public sealed class ScriptReloadHost : IDisposable
             lock (m_sync)
             {
                 if (ReferenceEquals(m_activeCompilationCancellation, linkedCancellation))
+                {
                     m_activeCompilationCancellation = null;
+                    m_acceptCompilerProgress = false;
+                }
             }
             Volatile.Write(ref m_isCompiling, 0);
             m_compileGate.Release();
@@ -529,17 +540,18 @@ public sealed class ScriptReloadHost : IDisposable
             m_plugins.ApplyPendingChange();
             CompletePendingReload(pending);
             m_reloads.RefreshDiagnostics();
-            SetCompilationProgress(1f, "No scripting changes detected.");
+            SetCompilationProgress(1f, "No scripting changes detected.", pending.operationId);
             return false;
         }
 
-        SetCompilationProgress(C_STAGING_PROGRESS, "Staging script reload candidates...");
+        SetCompilationProgress(C_STAGING_PROGRESS, "Staging script reload candidates...", pending.operationId);
         using AssemblyReloadSession reload = m_modules.BeginReload(
             plan.requests.Select(m_moduleSourceFactory).ToArray(),
             plan.removedModuleNames);
-        SetCompilationProgress(C_MIGRATION_PROGRESS, "Migrating active editor state...");
+        SetCompilationProgress(C_MIGRATION_PROGRESS, "Restoring active editor state...", pending.operationId);
         IAssemblyUnloadProbe unload = PublishGeneration(reload);
         m_modules.generations.TrackRetirement(unload);
+        m_retiringProgressOperation = pending.operationId;
         m_activeCompilationDirectory = pending.unavailability is null
             ? pending.compilation.outputDirectory
             : null;
@@ -556,7 +568,7 @@ public sealed class ScriptReloadHost : IDisposable
             !isUnloadVerificationPending ? 1f : C_UNLOAD_VERIFICATION_PROGRESS,
             !isUnloadVerificationPending
                 ? completedStatus
-                : completedStatus + " Verifying retired assembly unload...");
+                : completedStatus + " Verifying retired assembly unload...", pending.operationId);
         m_reloads.RefreshDiagnostics();
         CompletePendingReload(pending);
         return true;
@@ -665,23 +677,23 @@ public sealed class ScriptReloadHost : IDisposable
         failure = m_modules.generations.failure;
         if (failure is not null)
         {
-            SetCompilationProgress(1f, "Generation retirement failed. Restart the host before Play, Build, Export or reload.");
+            SetCompilationProgress(progress.fraction, "Generation retirement failed. Restart the host before Play, Build, Export or reload.");
             return true;
         }
         try
         {
             if (!m_modules.generations.Advance())
             {
-                SetCompilationProgress(C_UNLOAD_VERIFICATION_PROGRESS, "Verifying retired generation unload...");
+                SetCompilationProgress(C_UNLOAD_VERIFICATION_PROGRESS, "Verifying retired generation unload...", m_retiringProgressOperation);
                 return false;
             }
-            SetCompilationProgress(1f, "Generation publication and retired assembly unload completed.");
+            SetCompilationProgress(1f, "Generation publication and retired assembly unload completed.", m_retiringProgressOperation);
             return true;
         }
         catch (Exception exception)
         {
             failure = exception;
-            SetCompilationProgress(1f, "Generation retirement failed. Restart the host before Play, Build, Export or reload.");
+            SetCompilationProgress(progress.fraction, "Generation retirement failed. Restart the host before Play, Build, Export or reload.");
             return true;
         }
     }
@@ -736,11 +748,25 @@ public sealed class ScriptReloadHost : IDisposable
     }
 
     private void SetCompilationProgress(
-        float progress,
-        string status
+        float fraction,
+        string stage,
+        long? operationId = null,
+        bool cancellationRequested = false,
+        bool isCompilerUpdate = false,
+        bool canCancel = false
     ) {
-        Volatile.Write(ref m_compilationProgress, Math.Clamp(progress, 0f, 1f));
-        Volatile.Write(ref m_compilationStatus, status);
+        lock (m_sync)
+        {
+            ScriptReloadProgress current = m_progress;
+            if (m_disposed || (operationId is long expected && expected != current.operationId))
+                return;
+            if (isCompilerUpdate && (!m_acceptCompilerProgress || current.cancellationRequested))
+                return;
+            Volatile.Write(ref m_progress, new ScriptReloadProgress(current.operationId,
+                Math.Clamp(fraction, 0f, 1f), stage, current.cancellationRequested || cancellationRequested,
+                m_activeCompilationCancellation is not null && m_activeProgressOperation == current.operationId &&
+                (canCancel || isCompilerUpdate) && !current.cancellationRequested && !cancellationRequested));
+        }
     }
 
     private void QueueReload(ScriptReloadRequest request)
@@ -752,13 +778,13 @@ public sealed class ScriptReloadHost : IDisposable
             if (request > m_requestedReload)
                 m_requestedReload = request;
             m_lastCompileRequestTimestamp = Environment.TickCount64;
+            Volatile.Write(ref m_progress, new ScriptReloadProgress(++m_progressOperation, 0f, m_requestedReload switch
+            {
+                ScriptReloadRequest.ReloadPlugins => "Plugin and scripting reload queued.",
+                ScriptReloadRequest.ReloadScripting => "Full scripting reload queued.",
+                _ => "Scripting recompile queued."
+            }, false));
         }
-        SetCompilationProgress(0f, request switch
-        {
-            ScriptReloadRequest.ReloadPlugins => "Plugin and scripting reload queued.",
-            ScriptReloadRequest.ReloadScripting => "Full scripting reload queued.",
-            _ => "Scripting recompile queued."
-        });
     }
 
     private ReloadPlan SelectReloadPlan(PendingReload pending)
@@ -978,6 +1004,7 @@ public sealed class ScriptReloadHost : IDisposable
     private sealed record PendingReload(
         ScriptCompilationResult compilation,
         ScriptReloadRequest request,
+        long operationId,
         PluginUnavailabilityPlan? unavailability = null
     );
 

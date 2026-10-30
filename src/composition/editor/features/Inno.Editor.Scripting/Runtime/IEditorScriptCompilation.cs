@@ -35,14 +35,17 @@ public interface IEditorScriptCompilation
     bool requiresExclusiveProgress { get; }
 
     /// <summary>
-    /// Gets the most recent compiler progress fraction in the inclusive range zero to one.
+    /// Gets one immutable snapshot of the current reload operation and its cancellation policy.
     /// </summary>
-    float progress { get; }
+    EditorScriptCompilationProgress progress { get; }
 
     /// <summary>
     /// Requests cancellation while retaining ownership until compilation and retirement finish.
     /// </summary>
-    void CancelCompilation();
+    /// <param name="operationId">
+    /// The request observed by the presentation; stale requests have no effect.
+    /// </param>
+    void CancelCompilation(long operationId);
     /// <summary>
     /// Queues a fresh cache-aware compilation for a build or simulation workflow.
     /// </summary>
@@ -61,10 +64,6 @@ public interface IEditorScriptCompilation
     /// </summary>
     EditorScriptCompilationState state { get; }
 
-    /// <summary>
-    /// Gets a human-readable description of current compiler work or readiness.
-    /// </summary>
-    string status { get; }
 
     /// <summary>
     /// Gets the most recently completed compilation, or <see langword="null"/> before the first attempt completes.

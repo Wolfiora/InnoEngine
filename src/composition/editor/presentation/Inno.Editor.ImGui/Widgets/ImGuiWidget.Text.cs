@@ -461,7 +461,40 @@ public sealed unsafe partial class ImGuiWidget
     {
         m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(text);
-        NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + MathF.Max(1f, NativeImGui.GetContentRegionAvail().X));
+        DrawWrappedText(text, MathF.Max(1f, NativeImGui.GetContentRegionAvail().X));
+    }
+
+    /// <summary>
+    /// Draws literal text at an explicitly measured wrap width, independent of a scrolling window's virtual content extent.
+    /// </summary>
+    /// <param name="text">
+    /// The literal text captured for the current layout.
+    /// </param>
+    /// <param name="wrapWidth">
+    /// The measured positive width in current presentation coordinates.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The text is null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The width is not finite and positive.
+    /// </exception>
+    public void WrappedText(
+        string text,
+        float wrapWidth
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentNullException.ThrowIfNull(text);
+        if (!float.IsFinite(wrapWidth) || wrapWidth <= 0f)
+            throw new ArgumentOutOfRangeException(nameof(wrapWidth));
+        DrawWrappedText(text, wrapWidth);
+    }
+
+    private static void DrawWrappedText(
+        string text,
+        float wrapWidth
+    ) {
+        NativeImGui.PushTextWrapPos(NativeImGui.GetCursorPosX() + wrapWidth);
         try
         {
             NativeImGui.TextUnformatted(text);

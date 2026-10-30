@@ -549,9 +549,9 @@ public sealed class EditorPlayModeTests : IDisposable
     private sealed class FakeScriptCompilation(EditorScriptCompilationState initialState) : IEditorScriptCompilation
     {
         public bool requiresExclusiveProgress => false;
-        public float progress => 0f;
+        public EditorScriptCompilationProgress progress => new(0, 0f, "Test script status.", false);
 
-        public void CancelCompilation()
+        public void CancelCompilation(long operationId)
         {
         }
 
@@ -576,7 +576,6 @@ public sealed class EditorPlayModeTests : IDisposable
             }
         }
 
-        public string status => "Test script status.";
         public ScriptCompilationResult? lastCompilation => null;
     }
 

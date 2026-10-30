@@ -457,14 +457,9 @@ public sealed class EditorStyleMetrics
     public float interactionOverlayThickness => Scale(2f);
 
     /// <summary>
-    /// Gets script compilation modal width.
-    /// </summary>
-    public float scriptCompilationWidth => Scale(460f);
-
-    /// <summary>
     /// Gets the standard centered modal width.
     /// </summary>
-    public float modalWidth => scriptCompilationWidth;
+    public float modalWidth => Scale(460f);
 
     /// <summary>
     /// Gets the modal fade-in duration in seconds.

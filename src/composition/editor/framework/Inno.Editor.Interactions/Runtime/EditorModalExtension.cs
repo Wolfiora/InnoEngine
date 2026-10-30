@@ -44,6 +44,56 @@ public sealed class EditorModalExtension
     public int order { get; }
 
     /// <summary>
+    /// Prepares one presentation frame and quarantines callback failures within its owning presentation boundary.
+    /// </summary>
+    /// <param name="context">
+    /// The active owner-thread context.
+    /// </param>
+    /// <param name="presentation">
+    /// The window policy already captured for this presentation attempt.
+    /// </param>
+    /// <param name="availableContentSize">
+    /// The bounded content size in current presentation coordinates.
+    /// </param>
+    /// <param name="contentSize">
+    /// The measured extent, or null for explicit sizing or failed preparation.
+    /// </param>
+    /// <returns>
+    /// True when preparation succeeded; false when this extension is quarantined.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The context is null.
+    /// </exception>
+    public bool TryPrepare(
+        EditorContext context,
+        Presentation presentation,
+        Vector2 availableContentSize,
+        out Vector2? contentSize
+    ) {
+        ArgumentNullException.ThrowIfNull(context);
+        contentSize = null;
+        if (m_isQuarantined)
+            return false;
+        try
+        {
+            contentSize = m_modal.Prepare(context, availableContentSize);
+            if (contentSize is Vector2 size &&
+                (!float.IsFinite(size.X) || !float.IsFinite(size.Y) || size.X < 0f || size.Y < 0f))
+                throw new InvalidOperationException("Modal preparation returned an invalid content extent.");
+            if (presentation.initialSize.Y <= 0f && contentSize is null)
+                throw new InvalidOperationException("A content-sized modal must measure its current content before drawing.");
+            return true;
+        }
+        catch (Exception exception)
+        {
+            contentSize = null;
+            m_isQuarantined = true;
+            m_quarantine(exception);
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Safely captures generation-local modal presentation values.
     /// </summary>
     /// <param name="presentation">
@@ -69,6 +119,11 @@ public sealed class EditorModalExtension
                 m_modal.allowScrolling,
                 m_modal.initialSize,
                 m_modal.minimumSize);
+            Vector2 initial = presentation.initialSize;
+            Vector2 minimum = presentation.minimumSize;
+            if (!float.IsFinite(initial.X) || !float.IsFinite(initial.Y) || initial.X < 0f || initial.Y < 0f ||
+                !float.IsFinite(minimum.X) || !float.IsFinite(minimum.Y) || minimum.X < 0f || minimum.Y < 0f)
+                throw new InvalidOperationException("Modal dimensions must be finite and nonnegative; zero leaves that dimension unspecified.");
             return true;
         }
         catch (Exception exception)

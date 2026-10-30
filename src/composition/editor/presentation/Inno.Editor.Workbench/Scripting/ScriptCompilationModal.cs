@@ -1,39 +1,34 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Scripting;
 using System.Numerics;
 using Inno.Editor.Core;
-
+using Inno.Editor.ImGui;
+using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Scripting;
 namespace Inno.Editor.Workbench;
-/// <summary>
-/// Displays blocking script compiler and reload progress with cancellation controls.
-/// </summary>
-/// <param name="scripting">
-/// The scripting used to initialize this instance.
-/// </param>
 [EditorModal("scripting.compilation", "Compiling Scripts", order: 100)]
 internal sealed class ScriptCompilationModal(IEditorScriptCompilation scripting) : EditorModal
 {
-    /// <summary>
-    /// Gets whether this implementation is visible.
-    /// </summary>
+    private DialogPresentation m_content;
+    private DialogLayout m_layout;
+    private long m_operation;
+    /// <inheritdoc />
     public override bool isVisible => scripting.requiresExclusiveProgress;
-    /// <summary>
-    /// Gets whether blocks interaction is enabled for this implementation.
-    /// </summary>
-    public override bool blocksInteraction => true;
-
-    /// <summary>
-    /// Draws this feature using the current editor presentation context.
-    /// </summary>
-    /// <param name="context">
-    /// The context that supplies state and services for this operation.
-    /// </param>
+    /// <inheritdoc />
+    public override bool allowScrolling => false;
+    /// <inheritdoc />
+    protected override Vector2? OnPrepare(
+        EditorContext context,
+        Vector2 availableContentSize
+    ) {
+        var snapshot = scripting.progress;
+        m_operation = snapshot.operationId;
+        m_content = new(snapshot.status, snapshot.fraction, actionLabel: "Cancel", actionEnabled: snapshot.canCancel, cancelOnEscape: true);
+        m_layout = EditorUiSession.current.widgets.MeasureDialog(m_content, availableContentSize);
+        return m_layout.size;
+    }
+    /// <inheritdoc />
     protected override void OnDraw(EditorContext context)
     {
-        float progress = scripting.progress;
-        EditorUI.current.widgets.WrappedText(scripting.status);
-        EditorUI.current.widgets.CenteredProgressBar(progress, new Vector2(-1f, 0f), $"{progress:P0}");
-        if (EditorUI.current.widgets.CenteredButton("Cancel", EditorUI.current.widgets.style.itemSpacing.Y))
-            scripting.CancelCompilation();
+        if (EditorUiSession.current.widgets.DrawDialog(m_content, m_layout))
+            scripting.CancelCompilation(m_operation);
     }
 }

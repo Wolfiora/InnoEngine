@@ -50,3 +50,6 @@ using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 [assembly: ScriptingApiExport(typeof(ImGuiFont), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(ImGuiFontScope), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(ImGuiFontStyle), ScriptingApiScope.Editor)]
+
+[assembly: ScriptingApiExport(typeof(DialogPresentation), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(DialogLayout), ScriptingApiScope.Editor)]

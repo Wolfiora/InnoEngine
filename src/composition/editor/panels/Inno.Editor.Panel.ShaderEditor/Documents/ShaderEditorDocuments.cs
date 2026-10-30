@@ -72,6 +72,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         this.previews = previews;
     }
 
+    internal string checkStatus { get; private set; } = "Checking the current Shader draft…";
     internal SerializationContext context => AssetSerializationContext.Create(assets);
     internal ShaderNodeCompilerRegistry nodes => m_nodes ?? throw new InvalidOperationException("Shader documents have not started.");
     internal ShaderSourceFrontendRegistry frontends => m_frontends ?? throw new InvalidOperationException("Shader documents have not started.");
@@ -126,7 +127,11 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         return draft.preview = snapshot;
     }
 
-    internal void ShowCheck(Draft draft) => m_checkDraftId = draft.id;
+    internal void ShowCheck(Draft draft)
+    {
+        m_checkDraftId = draft.id;
+        checkStatus = "Checking the current Shader draft…";
+    }
     internal bool TryGetCheckDraft(out Draft draft)
     {
         draft = null!;
@@ -146,6 +151,34 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     {
         Diagnostic[] diagnostics = draft.nodeErrors.Select(pair => new Diagnostic("SHADER_NODE_INVALID", $"Node '{pair.Key.value}' cannot be evaluated: {pair.Value}", DiagnosticSeverity.Error, semanticId: pair.Key.value, objectId: draft.id, location: new DiagnosticLocation(draft.path.ToString()))).ToArray();
         Diagnostics.Set(draft.id, C_NODE_DIAGNOSTIC_GROUP, diagnostics, draft.path.ToString());
+    }
+
+    private static void PublishCheck(
+        Draft draft,
+        EditorShaderDraftCompilationSnapshot snapshot
+    ) {
+        var diagnostics = new List<Diagnostic>(Math.Max(1, snapshot.diagnostics.Count));
+        for (int index = 0; index < snapshot.diagnostics.Count; index++)
+        {
+            ShaderDiagnostic shader = snapshot.diagnostics[index];
+            DiagnosticLocation? location = shader.location is ShaderSourceLocation source ? new(source.assetPath, source.line, source.column) : null;
+            diagnostics.Add(shader.severity switch
+            {
+                DiagnosticSeverity.Info => Diagnostic.Info(shader.code, shader.message, location),
+                DiagnosticSeverity.Warning => Diagnostic.Warning(shader.code, shader.message, location),
+                DiagnosticSeverity.Error => Diagnostic.Error(shader.code, shader.message, location),
+                _ => Diagnostic.Error(shader.code, shader.message, location)
+            });
+        }
+
+        if (diagnostics.Count == 0)
+        {
+            diagnostics.Add(snapshot.state == EditorShaderCompilationState.Succeeded
+                ? Diagnostic.Info("SHADER_CHECK_SUCCEEDED", "Shader check completed without diagnostics.")
+                : Diagnostic.Error("SHADER_CHECK_FAILED", "Shader check failed without a compiler diagnostic."));
+        }
+
+        Diagnostics.Set(draft.id, "Shader Check", diagnostics, draft.path.ToString());
     }
 
     private static void ClearNodeDiagnostics(Draft draft) => Diagnostics.Clear(draft.id, C_NODE_DIAGNOSTIC_GROUP);
@@ -394,6 +427,17 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     /// </param>
     protected override void OnUpdate(EditorContext editor)
     {
+        if (TryGetCheckDraft(out Draft checking))
+        {
+            EditorShaderDraftCompilationSnapshot result = Check(checking);
+            if (result.state != EditorShaderCompilationState.Compiling)
+            {
+                PublishCheck(checking, result);
+                checkStatus = result.state == EditorShaderCompilationState.Succeeded
+                    ? "Shader check completed." : "Shader check failed. See Console diagnostics.";
+                CloseCheck();
+            }
+        }
         foreach (AssetPath path in m_pendingImports.ToArray())
         {
             m_pendingImports.Remove(path);
