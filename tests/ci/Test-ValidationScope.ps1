@@ -21,25 +21,40 @@ if ((& $policy -ChangedPath @($ui) -Full).profile -ne 'full') { throw 'Manual fu
 # Keep the tiny, test-owned Git fixture for inspection on failure.
 $owner = Join-Path ([IO.Path]::GetTempPath()) ('InnoCiScope-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory $owner | Out-Null
-$productionFilter = Join-Path $PSScriptRoot 'New-ProductionSolutionFilter.ps1'
-$productionOutput = Join-Path $owner 'production.slnf'
-& $productionFilter -OutputPath $productionOutput
-$production = Get-Content -LiteralPath $productionOutput -Raw | ConvertFrom-Json
-if ($production.solution.projects.Count -le 0 -or
-    @($production.solution.projects | Where-Object { $_ -match '(^|/)(tests|fixtures)/' }).Count -ne 0) {
-    throw 'The current production solution filter is empty or includes test owners.'
+$contractFilter = Join-Path $PSScriptRoot 'New-ValidationSolutionFilter.ps1'
+$contractOutput = Join-Path $owner 'contracts.slnf'
+& $contractFilter -OutputPath $contractOutput
+$contracts = Get-Content -LiteralPath $contractOutput -Raw | ConvertFrom-Json
+if ($contracts.solution.projects.Count -le 0) { throw 'The current contract solution filter is empty.' }
+$solutionRoot = Split-Path $contracts.solution.path -Parent
+foreach ($relative in $contracts.solution.projects) {
+    $declaration = [xml](Get-Content -LiteralPath (Join-Path $solutionRoot $relative) -Raw)
+    if ($declaration.Project.PropertyGroup.IsTestProject -contains 'true') {
+        throw "An executable test suite entered the contract build: $relative"
+    }
+}
+$trackedTests = @(& git -C $solutionRoot ls-files -- tests)
+if ($LASTEXITCODE -ne 0) { throw 'The tracked test-contract inventory could not be read.' }
+$expectedSupport = @($trackedTests | Where-Object {
+    if ($_ -notlike '*.csproj') { return $false }
+    $declaration = [xml](Get-Content -LiteralPath (Join-Path $solutionRoot $_) -Raw)
+    return $declaration.Project.PropertyGroup.IsTestProject -notcontains 'true'
+})
+if ($expectedSupport.Count -eq 0) { throw 'The test contract fixture unexpectedly has no support owners.' }
+foreach ($relative in $expectedSupport) {
+    if ($contracts.solution.projects -notcontains $relative) { throw "A Wiki test-support contract is missing: $relative" }
 }
 $invalidSolution = Join-Path $owner 'invalid.sln'
 'Project("{00000000-0000-0000-0000-000000000000}") = "Unknown", "unknown/Unknown.csproj", "{00000000-0000-0000-0000-000000000000}"' |
     Set-Content -LiteralPath $invalidSolution
 $rejected = $false
-try { & $productionFilter -Solution $invalidSolution -OutputPath (Join-Path $owner 'invalid.slnf') }
-catch { $rejected = $_.Exception.Message -like '*unclassified production owner*' }
+try { & $contractFilter -Solution $invalidSolution -OutputPath (Join-Path $owner 'invalid.slnf') }
+catch { $rejected = $_.Exception.Message -like '*unclassified validation owner*' }
 if (-not $rejected) { throw 'An unknown production owner was silently omitted.' }
 'No projects' | Set-Content -LiteralPath $invalidSolution
 $rejected = $false
-try { & $productionFilter -Solution $invalidSolution -OutputPath (Join-Path $owner 'empty.slnf') }
-catch { $rejected = $_.Exception.Message -like '*No production projects*' }
+try { & $contractFilter -Solution $invalidSolution -OutputPath (Join-Path $owner 'empty.slnf') }
+catch { $rejected = $_.Exception.Message -like '*No validation contracts*' }
 if (-not $rejected) { throw 'An empty production filter was accepted.' }
 Push-Location $owner
 try {
@@ -107,4 +122,4 @@ $parent = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
 if (-not $resolved.StartsWith($parent, [StringComparison]::OrdinalIgnoreCase) -or
     [IO.Path]::GetFileName($resolved) -notlike 'InnoCiScope-*') { throw 'Invalid fixture cleanup owner.' }
 Remove-Item -LiteralPath $resolved -Recurse -Force
-Write-Output 'Validation scope policy: 19 cases passed, including visibility proofs, production filters, real moves and PR bases.'
+Write-Output 'Validation scope policy: 20 cases passed, including test-support contracts, visibility proofs, real moves and PR bases.'

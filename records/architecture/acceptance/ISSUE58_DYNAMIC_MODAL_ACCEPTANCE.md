@@ -59,7 +59,7 @@ tests/
 ├── editor/Inno.Editor.ImGui.Tests/DynamicModalTests.cs
 ├── scripting/Inno.Editor.Scripting.Tests/ScriptingPipelineTests.Progress.cs
 ├── build/Inno.Build.Tests/BuildPipelineTests.ExportPresentation.cs
-├── ci/{Select-ValidationScope,Test-ValidationScope,New-ProductionSolutionFilter}.ps1
+├── ci/{Select-ValidationScope,Test-ValidationScope,New-ValidationSolutionFilter}.ps1
 └── Invoke-EditorUiAcceptance.ps1
 .github/workflows/rendering-ci.yml
 ```
@@ -84,8 +84,9 @@ tests/
 | 导出表单/状态/退休 | 5 passed / 0 failed / 0 skipped；`export-terminal.trx`，包含非合作 Support Pack 准备的严格退休。没有生成完整 Support Pack。 |
 | 正式 IDE 投影 | Canvas、Rendering2D、FlappyBird 均通过；`projection-*.log`，未编辑生成文件。 |
 | 架构、XML、脚本导出与 Wiki | 通过；`wiki-verified.log` 及目录，241/241 项目所有权求值、34,656 API entries、198 示例均无编译错误、0 未求值示例。其他平台产品编译单列未执行。 |
-| CI 范围策略 | 19 项通过；`ci-policy-verified.log`。真实 Git 移动/删除、PR merge-base、混合/未知输入、手动 Full、过滤器空集和引用可见性证明。 |
-| 生产项目过滤 | 从现有 Solution 派生 169 个实际生产项目；MSBuild 仍解释引用闭包。没有第二套 resolver。 |
+| CI 范围策略 | 20 项通过；`ci-contract-policy.log`。真实 Git 移动/删除、PR merge-base、混合/未知输入、手动 Full、过滤器空集、引用可见性及测试基础库契约证明。 |
+| 验证项目过滤 | 从现有 Solution 派生 169 个实际生产项目和 13 个测试基础库/fixture 契约，不构建无关的可执行测试套件；MSBuild 仍解释引用闭包。没有第二套 resolver。 |
+| CI 契约闭包复验 | `contract-proof/contracts.slnf` 正式 SourceDebug 构建通过，13 个基础库/fixture 均实际产出；`contract-proof/build.log/.binlog`，0 error。该次本地 NuGet 漏洞服务访问失败产生 26 项 NU1900 网络 warning，未屏蔽；不将其表述为零 warning 构建。 |
 
 ## 产品、性能与限制
 
@@ -117,6 +118,8 @@ FlappyBird 最终 15,000 帧验收通过八项工作流，退出码 0，记录�
 范围由完整 Git diff 决定，包含删除与移动；PR 使用 merge-base，push 使用直接 before/head，无法确认的输入失败或进入 Full。纯 Editor 路径及其必要测试/文档可以选择 Editor；SDK、共享 build/runtime、平台、backend、未知变更选择 Full。只有可由实际 Git 差异证明未改变边的 Editor ProjectReference 可见性收紧允许局部验证，其余项目图变更仍 Full。
 
 Editor CI 保留真实 Debug 产品、renderer smoke、普通及进程隔离的相关套件、当前架构/XML/Wiki；跳过 Release、NativeAOT 还原、十次热构建、无关全套测试和 Support Pack 生成。输出明确的选择原因及省略项；零测试和工具失败不能报成功。手动完整验收保留。冷 Native Debug 和全局 API/Wiki 仍有成本，尚未把未测量的加速倍数写成事实。
+
+首轮远端 macOS 的 Editor 构建、Metal smoke、架构和相关套件均通过，但 Wiki 报告 18 项缺失编译引用：原先的生产项目过滤错误地遗漏了 Wiki 测试页所需的基础库及 fixture。该失败保留于 run `41125819779`，不能算作完整通过。过滤器现从 Solution 选择全部非 `IsTestProject` 契约，保留测试基础库并排除可执行测试套件；不放宽 Wiki 校验、不执行无关测试，也不增加基础库名单。最终远端结论由 PR 的对应 head 检查与 issue 证据记录。
 
 ## 十一项质量自查
 

@@ -283,8 +283,8 @@ jobs:
         run: |
           $source = 'InnoEngine.sln'
           if ('${{ needs.scope.outputs.profile }}' -eq 'editor') {
-            $source = Join-Path $PWD 'artifacts/acceptance/ci-build/production.slnf'
-            ./tests/ci/New-ProductionSolutionFilter.ps1 -OutputPath $source
+            $source = Join-Path $PWD 'artifacts/acceptance/ci-build/contracts.slnf'
+            ./tests/ci/New-ValidationSolutionFilter.ps1 -OutputPath $source
           }
           dotnet build $source --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
             -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/source-debug.binlog' 2>&1 |

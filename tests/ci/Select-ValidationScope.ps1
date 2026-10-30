@@ -72,7 +72,7 @@ foreach ($raw in $paths) {
         $path -match '^(docs|records)/' -or $path -eq 'AGENTS.md' -or
         $path -eq '.github/workflows/rendering-ci.yml' -or
         $path -eq 'tests/build/Inno.Build.Tests/BuildPipelineTests.ExportPresentation.cs' -or
-        $path -match '^tests/ci/(Select-ValidationScope|Test-ValidationScope|New-ProductionSolutionFilter)\.ps1$' -or
+        $path -match '^tests/ci/(Select-ValidationScope|Test-ValidationScope|New-ValidationSolutionFilter)\.ps1$' -or
         $path -eq 'tests/Invoke-EditorUiAcceptance.ps1') {
         # Companions do not broaden a bounded Editor production change.
     } else {
