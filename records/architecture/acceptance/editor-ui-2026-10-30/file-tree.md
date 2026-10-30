@@ -70,8 +70,11 @@ InnoEngine/
 │   └── ManagedCompilerInputs.targets
 ├── src/foundation/core/
 │   ├── Inno.Core.IO/
+│   │   ├── AtomicFile.cs
 │   │   ├── AtomicDirectory.cs
-│   │   └── FileByteDocumentStore.cs
+│   │   ├── FileByteDocumentStore.cs
+│   │   ├── FileSystemRename.cs
+│   │   └── PosixFilePublication.cs
 │   └── Inno.Core.Serialization/
 │       ├── SerializationSnapshot.cs
 │       ├── Capture/SerializationCaptureKeyBuilder.cs

@@ -104,7 +104,9 @@ GPU 观察记录了十二个确切归属的 workflow/lifecycle 进程与 NVIDIA 
 6. SDK 决策来自实际选定的 MSBuild 求值，Compiler 不依赖 Build/MSBuild/平台；没有最高 reference pack 猜测或配置 fallback。
 7. Compiler 发布使用现有 Core 原子协议，旧树回滚使用未取消 token，提交后清理失败不谎报未提交。原始外部 handle owner 未确认，不归责 BGCS/Roslyn/杀毒软件。
 
-必要公开边界：中立 Graph node/port/layout/input/result；Host 注入不可变 ScriptCompilationInputs；Core member/snapshot/capture proof；EditorContext 可选默认文档；既有 AtomicDirectory.Install 的可选 CancellationToken。它们有真实跨程序集消费者，且同步 XML、Wiki、项目引用和失败/生命周期语义；没有为了测试扩大 internal，没有保留旧 overload/facade。菜单、Console、Stats、source-ID 投影和编码缓存保持内部。
+Core IO 的通用宿主文件系统实现也必须如实说明：create-only 发布在 Windows 使用 SDK 的不覆盖 move，在 Unix 使用公开 POSIX `link`，不支持相应原子能力的宿主/文件系统明确失败。这里包含 Windows/POSIX 实现区别，归既有 Core IO 原语，不等同于把产品平台 SDK、ABI、图形 backend 或部署策略放入 Core。Editor/Scripting 只消费中立契约；不能把“没有泄漏产品平台策略”写成“Core 没有 OS 分支”。
+
+必要公开边界：中立 Graph node/port/layout/input/result；Host 注入不可变 ScriptCompilationInputs；Core member/snapshot/capture proof；EditorContext 可选默认文档；既有 AtomicDirectory.Install 的可选 CancellationToken；AtomicFile.IsCandidatePath 让外部构建输入 owner 复用准确的原子候选命名协议，识别结果不授予删除权限。它们有真实跨程序集消费者，且同步 XML、Wiki、项目引用和失败/生命周期语义；没有为了测试扩大 internal，没有保留旧 overload/facade。菜单、Console、Stats、source-ID 投影和编码缓存保持内部。
 
 新增 Action/Drawer/Panel 使用现有发现协议；新增图领域只提供自己的 controller/语义和中立呈现；新平台仍实现其 provider/integration 并验证真实 SDK/ABI，UI 不增加平台 switch。没有为了基准降低 validation、reload barrier、Missing、History 原子性或输出完整性。
 
