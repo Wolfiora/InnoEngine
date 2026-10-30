@@ -78,6 +78,8 @@ public sealed class ScriptCompiler
     /// Source discovery captures live inputs on the owner thread. Reference generation, Roslyn and
     /// artifact writes run in the background; progress observers must accept callbacks from either thread.
     /// Retain the source generation until the returned operation drains, including after cancellation.
+    /// Complete cache trees use Core IO atomic publication and replacement. A committed cache remains
+    /// valid if cleanup of its previous tree fails; compilation does not activate either generation.
     /// </remarks>
     /// <param name="progress">
     /// Optional observer for monotonic compiler progress.
@@ -90,6 +92,15 @@ public sealed class ScriptCompiler
     /// </returns>
     /// <exception cref="OperationCanceledException">
     /// Thrown when <paramref name="cancellationToken"/> is canceled.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Artifact publication fails, or cleanup fails after a complete cache tree commits.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// The filesystem continues denying artifact access after the bounded Core IO wait.
+    /// </exception>
+    /// <exception cref="AggregateException">
+    /// Cache replacement and restoration both fail; the exception identifies the preserved previous tree.
     /// </exception>
     /// <param name="sourceSnapshot">
     /// Optional isolated authoring sources. Capture on its owner thread and keep its transaction
@@ -118,6 +129,11 @@ public sealed class ScriptCompiler
     /// <summary>
     /// Compiles only the runtime assembly closure required by a deployed Player and binds it to that Player runtime.
     /// </summary>
+    /// <remarks>
+    /// Complete cache trees use Core IO atomic publication and replacement. Cancellation before commit
+    /// preserves the previous tree; cancellation does not undo a committed cache. Cleanup failure after
+    /// commit preserves the installed tree and remaining backup without activating a generation.
+    /// </remarks>
     /// <param name="targetRuntimeDirectory">
     /// The verified Player Support Pack directory whose runtime assemblies will execute the emitted scripts.
     /// </param>
@@ -141,6 +157,15 @@ public sealed class ScriptCompiler
     /// </exception>
     /// <exception cref="InvalidDataException">
     /// Thrown when the target runtime has no valid Inno runtime assembly closure.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Artifact publication fails, or cleanup fails after a complete cache tree commits.
+    /// </exception>
+    /// <exception cref="UnauthorizedAccessException">
+    /// The filesystem continues denying artifact access after the bounded Core IO wait.
+    /// </exception>
+    /// <exception cref="AggregateException">
+    /// Cache replacement and restoration both fail; the exception identifies the preserved previous tree.
     /// </exception>
     public ValueTask<ScriptCompilationResult> CompileRuntimeDeploymentAsync(
         string targetRuntimeDirectory,

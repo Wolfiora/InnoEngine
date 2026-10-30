@@ -71,8 +71,13 @@ public static class AtomicDirectory
     /// <param name="destination">
     /// The destination directory.
     /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or bounded rename waits before the candidate commits.
+    /// </param>
     /// <remarks>
     /// The caller must serialize readers and writers while the two directory moves run.
+    /// Cancellation before commit restores the previous destination without canceling rollback.
+    /// A committed candidate is not canceled afterward.
     /// Backup cleanup runs after commit; its failure preserves the installed candidate and remaining backup.
     /// </remarks>
     /// <exception cref="ArgumentException">
@@ -93,10 +98,15 @@ public static class AtomicDirectory
     /// <exception cref="AggregateException">
     /// Installation and restoration both fail; neither tree is deleted to force a rollback.
     /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Cancellation is requested before the candidate commits; any moved previous tree is restored.
+    /// </exception>
     public static void Install(
         string source,
-        string destination
+        string destination,
+        CancellationToken cancellationToken = default
     ) {
+        cancellationToken.ThrowIfCancellationRequested();
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         ArgumentException.ThrowIfNullOrWhiteSpace(destination);
         string candidate = Path.GetFullPath(source);
@@ -114,10 +124,10 @@ public static class AtomicDirectory
 
         string backup = target + ".backup-" + Guid.NewGuid().ToString("N");
         if (Directory.Exists(target))
-            FileSystemRename.MoveDirectory(target, backup);
+            FileSystemRename.MoveDirectory(target, backup, cancellationToken);
         try
         {
-            FileSystemRename.MoveDirectory(candidate, target);
+            FileSystemRename.MoveDirectory(candidate, target, cancellationToken);
         }
         catch (Exception installationFailure)
         {

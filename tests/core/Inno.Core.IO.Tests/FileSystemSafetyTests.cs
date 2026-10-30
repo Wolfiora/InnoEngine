@@ -123,6 +123,85 @@ public sealed class FileSystemSafetyTests : IDisposable
         Assert.Empty(Directory.EnumerateDirectories(m_root).Where(path => path.Contains(".backup-", StringComparison.Ordinal)));
     }
 
+    /// <summary>
+    /// Rejects canceled installation before creating parents or modifying either owned tree.
+    /// </summary>
+    /// <param name="existing">Whether a previous destination is already present.</param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DirectoryInstallPriorCancellationPreservesBothOwners(bool existing)
+    {
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "publication", "destination");
+        Directory.CreateDirectory(candidate);
+        File.WriteAllText(Path.Combine(candidate, "current.txt"), "current");
+        if (existing)
+        {
+            Directory.CreateDirectory(destination);
+            File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
+        }
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        Assert.ThrowsAny<OperationCanceledException>(() => AtomicDirectory.Install(candidate, destination, cancellation.Token));
+
+        Assert.Equal("current", File.ReadAllText(Path.Combine(candidate, "current.txt")));
+        if (existing)
+            Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        else
+            Assert.False(Directory.Exists(Path.GetDirectoryName(destination)));
+        Assert.Empty(Directory.EnumerateDirectories(m_root, "*.backup-*", SearchOption.AllDirectories));
+    }
+
+    /// <summary>
+    /// Restores an evacuated destination even though the request token is already canceled.
+    /// </summary>
+    /// <returns>The completed cancellation and rollback checks.</returns>
+    [WindowsDirectorySharingFact]
+    public async Task DirectoryInstallCancellationRestoresThePreviousTreeDuringABlockedRename()
+    {
+        string candidate = Path.Combine(m_root, "candidate");
+        string destination = Path.Combine(m_root, "destination");
+        Directory.CreateDirectory(candidate);
+        Directory.CreateDirectory(destination);
+        string candidateFile = Path.Combine(candidate, "current.txt");
+        File.WriteAllText(candidateFile, "current");
+        File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
+        using var reader = new FileStream(candidateFile, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+        using var cancellation = new CancellationTokenSource();
+        var evacuated = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var watcher = new FileSystemWatcher(m_root) { NotifyFilter = NotifyFilters.DirectoryName };
+        watcher.Renamed += (
+            _,
+            change
+        ) => {
+            if (string.Equals(change.OldFullPath, destination, StringComparison.OrdinalIgnoreCase))
+                evacuated.TrySetResult(true);
+        };
+        watcher.EnableRaisingEvents = true;
+        Task installation = Task.Run(() => AtomicDirectory.Install(candidate, destination, cancellation.Token));
+        try
+        {
+            await evacuated.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            Assert.False(installation.IsCompleted);
+            Assert.False(Directory.Exists(destination));
+            cancellation.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => installation);
+        }
+        finally
+        {
+            cancellation.Cancel();
+            reader.Dispose();
+            watcher.EnableRaisingEvents = false;
+            _ = await Record.ExceptionAsync(() => installation);
+        }
+
+        Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        Assert.Equal("current", File.ReadAllText(candidateFile));
+        Assert.Empty(Directory.EnumerateDirectories(m_root, "*.backup-*"));
+    }
+
     [Fact]
     public async Task DirectoryPublicationToleratesATemporaryWindowsReaderWithoutDeleteSharing()
     {
@@ -260,5 +339,15 @@ public sealed class FileSystemSafetyTests : IDisposable
     {
         if (Directory.Exists(m_root))
             Directory.Delete(m_root, recursive: true);
+    }
+
+    private sealed class WindowsDirectorySharingFactAttribute : FactAttribute
+    {
+        /// <summary>Marks the Windows directory-sharing fixture as unexecuted on other hosts.</summary>
+        public WindowsDirectorySharingFactAttribute()
+        {
+            if (!OperatingSystem.IsWindows())
+                Skip = "This fixture requires Windows directory rename sharing semantics.";
+        }
     }
 }
