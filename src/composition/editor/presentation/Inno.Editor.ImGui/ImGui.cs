@@ -1064,6 +1064,12 @@ public static unsafe partial class ImGui
     /// <exception cref="ArgumentOutOfRangeException">
     /// The width is not finite and positive.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No drawing scope is active on the owning UI thread and native context.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The active UI session has retired.
+    /// </exception>
     public static Vector2 MeasureWrappedText(
         string text,
         float wrapWidth

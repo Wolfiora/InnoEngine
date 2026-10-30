@@ -457,6 +457,12 @@ public sealed unsafe partial class ImGuiWidget
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="text"/> is <see langword="null"/>.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The owning UI thread, frame or native context is not active.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning UI session has retired.
+    /// </exception>
     public void WrappedText(string text)
     {
         m_session.EnsureDrawing();
@@ -478,6 +484,12 @@ public sealed unsafe partial class ImGuiWidget
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// The width is not finite and positive.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The owning UI thread, frame or native context is not active.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning UI session has retired.
     /// </exception>
     public void WrappedText(
         string text,
