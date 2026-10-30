@@ -1,0 +1,485 @@
+{
+  "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "changes": [],
+  "trackedProjects": 241,
+  "editorProjects": 30,
+  "forbiddenChanges": [],
+  "importsRequiringReview": [
+    {
+      "path": "tests/scripting/Inno.Editor.Scripting.Tests/ScriptingPipelineTests.cs",
+      "line": 551,
+      "text": "global using InnoEngine.Scene;"
+    },
+    {
+      "path": "tests/tooling/Inno.Tooling.Architecture.Tests/ArchitectureCommandTests.cs",
+      "line": 129,
+      "text": "[InlineData(\"Directory.Build.props\", \"<Project><PropertyGroup><ImplicitUsings>true</ImplicitUsings></PropertyGroup></Project>\", \"implicit usings\", true)]"
+    },
+    {
+      "path": "tests/tooling/Inno.Tooling.Architecture.Tests/ArchitectureCommandTests.cs",
+      "line": 130,
+      "text": "[InlineData(\"build/Probe.targets\", \"<Project><ItemGroup><Using Include=\\\"System\\\" /></ItemGroup></Project>\", \"MSBuild Using\", true)]"
+    }
+  ],
+  "repositories": [
+    {
+      "name": "InnoEngine",
+      "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+      "branch": "editor-ui",
+      "changes": []
+    },
+    {
+      "name": "InnoEngine.Canvas",
+      "revision": "eed5fd9bdb13d5f29351aff2b8c52eed58138266",
+      "branch": "main",
+      "changes": []
+    },
+    {
+      "name": "InnoEngine.Rendering2D",
+      "revision": "067d4eb023b4dea0df114872247d9b44f69fe20f",
+      "branch": "main",
+      "changes": []
+    },
+    {
+      "name": "InnoEngine.Samples",
+      "revision": "3e331fd0fae08491fe11938faa5955c6e79e5089",
+      "branch": "main",
+      "changes": []
+    },
+    {
+      "name": "BindGen-CS",
+      "revision": "2894538911645ad28c74060840a02c154c15ce4d",
+      "branch": "main",
+      "changes": []
+    }
+  ],
+  "commits": [
+    {
+      "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(scripting): reuse atomic directory publication for script caches"
+    },
+    {
+      "revision": "5e329bbe96e4812fcec1207151dd98c520237bbd",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "refactor(editor): remove an unreachable hierarchy mutation path"
+    },
+    {
+      "revision": "4d0fdb0a47a90fdcf266b40c415f889afc268b81",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(build): own physical package probes through process exit"
+    },
+    {
+      "revision": "1917b25381591efcd4e1d037bae71742291c0d32",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(scene): reuse frozen graph identity projections during capture"
+    },
+    {
+      "revision": "98fd5a7dff2606f1ebbdf57649b99e8f8252c03d",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(io): read published documents through rename-compatible handles"
+    },
+    {
+      "revision": "163c193890feb07f508fcde6407531d0f7b9558a",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(scene): complete reference scope failure and documentation contracts"
+    },
+    {
+      "revision": "2bb4da4000bdd1c96d3ec0bdb9cc60ef2ec24e71",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): keep inline rename in the keyboard-focused browser view"
+    },
+    {
+      "revision": "bc88dc0479398135b6debec254968baa2b31d467",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(editor): cover large-view editing and shortcut dispatch workloads"
+    },
+    {
+      "revision": "e52689204e8bf60cebd494ead307bcc24f502db9",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(scene): resolve property references through the owning identity scope"
+    },
+    {
+      "revision": "973a1aa76b1efff7b51d892383dbd681396ff1e4",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(editor): cover large-view input and continuous edit workloads"
+    },
+    {
+      "revision": "2434cd96cb10b0e6733f12ba6e4e83f7638f9b1c",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(serialization): reuse proven array elements and bounded canonical blocks"
+    },
+    {
+      "revision": "a25d630220603933cad8fd7bc16753f369940d42",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): retire export form tables when target presentation fails"
+    },
+    {
+      "revision": "be44532f00dfa8644bceee8116830bd284e5d2b0",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(serialization): reuse complete neutral capture keys within owned snapshots"
+    },
+    {
+      "revision": "bced2aefd471cdfb00bc7ca5096f8c90aa652592",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(editor): separate cold preparation from panel lifecycle acceptance"
+    },
+    {
+      "revision": "329568bafab6fb60014bd88826d992e9d54bccf6",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(build): freeze shader inputs in owned compilation workspaces"
+    },
+    {
+      "revision": "564e00d0733634c928508787baece2e837471248",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(build): verify loaded assemblies retire with their collectible contexts"
+    },
+    {
+      "revision": "06f7e3c29893ab94fab96ba7ffb5f4b81079b06f",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "docs(editor): record verified owner fixes and remaining acceptance gates"
+    },
+    {
+      "revision": "d7f383f01dddbeaf184864c5d8d6e2cc32d73f61",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(editor): prepare complete contract owners and execute scaled workflows"
+    },
+    {
+      "revision": "397ae3edb6842126cd9e64ffde3d17c3d6e4a99b",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "docs(imgui): document supplemental font ownership on its partial declaration"
+    },
+    {
+      "revision": "6277db99b1475240e0062971eece72cb313d336a",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(scene): reuse authoritative attachments and ordinal scalar captures"
+    },
+    {
+      "revision": "8fd31ceeaca311c1761ac84f6f25a95e0d790cb1",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): preserve unavailable scene source assignments until recovery"
+    },
+    {
+      "revision": "23f0ceb25e606e97ed8ac263b0204f69e563df09",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "chore(assets): preserve bundled font license bytes across checkouts"
+    },
+    {
+      "revision": "e3f02ebeacdb908da6e274063f44c640adac0750",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(imgui): own supplemental glyph data through complete context retirement"
+    },
+    {
+      "revision": "0b0a821c728a592ff18cde432c22e8d85b258d16",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(serialization): reuse exact neutral captures without retaining source generations"
+    },
+    {
+      "revision": "a38437f7d27307aadcf964f76e9228256d26185f",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(build): verify output ownership through executed SDK results"
+    },
+    {
+      "revision": "318e30aab746e49f549d0fa8083adf07ef2dbf09",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(io): publish complete files without replacing concurrent creators"
+    },
+    {
+      "revision": "bb5b4bb9aff7d926cf585040c2feb4566f7ad74e",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "feat(editor): initialize new projects with the standard dock layout"
+    },
+    {
+      "revision": "870a0af0be0977313054e0a1127977fa4e98317b",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(build): isolate product outputs and restore entry reference owners"
+    },
+    {
+      "revision": "e2e6ca32f7aa07d9cfab230edcf1d2ad396e92fe",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): balance Shader settings scopes and presentation source contracts"
+    },
+    {
+      "revision": "6df06585afb8f72dcb9d67abffe181be2b2d17c1",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(serialization): bound encoding buffers and converter lookup contention"
+    },
+    {
+      "revision": "14c4d0b83c6c13b08d7b0961d222a72c1795e4f2",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "docs(editor): record controlled performance results and remaining acceptance"
+    },
+    {
+      "revision": "f7dce89c0d91ecb0f2333b8ca3117fefc71db96a",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): preserve input semantics and bound serialization allocations"
+    },
+    {
+      "revision": "660962a5bcd4bc393028738b0dc3b0d53a0b0e40",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(testing): forward the selected tool host to UI acceptance"
+    },
+    {
+      "revision": "0974c317c3afcdb97f8f95adf35e4677c40b6c46",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "docs(editor): synchronize current acceptance and API references"
+    },
+    {
+      "revision": "a4d975abbd17cb12b866a36a5447ea0f07ad0e52",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): apply settings atomically and retire failed presentation"
+    },
+    {
+      "revision": "e053be5b1de0ece46df91619711232eb54d5fd82",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(testing): honor evaluated SDK output owners"
+    },
+    {
+      "revision": "af6eac3153219c2457f9b187e332a1126952fb11",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(testing): require explicit product initialization expectations"
+    },
+    {
+      "revision": "081f41f917be7d1f4d33a6848d1fb69bfb68abf7",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(testing): keep temporary SDK work independent of result paths"
+    },
+    {
+      "revision": "14338d61df533f66646a82ba0f2d3184d264c003",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(tooling): validate complete graphs against their SDK output owner"
+    },
+    {
+      "revision": "e23f4ba5b8e836264ec5a0f805707243c27ac5f6",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(assets): verify writable source content before reusing imports"
+    },
+    {
+      "revision": "8dcceb94f4dd805075f6ed28db996eb017eae619",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(build): isolate neutral Foundation bootstrap compilation outputs"
+    },
+    {
+      "revision": "63d4f7dce8b21daa22a6f7e5a00825be3f46dd2d",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "feat(editor): complete reusable presentation and SDK-owned compilation contracts"
+    },
+    {
+      "revision": "273c42ad32be511c21fa21b1e99626af708f29c8",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(assets): preserve source identities during filesystem refresh"
+    },
+    {
+      "revision": "b7a8924dfb0b9611ad8725f508a1d43cc30e6bfe",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(editor): reuse unchanged statistic snapshots"
+    },
+    {
+      "revision": "6a656b674a90ebdda740ba6cb407f2f974564619",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(build): unify compiler tool references across SDK graphs"
+    },
+    {
+      "revision": "88df3c798ab5186e4357e57bb5ff4d058b25b968",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "perf(editor): index command metadata per extension generation"
+    },
+    {
+      "revision": "65d222ae43631083c0a5db6747300d655611c298",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): preserve drawing scopes when extensions fail"
+    },
+    {
+      "revision": "199ae0dcff070c21728bc19994edb407378f43ce",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "chore(editor): track closure issues and acceptance requirements"
+    },
+    {
+      "revision": "30d18489fbf68763229cd8ed35a7005f543019ad",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "docs(editor): reconcile UI acceptance with the approved plan"
+    },
+    {
+      "revision": "2dc37114b7c9b5137e866efc057a66e0dfd72046",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "test(editor): align export shutdown fixture with session ownership"
+    },
+    {
+      "revision": "61f855c00275d26274e6faedfdab204b11b05a2f",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "fix(editor): guard transient targets and script SDK owners"
+    },
+    {
+      "revision": "fa794a5ab3f18a04d072c7f2fc923f4b678a8fea",
+      "author": "Aaron Liao",
+      "email": "hsuankailiao@gmail.com",
+      "committer": "Aaron Liao",
+      "committerEmail": "hsuankailiao@gmail.com",
+      "subject": "refactor(editor): unify UI ownership and editing workflows"
+    }
+  ],
+  "coauthorTrailerCommits": [],
+  "documents": [
+    {
+      "path": "C:\\Dev\\GameEngineDev\\InnoEngine\\AGENTS.md",
+      "sha256": "220f7eab11a12926dbec3bf93b062e249ff08e7728a40184658e72020c014503"
+    },
+    {
+      "path": "C:\\Users\\23842\\Desktop\\InnoEngine_Editor_UI_Plan.md",
+      "sha256": "cbb7d50a26a08e4a0d50c7e0f9aabe6c8538ae3fbe229957d2094a4b60325d9e"
+    }
+  ]
+}

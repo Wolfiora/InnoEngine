@@ -6,19 +6,15 @@
 
 最新全仓深审见[四仓库核心验收报告](../../records/architecture/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md)。正式架构门禁通过不表示资源清理、错误原子性和热路径成本都已闭合。
 
-## 当前 Editor UI 计划缺口
+## Editor UI 计划的当前结论
 
-[原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)发现的缺口正在按[真实 issue 闭合台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)处理。菜单/快捷键 generation 索引、通用 Graph 呈现、Console 搜索、Stats 趋势与大视图裁剪已有实现；最终操作、视觉、生命周期和成对性能矩阵仍未全部闭合。深查发现的资产刷新身份问题按 [#43](https://github.com/Wolfiora/InnoEngine/issues/43)在所属索引修复，未在 UI 添加 fallback。PR #26 保持 Draft，不能用历史 CI 或局部测试代替最终验收。
+[原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)中的实现和本地验收缺口已在 `dd5979c6` 闭合，见[完整报告](../../records/architecture/acceptance/EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md)和[真实 issue 台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)。菜单、Graph、Console、Stats、可见工作控制、实际界面工作流、完整尺度与输入、100 次开关和十次 reload 均有候选源码证据，不能再把此前中间状态描述为当前实现缺失。
 
-E11 的原产品 producer 已恢复：引擎 `b303d9f1`、对应插件的 Editor 源与示例包组成可运行的历史输入，30,000 帧隐藏产品预检已观察到 idle、菜单、Play 和返回 Edit。运行资产与玩法保持一致，Editor 源及包身份差异单独记录于仓库验收记录；未添加兼容层。旧脚本 API 不匹配的失败日志保留为历史尝试，不再作为当前阻塞。五组成对产品性能和最终候选复验仍待执行。
+原产品 producer 和同输入五组对照已完成。完整 dirty inspection 通过十个独立进程的原预算；最差 P95 24.5695 ms，余量较小。图初始十帧尾部标记在预先声明的 50 帧/进程复验中未重现为持续回退；两批数据保留。2,000 节点图约 32 ms 的 P95、资源搜索约 73 ms 仍是值得继续改善的产品成本，不宣称所有场景稳定 60 FPS。
 
-大场景完整 dirty 检查按 [#46](https://github.com/Wolfiora/InnoEngine/issues/46)继续处理。中立不可变捕获复用已有 Core Serialization，仍完整读取 getter/converter，且不改变 100 ms 策略；41–43 ms 的已测中位数仍超出绝对预算。后续附件记录与标量写入实验的局部收益不能代替最终完整负载验收。
+分支修复包括资产源身份/内容、Missing Scene 分配、CJK 字体、精确 Context 退休、Core 读取共享与原子创建、脚本缓存发布，以及真实 SDK 输入与包加载身份。修复均位于原职责 owner；没有 UI fallback、BGCS 补丁或第二份基础能力系统。#13 非 LIFO 拒绝、#16 实际 assets/load、#19 同 SDK references 的本地验收已通过。
 
-新增的 [#49](https://github.com/Wolfiora/InnoEngine/issues/49) / [#51](https://github.com/Wolfiora/InnoEngine/issues/51)已实现补充 CJK 字体与精确 Context 退休登记；正常 SDK 输出的 12 项字体、失败和生命周期回归通过，完整候选门禁仍在执行。[#50](https://github.com/Wolfiora/InnoEngine/issues/50)在 Scene owner 保留经 Asset Pipeline 对账确认不可用的源分配，恢复和显式另存工作流正在做最终复验。未通过最终关卡前，相关 issue 保持 Open。
-
-F03 / [#13](https://github.com/Wolfiora/InnoEngine/issues/13) 已在本分支修复：History 先验证栈顶 ID 再 Pop，三种非 LIFO 拒绝回归在最终 Windows/macOS CI 通过，本次 121 项 Interactions 复跑也通过。等待 PR 合并后关闭 issue，不再把当前分支描述为仍在校验前弹栈。
-
-F09 / [#16](https://github.com/Wolfiora/InnoEngine/issues/16) 的固定默认 assets 读取已在当前源码及 master 中移除；测试读取 SDK Restore 实际返回的 ProjectAssetsFile。本次四个真实 SDK／实际加载用例已通过：默认还原、独立 ArtifactsPath、损坏的默认 obj 干扰，以及测试自有副本中相同程序集名称与 MVID 但内容不同的负例；后者被内容校验拒绝，并验证 collectible context 严格回收。最终候选 CI 仍单独报告。
+精确交付 SHA、最终 Windows/macOS 自动 CI、英文 issue 验证和 PR Ready 状态统一见 [PR #26 验证附件](https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338)。在该附件完成前不能从本地结果推断最终 CI 成功；issue 保持 Open，合并后关闭，#18 只部分关联。人工 Mac、真实显示器、OS IME、长期体验仍未执行。以下独立问题没有因此视为解决。
 
 ## 本轮已修复并验证
 
@@ -49,7 +45,7 @@ B02 / F09 的当前处理是使用标准 `.csproj` 依赖还原，不再维护�
 
 | 范围 | 验收边界 |
 | --- | --- |
-| macOS ARM64 / Unix | 本轮无实机；Metal、Editor Debug/Release、示例产品、CoreCLR、NativeAOT 和不同卷格式未执行。历史 CI 与 fixture 仅保留原范围。 |
+| macOS ARM64 / Unix | 本地没有实机；人工 Metal、不同物理显示器/卷格式和完整发布矩阵未执行。当前交付的托管、原生和产品自动 CI 结果见上方精确提交附件；历史 CI 与 fixture 不替代它。 |
 | Browser 产品 | 4.1.2 Native 与两种发布通过，解释执行和 AOT 各运行 3,000 帧。完整交互、游戏得分跨启动保存及 Browser 矩阵仍未闭合。 |
 | Rider 交互 | SDK 入口及 Task worker 回归不等于本轮操作过 Rider Run；没有单独的 Rider 生产分支。 |
 | GUI / 设备 | Play、昼夜切换、返回 Edit、窗口变化和退出按报告列出；完整 DPI/焦点、所有输入、音频听感及长期运行不计作通过。 |

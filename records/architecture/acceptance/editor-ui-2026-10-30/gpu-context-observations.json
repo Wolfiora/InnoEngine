@@ -1,0 +1,177 @@
+{
+  "scope": "Read-only public NVIDIA process/context association for exact owned product PIDs. No desktop control, injection, exclusive-adapter or physical-display claim. Not a timing measurement.",
+  "recorded": "2026-10-30T12:10:15.3838406+08:00",
+  "status": "Stopped",
+  "observations": [
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Debug-D3D11\\02b3f498325e43469c5be8aa1274727e\\Products\\journey-D3D11\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D11",
+      "time": "2026-10-30T11:32:17.9641362+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 38112,
+      "created": "2026-10-30T11:32:14.509286+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Debug-D3D11\\02b3f498325e43469c5be8aa1274727e\\Products\\lifecycle-D3D11\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D11",
+      "time": "2026-10-30T11:35:46.3731012+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 36020,
+      "created": "2026-10-30T11:35:44.475227+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Debug-D3D12\\70955c80b80d41e6bdfce55d3288ca9d\\Products\\journey-D3D12\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D12",
+      "time": "2026-10-30T11:38:33.2950203+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 35712,
+      "created": "2026-10-30T11:38:29.975196+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Debug-D3D12\\70955c80b80d41e6bdfce55d3288ca9d\\Products\\lifecycle-D3D12\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D12",
+      "time": "2026-10-30T11:42:38.8380660+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 7244,
+      "created": "2026-10-30T11:42:33.788184+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Debug-Vulkan\\454b2eb9ba094cc4a18fb46a58328976\\Products\\journey-Vulkan\\Project --window-visible false --smoke-frames 30000 --graphics-api Vulkan",
+      "time": "2026-10-30T11:46:34.1593946+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 34372,
+      "created": "2026-10-30T11:46:30.47345+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Debug-Vulkan\\454b2eb9ba094cc4a18fb46a58328976\\Products\\lifecycle-Vulkan\\Project --window-visible false --smoke-frames 30000 --graphics-api Vulkan",
+      "time": "2026-10-30T11:50:07.9257201+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 24308,
+      "created": "2026-10-30T11:50:03.628168+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\release\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Release-D3D11\\b863e4f7483e4f118991d61c6e819d92\\Products\\journey-D3D11\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D11",
+      "time": "2026-10-30T11:53:05.5452927+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 26020,
+      "created": "2026-10-30T11:53:00.878645+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\release\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Release-D3D11\\b863e4f7483e4f118991d61c6e819d92\\Products\\lifecycle-D3D11\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D11",
+      "time": "2026-10-30T11:55:00.4809761+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 16016,
+      "created": "2026-10-30T11:54:57.371018+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\release\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Release-D3D12\\93cbca7f8244415c89c45dd9dd2e0f6a\\Products\\journey-D3D12\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D12",
+      "time": "2026-10-30T11:56:39.8187226+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 7924,
+      "created": "2026-10-30T11:56:36.664035+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\release\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Release-D3D12\\93cbca7f8244415c89c45dd9dd2e0f6a\\Products\\lifecycle-D3D12\\Project --window-visible false --smoke-frames 30000 --graphics-api D3D12",
+      "time": "2026-10-30T11:59:16.7532560+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 42688,
+      "created": "2026-10-30T11:59:12.312585+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\release\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Release-Vulkan\\a13c10f2cc674e2cbad3a53511b448db\\Products\\journey-Vulkan\\Project --window-visible false --smoke-frames 30000 --graphics-api Vulkan",
+      "time": "2026-10-30T12:01:43.0848367+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 42176,
+      "created": "2026-10-30T12:01:39.499794+08:00"
+    },
+    {
+      "command": "\"C:\\Users\\23842\\.dotnet\\dotnet.exe\" D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\release\\InnoEngine.Editor.dll D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\products-Release-Vulkan\\a13c10f2cc674e2cbad3a53511b448db\\Products\\lifecycle-Vulkan\\Project --window-visible false --smoke-frames 30000 --graphics-api Vulkan",
+      "time": "2026-10-30T12:03:38.2622966+08:00",
+      "gpuContextAssociations": [
+        {
+          "memory": "N/A",
+          "name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+          "type": "C+G",
+          "bus": "00000000:01:00.0"
+        }
+      ],
+      "pid": 30976,
+      "created": "2026-10-30T12:03:34.257892+08:00"
+    }
+  ],
+  "started": "2026-10-30T11:22:56.0192639+08:00",
+  "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee"
+}

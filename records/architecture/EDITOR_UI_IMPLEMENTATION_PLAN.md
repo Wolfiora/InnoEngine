@@ -1,60 +1,31 @@
 # Editor UI implementation ledger
 
-This ledger tracks the approved Editor UI plan against the current `editor-ui` branch. It is an implementation record, not acceptance evidence.
+The approved implementation and closure work is implemented and locally verified on production candidate `dd5979c613b0fe8ebd9f7026f25001ceee9f8cee`, branch `editor-ui`. This current ledger supersedes the intermediate partial-implementation labels. The [complete report](acceptance/EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md), [issue ledger](EDITOR_UI_CLOSURE_PLAN.md) and [requirement matrix](acceptance/editor-ui-2026-10-30/original-plan-requirements.csv) provide actual scope and evidence.
 
-Status correction: the [original-plan review](acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md) found incomplete implementation and acceptance requirements. The branch is not fully complete; PR #26 remains a draft. Previous stage labels described implemented subsets, not every requirement in the approved plan.
+Final delivery-head CI, English issue verification and PR Ready are separately recorded in the [exact-head attachment](https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338). Local verification is not substituted for that gate. Issues stay Open until PR#26 merges to master; no automatic merge is authorized.
 
-Baseline: `b303d9f10cbaf5a905f7cb529e52cf8293b0d8bd`. Evidence owner: `D:/InnoEngine-Verification/editor-ui-2026-10-27`.
+## Implemented outcomes
 
-## Required outcomes
+| Responsibility | Current behavior and proof |
+|---|---|
+| History | Stack validation precedes completion; continuous gestures publish immediately into one History; discrete operations, cancellation, rollback failure and Missing barriers preserve their contracts. |
+| Domain ownership | Asset and Scene operations belong to features/SceneEdits; Panels do not reference each other or own parallel domain transactions. An unreachable direct Hierarchy deletion path is removed. |
+| Session and resources | One Session per interactive Host; frame/window/thread/context borrows; state and callbacks retire with owner/generation; successful native context retirement unregisters precisely its application entry. |
+| Controls and styles | Shared controls, domain-owned Assets/Shader presentation,2:3 forms, bounded selectors, one scroll owner and frame-boundary Zoom/DPI. |
+| Selection and commands | Core identities, neutral/weak deferred targets, visible-order keyboard/range navigation, fresh dynamic Action state and generation-owned static indexes. |
+| Generic Graph | Neutral geometry/ports/intents shared by Shader and an independent non-Shader consumer; domain controllers retain History/semantics. |
+| Console and Stats | Existing diagnostic occurrence filtering with Unicode search; existing statistics authority and immutable snapshots; Panel-owned bounded numeric trends. |
+| Large views |10k lists/trees/grid visible work and preserved edit/drag/selection;2k graph equivalent geometry reuse; actual CPU/allocation/count measurements. |
+| SDK and scripts | Actual selected SDK references/symbols/language are frozen once, mapped to neutral compiler inputs and shared by IDE/runtime. Compiler publication reuses Core atomic transactions. |
+| Layout and current data | Standard Host initializes absent readable editor.ini atomically; custom/empty files survive; state restores before capture; final exit captures current Module/Panel/layout without persisting selection/Undo/runtime state. |
+| Foundation reuse | Core Events/Identity/IO/Serialization and one History remain authoritative; no parallel managers or compatibility protocols. |
 
-- Preserve the existing ImGui visual identity while unifying layout, controls and feedback.
-- Repair History rejection atomicity and unify continuous edit boundaries.
-- Move reusable asset operations out of File Browser; remove Panel-to-Panel dependencies.
-- Keep domain editing independent from native UI and platform implementations.
-- Give UI state an explicit session and retirement owner.
-- Unify identity-aware selection, focus, queued actions and multi-object operations.
-- Unify Action availability, menus, shortcuts, toolbars and command search.
-- Separate reusable Graph presentation from Shader semantics.
-- Update every affected caller, scripting export, project, Solution entry and document.
-- Run meaningful correctness, native widget, reload, product and performance checks.
-- Commit as Aaron Liao without co-authors on the current branch and inspect its CI.
+## Verification
 
-## Stage ledger
+Eleven preparation and fourteen complete matrix stages pass. Contracts822pass/2Windows-inapplicableUnixskips, Workflows704, Visual524, Lifecycle15; Core97/67/41. Counts overlap. Six Windows product configurations, real interface journeys,100cycles/type, ten reloads, native scale/input and matching content images are recorded. Wiki/project/public API gate evaluates241projects and compiles197examples.
 
-| Stage | State | Evidence |
-| --- | --- | --- |
-| Baseline and ownership | Recorded | External baseline inventory and SDK information |
-| History atomicity | Implemented; local regressions passed | LIFO rejection, shared gestures, immediate draft records and generation-only queries |
-| Domain and presentation boundaries | Main boundaries implemented; graph extraction partial | Headless features and no Panel references; generic node/hit/box selection presentation remains incomplete |
-| UI session and styles | Session implemented; style and lifetime acceptance partial | Session/owner state and native borrow guards passed focused tests; domain metrics and full lifecycle matrix remain |
-| Selection, gestures and commands | Implemented; local regressions passed | Ordered identities, mixed values, precise scalar components and atomic batch operations |
-| Panel integration | Partial | Core views integrated; Console search, keyboard journey proof and Stats trends remain incomplete |
-| Architecture, scripting and documentation | Passed locally | 241 SDK projects evaluated; current API mappings synchronized; final XML formatting, API signatures and compiled Wiki examples passed |
-| Product, performance and final acceptance | Bounded products passed; full plan acceptance incomplete | Final Debug/Release and FlappyBird checks passed; 10k/2k UI performance, 100-cycle, 10-reload and complete visual matrix are not established by the UTF-8 microbenchmark |
+The original production baseline b303d9f1 is reconstructed with matching gameplay/assets/layout, not a legacy production reader.150initial paired trials and ten additional graph-tail process trials retain every outlier. Absolute complete-inspection budgets pass without reduced validation. Initial failures, observer mistakes, performance flags and failed setup attempts remain part of the evidence.
 
-## Acceptance rules
+## Completion review
 
-Tests use real public contracts and existing replaceable boundaries. No IVT, private reflection, test-only production entry points, compatibility wrappers, generated binding edits or vendor changes are permitted. Current Core IO, Events, Identity, Serialization, History and candidate-generation lifecycles remain authoritative.
-
-The final report must assess architecture, readability, state ownership, abstraction, reuse, styling, extensibility, interaction, Undo/Redo, menu clarity and component granularity individually. Passed checks, failures and unexecuted checks must remain distinct.
-
-## Execution observations
-
-- Native fixtures require an explicit product target and its Editor product properties. Ordinary managed compilation alone does not establish a matched native deployment. Scripting and PlayMode fixtures now declare their actual native product dependency; ImGui fixtures consume the selected target instead of a Windows default.
-- The initial full target source build used base product properties and correctly rejected missing ImGui shader inputs. The corrected complete run was cancelled when the component-edit contract changed; it is not a passing result. Final focused UI builds and remote CI must use the frozen final contract.
-- Computer Use captured the real FlappyBird Scene/Game view but failed to activate the owned window twice. Manual mouse interaction is unexecuted; native input tests and bounded product smoke remain separate evidence.
-- Final acceptance must replace these intermediate observations with actual final results, retaining failed/cancelled command provenance in the evidence owner.
-
-
-## Closed local regressions
-
-- 558 shared Editor/tooling tests and one real isolated viewport-retirement fact passed. Three further isolated Core/compiler/build facts passed through the corrected SDK test runner. Rendering2D authoring has 42 passing tests. The corrected export shutdown integration case passed three times: 605 distinct local cases in total, excluding focused reruns.
-- Temporary Play identity routing now has an explicit Host lease and retains Missing selections when a domain retires. The real FlappyBird probe verified the same persistent ID in Edit/Play and restoration to the original domain.
-- Pure label formatting belongs to Editor Core; menu queries require no native drawing context. All engine/plugin callers use the shared formatter.
-- VSTest discovery errors are no longer treated as successful empty discovery; raw discovery logs are preserved.
-- Native vendor/cold SDK diagnostics and automatic maintenance-budget deferrals remain visible in their original logs. They were not suppressed.
-- Final lifetime review reproduced boxed structs retaining referenced objects through selection/focus/snapshots. Targets now retain only known neutral scalars strongly; all other non-identity objects use weak references. The failing-before regression and complete passing Interactions suite are retained separately.
-- The SDK directly references reusable API owners. Its Hierarchy/Inspector contract references remain because they explicitly export four drop targets; a fresh SDK and real script probe verify these public contracts. Non-exporting Panel carriers are rejected by syntax-aware ownership fixtures.
-- Complete Windows/macOS CI at `61f855c0` exposed one remaining Build fixture using the old drawing host. Its real UI session, typed export owner and asynchronous retirement retry are now explicit; original assertions remain. Both platforms' other stages passed. Final CI must be evaluated on the replacement commit.
-- Replacement commit `2dc37114` passed all six checks, including complete Windows/macOS suites. The 2026-10-27 plan review additionally rebuilt and ran 121 Interactions tests successfully. These passes do not close the implementation/acceptance gaps listed above.
+Every original requirement has an issue/owner/commit/command/evidence mapping, including ten interface journeys that a first text extractor omitted. Thirty real Editor projects appear in the actual file tree. Eleven quality dimensions are evaluated against explicit engineering criteria with limits. Physical displays, OS IME, manual Mac experience and unrelated engine issues are not certified. The final attachment resolves delivery/CI conditions before PR Ready; a future user-authorized merge remains separate.

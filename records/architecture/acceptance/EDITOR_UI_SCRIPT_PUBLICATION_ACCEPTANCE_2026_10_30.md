@@ -2,6 +2,8 @@
 
 Issue: [#55](https://github.com/Wolfiora/InnoEngine/issues/55), parent [#27](https://github.com/Wolfiora/InnoEngine/issues/27). This is focused correction evidence; complete corrected-source product, quantitative and CI acceptance remains a separate final gate.
 
+Subsequent complete local acceptance at `dd5979c6`, including five cold/warm publications, companions, six products, quantitative review and full Wiki, is recorded in the [final report](EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md). Its exact delivery-head PR attachment separately records CI and Ready; this focused report retains the original diagnostic chronology.
+
 ## Confirmed failure and diagnostic limits
 
 At `5e329bbe96e4812fcec1207151dd98c520237bbd`, eleven preparation stages and Contracts, Workflows, Visual and Lifecycle passed. The subsequent formal companion script/IDE command failed in `ScriptCompilerEngine.CommitGenerationCache`: raw `Directory.Move` reported Windows access denied for an owned staging directory. The failed command is preserved; a successful explicit repeat does not turn it into a passing execution.

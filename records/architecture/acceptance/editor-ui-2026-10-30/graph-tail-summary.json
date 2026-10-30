@@ -1,0 +1,415 @@
+{
+  "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "trials": [
+    {
+      "source": "original",
+      "pair": 0,
+      "medianMs": 32.14015,
+      "p95Ms": 38.1169,
+      "maximumMs": 44.106,
+      "cpuMsPerOperation": 45.3125,
+      "allocatedBytesPerOperation": 4506232.8,
+      "totalAllocatedBytesPerOperation": 4506881.12,
+      "gen0": 28,
+      "gen1": 6,
+      "gen2": 6,
+      "vertices": [
+        182260
+      ],
+      "indices": [
+        456183
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-0-original"
+    },
+    {
+      "source": "current",
+      "pair": 0,
+      "medianMs": 29.2441,
+      "p95Ms": 32.9627,
+      "maximumMs": 33.2867,
+      "cpuMsPerOperation": 36.875,
+      "allocatedBytesPerOperation": 3335401.28,
+      "totalAllocatedBytesPerOperation": 3335667.04,
+      "gen0": 21,
+      "gen1": 2,
+      "gen2": 2,
+      "vertices": [
+        184030
+      ],
+      "indices": [
+        458625
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-0-current"
+    },
+    {
+      "source": "current",
+      "pair": 1,
+      "medianMs": 22.2517,
+      "p95Ms": 27.737,
+      "maximumMs": 28.4866,
+      "cpuMsPerOperation": 28.75,
+      "allocatedBytesPerOperation": 3282931.68,
+      "totalAllocatedBytesPerOperation": 3283197.44,
+      "gen0": 21,
+      "gen1": 2,
+      "gen2": 2,
+      "vertices": [
+        184030
+      ],
+      "indices": [
+        458625
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-1-current"
+    },
+    {
+      "source": "original",
+      "pair": 1,
+      "medianMs": 28.0138,
+      "p95Ms": 32.4755,
+      "maximumMs": 37.801,
+      "cpuMsPerOperation": 34.6875,
+      "allocatedBytesPerOperation": 4469765.44,
+      "totalAllocatedBytesPerOperation": 4470309.92,
+      "gen0": 27,
+      "gen1": 5,
+      "gen2": 5,
+      "vertices": [
+        182260
+      ],
+      "indices": [
+        456183
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-1-original"
+    },
+    {
+      "source": "original",
+      "pair": 2,
+      "medianMs": 23.884900000000002,
+      "p95Ms": 32.8391,
+      "maximumMs": 37.4046,
+      "cpuMsPerOperation": 32.5,
+      "allocatedBytesPerOperation": 4469715.04,
+      "totalAllocatedBytesPerOperation": 4470363.2,
+      "gen0": 28,
+      "gen1": 6,
+      "gen2": 6,
+      "vertices": [
+        182260
+      ],
+      "indices": [
+        456183
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-2-original"
+    },
+    {
+      "source": "current",
+      "pair": 2,
+      "medianMs": 28.7754,
+      "p95Ms": 32.0666,
+      "maximumMs": 35.6308,
+      "cpuMsPerOperation": 40.0,
+      "allocatedBytesPerOperation": 3298463.84,
+      "totalAllocatedBytesPerOperation": 3298523.2,
+      "gen0": 19,
+      "gen1": 1,
+      "gen2": 0,
+      "vertices": [
+        184030
+      ],
+      "indices": [
+        458625
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-2-current"
+    },
+    {
+      "source": "current",
+      "pair": 3,
+      "medianMs": 23.92,
+      "p95Ms": 32.2866,
+      "maximumMs": 41.3669,
+      "cpuMsPerOperation": 30.3125,
+      "allocatedBytesPerOperation": 3298407.52,
+      "totalAllocatedBytesPerOperation": 3298467.36,
+      "gen0": 19,
+      "gen1": 1,
+      "gen2": 0,
+      "vertices": [
+        184030
+      ],
+      "indices": [
+        458625
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-3-current"
+    },
+    {
+      "source": "original",
+      "pair": 3,
+      "medianMs": 28.468899999999998,
+      "p95Ms": 31.4734,
+      "maximumMs": 33.0214,
+      "cpuMsPerOperation": 40.0,
+      "allocatedBytesPerOperation": 4469812.0,
+      "totalAllocatedBytesPerOperation": 4470461.28,
+      "gen0": 28,
+      "gen1": 6,
+      "gen2": 6,
+      "vertices": [
+        182260
+      ],
+      "indices": [
+        456183
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-3-original"
+    },
+    {
+      "source": "original",
+      "pair": 4,
+      "medianMs": 33.80315,
+      "p95Ms": 46.1429,
+      "maximumMs": 63.8343,
+      "cpuMsPerOperation": 50.0,
+      "allocatedBytesPerOperation": 4543119.52,
+      "totalAllocatedBytesPerOperation": 4543768.32,
+      "gen0": 28,
+      "gen1": 6,
+      "gen2": 6,
+      "vertices": [
+        182260
+      ],
+      "indices": [
+        456183
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-4-original"
+    },
+    {
+      "source": "current",
+      "pair": 4,
+      "medianMs": 28.86425,
+      "p95Ms": 31.9508,
+      "maximumMs": 34.8923,
+      "cpuMsPerOperation": 36.875,
+      "allocatedBytesPerOperation": 3298463.84,
+      "totalAllocatedBytesPerOperation": 3298523.68,
+      "gen0": 19,
+      "gen1": 1,
+      "gen2": 0,
+      "vertices": [
+        184030
+      ],
+      "indices": [
+        458625
+      ],
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\shader-4-current"
+    }
+  ],
+  "comparisons": [
+    {
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          32.14015,
+          28.0138,
+          23.884900000000002,
+          28.468899999999998,
+          33.80315
+        ],
+        "current": [
+          29.2441,
+          22.2517,
+          28.7754,
+          23.92,
+          28.86425
+        ]
+      },
+      "medians": {
+        "original": 28.468899999999998,
+        "current": 28.7754
+      },
+      "medianRatio": 1.0107661342728382,
+      "pairedRatios": [
+        0.9098930776614297,
+        0.7943120890418294,
+        1.204752793606002,
+        0.8402151119291579,
+        0.8538923147694815
+      ],
+      "repeated": 1,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          38.1169,
+          32.4755,
+          32.8391,
+          31.4734,
+          46.1429
+        ],
+        "current": [
+          32.9627,
+          27.737,
+          32.0666,
+          32.2866,
+          31.9508
+        ]
+      },
+      "medians": {
+        "original": 32.8391,
+        "current": 32.0666
+      },
+      "medianRatio": 0.9764762128072937,
+      "pairedRatios": [
+        0.8647791399615393,
+        0.8540900063124509,
+        0.9764762128072937,
+        1.0258376915109266,
+        0.6924315550171316
+      ],
+      "repeated": 0,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          44.106,
+          37.801,
+          37.4046,
+          33.0214,
+          63.8343
+        ],
+        "current": [
+          33.2867,
+          28.4866,
+          35.6308,
+          41.3669,
+          34.8923
+        ]
+      },
+      "medians": {
+        "original": 37.801,
+        "current": 34.8923
+      },
+      "medianRatio": 0.9230523002036982,
+      "pairedRatios": [
+        0.7546977735455495,
+        0.753593820269305,
+        0.9525780251626805,
+        1.2527300477871925,
+        0.5466073881909882
+      ],
+      "repeated": 1,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          45.3125,
+          34.6875,
+          32.5,
+          40.0,
+          50.0
+        ],
+        "current": [
+          36.875,
+          28.75,
+          40.0,
+          30.3125,
+          36.875
+        ]
+      },
+      "medians": {
+        "original": 40.0,
+        "current": 36.875
+      },
+      "medianRatio": 0.921875,
+      "pairedRatios": [
+        0.8137931034482758,
+        0.8288288288288288,
+        1.2307692307692308,
+        0.7578125,
+        0.7375
+      ],
+      "repeated": 1,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4506232.8,
+          4469765.44,
+          4469715.04,
+          4469812.0,
+          4543119.52
+        ],
+        "current": [
+          3335401.28,
+          3282931.68,
+          3298463.84,
+          3298407.52,
+          3298463.84
+        ]
+      },
+      "medians": {
+        "original": 4469812.0,
+        "current": 3298463.84
+      },
+      "medianRatio": 0.7379424101058388,
+      "pairedRatios": [
+        0.7401750925961925,
+        0.7344751584995923,
+        0.7379584180382112,
+        0.7379298100233298,
+        0.7260350130520009
+      ],
+      "repeated": 0,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4506881.12,
+          4470309.92,
+          4470363.2,
+          4470461.28,
+          4543768.32
+        ],
+        "current": [
+          3335667.04,
+          3283197.44,
+          3298523.2,
+          3298467.36,
+          3298523.68
+        ]
+      },
+      "medians": {
+        "original": 4470461.28,
+        "current": 3298523.2
+      },
+      "medianRatio": 0.7378485112390908,
+      "pairedRatios": [
+        0.7401275851713612,
+        0.7344451500579628,
+        0.7378646996736193,
+        0.7378360203580602,
+        0.7259445129455896
+      ],
+      "repeated": 0,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    }
+  ],
+  "flags": [],
+  "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\measurements.json",
+  "frozenFiles": 16406,
+  "scope": "Predeclared five additional alternating independent pairs; all 50 frames pooled per process. No runtime, fixture, source or validation change; preserve initial 150-row results and every new outlier."
+}

@@ -1,0 +1,472 @@
+[
+  {
+    "frames": 18928,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 320830.5255,
+    "firstApplicationFrameWallMilliseconds": 24200.9671,
+    "editorSha256": "35E522169C6377FA022BBF3CAC5B8416F544285D707FEAE6477D8363B6A5333B",
+    "sourceReadyFrameMilliseconds": 60460.0851,
+    "cpuMilliseconds": 455812.5,
+    "pair": 0,
+    "source": "original",
+    "mainCpuAtSourceReadyMilliseconds": 101234.375,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\original-product-runtime\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-original",
+    "samples": [
+      {
+        "median": 9.67915,
+        "phase": "idle",
+        "p95": 29.4194,
+        "meanAllocatedBytes": 4743584.76,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 106
+      },
+      {
+        "median": 9.63265,
+        "phase": "menus",
+        "p95": 30.2297,
+        "meanAllocatedBytes": 4906128.6,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 109
+      },
+      {
+        "median": 11.9108,
+        "phase": "play",
+        "p95": 17.983,
+        "meanAllocatedBytes": 1856208.9246231157,
+        "gen2": 6,
+        "count": 199,
+        "gen1": 12,
+        "gen0": 36
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 18660,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 304202.4103,
+    "firstApplicationFrameWallMilliseconds": 19943.63,
+    "editorSha256": "9B85D2606CBB09C4331AA20AB6D7B825CBFD34A4C5505C9D0C7C593969C0CFB6",
+    "sourceReadyFrameMilliseconds": 66056.5238,
+    "cpuMilliseconds": 420875.0,
+    "pair": 0,
+    "source": "current",
+    "mainCpuAtSourceReadyMilliseconds": 116093.75,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-current",
+    "samples": [
+      {
+        "median": 9.37575,
+        "phase": "idle",
+        "p95": 24.8848,
+        "meanAllocatedBytes": 1936556.2,
+        "gen2": 5,
+        "count": 200,
+        "gen1": 5,
+        "gen0": 38
+      },
+      {
+        "median": 9.617650000000001,
+        "phase": "menus",
+        "p95": 25.6659,
+        "meanAllocatedBytes": 1954005.88,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 40
+      },
+      {
+        "median": 12.7545,
+        "phase": "play",
+        "p95": 15.4336,
+        "meanAllocatedBytes": 1834145.3668341709,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 10,
+        "gen0": 36
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 17778,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 268821.8483,
+    "firstApplicationFrameWallMilliseconds": 8598.3295,
+    "editorSha256": "9B85D2606CBB09C4331AA20AB6D7B825CBFD34A4C5505C9D0C7C593969C0CFB6",
+    "sourceReadyFrameMilliseconds": 52733.859,
+    "cpuMilliseconds": 403546.875,
+    "pair": 1,
+    "source": "current",
+    "mainCpuAtSourceReadyMilliseconds": 115046.875,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-current",
+    "samples": [
+      {
+        "median": 9.7269,
+        "phase": "idle",
+        "p95": 25.3644,
+        "meanAllocatedBytes": 1936436.52,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 40
+      },
+      {
+        "median": 9.712399999999999,
+        "phase": "menus",
+        "p95": 25.5731,
+        "meanAllocatedBytes": 1957503.96,
+        "gen2": 5,
+        "count": 200,
+        "gen1": 5,
+        "gen0": 39
+      },
+      {
+        "median": 11.7569,
+        "phase": "play",
+        "p95": 13.5499,
+        "meanAllocatedBytes": 1834009.2864321608,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 5,
+        "gen0": 35
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 18651,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 282493.8291,
+    "firstApplicationFrameWallMilliseconds": 8705.0177,
+    "editorSha256": "35E522169C6377FA022BBF3CAC5B8416F544285D707FEAE6477D8363B6A5333B",
+    "sourceReadyFrameMilliseconds": 50443.5293,
+    "cpuMilliseconds": 437296.875,
+    "pair": 1,
+    "source": "original",
+    "mainCpuAtSourceReadyMilliseconds": 114437.5,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\original-product-runtime\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-original",
+    "samples": [
+      {
+        "median": 9.6667,
+        "phase": "idle",
+        "p95": 29.7502,
+        "meanAllocatedBytes": 4747774.16,
+        "gen2": 5,
+        "count": 200,
+        "gen1": 5,
+        "gen0": 105
+      },
+      {
+        "median": 9.699649999999998,
+        "phase": "menus",
+        "p95": 29.7035,
+        "meanAllocatedBytes": 4774186.16,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 107
+      },
+      {
+        "median": 11.3259,
+        "phase": "play",
+        "p95": 14.051,
+        "meanAllocatedBytes": 1856485.5879396985,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 5,
+        "gen0": 36
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 19147,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 299000.016,
+    "firstApplicationFrameWallMilliseconds": 8451.0554,
+    "editorSha256": "35E522169C6377FA022BBF3CAC5B8416F544285D707FEAE6477D8363B6A5333B",
+    "sourceReadyFrameMilliseconds": 50087.4516,
+    "cpuMilliseconds": 477906.25,
+    "pair": 2,
+    "source": "original",
+    "mainCpuAtSourceReadyMilliseconds": 115750.0,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\original-product-runtime\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-original",
+    "samples": [
+      {
+        "median": 10.732949999999999,
+        "phase": "idle",
+        "p95": 33.5956,
+        "meanAllocatedBytes": 5139818.52,
+        "gen2": 15,
+        "count": 200,
+        "gen1": 15,
+        "gen0": 125
+      },
+      {
+        "median": 9.79795,
+        "phase": "menus",
+        "p95": 30.5176,
+        "meanAllocatedBytes": 4775486.96,
+        "gen2": 14,
+        "count": 200,
+        "gen1": 14,
+        "gen0": 115
+      },
+      {
+        "median": 12.1663,
+        "phase": "play",
+        "p95": 17.1537,
+        "meanAllocatedBytes": 1856907.336683417,
+        "gen2": 13,
+        "count": 199,
+        "gen1": 13,
+        "gen0": 44
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 18350,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 287553.2501,
+    "firstApplicationFrameWallMilliseconds": 8298.5185,
+    "editorSha256": "9B85D2606CBB09C4331AA20AB6D7B825CBFD34A4C5505C9D0C7C593969C0CFB6",
+    "sourceReadyFrameMilliseconds": 52945.6862,
+    "cpuMilliseconds": 427187.5,
+    "pair": 2,
+    "source": "current",
+    "mainCpuAtSourceReadyMilliseconds": 115265.625,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-current",
+    "samples": [
+      {
+        "median": 9.58705,
+        "phase": "idle",
+        "p95": 25.5172,
+        "meanAllocatedBytes": 1940349.32,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 40
+      },
+      {
+        "median": 9.6327,
+        "phase": "menus",
+        "p95": 25.8475,
+        "meanAllocatedBytes": 1962944.08,
+        "gen2": 5,
+        "count": 200,
+        "gen1": 5,
+        "gen0": 39
+      },
+      {
+        "median": 11.7992,
+        "phase": "play",
+        "p95": 15.6227,
+        "meanAllocatedBytes": 1834056.8040201005,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 11,
+        "gen0": 36
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 18013,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 290968.5551,
+    "firstApplicationFrameWallMilliseconds": 10370.7248,
+    "editorSha256": "9B85D2606CBB09C4331AA20AB6D7B825CBFD34A4C5505C9D0C7C593969C0CFB6",
+    "sourceReadyFrameMilliseconds": 56648.4576,
+    "cpuMilliseconds": 436437.5,
+    "pair": 3,
+    "source": "current",
+    "mainCpuAtSourceReadyMilliseconds": 123078.125,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-current",
+    "samples": [
+      {
+        "median": 9.6922,
+        "phase": "idle",
+        "p95": 25.5423,
+        "meanAllocatedBytes": 1940453.28,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 40
+      },
+      {
+        "median": 9.70125,
+        "phase": "menus",
+        "p95": 25.6267,
+        "meanAllocatedBytes": 1962768.84,
+        "gen2": 5,
+        "count": 200,
+        "gen1": 5,
+        "gen0": 40
+      },
+      {
+        "median": 11.8473,
+        "phase": "play",
+        "p95": 16.0398,
+        "meanAllocatedBytes": 1834040.5628140704,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 11,
+        "gen0": 36
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 19900,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 327586.5809,
+    "firstApplicationFrameWallMilliseconds": 9976.6375,
+    "editorSha256": "35E522169C6377FA022BBF3CAC5B8416F544285D707FEAE6477D8363B6A5333B",
+    "sourceReadyFrameMilliseconds": 58998.4098,
+    "cpuMilliseconds": 500921.875,
+    "pair": 3,
+    "source": "original",
+    "mainCpuAtSourceReadyMilliseconds": 133843.75,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\original-product-runtime\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-original",
+    "samples": [
+      {
+        "median": 9.88215,
+        "phase": "idle",
+        "p95": 30.8648,
+        "meanAllocatedBytes": 4875279.12,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 9,
+        "gen0": 109
+      },
+      {
+        "median": 9.90825,
+        "phase": "menus",
+        "p95": 29.94,
+        "meanAllocatedBytes": 4906543.88,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 14,
+        "gen0": 107
+      },
+      {
+        "median": 11.9443,
+        "phase": "play",
+        "p95": 16.2577,
+        "meanAllocatedBytes": 1856203.216080402,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 12,
+        "gen0": 36
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 18984,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 311802.565,
+    "firstApplicationFrameWallMilliseconds": 8934.5503,
+    "editorSha256": "35E522169C6377FA022BBF3CAC5B8416F544285D707FEAE6477D8363B6A5333B",
+    "sourceReadyFrameMilliseconds": 52717.7551,
+    "cpuMilliseconds": 478125.0,
+    "pair": 4,
+    "source": "original",
+    "mainCpuAtSourceReadyMilliseconds": 121609.375,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\original-product-runtime\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-original",
+    "samples": [
+      {
+        "median": 10.023399999999999,
+        "phase": "idle",
+        "p95": 31.1487,
+        "meanAllocatedBytes": 5007234.2,
+        "gen2": 5,
+        "count": 200,
+        "gen1": 16,
+        "gen0": 111
+      },
+      {
+        "median": 10.412949999999999,
+        "phase": "menus",
+        "p95": 31.4659,
+        "meanAllocatedBytes": 5037921.08,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 15,
+        "gen0": 113
+      },
+      {
+        "median": 14.7406,
+        "phase": "play",
+        "p95": 21.6769,
+        "meanAllocatedBytes": 1856437.6683417086,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 9,
+        "gen0": 35
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  },
+  {
+    "frames": 19214,
+    "coldScope": "First application CPU frame uses official boot timestamps and parent launch wall clock. Source-ready CPU frame uses the second public module update and monotonic timestamps. Neither measures GPU completion or physical display; source-ready CPU excludes child processes.",
+    "wallMilliseconds": 306272.7565,
+    "firstApplicationFrameWallMilliseconds": 8929.0579,
+    "editorSha256": "9B85D2606CBB09C4331AA20AB6D7B825CBFD34A4C5505C9D0C7C593969C0CFB6",
+    "sourceReadyFrameMilliseconds": 58373.1177,
+    "cpuMilliseconds": 458953.125,
+    "pair": 4,
+    "source": "current",
+    "mainCpuAtSourceReadyMilliseconds": 127578.125,
+    "editor": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\InnoEngine.Editor\\debug\\InnoEngine.Editor.dll",
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-current",
+    "samples": [
+      {
+        "median": 9.63455,
+        "phase": "idle",
+        "p95": 25.6117,
+        "meanAllocatedBytes": 1936929.32,
+        "gen2": 6,
+        "count": 200,
+        "gen1": 6,
+        "gen0": 39
+      },
+      {
+        "median": 9.9705,
+        "phase": "menus",
+        "p95": 26.9715,
+        "meanAllocatedBytes": 1962888.56,
+        "gen2": 5,
+        "count": 200,
+        "gen1": 5,
+        "gen0": 39
+      },
+      {
+        "median": 11.8801,
+        "phase": "play",
+        "p95": 15.3872,
+        "meanAllocatedBytes": 1833919.6783919598,
+        "gen2": 5,
+        "count": 199,
+        "gen1": 5,
+        "gen0": 35
+      }
+    ],
+    "fixtureSha256": "6D46452CD09D56207264A055A812B4DDFDC0091FAB34B0DA363D84C6C0781084"
+  }
+]

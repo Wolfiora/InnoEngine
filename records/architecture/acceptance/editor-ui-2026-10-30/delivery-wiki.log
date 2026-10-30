@@ -1,0 +1,7 @@
+D:\InnoEngine-Verification\editor-ui-closure-2026-10-27\delivery-documentation-wiki\Scripts
+Cache: 174090357 bytes; protected 174090357; reclaimed 0; skipped 0.
+Wiki product 'platforms\MacOSArm64\player\Inno.Player.MacOSArm64\Inno.Player.MacOSArm64.csproj' is outside the selected target; API compilation was not evaluated.
+Wiki product 'platforms\MacOSArm64\editor\Inno.Editor.MacOSArm64\Inno.Editor.MacOSArm64.csproj' is outside the selected target; API compilation was not evaluated.
+Wiki product 'platforms\BrowserWasm32\player\Inno.Player.BrowserWasm32\Inno.Player.BrowserWasm32.csproj' is outside the selected target; API compilation was not evaluated.
+Evaluated MSBuild ownership for 241/241 projects without executing build targets.
+InnoEngine architecture validation passed.

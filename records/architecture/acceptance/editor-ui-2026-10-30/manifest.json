@@ -1,0 +1,253 @@
+{
+  "productionRevision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 162,
+      "sha256": "a6e93a6c30def3ddc4be06636e4643c263acc73639eaa9ccaac064a710e5a9d8"
+    },
+    {
+      "path": "absolute-inspection-measurements.json",
+      "bytes": 38106,
+      "sha256": "767f55d8544f99556b177348ebd688f5c53cb612a23be187a87bab3efd504299",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e46\\inspection-pairs-afd3ba27331e494dbc33002b6562c011\\measurements.json"
+    },
+    {
+      "path": "bgcs-package-integrity.json",
+      "bytes": 1094,
+      "sha256": "d83025144881a4e7c5564659e7badc592e18f6f3d48fe9129fc3874feddf695b",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e54\\final-bgcs-package-integrity.json"
+    },
+    {
+      "path": "cache-maintenance-dry-run.log",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 244153,
+      "sha256": "d67810c7a281439db9e9b81f3af7eb1dde4230d461223f893e5341ed0bafa1f9"
+    },
+    {
+      "path": "cache-maintenance.log",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 82,
+      "sha256": "43e5e52cfad46bd7b40199df31d855404eeb8d2c4525fe3a4eafe3b1ed666082"
+    },
+    {
+      "path": "cold-warm-publications.json",
+      "bytes": 215793,
+      "sha256": "8b25c6941006501cf23386b378f59be5233846459ad6ddf92de3015d5904b7c4",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\script-publication-investigation\\cold-content-dd5979c6\\results.json"
+    },
+    {
+      "path": "current-ui.png",
+      "bytes": 215290,
+      "sha256": "707eb8d5a0ddf2aac4d60b9f7ecae5c68d1699e00f60fbecda2a5b1852b39e67",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e09\\visual-capture\\current\\Captures-dd5979c6\\native-ui-replay.png"
+    },
+    {
+      "path": "delivery-wiki-examples.json",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 46556,
+      "sha256": "6c71b7d8cb35fd7106ed0a77b2e2fd0dfb0bca92fd6a3a2660d046f1c309cbfe"
+    },
+    {
+      "path": "delivery-wiki-result.json",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 769,
+      "sha256": "04b974039d6f978fee1028cd2e50ba15430585a0ad3a6be7022a5b8b33493d66"
+    },
+    {
+      "path": "delivery-wiki.log",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 791,
+      "sha256": "14149848b8fe1060e2f4f5bc53ad4c9bb5da084a792eb77dd5c54660f882a5cd"
+    },
+    {
+      "path": "environment.json",
+      "bytes": 2875,
+      "sha256": "a99e55bdc6b6d0d8b095c0fa383f01974eb2498461705061b45e625c9a81d2a7",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\environment.json"
+    },
+    {
+      "path": "file-tree.md",
+      "bytes": 5629,
+      "sha256": "eb321755e222c1cfc6751a9b43b8e0eb847e1381f6858c6840bf3850e9d03c6c",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e54\\final-tree.md"
+    },
+    {
+      "path": "gpu-context-observations.json",
+      "bytes": 9773,
+      "sha256": "7fd89e42b57af47f614876ed8ac3edc1d86848c84b88375c8c4f0d7027713af4",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\gpu-process-observations.json"
+    },
+    {
+      "path": "graph-tail-protocol.json",
+      "bytes": 713,
+      "sha256": "6324bdae08c59f1a6f1e720a06fb5721e6685e2a9e29460193202d06417fa29e",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e54\\graph-tail-review-protocol.json"
+    },
+    {
+      "path": "graph-tail-summary.json",
+      "bytes": 11531,
+      "sha256": "c34fff55878a619d7ba013e2d6aa31d00aa8f3002bae502ac55e7248e2d5cb41",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6-graph-tail\\graph-tail-summary.json"
+    },
+    {
+      "path": "issue-map.json",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 24767,
+      "sha256": "10a5dd071bb680feb821544ccb7753a20d4b48f04099e4a3d8fe2b0330535757"
+    },
+    {
+      "path": "local-acceptance.json",
+      "bytes": 117785,
+      "sha256": "1b6a7b401b094446f6361502975e41f40cc0cb4cfea4258a007ffe78963a727e",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\delivery-data.json"
+    },
+    {
+      "path": "original-plan-requirements.csv",
+      "bytes": 192631,
+      "sha256": "28455042820db7d21fab14cd09b3e2a273a760a16419cd4a93ea11c86abb5357",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e54\\original-plan-requirements-prepared.csv"
+    },
+    {
+      "path": "original-plan-source.json",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 433,
+      "sha256": "3faad8cf8b21757e84c4c63b8de34c9dfd181745e9775e22aa9aa14cf1878d1e"
+    },
+    {
+      "path": "original-ui.png",
+      "bytes": 216695,
+      "sha256": "0efe2ec81d6e10ab0652e72368aafecbfc12f612353e0dfa71757450b91274fe",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e09\\visual-capture\\original\\Captures-cold-settled\\native-ui-replay.png"
+    },
+    {
+      "path": "ownership-review.md",
+      "bytes": 12728,
+      "sha256": "5a6b6215fd289fd47246c42cecafda9df111f6e204d616a32959d905641d1017",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e54\\final-ownership-review-dd5979c6.md"
+    },
+    {
+      "path": "performance-review.json",
+      "bytes": 9294,
+      "sha256": "6ec484e7f455b4bb347acc7c3d3627314a390cdac76a361a84f8654c44798d9d",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6-quantitative\\performance-review.json"
+    },
+    {
+      "path": "performance-summary.json",
+      "bytes": 150629,
+      "sha256": "bda0af282ada8860b38cf871ded6d7b9cc61bef7314da24cf306830984e0bb75",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6-quantitative\\performance-summary.json"
+    },
+    {
+      "path": "raw-commands-measurements.json",
+      "bytes": 57115,
+      "sha256": "78e70470237d68ddd257e1ad49bce4bd9099fb49d03062af756a6c8453622425",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\measurements.json"
+    },
+    {
+      "path": "raw-graph-tail-measurements.json",
+      "bytes": 65583,
+      "sha256": "96844d1d880a25e82ccbd54dd000ab394944859a4a79b56dfbeb65a628eece14",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\graph-tail-pairs-3f1e2dccf94b458b9099c16a9fb6ad81\\measurements.json"
+    },
+    {
+      "path": "raw-input-measurements.json",
+      "bytes": 49367,
+      "sha256": "ebf6b75eff1c10400320837fae825f301d2345da3b13962ea162663bd0c35fae",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\measurements.json"
+    },
+    {
+      "path": "raw-product-measurements.json",
+      "bytes": 17664,
+      "sha256": "e7b42ffeff19ebfd558fe7cb8bab2bcd0d9ff3554ddd9091ba8f88bbc86e1ed9",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\measurements.json"
+    },
+    {
+      "path": "raw-static-measurements.json",
+      "bytes": 55806,
+      "sha256": "b50e6cbcb4018e5eaf09cb2033ba9f1a74ea0c542372e3db2169bc9db29ef9a2",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\measurements.json"
+    },
+    {
+      "path": "README.md",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 1507,
+      "sha256": "f78f220f5919f429880df9c8de469b0f89bcd8055c1861642c5cd6376867e987"
+    },
+    {
+      "path": "source-inventory.json",
+      "bytes": 19088,
+      "sha256": "38f1346d01e037c06eece4ac5c0da45fb237d768f2ec5d6082e4bc6edf07f66d",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e54\\final-source-inventory.json"
+    },
+    {
+      "path": "test-cases.csv",
+      "bytes": 584376,
+      "sha256": "5ddd02d7c5152655773ffd2a9509b009e82af46a91d4606dede70d89aab4d086",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\test-case-index.csv"
+    },
+    {
+      "path": "visual-content-review.json",
+      "bytes": 1776,
+      "sha256": "74a2c807569b09caca5c3b4d6b8e9043b309fe43552c2dadb507d4094eb37673",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\visual-content-review.json"
+    },
+    {
+      "path": "volume-after-maintenance.json",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 166,
+      "sha256": "bf9d661b6f80dd855cf219d9e1a326a9a88c79559fc9c3f70089f2b3bd07532b"
+    },
+    {
+      "path": "volume-before-maintenance.json",
+      "raw": "Prepared final acceptance evidence",
+      "bytes": 166,
+      "sha256": "ad4dbd921eeec03ffd6c78f2da2a12e20dd4a07f60f2c37c206c0210b25e72c2"
+    },
+    {
+      "path": "wiki-result.json",
+      "bytes": 216,
+      "sha256": "90a5964bacbf0fcdd7a8785594f26af13bdeca26c507b425e72ecafd3b47342a",
+      "raw": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6\\wiki-result.json"
+    }
+  ],
+  "requirementRows": 307,
+  "requirementSnapshotStates": {
+    "\u5f85\u9a8c\u6536": 15,
+    "\u660e\u786e\u4e0d\u9002\u7528": 9,
+    "\u901a\u8fc7": 283
+  },
+  "deliveryAttachment": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+  "pendingOriginalLines": [
+    14,
+    15,
+    51,
+    74,
+    95,
+    98,
+    710,
+    716,
+    719,
+    720,
+    734,
+    738,
+    741,
+    742,
+    743
+  ],
+  "rawEvidenceOwner": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27",
+  "scope": "Portable raw measurements and result indexes; complete TRX/binlogs/source/runtime manifests and initial failed attempts remain under the recorded owner. This manifest is not a production registry.",
+  "planSourceSha256": "cbb7d50a26a08e4a0d50c7e0f9aabe6c8538ae3fbe229957d2094a4b60325d9e",
+  "cacheMaintenance": {
+    "status": "Passed",
+    "exitCode": 0,
+    "logicalInventoryBytes": 90213428162,
+    "logicalRetiredBytes": 90039337805,
+    "protectedBytes": 174090357,
+    "observedCFreeGiBBefore": 77.79,
+    "observedCFreeGiBAfter": 90.32,
+    "observedCFreeDeltaGiB": 12.53,
+    "scope": "Formal owned cache clean, after dry-run; logical bytes and volume free delta are distinct. Five policy-rejected D: diagnostic runtimes remain untouched. D: free remained about5.78GiB. No user/SDK/NuGet global content deleted."
+  }
+}

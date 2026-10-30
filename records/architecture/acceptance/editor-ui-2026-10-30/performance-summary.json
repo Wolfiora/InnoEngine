@@ -1,0 +1,5010 @@
+{
+  "scope": "Five alternating producer process pairs per workload. Command timing is batch means, not frame P95. First application frame uses official boot and launch wall timestamps. Source activation is separate and uses the second public module update with monotonic timestamps; neither is GPU completion or physical display. Main-process CPU excludes child processes. Raw trials and all outliers are retained. Flags require explicit review, not automatic waiver.",
+  "sourceCandidate": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "trials": [
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 4387.3229,
+        "p95Ms": 4539.3549,
+        "maximumMs": 4539.3549,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709018286.4,
+        "cpuMsPerOperation": 4356.25,
+        "totalAllocatedBytesPerOperation": 709025148.8,
+        "gen0Collections": 825,
+        "gen1Collections": 107,
+        "gen2Collections": 12
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-0-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 2.0164,
+        "p95Ms": 19.7131,
+        "maximumMs": 19.7131,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 277432.0,
+        "cpuMsPerOperation": 3.125,
+        "totalAllocatedBytesPerOperation": 277497.6,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-0-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 2.1885000000000003,
+        "p95Ms": 19.5684,
+        "maximumMs": 19.5684,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 277432.0,
+        "cpuMsPerOperation": 3.125,
+        "totalAllocatedBytesPerOperation": 277497.6,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-1-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 4380.0702,
+        "p95Ms": 4506.4856,
+        "maximumMs": 4506.4856,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709016743.2,
+        "cpuMsPerOperation": 4396.875,
+        "totalAllocatedBytesPerOperation": 709023605.6,
+        "gen0Collections": 825,
+        "gen1Collections": 109,
+        "gen2Collections": 12
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-1-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 4228.7503,
+        "p95Ms": 4523.6256,
+        "maximumMs": 4523.6256,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709019120.8,
+        "cpuMsPerOperation": 4265.625,
+        "totalAllocatedBytesPerOperation": 709026549.6,
+        "gen0Collections": 826,
+        "gen1Collections": 114,
+        "gen2Collections": 13
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-2-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 2.2058999999999997,
+        "p95Ms": 2.3837,
+        "maximumMs": 2.3837,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 277432.0,
+        "cpuMsPerOperation": 3.125,
+        "totalAllocatedBytesPerOperation": 277497.6,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-2-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 2.02435,
+        "p95Ms": 19.252,
+        "maximumMs": 19.252,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 277432.0,
+        "cpuMsPerOperation": 4.6875,
+        "totalAllocatedBytesPerOperation": 277497.6,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-3-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 4441.211499999999,
+        "p95Ms": 4675.2377,
+        "maximumMs": 4675.2377,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709019076.8,
+        "cpuMsPerOperation": 4459.375,
+        "totalAllocatedBytesPerOperation": 709027652.0,
+        "gen0Collections": 828,
+        "gen1Collections": 115,
+        "gen2Collections": 15
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-3-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 4436.56365,
+        "p95Ms": 4651.0813,
+        "maximumMs": 4651.0813,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709019501.6,
+        "cpuMsPerOperation": 4440.625,
+        "totalAllocatedBytesPerOperation": 709030908.8,
+        "gen0Collections": 833,
+        "gen1Collections": 98,
+        "gen2Collections": 20
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-4-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 1.9738,
+        "p95Ms": 19.093,
+        "maximumMs": 19.093,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 277474.4,
+        "cpuMsPerOperation": 3.125,
+        "totalAllocatedBytesPerOperation": 277540.0,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\hierarchy-4-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 3431.3217999999997,
+        "p95Ms": 3490.0804,
+        "maximumMs": 3490.0804,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 249231740.8,
+        "cpuMsPerOperation": 3445.3125,
+        "totalAllocatedBytesPerOperation": 249231806.4,
+        "gen0Collections": 296,
+        "gen1Collections": 3,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-0-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 16.5183,
+        "p95Ms": 26.502,
+        "maximumMs": 26.502,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 918679.2,
+        "cpuMsPerOperation": 18.75,
+        "totalAllocatedBytesPerOperation": 918778.4,
+        "gen0Collections": 1,
+        "gen1Collections": 1,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-0-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 15.38935,
+        "p95Ms": 24.6364,
+        "maximumMs": 24.6364,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 918679.2,
+        "cpuMsPerOperation": 17.1875,
+        "totalAllocatedBytesPerOperation": 918778.4,
+        "gen0Collections": 1,
+        "gen1Collections": 1,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-1-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 3409.38115,
+        "p95Ms": 3450.0804,
+        "maximumMs": 3450.0804,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 249231740.8,
+        "cpuMsPerOperation": 3412.5,
+        "totalAllocatedBytesPerOperation": 249231806.4,
+        "gen0Collections": 296,
+        "gen1Collections": 3,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-1-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 3451.2929,
+        "p95Ms": 3522.6453,
+        "maximumMs": 3522.6453,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 249231740.8,
+        "cpuMsPerOperation": 3448.4375,
+        "totalAllocatedBytesPerOperation": 249231806.4,
+        "gen0Collections": 296,
+        "gen1Collections": 3,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-2-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 15.244599999999998,
+        "p95Ms": 24.5067,
+        "maximumMs": 24.5067,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 918679.2,
+        "cpuMsPerOperation": 15.625,
+        "totalAllocatedBytesPerOperation": 918778.4,
+        "gen0Collections": 1,
+        "gen1Collections": 1,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-2-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 15.799199999999999,
+        "p95Ms": 26.7983,
+        "maximumMs": 26.7983,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 918679.2,
+        "cpuMsPerOperation": 17.1875,
+        "totalAllocatedBytesPerOperation": 918778.4,
+        "gen0Collections": 1,
+        "gen1Collections": 1,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-3-current"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 3428.9718,
+        "p95Ms": 3486.708,
+        "maximumMs": 3486.708,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 249231740.8,
+        "cpuMsPerOperation": 3431.25,
+        "totalAllocatedBytesPerOperation": 249231806.4,
+        "gen0Collections": 296,
+        "gen1Collections": 3,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-3-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 3441.705,
+        "p95Ms": 3507.2268,
+        "maximumMs": 3507.2268,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 249231740.8,
+        "cpuMsPerOperation": 3451.5625,
+        "totalAllocatedBytesPerOperation": 249231806.4,
+        "gen0Collections": 296,
+        "gen1Collections": 3,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-4-original"
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 15.1674,
+        "p95Ms": 24.9492,
+        "maximumMs": 24.9492,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 918679.2,
+        "cpuMsPerOperation": 17.1875,
+        "totalAllocatedBytesPerOperation": 918778.4,
+        "gen0Collections": 1,
+        "gen1Collections": 1,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\assets-4-current"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 23.1096,
+        "p95Ms": 24.7994,
+        "maximumMs": 24.7994,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 4364820.0,
+        "cpuMsPerOperation": 25.0,
+        "totalAllocatedBytesPerOperation": 4365382.4,
+        "gen0Collections": 5,
+        "gen1Collections": 1,
+        "gen2Collections": 1
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-0-original"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 24.46985,
+        "p95Ms": 27.3035,
+        "maximumMs": 27.3035,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 3277376.0,
+        "cpuMsPerOperation": 35.9375,
+        "totalAllocatedBytesPerOperation": 3277441.6,
+        "gen0Collections": 4,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-0-current"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 29.15775,
+        "p95Ms": 39.7908,
+        "maximumMs": 39.7908,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 3277376.0,
+        "cpuMsPerOperation": 32.8125,
+        "totalAllocatedBytesPerOperation": 3277441.6,
+        "gen0Collections": 4,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-1-current"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 23.68225,
+        "p95Ms": 25.438,
+        "maximumMs": 25.438,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 4364780.0,
+        "cpuMsPerOperation": 25.0,
+        "totalAllocatedBytesPerOperation": 4365841.6,
+        "gen0Collections": 6,
+        "gen1Collections": 2,
+        "gen2Collections": 2
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-1-original"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 23.89115,
+        "p95Ms": 29.9459,
+        "maximumMs": 29.9459,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 4364723.2,
+        "cpuMsPerOperation": 28.125,
+        "totalAllocatedBytesPerOperation": 4365784.8,
+        "gen0Collections": 6,
+        "gen1Collections": 2,
+        "gen2Collections": 2
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-2-original"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 24.0661,
+        "p95Ms": 36.6837,
+        "maximumMs": 36.6837,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 3277376.0,
+        "cpuMsPerOperation": 26.5625,
+        "totalAllocatedBytesPerOperation": 3277441.6,
+        "gen0Collections": 4,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-2-current"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 25.95035,
+        "p95Ms": 35.9288,
+        "maximumMs": 35.9288,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 3277376.0,
+        "cpuMsPerOperation": 26.5625,
+        "totalAllocatedBytesPerOperation": 3277441.6,
+        "gen0Collections": 4,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-3-current"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 25.028750000000002,
+        "p95Ms": 35.0849,
+        "maximumMs": 35.0849,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 4364528.0,
+        "cpuMsPerOperation": 29.6875,
+        "totalAllocatedBytesPerOperation": 4365589.6,
+        "gen0Collections": 6,
+        "gen1Collections": 2,
+        "gen2Collections": 2
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-3-original"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 23.5582,
+        "p95Ms": 32.6808,
+        "maximumMs": 32.6808,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 4364701.6,
+        "cpuMsPerOperation": 26.5625,
+        "totalAllocatedBytesPerOperation": 4365763.2,
+        "gen0Collections": 6,
+        "gen1Collections": 2,
+        "gen2Collections": 2
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-4-original"
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 23.49785,
+        "p95Ms": 33.9387,
+        "maximumMs": 33.9387,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 3277376.0,
+        "cpuMsPerOperation": 26.5625,
+        "totalAllocatedBytesPerOperation": 3277441.6,
+        "gen0Collections": 4,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\pairs-e9cf8c205df0499784abe33dae5ff767\\shader-4-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 10467.925599999999,
+        "p95Ms": 10649.9995,
+        "maximumMs": 10649.9995,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 754213838.4,
+        "cpuMsPerOperation": 10417.1875,
+        "totalAllocatedBytesPerOperation": 754215603.2,
+        "gen0Collections": 898,
+        "gen1Collections": 17,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 3527.7773500000003,
+        "p95Ms": 3786.8515,
+        "maximumMs": 3786.8515,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 246352774.4,
+        "cpuMsPerOperation": 3554.6875,
+        "totalAllocatedBytesPerOperation": 246353388.8,
+        "gen0Collections": 294,
+        "gen1Collections": 4,
+        "gen2Collections": 1
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 3935.62945,
+        "p95Ms": 4082.0511,
+        "maximumMs": 4082.0511,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 726426723.2,
+        "cpuMsPerOperation": 3935.9375,
+        "totalAllocatedBytesPerOperation": 726434374.4,
+        "gen0Collections": 831,
+        "gen1Collections": 109,
+        "gen2Collections": 12
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 4518.9755000000005,
+        "p95Ms": 4751.4065,
+        "maximumMs": 4751.4065,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709020653.6,
+        "cpuMsPerOperation": 4553.125,
+        "totalAllocatedBytesPerOperation": 709029572.0,
+        "gen0Collections": 826,
+        "gen1Collections": 111,
+        "gen2Collections": 14
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 73.1636,
+        "p95Ms": 79.7892,
+        "maximumMs": 79.7892,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 7873499.2,
+        "cpuMsPerOperation": 92.1875,
+        "totalAllocatedBytesPerOperation": 7875357.6,
+        "gen0Collections": 8,
+        "gen1Collections": 6,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 1.4435,
+        "p95Ms": 1.562,
+        "maximumMs": 1.562,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 300984.0,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 301032.0,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 1.4398,
+        "p95Ms": 1.5519,
+        "maximumMs": 1.5519,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 283193.6,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 283241.6,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 14.714649999999999,
+        "p95Ms": 16.4719,
+        "maximumMs": 16.4719,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 938392.8,
+        "cpuMsPerOperation": 15.625,
+        "totalAllocatedBytesPerOperation": 938440.8,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 1.4905,
+        "p95Ms": 1.6529,
+        "maximumMs": 1.6529,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 283193.6,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 283241.6,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 1.4158,
+        "p95Ms": 1.4659,
+        "maximumMs": 1.4659,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 300984.0,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 301032.0,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 68.55875,
+        "p95Ms": 77.1866,
+        "maximumMs": 77.1866,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 7873821.6,
+        "cpuMsPerOperation": 92.1875,
+        "totalAllocatedBytesPerOperation": 7875680.0,
+        "gen0Collections": 8,
+        "gen1Collections": 5,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 14.05985,
+        "p95Ms": 15.8653,
+        "maximumMs": 15.8653,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 938392.8,
+        "cpuMsPerOperation": 15.625,
+        "totalAllocatedBytesPerOperation": 938440.8,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 10187.652600000001,
+        "p95Ms": 10283.1874,
+        "maximumMs": 10283.1874,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 754213674.4,
+        "cpuMsPerOperation": 10187.5,
+        "totalAllocatedBytesPerOperation": 754215439.2,
+        "gen0Collections": 898,
+        "gen1Collections": 16,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 3366.68745,
+        "p95Ms": 3396.2747,
+        "maximumMs": 3396.2747,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 246353179.2,
+        "cpuMsPerOperation": 3357.8125,
+        "totalAllocatedBytesPerOperation": 246353793.6,
+        "gen0Collections": 294,
+        "gen1Collections": 4,
+        "gen2Collections": 1
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 4060.34005,
+        "p95Ms": 4425.4523,
+        "maximumMs": 4425.4523,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 726426868.8,
+        "cpuMsPerOperation": 4087.5,
+        "totalAllocatedBytesPerOperation": 726435787.2,
+        "gen0Collections": 833,
+        "gen1Collections": 107,
+        "gen2Collections": 14
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 4469.9085,
+        "p95Ms": 4741.383,
+        "maximumMs": 4741.383,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709021073.6,
+        "cpuMsPerOperation": 4479.6875,
+        "totalAllocatedBytesPerOperation": 709029992.0,
+        "gen0Collections": 826,
+        "gen1Collections": 111,
+        "gen2Collections": 14
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 4538.4312,
+        "p95Ms": 4606.4219,
+        "maximumMs": 4606.4219,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709016406.4,
+        "cpuMsPerOperation": 4528.125,
+        "totalAllocatedBytesPerOperation": 709024057.6,
+        "gen0Collections": 824,
+        "gen1Collections": 114,
+        "gen2Collections": 12
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 10344.95765,
+        "p95Ms": 11417.2039,
+        "maximumMs": 11417.2039,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 754213033.6,
+        "cpuMsPerOperation": 10432.8125,
+        "totalAllocatedBytesPerOperation": 754214796.0,
+        "gen0Collections": 899,
+        "gen1Collections": 17,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 3426.88195,
+        "p95Ms": 3624.0777,
+        "maximumMs": 3624.0777,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 246353407.2,
+        "cpuMsPerOperation": 3464.0625,
+        "totalAllocatedBytesPerOperation": 246354021.6,
+        "gen0Collections": 294,
+        "gen1Collections": 4,
+        "gen2Collections": 1
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 3585.1115,
+        "p95Ms": 3628.8166,
+        "maximumMs": 3628.8166,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 726428257.6,
+        "cpuMsPerOperation": 3590.625,
+        "totalAllocatedBytesPerOperation": 726434620.0,
+        "gen0Collections": 829,
+        "gen1Collections": 127,
+        "gen2Collections": 10
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 91.09275,
+        "p95Ms": 123.7802,
+        "maximumMs": 123.7802,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 7912272.0,
+        "cpuMsPerOperation": 121.875,
+        "totalAllocatedBytesPerOperation": 7914125.6,
+        "gen0Collections": 8,
+        "gen1Collections": 4,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 15.3498,
+        "p95Ms": 18.1181,
+        "maximumMs": 18.1181,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 938528.0,
+        "cpuMsPerOperation": 18.75,
+        "totalAllocatedBytesPerOperation": 938576.0,
+        "gen0Collections": 2,
+        "gen1Collections": 1,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 1.5540500000000002,
+        "p95Ms": 1.9986,
+        "maximumMs": 1.9986,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 300984.0,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 301032.0,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 1.77805,
+        "p95Ms": 1.8761,
+        "maximumMs": 1.8761,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 283193.6,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 283241.6,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 20.20265,
+        "p95Ms": 21.9723,
+        "maximumMs": 21.9723,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 938427.2,
+        "cpuMsPerOperation": 23.4375,
+        "totalAllocatedBytesPerOperation": 938475.2,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 1.9068,
+        "p95Ms": 2.1292,
+        "maximumMs": 2.1292,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 300984.0,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 301032.0,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 1.93125,
+        "p95Ms": 2.4219,
+        "maximumMs": 2.4219,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 283193.6,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 283241.6,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 72.15729999999999,
+        "p95Ms": 90.7394,
+        "maximumMs": 90.7394,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 7911923.2,
+        "cpuMsPerOperation": 96.875,
+        "totalAllocatedBytesPerOperation": 7913781.6,
+        "gen0Collections": 9,
+        "gen1Collections": 3,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 5904.7548,
+        "p95Ms": 6853.4044,
+        "maximumMs": 6853.4044,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 726670890.4,
+        "cpuMsPerOperation": 5992.1875,
+        "totalAllocatedBytesPerOperation": 726695003.2,
+        "gen0Collections": 857,
+        "gen1Collections": 141,
+        "gen2Collections": 38
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 6197.7714,
+        "p95Ms": 8356.4387,
+        "maximumMs": 8356.4387,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 246366254.4,
+        "cpuMsPerOperation": 6356.25,
+        "totalAllocatedBytesPerOperation": 246366868.8,
+        "gen0Collections": 297,
+        "gen1Collections": 11,
+        "gen2Collections": 1
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 5902.0731,
+        "p95Ms": 6654.2834,
+        "maximumMs": 6654.2834,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709287042.4,
+        "cpuMsPerOperation": 5848.4375,
+        "totalAllocatedBytesPerOperation": 709309252.0,
+        "gen0Collections": 849,
+        "gen1Collections": 128,
+        "gen2Collections": 35
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 14733.090049999999,
+        "p95Ms": 16053.4,
+        "maximumMs": 16053.4,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 754282373.6,
+        "cpuMsPerOperation": 14735.9375,
+        "totalAllocatedBytesPerOperation": 754285259.2,
+        "gen0Collections": 902,
+        "gen1Collections": 21,
+        "gen2Collections": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 4880.64335,
+        "p95Ms": 5163.1566,
+        "maximumMs": 5163.1566,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 246352763.2,
+        "cpuMsPerOperation": 4790.625,
+        "totalAllocatedBytesPerOperation": 246352811.2,
+        "gen0Collections": 294,
+        "gen1Collections": 6,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-original"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 14610.683,
+        "p95Ms": 19866.71,
+        "maximumMs": 19866.71,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 754281620.0,
+        "cpuMsPerOperation": 14937.5,
+        "totalAllocatedBytesPerOperation": 754284500.8,
+        "gen0Collections": 904,
+        "gen1Collections": 20,
+        "gen2Collections": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 4591.67915,
+        "p95Ms": 5687.0343,
+        "maximumMs": 5687.0343,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 726697597.6,
+        "cpuMsPerOperation": 4651.5625,
+        "totalAllocatedBytesPerOperation": 726726152.8,
+        "gen0Collections": 864,
+        "gen1Collections": 138,
+        "gen2Collections": 45
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 4497.09725,
+        "p95Ms": 4749.9316,
+        "maximumMs": 4749.9316,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 709291708.0,
+        "cpuMsPerOperation": 4503.125,
+        "totalAllocatedBytesPerOperation": 709315172.8,
+        "gen0Collections": 850,
+        "gen1Collections": 136,
+        "gen2Collections": 37
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-original"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 1.5859,
+        "p95Ms": 1.7238,
+        "maximumMs": 1.7238,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 300984.0,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 301032.0,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-current"
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 1.7662,
+        "p95Ms": 1.9979,
+        "maximumMs": 1.9979,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 283193.6,
+        "cpuMsPerOperation": 1.5625,
+        "totalAllocatedBytesPerOperation": 283241.6,
+        "gen0Collections": 0,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 76.14715000000001,
+        "p95Ms": 80.7782,
+        "maximumMs": 80.7782,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 7912856.8,
+        "cpuMsPerOperation": 81.25,
+        "totalAllocatedBytesPerOperation": 7914708.0,
+        "gen0Collections": 9,
+        "gen1Collections": 4,
+        "gen2Collections": 3
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-current"
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 18.65335,
+        "p95Ms": 19.5928,
+        "maximumMs": 19.5928,
+        "measuredOperations": 10,
+        "allocatedBytesPerOperation": 938392.8,
+        "cpuMsPerOperation": 20.3125,
+        "totalAllocatedBytesPerOperation": 938440.8,
+        "gen0Collections": 1,
+        "gen1Collections": 0,
+        "gen2Collections": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-current"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.01352185,
+        "cpuMsPerOperation": 0.015625,
+        "allocatedBytesPerOperation": 8544.288,
+        "gen0": 10,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0041922,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 1608.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0036932,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 1424.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.02743575,
+        "cpuMsPerOperation": 0.03125,
+        "allocatedBytesPerOperation": 16792.0,
+        "gen0": 20,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00594675,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 4240.144,
+        "gen0": 5,
+        "gen1": 1,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0012994,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 352.0,
+        "gen0": 1,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00031995,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 48.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00036525,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 400.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\0-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00499185,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 4240.144,
+        "gen0": 5,
+        "gen1": 1,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0010549,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 352.0,
+        "gen0": 1,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00026555000000000003,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 48.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00019894999999999998,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 400.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.009671049999999999,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 8544.288,
+        "gen0": 10,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00488945,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 1608.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0040687499999999995,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 1424.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.025300049999999998,
+        "cpuMsPerOperation": 0.03125,
+        "allocatedBytesPerOperation": 16792.0,
+        "gen0": 20,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\1-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.008250400000000001,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 8544.288,
+        "gen0": 10,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0040537,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 1608.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0035343,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 1424.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.024111999999999998,
+        "cpuMsPerOperation": 0.0234375,
+        "allocatedBytesPerOperation": 16792.0,
+        "gen0": 20,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0054373,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 4240.144,
+        "gen0": 5,
+        "gen1": 1,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0010749,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 352.0,
+        "gen0": 1,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00027529999999999997,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 48.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00023035,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 400.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\2-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0057007,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 4240.144,
+        "gen0": 5,
+        "gen1": 1,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0011759,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 352.0,
+        "gen0": 1,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0002673,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 48.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00020055,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 400.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0096234,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 8544.288,
+        "gen0": 10,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.004262800000000001,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 1608.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00345585,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 1424.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0243715,
+        "cpuMsPerOperation": 0.03125,
+        "allocatedBytesPerOperation": 16792.0,
+        "gen0": 20,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\3-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0085225,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 8544.288,
+        "gen0": 10,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0040953,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 1608.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0037190500000000002,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 1424.0,
+        "gen0": 2,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.0276752,
+        "cpuMsPerOperation": 0.03125,
+        "allocatedBytesPerOperation": 16792.0,
+        "gen0": 20,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-original.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00558785,
+        "cpuMsPerOperation": 0.0078125,
+        "allocatedBytesPerOperation": 4240.144,
+        "gen0": 5,
+        "gen1": 1,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00099065,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 352.0,
+        "gen0": 1,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00025795,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 48.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-current.log"
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "batchMeanMsPerOperation": 0.00020085,
+        "cpuMsPerOperation": 0.0,
+        "allocatedBytesPerOperation": 400.0,
+        "gen0": 0,
+        "gen1": 0,
+        "gen2": 0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-f5b1d2d01c67474ba44f3fd9147d6482\\4-current.log"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 9.67915,
+        "p95Ms": 29.4194,
+        "allocatedBytesPerOperation": 4743584.76,
+        "measuredOperations": 200,
+        "gen0": 106,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 9.63265,
+        "p95Ms": 30.2297,
+        "allocatedBytesPerOperation": 4906128.6,
+        "measuredOperations": 200,
+        "gen0": 109,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 11.9108,
+        "p95Ms": 17.983,
+        "allocatedBytesPerOperation": 1856208.9246231157,
+        "measuredOperations": 199,
+        "gen0": 36,
+        "gen1": 12,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-original"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "original",
+      "pair": 0,
+      "metrics": {
+        "firstApplicationFrameWallMs": 24200.9671,
+        "sourceActivatedCpuFrameMs": 60460.0851,
+        "mainProcessCpuAtSourceReadyMs": 101234.375,
+        "completeRunWallMs": 320830.5255,
+        "completeRunMainCpuMs": 455812.5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 9.37575,
+        "p95Ms": 24.8848,
+        "allocatedBytesPerOperation": 1936556.2,
+        "measuredOperations": 200,
+        "gen0": 38,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 9.617650000000001,
+        "p95Ms": 25.6659,
+        "allocatedBytesPerOperation": 1954005.88,
+        "measuredOperations": 200,
+        "gen0": 40,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "medianMs": 12.7545,
+        "p95Ms": 15.4336,
+        "allocatedBytesPerOperation": 1834145.3668341709,
+        "measuredOperations": 199,
+        "gen0": 36,
+        "gen1": 10,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-current"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "current",
+      "pair": 0,
+      "metrics": {
+        "firstApplicationFrameWallMs": 19943.63,
+        "sourceActivatedCpuFrameMs": 66056.5238,
+        "mainProcessCpuAtSourceReadyMs": 116093.75,
+        "completeRunWallMs": 304202.4103,
+        "completeRunMainCpuMs": 420875.0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\0-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 9.7269,
+        "p95Ms": 25.3644,
+        "allocatedBytesPerOperation": 1936436.52,
+        "measuredOperations": 200,
+        "gen0": 40,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 9.712399999999999,
+        "p95Ms": 25.5731,
+        "allocatedBytesPerOperation": 1957503.96,
+        "measuredOperations": 200,
+        "gen0": 39,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 11.7569,
+        "p95Ms": 13.5499,
+        "allocatedBytesPerOperation": 1834009.2864321608,
+        "measuredOperations": 199,
+        "gen0": 35,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-current"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "current",
+      "pair": 1,
+      "metrics": {
+        "firstApplicationFrameWallMs": 8598.3295,
+        "sourceActivatedCpuFrameMs": 52733.859,
+        "mainProcessCpuAtSourceReadyMs": 115046.875,
+        "completeRunWallMs": 268821.8483,
+        "completeRunMainCpuMs": 403546.875
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 9.6667,
+        "p95Ms": 29.7502,
+        "allocatedBytesPerOperation": 4747774.16,
+        "measuredOperations": 200,
+        "gen0": 105,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 9.699649999999998,
+        "p95Ms": 29.7035,
+        "allocatedBytesPerOperation": 4774186.16,
+        "measuredOperations": 200,
+        "gen0": 107,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "medianMs": 11.3259,
+        "p95Ms": 14.051,
+        "allocatedBytesPerOperation": 1856485.5879396985,
+        "measuredOperations": 199,
+        "gen0": 36,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-original"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "original",
+      "pair": 1,
+      "metrics": {
+        "firstApplicationFrameWallMs": 8705.0177,
+        "sourceActivatedCpuFrameMs": 50443.5293,
+        "mainProcessCpuAtSourceReadyMs": 114437.5,
+        "completeRunWallMs": 282493.8291,
+        "completeRunMainCpuMs": 437296.875
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\1-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 10.732949999999999,
+        "p95Ms": 33.5956,
+        "allocatedBytesPerOperation": 5139818.52,
+        "measuredOperations": 200,
+        "gen0": 125,
+        "gen1": 15,
+        "gen2": 15
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 9.79795,
+        "p95Ms": 30.5176,
+        "allocatedBytesPerOperation": 4775486.96,
+        "measuredOperations": 200,
+        "gen0": 115,
+        "gen1": 14,
+        "gen2": 14
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 12.1663,
+        "p95Ms": 17.1537,
+        "allocatedBytesPerOperation": 1856907.336683417,
+        "measuredOperations": 199,
+        "gen0": 44,
+        "gen1": 13,
+        "gen2": 13
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-original"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "original",
+      "pair": 2,
+      "metrics": {
+        "firstApplicationFrameWallMs": 8451.0554,
+        "sourceActivatedCpuFrameMs": 50087.4516,
+        "mainProcessCpuAtSourceReadyMs": 115750.0,
+        "completeRunWallMs": 299000.016,
+        "completeRunMainCpuMs": 477906.25
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 9.58705,
+        "p95Ms": 25.5172,
+        "allocatedBytesPerOperation": 1940349.32,
+        "measuredOperations": 200,
+        "gen0": 40,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 9.6327,
+        "p95Ms": 25.8475,
+        "allocatedBytesPerOperation": 1962944.08,
+        "measuredOperations": 200,
+        "gen0": 39,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "medianMs": 11.7992,
+        "p95Ms": 15.6227,
+        "allocatedBytesPerOperation": 1834056.8040201005,
+        "measuredOperations": 199,
+        "gen0": 36,
+        "gen1": 11,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-current"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "current",
+      "pair": 2,
+      "metrics": {
+        "firstApplicationFrameWallMs": 8298.5185,
+        "sourceActivatedCpuFrameMs": 52945.6862,
+        "mainProcessCpuAtSourceReadyMs": 115265.625,
+        "completeRunWallMs": 287553.2501,
+        "completeRunMainCpuMs": 427187.5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\2-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 9.6922,
+        "p95Ms": 25.5423,
+        "allocatedBytesPerOperation": 1940453.28,
+        "measuredOperations": 200,
+        "gen0": 40,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 9.70125,
+        "p95Ms": 25.6267,
+        "allocatedBytesPerOperation": 1962768.84,
+        "measuredOperations": 200,
+        "gen0": 40,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 11.8473,
+        "p95Ms": 16.0398,
+        "allocatedBytesPerOperation": 1834040.5628140704,
+        "measuredOperations": 199,
+        "gen0": 36,
+        "gen1": 11,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-current"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "current",
+      "pair": 3,
+      "metrics": {
+        "firstApplicationFrameWallMs": 10370.7248,
+        "sourceActivatedCpuFrameMs": 56648.4576,
+        "mainProcessCpuAtSourceReadyMs": 123078.125,
+        "completeRunWallMs": 290968.5551,
+        "completeRunMainCpuMs": 436437.5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 9.88215,
+        "p95Ms": 30.8648,
+        "allocatedBytesPerOperation": 4875279.12,
+        "measuredOperations": 200,
+        "gen0": 109,
+        "gen1": 9,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 9.90825,
+        "p95Ms": 29.94,
+        "allocatedBytesPerOperation": 4906543.88,
+        "measuredOperations": 200,
+        "gen0": 107,
+        "gen1": 14,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "medianMs": 11.9443,
+        "p95Ms": 16.2577,
+        "allocatedBytesPerOperation": 1856203.216080402,
+        "measuredOperations": 199,
+        "gen0": 36,
+        "gen1": 12,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-original"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "original",
+      "pair": 3,
+      "metrics": {
+        "firstApplicationFrameWallMs": 9976.6375,
+        "sourceActivatedCpuFrameMs": 58998.4098,
+        "mainProcessCpuAtSourceReadyMs": 133843.75,
+        "completeRunWallMs": 327586.5809,
+        "completeRunMainCpuMs": 500921.875
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\3-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 10.023399999999999,
+        "p95Ms": 31.1487,
+        "allocatedBytesPerOperation": 5007234.2,
+        "measuredOperations": 200,
+        "gen0": 111,
+        "gen1": 16,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 10.412949999999999,
+        "p95Ms": 31.4659,
+        "allocatedBytesPerOperation": 5037921.08,
+        "measuredOperations": 200,
+        "gen0": 113,
+        "gen1": 15,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 14.7406,
+        "p95Ms": 21.6769,
+        "allocatedBytesPerOperation": 1856437.6683417086,
+        "measuredOperations": 199,
+        "gen0": 35,
+        "gen1": 9,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-original"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "original",
+      "pair": 4,
+      "metrics": {
+        "firstApplicationFrameWallMs": 8934.5503,
+        "sourceActivatedCpuFrameMs": 52717.7551,
+        "mainProcessCpuAtSourceReadyMs": 121609.375,
+        "completeRunWallMs": 311802.565,
+        "completeRunMainCpuMs": 478125.0
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-original"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 9.63455,
+        "p95Ms": 25.6117,
+        "allocatedBytesPerOperation": 1936929.32,
+        "measuredOperations": 200,
+        "gen0": 39,
+        "gen1": 6,
+        "gen2": 6
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 9.9705,
+        "p95Ms": 26.9715,
+        "allocatedBytesPerOperation": 1962888.56,
+        "measuredOperations": 200,
+        "gen0": 39,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-current"
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "medianMs": 11.8801,
+        "p95Ms": 15.3872,
+        "allocatedBytesPerOperation": 1833919.6783919598,
+        "measuredOperations": 199,
+        "gen0": 35,
+        "gen1": 5,
+        "gen2": 5
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-current"
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "source": "current",
+      "pair": 4,
+      "metrics": {
+        "firstApplicationFrameWallMs": 8929.0579,
+        "sourceActivatedCpuFrameMs": 58373.1177,
+        "mainProcessCpuAtSourceReadyMs": 127578.125,
+        "completeRunWallMs": 306272.7565,
+        "completeRunMainCpuMs": 458953.125
+      },
+      "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\product-pairs-c2c33a875f5b4184b36f19ecb983b031\\4-current"
+    }
+  ],
+  "comparisons": [
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          8544.288,
+          8544.288,
+          8544.288,
+          8544.288,
+          8544.288
+        ],
+        "current": [
+          4240.144,
+          4240.144,
+          4240.144,
+          4240.144,
+          4240.144
+        ]
+      },
+      "medians": {
+        "original": 8544.288,
+        "current": 4240.144
+      },
+      "medianRatio": 0.49625480789037074,
+      "pairedRatios": [
+        0.49625480789037074,
+        0.49625480789037074,
+        0.49625480789037074,
+        0.49625480789037074,
+        0.49625480789037074
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "metric": "batchMeanMsPerOperation",
+      "values": {
+        "original": [
+          0.01352185,
+          0.009671049999999999,
+          0.008250400000000001,
+          0.0096234,
+          0.0085225
+        ],
+        "current": [
+          0.00594675,
+          0.00499185,
+          0.0054373,
+          0.0057007,
+          0.00558785
+        ]
+      },
+      "medians": {
+        "original": 0.0096234,
+        "current": 0.00558785
+      },
+      "medianRatio": 0.5806523681858802,
+      "pairedRatios": [
+        0.4397881946627126,
+        0.5161642220855027,
+        0.6590347134684378,
+        0.5923789928715423,
+        0.6556585508946905
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "menu-open",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          0.015625,
+          0.0078125,
+          0.0078125,
+          0.0078125,
+          0.0078125
+        ],
+        "current": [
+          0.0078125,
+          0.0078125,
+          0.0078125,
+          0.0078125,
+          0.0078125
+        ]
+      },
+      "medians": {
+        "original": 0.0078125,
+        "current": 0.0078125
+      },
+      "medianRatio": 1.0,
+      "pairedRatios": [
+        0.5,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          1608.0,
+          1608.0,
+          1608.0,
+          1608.0,
+          1608.0
+        ],
+        "current": [
+          352.0,
+          352.0,
+          352.0,
+          352.0,
+          352.0
+        ]
+      },
+      "medians": {
+        "original": 1608.0,
+        "current": 352.0
+      },
+      "medianRatio": 0.21890547263681592,
+      "pairedRatios": [
+        0.21890547263681592,
+        0.21890547263681592,
+        0.21890547263681592,
+        0.21890547263681592,
+        0.21890547263681592
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "metric": "batchMeanMsPerOperation",
+      "values": {
+        "original": [
+          0.0041922,
+          0.00488945,
+          0.0040537,
+          0.004262800000000001,
+          0.0040953
+        ],
+        "current": [
+          0.0012994,
+          0.0010549,
+          0.0010749,
+          0.0011759,
+          0.00099065
+        ]
+      },
+      "medians": {
+        "original": 0.0041922,
+        "current": 0.0010749
+      },
+      "medianRatio": 0.2564047516816946,
+      "pairedRatios": [
+        0.30995658604074233,
+        0.21575023775680288,
+        0.26516515775711075,
+        0.2758515529698789,
+        0.24189925036016902
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-dispatch",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          0.0078125,
+          0.0078125,
+          0.0078125,
+          0.0078125,
+          0.0
+        ],
+        "current": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "medians": {
+        "original": 0.0078125,
+        "current": 0.0
+      },
+      "medianRatio": 0.0,
+      "pairedRatios": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        null
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          1424.0,
+          1424.0,
+          1424.0,
+          1424.0,
+          1424.0
+        ],
+        "current": [
+          48.0,
+          48.0,
+          48.0,
+          48.0,
+          48.0
+        ]
+      },
+      "medians": {
+        "original": 1424.0,
+        "current": 48.0
+      },
+      "medianRatio": 0.033707865168539325,
+      "pairedRatios": [
+        0.033707865168539325,
+        0.033707865168539325,
+        0.033707865168539325,
+        0.033707865168539325,
+        0.033707865168539325
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "metric": "batchMeanMsPerOperation",
+      "values": {
+        "original": [
+          0.0036932,
+          0.0040687499999999995,
+          0.0035343,
+          0.00345585,
+          0.0037190500000000002
+        ],
+        "current": [
+          0.00031995,
+          0.00026555000000000003,
+          0.00027529999999999997,
+          0.0002673,
+          0.00025795
+        ]
+      },
+      "medians": {
+        "original": 0.0036932,
+        "current": 0.0002673
+      },
+      "medianRatio": 0.07237625907072456,
+      "pairedRatios": [
+        0.08663218888768547,
+        0.06526574500768051,
+        0.0778937837761367,
+        0.07734710707930031,
+        0.06935911052553743
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "shortcut-unmatched",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          0.0,
+          0.0078125,
+          0.0078125,
+          0.0078125,
+          0.0
+        ],
+        "current": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "medians": {
+        "original": 0.0078125,
+        "current": 0.0
+      },
+      "medianRatio": 0.0,
+      "pairedRatios": [
+        null,
+        0.0,
+        0.0,
+        0.0,
+        null
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          16792.0,
+          16792.0,
+          16792.0,
+          16792.0,
+          16792.0
+        ],
+        "current": [
+          400.0,
+          400.0,
+          400.0,
+          400.0,
+          400.0
+        ]
+      },
+      "medians": {
+        "original": 16792.0,
+        "current": 400.0
+      },
+      "medianRatio": 0.023820867079561697,
+      "pairedRatios": [
+        0.023820867079561697,
+        0.023820867079561697,
+        0.023820867079561697,
+        0.023820867079561697,
+        0.023820867079561697
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "metric": "batchMeanMsPerOperation",
+      "values": {
+        "original": [
+          0.02743575,
+          0.025300049999999998,
+          0.024111999999999998,
+          0.0243715,
+          0.0276752
+        ],
+        "current": [
+          0.00036525,
+          0.00019894999999999998,
+          0.00023035,
+          0.00020055,
+          0.00020085
+        ]
+      },
+      "medians": {
+        "original": 0.025300049999999998,
+        "current": 0.00020085
+      },
+      "medianRatio": 0.007938719488696663,
+      "pairedRatios": [
+        0.013312922008693039,
+        0.007863620822883749,
+        0.009553334439283344,
+        0.008228873889584145,
+        0.007257400127189686
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "commands",
+      "workload": "statistics-unchanged",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          0.03125,
+          0.03125,
+          0.0234375,
+          0.03125,
+          0.03125
+        ],
+        "current": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      "medians": {
+        "original": 0.03125,
+        "current": 0.0
+      },
+      "medianRatio": 0.0,
+      "pairedRatios": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          246352774.4,
+          246353179.2,
+          246353407.2,
+          246366254.4,
+          246352763.2
+        ],
+        "current": [
+          938392.8,
+          938392.8,
+          938528.0,
+          938427.2,
+          938392.8
+        ]
+      },
+      "medians": {
+        "original": 246353179.2,
+        "current": 938392.8
+      },
+      "medianRatio": 0.0038091361477343585,
+      "pairedRatios": [
+        0.003809142406800514,
+        0.0038091361477343585,
+        0.0038096814274545987,
+        0.0038090736179979038,
+        0.00380914257997655
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          3554.6875,
+          3357.8125,
+          3464.0625,
+          6356.25,
+          4790.625
+        ],
+        "current": [
+          15.625,
+          15.625,
+          18.75,
+          23.4375,
+          20.3125
+        ]
+      },
+      "medians": {
+        "original": 3554.6875,
+        "current": 18.75
+      },
+      "medianRatio": 0.005274725274725275,
+      "pairedRatios": [
+        0.004395604395604396,
+        0.004653327128897162,
+        0.005412719891745603,
+        0.003687315634218289,
+        0.0042400521852576645
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          3786.8515,
+          3396.2747,
+          3624.0777,
+          8356.4387,
+          5163.1566
+        ],
+        "current": [
+          16.4719,
+          15.8653,
+          18.1181,
+          21.9723,
+          19.5928
+        ]
+      },
+      "medians": {
+        "original": 3786.8515,
+        "current": 18.1181
+      },
+      "medianRatio": 0.004784475969020701,
+      "pairedRatios": [
+        0.00434976127265619,
+        0.004671383030353817,
+        0.004999368528991527,
+        0.0026293856496547984,
+        0.003794732857802531
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          3527.7773500000003,
+          3366.68745,
+          3426.88195,
+          6197.7714,
+          4880.64335
+        ],
+        "current": [
+          14.714649999999999,
+          14.05985,
+          15.3498,
+          20.20265,
+          18.65335
+        ]
+      },
+      "medians": {
+        "original": 3527.7773500000003,
+        "current": 15.3498
+      },
+      "medianRatio": 0.004351124937065543,
+      "pairedRatios": [
+        0.0041710823955485735,
+        0.004176167288709857,
+        0.004479232206992131,
+        0.0032596636268320575,
+        0.0038219039299398918
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          3786.8515,
+          3396.2747,
+          3624.0777,
+          8356.4387,
+          5163.1566
+        ],
+        "current": [
+          16.4719,
+          15.8653,
+          18.1181,
+          21.9723,
+          19.5928
+        ]
+      },
+      "medians": {
+        "original": 3786.8515,
+        "current": 18.1181
+      },
+      "medianRatio": 0.004784475969020701,
+      "pairedRatios": [
+        0.00434976127265619,
+        0.004671383030353817,
+        0.004999368528991527,
+        0.0026293856496547984,
+        0.003794732857802531
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-scroll",
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          246353388.8,
+          246353793.6,
+          246354021.6,
+          246366868.8,
+          246352811.2
+        ],
+        "current": [
+          938440.8,
+          938440.8,
+          938576.0,
+          938475.2,
+          938440.8
+        ]
+      },
+      "medians": {
+        "original": 246353793.6,
+        "current": 938440.8
+      },
+      "medianRatio": 0.0038093214895798546,
+      "pairedRatios": [
+        0.003809327748934948,
+        0.0038093214895798546,
+        0.0038098667677686493,
+        0.0038092589501628636,
+        0.0038093366803033262
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          754213838.4,
+          754213674.4,
+          754213033.6,
+          754282373.6,
+          754281620.0
+        ],
+        "current": [
+          7873499.2,
+          7873821.6,
+          7912272.0,
+          7911923.2,
+          7912856.8
+        ]
+      },
+      "medians": {
+        "original": 754213838.4,
+        "current": 7911923.2
+      },
+      "medianRatio": 0.010490291741112132,
+      "pairedRatios": [
+        0.010439345977399398,
+        0.010439775712451601,
+        0.010490765403818658,
+        0.010489338577856964,
+        0.01049058679170785
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          10417.1875,
+          10187.5,
+          10432.8125,
+          14735.9375,
+          14937.5
+        ],
+        "current": [
+          92.1875,
+          92.1875,
+          121.875,
+          96.875,
+          81.25
+        ]
+      },
+      "medians": {
+        "original": 10432.8125,
+        "current": 92.1875
+      },
+      "medianRatio": 0.00883630372921971,
+      "pairedRatios": [
+        0.008849557522123894,
+        0.009049079754601227,
+        0.01168189306574809,
+        0.0065740642561764396,
+        0.005439330543933054
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          10649.9995,
+          10283.1874,
+          11417.2039,
+          16053.4,
+          19866.71
+        ],
+        "current": [
+          79.7892,
+          77.1866,
+          123.7802,
+          90.7394,
+          80.7782
+        ]
+      },
+      "medians": {
+        "original": 11417.2039,
+        "current": 80.7782
+      },
+      "medianRatio": 0.0070751298398025455,
+      "pairedRatios": [
+        0.007491944013706291,
+        0.007506096796407697,
+        0.010841551143708661,
+        0.005652347789253367,
+        0.004066007909714291
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          10467.925599999999,
+          10187.652600000001,
+          10344.95765,
+          14733.090049999999,
+          14610.683
+        ],
+        "current": [
+          73.1636,
+          68.55875,
+          91.09275,
+          72.15729999999999,
+          76.14715000000001
+        ]
+      },
+      "medians": {
+        "original": 10467.925599999999,
+        "current": 73.1636
+      },
+      "medianRatio": 0.006989312189991111,
+      "pairedRatios": [
+        0.006989312189991111,
+        0.006729592448018889,
+        0.008805521789642124,
+        0.004897635170566272,
+        0.005211744721311112
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          10649.9995,
+          10283.1874,
+          11417.2039,
+          16053.4,
+          19866.71
+        ],
+        "current": [
+          79.7892,
+          77.1866,
+          123.7802,
+          90.7394,
+          80.7782
+        ]
+      },
+      "medians": {
+        "original": 11417.2039,
+        "current": 80.7782
+      },
+      "medianRatio": 0.0070751298398025455,
+      "pairedRatios": [
+        0.007491944013706291,
+        0.007506096796407697,
+        0.010841551143708661,
+        0.005652347789253367,
+        0.004066007909714291
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "assets-search",
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          754215603.2,
+          754215439.2,
+          754214796.0,
+          754285259.2,
+          754284500.8
+        ],
+        "current": [
+          7875357.6,
+          7875680.0,
+          7914125.6,
+          7913781.6,
+          7914708.0
+        ]
+      },
+      "medians": {
+        "original": 754215603.2,
+        "current": 7913781.6
+      },
+      "medianRatio": 0.010492731211636646,
+      "pairedRatios": [
+        0.010441785567132641,
+        0.010442215301709776,
+        0.010493198544993806,
+        0.010491762239120793,
+        0.010493000971921866
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          726426723.2,
+          726426868.8,
+          726428257.6,
+          726670890.4,
+          726697597.6
+        ],
+        "current": [
+          300984.0,
+          300984.0,
+          300984.0,
+          300984.0,
+          300984.0
+        ]
+      },
+      "medians": {
+        "original": 726428257.6,
+        "current": 300984.0
+      },
+      "medianRatio": 0.0004143341023026855,
+      "pairedRatios": [
+        0.0004143349774828328,
+        0.0004143348944363827,
+        0.0004143341023026855,
+        0.00041419575763427337,
+        0.00041418053533413796
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          3935.9375,
+          4087.5,
+          3590.625,
+          5992.1875,
+          4651.5625
+        ],
+        "current": [
+          1.5625,
+          1.5625,
+          1.5625,
+          1.5625,
+          1.5625
+        ]
+      },
+      "medians": {
+        "original": 4087.5,
+        "current": 1.5625
+      },
+      "medianRatio": 0.00038226299694189603,
+      "pairedRatios": [
+        0.0003969829297340214,
+        0.00038226299694189603,
+        0.0004351610095735422,
+        0.0002607561929595828,
+        0.0003359086328518643
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          4082.0511,
+          4425.4523,
+          3628.8166,
+          6853.4044,
+          5687.0343
+        ],
+        "current": [
+          1.562,
+          1.4659,
+          1.9986,
+          2.1292,
+          1.7238
+        ]
+      },
+      "medians": {
+        "original": 4425.4523,
+        "current": 1.7238
+      },
+      "medianRatio": 0.0003895195074184847,
+      "pairedRatios": [
+        0.00038265077083429944,
+        0.00033124297826009786,
+        0.0005507580625595682,
+        0.00031067771223306184,
+        0.0003031105333758933
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          3935.62945,
+          4060.34005,
+          3585.1115,
+          5904.7548,
+          4591.67915
+        ],
+        "current": [
+          1.4435,
+          1.4158,
+          1.5540500000000002,
+          1.9068,
+          1.5859
+        ]
+      },
+      "medians": {
+        "original": 4060.34005,
+        "current": 1.5540500000000002
+      },
+      "medianRatio": 0.0003827388792226898,
+      "pairedRatios": [
+        0.0003667774159988563,
+        0.0003486900068874773,
+        0.0004334732685440886,
+        0.00032292619500474436,
+        0.0003453856308753629
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          4082.0511,
+          4425.4523,
+          3628.8166,
+          6853.4044,
+          5687.0343
+        ],
+        "current": [
+          1.562,
+          1.4659,
+          1.9986,
+          2.1292,
+          1.7238
+        ]
+      },
+      "medians": {
+        "original": 4425.4523,
+        "current": 1.7238
+      },
+      "medianRatio": 0.0003895195074184847,
+      "pairedRatios": [
+        0.00038265077083429944,
+        0.00033124297826009786,
+        0.0005507580625595682,
+        0.00031067771223306184,
+        0.0003031105333758933
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-edit",
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          726434374.4,
+          726435787.2,
+          726434620.0,
+          726695003.2,
+          726726152.8
+        ],
+        "current": [
+          301032.0,
+          301032.0,
+          301032.0,
+          301032.0,
+          301032.0
+        ]
+      },
+      "medians": {
+        "original": 726435787.2,
+        "current": 301032.0
+      },
+      "medianRatio": 0.00041439588371645133,
+      "pairedRatios": [
+        0.00041439668965092413,
+        0.00041439588371645133,
+        0.0004143965495477074,
+        0.0004142480664851226,
+        0.00041423031060621
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          709020653.6,
+          709021073.6,
+          709016406.4,
+          709287042.4,
+          709291708.0
+        ],
+        "current": [
+          283193.6,
+          283193.6,
+          283193.6,
+          283193.6,
+          283193.6
+        ]
+      },
+      "medians": {
+        "original": 709021073.6,
+        "current": 283193.6
+      },
+      "medianRatio": 0.0003994149265015583,
+      "pairedRatios": [
+        0.0003994151631015336,
+        0.0003994149265015583,
+        0.0003994175557063668,
+        0.00039926515369823144,
+        0.00039926252740008064
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          4553.125,
+          4479.6875,
+          4528.125,
+          5848.4375,
+          4503.125
+        ],
+        "current": [
+          1.5625,
+          1.5625,
+          1.5625,
+          1.5625,
+          1.5625
+        ]
+      },
+      "medians": {
+        "original": 4528.125,
+        "current": 1.5625
+      },
+      "medianRatio": 0.0003450655624568668,
+      "pairedRatios": [
+        0.00034317089910775565,
+        0.0003487966515521451,
+        0.0003450655624568668,
+        0.0002671653753673524,
+        0.00034698126301179735
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          4751.4065,
+          4741.383,
+          4606.4219,
+          6654.2834,
+          4749.9316
+        ],
+        "current": [
+          1.5519,
+          1.6529,
+          1.8761,
+          2.4219,
+          1.9979
+        ]
+      },
+      "medians": {
+        "original": 4749.9316,
+        "current": 1.8761
+      },
+      "medianRatio": 0.0003949741086797966,
+      "pairedRatios": [
+        0.00032661907584627837,
+        0.00034861136508061046,
+        0.00040727923770942476,
+        0.0003639610540182283,
+        0.00042061658319458747
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          4518.9755000000005,
+          4469.9085,
+          4538.4312,
+          5902.0731,
+          4497.09725
+        ],
+        "current": [
+          1.4398,
+          1.4905,
+          1.77805,
+          1.93125,
+          1.7662
+        ]
+      },
+      "medians": {
+        "original": 4518.9755000000005,
+        "current": 1.7662
+      },
+      "medianRatio": 0.0003908408000884271,
+      "pairedRatios": [
+        0.0003186120393881312,
+        0.0003334520158522261,
+        0.00039177634773883977,
+        0.0003272155338096372,
+        0.00039274222944589427
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          4751.4065,
+          4741.383,
+          4606.4219,
+          6654.2834,
+          4749.9316
+        ],
+        "current": [
+          1.5519,
+          1.6529,
+          1.8761,
+          2.4219,
+          1.9979
+        ]
+      },
+      "medians": {
+        "original": 4749.9316,
+        "current": 1.8761
+      },
+      "medianRatio": 0.0003949741086797966,
+      "pairedRatios": [
+        0.00032661907584627837,
+        0.00034861136508061046,
+        0.00040727923770942476,
+        0.0003639610540182283,
+        0.00042061658319458747
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "input",
+      "workload": "hierarchy-scroll",
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          709029572.0,
+          709029992.0,
+          709024057.6,
+          709309252.0,
+          709315172.8
+        ],
+        "current": [
+          283241.6,
+          283241.6,
+          283241.6,
+          283241.6,
+          283241.6
+        ]
+      },
+      "medians": {
+        "original": 709029992.0,
+        "current": 283241.6
+      },
+      "medianRatio": 0.00039947760065980393,
+      "pairedRatios": [
+        0.0003994778372939288,
+        0.00039947760065980393,
+        0.00039948094421330955,
+        0.00039932032354203663,
+        0.00039931699033296075
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4743584.76,
+          4747774.16,
+          5139818.52,
+          4875279.12,
+          5007234.2
+        ],
+        "current": [
+          1936556.2,
+          1936436.52,
+          1940349.32,
+          1940453.28,
+          1936929.32
+        ]
+      },
+      "medians": {
+        "original": 4875279.12,
+        "current": 1936929.32
+      },
+      "medianRatio": 0.3972960875314971,
+      "pairedRatios": [
+        0.4082474116052266,
+        0.407861969576076,
+        0.3775131967110777,
+        0.39801890973577736,
+        0.3868261883975788
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          9.67915,
+          9.6667,
+          10.732949999999999,
+          9.88215,
+          10.023399999999999
+        ],
+        "current": [
+          9.37575,
+          9.7269,
+          9.58705,
+          9.6922,
+          9.63455
+        ]
+      },
+      "medians": {
+        "original": 9.88215,
+        "current": 9.63455
+      },
+      "medianRatio": 0.97494472356724,
+      "pairedRatios": [
+        0.9686542723276321,
+        1.0062275647325354,
+        0.8932353174104045,
+        0.9807784743198595,
+        0.9612057784783609
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "idle",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          29.4194,
+          29.7502,
+          33.5956,
+          30.8648,
+          31.1487
+        ],
+        "current": [
+          24.8848,
+          25.3644,
+          25.5172,
+          25.5423,
+          25.6117
+        ]
+      },
+      "medians": {
+        "original": 30.8648,
+        "current": 25.5172
+      },
+      "medianRatio": 0.8267411420129079,
+      "pairedRatios": [
+        0.845863613805856,
+        0.8525791423250936,
+        0.7595399397540155,
+        0.827554366138773,
+        0.822239772446362
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4906128.6,
+          4774186.16,
+          4775486.96,
+          4906543.88,
+          5037921.08
+        ],
+        "current": [
+          1954005.88,
+          1957503.96,
+          1962944.08,
+          1962768.84,
+          1962888.56
+        ]
+      },
+      "medians": {
+        "original": 4906128.6,
+        "current": 1962768.84
+      },
+      "medianRatio": 0.4000646945944304,
+      "pairedRatios": [
+        0.39827856937953077,
+        0.410018355882461,
+        0.4110458465161425,
+        0.40003083392377614,
+        0.38962272906426715
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          9.63265,
+          9.699649999999998,
+          9.79795,
+          9.90825,
+          10.412949999999999
+        ],
+        "current": [
+          9.617650000000001,
+          9.712399999999999,
+          9.6327,
+          9.70125,
+          9.9705
+        ]
+      },
+      "medians": {
+        "original": 9.79795,
+        "current": 9.70125
+      },
+      "medianRatio": 0.9901305885414806,
+      "pairedRatios": [
+        0.9984427961152955,
+        1.0013144804193965,
+        0.9831342270577008,
+        0.9791083188252213,
+        0.9575096394393521
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "menus",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          30.2297,
+          29.7035,
+          30.5176,
+          29.94,
+          31.4659
+        ],
+        "current": [
+          25.6659,
+          25.5731,
+          25.8475,
+          25.6267,
+          26.9715
+        ]
+      },
+      "medians": {
+        "original": 30.2297,
+        "current": 25.6659
+      },
+      "medianRatio": 0.8490292659206012,
+      "pairedRatios": [
+        0.8490292659206012,
+        0.8609456798020436,
+        0.8469702728917083,
+        0.8559352037408149,
+        0.8571660114600249
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          1856208.9246231157,
+          1856485.5879396985,
+          1856907.336683417,
+          1856203.216080402,
+          1856437.6683417086
+        ],
+        "current": [
+          1834145.3668341709,
+          1834009.2864321608,
+          1834056.8040201005,
+          1834040.5628140704,
+          1833919.6783919598
+        ]
+      },
+      "medians": {
+        "original": 1856437.6683417086,
+        "current": 1834040.5628140704
+      },
+      "medianRatio": 0.9879354389810218,
+      "pairedRatios": [
+        0.9881136452388167,
+        0.9878930913045861,
+        0.9876943064352747,
+        0.9880602225692019,
+        0.9878703226433326
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          11.9108,
+          11.3259,
+          12.1663,
+          11.9443,
+          14.7406
+        ],
+        "current": [
+          12.7545,
+          11.7569,
+          11.7992,
+          11.8473,
+          11.8801
+        ]
+      },
+      "medians": {
+        "original": 11.9443,
+        "current": 11.8473
+      },
+      "medianRatio": 0.9918789715596561,
+      "pairedRatios": [
+        1.0708348725526413,
+        1.0380543709550676,
+        0.9698264879215539,
+        0.9918789715596561,
+        0.8059441271047312
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-frame",
+      "workload": "play",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          17.983,
+          14.051,
+          17.1537,
+          16.2577,
+          21.6769
+        ],
+        "current": [
+          15.4336,
+          13.5499,
+          15.6227,
+          16.0398,
+          15.3872
+        ]
+      },
+      "medians": {
+        "original": 17.1537,
+        "current": 15.4336
+      },
+      "medianRatio": 0.8997242577403126,
+      "pairedRatios": [
+        0.8582327753989879,
+        0.9643370578606504,
+        0.910748118481727,
+        0.9865971201338443,
+        0.7098431971361219
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "metric": "completeRunMainCpuMs",
+      "values": {
+        "original": [
+          455812.5,
+          437296.875,
+          477906.25,
+          500921.875,
+          478125.0
+        ],
+        "current": [
+          420875.0,
+          403546.875,
+          427187.5,
+          436437.5,
+          458953.125
+        ]
+      },
+      "medians": {
+        "original": 477906.25,
+        "current": 427187.5
+      },
+      "medianRatio": 0.8938730137971621,
+      "pairedRatios": [
+        0.9233511586452763,
+        0.9228213098938793,
+        0.8938730137971621,
+        0.871268598521476,
+        0.9599019607843138
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "metric": "completeRunWallMs",
+      "values": {
+        "original": [
+          320830.5255,
+          282493.8291,
+          299000.016,
+          327586.5809,
+          311802.565
+        ],
+        "current": [
+          304202.4103,
+          268821.8483,
+          287553.2501,
+          290968.5551,
+          306272.7565
+        ]
+      },
+      "medians": {
+        "original": 311802.565,
+        "current": 290968.5551
+      },
+      "medianRatio": 0.9331820445415515,
+      "pairedRatios": [
+        0.9481716548820103,
+        0.9516025505988656,
+        0.9617165040553042,
+        0.8882187857042345,
+        0.9822650320403875
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "metric": "firstApplicationFrameWallMs",
+      "values": {
+        "original": [
+          24200.9671,
+          8705.0177,
+          8451.0554,
+          9976.6375,
+          8934.5503
+        ],
+        "current": [
+          19943.63,
+          8598.3295,
+          8298.5185,
+          10370.7248,
+          8929.0579
+        ]
+      },
+      "medians": {
+        "original": 8934.5503,
+        "current": 8929.0579
+      },
+      "medianRatio": 0.9993852628486516,
+      "pairedRatios": [
+        0.8240840094361352,
+        0.9877440570856048,
+        0.9819505502235852,
+        1.0395010142445287,
+        0.9993852628486516
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "metric": "mainProcessCpuAtSourceReadyMs",
+      "values": {
+        "original": [
+          101234.375,
+          114437.5,
+          115750.0,
+          133843.75,
+          121609.375
+        ],
+        "current": [
+          116093.75,
+          115046.875,
+          115265.625,
+          123078.125,
+          127578.125
+        ]
+      },
+      "medians": {
+        "original": 115750.0,
+        "current": 116093.75
+      },
+      "medianRatio": 1.0029697624190064,
+      "pairedRatios": [
+        1.146781910788702,
+        1.0053249590387767,
+        0.9958153347732182,
+        0.9195657249591408,
+        1.0490813311062572
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "product-process",
+      "workload": "cold-start-and-complete-run",
+      "metric": "sourceActivatedCpuFrameMs",
+      "values": {
+        "original": [
+          60460.0851,
+          50443.5293,
+          50087.4516,
+          58998.4098,
+          52717.7551
+        ],
+        "current": [
+          66056.5238,
+          52733.859,
+          52945.6862,
+          56648.4576,
+          58373.1177
+        ]
+      },
+      "medians": {
+        "original": 52717.7551,
+        "current": 56648.4576
+      },
+      "medianRatio": 1.0745612648441474,
+      "pairedRatios": [
+        1.092564188269725,
+        1.0454038353735886,
+        1.0570648836923457,
+        0.9601692281543494,
+        1.1072762409793888
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          249231740.8,
+          249231740.8,
+          249231740.8,
+          249231740.8,
+          249231740.8
+        ],
+        "current": [
+          918679.2,
+          918679.2,
+          918679.2,
+          918679.2,
+          918679.2
+        ]
+      },
+      "medians": {
+        "original": 249231740.8,
+        "current": 918679.2
+      },
+      "medianRatio": 0.0036860441493172763,
+      "pairedRatios": [
+        0.0036860441493172763,
+        0.0036860441493172763,
+        0.0036860441493172763,
+        0.0036860441493172763,
+        0.0036860441493172763
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          3445.3125,
+          3412.5,
+          3448.4375,
+          3431.25,
+          3451.5625
+        ],
+        "current": [
+          18.75,
+          17.1875,
+          15.625,
+          17.1875,
+          17.1875
+        ]
+      },
+      "medians": {
+        "original": 3445.3125,
+        "current": 17.1875
+      },
+      "medianRatio": 0.004988662131519274,
+      "pairedRatios": [
+        0.005442176870748299,
+        0.005036630036630037,
+        0.004531037607612143,
+        0.005009107468123861,
+        0.004979628791308284
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          3490.0804,
+          3450.0804,
+          3522.6453,
+          3486.708,
+          3507.2268
+        ],
+        "current": [
+          26.502,
+          24.6364,
+          24.5067,
+          26.7983,
+          24.9492
+        ]
+      },
+      "medians": {
+        "original": 3490.0804,
+        "current": 24.9492
+      },
+      "medianRatio": 0.0071486032241549514,
+      "pairedRatios": [
+        0.007593521341227555,
+        0.007140819095114421,
+        0.0069569025300390015,
+        0.007685845789208618,
+        0.00711365458315955
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          3431.3217999999997,
+          3409.38115,
+          3451.2929,
+          3428.9718,
+          3441.705
+        ],
+        "current": [
+          16.5183,
+          15.38935,
+          15.244599999999998,
+          15.799199999999999,
+          15.1674
+        ]
+      },
+      "medians": {
+        "original": 3431.3217999999997,
+        "current": 15.38935
+      },
+      "medianRatio": 0.004484962617029974,
+      "pairedRatios": [
+        0.00481397576875477,
+        0.004513825038306439,
+        0.004417069324947761,
+        0.00460756195195306,
+        0.004406943651475068
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          3490.0804,
+          3450.0804,
+          3522.6453,
+          3486.708,
+          3507.2268
+        ],
+        "current": [
+          26.502,
+          24.6364,
+          24.5067,
+          26.7983,
+          24.9492
+        ]
+      },
+      "medians": {
+        "original": 3490.0804,
+        "current": 24.9492
+      },
+      "medianRatio": 0.0071486032241549514,
+      "pairedRatios": [
+        0.007593521341227555,
+        0.007140819095114421,
+        0.0069569025300390015,
+        0.007685845789208618,
+        0.00711365458315955
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-asset-directory-rows",
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          249231806.4,
+          249231806.4,
+          249231806.4,
+          249231806.4,
+          249231806.4
+        ],
+        "current": [
+          918778.4,
+          918778.4,
+          918778.4,
+          918778.4,
+          918778.4
+        ]
+      },
+      "medians": {
+        "original": 249231806.4,
+        "current": 918778.4
+      },
+      "medianRatio": 0.003686441202153081,
+      "pairedRatios": [
+        0.003686441202153081,
+        0.003686441202153081,
+        0.003686441202153081,
+        0.003686441202153081,
+        0.003686441202153081
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          709018286.4,
+          709016743.2,
+          709019120.8,
+          709019076.8,
+          709019501.6
+        ],
+        "current": [
+          277432.0,
+          277432.0,
+          277432.0,
+          277432.0,
+          277474.4
+        ]
+      },
+      "medians": {
+        "original": 709019076.8,
+        "current": 277432.0
+      },
+      "medianRatio": 0.00039128989483911726,
+      "pairedRatios": [
+        0.00039129033104159445,
+        0.0003912911826988291,
+        0.0003912898705566193,
+        0.00039128989483911726,
+        0.0003913494612966793
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          4356.25,
+          4396.875,
+          4265.625,
+          4459.375,
+          4440.625
+        ],
+        "current": [
+          3.125,
+          3.125,
+          3.125,
+          4.6875,
+          3.125
+        ]
+      },
+      "medians": {
+        "original": 4396.875,
+        "current": 3.125
+      },
+      "medianRatio": 0.0007107320540156361,
+      "pairedRatios": [
+        0.0007173601147776184,
+        0.0007107320540156361,
+        0.0007326007326007326,
+        0.001051156271899089,
+        0.0007037297677691766
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          4539.3549,
+          4506.4856,
+          4523.6256,
+          4675.2377,
+          4651.0813
+        ],
+        "current": [
+          19.7131,
+          19.5684,
+          2.3837,
+          19.252,
+          19.093
+        ]
+      },
+      "medians": {
+        "original": 4539.3549,
+        "current": 19.252
+      },
+      "medianRatio": 0.004241131267352548,
+      "pairedRatios": [
+        0.004342709577521687,
+        0.004342275053536175,
+        0.0005269445817973972,
+        0.0041178654937694395,
+        0.004105066922825021
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          4387.3229,
+          4380.0702,
+          4228.7503,
+          4441.211499999999,
+          4436.56365
+        ],
+        "current": [
+          2.0164,
+          2.1885000000000003,
+          2.2058999999999997,
+          2.02435,
+          1.9738
+        ]
+      },
+      "medians": {
+        "original": 4387.3229,
+        "current": 2.02435
+      },
+      "medianRatio": 0.00046140893801092236,
+      "pairedRatios": [
+        0.0004595968990565978,
+        0.0004996495261651286,
+        0.0005216434746691002,
+        0.0004558103121186641,
+        0.0004448938763675801
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          4539.3549,
+          4506.4856,
+          4523.6256,
+          4675.2377,
+          4651.0813
+        ],
+        "current": [
+          19.7131,
+          19.5684,
+          2.3837,
+          19.252,
+          19.093
+        ]
+      },
+      "medians": {
+        "original": 4539.3549,
+        "current": 19.252
+      },
+      "medianRatio": 0.004241131267352548,
+      "pairedRatios": [
+        0.004342709577521687,
+        0.004342275053536175,
+        0.0005269445817973972,
+        0.0041178654937694395,
+        0.004105066922825021
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "10000-hierarchy-rows",
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          709025148.8,
+          709023605.6,
+          709026549.6,
+          709027652.0,
+          709030908.8
+        ],
+        "current": [
+          277497.6,
+          277497.6,
+          277497.6,
+          277497.6,
+          277540.0
+        ]
+      },
+      "medians": {
+        "original": 709026549.6,
+        "current": 277497.6
+      },
+      "medianRatio": 0.00039137829204922053,
+      "pairedRatios": [
+        0.00039137906528372777,
+        0.00039137991712585087,
+        0.00039137829204922053,
+        0.00039137768353215085,
+        0.00039143568574425455
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4364820.0,
+          4364780.0,
+          4364723.2,
+          4364528.0,
+          4364701.6
+        ],
+        "current": [
+          3277376.0,
+          3277376.0,
+          3277376.0,
+          3277376.0,
+          3277376.0
+        ]
+      },
+      "medians": {
+        "original": 4364723.2,
+        "current": 3277376.0
+      },
+      "medianRatio": 0.75087831457445,
+      "pairedRatios": [
+        0.7508616621074867,
+        0.7508685432026356,
+        0.75087831457445,
+        0.7509118970023791,
+        0.7508820305149841
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          25.0,
+          25.0,
+          28.125,
+          29.6875,
+          26.5625
+        ],
+        "current": [
+          35.9375,
+          32.8125,
+          26.5625,
+          26.5625,
+          26.5625
+        ]
+      },
+      "medians": {
+        "original": 26.5625,
+        "current": 26.5625
+      },
+      "medianRatio": 1.0,
+      "pairedRatios": [
+        1.4375,
+        1.3125,
+        0.9444444444444444,
+        0.8947368421052632,
+        1.0
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          24.7994,
+          25.438,
+          29.9459,
+          35.0849,
+          32.6808
+        ],
+        "current": [
+          27.3035,
+          39.7908,
+          36.6837,
+          35.9288,
+          33.9387
+        ]
+      },
+      "medians": {
+        "original": 29.9459,
+        "current": 35.9288
+      },
+      "medianRatio": 1.1997902884869047,
+      "pairedRatios": [
+        1.1009742171181562,
+        1.5642267473858007,
+        1.2249990816772913,
+        1.0240530826651923,
+        1.0384904898288903
+      ],
+      "reviewRequired": true,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          23.1096,
+          23.68225,
+          23.89115,
+          25.028750000000002,
+          23.5582
+        ],
+        "current": [
+          24.46985,
+          29.15775,
+          24.0661,
+          25.95035,
+          23.49785
+        ]
+      },
+      "medians": {
+        "original": 23.68225,
+        "current": 24.46985
+      },
+      "medianRatio": 1.0332569751607217,
+      "pairedRatios": [
+        1.0588608197459064,
+        1.2312069165725386,
+        1.0073227952610067,
+        1.0368216550966387,
+        0.997438259289759
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          24.7994,
+          25.438,
+          29.9459,
+          35.0849,
+          32.6808
+        ],
+        "current": [
+          27.3035,
+          39.7908,
+          36.6837,
+          35.9288,
+          33.9387
+        ]
+      },
+      "medians": {
+        "original": 29.9459,
+        "current": 35.9288
+      },
+      "medianRatio": 1.1997902884869047,
+      "pairedRatios": [
+        1.1009742171181562,
+        1.5642267473858007,
+        1.2249990816772913,
+        1.0240530826651923,
+        1.0384904898288903
+      ],
+      "reviewRequired": true,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4365382.4,
+          4365841.6,
+          4365784.8,
+          4365589.6,
+          4365763.2
+        ],
+        "current": [
+          3277441.6,
+          3277441.6,
+          3277441.6,
+          3277441.6,
+          3277441.6
+        ]
+      },
+      "medians": {
+        "original": 4365763.2,
+        "current": 3277441.6
+      },
+      "medianRatio": 0.7507144684347515,
+      "pairedRatios": [
+        0.7507799545808403,
+        0.7507009874109954,
+        0.7507107542268231,
+        0.7507443209961835,
+        0.7507144684347515
+      ],
+      "reviewRequired": false,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    }
+  ],
+  "flags": [
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          24.7994,
+          25.438,
+          29.9459,
+          35.0849,
+          32.6808
+        ],
+        "current": [
+          27.3035,
+          39.7908,
+          36.6837,
+          35.9288,
+          33.9387
+        ]
+      },
+      "medians": {
+        "original": 29.9459,
+        "current": 35.9288
+      },
+      "medianRatio": 1.1997902884869047,
+      "pairedRatios": [
+        1.1009742171181562,
+        1.5642267473858007,
+        1.2249990816772913,
+        1.0240530826651923,
+        1.0384904898288903
+      ],
+      "reviewRequired": true,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          24.7994,
+          25.438,
+          29.9459,
+          35.0849,
+          32.6808
+        ],
+        "current": [
+          27.3035,
+          39.7908,
+          36.6837,
+          35.9288,
+          33.9387
+        ]
+      },
+      "medians": {
+        "original": 29.9459,
+        "current": 35.9288
+      },
+      "medianRatio": 1.1997902884869047,
+      "pairedRatios": [
+        1.1009742171181562,
+        1.5642267473858007,
+        1.2249990816772913,
+        1.0240530826651923,
+        1.0384904898288903
+      ],
+      "reviewRequired": true,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    }
+  ]
+}

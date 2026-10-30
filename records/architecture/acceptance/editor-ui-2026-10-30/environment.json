@@ -1,0 +1,89 @@
+{
+  "recorded": "2026-10-30T09:18:32.6133699+08:00",
+  "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "processor": [
+    {
+      "Name": "AMD Ryzen 9 6900HX with Radeon Graphics        ",
+      "NumberOfCores": 8,
+      "NumberOfLogicalProcessors": 16
+    }
+  ],
+  "graphics": [
+    {
+      "Name": "AMD Radeon(TM) Graphics",
+      "DriverVersion": "31.0.14084.6002"
+    },
+    {
+      "Name": "NVIDIA GeForce RTX 3070 Ti Laptop GPU",
+      "DriverVersion": "32.0.15.9649"
+    }
+  ],
+  "operatingSystem": {
+    "Caption": "Microsoft Windows 11 专业版",
+    "Version": "10.0.26200",
+    "OSArchitecture": "64 位"
+  },
+  "disk": [
+    {
+      "drive": "C",
+      "freeBytes": 83861815296
+    },
+    {
+      "drive": "D",
+      "freeBytes": 8294096896
+    }
+  ],
+  "dotnetInfo": [
+    ".NET SDK:",
+    " Version:           10.0.402",
+    " Commit:            a8dd0577c5",
+    " Workload version:  10.0.400-manifests.da132f47",
+    " MSBuild version:   18.9.15+a8dd0577c",
+    "",
+    "运行时环境:",
+    " OS Name:     Windows",
+    " OS Version:  10.0.26200",
+    " OS Platform: Windows",
+    " RID:         win-x64",
+    " Base Path:   C:\\Users\\23842\\.dotnet\\sdk\\10.0.402\\",
+    "",
+    "已安装 .NET 工作负载:",
+    " [wasm-tools]",
+    "   安装源文件: SDK 10.0.400",
+    "   清单版本:    10.0.113/10.0.100",
+    "   清单路径:       C:\\Users\\23842\\.dotnet\\sdk-manifests\\10.0.100\\microsoft.net.workload.mono.toolchain.current\\10.0.113\\WorkloadManifest.json",
+    "   安装类型:        FileBased",
+    "",
+    "已配置为在安装新清单时使用 workload sets。",
+    "未安装任何 workload sets。运行 “dotnet workload restore” 以安装工作负载集。",
+    "",
+    "Host:",
+    "  Version:      10.0.13",
+    "  Architecture: x64",
+    "  Commit:       4099f83977",
+    "",
+    ".NET SDKs installed:",
+    "  10.0.402 [C:\\Users\\23842\\.dotnet\\sdk]",
+    "",
+    ".NET runtimes installed:",
+    "  Microsoft.AspNetCore.App 10.0.13 [C:\\Users\\23842\\.dotnet\\shared\\Microsoft.AspNetCore.App]",
+    "  Microsoft.NETCore.App 10.0.13 [C:\\Users\\23842\\.dotnet\\shared\\Microsoft.NETCore.App]",
+    "  Microsoft.WindowsDesktop.App 10.0.13 [C:\\Users\\23842\\.dotnet\\shared\\Microsoft.WindowsDesktop.App]",
+    "",
+    "Other architectures found:",
+    "  None",
+    "",
+    "Environment variables:",
+    "  Not set",
+    "",
+    "global.json file:",
+    "  C:\\Dev\\GameEngineDev\\InnoEngine\\global.json",
+    "",
+    "Learn more:",
+    "  https://aka.ms/dotnet/info",
+    "",
+    "Download .NET:",
+    "  https://aka.ms/dotnet/download"
+  ],
+  "scope": "Fresh installed-device/SDK inventory. It does not prove exclusive GPU attribution, physical display/DPI behavior, OS IME operation or manual usability."
+}

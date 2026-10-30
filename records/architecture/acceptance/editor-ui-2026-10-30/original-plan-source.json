@@ -1,0 +1,23 @@
+{
+  "plan": "C:\\Users\\23842\\Desktop\\InnoEngine_Editor_UI_Plan.md",
+  "sha256": "cbb7d50a26a08e4a0d50c7e0f9aabe6c8538ae3fbe229957d2094a4b60325d9e",
+  "scope": "Prepared clause-level traceability; no verification outcome inferred from a mapping.",
+  "requirements": 307,
+  "issues": [
+    16,
+    19,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39
+  ]
+}

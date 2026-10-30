@@ -1,0 +1,37 @@
+{
+  "packages": [
+    {
+      "package": "bgcs",
+      "version": "4.1.2",
+      "matched": 100,
+      "archiveSha256": "e45ae62dbb7cfa879999a4d91d58d6d17a0b26ac60d2044be47a7abbddab40f2",
+      "matchesPreImplementationArchive": true,
+      "mismatches": []
+    },
+    {
+      "package": "bgcs.core",
+      "version": "4.1.2",
+      "matched": 5,
+      "archiveSha256": "25d3f0db2306792a08632278b02c3a08ef37c12f63330d6ca0b1eff55a971309",
+      "matchesPreImplementationArchive": true,
+      "mismatches": []
+    },
+    {
+      "package": "bgcs.parserruntime.osx-x64",
+      "version": "4.1.2",
+      "matched": 15,
+      "archiveSha256": "da1b3ede4ffb6e0b370a36ff66be6a1c2610ccb5fea08d2e854b36a5accf10b5",
+      "matchesPreImplementationArchive": true,
+      "mismatches": []
+    },
+    {
+      "package": "bgcs.runtime",
+      "version": "4.1.2",
+      "matched": 6,
+      "archiveSha256": "5ab737cc30577290a0c049ba2254cc70642c30e7fb95c0a3188de6fd4643eb3e",
+      "matchesPreImplementationArchive": true,
+      "mismatches": []
+    }
+  ],
+  "passed": true
+}
