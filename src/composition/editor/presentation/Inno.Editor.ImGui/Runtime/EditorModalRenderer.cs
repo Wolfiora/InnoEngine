@@ -1,15 +1,13 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
-
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
-
 /// <summary>
 /// Renders centered editor modals consistently on the main viewport.
 /// </summary>
@@ -48,38 +46,31 @@ internal static unsafe class EditorModalRenderer
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
         ArgumentNullException.ThrowIfNull(modal);
         ArgumentNullException.ThrowIfNull(context);
-
         string popupId = $"{title}##{id}";
         ImGuiViewport* viewport = NativeImGui.Raw.GetMainViewport();
         Vector2 center = ImGui.FromNative(viewport->WorkPos) + ImGui.FromNative(viewport->WorkSize) * 0.5f;
         if (presentation.blocksInteraction)
             NativeImGui.OpenPopup(popupId, (int)(ImGuiPopupFlags.NoReopen));
         NativeImGui.SetNextWindowViewport(viewport->ID);
-        ImGuiCond placementCondition = presentation.canMove || presentation.canResize
-            ? ImGuiCond.Appearing
-            : ImGuiCond.Always;
+        ImGuiCond placementCondition = presentation.canMove || presentation.canResize ? ImGuiCond.Appearing : ImGuiCond.Always;
         NativeImGui.SetNextWindowPos(center, (int)(placementCondition), new Vector2(0.5f, 0.5f));
         Vector2 initialSize = presentation.initialSize;
         if (initialSize.X > 0f && initialSize.Y > 0f)
         {
-            NativeImGui.SetNextWindowSize(
-                initialSize * EditorWidget.style.zoom,
-                (int)(placementCondition));
+            NativeImGui.SetNextWindowSize(initialSize * EditorUI.current.widgets.style.zoom, (int)(placementCondition));
         }
         else if (!presentation.canResize)
         {
-            NativeImGui.SetNextWindowSize(
-                new Vector2(EditorWidget.style.modalWidth, 0f),
-                (int)(ImGuiCond.Always));
+            NativeImGui.SetNextWindowSize(new Vector2(EditorUI.current.widgets.style.modalWidth, 0f), (int)(ImGuiCond.Always));
         }
+
         if (presentation.canResize)
         {
             Vector2 maximumSize = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize));
-            Vector2 minimumSize = Vector2.Min(
-                presentation.minimumSize * EditorWidget.style.zoom,
-                maximumSize);
+            Vector2 minimumSize = Vector2.Min(presentation.minimumSize * EditorUI.current.widgets.style.zoom, maximumSize);
             ImGui.ConstrainNativeWindowSize(minimumSize, maximumSize, null, null);
         }
+
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.Alpha), alpha);
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoCollapse;
         if (!presentation.allowScrolling)
@@ -92,12 +83,19 @@ internal static unsafe class EditorModalRenderer
             if (presentation.initialSize.X <= 0f || presentation.initialSize.Y <= 0f)
                 flags |= ImGuiWindowFlags.AlwaysAutoResize;
         }
+
         bool beganWindow = false;
         try
         {
-            bool visible = presentation.blocksInteraction
-                ? ImGui.BeginNativeWindow(popupId, flags, modal: true)
-                : ImGui.BeginNativeWindow(popupId, flags | ImGuiWindowFlags.NoSavedSettings, modal: false);
+            bool visible = presentation.blocksInteraction ? ImGui.BeginNativeWindow(
+                popupId,
+                flags,
+                modal: true
+            ) : ImGui.BeginNativeWindow(
+                popupId,
+                flags | ImGuiWindowFlags.NoSavedSettings,
+                modal: false
+            );
             beganWindow = !presentation.blocksInteraction || visible;
             if (visible)
             {
@@ -113,6 +111,7 @@ internal static unsafe class EditorModalRenderer
                 else
                     NativeImGui.End();
             }
+
             NativeImGui.PopStyleVar();
         }
     }

@@ -12,10 +12,11 @@
     <StartupObject>Inno.Editor.ImGui.Tests.NativeWindowTestHost</StartupObject>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
     <InnoTestNativeProduct>editor</InnoTestNativeProduct>
-    <InnoTestNativeTarget>windows-x64</InnoTestNativeTarget>
+    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Sdl3/Inno.Integration.MacOSArm64.Sdl3.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj" PrivateAssets="compile" />
@@ -35,5 +36,4 @@
   <ItemGroup>
     <ProjectReference Include="../../process/Inno.Testing.Processes/Inno.Testing.Processes.csproj" PrivateAssets="compile" />
   </ItemGroup>
-
 </Project>

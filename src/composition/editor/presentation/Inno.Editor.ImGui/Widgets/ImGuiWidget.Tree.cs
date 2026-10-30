@@ -1,32 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
-    private static readonly Dictionary<int, TreeWidgetWindowState> s_treeStatesByWindow = [];
-    private static bool s_hasNextTreeNodeOpen;
-    private static bool s_nextTreeNodeOpen;
-
-    private static List<TreeWidgetNodeState> s_treeNodeStack => GetTreeWindowState().treeNodeStack;
-    private static List<string> s_lastNodeIdsByDepth => GetTreeWindowState().lastNodeIdsByDepth;
-    private static List<TreeWidgetLineSegment> s_lineSegments => GetTreeWindowState().lineSegments;
-    private static Dictionary<string, bool> s_hasNextSiblingById => GetTreeWindowState().hasNextSiblingById;
-    private static Dictionary<string, bool> s_openStatesById => GetTreeWindowState().openStatesById;
-
-    private static int s_lastFrame
-    {
-        get => GetTreeWindowState().lastFrame;
-        set => GetTreeWindowState().lastFrame = value;
-    }
+    private readonly Dictionary<(string Owner, uint Window), TreeWidgetWindowState> m_treeStatesByWindow = [];
+    private bool m_hasNextTreeNodeOpen;
+    private bool m_nextTreeNodeOpen;
+    private List<TreeWidgetNodeState> m_treeNodeStack => GetTreeWindowState().treeNodeStack;
+    private List<string> m_lastNodeIdsByDepth => GetTreeWindowState().lastNodeIdsByDepth;
+    private List<TreeWidgetLineSegment> m_lineSegments => GetTreeWindowState().lineSegments;
+    private Dictionary<string, bool> m_hasNextSiblingById => GetTreeWindowState().hasNextSiblingById;
+    private Dictionary<string, bool> m_openStatesById => GetTreeWindowState().openStatesById;
+    private int m_lastFrame { get => GetTreeWindowState().lastFrame; set => GetTreeWindowState().lastFrame = value; }
 
     /// <summary>
     /// Draws a full-width interactive tree row whose non-leaf content toggles expansion when
@@ -36,7 +28,7 @@ public static unsafe partial class ImGuiWidget
     /// Stable row identifier.
     /// </param>
     /// <param name="onDraw">
-    /// Content drawing callback that receives the native row geometry established by ImGui.
+    /// Frame-local content drawing for visible or explicitly preserved rows; clipped ordinary rows do not invoke it.
     /// </param>
     /// <param name="options">
     /// Tree row options.
@@ -44,22 +36,128 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// Interaction and row geometry for the submitted item.
     /// </returns>
-    public static TreeNodeResult TreeNode(
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// An explicit flattened depth is negative.
+    /// </exception>
+    public TreeNodeResult TreeNode(
         string id,
         Action<TreeNodeDrawContext> onDraw,
         in TreeNodeOptions options
     ) {
+        m_session.EnsureDrawing();
+        if (options.depth < 0)
+            throw new ArgumentOutOfRangeException(nameof(options), "A flattened tree depth cannot be negative.");
+        float indentation = (options.depth ?? 0) * NativeImGui.Raw.GetStyle()->IndentSpacing;
+        if (indentation > 0f)
+            NativeImGui.Indent(indentation);
+        try
+        {
+            return DrawTreeRow(id, onDraw, options);
+        }
+        finally
+        {
+            if (indentation > 0f)
+                NativeImGui.Unindent(indentation);
+        }
+    }
+
+    /// <summary>
+    /// Gets this window and owner's expansion change counter for invalidating neutral flattened views.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public ulong treeExpansionRevision
+    {
+        get
+        {
+            m_session.EnsureDrawing();
+            return GetTreeWindowState().expansionRevision;
+        }
+    }
+
+    /// <summary>
+    /// Reads a retained expansion value without submitting a native row or retaining domain objects.
+    /// </summary>
+    /// <param name="id">
+    /// The stable row identifier within this window and owner.
+    /// </param>
+    /// <returns>
+    /// True when the row was explicitly expanded; unknown rows are collapsed.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The row identifier is empty or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public bool IsTreeNodeOpen(string id)
+    {
+        m_session.EnsureDrawing();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        return m_openStatesById.GetValueOrDefault(id);
+    }
+
+    /// <summary>
+    /// Changes retained expansion before a flattened view is computed, without submitting a row.
+    /// </summary>
+    /// <param name="id">
+    /// The stable row identifier within this window and owner.
+    /// </param>
+    /// <param name="open">
+    /// The requested disclosure state.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The row identifier is empty or whitespace.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No valid drawing session or native frame is active.
+    /// </exception>
+    public void SetTreeNodeOpen(
+        string id,
+        bool open
+    ) {
+        m_session.EnsureDrawing();
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        if (m_openStatesById.GetValueOrDefault(id) == open)
+            return;
+        m_openStatesById[id] = open;
+        GetTreeWindowState().expansionRevision++;
+    }
+
+    private TreeNodeResult DrawTreeRow(
+        string id,
+        Action<TreeNodeDrawContext> onDraw,
+        in TreeNodeOptions options
+    ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(onDraw);
-
         bool isLeaf = options.isLeaf;
         BeginTreeFrameIfNeeded();
+        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+        Vector2 cursor = NativeImGui.GetCursorScreenPos();
+        TreeWidgetWindowState state = GetTreeWindowState();
+        bool visible = cursor.Y <= window->ClipRect.Max.Y
+            && cursor.Y + NativeImGui.GetFrameHeight() >= window->ClipRect.Min.Y;
+        bool drawContent = visible || options.requestFocus || options.keepContentActive
+            || state.activeContentOwner == id;
+        uint activeBefore = NativeImGui.Raw.GetCurrentContext()->ActiveId;
+        if (!drawContent)
+            return DrawTreeNode(id, onDraw, options, isLeaf, null, false);
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
         NativeImGui.Raw.ChannelsSplit(drawList, 2);
         NativeImGui.Raw.ChannelsSetCurrent(drawList, 1);
         try
         {
-            return DrawTreeNode(id, onDraw, options, isLeaf, drawList);
+            TreeNodeResult result = DrawTreeNode(id, onDraw, options, isLeaf, drawList, true);
+            uint active = NativeImGui.Raw.GetCurrentContext()->ActiveId;
+            if (active != 0 && (active != activeBefore || active == NativeImGui.Raw.GetCurrentContext()->LastItemData.ID))
+            {
+                state.activeContentOwner = id;
+                state.activeContentId = active;
+            }
+            return result;
         }
         finally
         {
@@ -67,23 +165,23 @@ public static unsafe partial class ImGuiWidget
         }
     }
 
-    private static TreeNodeResult DrawTreeNode(
+    private TreeNodeResult DrawTreeNode(
         string id,
         Action<TreeNodeDrawContext> onDraw,
         in TreeNodeOptions options,
         bool isLeaf,
-        ImDrawList* drawList
+        ImDrawList* drawList,
+        bool drawContent
     ) {
-        bool open = !isLeaf && s_openStatesById.TryGetValue(id, out bool storedOpen) && storedOpen;
-        if (!isLeaf && s_hasNextTreeNodeOpen)
+        bool open = !isLeaf && m_openStatesById.TryGetValue(id, out bool storedOpen) && storedOpen;
+        if (!isLeaf && m_hasNextTreeNodeOpen)
         {
-            open = s_nextTreeNodeOpen;
-            s_openStatesById[id] = open;
+            open = m_nextTreeNodeOpen;
+            SetTreeNodeOpen(id, open);
         }
 
-        s_hasNextTreeNodeOpen = false;
+        m_hasNextTreeNodeOpen = false;
         NativeImGui.SetNextItemOpen(open, (int)(ImGuiCond.Always));
-
         Vector2 nodeCursor = NativeImGui.GetCursorScreenPos();
         // Each disclosure, content row and overlay owns its own hit region.
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.None;
@@ -91,77 +189,64 @@ public static unsafe partial class ImGuiWidget
             flags |= ImGuiTreeNodeFlags.Leaf | ImGuiTreeNodeFlags.NoTreePushOnOpen;
         else
             flags |= ImGuiTreeNodeFlags.OpenOnArrow;
-
-        int depth = Math.Max(0, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
+        if (options.depth is not null)
+            flags |= ImGuiTreeNodeFlags.NoTreePushOnOpen;
+        int depth = options.depth ?? Math.Max(0, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
         PruneTreeNodeStack(depth);
         bool hasNextSibling = TrackSiblingState(id, depth);
-        if (!options.hideGuideLines)
+        if (drawContent && !options.hideGuideLines)
             DrawTreeGuideLines(nodeCursor, hasNextSibling, !isLeaf);
-        PushTransparentTreeNodeHeaderColors();
+        if (drawContent)
+            PushTransparentTreeNodeHeaderColors();
         bool isOpen;
         try
         {
+            if (options.requestFocus && NativeImGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.ChildWindows))
+                NativeImGui.SetKeyboardFocusHere();
             isOpen = NativeImGui.TreeNodeEx($"##{id}", (int)(flags));
+            GetTreeWindowState().navigationItemIds.Add(NativeImGui.Raw.GetCurrentContext()->LastItemData.ID);
         }
         finally
         {
-            NativeImGui.PopStyleColor(3);
+            if (drawContent)
+                NativeImGui.PopStyleColor(3);
         }
+
         float nativeRowMaxY = NativeImGui.GetItemRectMax().Y;
+        if (!drawContent)
+        {
+            ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
+            if (isOpen && !isLeaf)
+                m_treeNodeStack.Add(new TreeWidgetNodeState { id = id, cursor = nodeCursor, rowMaxY = nativeRowMaxY, hasNextSibling = hasNextSibling });
+            return new TreeNodeResult(isOpen && !isLeaf, false, false, false,
+                new Vector2(window->Pos.X, nodeCursor.Y), new Vector2(window->WorkRect.Max.X, nativeRowMaxY),
+                new Vector2(nodeCursor.X + NativeImGui.GetTreeNodeToLabelSpacing(), nodeCursor.Y), false);
+        }
         try
         {
             if (!isLeaf && NativeImGui.IsItemToggledOpen())
-                s_openStatesById[id] = isOpen;
-
-            TreeWidgetHighlightRect contentRect = DrawTreeNodeContentContainer(
-                id,
-                nodeCursor,
-                nativeRowMaxY,
-                onDraw,
-                options.drawViewportOverlay,
-                out Vector2 interactionMin);
+                SetTreeNodeOpen(id, isOpen);
+            TreeWidgetHighlightRect contentRect = DrawTreeNodeContentContainer(id, nodeCursor, nativeRowMaxY, onDraw, options.drawViewportOverlay, out Vector2 interactionMin);
             bool hovered = NativeImGui.IsItemHovered((int)(ImGuiHoveredFlags.AllowWhenOverlappedByItem));
             bool clicked = hovered && NativeImGui.IsItemClicked((int)(ImGuiMouseButton.Left));
             bool doubleClicked = hovered && NativeImGui.IsMouseDoubleClicked((int)(ImGuiMouseButton.Left));
             if (!isLeaf && doubleClicked)
-                s_openStatesById[id] = !isOpen;
-            bool showHoverHighlight = hovered &&
-                                      !options.suppressHoverHighlight &&
-                                      NativeImGui.Raw.IsDragDropActive() == 0;
+                SetTreeNodeOpen(id, !isOpen);
+            bool showHoverHighlight = hovered && !options.suppressHoverHighlight && NativeImGui.Raw.IsDragDropActive() == 0;
             if (options.selected || showHoverHighlight)
-                DrawTreeRowBackground(
-                    drawList,
-                    contentRect,
-                    NativeImGui.GetColorU32((int)(options.selected ? ImGuiCol.Header : ImGuiCol.HeaderHovered)));
+                DrawTreeRowBackground(drawList, contentRect, NativeImGui.GetColorU32((int)(options.selected ? ImGuiCol.Header : ImGuiCol.HeaderHovered)));
             else if (options.showBackground)
-                DrawTreeRowBackground(
-                    drawList,
-                    contentRect,
-                    NativeImGui.ColorConvertFloat4ToU32(options.backgroundColor));
-
+                DrawTreeRowBackground(drawList, contentRect, NativeImGui.ColorConvertFloat4ToU32(options.backgroundColor));
             if (isOpen && !isLeaf)
             {
-                s_treeNodeStack.Add(new TreeWidgetNodeState
-                {
-                    id = id,
-                    cursor = nodeCursor,
-                    rowMaxY = contentRect.max.Y,
-                    hasNextSibling = hasNextSibling
-                });
+                m_treeNodeStack.Add(new TreeWidgetNodeState { id = id, cursor = nodeCursor, rowMaxY = contentRect.max.Y, hasNextSibling = hasNextSibling });
             }
 
-            return new TreeNodeResult(
-                isOpen && !isLeaf,
-                clicked,
-                doubleClicked,
-                hovered,
-                contentRect.min,
-                contentRect.max,
-                interactionMin);
+            return new TreeNodeResult(isOpen && !isLeaf, clicked, doubleClicked, hovered, contentRect.min, contentRect.max, interactionMin, true);
         }
         catch
         {
-            if (isOpen && !isLeaf)
+            if (isOpen && !isLeaf && options.depth is null)
                 NativeImGui.TreePop();
             throw;
         }
@@ -173,25 +258,26 @@ public static unsafe partial class ImGuiWidget
     /// <param name="open">
     /// Whether the next row should be expanded.
     /// </param>
-    public static void SetNextTreeNodeOpen(bool open)
+    public void SetNextTreeNodeOpen(bool open)
     {
-        s_hasNextTreeNodeOpen = true;
-        s_nextTreeNodeOpen = open;
+        m_session.EnsureDrawing();
+        m_hasNextTreeNodeOpen = true;
+        m_nextTreeNodeOpen = open;
     }
 
-    private static TreeWidgetWindowState GetTreeWindowState()
+    private TreeWidgetWindowState GetTreeWindowState()
     {
-        int windowKey = ((nint)NativeImGui.Raw.GetWindowDrawList()).GetHashCode();
-        if (!s_treeStatesByWindow.TryGetValue(windowKey, out TreeWidgetWindowState? state))
+        var windowKey = (m_session.owner, NativeImGui.Raw.GetCurrentWindow()->ID);
+        if (!m_treeStatesByWindow.TryGetValue(windowKey, out TreeWidgetWindowState? state))
         {
             state = new TreeWidgetWindowState();
-            s_treeStatesByWindow[windowKey] = state;
+            m_treeStatesByWindow[windowKey] = state;
         }
 
         return state;
     }
 
-    private static TreeWidgetHighlightRect DrawTreeNodeContentContainer(
+    private TreeWidgetHighlightRect DrawTreeNodeContentContainer(
         string id,
         Vector2 nodeCursor,
         float nativeRowMaxY,
@@ -204,10 +290,7 @@ public static unsafe partial class ImGuiWidget
         float contentX = nodeCursor.X + NativeImGui.GetTreeNodeToLabelSpacing();
         float contentRightX = window->WorkRect.Max.X;
         float contentBottomY = window->InnerRect.Max.Y;
-        float contentOffsetX = contentX - windowPos.X + window->Scroll.X -
-                               window->DC.GroupOffset.X -
-                               window->DC.ColumnsOffset.X;
-
+        float contentOffsetX = contentX - windowPos.X + window->Scroll.X - window->DC.GroupOffset.X - window->DC.ColumnsOffset.X;
         NativeImGui.SameLine(contentOffsetX, 0f);
         NativeImGui.BeginGroup();
         NativeImGui.PushClipRect(new Vector2(contentX, nodeCursor.Y), new Vector2(contentRightX, contentBottomY), true);
@@ -228,7 +311,6 @@ public static unsafe partial class ImGuiWidget
             min = new Vector2(windowPos.X, MathF.Min(nodeCursor.Y, contentMin.Y)),
             max = new Vector2(contentRightX, MathF.Max(nativeRowMaxY, contentMax.Y))
         };
-
         Vector2 hitMin = new(contentX, rect.min.Y);
         Vector2 hitMax = rect.max;
         interactionMin = hitMin;
@@ -242,13 +324,12 @@ public static unsafe partial class ImGuiWidget
         return rect;
     }
 
-    private static void DrawTreeNodeViewportOverlay(
+    private void DrawTreeNodeViewportOverlay(
         ImGuiWindow* window,
         Action? drawViewportOverlay
     ) {
         if (drawViewportOverlay is null)
             return;
-
         float contentBoundaryX = window->DC.CursorMaxPos.X;
         float idealBoundaryX = window->DC.IdealMaxPos.X;
         try
@@ -262,81 +343,76 @@ public static unsafe partial class ImGuiWidget
         }
     }
 
-    private static void PushTransparentTreeNodeHeaderColors()
+    private void PushTransparentTreeNodeHeaderColors()
     {
         NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.transparent);
         NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.transparent);
         NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.transparent);
     }
 
-    private static void BeginTreeFrameIfNeeded()
+    private void BeginTreeFrameIfNeeded()
     {
         int frame = NativeImGui.GetFrameCount();
-        if (frame == s_lastFrame)
+        if (frame == m_lastFrame)
             return;
-
         TreeWidgetWindowState state = GetTreeWindowState();
         state.treeNodeStack.Clear();
         state.lastNodeIdsByDepth.Clear();
         state.lineSegments.Clear();
-        s_lastFrame = frame;
+        state.navigationItemIds.Clear();
+        if (state.activeContentId != NativeImGui.Raw.GetCurrentContext()->ActiveId)
+        {
+            state.activeContentId = 0;
+            state.activeContentOwner = null;
+        }
+        m_lastFrame = frame;
     }
 
-    private static void PruneTreeNodeStack(int nativeDepth)
+    private void PruneTreeNodeStack(int nativeDepth)
     {
-        while (s_treeNodeStack.Count > nativeDepth)
-            s_treeNodeStack.RemoveAt(s_treeNodeStack.Count - 1);
+        while (m_treeNodeStack.Count > nativeDepth)
+            m_treeNodeStack.RemoveAt(m_treeNodeStack.Count - 1);
     }
 
-    private static bool TrackSiblingState(
+    private bool TrackSiblingState(
         string id,
         int depth
     ) {
-        bool hasNextSibling = s_hasNextSiblingById.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
-
-        while (s_lastNodeIdsByDepth.Count <= depth)
-            s_lastNodeIdsByDepth.Add(string.Empty);
-
-        string previousId = s_lastNodeIdsByDepth[depth];
+        bool hasNextSibling = m_hasNextSiblingById.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
+        while (m_lastNodeIdsByDepth.Count <= depth)
+            m_lastNodeIdsByDepth.Add(string.Empty);
+        string previousId = m_lastNodeIdsByDepth[depth];
         if (!string.IsNullOrEmpty(previousId) && !string.Equals(previousId, id, StringComparison.Ordinal))
-            s_hasNextSiblingById[previousId] = true;
-
-        s_hasNextSiblingById[id] = false;
-        s_lastNodeIdsByDepth[depth] = id;
-
-        for (int i = depth + 1; i < s_lastNodeIdsByDepth.Count; i++)
-            s_lastNodeIdsByDepth[i] = string.Empty;
-
+            m_hasNextSiblingById[previousId] = true;
+        m_hasNextSiblingById[id] = false;
+        m_lastNodeIdsByDepth[depth] = id;
+        for (int i = depth + 1; i < m_lastNodeIdsByDepth.Count; i++)
+            m_lastNodeIdsByDepth[i] = string.Empty;
         return hasNextSibling;
     }
 
-    private static void DrawTreeGuideLines(
+    private void DrawTreeGuideLines(
         Vector2 nodeCursor,
         bool hasNextSibling,
         bool hasDisclosureArrow
     ) {
-        if (s_treeNodeStack.Count == 0)
+        if (m_treeNodeStack.Count == 0)
             return;
-
         ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         float textLineHeight = NativeImGui.GetTextLineHeight();
-        float lineOverlap = ImGuiWidget.style.treeGuideLineOverlap;
+        float lineOverlap = this.style.treeGuideLineOverlap;
         float rowMaxY = nodeCursor.Y + textLineHeight + style->ItemSpacing.Y + lineOverlap;
         float rowCenterY = nodeCursor.Y + textLineHeight * 0.5f;
         float nodeToLabel = NativeImGui.GetTreeNodeToLabelSpacing();
-        float guideOffset = nodeToLabel * 0.5f - ImGuiWidget.style.treeGuideLeftOffset;
+        float guideOffset = nodeToLabel * 0.5f - this.style.treeGuideLeftOffset;
         float labelStartX = nodeCursor.X + nodeToLabel;
         float fileConnectorPadding = MathF.Max(1f, style->ItemInnerSpacing.X);
-        float folderConnectorPadding = fileConnectorPadding * 2f +
-                                       ImGuiWidget.style.treeFolderConnectorPadding;
-        float targetX = hasDisclosureArrow
-            ? nodeCursor.X + guideOffset - folderConnectorPadding
-            : labelStartX - fileConnectorPadding;
-
-        for (int i = 0; i < s_treeNodeStack.Count - 1; i++)
+        float folderConnectorPadding = fileConnectorPadding * 2f + this.style.treeFolderConnectorPadding;
+        float targetX = hasDisclosureArrow ? nodeCursor.X + guideOffset - folderConnectorPadding : labelStartX - fileConnectorPadding;
+        for (int i = 0; i < m_treeNodeStack.Count - 1; i++)
         {
-            TreeWidgetNodeState ancestorState = s_treeNodeStack[i];
-            TreeWidgetNodeState pathChildState = s_treeNodeStack[i + 1];
+            TreeWidgetNodeState ancestorState = m_treeNodeStack[i];
+            TreeWidgetNodeState pathChildState = m_treeNodeStack[i + 1];
             if (pathChildState.hasNextSibling)
             {
                 float ancestorX = ancestorState.cursor.X + guideOffset;
@@ -345,7 +421,7 @@ public static unsafe partial class ImGuiWidget
             }
         }
 
-        TreeWidgetNodeState parentState = s_treeNodeStack[^1];
+        TreeWidgetNodeState parentState = m_treeNodeStack[^1];
         float branchX = parentState.cursor.X + guideOffset;
         float branchStartY = MathF.Max(parentState.rowMaxY, nodeCursor.Y);
         AddTreeLine(new Vector2(branchX, branchStartY), new Vector2(branchX, hasNextSibling ? rowMaxY : rowCenterY));
@@ -353,7 +429,7 @@ public static unsafe partial class ImGuiWidget
             AddTreeLine(new Vector2(branchX, rowCenterY), new Vector2(targetX, rowCenterY));
     }
 
-    private static void AddTreeLine(
+    private void AddTreeLine(
         Vector2 from,
         Vector2 to
     ) {
@@ -362,22 +438,16 @@ public static unsafe partial class ImGuiWidget
             from = SnapTreeLinePoint(from),
             to = SnapTreeLinePoint(to)
         };
-        s_lineSegments.Add(line);
-        ImGui.DrawNativeLine(
-            NativeImGui.Raw.GetWindowDrawList(),
-            line.from,
-            line.to,
-            NativeImGui.ColorConvertFloat4ToU32(EditorPalette.treeGuide),
-            style.borderSize
-        );
+        m_lineSegments.Add(line);
+        ImGui.DrawNativeLine(NativeImGui.Raw.GetWindowDrawList(), line.from, line.to, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.treeGuide), this.style.borderSize);
     }
 
-    private static Vector2 SnapTreeLinePoint(Vector2 point)
+    private Vector2 SnapTreeLinePoint(Vector2 point)
     {
         return new Vector2(MathF.Floor(point.X) + 0.5f, MathF.Floor(point.Y) + 0.5f);
     }
 
-    private static void DrawTreeRowBackground(
+    private void DrawTreeRowBackground(
         ImDrawList* drawList,
         TreeWidgetHighlightRect rect,
         uint color
@@ -386,7 +456,6 @@ public static unsafe partial class ImGuiWidget
         ImGui.DrawNativeFilledRectangle(drawList, rect.min, rect.max, color, 0, 0);
         NativeImGui.Raw.ChannelsSetCurrent(drawList, 1);
     }
-
 }
 
 /// <summary>
@@ -411,35 +480,44 @@ public readonly struct TreeNodeDrawContext
 public readonly struct TreeNodeOptions
 {
     /// <summary>
+    /// Gets explicit indentation for a flattened row, or null for a nested native tree.
+    /// Explicit-depth rows never push a native tree scope; callers must not call TreePop for them.
+    /// </summary>
+    public int? depth { get; init; }
+    /// <summary>
+    /// Gets whether this row should receive keyboard focus during this submission when its tree window is focused.
+    /// </summary>
+    public bool requestFocus { get; init; }
+
+    /// <summary>
+    /// Gets whether an active edit requires content submission even while its row is clipped.
+    /// </summary>
+    public bool keepContentActive { get; init; }
+
+    /// <summary>
     /// Gets whether the row is selected.
     /// </summary>
     public bool selected { get; init; }
-
     /// <summary>
     /// Gets whether the row has no expandable children.
     /// </summary>
     public bool isLeaf { get; init; }
-
     /// <summary>
     /// Gets whether a custom background is drawn behind an unselected row.
     /// </summary>
     public bool showBackground { get; init; }
-
     /// <summary>
     /// Gets the custom background color used when <see cref="showBackground"/> is enabled.
     /// </summary>
     public Vector4 backgroundColor { get; init; }
-
     /// <summary>
     /// Gets whether the row keeps its configured background while hovered.
     /// </summary>
     public bool suppressHoverHighlight { get; init; }
-
     /// <summary>
     /// Gets whether ancestor and branch guide lines are omitted for this row.
     /// </summary>
     public bool hideGuideLines { get; init; }
-
     /// <summary>
     /// Gets the callback that draws controls fixed to the current viewport without extending the
     /// tree's horizontal content boundary.
@@ -459,7 +537,8 @@ public readonly struct TreeNodeResult
         bool isHovered,
         Vector2 min,
         Vector2 max,
-        Vector2 contentMin
+        Vector2 contentMin,
+        bool isSubmitted
     ) {
         this.isOpen = isOpen;
         this.isClicked = isClicked;
@@ -468,39 +547,39 @@ public readonly struct TreeNodeResult
         this.min = min;
         this.max = max;
         this.contentMin = contentMin;
+        this.isSubmitted = isSubmitted;
     }
+
+    /// <summary>
+    /// Gets whether row controls were submitted; ordinary clipped rows are false, while preserved active edits remain true.
+    /// </summary>
+    public bool isSubmitted { get; }
 
     /// <summary>
     /// Gets whether child content should be rendered.
     /// </summary>
     public bool isOpen { get; }
-
     /// <summary>
     /// Gets whether the content row was clicked.
     /// </summary>
     public bool isClicked { get; }
-
     /// <summary>
     /// Gets whether the content row was double-clicked. Double-clicking a non-leaf content row
     /// also toggles its retained expansion state for the next frame.
     /// </summary>
     public bool isDoubleClicked { get; }
-
     /// <summary>
     /// Gets whether the full row is hovered.
     /// </summary>
     public bool isHovered { get; }
-
     /// <summary>
     /// Gets the row minimum screen coordinate.
     /// </summary>
     public Vector2 min { get; }
-
     /// <summary>
     /// Gets the row maximum screen coordinate.
     /// </summary>
     public Vector2 max { get; }
-
     /// <summary>
     /// Gets the minimum screen coordinate of the row's interactive content, excluding tree indentation.
     /// </summary>
@@ -509,6 +588,10 @@ public readonly struct TreeNodeResult
 
 internal sealed class TreeWidgetWindowState
 {
+    internal ulong expansionRevision;
+    internal uint activeContentId;
+    internal string? activeContentOwner;
+    internal readonly HashSet<uint> navigationItemIds = [];
     internal readonly List<TreeWidgetNodeState> treeNodeStack = [];
     internal readonly List<string> lastNodeIdsByDepth = [];
     internal readonly List<TreeWidgetLineSegment> lineSegments = [];

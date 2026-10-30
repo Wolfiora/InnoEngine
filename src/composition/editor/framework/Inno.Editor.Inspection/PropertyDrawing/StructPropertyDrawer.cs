@@ -1,21 +1,18 @@
+using Inno.Editor.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-
 using Inno.Core.Serialization;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
-
 [PropertyDrawer(typeof(ValueType), useForChildren: true, priority: -100)]
 internal sealed class StructPropertyDrawer : IPropertyDrawer
 {
     private static readonly ConditionalWeakTable<Type, MembersBox> S_MEMBER_CACHE = new();
-
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -28,77 +25,61 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
         MemberInfo[] members = GetMembers(context.propertyType);
         if (members.Length == 0)
         {
-            NativeImGui.TextUnformatted(boxedValue.ToString() ?? context.propertyType.Name);
+            Ui.Text(boxedValue.ToString() ?? context.propertyType.Name);
             return;
         }
 
-        if (!NativeImGui.TreeNodeEx($"{context.propertyType.Name}##{context.path}", (int)(ImGuiTreeNodeFlags.SpanAvailWidth)))
+        if (!Ui.TreeNode($"{context.propertyType.Name}##{context.path}", (ImGuiTreeNodeFlags.SpanAvailWidth)))
         {
             return;
         }
 
-        EditorWidget.SectionLayout(() =>
+        EditorUI.current.widgets.SectionLayout(() =>
         {
             for (int i = 0; i < members.Length; i++)
             {
                 MemberInfo member = members[i];
                 Type memberType = GetMemberType(member);
-                bool memberReadOnly = !CanWrite(member) ||
-                    (GetVisibility(member) & PropertyVisibility.RuntimeSet) == 0;
-                context.DrawChildMember(
-                    context.GetValue() ?? boxedValue,
-                    member,
-                    memberType,
-                    () => GetMemberValue(member, context.GetValue() ?? boxedValue),
-                    value =>
-                    {
-                        object updated = context.GetValue() ?? Activator.CreateInstance(context.propertyType)!;
-                        SetMemberValue(member, updated, value);
-                        context.SetValue(updated);
-                    },
-                    memberReadOnly);
+                bool memberReadOnly = !CanWrite(member) || (GetVisibility(member) & PropertyVisibility.RuntimeSet) == 0;
+                context.DrawChildMember(context.GetValue() ?? boxedValue, member, memberType, () => GetMemberValue(member, context.GetValue() ?? boxedValue), value =>
+                {
+                    object updated = context.GetValue() ?? Activator.CreateInstance(context.propertyType)!;
+                    SetMemberValue(member, updated, value);
+                    context.SetValue(updated);
+                }, memberReadOnly);
             }
         });
-
-        NativeImGui.TreePop();
+        Ui.TreePop();
     }
 
     private static MemberInfo[] GetMembers(Type type)
     {
-        return S_MEMBER_CACHE.GetValue(type, static value => new MembersBox(
-            value
-                .GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(IsRuntimeVisibleMember)
-                .OrderBy(static member => member.MetadataToken)
-                .ToArray())).members;
+        return S_MEMBER_CACHE.GetValue(
+            type,
+            static value => new MembersBox(value.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(IsRuntimeVisibleMember).OrderBy(static member => member.MetadataToken).ToArray())
+        ).members;
     }
 
     private static bool IsRuntimeVisibleMember(MemberInfo member)
     {
-        SerializablePropertyAttribute? attribute =
-            member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
+        SerializablePropertyAttribute? attribute = member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
         PropertyVisibility visibility = attribute?.propertyVisibility ?? PropertyVisibility.Show;
         if ((visibility & PropertyVisibility.RuntimeGet) == 0)
             return false;
-
         return member switch
         {
-            FieldInfo field =>
-                !field.IsStatic &&
-                (attribute is not null || field.IsPublic && !field.IsInitOnly),
-            PropertyInfo property =>
-                property.GetIndexParameters().Length == 0 &&
-                (attribute is not null ||
-                 property.GetGetMethod(nonPublic: true)?.IsPublic == true &&
-                 property.GetSetMethod(nonPublic: true)?.IsPublic == true),
+            FieldInfo field => !field.IsStatic && (attribute is not null || field.IsPublic && !field.IsInitOnly),
+            PropertyInfo property => property.GetIndexParameters().Length == 0
+                && (attribute is not null
+                || property.GetGetMethod(nonPublic: true)?.IsPublic == true
+                && property.GetSetMethod(nonPublic: true)?.IsPublic == true),
             _ => false
         };
     }
 
     private static PropertyVisibility GetVisibility(MemberInfo member)
     {
-        return member.GetCustomAttribute<SerializablePropertyAttribute>(true)?.propertyVisibility
-            ?? PropertyVisibility.Show;
+        return member.GetCustomAttribute<SerializablePropertyAttribute>(true)?.propertyVisibility ?? PropertyVisibility.Show;
     }
 
     private static Type GetMemberType(MemberInfo member)
@@ -107,8 +88,7 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
         {
             FieldInfo field => field.FieldType,
             PropertyInfo property => property.PropertyType,
-            _ => throw new InvalidOperationException($"Unsupported struct member '{member.MemberType}'.")
-        };
+            _ => throw new InvalidOperationException($"Unsupported struct member '{member.MemberType}'.")};
     }
 
     private static object? GetMemberValue(

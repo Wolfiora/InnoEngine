@@ -1,0 +1,515 @@
+{
+  "status": "All applicable local gates verified at dd5979c6; exact delivery-head CI and final issue/PR transitions are recorded in the linked attachment.",
+  "scope": "Issue bodies must remain open until master merge; final evidence and CI still required",
+  "issues": [
+    {
+      "id": 13,
+      "owner": "Editor Interactions History",
+      "commits": [
+        "fa794a5a"
+      ],
+      "evidence": [
+        "Contracts: EditorHistoryTests non-LIFO Commit/Rollback/Dispose and retained stack"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 16,
+      "owner": "SDK-evaluated Restore and process-owned loaded-package test",
+      "commits": [
+        "564e00d0",
+        "4d0fdb0a"
+      ],
+      "evidence": [
+        "Contracts: NuGetLoadedIdentityTests",
+        "e16/process-owned-fixture: ten ordinary/isolated entries, forty parent scenarios"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 19,
+      "owner": "Build SDK capture -> neutral compiler inputs -> Host/IDE",
+      "commits": [
+        "63d4f7dc"
+      ],
+      "evidence": [
+        "Contracts: frozen multi-SDK/CSharp14 inputs",
+        "Companion-Canvas",
+        "Companion-Rendering2D",
+        "Companion-FlappyBird"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 27,
+      "owner": "Approved whole-plan traceability and final acceptance",
+      "commits": [
+        "199ae0dc"
+      ],
+      "evidence": [
+        "All final functional, product, visual, performance and CI gates"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 28,
+      "owner": "Session/context scopes and actual presentation callers",
+      "commits": [
+        "65d222ae",
+        "e2e6ca32",
+        "a25d6302"
+      ],
+      "evidence": [
+        "Contracts/Visual: extension failure and next-frame scopes",
+        "Lifecycle: owner and retirement protocols",
+        "e28/export-label: prior-producer negative and corrected public provider failure"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 29,
+      "owner": "Generation-owned Interactions menu/shortcut catalog",
+      "commits": [
+        "88df3c79",
+        "bc88dc04"
+      ],
+      "evidence": [
+        "Contracts: fresh Query/conflict/last-good/index reuse",
+        "Lifecycle: actual generation loop",
+        "Quantitative: menus, shortcut hit/miss"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 30,
+      "owner": "Shared presentation and domain-owned styles",
+      "commits": [
+        "63d4f7dc",
+        "f7dce89c"
+      ],
+      "evidence": [
+        "Architecture dependencies/API",
+        "Visual: frame-consistent Zoom/DPI/control matrix",
+        "Matched original/current native UI and viewport readback"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 31,
+      "owner": "Visible-order navigation and Diagnostics occurrence views",
+      "commits": [
+        "63d4f7dc",
+        "2bb4da40",
+        "bc88dc04"
+      ],
+      "evidence": [
+        "Workflows/Visual: native Hierarchy/Browser/Console input",
+        "10k search/range/scroll/drag/rename journeys"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 32,
+      "owner": "Neutral Graph document/controller and Graph.ImGui geometry/intents",
+      "commits": [
+        "63d4f7dc"
+      ],
+      "evidence": [
+        "Contracts: graph layout/pointer/controller",
+        "Visual: independent non-Shader native consumer/failure",
+        "Workflows: Shader document/History/Missing",
+        "Quantitative: deterministic 2k graph"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 33,
+      "owner": "EditorStatistics authority and bounded Stats Panel sampler",
+      "commits": [
+        "b7a8924d",
+        "63d4f7dc"
+      ],
+      "evidence": [
+        "Contracts: unchanged snapshot reuse/frame ordering",
+        "Visual: actual native trends, interval/window/reset",
+        "Products: actual Stats Panel 100 cycles",
+        "Quantitative: statistics"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 34,
+      "owner": "Visible tree/grid/Console rows and neutral graph display projection",
+      "commits": [
+        "63d4f7dc",
+        "973a1aa7",
+        "bc88dc04"
+      ],
+      "evidence": [
+        "Visual/Workflows: 10k native range/edit/drag and clipped content counts",
+        "Contracts: 2k affected-node geometry reuse",
+        "Quantitative: five paired static and input producers"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 35,
+      "owner": "Feature edits, unified History and actual Panel composition",
+      "commits": [
+        "fa794a5a",
+        "a4d975ab",
+        "f7dce89c",
+        "8fd31cee",
+        "2bb4da40"
+      ],
+      "evidence": [
+        "Workflows: actual Inspector/Scene/Asset/Settings/Shader/Play/export journeys",
+        "Contracts: History atomicity and Missing barriers",
+        "Products: eight FlappyBird journeys in six configurations"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 36,
+      "owner": "Real ImGui public input/geometry and matched content review",
+      "commits": [
+        "d7f383f0",
+        "e3f02ebe",
+        "bc88dc04"
+      ],
+      "evidence": [
+        "Visual: independent Zoom/DPI/size matrix and occlusion/text/state cases",
+        "Final current and retained original 6000-preparation-frame capture",
+        "Physical monitor/IME/manual Mac explicitly unexecuted"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 37,
+      "owner": "Session/Panel/document/generation retirement",
+      "commits": [
+        "d7f383f0",
+        "bced2aef",
+        "e3f02ebe"
+      ],
+      "evidence": [
+        "Lifecycle: document cycles and ten success/reject/Missing/recovery reloads",
+        "Products: every discovered actual Panel 100 cycles, strict GC resource series",
+        "Host exit state/layout publication"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 38,
+      "owner": "Controlled public-host static/input/command/product measurements",
+      "commits": [
+        "973a1aa7",
+        "bc88dc04",
+        "1917b253"
+      ],
+      "evidence": [
+        "Frozen input/runtime hashes before/after",
+        "150 five-pair original/current trial rows",
+        "Ten absolute complete-inspection processes",
+        "All regression flags require explicit review"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 39,
+      "owner": "Current per-owner API contracts, design standard and final report",
+      "commits": [
+        "0974c317",
+        "163c1938",
+        "5e329bbe"
+      ],
+      "evidence": [
+        "Final architecture/XML/Wiki/project coverage",
+        "Eleven quality dimensions and complete requirement mapping",
+        "English issue verification, individual Fixes and partial Refs #18"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 40,
+      "owner": "Compiler-tool graph and SDK-owned output identity",
+      "commits": [
+        "6a656b67",
+        "8dcceb94",
+        "870a0af0"
+      ],
+      "evidence": [
+        "Contracts: CompilerToolBuildScope/GeneratorRestoreScope/owned Task inputs",
+        "Repeated official source, Editor and isolated output builds",
+        "Final Windows/ARM64 CI"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 41,
+      "owner": "Tooling consumes current SDK-evaluated source/compiled output",
+      "commits": [
+        "14338d61",
+        "e053be5b",
+        "a38437f7"
+      ],
+      "evidence": [
+        "Contracts: public API graph default/independent/stale output cases",
+        "Final real complete architecture/XML/Wiki validation"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 42,
+      "owner": "Scene-owned root placement indices",
+      "commits": [
+        "63d4f7dc"
+      ],
+      "evidence": [
+        "Scene: creation/reorder/parent/transfer/failure indices",
+        "Quantitative: five paired 10k Hierarchy producers",
+        "Original profile retains repeated IndexOf evidence"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 43,
+      "owner": "Asset source reconciliation",
+      "commits": [
+        "273c42ad"
+      ],
+      "evidence": [
+        "Workflows: stable source IDs through atomic refresh/recovery",
+        "Products: Scene/Asset save/close/reopen and installed sources"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 44,
+      "owner": "Asset source content verification",
+      "commits": [
+        "e23f4ba5"
+      ],
+      "evidence": [
+        "Workflows: same-length/same-mtime external content mutation",
+        "Source content/semantic identity and read-only source regressions"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 45,
+      "owner": "Existing Core Writer/member capture and encoding",
+      "commits": [
+        "f7dce89c",
+        "6df06585"
+      ],
+      "evidence": [
+        "Core Serialization: exact single-member/context/converter/failure semantics",
+        "Quantitative: five paired 10k/2k workloads and complete product"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 46,
+      "owner": "Scene-owned complete capture inputs and Core canonical output",
+      "commits": [
+        "0b0a821c",
+        "2434cd96",
+        "1917b253"
+      ],
+      "evidence": [
+        "Core97/Scene67 and complete Workflows",
+        "Ten independent idle/edit absolute inspection processes",
+        "Failed earlier tails and corrected focused ten-process proof retained"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 47,
+      "owner": "Standard Hosting layout resource, passive Core state document",
+      "commits": [
+        "bb5b4bb9"
+      ],
+      "evidence": [
+        "Contracts/Visual: absent/custom/empty/docking/resizing",
+        "Core IO concurrent creators and final ARM64 CI",
+        "Default layout focused report"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 48,
+      "owner": "Core IO atomic create-only publisher and compatible document reader",
+      "commits": [
+        "318e30aa",
+        "98fd5a7d"
+      ],
+      "evidence": [
+        "Core IO38 and ten independent publication/held-handle process repeats",
+        "Final Windows/ARM64 concurrency suites",
+        "Original deterministic reader-negative evidence retained"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 49,
+      "owner": "Existing native Context/atlas supplemental font lifetime",
+      "commits": [
+        "e3f02ebe",
+        "23f0ceb2",
+        "397ae3ed"
+      ],
+      "evidence": [
+        "Native font four-face/scale/CJK/Latin/icon/missing/corrupt cases",
+        "Products and matched visual content",
+        "Source bytes16,437,364, official Noto2.004/OFL unchanged, one pinned source per Context"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 50,
+      "owner": "Scene Workspace assigned source and existing recovery transaction",
+      "commits": [
+        "8fd31cee"
+      ],
+      "evidence": [
+        "Workflows: clean/edited source removal, pipeline reconciliation, exact restoration/rename",
+        "Save rejects unavailable assignment, explicit SaveToDirectory establishes new source"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 51,
+      "owner": "Application/context native retirement registration",
+      "commits": [
+        "e3f02ebe"
+      ],
+      "evidence": [
+        "Lifecycle: ten contexts collected while another remains active",
+        "Pending/failure preserves registration, successful direct Dispose/replacement",
+        "Native application shutdown"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 52,
+      "owner": "Core IO reserved publication name and frozen shader compiler workspace",
+      "commits": [
+        "329568ba"
+      ],
+      "evidence": [
+        "Contracts: ShaderBuildInputsTests inventory/content/empty directory/failure cases",
+        "e52: simultaneous independent SDK outputs with deliberately held candidate",
+        "Authored inventory/hash unchanged; final complete builds/CI"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 53,
+      "owner": "Core immutable snapshot/Writer proof, Scene complete neutral row inputs",
+      "commits": [
+        "be44532f",
+        "2434cd96",
+        "1917b253"
+      ],
+      "evidence": [
+        "Core97: callback retirement/thread/metadata/identity/converter/effect/mutation/GC guards",
+        "Scene67: complete writes/restore/references/Missing/Prefab and removed-System GC",
+        "Ten complete-inspection processes, architecture/Wiki/products/CI"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 54,
+      "owner": "Scene property reference scope through exact Core allocator",
+      "commits": [
+        "e5268920",
+        "163c1938"
+      ],
+      "evidence": [
+        "Scene67: current/stale/foreign/wrong-kind/alias/throw/nested scopes and canonical graph behavior",
+        "Actual SceneEdits History continuous-input comparison",
+        "Formal companion SDK/IDE and complete products/CI"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    },
+    {
+      "id": 55,
+      "owner": "Core atomic directory publication and Compiler-owned complete cache trees",
+      "commits": [
+        "dd5979c6"
+      ],
+      "evidence": [
+        "Public Compiler red/green temporary-reader regression; persistent failure, cancellation and exact whole-tree replacement preservation",
+        "Core IO41 and Compiler17 complete focused suites; five independent cold/warm formal publications",
+        "Corrected-source full matrices, formal companions, products, quantitative results and exact-head CI"
+      ],
+      "localVerification": "Passed; see final report and portable candidate results.",
+      "remoteVerificationAuthority": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338",
+      "mergePolicy": "Keep Open; Verified on branch / awaiting merge after exact-head verification; close through individual PR Fixes on master merge only."
+    }
+  ],
+  "deliveryAttachment": "https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338"
+}

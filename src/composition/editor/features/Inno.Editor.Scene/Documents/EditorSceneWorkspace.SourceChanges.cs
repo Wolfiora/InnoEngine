@@ -27,27 +27,30 @@ internal sealed partial class EditorSceneWorkspace
 
 {
 
-    private void SynchronizeSource(
+    private bool SynchronizeSource(
         GameScene scene,
         SceneDocument document
     ) {
         if (document.sourceAssetId == Guid.Empty)
-            return;
-        if (!m_assets.TryLoad(document.sourceAssetId, out SceneAsset? asset) ||
-            asset is null ||
-            asset.isMissing)
         {
-            document.sourcePath = string.Empty;
-            document.sourceAssetId = Guid.Empty;
+            m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
+            return true;
+        }
+        if (!m_assets.TryGetInfo(document.sourceAssetId, out AssetInfo? asset) ||
+            asset is null ||
+            asset.status == AssetImportStatus.Missing)
+        {
             document.isDirty = true;
-            return;
+            m_diagnostics.PublishSourceUnavailable(scene, document.sourcePath);
+            return false;
         }
 
+        m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
         string sourcePath = NormalizePath(asset.assetPath.ToString());
         string sourceName = GetAssetName(sourcePath);
         bool pathChanged = !string.Equals(document.sourcePath, sourcePath, StringComparison.Ordinal);
         if (!pathChanged)
-            return;
+            return true;
 
         bool wasDirty = HasSerializedChanges(scene, document);
         document.sourcePath = sourcePath;
@@ -57,6 +60,7 @@ internal sealed partial class EditorSceneWorkspace
         document.isDirty = wasDirty;
         document.nextRefreshTimestamp = Stopwatch.GetTimestamp() +
                                         (long)(Stopwatch.Frequency * C_DIRTY_REFRESH_SECONDS);
+        return true;
     }
 
     private void ApplyRename(

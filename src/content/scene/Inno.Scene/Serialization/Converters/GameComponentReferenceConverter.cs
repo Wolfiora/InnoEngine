@@ -24,7 +24,7 @@ internal sealed class GameComponentReferenceConverter : SerializationConverter<G
     ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
-        EngineReferenceToken token = SceneGraphReferenceMap.current.Capture(value, writer.path);
+        EngineReferenceToken token = SceneReferenceScope.current.Capture(value, writer.path);
         writer.Write("kind", (int)token.kind);
         writer.Write("sourceId", token.sourceId);
     }
@@ -46,6 +46,6 @@ internal sealed class GameComponentReferenceConverter : SerializationConverter<G
             reader.Read<Guid>("sourceId"));
         if (token.kind != EngineReferenceKind.GameComponent)
             throw new InvalidDataException($"Reference token at '{reader.path}' is not a GameComponent reference.");
-        return (GameComponent)SceneGraphReferenceMap.current.Resolve(token, reader.valueType, reader.path);
+        return (GameComponent)SceneReferenceScope.current.Resolve(token, reader.valueType, reader.path);
     }
 }

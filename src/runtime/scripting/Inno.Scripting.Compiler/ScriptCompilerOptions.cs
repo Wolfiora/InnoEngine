@@ -12,6 +12,11 @@ public sealed class ScriptCompilerOptions
     /// </summary>
     public required string projectRootDirectory { get; init; }
 
+    /// <summary>
+    /// Gets the host-owned source of SDK framework inputs for each operation.
+    /// </summary>
+    public required IScriptCompilationEnvironmentProvider compilationEnvironment { get; init; }
+
     internal string ideDirectory => Path.Combine(projectRootDirectory, "Library", "IDE");
 
     internal string outputDirectory => Path.Combine(projectRootDirectory, "Library", "Artifacts", "ScriptAssemblies");

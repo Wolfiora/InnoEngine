@@ -74,6 +74,7 @@ public static partial class ArchitectureValidator
         bool selectedConfiguration = false;
         string? dotnetHost = null;
         string? projectGraphPath = null;
+        string? artifactsPath = null;
         var paths = new List<string>();
         for (int index = 0; index < arguments.Length; index++)
         {
@@ -96,22 +97,28 @@ public static partial class ArchitectureValidator
                 dotnetHost = arguments[++index];
             else if (argument == "--project-graph" && projectGraphPath is null && index + 1 < arguments.Length)
                 projectGraphPath = arguments[++index];
+            else if (argument == "--artifacts-path" && artifactsPath is null && index + 1 < arguments.Length)
+                artifactsPath = Path.GetFullPath(arguments[++index]);
             else if (argument == "--configuration" && !selectedConfiguration && index + 1 < arguments.Length)
             {
                 configuration = arguments[++index] switch
                 {
                     "Debug" => "Debug",
                     "Release" => "Release",
-                    _ => throw new ArgumentException("Architecture configuration must be Debug or Release.", nameof(arguments))
+                    "SourceDebug" => "SourceDebug",
+                    _ => throw new ArgumentException("Architecture configuration must be Debug, SourceDebug or Release.", nameof(arguments))
                 };
                 selectedConfiguration = true;
             }
             else if (!argument.StartsWith("--", StringComparison.Ordinal) && paths.Count == 0)
                 paths.Add(argument);
             else
-                throw new ArgumentException("Usage: verify [engine-root] [--configuration Debug|Release] [--expand-xml] [--dotnet SDK] [--project-graph output.json] [--wiki] [--wiki-target targetId] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]", nameof(arguments));
+                throw new ArgumentException(
+                    "Usage: verify [engine-root] [--configuration Debug|SourceDebug|Release] [--expand-xml] [--dotnet SDK] [--artifacts-path directory] [--project-graph output.json] [--wiki] [--wiki-target targetId] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]",
+                    nameof(arguments)
+                );
         }
-        if (projectGraphPath is not null && dotnetHost is null)
+        if ((projectGraphPath is not null || artifactsPath is not null) && dotnetHost is null)
             throw new ArgumentException("Evaluated project graph output requires an explicitly selected --dotnet SDK.", nameof(arguments));
         if ((wikiInventoryPath is not null || wikiExamplesPath is not null
             || wikiRuntimeReference is not null || wikiEditorReference is not null || wikiTarget is not null) && !wiki)
@@ -127,8 +134,8 @@ public static partial class ArchitectureValidator
         }
         List<string> failures = [];
 
-        WikiProjectReferences? evaluatedReferences = !wiki || dotnetHost is null ? null
-            : new WikiProjectReferences(repositoryRoot, configuration, dotnetHost, wikiTarget);
+        WikiProjectReferences? evaluatedReferences = dotnetHost is null ? null
+            : new WikiProjectReferences(repositoryRoot, configuration, dotnetHost, wikiTarget, artifactsPath);
         var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration,
             evaluatedReferences, cancellationToken, failures);
         if (wiki)
@@ -157,10 +164,11 @@ public static partial class ArchitectureValidator
         ValidateProductionSolutionFolders(repositoryRoot, failures);
         ValidateTestSolutionFolders(repositoryRoot, failures);
         ArchitectureRules.Validate(repositoryRoot, failures);
-        PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures);
+        IReadOnlyDictionary<string, string>? outputs = null;
         if (dotnetHost is not null)
-            MSBuildProjectGraphValidator.ValidateAsync(repositoryRoot, configuration, dotnetHost,
+            outputs = MSBuildProjectGraphValidator.ValidateAsync(repositoryRoot, configuration, dotnetHost, artifactsPath,
                 projectGraphPath, failures, cancellationToken).GetAwaiter().GetResult();
+        PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures, outputs);
         if (failures.Count == 0)
         {
             Console.WriteLine("InnoEngine architecture validation passed.");
@@ -584,7 +592,7 @@ public static partial class ArchitectureValidator
             return "src/composition/editor/panels";
         if (string.Equals(projectName, "Inno.Editor.Hosting", StringComparison.Ordinal))
             return "src/composition/editor/hosting";
-        if (string.Equals(projectName, "Inno.Editor.ImGui", StringComparison.Ordinal))
+        if (projectName is "Inno.Editor.ImGui" or "Inno.Editor.Workbench" or "Inno.Editor.Assets.ImGui" or "Inno.Editor.Shaders.ImGui" or "Inno.Editor.Graph.ImGui")
             return "src/composition/editor/presentation";
         if (string.Equals(projectName, "Inno.Editor.Core", StringComparison.Ordinal) ||
             string.Equals(projectName, "Inno.Editor.Diagnostics", StringComparison.Ordinal) ||

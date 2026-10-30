@@ -1,5 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Settings/Inno.Editor.Panel.Settings.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Graph.ImGui/Inno.Editor.Graph.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Inno.Editor.Panel.Hierarchy.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Inno.Editor.Assets.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Workbench/Inno.Editor.Workbench.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.Settings/Inno.Core.Settings.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" />
@@ -15,9 +28,25 @@
     <IsTestProject>true</IsTestProject>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
+    <InnoTestNativeProduct>editor</InnoTestNativeProduct>
+    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="../../../src/composition/editor/hosting/Inno.Editor.Hosting/Layout/DefaultEditorLayout.ini"
+          Link="Fixtures/DefaultEditorLayout.ini" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference
+      Include="../../../src/foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+      PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Stats/Inno.Editor.Panel.Stats.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Logging/Inno.Editor.Panel.Logging.csproj" />
     <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets/Inno.Assets.csproj" PrivateAssets="compile" />

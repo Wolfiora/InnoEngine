@@ -8,14 +8,17 @@ using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Logging;
+using Inno.Build.Toolchains;
 using Xunit;
 
 namespace Inno.Build.Tests;
 
 public sealed class TaskPublisherBootstrapTests
 {
-    [Fact]
-    public async Task ProjectGraphSharesCompilationButKeepsPrivateLoadsAndFreshBuildOwnership()
+    [Theory]
+    [InlineData("Debug")]
+    [InlineData("Release")]
+    public async Task ProjectGraphSharesCompilationButKeepsPrivateLoadsAndFreshBuildOwnership(string configuration)
     {
         string repository = TestRepository.GetRoot(typeof(TaskPublisherBootstrapTests).Assembly);
         string root = Path.Combine(Path.GetTempPath(), "InnoPublisherTests", Guid.NewGuid().ToString("N"));
@@ -45,15 +48,80 @@ public sealed class TaskPublisherBootstrapTests
                 };
                 string references = string.Join(string.Empty, dependencies.Select(static name =>
                     $"<ProjectReference Include=\"../{name}/{name}.csproj\" />"));
+                if (name == "Root")
+                    references += "<ProjectReference Include=\"" + SecurityElement.Escape(Path.Combine(repository,
+                        "src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj")) + "\" />";
                 File.WriteAllText(Path.Combine(directory, name + ".csproj"),
                     "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
-                    + "<ImplicitUsings>disable</ImplicitUsings></PropertyGroup><ItemGroup>" + references + "</ItemGroup></Project>");
+                    + "<ImplicitUsings>disable</ImplicitUsings><BuildingInsideVisualStudio>false</BuildingInsideVisualStudio></PropertyGroup>"
+                    + "<ItemDefinitionGroup><ProjectReference><AdditionalProperties>BuildProjectReferences=true;BuildingInsideVisualStudio=false</AdditionalProperties>"
+                    + "</ProjectReference></ItemDefinitionGroup><ItemGroup>" + references + "</ItemGroup></Project>");
             }
-            var first = await Build(root);
+            var first = await Build(root, configuration);
             string firstOwner = Validate(first.output, first.binlog);
-            var second = await Build(root);
+            var second = await Build(root, configuration);
             string secondOwner = Validate(second.output, second.binlog);
             Assert.NotEqual(firstOwner, secondOwner);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("net10.0-browser", "browser-wasm")]
+    [InlineData("net10.0", "win-x64")]
+    public async Task ProductPublishPropertiesDoNotReachFoundationBootstrap(
+        string framework,
+        string runtimeIdentifier
+    ) {
+        string repository = TestRepository.GetRoot(typeof(TaskPublisherBootstrapTests).Assembly);
+        string root = Path.Combine(Path.GetTempPath(), "InnoBootstrapTargetTests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            string project = Path.Combine(root, "Probe.proj");
+            File.WriteAllText(project, $$"""
+                <Project>
+                  <PropertyGroup><Configuration>Debug</Configuration></PropertyGroup>
+                  <Import Project="{{SecurityElement.Escape(Path.Combine(repository, "Directory.Build.props"))}}" />
+                  <Import Project="{{SecurityElement.Escape(Path.Combine(repository, "Directory.Build.targets"))}}" />
+                  <Target Name="Probe" DependsOnTargets="PrepareInnoTaskPublisher" />
+                </Project>
+                """);
+            string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+            string binlog = Path.Combine(root, "probe.binlog");
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            using var output = new StringWriter();
+            using var errors = new StringWriter();
+            Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(dotnet,
+                ["msbuild", project, "-nologo", "-t:Probe", "-nr:false", "-bl:" + binlog,
+                    "-p:InnoTaskArtifacts=" + Path.Combine(root, "tasks"), "-p:ArtifactsPath=" + Path.Combine(root, "caller"),
+                    "-p:TargetFramework=" + framework, "-p:RuntimeIdentifier=" + runtimeIdentifier,
+                    "-p:PublishAot=true", "-p:PublishSingleFile=true", "-p:SelfContained=true", "-p:WasmBuildNative=true"],
+                repository, timeout.Token, DotNetSdkEnvironment.Create(dotnet), output, errors));
+            Assert.True(failure is null, $"{failure}\n{output}\n{errors}");
+            int requests = 0;
+            var events = new BinaryLogReplayEventSource();
+            events.ProjectStarted += (
+                _,
+                item
+            ) => {
+                if (Path.GetFileNameWithoutExtension(item.ProjectFile) != "Inno.Core.IO"
+                    || item.TargetNames != "Restore;Build")
+                    return;
+                requests++;
+                Assert.NotNull(item.GlobalProperties);
+                foreach (string property in new[] { "RuntimeIdentifier", "TargetFramework", "PublishAot", "PublishSingleFile", "SelfContained", "WasmBuildNative" })
+                    Assert.DoesNotContain(property, item.GlobalProperties!.Keys);
+                Assert.Equal(Path.Combine(root, "caller", ".inno-task-foundation").Replace('\\', '/'),
+                    item.GlobalProperties!["ArtifactsPath"].Replace('\\', '/'));
+            };
+            events.Replay(binlog);
+            Assert.True(requests > 0, "No neutral Foundation bootstrap was inspected.");
+            Assert.False(Directory.Exists(Path.Combine(root, "caller", "bin")));
+            Assert.False(Directory.Exists(Path.Combine(root, "caller", "obj")));
         }
         finally
         {
@@ -75,6 +143,32 @@ public sealed class TaskPublisherBootstrapTests
         // Incremental Build targets can report TargetPath without executing the compiler.
         int compilations = 0;
         var events = new BinaryLogReplayEventSource();
+        int sharedFoundationRequests = 0;
+        int bootstrapFoundationRequests = 0;
+        events.ProjectStarted += (
+            _,
+            project
+        ) => {
+            if (Path.GetFileNameWithoutExtension(project.ProjectFile) != "Inno.Core.IO"
+                || project.GlobalProperties is not { } globals
+                || !globals.TryGetValue("ArtifactsPath", out string? artifacts))
+                return;
+            if (string.Equals(Path.GetFileName(artifacts), ".inno-task-foundation", StringComparison.Ordinal))
+            {
+                bootstrapFoundationRequests++;
+                Assert.DoesNotContain("InnoNativeTarget", globals.Keys);
+                Assert.DoesNotContain("BuildingInsideVisualStudio", globals.Keys);
+                return;
+            }
+            if (!string.IsNullOrEmpty(project.TargetNames)
+                || !string.Equals(Path.GetFileName(artifacts), "managed", StringComparison.Ordinal))
+                return;
+            sharedFoundationRequests++;
+            Assert.True(globals.TryGetValue("InnoNativeTarget", out string? target));
+            Assert.Equal("fixture-target", target);
+            Assert.True(globals.TryGetValue("BuildingInsideVisualStudio", out string? insideIde));
+            Assert.Equal("false", insideIde);
+        };
         events.TaskStarted += (
             _,
             task
@@ -83,6 +177,8 @@ public sealed class TaskPublisherBootstrapTests
                 compilations++;
         };
         events.Replay(binlog);
+        Assert.True(sharedFoundationRequests > 0, "The real shared Foundation graph was not exercised.");
+        Assert.True(bootstrapFoundationRequests > 0, "The neutral bootstrap output owner was not exercised.");
         Assert.True(compilations == 1, $"Expected one bootstrap Csc task, observed {compilations}.\n{output}");
         string[] runtimeReports = output.Split('\n').Select(static line => line.Trim())
             .Where(static line => line.StartsWith("INNO-TASK-RUNTIME ", StringComparison.Ordinal)).ToArray();
@@ -94,8 +190,10 @@ public sealed class TaskPublisherBootstrapTests
         return owner;
     }
 
-    private static async Task<(string output, string binlog)> Build(string root)
-    {
+    private static async Task<(string output, string binlog)> Build(
+        string root,
+        string configuration
+    ) {
         string dotnet = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
         var start = new ProcessStartInfo(dotnet)
@@ -109,7 +207,8 @@ public sealed class TaskPublisherBootstrapTests
         string binlog = Path.Combine(root, Guid.NewGuid().ToString("N") + ".binlog");
         foreach (string argument in new[]
         {
-            "build", "Root/Root.csproj", "--disable-build-servers", "--nologo", "-m:2", "-nodeReuse:false",
+            "build", "Root/Root.csproj", "--configuration", configuration, "--disable-build-servers", "--nologo", "-m:2", "-nodeReuse:false",
+            "-p:InnoNativeTarget=fixture-target",
             "-p:InnoTaskArtifacts=" + Path.Combine(root, "tasks"),
             "-p:ArtifactsPath=" + Path.Combine(root, "managed"),
             "-bl:" + binlog

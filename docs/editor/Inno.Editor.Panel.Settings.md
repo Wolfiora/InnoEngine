@@ -11,6 +11,8 @@ Settings
 └─ Build/...    → Settings.Build.inno
 ```
 
+Settings 专用字段底色与内边距由内部 `Styling/SettingsStyle` 维护。它只读取当前帧的共享尺度，不把 Settings 策略或 Session 引用放回公共 metrics。
+
 ## 窗口行为
 
 - 主菜单 `Edit/Settings...` 打开可移动、可缩放但不可 Dock/Collapse 的 Modal。
@@ -21,17 +23,20 @@ Settings
 - 任何拥有子页面的非叶页面都会在 description 下方自动显示相同的子页面跳转列表，即使该页面自身同时拥有设置字段；字段仍从跳转列表下方开始，不要求每个页面重复编写导航 UI。
 - 右侧每个完整字段使用自动内容行高；label/content/reset 保持对齐，连续行之间没有空隙。Reset 固定宽度扣除后，label/content 使用共享 2:3 比例，长标签在本列换行。Field Table 严格使用 page 的真实 content width，不通过负 cursor 或扩大 table width 穿透 padding，因此不会污染 `CursorMaxPos` 或产生虚假水平滚动范围。左右 gutter 背景作为不参与 layout 的 draw-list geometry 延伸至内容窗口边缘，文字与控件继续使用正常 window/cell inset。两种背景使用轻微明度差和固定 `0.005` alpha，只辅助辨认连续字段而不形成明显色块。
 - 合成页面不需要中央 page 注册；frontend 根据 slash-delimited path 自动补齐祖先。
-- Catalog generation 改变时丢弃旧 staged generation，按新 definitions 原子重建窗口 session。
+- 窗口借用当前 generation 的 definitions 和隔离编辑值。打开期间通过既有 reload admission guard 延迟脚本请求与激活；关闭后恢复许可，不在后台丢弃未提交草稿。导航只跟踪中立 session revision，不保存上一次编辑 Session。
 
 ## 单一 Apply 操作
 
 底部根据 staged state 使用两种互斥状态：没有变化时只显示右对齐的 `OK`；存在变化时显示右对齐的 `Cancel` 与 `Apply`，其中 `Cancel` 在左、`Apply` 在右：
 
-- `Apply` 一次提交所有 dirty scope；Editor、Project、Build 分别原子写入 `Settings.Editor.inno`、`Settings.Project.inno`、`Settings.Build.inno`，并形成各自的 History entry。
+- `Apply` 使用同一个既有 History transaction 提交所有 dirty scope；三个 owner 分别原子写入自己的文件，全部成功后形成一个 `Apply Settings` Undo/Redo entry，才更新草稿基线。
 - `Cancel` 同时丢弃三个域尚未 Apply 的隔离 staged 值并关闭窗口。
 - `OK` 仅在 session clean 时关闭窗口，不执行无意义的持久化。
 - `Apply` 仅在 staged effective value 相对窗口打开或上次 Apply 的基线真正变化时启用。把一次未提交修改 Reset 回原始默认值不会留下虚假的 reset intent。
-- 三个持久化域仍分别保证各自的原子写入与 History；单一按钮不把三个文件伪装成一个跨文件事务。
+- 任一写入或 History 记录失败时，通过既有事务回滚本次已应用修改。普通文件或校验失败留在窗口内显示，草稿可重试或取消，完整诊断进入 Console，不因此隔离整个 Modal。
+- 回滚无法证明状态完整时保留原始与回滚诊断，遵守 History 的 Faulted 状态，禁用 Apply 并明确要求重启。关闭失败前不会释放仍承担恢复的 Session/transaction owner。
+- 意外 Drawer/呈现异常仍由既有 Registry 隔离；先取消窗口的临时编辑 owner，释放正常 reload admission。Settings 动作明确禁用并说明需恢复扩展；catalog 更新后才能重开。不会留下已不可操作、却永久阻塞重载的 Modal。
+- 这是进程内的领域回滚和单一 History 操作；三个文件仍是各自原子写入，不宣称断电或进程崩溃期间具有跨文件提交保证。
 
 Reset Editor 恢复字段定义的 `defaultValue`。Reset Project 删除项目 override，并恢复 Host 默认值与依赖有序 Plugin 默认贡献的合成结果。Reset Build 恢复由项目名、host target 和首个已导入 Scene 建立的 project-derived 默认值。页面顶部 Reset 会递归作用于当前页面所有后代字段，但提交仍遵循各自数据域。
 
@@ -110,20 +115,21 @@ Settings frontend 不内建 Boolean、Layer、Tag、PBR 或其他业务字段类
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
-本项目没有公开入口，通过组合或扩展发现使用内部实现。
+本程序集没有对外公开类型；扩展由当前产品的 Registry 在内部发现。
 
 ## 项目依赖
 
-- [Inno.Build](../build/Inno.Build.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Managed](../build/Inno.Build.Managed.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Core.Logging` | 实现依赖；不传递 compile surface |
+| `Inno.Build` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Build.Managed` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Serialization` | 公开签名依赖 |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |

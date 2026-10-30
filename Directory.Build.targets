@@ -76,6 +76,25 @@
     </ProjectReference>
   </ItemGroup>
 
+  <!-- The same tool can be an analyzer and a private runtime dependency. Let its owner
+       declare that role through SDK negotiation, including SDK-added transitive edges. -->
+  <ItemGroup>
+    <AdditionalTargetFrameworkInfoProperty Include="IsRoslynComponent" />
+  </ItemGroup>
+
+  <Target Name="NormalizeInnoCompilerToolReferences" AfterTargets="_GetProjectReferenceTargetFrameworkProperties">
+    <PropertyGroup>
+      <_InnoCompilerToolPropertyPattern>(?i)(^|;)(?:$([System.String]::Copy('$(InnoCompilerToolExcludedProperties);BuildProjectReferences;InnoTaskBootstrapOwner;BuildingInsideVisualStudio').Replace(';', '|')))=[^;]*</_InnoCompilerToolPropertyPattern>
+    </PropertyGroup>
+    <ItemGroup>
+      <_MSBuildProjectReferenceExistent Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_MSBuildProjectReferenceExistent.AdditionalPropertiesFromProject)', '&lt;IsRoslynComponent&gt;\s*(?i:true)\s*&lt;/IsRoslynComponent&gt;'))">
+        <InnoCompilerTool>true</InnoCompilerTool>
+        <AdditionalProperties>$([System.Text.RegularExpressions.Regex]::Replace('%(_MSBuildProjectReferenceExistent.AdditionalProperties)', '$(_InnoCompilerToolPropertyPattern)', ''))</AdditionalProperties>
+        <GlobalPropertiesToRemove>%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove);$(InnoCompilerToolExcludedProperties);BuildProjectReferences;InnoTaskBootstrapOwner;BuildingInsideVisualStudio</GlobalPropertiesToRemove>
+      </_MSBuildProjectReferenceExistent>
+    </ItemGroup>
+  </Target>
+
   <PropertyGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
     <!-- Generated ABI carriers already own marshalling; the runtime must not reinterpret them. -->
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
@@ -206,14 +225,18 @@
     <Error Condition="'@(_BindGenCompileSources->Count())' != '1'" Text="The native component must compile exactly one selected Bindings.cs source: @(_BindGenCompileSources)" />
   </Target>
 
+  <PropertyGroup Condition="'$(InnoProductId)' != ''">
+    <InnoProductRestoreProject Condition="'$(InnoProductRestoreProject)' == ''">$(MSBuildProjectFullPath)</InnoProductRestoreProject>
+  </PropertyGroup>
+
   <Target
     Name="RestoreProductTargetGraph"
     BeforeTargets="PrepareForBuild"
     DependsOnTargets="PrepareInnoTaskPublisher"
-    Condition="'$(InnoProductId)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoProductRestore)' != 'false'">
+    Condition="'$(InnoProductRestoreProject)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoProductRestore)' != 'false'">
     <Inno.Build.TaskHosting.RestoreOwnedProjectTask
-      Projects="$(MSBuildProjectFullPath)"
-      Properties="InnoNativeTarget=$(InnoProductTarget);InnoToolTarget=$(InnoToolTarget);InnoProductRestore=false"
+      Projects="$(InnoProductRestoreProject)"
+      Properties="InnoNativeTarget=$(InnoNativeTarget);InnoToolTarget=$(InnoToolTarget);InnoProductBuildProperties=$(InnoProductBuildProperties);InnoProductRestore=false"
       LockPath="$(MSBuildThisFileDirectory)artifacts/managed/restore-graphs/write.lock" />
   </Target>
 

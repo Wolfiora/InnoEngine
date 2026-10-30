@@ -20,7 +20,16 @@ internal static class FileSystemRename
         string source,
         string destination,
         bool overwrite
-    ) => Execute(() => File.Move(source, destination, overwrite), default);
+    ) {
+        if (overwrite || OperatingSystem.IsWindows())
+        {
+            Execute(() => File.Move(source, destination, overwrite), default);
+            return;
+        }
+        // The SDK's Unix Move(false) can check absence and then replace a competing creator.
+        // POSIX link creates the complete destination in one no-clobber filesystem operation.
+        PosixFilePublication.Install(source, destination);
+    }
 
     private static void Execute(
         Action rename,

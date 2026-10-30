@@ -22,7 +22,7 @@
 - [Inno.Editor.PlayMode](../editor/Inno.Editor.PlayMode.md)
 - [Inno.Editor.Settings](../editor/Inno.Editor.Settings.md)
 - [Inno.Editor.Panel.FileBrowser](../editor/Inno.Editor.Panel.FileBrowser.md)
-- [Inno.Editor.Panel.Global](../editor/Inno.Editor.Panel.Global.md)
+- [Inno.Editor.Workbench](../editor/Inno.Editor.Workbench.md)
 - [Inno.Editor.Panel.Logging](../editor/Inno.Editor.Panel.Logging.md)
 - [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)
 - [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)

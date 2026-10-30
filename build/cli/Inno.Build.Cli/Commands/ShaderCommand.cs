@@ -46,7 +46,9 @@ internal static class ShaderCommand
             tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant()
                 + extension));
         string includes = Path.GetDirectoryName(product.files.Single(file => Path.GetFileName(file) == "bgfx_shader.sh"))!;
-        ShaderArtifactBuilder.Compile(options.Require("assets"), options.Require("shader"),
+        ShaderBuildInputs inputs = ShaderBuildInputs.Capture(options.Require("assets"), cancellationToken);
+        using ProcessOwnedDirectory compilation = await StandardBuildCaches.CreateShaderWorkspaceAsync(root, cancellationToken).ConfigureAwait(false);
+        ShaderArtifactBuilder.Compile(inputs, compilation, options.Require("shader"),
             platform, renderer, options.Require("output"), new ToolRunner(executables, includes, context.host.services.workspaces), cancellationToken);
         return;
         

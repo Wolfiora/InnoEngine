@@ -24,7 +24,10 @@ internal sealed class CompilerFixture : IDisposable
     private readonly ProjectSettingsStore m_settings;
     private readonly PluginEnvironment m_plugins;
 
-    internal CompilerFixture(Action<string, SerializationRegistry>? configure = null)
+    internal CompilerFixture(
+        Action<string, SerializationRegistry>? configure = null,
+        IScriptCompilationEnvironmentProvider? compilationEnvironment = null
+    )
     {
         projectRoot = Path.Combine(Path.GetTempPath(), "InnoCompilerTests", Guid.NewGuid().ToString("N"));
         string assetsRoot = Path.Combine(projectRoot, "Assets");
@@ -55,7 +58,15 @@ internal sealed class CompilerFixture : IDisposable
             AssetSerializationContext.Create(m_assets));
         m_plugins = new PluginEnvironment(m_assets, m_settings, m_host.serialization,
             pluginsRoot, libraryRoot, scan, m_host.modules.generations);
-        compiler = new ScriptCompiler(new ScriptCompilerOptions { projectRootDirectory = projectRoot }, m_assets, m_plugins);
+        string dotnetHost = Path.Combine(
+            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        compiler = new ScriptCompiler(
+            new ScriptCompilerOptions
+            {
+                projectRootDirectory = projectRoot,
+                compilationEnvironment = compilationEnvironment ?? new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
+            }, m_assets, m_plugins);
     }
 
     internal string projectRoot { get; }

@@ -48,14 +48,15 @@ internal sealed partial class EditorSceneWorkspace
         SceneDocument document = GetOrCreateDocument(scene);
         try
         {
-            SynchronizeSource(scene, document);
-            m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
+            if (!SynchronizeSource(scene, document))
+                return true;
         }
         catch (Exception exception)
         {
             document.isDirty = true;
             if (m_diagnostics.PublishSynchronizationFailure(scene, exception))
                 m_log.Write(LogLevel.Error, "Scene document synchronization failed: {0}", [exception]);
+            return true;
         }
         if (string.IsNullOrEmpty(document.sourcePath))
             return true;
@@ -260,6 +261,10 @@ internal sealed partial class EditorSceneWorkspace
         GameScene scene,
         string relativePath
     ) {
+        SceneDocument document = GetOrCreateDocument(scene);
+        if (document.sourceAssetId != Guid.Empty &&
+            string.Equals(document.sourcePath, relativePath, StringComparison.Ordinal) && !SynchronizeSource(scene, document))
+            throw new InvalidOperationException($"Scene source '{relativePath}' is unavailable. Restore its source or explicitly save to another directory.");
         scene.name = GetAssetName(relativePath);
         bool exists = m_assets.TryLoad(AssetPath.Parse(relativePath), out SceneAsset? sceneAsset);
         sceneAsset ??= new SceneAsset();
@@ -271,7 +276,6 @@ internal sealed partial class EditorSceneWorkspace
             throw new InvalidOperationException($"No asset importer could save scene '{relativePath}'.");
 
         byte[] savedHash = ComputeSceneHash(scene);
-        SceneDocument document = GetOrCreateDocument(scene);
         document.sourcePath = relativePath;
         document.sourceAssetId = sceneAsset.identity.persistentId;
         document.savedHash = savedHash;
@@ -302,19 +306,33 @@ internal sealed partial class EditorSceneWorkspace
         }
     }
 
-    private byte[] ComputeSceneHash(GameScene scene)
-    {
+    private byte[] ComputeSceneHash(
+        GameScene scene,
+        SceneDocument? document = null
+    ) {
         var dependencies = new AssetDependencyCollection(includeLastKnownPaths: false);
         SerializationContext context = AssetSerializationContext.Create(m_assets, dependencies);
-        byte[] payload = m_serialization.Serialize(scene, context);
-        return SHA256.HashData(payload);
+        SerializationSnapshot captured = m_serialization.CaptureSnapshot(scene, context, document?.observedSnapshot);
+        if (document is not null && ReferenceEquals(captured, document.observedSnapshot))
+            return document.observedHash!;
+        using var algorithm = SHA256.Create();
+        using (var digest = new CryptoStream(Stream.Null, algorithm, CryptoStreamMode.Write, leaveOpen: true))
+        using (var output = new BufferedStream(digest, 64 * 1024))
+            captured.WriteTo(output);
+        byte[] hash = algorithm.Hash ?? throw new InvalidOperationException("Scene content hashing did not complete.");
+        if (document is not null)
+        {
+            document.observedSnapshot = captured;
+            document.observedHash = hash;
+        }
+        return hash;
     }
 
     private bool HasSerializedChanges(
         GameScene scene,
         SceneDocument document
     )
-        => !ComputeSceneHash(scene).AsSpan().SequenceEqual(document.savedHash);
+        => !ComputeSceneHash(scene, document).AsSpan().SequenceEqual(document.savedHash);
 
     private string CreateUniquePath(
         string directory,
@@ -376,6 +394,9 @@ internal sealed partial class EditorSceneWorkspace
         Guid sourceAssetId,
         byte[] savedHash
     ) {
+        internal SerializationSnapshot? observedSnapshot;
+        internal byte[]? observedHash;
+
         /// <summary>
         /// The scene value used as part of this type's public representation.
         /// </summary>

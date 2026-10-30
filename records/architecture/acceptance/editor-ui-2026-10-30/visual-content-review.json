@@ -1,0 +1,30 @@
+{
+  "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "status": "Passed",
+  "recorded": "2026-10-30T12:14:37.0025039+08:00",
+  "reviewMethod": "assistant-image-inspection",
+  "original": {
+    "sha256": "0EFE2EC81D6E10AB0652E72368AAFECBFC12F612353E0DFA71757450B91274FE",
+    "path": "D:/InnoEngine-Verification/editor-ui-closure-2026-10-27/e09/visual-capture/original/Captures-cold-settled/native-ui-replay.png"
+  },
+  "current": {
+    "sha256": "707EB8D5A0DDF2AAC4D60B9F7ECAE5C68D1699E00F60FBECDA2A5B1852B39E67",
+    "path": "D:/InnoEngine-Verification/editor-ui-closure-2026-10-27/e09/visual-capture/current/Captures-dd5979c6/native-ui-replay.png"
+  },
+  "size": [
+    1600,
+    900
+  ],
+  "observations": [
+    "Both Scene and Game contain actual FlappyBird title, bird, pipes, scenery and ground; no blank placeholder viewport was accepted.",
+    "Major docking boundaries, tabs, scene tool column, hierarchy rows and empty Inspector remain recognizable and aligned.",
+    "Main menu is intentionally organized as File/Edit/View/Window/Tools; Stats adds the planned numeric trends within its existing scrolling owner.",
+    "Completed replay reports 1827 triangles, zero unavailable GPU commands and zero unexecuted callbacks."
+  ],
+  "limits": [
+    "Native triangle/atlas replay with actual GPU viewport texture readback; not a physical screenshot or final-backbuffer capture.",
+    "One matching full-product layout/content pair; other scales and inputs are separate real-context simulated-metric contracts.",
+    "No physical monitor/DPI, OS IME, manual usability or local Mac acceptance is inferred.",
+    "Single screenshot FPS/delta values are not performance evidence; controlled repeated measurements remain required."
+  ]
+}

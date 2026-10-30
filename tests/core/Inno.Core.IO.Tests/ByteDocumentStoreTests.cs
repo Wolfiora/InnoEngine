@@ -40,4 +40,37 @@ public sealed class ByteDocumentStoreTests
                 Directory.Delete(root, true);
         }
     }
+
+    [Fact]
+    public void FilesReadTheCompleteDocumentWhileADeleteAccessHandleRemainsOpen()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "inno-documents-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        string path = Path.Combine(root, "settings");
+        byte[] expected = [3, 4, 5, 6];
+        try
+        {
+            File.WriteAllBytes(path, expected);
+            using (var renameHandle = new FileStream(
+                       path,
+                       FileMode.Open,
+                       FileAccess.Read,
+                       FileShare.Read | FileShare.Delete,
+                       4096,
+                       FileOptions.DeleteOnClose))
+            {
+                if (OperatingSystem.IsWindows())
+                    Assert.ThrowsAny<IOException>(() => File.ReadAllBytes(path));
+                var store = new FileByteDocumentStore(path);
+                for (int read = 0; read < 16; read++)
+                    Assert.Equal(expected, store.Read());
+                Assert.True(File.Exists(path));
+            }
+            Assert.False(File.Exists(path));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
 }

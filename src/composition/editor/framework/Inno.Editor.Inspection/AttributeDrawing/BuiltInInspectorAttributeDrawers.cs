@@ -1,17 +1,15 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections;
 using System.Globalization;
 using System.Reflection;
-using Inno.Adapter.Presentation.ImGui;
 using Inno.Core.Serialization;
 using Inno.Editor.Annotations;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
-
 [InspectorAttributeDrawer(typeof(HeaderAttribute))]
 internal sealed class HeaderInspectorAttributeDrawer : IInspectorAttributeDrawer
 {
@@ -24,7 +22,7 @@ internal sealed class HeaderInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         var header = (HeaderAttribute)context.attribute;
-        ImGuiWidget.SectionHeader(header.title, header.description);
+        EditorUI.current.widgets.SectionHeader(header.title, header.description);
     }
 }
 
@@ -40,14 +38,14 @@ internal sealed class TextInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         string text = ((TextAttribute)context.attribute).text;
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.textDisabled);
+        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.textDisabled);
         try
         {
-            ImGuiWidget.WrappedText(text);
+            EditorUI.current.widgets.WrappedText(text);
         }
         finally
         {
-            NativeImGui.PopStyleColor();
+            Ui.PopStyleColor();
         }
     }
 }
@@ -64,7 +62,7 @@ internal sealed class SpaceInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         float height = ((SpaceAttribute)context.attribute).height;
-        NativeImGui.Dummy(new System.Numerics.Vector2(0f, height));
+        Ui.Dummy(new System.Numerics.Vector2(0f, height));
     }
 }
 
@@ -133,10 +131,7 @@ internal sealed class ShowIfInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void Update(InspectorAttributeDrawContext context)
     {
         var condition = (ShowIfAttribute)context.attribute;
-        context.isVisible &= InspectorConditionEvaluator.Evaluate(
-            context.GetSiblingValue(condition.memberName),
-            condition.condition,
-            condition.expectedValue);
+        context.isVisible &= InspectorConditionEvaluator.Evaluate(context.GetSiblingValue(condition.memberName), condition.condition, condition.expectedValue);
     }
 }
 
@@ -152,10 +147,7 @@ internal sealed class HideIfInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void Update(InspectorAttributeDrawContext context)
     {
         var condition = (HideIfAttribute)context.attribute;
-        context.isVisible &= !InspectorConditionEvaluator.Evaluate(
-            context.GetSiblingValue(condition.memberName),
-            condition.condition,
-            condition.expectedValue);
+        context.isVisible &= !InspectorConditionEvaluator.Evaluate(context.GetSiblingValue(condition.memberName), condition.condition, condition.expectedValue);
     }
 }
 
@@ -173,25 +165,26 @@ internal sealed class HelpBoxInspectorAttributeDrawer : IInspectorAttributeDrawe
         var help = (HelpBoxAttribute)context.attribute;
         if (!string.IsNullOrWhiteSpace(help.conditionMember)
             && !InspectorConditionEvaluator.Evaluate(
-                context.GetSiblingValue(help.conditionMember),
-                help.condition,
-                help.expectedValue))
+            context.GetSiblingValue(help.conditionMember),
+            help.condition,
+            help.expectedValue
+        ))
         {
             return;
         }
+
         System.Numerics.Vector4 color = help.messageType switch
         {
             InspectorMessageType.Warning => EditorPalette.warning,
             InspectorMessageType.Error => EditorPalette.error,
-            _ => new System.Numerics.Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque)
-        };
+            _ => new System.Numerics.Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque)};
         string icon = help.messageType switch
         {
             InspectorMessageType.Warning => ImGuiIcon.TriangleExclamation,
             InspectorMessageType.Error => ImGuiIcon.CircleXmark,
             _ => ImGuiIcon.CircleInfo
         };
-        ImGuiWidget.HelpBox(help.text, icon, color);
+        EditorUI.current.widgets.HelpBox(help.text, icon, color);
     }
 }
 
@@ -212,8 +205,7 @@ internal static class InspectorConditionEvaluator
             InspectorCondition.NotNull => value is not null,
             InspectorCondition.Assigned => IsAssigned(value),
             InspectorCondition.NotAssigned => !IsAssigned(value),
-            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Unknown Inspector condition.")
-        };
+            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Unknown Inspector condition.")};
     }
 
     private static bool IsTruthy(object? value)
@@ -232,12 +224,8 @@ internal static class InspectorConditionEvaluator
     {
         if (value is null)
             return false;
-        PropertyInfo? property = value.GetType().GetProperty(
-            "isAssigned",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        return property?.PropertyType == typeof(bool) && property.GetIndexParameters().Length == 0
-            ? (bool)(property.GetValue(value) ?? false)
-            : true;
+        PropertyInfo? property = value.GetType().GetProperty("isAssigned", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        return property?.PropertyType == typeof(bool) && property.GetIndexParameters().Length == 0 ? (bool)(property.GetValue(value) ?? false) : true;
     }
 
     private static bool AreEqual(
@@ -251,11 +239,18 @@ internal static class InspectorConditionEvaluator
         Type valueType = value.GetType();
         try
         {
-            object converted = valueType.IsEnum
-                ? expected is string name
-                    ? Enum.Parse(valueType, name, ignoreCase: false)
-                    : Enum.ToObject(valueType, expected)
-                : Convert.ChangeType(expected, valueType, CultureInfo.InvariantCulture);
+            object converted = valueType.IsEnum ? expected is string name ? Enum.Parse(
+                valueType,
+                name,
+                ignoreCase: false
+            ) : Enum.ToObject(
+                valueType,
+                expected
+            ) : Convert.ChangeType(
+                expected,
+                valueType,
+                CultureInfo.InvariantCulture
+            );
             return Equals(value, converted);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidCastException or FormatException or OverflowException)

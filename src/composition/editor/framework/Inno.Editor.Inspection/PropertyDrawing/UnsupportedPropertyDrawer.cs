@@ -1,8 +1,7 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.Editor.ImGui;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
 namespace Inno.Editor.Inspection;
-
 internal sealed class UnsupportedPropertyDrawer : IPropertyDrawer
 {
     internal static UnsupportedPropertyDrawer instance { get; } = new();
@@ -16,10 +15,9 @@ internal sealed class UnsupportedPropertyDrawer : IPropertyDrawer
     public void Draw(PropertyDrawContext context)
     {
         object? value = context.GetValue();
-        EditorWidget.ColoredText(
+        EditorUI.current.widgets.ColoredText(
             EditorPalette.warning,
-            value is null
-                ? $"Unsupported {context.propertyType.Name} (null)"
-                : $"Unsupported {context.propertyType.Name}: {value}");
+            value is null ? $"Unsupported {context.propertyType.Name} (null)" : $"Unsupported {context.propertyType.Name}: {value}"
+        );
     }
 }

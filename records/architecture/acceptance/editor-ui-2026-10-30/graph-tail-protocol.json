@@ -1,0 +1,12 @@
+{
+  "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "reason": "Investigate two initial graph P95/max flags; preserve all original 150 trials.",
+  "producers": "Same unmodified production and public fixture assemblies; original b303d9f1, current dd5979c6.",
+  "pairs": 5,
+  "warmupFrames": 5,
+  "measuredFramesPerProcess": 50,
+  "order": "original,current on even pairs; current,original on odd pairs",
+  "metrics": "Pool all 50 frames in each process; nearest-rank P95; retain maxima, CPU, allocation, GC and geometry counts.",
+  "acceptance": "Same +10% median and at least three paired timing regressions; no hot-path allocation increase. No best-repetition selection.",
+  "pending": true
+}

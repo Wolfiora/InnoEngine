@@ -6,6 +6,16 @@
 
 最新全仓深审见[四仓库核心验收报告](../../records/architecture/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md)。正式架构门禁通过不表示资源清理、错误原子性和热路径成本都已闭合。
 
+## Editor UI 计划的当前结论
+
+[原计划复审](../../records/architecture/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md)中的实现和本地验收缺口已在 `dd5979c6` 闭合，见[完整报告](../../records/architecture/acceptance/EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md)和[真实 issue 台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)。菜单、Graph、Console、Stats、可见工作控制、实际界面工作流、完整尺度与输入、100 次开关和十次 reload 均有候选源码证据，不能再把此前中间状态描述为当前实现缺失。
+
+原产品 producer 和同输入五组对照已完成。完整 dirty inspection 通过十个独立进程的原预算；最差 P95 24.5695 ms，余量较小。图初始十帧尾部标记在预先声明的 50 帧/进程复验中未重现为持续回退；两批数据保留。2,000 节点图约 32 ms 的 P95、资源搜索约 73 ms 仍是值得继续改善的产品成本，不宣称所有场景稳定 60 FPS。
+
+分支修复包括资产源身份/内容、Missing Scene 分配、CJK 字体、精确 Context 退休、Core 读取共享与原子创建、脚本缓存发布，以及真实 SDK 输入与包加载身份。修复均位于原职责 owner；没有 UI fallback、BGCS 补丁或第二份基础能力系统。#13 非 LIFO 拒绝、#16 实际 assets/load、#19 同 SDK references 的本地验收已通过。
+
+精确交付 SHA、最终 Windows/macOS 自动 CI、英文 issue 验证和 PR Ready 状态统一见 [PR #26 验证附件](https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338)。在该附件完成前不能从本地结果推断最终 CI 成功；issue 保持 Open，合并后关闭，#18 只部分关联。人工 Mac、真实显示器、OS IME、长期体验仍未执行。以下独立问题没有因此视为解决。
+
 ## 本轮已修复并验证
 
 F02/F08 已在 Core Coroutine owner 内统一修复：嵌套枚举器逆序释放，完成/停止/失败共用退休流程；重入停止失效 handle 后在回调返回安全点清理，不再改坏活动遍历。Debug/Release 各 40 项回归通过，Runtime 62 项通过。异常明确汇总，未增加第二套调度器或事件系统。
@@ -25,10 +35,9 @@ B02 / F09 的当前处理是使用标准 `.csproj` 依赖还原，不再维护�
 | R02 | Runtime coroutine 接入 | 私有 scheduler 只有创建、Tick、stop 和 Dispose，当前没有 admission 路径；需落地最小真实契约或删除未使用状态，不能宣称已集成。 |
 | T01/T02 | Browser 验收覆盖 | 非致命 console 404 尚未归因；最高分跨启动写入没有在有界游戏运行中触发，已各自提交 issue。 |
 | B01 | Native 构建诊断 | Windows native 源码编码告警仍需按组件 owner 处理；B02 的依赖还原范围独立验收。 |
-| F03 | History 拒绝操作的原子性 | 非 LIFO Commit 在校验 ID 前弹栈，public handler 反例确认内层修改无法随后回滚/Undo。不能用正常顺序用例通过关闭此项。 |
 | F04/F05 | 插件 UI / 2D 热路径 | UI 插件在纹理 GPU 命中前按 draw 完整复制像素；2D 模型的非空 viewContent 使完整帧缓存持续绕过。见全仓报告的分配实测和调用链，尚未修复。 |
 | F06/F07 | 热构建与缓存维护成本 | 暖 Native 准备反复读取约 4.5 GB；当前 5 秒 inventory 超时，30 秒 dry-run 可完成。内容/owner 正确性协议已存在，但没有以此证明日常维护必然收敛或性能足够。 |
-| O01 | macOS / Metal | 历史 revision 的两条 CI 在单线程 Metal surface 退休用例超时，根因未确认。本轮没有 Mac，不能关闭或直接归责 BGCS。 |
+| O01 | macOS / Metal | 历史 revision 的超时保留原记录；`2dc37114` 的 Mac 自动 CI 已通过。Metal refcount warning 仍存在且 master 也可见，根因未确认；人工 Mac 交互未执行，不能宣称无泄漏或归责 BGCS。 |
 | O02 | 完整构建性能 | 本轮有当前热构建采样及同 .NET 10 的路径解析实现对照，但没有完整改造前的空闲、同输入五次 Editor 基线。历史高负载耗时不作有效对照，不宣称整体提速或已排除全部回退。 |
 | O06 | XML / Wiki 语义 | 符号、签名和示例门禁不证明全部历史注释足够具体；部分历史参数说明仍需补充实际约束和失败语义。新增构建 API 的所有权、失败与生命周期单独说明。 |
 
@@ -36,7 +45,7 @@ B02 / F09 的当前处理是使用标准 `.csproj` 依赖还原，不再维护�
 
 | 范围 | 验收边界 |
 | --- | --- |
-| macOS ARM64 / Unix | 本轮无实机；Metal、Editor Debug/Release、示例产品、CoreCLR、NativeAOT 和不同卷格式未执行。历史 CI 与 fixture 仅保留原范围。 |
+| macOS ARM64 / Unix | 本地没有实机；人工 Metal、不同物理显示器/卷格式和完整发布矩阵未执行。当前交付的托管、原生和产品自动 CI 结果见上方精确提交附件；历史 CI 与 fixture 不替代它。 |
 | Browser 产品 | 4.1.2 Native 与两种发布通过，解释执行和 AOT 各运行 3,000 帧。完整交互、游戏得分跨启动保存及 Browser 矩阵仍未闭合。 |
 | Rider 交互 | SDK 入口及 Task worker 回归不等于本轮操作过 Rider Run；没有单独的 Rider 生产分支。 |
 | GUI / 设备 | Play、昼夜切换、返回 Edit、窗口变化和退出按报告列出；完整 DPI/焦点、所有输入、音频听感及长期运行不计作通过。 |

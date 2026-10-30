@@ -1,57 +1,50 @@
-using EditorImGui = Inno.Editor.ImGui.ImGui;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Numerics;
-
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Editor.Settings;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Inno.Core.Logging;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
-
 [EditorModal("editor.settings", "Settings", order: 100)]
-internal sealed unsafe class SettingsModal(
+internal sealed class SettingsModal(
     EditorSettings editorSettings,
     ProjectSettingsEditor projectSettings,
-    SettingsWindowModule window
+    SettingsWindowModule window,
+    LogRouter logs
 ) : EditorModal
 {
     private readonly SettingsNavigation m_navigation = new();
     private readonly SettingsTree m_tree = new();
-
-    private SettingsEditSession? m_navigationSession;
+    private long m_navigationRevision = -1;
     private string m_query = string.Empty;
     private float m_treePaneRatio = 0.25f;
-
+    private readonly Logger m_log = logs.CreateLogger<SettingsModal>();
+    private string m_applyError = string.Empty;
     /// <summary>
     /// Gets whether this implementation is visible.
     /// </summary>
     public override bool isVisible => window.isVisible;
-
     /// <summary>
     /// Gets whether this implementation can move.
     /// </summary>
     public override bool canMove => true;
-
     /// <summary>
     /// Gets whether this implementation can resize.
     /// </summary>
     public override bool canResize => true;
-
     /// <summary>
     /// Lets the navigation tree and current settings page own their scrolling.
     /// </summary>
     public override bool allowScrolling => false;
-
     /// <summary>
     /// Gets the preferred initial window size in logical editor units.
     /// </summary>
     public override Vector2 initialSize => new(1050f, 700f);
-
     /// <summary>
     /// Gets the smallest editor window size that keeps every setting control usable.
     /// </summary>
@@ -65,11 +58,30 @@ internal sealed unsafe class SettingsModal(
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
+        try
+        {
+            DrawWindow();
+        }
+        catch (Exception failure)
+        {
+            try
+            {
+                window.FailPresentation();
+            }
+            catch (Exception retirementFailure)
+            {
+                throw new AggregateException("Settings presentation and its owned retirement failed.", failure, retirementFailure);
+            }
+            throw;
+        }
+    }
+
+    private void DrawWindow()
+    {
         SettingsEditSession? session = window.session;
         if (session is null)
             return;
-        if (session.editorCatalogRevision != editorSettings.catalogRevision ||
-            session.projectCatalogRevision != projectSettings.catalogRevision)
+        if (session.editorCatalogRevision != editorSettings.catalogRevision || session.projectCatalogRevision != projectSettings.catalogRevision)
         {
             window.Refresh();
             session = window.session;
@@ -78,20 +90,25 @@ internal sealed unsafe class SettingsModal(
         }
 
         IReadOnlyList<SettingsPage> pages = session.pages;
-        EnsureNavigationSession(session, pages);
+        EnsureNavigationSession(pages);
         SettingsPage? selected = SettingsTree.FindPage(pages, m_navigation.currentPath);
         selected ??= SettingsTree.FindFirstMatch(pages, m_query);
         if (selected is not null)
             m_navigation.Replace(selected.path);
-
-        float footerHeight = NativeImGui.GetFrameHeightWithSpacing() +
-                             NativeImGui.Raw.GetStyle()->ItemSpacing.Y;
-        Vector2 available = NativeImGui.GetContentRegionAvail();
-        DrawBody(
-            session,
-            pages,
-            new Vector2(available.X, MathF.Max(1f, available.Y - footerHeight)));
-        NativeImGui.Separator();
+        float footerHeight = Ui.GetFrameHeightWithSpacing() + Ui.GetLayout().itemSpacing.Y;
+        if (m_applyError.Length != 0)
+            footerHeight += Ui.GetFrameHeightWithSpacing();
+        Vector2 available = Ui.GetContentRegionAvailable();
+        DrawBody(session, pages, new Vector2(available.X, MathF.Max(1f, available.Y - footerHeight)));
+        Ui.Separator();
+        if (m_applyError.Length != 0)
+        {
+            EditorUiSession.current.widgets.ColoredText(EditorPalette.error,
+                session.isHistoryFaulted ? "History integrity was lost. Restart the Editor."
+                    : session.canApply ? "Apply failed. Edits remain staged; retry or Cancel."
+                    : "Settings recovery is required. See Console for details.");
+            EditorUiSession.current.widgets.DrawItemTooltip(m_applyError);
+        }
         DrawButtons(session);
     }
 
@@ -100,46 +117,33 @@ internal sealed unsafe class SettingsModal(
         IReadOnlyList<SettingsPage> pages,
         Vector2 size
     ) {
-        ImGuiTableFlags flags = ImGuiTableFlags.NoPadOuterX |
-                                ImGuiTableFlags.NoKeepColumnsVisible |
-                                ImGuiTableFlags.SizingFixedFit |
-                                ImGuiTableFlags.NoSavedSettings;
-        float splitterWidth = MathF.Max(
-            5f * EditorWidget.style.zoom,
-            NativeImGui.Raw.GetStyle()->DockingSeparatorSize);
+        ImGuiTableFlags flags = ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoKeepColumnsVisible | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings;
+        float splitterWidth = MathF.Max(5f * EditorUiSession.current.widgets.style.zoom, Ui.GetLayout().dockingSeparatorSize);
         float treeWidth = ResolveTreeWidth(size.X, splitterWidth);
-        NativeImGui.PushStyleVar((int)ImGuiStyleVar.CellPadding, Vector2.Zero);
+        Ui.PushStyleVar(ImGuiStyleVar.CellPadding, Vector2.Zero);
         bool tableStarted = false;
         try
         {
-            tableStarted = NativeImGui.BeginTable("##settings_split", 3, (int)flags, size);
+            tableStarted = Ui.BeginTable("##settings_split", 3, flags, size);
             if (tableStarted)
             {
-                NativeImGui.TableSetupColumn(
-                    "##settings_tree",
-                    (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
-                    treeWidth);
-                NativeImGui.TableSetupColumn(
-                    "##settings_splitter",
-                    (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
-                    splitterWidth);
-                NativeImGui.TableSetupColumn(
-                    "##settings_page",
-                    (int)ImGuiTableColumnFlags.WidthStretch);
-                NativeImGui.TableNextRow();
-                _ = NativeImGui.TableSetColumnIndex(0);
+                Ui.TableSetupColumn("##settings_tree", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), treeWidth);
+                Ui.TableSetupColumn("##settings_splitter", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), splitterWidth);
+                Ui.TableSetupColumn("##settings_page", ImGuiTableColumnFlags.WidthStretch);
+                Ui.TableNextRow();
+                _ = Ui.TableSetColumnIndex(0);
                 DrawTreePane(pages, size.Y);
-                _ = NativeImGui.TableSetColumnIndex(1);
+                _ = Ui.TableSetColumnIndex(1);
                 DrawSplitter(splitterWidth, size.X, treeWidth, size.Y);
-                _ = NativeImGui.TableSetColumnIndex(2);
+                _ = Ui.TableSetColumnIndex(2);
                 DrawPagePane(session, pages, size.Y);
             }
         }
         finally
         {
             if (tableStarted)
-                NativeImGui.EndTable();
-            NativeImGui.PopStyleVar();
+                Ui.EndTable();
+            Ui.PopStyleVar();
         }
     }
 
@@ -147,24 +151,21 @@ internal sealed unsafe class SettingsModal(
         IReadOnlyList<SettingsPage> pages,
         float height
     ) {
-        bool visible = NativeImGui.BeginChild(
+        bool visible = Ui.BeginChild(
             "##settings_tree_pane",
             new Vector2(0f, height),
-            (int)(ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding),
-            (int)(ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
+            (ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding),
+            (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        );
         try
         {
             if (!visible)
                 return;
             DrawNavigationButtons();
-            NativeImGui.SameLine(0f, EditorWidget.style.assetToolbarSectionSpacing);
+            Ui.SameLine(0f, EditorUiSession.current.widgets.style.toolbarSectionSpacing);
             bool wasSearching = !string.IsNullOrWhiteSpace(m_query);
-            NativeImGui.SetNextItemWidth(-1f);
-            bool queryChanged = EditorWidget.SearchInput(
-                "settings",
-                "Search settings",
-                ref m_query,
-                width: -1f);
+            Ui.SetNextItemWidth(-1f);
+            bool queryChanged = EditorUiSession.current.widgets.SearchInput("settings", "Search settings", ref m_query, width: -1f);
             if (queryChanged)
             {
                 SettingsPage? first = SettingsTree.FindFirstMatch(pages, m_query);
@@ -180,27 +181,24 @@ internal sealed unsafe class SettingsModal(
                     m_navigation.Replace(string.Empty);
                 }
             }
-            NativeImGui.Separator();
-            bool scrollVisible = NativeImGui.BeginChild("##settings_tree_scroll", Vector2.Zero, 0, 0);
+
+            Ui.Separator();
+            bool scrollVisible = Ui.BeginChild("##settings_tree_scroll", Vector2.Zero, 0, 0);
             try
             {
                 if (scrollVisible)
                 {
-                    m_tree.Draw(
-                        pages,
-                        m_query,
-                        m_navigation.currentPath,
-                        page => m_navigation.NavigateTo(page.path));
+                    m_tree.Draw(pages, m_query, m_navigation.currentPath, page => m_navigation.NavigateTo(page.path));
                 }
             }
             finally
             {
-                NativeImGui.EndChild();
+                Ui.EndChild();
             }
         }
         finally
         {
-            NativeImGui.EndChild();
+            Ui.EndChild();
         }
     }
 
@@ -209,10 +207,7 @@ internal sealed unsafe class SettingsModal(
         IReadOnlyList<SettingsPage> pages,
         float height
     ) {
-        bool visible = NativeImGui.BeginChild(
-            "##settings_page_pane",
-            new Vector2(0f, height),
-            (int)(ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding));
+        bool visible = Ui.BeginChild("##settings_page_pane", new Vector2(0f, height), (ImGuiChildFlags.Borders | ImGuiChildFlags.AlwaysUseWindowPadding));
         try
         {
             if (!visible)
@@ -229,12 +224,12 @@ internal sealed unsafe class SettingsModal(
             }
             else
             {
-                NativeImGui.TextUnformatted("No matching settings");
+                Ui.Text("No matching settings");
             }
         }
         finally
         {
-            NativeImGui.EndChild();
+            Ui.EndChild();
         }
     }
 
@@ -244,41 +239,28 @@ internal sealed unsafe class SettingsModal(
         float treeWidth,
         float height
     ) {
-        _ = NativeImGui.InvisibleButton(
-            "##settings_tree_splitter_grip",
-            new Vector2(width, MathF.Max(1f, height)));
-        bool hovered = NativeImGui.IsItemHovered();
-        bool active = NativeImGui.IsItemActive();
+        _ = Ui.InvisibleButton("##settings_tree_splitter_grip", new Vector2(width, MathF.Max(1f, height)));
+        bool hovered = Ui.IsItemHovered();
+        bool active = Ui.IsItemActive();
         if (hovered || active)
-            NativeImGui.SetMouseCursor((int)ImGuiMouseCursor.ResizeEw);
+            Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
         if (active)
         {
-            Vector2 delta = NativeImGui.GetMouseDragDelta((int)ImGuiMouseButton.Left);
+            Vector2 delta = Ui.GetMouseDragDelta(ImGuiMouseButton.Left);
             if (MathF.Abs(delta.X) > 0f)
             {
                 float usable = MathF.Max(0f, availableWidth - width);
                 float requested = ClampTreeWidth(treeWidth + delta.X, usable);
-                m_treePaneRatio = usable > float.Epsilon
-                    ? Math.Clamp(requested / usable, 0f, 1f)
-                    : 0.25f;
-                NativeImGui.ResetMouseDragDelta((int)ImGuiMouseButton.Left);
+                m_treePaneRatio = usable > float.Epsilon ? Math.Clamp(requested / usable, 0f, 1f) : 0.25f;
+                Ui.ResetMouseDragDelta(ImGuiMouseButton.Left);
             }
         }
 
-        Vector2 minimum = NativeImGui.GetItemRectMin();
-        Vector2 maximum = NativeImGui.GetItemRectMax();
-        System.Numerics.Vector4 color = active
-            ? EditorPalette.assetAccent
-            : hovered
-                ? EditorPalette.assetBorder
-                : EditorPalette.assetBorderSoft;
+        Vector2 minimum = Ui.GetItemMinimum();
+        Vector2 maximum = Ui.GetItemMaximum();
+        System.Numerics.Vector4 color = active ? EditorPalette.contentAccent : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
         float centerX = (minimum.X + maximum.X) * 0.5f;
-        EditorImGui.DrawLine(
-            new Vector2(centerX, minimum.Y),
-            new Vector2(centerX, maximum.Y),
-            NativeImGui.ColorConvertFloat4ToU32(color),
-            EditorWidget.style.borderSize
-        );
+        Ui.DrawLine(new Vector2(centerX, minimum.Y), new Vector2(centerX, maximum.Y), Ui.ToPackedColor(color), EditorUiSession.current.widgets.style.borderSize);
     }
 
     private float ResolveTreeWidth(
@@ -293,72 +275,101 @@ internal sealed unsafe class SettingsModal(
         float requested,
         float usable
     ) {
-        float minimum = MathF.Min(
-            EditorWidget.style.assetPaneMinimumVisibleWidth,
-            usable * 0.5f);
+        float minimum = MathF.Min(EditorUiSession.current.widgets.style.paneMinimumVisibleWidth, usable * 0.5f);
         float maximum = MathF.Max(minimum, usable - minimum);
         return Math.Clamp(requested, minimum, maximum);
     }
 
     private void DrawButtons(SettingsEditSession session)
     {
-        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
+        EditorUiLayout style = Ui.GetLayout();
         if (!session.isDirty)
         {
-            float okWidth = NativeImGui.CalcTextSize("OK").X + style->FramePadding.X * 2f;
-            NativeImGui.SetCursorPosX(
-                NativeImGui.GetCursorPosX() +
-                MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - okWidth));
-            if (NativeImGui.Button("OK"))
-                window.Close();
+            float okWidth = Ui.MeasureText("OK").X + style.framePadding.X * 2f;
+            Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - okWidth));
+            if (Ui.Button("OK"))
+                TryClose();
             return;
         }
 
-        float cancelWidth = NativeImGui.CalcTextSize("Cancel").X + style->FramePadding.X * 2f;
-        float applyWidth = NativeImGui.CalcTextSize("Apply").X + style->FramePadding.X * 2f;
-        float totalWidth = cancelWidth + style->ItemSpacing.X + applyWidth;
-        NativeImGui.SetCursorPosX(
-            NativeImGui.GetCursorPosX() +
-            MathF.Max(0f, NativeImGui.GetContentRegionAvail().X - totalWidth));
-        if (NativeImGui.Button("Cancel"))
-            window.Close();
-
-        NativeImGui.SameLine(0f, -1f);
-        if (NativeImGui.Button("Apply"))
-            _ = session.Apply();
+        float cancelWidth = Ui.MeasureText("Cancel").X + style.framePadding.X * 2f;
+        float applyWidth = Ui.MeasureText("Apply").X + style.framePadding.X * 2f;
+        float totalWidth = cancelWidth + style.itemSpacing.X + applyWidth;
+        Ui.SetCursorPosX(Ui.GetCursorPosX() + MathF.Max(0f, Ui.GetContentRegionAvailable().X - totalWidth));
+        if (Ui.Button("Cancel"))
+            TryClose();
+        Ui.SameLine(0f, -1f);
+        Ui.BeginDisabled(!session.canApply);
+        try
+        {
+            if (Ui.Button("Apply"))
+            {
+                try
+                {
+                    _ = session.Apply();
+                    m_applyError = string.Empty;
+                }
+                catch (Exception failure) when (IsOperationalFailure(failure))
+                {
+                    ReportFailure(failure);
+                }
+            }
+        }
+        finally
+        {
+            Ui.EndDisabled();
+        }
     }
+
+    private void TryClose()
+    {
+        try
+        {
+            window.Close();
+            m_applyError = string.Empty;
+        }
+        catch (Exception failure) when (IsOperationalFailure(failure))
+        {
+            ReportFailure(failure);
+        }
+    }
+
+    private void ReportFailure(Exception failure)
+    {
+        m_applyError = failure.Message;
+        m_log.Write(LogLevel.Error, "Settings operation failed; edits and History ownership were retained: {0}", [failure]);
+    }
+
+    private static bool IsOperationalFailure(Exception failure)
+        => failure is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or AggregateException;
 
     private void DrawNavigationButtons()
     {
-        float frameHeight = NativeImGui.GetFrameHeight();
+        float frameHeight = Ui.GetFrameHeight();
         var buttonSize = new Vector2(frameHeight, frameHeight);
-        NativeImGui.BeginDisabled(!m_navigation.canGoBack);
-        if (NativeImGui.Button(
-                $"{Inno.Adapter.Presentation.ImGui.ImGuiIcon.AngleLeft}##SettingsBack",
-                buttonSize))
+        Ui.BeginDisabled(!m_navigation.canGoBack);
+        if (Ui.Button($"{Inno.Editor.ImGui.ImGuiIcon.AngleLeft}##SettingsBack", buttonSize))
         {
             m_navigation.GoBack();
         }
-        NativeImGui.EndDisabled();
 
-        NativeImGui.SameLine(0f, EditorWidget.style.assetToolbarTightSpacing);
-        NativeImGui.BeginDisabled(!m_navigation.canGoForward);
-        if (NativeImGui.Button(
-                $"{Inno.Adapter.Presentation.ImGui.ImGuiIcon.AngleRight}##SettingsForward",
-                buttonSize))
+        Ui.EndDisabled();
+        Ui.SameLine(0f, EditorUiSession.current.widgets.style.toolbarTightSpacing);
+        Ui.BeginDisabled(!m_navigation.canGoForward);
+        if (Ui.Button($"{Inno.Editor.ImGui.ImGuiIcon.AngleRight}##SettingsForward", buttonSize))
         {
             m_navigation.GoForward();
         }
-        NativeImGui.EndDisabled();
+
+        Ui.EndDisabled();
     }
 
-    private void EnsureNavigationSession(
-        SettingsEditSession session,
-        IReadOnlyList<SettingsPage> pages
-    ) {
-        if (ReferenceEquals(m_navigationSession, session))
+    private void EnsureNavigationSession(IReadOnlyList<SettingsPage> pages)
+    {
+        if (m_navigationRevision == window.sessionRevision)
             return;
-        m_navigationSession = session;
+        m_navigationRevision = window.sessionRevision;
+        m_applyError = string.Empty;
         SettingsPage? first = SettingsTree.FindFirstMatch(pages, m_query);
         m_navigation.Reset(first?.path ?? string.Empty);
     }

@@ -32,19 +32,59 @@ public static class DotNetSdkResolver
     /// <exception cref="InvalidOperationException">
     /// The selected host cannot resolve a valid SDK identity and absolute base path.
     /// </exception>
-    public static async ValueTask<DotNetSdkDescriptor> ResolveAsync(
+    public static ValueTask<DotNetSdkDescriptor> ResolveAsync(
         string hostPath,
         string projectPath,
         CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(hostPath);
         ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
-        hostPath = ToolchainEnvironment.ResolveExecutable(hostPath);
         string project = Path.GetFullPath(projectPath);
         if (!File.Exists(project))
             throw new FileNotFoundException("The managed entry project is absent.", project);
+        return ResolveDirectoryAsync(hostPath, Path.GetDirectoryName(project)!, cancellationToken);
+    }
+
+    /// <summary>
+    /// Selects the SDK from an authoring owner's directory before any temporary evaluation project is created.
+    /// </summary>
+    /// <param name="hostPath">
+    /// The managed host explicitly selected by the composition root.
+    /// </param>
+    /// <param name="ownerDirectory">
+    /// The existing source owner whose ancestor global.json rules govern the operation.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels discovery and drains the SDK process.
+    /// </param>
+    /// <returns>
+    /// The selected SDK and fixed managed CLI path, without probing reference pack directories.
+    /// </returns>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The source owner directory does not exist.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// The host or selected SDK CLI is missing.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The host cannot resolve the source owner's requested SDK.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The caller cancels SDK discovery.
+    /// </exception>
+    public static async ValueTask<DotNetSdkDescriptor> ResolveDirectoryAsync(
+        string hostPath,
+        string ownerDirectory,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentException.ThrowIfNullOrWhiteSpace(hostPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(ownerDirectory);
+        string directory = Path.GetFullPath(ownerDirectory);
+        if (!Directory.Exists(directory))
+            throw new DirectoryNotFoundException($"The managed SDK source owner is absent: '{directory}'.");
+        hostPath = ToolchainEnvironment.ResolveExecutable(hostPath);
         string information = await ToolchainEnvironment.CaptureOutputAsync(hostPath, ["--info"],
-            Path.GetDirectoryName(project)!, cancellationToken,
+            directory, cancellationToken,
             DotNetSdkEnvironment.Create(hostPath, new Dictionary<string, string>
             {
                 ["DOTNET_CLI_UI_LANGUAGE"] = "en-US"

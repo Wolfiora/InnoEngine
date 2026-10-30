@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Inno.Assets;
 using Inno.Core.Serialization;
@@ -11,6 +10,11 @@ namespace Inno.Scene;
 /// <summary>
 /// Captures and restores individual scene-object properties while preserving scene reference identities.
 /// </summary>
+/// <remarks>
+/// Each operation borrows its owning Core identity domain and resolves current references within that scene.
+/// Property access does not enumerate unrelated scene objects. Complete graph and prefab operations keep
+/// their explicit frozen local-identity boundaries. Asset references retain the supplied resolver context.
+/// </remarks>
 public static class ScenePropertySerialization
 {
     /// <summary>
@@ -52,7 +56,7 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
-        SceneGraphReferenceMap references = CreateReferences(ResolveScene(target));
+        ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
             return serialization.CapturePropertyData(serializable, propertyName, context);
@@ -89,7 +93,7 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
-        SceneGraphReferenceMap references = CreateReferences(ResolveScene(target));
+        ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
             return serialization.CapturePropertiesData(serializable, context);
@@ -120,7 +124,7 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
-        SceneGraphReferenceMap references = CreateReferences(ResolveScene(target));
+        ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
             return serialization.CaptureProperties(serializable, context);
@@ -136,7 +140,7 @@ public static class ScenePropertySerialization
     /// Bytes produced by <see cref="CaptureProperty"/> or <see cref="CaptureProperties"/>.
     /// </param>
     /// <param name="mode">
-    /// The compatibility policy applied to matching current properties.
+    /// The policy applied to unavailable or mismatched current properties.
     /// </param>
     /// <param name="serialization">
     /// The serialization registry that owns the active converter generation.
@@ -165,45 +169,16 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
-        SceneGraphReferenceMap references = CreateReferences(ResolveScene(target));
+        ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
             return serialization.RestorePropertiesData(serializable, data, mode, context);
     }
 
-    internal static SceneGraphReferenceMap CreateReferences(
+    internal static ScenePropertyReferenceScope CreateReferences(
         GameScene scene,
         IReadOnlyDictionary<Guid, Guid>? aliases = null
-    ) {
-        var objects = new List<EngineObject>();
-        IReadOnlyList<GameObject> gameObjects = scene.GetObjects();
-        for (int i = 0; i < gameObjects.Count; i++)
-        {
-            GameObject gameObject = gameObjects[i];
-            objects.Add(gameObject);
-            IReadOnlyList<GameComponent> components = gameObject.GetComponents();
-            for (int componentIndex = 0; componentIndex < components.Count; componentIndex++)
-                objects.Add(components[componentIndex]);
-        }
-        IReadOnlyList<GameSystem> systems = scene.GetSystems();
-        for (int i = 0; i < systems.Count; i++)
-            objects.Add(systems[i]);
-
-        var references = new SceneGraphReferenceMap(scene, objects);
-        for (int i = 0; i < objects.Count; i++)
-            references.Register(objects[i].identity.persistentId, objects[i]);
-        if (aliases is not null)
-        {
-            var byId = objects.ToDictionary(static value => value.identity.persistentId);
-            foreach ((Guid alias, Guid targetId) in aliases)
-            {
-                if (!byId.TryGetValue(targetId, out EngineObject? target))
-                    throw new InvalidOperationException($"Scene reference alias '{alias}' targets missing object '{targetId}'.");
-                references.Register(alias, target);
-            }
-        }
-        return references;
-    }
+    ) => new(scene, aliases);
 
     internal static GameScene ResolveScene(EngineObject target)
     {

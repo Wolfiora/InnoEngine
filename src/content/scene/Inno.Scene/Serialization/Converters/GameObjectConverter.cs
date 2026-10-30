@@ -30,7 +30,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
     ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
-        if (SceneGraphReferenceMap.TryGetCurrent(out SceneGraphReferenceMap? activeReferences))
+        if (SceneReferenceScope.TryGetCurrent(out SceneReferenceScope? activeReferences))
         {
             WriteReference(writer, activeReferences!, value);
             return;
@@ -68,7 +68,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                     : Guid.NewGuid());
         }
 
-        var references = new SceneGraphReferenceMap(value.scene, engineObjects, sourceIds, value);
+        var references = new SceneGraphReferenceMap(value.scene, sourceIds, value);
         writer.Write(C_SOURCE_ROOT_ID_KEY, sourceIds[value]);
         using (references.Enter())
         {
@@ -76,6 +76,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                 writer,
                 entries,
                 sourceIds,
+                included.Contains,
                 preserveRootSiblingOrder: false);
         }
     }
@@ -92,7 +93,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
     public override GameObject Read(SerializationReader reader)
     {
         ArgumentNullException.ThrowIfNull(reader);
-        if (SceneGraphReferenceMap.TryGetCurrent(out SceneGraphReferenceMap? activeReferences))
+        if (SceneReferenceScope.TryGetCurrent(out SceneReferenceScope? activeReferences))
             return (GameObject)ReadReference(reader, activeReferences!);
 
         GameScene scene = reader.context.GetRequired<GameScene>();
@@ -198,7 +199,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
 
     private static void WriteReference(
         SerializationWriter writer,
-        SceneGraphReferenceMap references,
+        SceneReferenceScope references,
         GameObject gameObject
     ) {
         EngineReferenceToken token = references.Capture(gameObject, writer.path);
@@ -208,7 +209,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
 
     private static EngineObject ReadReference(
         SerializationReader reader,
-        SceneGraphReferenceMap references
+        SceneReferenceScope references
     ) {
         var token = new EngineReferenceToken(
             (EngineReferenceKind)reader.Read<int>("kind"),

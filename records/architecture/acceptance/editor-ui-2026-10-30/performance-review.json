@@ -1,0 +1,300 @@
+{
+  "revision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "status": "Passed",
+  "unresolved": [],
+  "reviewedComparisons": 68,
+  "initialTrials": 150,
+  "followupTrials": 10,
+  "initialSummarySha256": "bda0af282ada8860b38cf871ded6d7b9cc61bef7314da24cf306830984e0bb75",
+  "followupSummarySha256": "c34fff55878a619d7ba013e2d6aa31d00aa8f3002bae502ac55e7248e2d5cb41",
+  "followupEvidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\candidate-dd5979c6-graph-tail\\graph-tail-summary.json",
+  "decision": "The only initial flags concern the same graph tail, where ten measured frames make P95 the maximum. A predeclared additional five alternating process pairs used the unchanged existing fixture with its normal five repetitions (50 measured frames/process). No pair exceeds +10% for P95; median P95 ratio 0.976476, CPU ratio 0.921875, frame median ratio 1.010766 and allocation ratio 0.737942. The initial +19.98% observation remains in the report, not erased or called a passing initial trial. No persistent >10% CPU/P95 or hot allocation regression is established under this repeatability criterion.",
+  "initialFlags": [
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          24.7994,
+          25.438,
+          29.9459,
+          35.0849,
+          32.6808
+        ],
+        "current": [
+          27.3035,
+          39.7908,
+          36.6837,
+          35.9288,
+          33.9387
+        ]
+      },
+      "medians": {
+        "original": 29.9459,
+        "current": 35.9288
+      },
+      "medianRatio": 1.1997902884869047,
+      "pairedRatios": [
+        1.1009742171181562,
+        1.5642267473858007,
+        1.2249990816772913,
+        1.0240530826651923,
+        1.0384904898288903
+      ],
+      "reviewRequired": true,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    },
+    {
+      "kind": "static",
+      "workload": "2000-shader-nodes",
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          24.7994,
+          25.438,
+          29.9459,
+          35.0849,
+          32.6808
+        ],
+        "current": [
+          27.3035,
+          39.7908,
+          36.6837,
+          35.9288,
+          33.9387
+        ]
+      },
+      "medians": {
+        "original": 29.9459,
+        "current": 35.9288
+      },
+      "medianRatio": 1.1997902884869047,
+      "pairedRatios": [
+        1.1009742171181562,
+        1.5642267473858007,
+        1.2249990816772913,
+        1.0240530826651923,
+        1.0384904898288903
+      ],
+      "reviewRequired": true,
+      "note": "Review all values and scope; timing quantization, startup tradeoffs and noise are not silently accepted."
+    }
+  ],
+  "followupComparisons": [
+    {
+      "metric": "medianMs",
+      "values": {
+        "original": [
+          32.14015,
+          28.0138,
+          23.884900000000002,
+          28.468899999999998,
+          33.80315
+        ],
+        "current": [
+          29.2441,
+          22.2517,
+          28.7754,
+          23.92,
+          28.86425
+        ]
+      },
+      "medians": {
+        "original": 28.468899999999998,
+        "current": 28.7754
+      },
+      "medianRatio": 1.0107661342728382,
+      "pairedRatios": [
+        0.9098930776614297,
+        0.7943120890418294,
+        1.204752793606002,
+        0.8402151119291579,
+        0.8538923147694815
+      ],
+      "repeated": 1,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "p95Ms",
+      "values": {
+        "original": [
+          38.1169,
+          32.4755,
+          32.8391,
+          31.4734,
+          46.1429
+        ],
+        "current": [
+          32.9627,
+          27.737,
+          32.0666,
+          32.2866,
+          31.9508
+        ]
+      },
+      "medians": {
+        "original": 32.8391,
+        "current": 32.0666
+      },
+      "medianRatio": 0.9764762128072937,
+      "pairedRatios": [
+        0.8647791399615393,
+        0.8540900063124509,
+        0.9764762128072937,
+        1.0258376915109266,
+        0.6924315550171316
+      ],
+      "repeated": 0,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "maximumMs",
+      "values": {
+        "original": [
+          44.106,
+          37.801,
+          37.4046,
+          33.0214,
+          63.8343
+        ],
+        "current": [
+          33.2867,
+          28.4866,
+          35.6308,
+          41.3669,
+          34.8923
+        ]
+      },
+      "medians": {
+        "original": 37.801,
+        "current": 34.8923
+      },
+      "medianRatio": 0.9230523002036982,
+      "pairedRatios": [
+        0.7546977735455495,
+        0.753593820269305,
+        0.9525780251626805,
+        1.2527300477871925,
+        0.5466073881909882
+      ],
+      "repeated": 1,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "cpuMsPerOperation",
+      "values": {
+        "original": [
+          45.3125,
+          34.6875,
+          32.5,
+          40.0,
+          50.0
+        ],
+        "current": [
+          36.875,
+          28.75,
+          40.0,
+          30.3125,
+          36.875
+        ]
+      },
+      "medians": {
+        "original": 40.0,
+        "current": 36.875
+      },
+      "medianRatio": 0.921875,
+      "pairedRatios": [
+        0.8137931034482758,
+        0.8288288288288288,
+        1.2307692307692308,
+        0.7578125,
+        0.7375
+      ],
+      "repeated": 1,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "allocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4506232.8,
+          4469765.44,
+          4469715.04,
+          4469812.0,
+          4543119.52
+        ],
+        "current": [
+          3335401.28,
+          3282931.68,
+          3298463.84,
+          3298407.52,
+          3298463.84
+        ]
+      },
+      "medians": {
+        "original": 4469812.0,
+        "current": 3298463.84
+      },
+      "medianRatio": 0.7379424101058388,
+      "pairedRatios": [
+        0.7401750925961925,
+        0.7344751584995923,
+        0.7379584180382112,
+        0.7379298100233298,
+        0.7260350130520009
+      ],
+      "repeated": 0,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    },
+    {
+      "metric": "totalAllocatedBytesPerOperation",
+      "values": {
+        "original": [
+          4506881.12,
+          4470309.92,
+          4470363.2,
+          4470461.28,
+          4543768.32
+        ],
+        "current": [
+          3335667.04,
+          3283197.44,
+          3298523.2,
+          3298467.36,
+          3298523.68
+        ]
+      },
+      "medians": {
+        "original": 4470461.28,
+        "current": 3298523.2
+      },
+      "medianRatio": 0.7378485112390908,
+      "pairedRatios": [
+        0.7401275851713612,
+        0.7344451500579628,
+        0.7378646996736193,
+        0.7378360203580602,
+        0.7259445129455896
+      ],
+      "repeated": 0,
+      "reviewRequired": false,
+      "scope": "Maximum is retained as an outlier observation; acceptance specifies CPU/P95 and allocation, not an absolute maximum guarantee."
+    }
+  ],
+  "productionChangeForFollowup": false,
+  "otherReview": [
+    "Every other initial comparison was reviewed, including all paired values and scope; no repeatability flag remains.",
+    "Process CPU zero for very short command batches is quantization, not a claimed 100% CPU gain.",
+    "Product first-application wall time, source-activation CPU-frame interval and complete-run main CPU have different scopes; child CPU/GPU completion/physical display are not inferred.",
+    "Current source-activation CPU-frame median is 56.65s versus 52.72s (+7.46%), within the stated repeatable >10% gate; retain the cost, not claim startup uniformly improved.",
+    "2k graph P95 around32ms is not a 60FPS guarantee; 10k asset search around73ms is an explicit search operation, not a steady-frame guarantee.",
+    "Ten absolute complete-inspection processes separately satisfy median<16ms/P95<25ms/<8MiB at the unchanged100ms policy; worst observedP95 24.5695ms has limited margin.",
+    "All initial outliers, GC counts, counts of work, raw timings and all followup outliers remain preserved. No best-run selection, fixture validation removal, timeout relaxation or source/API change was made."
+  ]
+}

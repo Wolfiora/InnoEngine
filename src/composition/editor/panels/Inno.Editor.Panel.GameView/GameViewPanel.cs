@@ -1,9 +1,8 @@
-using EditorImGui = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.References;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-
 using Inno.Core.Settings;
 using Inno.Core.Input;
 using Inno.Editor.Core;
@@ -14,23 +13,20 @@ using Inno.Editor.Scene;
 using Inno.Editor.Settings;
 using Inno.Rendering;
 using Inno.Runtime;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
+using Ui = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Runtime;
 
 namespace Inno.Editor.Panel.GameView;
-
 /// <summary>
 /// Presents the active Plugin provider for the open Game viewport purpose.
 /// </summary>
 [EditorPanel("rendering.game-view", "Game", order: 220, menuPath: "Viewports")]
-internal sealed unsafe class GameViewPanel : EditorPanel
+internal sealed class GameViewPanel : EditorPanel
 {
+    private IDisposable? m_settingsSubscription;
     private const string C_VIEWPORT_ID = "game-view";
     private static readonly EditorViewportKindId S_KIND = new("inno.editor.viewport.game");
     private static readonly Vector2 S_UNAVAILABLE_PADDING = new(48f, 32f);
-
     private readonly EditorRenderingModule m_rendering;
     private readonly IEditorGameScenePresentation m_scenePresentation;
     private readonly IEditorPlayMode m_playMode;
@@ -42,7 +38,6 @@ internal sealed unsafe class GameViewPanel : EditorPanel
     private GamePresentationSettings m_presentation = new();
     private long m_presentationRevision = -1;
     private bool m_leftPointerActive;
-
     internal GameViewPanel(
         EditorRenderingModule rendering,
         IEditorGameScenePresentation scenePresentation,
@@ -65,7 +60,6 @@ internal sealed unsafe class GameViewPanel : EditorPanel
     /// Gets whether use window padding is enabled for this implementation.
     /// </summary>
     public override bool useWindowPadding => false;
-
     /// <summary>
     /// Gets whether allow scrolling is enabled for this implementation.
     /// </summary>
@@ -81,101 +75,85 @@ internal sealed unsafe class GameViewPanel : EditorPanel
     {
         using IDisposable presentationScope = m_playModeLoop.EnterPresentationScope();
         _ = context;
-        Vector2 available = NativeImGui.GetContentRegionAvail();
+        Vector2 available = Ui.GetContentRegionAvailable();
         if (available.X <= 0f || available.Y <= 0f)
             return;
         RefreshPresentationSettings();
-        float framebufferScale = NativeImGui.Raw.GetIO()->DisplayFramebufferScale.X;
+        float framebufferScale = Ui.GetInput().framebufferScale.X;
         if (!float.IsFinite(framebufferScale) || framebufferScale <= 0f)
             framebufferScale = 1f;
         GameViewportLayout layout = CalculateLayout(available, m_presentation, framebufferScale);
         m_rendering.SetPresentation(
             C_VIEWPORT_ID,
-            new EditorViewportPresentation(new Inno.Core.Mathematics.Color(
-                m_backgroundColor.X,
-                m_backgroundColor.Y,
-                m_backgroundColor.Z,
-                m_backgroundColor.W), framebufferScale));
+            new EditorViewportPresentation(new Inno.Core.Mathematics.Color(m_backgroundColor.X, m_backgroundColor.Y, m_backgroundColor.Z, m_backgroundColor.W), framebufferScale)
+        );
         m_rendering.SetContentScope(C_VIEWPORT_ID, CreateContentScope());
-        Vector2 outputOrigin = NativeImGui.GetCursorScreenPos() + layout.offset;
-        Vector2 mouse = NativeImGui.GetMousePos();
+        Vector2 outputOrigin = Ui.GetCursorScreenPosition() + layout.offset;
+        Vector2 mouse = Ui.GetMousePos();
         Vector2 local = mouse - outputOrigin;
-        bool inside = local.X >= 0f && local.Y >= 0f
-            && local.X < layout.size.X && local.Y < layout.size.Y;
-        ImGuiViewport* viewport = NativeImGui.Raw.GetWindowViewport();
-        bool gameViewFocused = m_playMode.isPlaying
-            && NativeImGui.IsWindowFocused((int)ImGuiFocusedFlags.RootAndChildWindows);
-        bool imageHovered = inside
-            && NativeImGui.IsWindowHovered((int)ImGuiHoveredFlags.RootAndChildWindows);
-        bool focused = m_inputCapture.Report(
-            viewport->ID,
-            outputOrigin - new Vector2(viewport->Pos.X, viewport->Pos.Y),
-            layout.size,
-            gameViewFocused,
-            imageHovered);
+        bool inside = local.X >= 0f && local.Y >= 0f && local.X < layout.size.X && local.Y < layout.size.Y;
+        var viewport = Ui.GetViewport();
+        bool gameViewFocused = m_playMode.isPlaying && Ui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
+        bool imageHovered = inside && Ui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
+        bool focused = m_inputCapture.Report(viewport.id, outputOrigin - viewport.position, layout.size, gameViewFocused, imageHovered);
         bool acceptsPointer = focused && imageHovered;
-        if (!NativeImGui.IsMouseDown((int)ImGuiMouseButton.Left)
-            && !NativeImGui.IsMouseReleased((int)ImGuiMouseButton.Left))
+        if (!Ui.IsMouseButtonDown(ImGuiMouseButton.Left) && !Ui.IsMouseReleased(ImGuiMouseButton.Left))
         {
             m_leftPointerActive = false;
         }
-        bool leftPressed = acceptsPointer && NativeImGui.IsMouseClicked((int)ImGuiMouseButton.Left);
+
+        bool leftPressed = acceptsPointer && Ui.IsMouseClicked(ImGuiMouseButton.Left);
         if (leftPressed)
             m_leftPointerActive = true;
-        bool leftReleased = m_leftPointerActive && NativeImGui.IsMouseReleased((int)ImGuiMouseButton.Left);
+        bool leftReleased = m_leftPointerActive && Ui.IsMouseReleased(ImGuiMouseButton.Left);
         if (leftReleased || !focused)
             m_leftPointerActive = false;
-        var io = NativeImGui.Raw.GetIO();
+        var io = Ui.GetInput();
         KeyModifier modifiers = KeyModifier.None;
-        if (io->KeyAlt != 0)
+        if (io.alt)
             modifiers |= KeyModifier.Alt;
-        if (io->KeyCtrl != 0)
+        if (io.control)
             modifiers |= KeyModifier.Control;
-        if (io->KeyShift != 0)
+        if (io.shift)
             modifiers |= KeyModifier.Shift;
-        if (io->KeySuper != 0)
+        if (io.super)
             modifiers |= KeyModifier.Super;
-        m_rendering.SetOutputInput(C_VIEWPORT_ID, focused ? new RenderOutputInput(
-            new Inno.Core.Mathematics.Vector2(local.X * layout.pixelWidth / layout.size.X, local.Y * layout.pixelHeight / layout.size.Y),
-            acceptsPointer,
-            acceptsPointer ? new Inno.Core.Mathematics.Vector2(0f, io->MouseWheel) : default,
-            modifiers,
-            [], [],
-            leftPressed ? [MouseButton.Left] : [],
-            leftReleased ? [MouseButton.Left] : [],
-            []) : RenderOutputInput.suspended);
-        if (!m_rendering.TrySubmit(
-                S_KIND,
-                C_VIEWPORT_ID,
-                layout.pixelWidth,
-                layout.pixelHeight,
-                out EditorViewportOutput output))
+        m_rendering.SetOutputInput(
+            C_VIEWPORT_ID,
+            focused ? new RenderOutputInput(
+                new Inno.Core.Mathematics.Vector2(local.X * layout.pixelWidth / layout.size.X, local.Y * layout.pixelHeight / layout.size.Y),
+                acceptsPointer,
+                acceptsPointer ? new Inno.Core.Mathematics.Vector2(0f, io.wheel) : default,
+                modifiers,
+                [],
+                [],
+                leftPressed ? [MouseButton.Left] : [],
+                leftReleased ? [MouseButton.Left] : [],
+                []
+            ) : RenderOutputInput.suspended
+        );
+        if (!m_rendering.TrySubmit(S_KIND, C_VIEWPORT_ID, layout.pixelWidth, layout.pixelHeight, out EditorViewportOutput output))
         {
-            DrawUnavailable(
-                available,
-                m_rendering.GetCompositionError(C_VIEWPORT_ID) ?? "No rendering model contributes to Game View.");
+            DrawUnavailable(available, m_rendering.GetCompositionError(C_VIEWPORT_ID) ?? "No rendering model contributes to Game View.");
             return;
         }
+
         if (!output.isReady)
         {
             DrawUnavailable(available, "Preparing Game View GPU target...");
             return;
         }
 
-        Vector2 origin = NativeImGui.GetCursorScreenPos();
+        Vector2 origin = Ui.GetCursorScreenPosition();
         if (m_presentation.preserveAspectRatio)
         {
-            EditorImGui.DrawFilledRectangle(
-                origin,
-                origin + available,
-                NativeImGui.ColorConvertFloat4ToU32(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)),
-                0
-            );
+            Ui.DrawFilledRectangle(origin, origin + available, Ui.ToPackedColor(new Vector4(0f, 0f, 0f, EditorPalette.opacityOpaque)), 0);
         }
-        NativeImGui.SetCursorScreenPos(origin + layout.offset);
+
+        Ui.SetCursorScreenPosition(origin + layout.offset);
         m_rendering.Draw(output, layout.size);
-        NativeImGui.SetCursorScreenPos(origin);
-        NativeImGui.Dummy(available);
+        Ui.SetCursorScreenPosition(origin);
+        Ui.Dummy(available);
     }
 
     /// <summary>
@@ -189,7 +167,7 @@ internal sealed unsafe class GameViewPanel : EditorPanel
         _ = context;
         ApplyEditorSettings(m_editorSettings);
         RefreshPresentationSettings();
-        m_editorSettings.changed += ApplyEditorSettings;
+        m_settingsSubscription = m_editorSettings.ListenChanges(ApplyEditorSettings);
     }
 
     /// <summary>
@@ -201,14 +179,13 @@ internal sealed unsafe class GameViewPanel : EditorPanel
     protected override void OnDetach(EditorContext context)
     {
         _ = context;
-        m_editorSettings.changed -= ApplyEditorSettings;
+        m_settingsSubscription?.Dispose();
         m_rendering.Release(C_VIEWPORT_ID);
         m_presentationRevision = -1;
         m_leftPointerActive = false;
     }
 
     private void ApplyEditorSettings(EditorSettings settings) => m_backgroundColor = GameViewBackgroundSetting.Read(settings);
-
     private void RefreshPresentationSettings()
     {
         if (m_presentationRevision == m_projectSettings.revision)
@@ -224,37 +201,30 @@ internal sealed unsafe class GameViewPanel : EditorPanel
     ) {
         int availableWidth = Math.Max(1, (int)MathF.Floor(available.X));
         int availableHeight = Math.Max(1, (int)MathF.Floor(available.Y));
-        GamePresentationViewport viewport = presentation.CalculateViewport(
-            availableWidth,
-            availableHeight);
+        GamePresentationViewport viewport = presentation.CalculateViewport(availableWidth, availableHeight);
         return new GameViewportLayout(
             new Vector2(viewport.x, viewport.y),
             new Vector2(viewport.width, viewport.height),
             Math.Max(1, (int)MathF.Ceiling(viewport.width * framebufferScale)),
-            Math.Max(1, (int)MathF.Ceiling(viewport.height * framebufferScale)));
+            Math.Max(1, (int)MathF.Ceiling(viewport.height * framebufferScale))
+        );
     }
 
     private ContentReadScope CreateContentScope() => m_scenePresentation.Capture();
-
     private void DrawUnavailable(
         Vector2 size,
         string message
     ) {
-        Vector2 minimum = NativeImGui.GetCursorScreenPos();
-        EditorImGui.DrawFilledRectangle(
-            minimum,
-            minimum + size,
-            NativeImGui.ColorConvertFloat4ToU32(m_backgroundColor),
-            0
-        );
-        NativeImGui.PushStyleColor((int)ImGuiCol.Text, EditorPalette.textDisabled);
+        Vector2 minimum = Ui.GetCursorScreenPosition();
+        Ui.DrawFilledRectangle(minimum, minimum + size, Ui.ToPackedColor(m_backgroundColor), 0);
+        Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {
-            EditorWidget.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);
+            EditorUI.current.widgets.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);
         }
         finally
         {
-            NativeImGui.PopStyleColor();
+            Ui.PopStyleColor();
         }
     }
 

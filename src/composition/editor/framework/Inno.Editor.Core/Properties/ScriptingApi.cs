@@ -20,3 +20,5 @@ using Inno.Editor.Core;
 [assembly: ScriptingApiExport(typeof(EditorModal), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorModalAttribute), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(IEditorPanelReloadState), ScriptingApiScope.Editor)]
+
+[assembly: ScriptingApiExport(typeof(EditorDisplayNames), ScriptingApiScope.Editor)]

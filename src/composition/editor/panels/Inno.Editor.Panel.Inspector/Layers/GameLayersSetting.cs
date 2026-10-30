@@ -1,42 +1,32 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-
 using Inno.Core.Settings;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
 using Inno.Scene.Layers;
-using Inno.Native.ImGui;
-using EditorImGui = Inno.Editor.ImGui.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
-
 [ProjectSettingPath("Project/Scene/Layers")]
-internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
+internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
 {
     private const int C_LAYER_NAME_BUFFER_SIZE = 128;
-
     private readonly string[] m_nameBuffers = new string[GameLayer.C_MAX_COUNT];
     private string m_error = string.Empty;
-    private string?[]? m_observedNames;
-
-    /// <summary>
-    /// Gets the stable project-setting identity used for discovery and persistence.
-    /// </summary>
+    private string? []? m_observedNames;
     /// <summary>
     /// Gets the presentation section that groups this setting.
     /// </summary>
     public override string section => "Definitions";
-
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description
-        => "Define layer names and slots. Stable IDs are generated as projectId.name and are never authored manually.";
+    public override string description => "Define layer names and slots. Stable IDs are generated as projectId.name and are never authored manually.";
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.
@@ -46,46 +36,33 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
     /// </param>
     protected override void OnDraw(GameLayerCatalog setting)
     {
-        string?[] names = CaptureNames(setting);
+        string? [] names = CaptureNames(setting);
         SynchronizeBuffers(names);
         DrawLayerRows(setting, names);
         if (!string.IsNullOrEmpty(m_error))
-            ImGuiWidget.ColoredText(EditorPalette.error, m_error);
+            EditorUI.current.widgets.ColoredText(EditorPalette.error, m_error);
     }
 
     private void DrawLayerRows(
         GameLayerCatalog setting,
-        string?[] names
+        string? [] names
     ) {
         int definedCount = names.Count(static name => !string.IsNullOrWhiteSpace(name));
         DrawLayerToolbar(setting, names, definedCount);
-        NativeImGui.Spacing();
-
-        ImGuiTableFlags flags = ImGuiTableFlags.RowBg |
-                                ImGuiTableFlags.BordersInnerH |
-                                ImGuiTableFlags.BordersInnerV |
-                                ImGuiTableFlags.SizingStretchProp |
-                                ImGuiTableFlags.NoPadOuterX |
-                                ImGuiTableFlags.NoSavedSettings;
-        NativeImGui.PushStyleVar((int)ImGuiStyleVar.CellPadding, ImGuiWidget.style.cellPadding);
-        if (!NativeImGui.BeginTable("##game_layer_definitions", 3, (int)flags, default(System.Numerics.Vector2), 0f))
+        Ui.Spacing();
+        ImGuiTableFlags flags = ImGuiTableFlags.RowBg | ImGuiTableFlags.BordersInnerH | ImGuiTableFlags.BordersInnerV | ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoSavedSettings;
+        Ui.PushStyleVar(ImGuiStyleVar.CellPadding, EditorUI.current.widgets.style.cellPadding);
+        if (!Ui.BeginTable("##game_layer_definitions", 3, flags, default(System.Numerics.Vector2), 0f))
         {
-            NativeImGui.PopStyleVar();
+            Ui.PopStyleVar();
             return;
         }
+
         try
         {
-            NativeImGui.TableSetupColumn(
-                "Slot",
-                (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
-                48f * ImGuiWidget.style.zoom);
-            NativeImGui.TableSetupColumn(
-                "Name",
-                (int)(ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize));
-            NativeImGui.TableSetupColumn(
-                "Action",
-                (int)(ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
-                72f * ImGuiWidget.style.zoom);
+            Ui.TableSetupColumn("Slot", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), 48f * EditorUI.current.widgets.style.zoom);
+            Ui.TableSetupColumn("Name", (ImGuiTableColumnFlags.WidthStretch | ImGuiTableColumnFlags.NoResize));
+            Ui.TableSetupColumn("Action", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), 72f * EditorUI.current.widgets.style.zoom);
             DrawLayerTableHeader();
             for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
             {
@@ -95,8 +72,8 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         }
         finally
         {
-            NativeImGui.EndTable();
-            NativeImGui.PopStyleVar();
+            Ui.EndTable();
+            Ui.PopStyleVar();
         }
     }
 
@@ -106,23 +83,23 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         int index
     ) {
         var layer = new GameLayer(index);
-        NativeImGui.TableNextRow();
-        _ = NativeImGui.TableSetColumnIndex(0);
-        NativeImGui.AlignTextToFramePadding();
+        Ui.TableNextRow();
+        _ = Ui.TableSetColumnIndex(0);
+        Ui.AlignTextToFramePadding();
         InsetPlainCell();
-        NativeImGui.TextUnformatted(index.ToString("00", CultureInfo.InvariantCulture));
-        _ = NativeImGui.TableSetColumnIndex(1);
+        Ui.Text(index.ToString("00", CultureInfo.InvariantCulture));
+        _ = Ui.TableSetColumnIndex(1);
         if (layer == GameLayer.defaultLayer)
         {
             InsetPlainCell();
-            NativeImGui.TextUnformatted(names[index] ?? "Default");
-            _ = NativeImGui.TableSetColumnIndex(2);
+            Ui.Text(names[index] ?? "Default");
+            _ = Ui.TableSetColumnIndex(2);
             InsetPlainCell();
-            ImGuiWidget.ColoredText(EditorPalette.textDisabled, "Fixed");
+            EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Fixed");
             return;
         }
 
-        NativeImGui.PushID(index);
+        Ui.PushId(index);
         try
         {
             string name = m_nameBuffers[index];
@@ -130,17 +107,10 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
             m_nameBuffers[index] = name;
             if (committed)
                 CommitDefinition(setting, layer, name);
-
-            _ = NativeImGui.TableSetColumnIndex(2);
+            _ = Ui.TableSetColumnIndex(2);
             InsetPlainCell();
-            Vector2 removeSize = new(
-                NativeImGui.CalcTextSize("Remove").X,
-                NativeImGui.GetFrameHeight());
-            if (ImGuiWidget.ClickableText(
-                    $"remove_layer_{index}",
-                    "Remove",
-                    removeSize,
-                    "Remove this definition while preserving Scene slot assignments."))
+            Vector2 removeSize = new(Ui.MeasureText("Remove").X, Ui.GetFrameHeight());
+            if (EditorUI.current.widgets.ClickableText($"remove_layer_{index}", "Remove", removeSize, "Remove this definition while preserving Scene slot assignments."))
             {
                 _ = setting.Remove(layer);
                 SynchronizeSlot(setting, layer);
@@ -149,7 +119,7 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         }
         finally
         {
-            NativeImGui.PopID();
+            Ui.PopId();
         }
     }
 
@@ -158,36 +128,31 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         string hint,
         ref string value
     ) {
-        NativeImGui.SetNextItemWidth(-1f);
-        NativeImGui.PushStyleColor((int)ImGuiCol.FrameBg, EditorPalette.transparent);
-        NativeImGui.PushStyleColor((int)ImGuiCol.FrameBgHovered, EditorPalette.transparent);
-        NativeImGui.PushStyleColor((int)ImGuiCol.FrameBgActive, EditorPalette.transparent);
+        Ui.SetNextItemWidth(-1f);
+        Ui.PushStyleColor(ImGuiCol.FrameBg, EditorPalette.transparent);
+        Ui.PushStyleColor(ImGuiCol.FrameBgHovered, EditorPalette.transparent);
+        Ui.PushStyleColor(ImGuiCol.FrameBgActive, EditorPalette.transparent);
         try
         {
-            bool submitted = EditorImGui.InputTextWithHint(
-                id,
-                hint,
-                ref value,
-                C_LAYER_NAME_BUFFER_SIZE,
-                ImGuiInputTextFlags.EnterReturnsTrue);
-            return submitted || NativeImGui.IsItemDeactivatedAfterEdit();
+            bool submitted = Ui.InputTextWithHint(id, hint, ref value, C_LAYER_NAME_BUFFER_SIZE, ImGuiInputTextFlags.EnterReturnsTrue);
+            return submitted || Ui.IsItemDeactivatedAfterEdit();
         }
         finally
         {
-            NativeImGui.PopStyleColor(3);
+            Ui.PopStyleColor(3);
         }
     }
 
     private void DrawLayerToolbar(
         GameLayerCatalog setting,
-        string?[] names,
+        string? [] names,
         int definedCount
     ) {
-        float spacing = NativeImGui.Raw.GetStyle()->ItemSpacing.X;
-        ImGuiWidget.LabelChip("Defined", EditorPalette.collectionRowAlternate);
-        NativeImGui.SameLine(0f, 0f);
-        DrawReadOnlyCount($"{definedCount} / {GameLayer.C_MAX_COUNT}", 78f * ImGuiWidget.style.zoom);
-        NativeImGui.SameLine(0f, spacing);
+        float spacing = Ui.GetLayout().itemSpacing.X;
+        EditorUI.current.widgets.LabelChip("Defined", EditorPalette.collectionRowAlternate);
+        Ui.SameLine(0f, 0f);
+        DrawReadOnlyCount($"{definedCount} / {GameLayer.C_MAX_COUNT}", 78f * EditorUI.current.widgets.style.zoom);
+        Ui.SameLine(0f, spacing);
         DrawAddLayer(setting, names, definedCount);
     }
 
@@ -195,35 +160,23 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         string value,
         float width
     ) {
-        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
-        Vector2 minimum = NativeImGui.GetCursorScreenPos();
-        Vector2 size = new(MathF.Max(1f, width), NativeImGui.GetFrameHeight());
-        NativeImGui.Dummy(size);
+        EditorUiLayout style = Ui.GetLayout();
+        Vector2 minimum = Ui.GetCursorScreenPosition();
+        Vector2 size = new(MathF.Max(1f, width), Ui.GetFrameHeight());
+        Ui.Dummy(size);
         Vector2 maximum = minimum + size;
-        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        EditorImGui.DrawFilledRectangle(
-            minimum,
-            maximum,
-            NativeImGui.GetColorU32((int)ImGuiCol.FrameBg),
-            style->FrameRounding
-        );
-        EditorImGui.DrawRectangle(
-            minimum,
-            maximum,
-            NativeImGui.GetColorU32((int)ImGuiCol.Border),
-            style->FrameRounding,
-            ImGuiWidget.style.borderSize
-        );
-        Vector2 textSize = NativeImGui.CalcTextSize(value);
-        EditorImGui.DrawText(minimum + (size - textSize) * 0.5f, NativeImGui.GetColorU32((int)ImGuiCol.Text), value);
+        Ui.DrawFilledRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.FrameBg), style.frameRounding);
+        Ui.DrawRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.Border), style.frameRounding, EditorUI.current.widgets.style.borderSize);
+        Vector2 textSize = Ui.MeasureText(value);
+        Ui.DrawText(minimum + (size - textSize) * 0.5f, Ui.GetStyleColor(ImGuiCol.Text), value);
     }
 
     private static void DrawLayerTableHeader()
     {
-        uint background = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionHeader);
-        NativeImGui.TableNextRow();
-        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg0, background);
-        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg1, background);
+        uint background = Ui.ToPackedColor(EditorPalette.collectionHeader);
+        Ui.TableNextRow();
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
         DrawHeaderCell(0, "Slot");
         DrawHeaderCell(1, "Name");
         DrawHeaderCell(2, "Action");
@@ -233,32 +186,26 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         int column,
         string label
     ) {
-        _ = NativeImGui.TableSetColumnIndex(column);
+        _ = Ui.TableSetColumnIndex(column);
         InsetPlainCell();
-        NativeImGui.TextUnformatted(label);
+        Ui.Text(label);
     }
 
-    private static void InsetPlainCell()
-        => NativeImGui.SetCursorPosX(
-            NativeImGui.GetCursorPosX() + NativeImGui.Raw.GetStyle()->FramePadding.X);
-
+    private static void InsetPlainCell() => Ui.SetCursorPosX(Ui.GetCursorPosX() + Ui.GetLayout().framePadding.X);
     private void DrawAddLayer(
         GameLayerCatalog setting,
-        string?[] names,
+        string? [] names,
         int definedCount
     ) {
-        NativeImGui.BeginDisabled(definedCount >= GameLayer.C_MAX_COUNT);
+        Ui.BeginDisabled(definedCount >= GameLayer.C_MAX_COUNT);
         try
         {
-            float selectorWidth = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
-            if (!ImGuiWidget.BeginMenuSelector(
-                    "add_game_layer",
-                    "Add layer...",
-                    selectorWidth,
-                    selectorWidth))
+            float selectorWidth = MathF.Max(1f, Ui.GetContentRegionAvailable().X);
+            if (!EditorUI.current.widgets.BeginMenuSelector("add_game_layer", "Add layer...", selectorWidth, selectorWidth))
             {
                 return;
             }
+
             try
             {
                 for (int index = 1; index < GameLayer.C_MAX_COUNT; index++)
@@ -266,18 +213,18 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
                     if (!string.IsNullOrWhiteSpace(names[index]))
                         continue;
                     string slot = index.ToString("00", CultureInfo.InvariantCulture);
-                    if (NativeImGui.Selectable($"{slot}  Layer {index}"))
+                    if (Ui.Selectable($"{slot}  Layer {index}"))
                         CommitDefinition(setting, new GameLayer(index), $"Layer {index}");
                 }
             }
             finally
             {
-                ImGuiWidget.EndMenuSelector();
+                EditorUI.current.widgets.EndMenuSelector();
             }
         }
         finally
         {
-            NativeImGui.EndDisabled();
+            Ui.EndDisabled();
         }
     }
 
@@ -301,11 +248,11 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
 
     private void SynchronizeBuffers(IReadOnlyList<string?> names)
     {
-        if (m_observedNames is not null
-            && m_observedNames.SequenceEqual(names, StringComparer.Ordinal))
+        if (m_observedNames is not null && m_observedNames.SequenceEqual(names, StringComparer.Ordinal))
         {
             return;
         }
+
         for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
             m_nameBuffers[index] = names[index] ?? string.Empty;
         m_observedNames = names.ToArray();
@@ -319,9 +266,9 @@ internal sealed unsafe class GameLayersSetting : ProjectSettingEditor<GameLayerC
         m_observedNames = CaptureNames(setting);
     }
 
-    private static string?[] CaptureNames(GameLayerCatalog stack)
+    private static string? [] CaptureNames(GameLayerCatalog stack)
     {
-        var result = new string?[GameLayer.C_MAX_COUNT];
+        var result = new string? [GameLayer.C_MAX_COUNT];
         for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
             result[index] = stack.GetName(new GameLayer(index));
         return result;

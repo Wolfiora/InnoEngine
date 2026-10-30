@@ -61,15 +61,17 @@ internal static class SceneGraphSerialization
         SerializationWriter writer,
         IReadOnlyCollection<SceneObjectStructureSnapshot> entries,
         IReadOnlyDictionary<EngineObject, Guid> sourceIds,
+        Predicate<GameObject> containsObject,
         bool preserveRootSiblingOrder
     ) {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(entries);
         ArgumentNullException.ThrowIfNull(sourceIds);
-
-        var included = new HashSet<GameObject>(
-            entries.Select(static entry => entry.gameObject),
-            ReferenceEqualityComparer.Instance);
+        ArgumentNullException.ThrowIfNull(containsObject);
+        Action<SerializationWriter, GameComponent> writeComponent = (
+            componentWriter,
+            component
+        ) => WriteComponent(componentWriter, component, sourceIds);
         WriteMissingReferenceAliases(writer, sourceIds);
         writer.WriteObjectArray(C_OBJECTS_KEY, entries, (
             objectWriter,
@@ -78,7 +80,7 @@ internal static class SceneGraphSerialization
         {
             GameObject gameObject = entry.gameObject;
             Transform? parent = gameObject.transform.parent;
-            bool parentIsIncluded = parent is not null && included.Contains(parent.gameObject);
+            bool parentIsIncluded = parent is not null && containsObject(parent.gameObject);
             objectWriter.Write(C_OBJECT_ID_KEY, GetSourceId(sourceIds, gameObject));
             objectWriter.Write(C_NAME_KEY, gameObject.name);
             objectWriter.Write(C_TAG_KEY, gameObject.tag);
@@ -91,7 +93,7 @@ internal static class SceneGraphSerialization
                 C_SIBLING_INDEX_KEY,
                 parentIsIncluded || preserveRootSiblingOrder ? gameObject.transform.siblingIndex : 0);
             PrefabInstanceInfo? prefab = gameObject.prefabInstance;
-            bool hasPrefabConnection = prefab is not null && included.Contains(prefab.instanceRoot);
+            bool hasPrefabConnection = prefab is not null && containsObject(prefab.instanceRoot);
             objectWriter.Write(C_HAS_PREFAB_CONNECTION_KEY, hasPrefabConnection);
             if (hasPrefabConnection)
             {
@@ -112,7 +114,7 @@ internal static class SceneGraphSerialization
                         connection,
                         gameObject.scene,
                         objectWriter.context,
-                        SceneGraphReferenceMap.current);
+                        SceneReferenceScope.current);
                     WritePrefabConnection(
                         objectWriter,
                         connection,
@@ -127,36 +129,27 @@ internal static class SceneGraphSerialization
                     C_PREFAB_ORPHANED_OVERRIDE_COUNT_KEY,
                     capturedOverrides?.orphanedCount ?? prefab.orphanedOverrideCount);
             }
-            objectWriter.WriteObjectArray(C_COMPONENTS_KEY, entry.components, (
-                componentWriter,
-                component
-            ) =>
+            objectWriter.WriteObjectArray(C_COMPONENTS_KEY, entry.components, writeComponent);
+        }, captureKey: (
+            entry,
+            key
+        ) => {
+            GameObject gameObject = entry.gameObject;
+            if (gameObject.prefabInstance is not null || !key.TryAddOwner(gameObject, gameObject.captureRevision))
+                return false;
+            Transform? parent = gameObject.transform.parent;
+            bool parentIsIncluded = parent is not null && containsObject(parent.gameObject);
+            key.AddValue(GetSourceId(sourceIds, gameObject));
+            key.AddValue(parentIsIncluded ? GetSourceId(sourceIds, parent!.gameObject) : Guid.Empty);
+            key.AddValue((ulong)(parentIsIncluded || preserveRootSiblingOrder ? gameObject.transform.siblingIndex : 0));
+            for (int componentIndex = 0; componentIndex < entry.components.Count; componentIndex++)
             {
-                componentWriter.Write(C_COMPONENT_ID_KEY, GetSourceId(sourceIds, component));
-                if (component is MissingGameComponent missing)
-                {
-                    componentWriter.Write(C_STABLE_TYPE_ID_KEY, missing.missingType.stableId);
-                    componentWriter.Write(C_TYPE_NAME_KEY, missing.missingTypeName);
-                    componentWriter.Write(C_STATE_KEY, missing.CaptureSerializedState());
-                    WriteStateDependencies(componentWriter, missing.dependencies);
-                    return;
-                }
-                componentWriter.Write(C_STABLE_TYPE_ID_KEY, GetStableComponentTypeId(component.GetType(), componentWriter.context));
-                componentWriter.Write(C_TYPE_NAME_KEY, component.GetType().FullName ?? component.GetType().Name);
-                try
-                {
-                    CapturedSceneState state = CaptureState(component, componentWriter.context);
-                    componentWriter.Write(C_STATE_KEY, state.data);
-                    WriteStateDependencies(componentWriter, state.dependencies);
-                }
-                catch (Exception exception)
-                {
-                    throw new InvalidOperationException(
-                        $"Failed to serialize GameComponent '{component.GetType().FullName}' on " +
-                        $"GameObject '{gameObject.name}' at '{componentWriter.path}'. {exception.Message}",
-                        exception);
-                }
-            });
+                GameComponent component = entry.components[componentIndex];
+                if (component is MissingGameComponent || !key.TryAddProperties(component))
+                    return false;
+                key.AddValue(GetSourceId(sourceIds, component));
+            }
+            return true;
         });
     }
 
@@ -413,11 +406,10 @@ internal static class SceneGraphSerialization
                 WriteStateDependencies(systemWriter, missing.dependencies);
                 return;
             }
-            systemWriter.Write(C_STABLE_TYPE_ID_KEY, GetStableSystemTypeId(system.GetType(), systemWriter.context));
+            systemWriter.Write(C_STABLE_TYPE_ID_KEY, systemWriter.typeSnapshot.GetTypeRef(system.GetType()).stableId);
             systemWriter.Write(C_TYPE_NAME_KEY, system.GetType().FullName ?? system.GetType().Name);
-            CapturedSceneState state = CaptureState(system, systemWriter.context);
-            systemWriter.Write(C_STATE_KEY, state.data);
-            WriteStateDependencies(systemWriter, state.dependencies);
+            AssetDependency[] dependencies = WriteState(systemWriter, system);
+            WriteStateDependencies(systemWriter, dependencies);
         });
     }
 
@@ -806,13 +798,6 @@ internal static class SceneGraphSerialization
                out Type? type) &&
            type == typeof(Transform);
 
-    private static Guid GetStableComponentTypeId(
-        Type componentType,
-        SerializationContext context
-    ) {
-        return context.GetRequired<TypeCatalog>().GetTypeRef(componentType).stableId;
-    }
-
     private static bool TryResolveComponentType(
         Guid stableTypeId,
         SerializationContext context,
@@ -827,13 +812,6 @@ internal static class SceneGraphSerialization
                 $"Stable type id '{stableTypeId}' resolves to invalid component type '{resolved.FullName}'.");
         }
         return true;
-    }
-
-    private static Guid GetStableSystemTypeId(
-        Type systemType,
-        SerializationContext context
-    ) {
-        return context.GetRequired<TypeCatalog>().GetTypeRef(systemType).stableId;
     }
 
     private static bool TryResolveSystemType(
@@ -857,18 +835,48 @@ internal static class SceneGraphSerialization
         return context.GetRequired<TypeCatalog>().TryResolve(typeRef, out type);
     }
 
-    private static CapturedSceneState CaptureState(
-        ISerializable value,
-        SerializationContext outerContext
+    private static void WriteComponent(
+        SerializationWriter writer,
+        GameComponent component,
+        IReadOnlyDictionary<EngineObject, Guid> sourceIds
     ) {
+        writer.Write(C_COMPONENT_ID_KEY, GetSourceId(sourceIds, component));
+        if (component is MissingGameComponent missing)
+        {
+            writer.Write(C_STABLE_TYPE_ID_KEY, missing.missingType.stableId);
+            writer.Write(C_TYPE_NAME_KEY, missing.missingTypeName);
+            writer.Write(C_STATE_KEY, missing.CaptureSerializedState());
+            WriteStateDependencies(writer, missing.dependencies);
+            return;
+        }
+        writer.Write(C_STABLE_TYPE_ID_KEY, writer.typeSnapshot.GetTypeRef(component.GetType()).stableId);
+        writer.Write(C_TYPE_NAME_KEY, component.GetType().FullName ?? component.GetType().Name);
+        GameObject gameObject = component.gameObject;
+        try
+        {
+            AssetDependency[] dependencies = WriteState(writer, component);
+            WriteStateDependencies(writer, dependencies);
+        }
+        catch (Exception exception)
+        {
+            throw new InvalidOperationException(
+                $"Failed to serialize GameComponent '{component.GetType().FullName}' on " +
+                $"GameObject '{gameObject.name}' at '{writer.path}'. {exception.Message}",
+                exception);
+        }
+    }
+
+    private static AssetDependency[] WriteState(
+        SerializationWriter writer,
+        ISerializable value
+    ) {
+        SerializationContext outerContext = writer.context;
         bool includeLastKnownPaths = !outerContext.TryGet(out AssetDependencyCollection? outerDependencies) ||
                                      outerDependencies is null ||
                                      outerDependencies.includeLastKnownPaths;
         var dependencies = new AssetDependencyCollection(includeLastKnownPaths);
-        byte[] data = outerContext.GetRequired<SerializationRegistry>().CapturePropertiesData(
-            value,
-            outerContext.With(dependencies));
-        return new CapturedSceneState(data, dependencies.dependencies.ToArray());
+        writer.WritePropertiesData(C_STATE_KEY, value, outerContext.With(dependencies));
+        return dependencies.dependencies.ToArray();
     }
 
     private static void WriteStateDependencies(
@@ -877,14 +885,22 @@ internal static class SceneGraphSerialization
     ) {
         writer.Write(C_STATE_DEPENDENCIES_KEY, dependencies.ToArray());
         IAssetReferenceResolver resolver = writer.context.GetRequired<IAssetReferenceResolver>();
-        AssetObject[] assets = dependencies
-            .Select(dependency => resolver.Resolve(
+        if (dependencies.Count == 0)
+        {
+            writer.Write(C_STATE_DEPENDENCY_ASSETS_KEY, Array.Empty<AssetObject>());
+            return;
+        }
+        var assets = new AssetObject[dependencies.Count];
+        for (int index = 0; index < dependencies.Count; index++)
+        {
+            AssetDependency dependency = dependencies[index];
+            assets[index] = resolver.Resolve(
                 dependency.persistentId,
                 dependency.type.stableId,
                 dependency.lastKnownPath,
                 typeof(AssetObject),
-                "scene.state.dependencies"))
-            .ToArray();
+                "scene.state.dependencies");
+        }
         writer.Write(C_STATE_DEPENDENCY_ASSETS_KEY, assets);
     }
 
@@ -924,8 +940,4 @@ internal static class SceneGraphSerialization
             throw new InvalidDataException($"Scene element type name at '{path}' cannot be empty.");
     }
 
-    private readonly record struct CapturedSceneState(
-        byte[] data,
-        AssetDependency[] dependencies
-    );
 }

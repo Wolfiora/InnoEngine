@@ -1,6 +1,9 @@
 <Project>
   <!-- Product dependencies ship discoverable extensions; Hosting exposes only its startup contracts. -->
   <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)presentation/Inno.Editor.Graph.ImGui/Inno.Editor.Graph.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)presentation/Inno.Editor.Shaders.ImGui/Inno.Editor.Shaders.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)presentation/Inno.Editor.Assets.ImGui/Inno.Editor.Assets.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.Audio/Inno.Editor.Audio.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)features/Inno.Editor.PlayMode/Inno.Editor.PlayMode.csproj" PrivateAssets="compile" />
@@ -14,7 +17,7 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.GameView/Inno.Editor.Panel.GameView.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Global/Inno.Editor.Panel.Global.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)presentation/Inno.Editor.Workbench/Inno.Editor.Workbench.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Hierarchy/Inno.Editor.Panel.Hierarchy.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Inspector/Inno.Editor.Panel.Inspector.csproj" PrivateAssets="compile" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)panels/Inno.Editor.Panel.Logging/Inno.Editor.Panel.Logging.csproj" PrivateAssets="compile" />

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
+    <InnoAssemblyScope>Editor</InnoAssemblyScope>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" />
+    <ProjectReference Include="../../../../content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../features/Inno.Editor.Assets/Inno.Editor.Assets.csproj" />
+    <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" />
+    <ProjectReference Include="../../framework/Inno.Editor.Inspection/Inno.Editor.Inspection.csproj" />
+    <ProjectReference Include="../../framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" />
+    <ProjectReference Include="../../framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj" />
+  </ItemGroup>
+</Project>

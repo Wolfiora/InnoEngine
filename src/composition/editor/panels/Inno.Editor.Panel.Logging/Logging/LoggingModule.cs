@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
@@ -8,13 +7,12 @@ using Inno.Editor.PlayMode;
 using Inno.Editor.Settings;
 
 namespace Inno.Editor.Panel.Logging;
-
 [EditorModule("diagnostics-logging", order: int.MinValue)]
 internal sealed class LoggingModule : EditorModule, IEditorConsole
 {
+    private IDisposable? m_settingsSubscription;
     private readonly EditorConsole m_console;
     private readonly EditorSettings m_settings;
-
     internal LoggingModule(
         LogRouter logRouter,
         DiagnosticHub diagnosticHub,
@@ -34,7 +32,7 @@ internal sealed class LoggingModule : EditorModule, IEditorConsole
     protected override void OnStart(EditorContext context)
     {
         ApplySettings(m_settings);
-        m_settings.changed += ApplySettings;
+        m_settingsSubscription = m_settings.ListenChanges(ApplySettings);
         m_console.Start();
     }
 
@@ -46,32 +44,24 @@ internal sealed class LoggingModule : EditorModule, IEditorConsole
     /// </param>
     protected override void OnStop(EditorContext context)
     {
-        m_settings.changed -= ApplySettings;
+        m_settingsSubscription?.Dispose();
         m_console.Dispose();
     }
 
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
-    protected override void OnDispose() => m_console.Dispose();
+    protected override void OnDispose()
+    {
+        m_settingsSubscription?.Dispose();
+        m_console.Dispose();
+    }
 
     private void ApplySettings(EditorSettings settings) => m_console.clearOnPlay = ClearConsoleOnPlaySetting.Read(settings);
+    int IEditorConsole.capacity { get => m_console.capacity; set => m_console.capacity = value; }
 
-    int IEditorConsole.capacity
-    {
-        get => m_console.capacity;
-        set => m_console.capacity = value;
-    }
+    bool IEditorConsole.clearOnPlay { get => m_console.clearOnPlay; set => m_console.clearOnPlay = value; }
 
-    bool IEditorConsole.clearOnPlay
-    {
-        get => m_console.clearOnPlay;
-        set => m_console.clearOnPlay = value;
-    }
-
-    EditorConsoleSnapshot IEditorConsole.Capture()
-        => m_console.Capture();
-
-    void IEditorConsole.Clear()
-        => m_console.Clear();
+    EditorConsoleSnapshot IEditorConsole.Capture() => m_console.Capture();
+    void IEditorConsole.Clear() => m_console.Clear();
 }

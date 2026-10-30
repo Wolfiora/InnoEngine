@@ -16,7 +16,7 @@ namespace Inno.Assets;
 /// </remarks>
 public sealed class AssetDependencyCollection
 {
-    private readonly Dictionary<Guid, AssetDependency> m_dependencies = [];
+    private Dictionary<Guid, AssetDependency>? m_dependencies;
 
     /// <summary>
     /// Creates a dependency collector that preserves last-known source paths in serialized references.
@@ -47,7 +47,9 @@ public sealed class AssetDependencyCollection
     /// Gets the collected dependencies in deterministic persistent-identity order.
     /// </summary>
     public IReadOnlyList<AssetDependency> dependencies
-        => m_dependencies.Values.OrderBy(static dependency => dependency.persistentId).ToArray();
+        => m_dependencies is null || m_dependencies.Count == 0
+            ? Array.Empty<AssetDependency>()
+            : m_dependencies.Values.OrderBy(static dependency => dependency.persistentId).ToArray();
 
     internal void Add(
         AssetObject asset,
@@ -64,7 +66,7 @@ public sealed class AssetDependencyCollection
                 $"Asset type '{asset.GetType().FullName}' requires a StableTypeId before it can be referenced persistently.");
         }
 
-        m_dependencies[persistentId] = new AssetDependency(
+        (m_dependencies ??= [])[persistentId] = new AssetDependency(
             persistentId,
             typeRef,
             includeLastKnownPaths ? asset.assetPath.ToString() : string.Empty);
@@ -80,7 +82,7 @@ public sealed class AssetDependencyCollection
     {
         if (dependency.persistentId == Guid.Empty)
             throw new ArgumentException("A dependency requires a persistent asset identity.", nameof(dependency));
-        m_dependencies[dependency.persistentId] = includeLastKnownPaths ? dependency
+        (m_dependencies ??= [])[dependency.persistentId] = includeLastKnownPaths ? dependency
             : new AssetDependency(dependency.persistentId, dependency.type, string.Empty);
     }
 }

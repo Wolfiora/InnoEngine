@@ -1,0 +1,792 @@
+[
+  {
+    "source": "original",
+    "pair": 0,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-original\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "A1A613678F86D92A55A076CE94DCD783C2A8F35C0C805AA78ACBEC4D405045A7",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 18.6294,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 19.0826,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 18.3725,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 17.387,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 17.2846,
+        "bytes": 17088576
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 55.1675,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 54.9601,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 60.2469,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 90.0206,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 50.6861,
+        "bytes": 33584000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\0-original.log"
+  },
+  {
+    "source": "current",
+    "pair": 0,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-current\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "EF1D88745210722CBE88E57648A2A71C17327C93E97942250F26250D2867A2F4",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 22.1647,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 22.4778,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 18.2068,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 16.5582,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 17.0201,
+        "bytes": 8480288
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 0.8537,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 0.9072,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 0.7585,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 0.6141,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 1.1192,
+        "bytes": 800000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\0-current.log"
+  },
+  {
+    "source": "current",
+    "pair": 1,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-current\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "EF1D88745210722CBE88E57648A2A71C17327C93E97942250F26250D2867A2F4",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 11.3777,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 13.8577,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 12.754,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 16.0016,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 12.6139,
+        "bytes": 8480288
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 0.4503,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 0.4985,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 0.4814,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 0.4283,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 0.6805,
+        "bytes": 800000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\1-current.log"
+  },
+  {
+    "source": "original",
+    "pair": 1,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-original\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "A1A613678F86D92A55A076CE94DCD783C2A8F35C0C805AA78ACBEC4D405045A7",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 33.0158,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 40.2395,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 41.404,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 34.6911,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 28.8193,
+        "bytes": 17088576
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 61.6503,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 55.4783,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 70.4781,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 63.7655,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 73.3136,
+        "bytes": 33584000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\1-original.log"
+  },
+  {
+    "source": "original",
+    "pair": 2,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-original\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "A1A613678F86D92A55A076CE94DCD783C2A8F35C0C805AA78ACBEC4D405045A7",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 21.8951,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 37.0477,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 28.086,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 25.533,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 31.4486,
+        "bytes": 17088576
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 68.8253,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 64.711,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 76.2951,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 60.8004,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 88.8199,
+        "bytes": 33584000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\2-original.log"
+  },
+  {
+    "source": "current",
+    "pair": 2,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-current\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "EF1D88745210722CBE88E57648A2A71C17327C93E97942250F26250D2867A2F4",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 11.742,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 10.4581,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 11.1254,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 11.3832,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 11.3605,
+        "bytes": 8480288
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 0.3976,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 0.4273,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 0.4232,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 0.4422,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 0.6269,
+        "bytes": 800000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\2-current.log"
+  },
+  {
+    "source": "current",
+    "pair": 3,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-current\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "EF1D88745210722CBE88E57648A2A71C17327C93E97942250F26250D2867A2F4",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 12.8404,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 14.1383,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 12.3513,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 11.7707,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 12.3834,
+        "bytes": 8480288
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 0.6417,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 0.5945,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 0.4527,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 0.4681,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 0.7121,
+        "bytes": 800000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\3-current.log"
+  },
+  {
+    "source": "original",
+    "pair": 3,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-original\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "A1A613678F86D92A55A076CE94DCD783C2A8F35C0C805AA78ACBEC4D405045A7",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 22.8985,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 21.2117,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 19.301,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 19.2881,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 18.9335,
+        "bytes": 17088576
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 56.6941,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 53.7564,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 61.306,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 54.1069,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 64.2283,
+        "bytes": 33584000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\3-original.log"
+  },
+  {
+    "source": "original",
+    "pair": 4,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-original\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "A1A613678F86D92A55A076CE94DCD783C2A8F35C0C805AA78ACBEC4D405045A7",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 19.4387,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 18.8756,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 19.387,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 25.0294,
+        "bytes": 17088576
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 16.9238,
+        "bytes": 17088576
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 49.6064,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 59.5073,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 50.6363,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 70.6603,
+        "bytes": 33584000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 44.074,
+        "bytes": 33584000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\4-original.log"
+  },
+  {
+    "source": "current",
+    "pair": 4,
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-harness-current\\bin\\Release\\net10.0\\MenuHarness.dll",
+    "sha256": "EF1D88745210722CBE88E57648A2A71C17327C93E97942250F26250D2867A2F4",
+    "samples": [
+      {
+        "workload": "menu-open",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 11.1479,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 12.1451,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 11.8925,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 11.9273,
+        "bytes": 8480288
+      },
+      {
+        "workload": "menu-open",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 11.5446,
+        "bytes": 8480288
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 0,
+        "iterations": 2000,
+        "milliseconds": 0.3991,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 1,
+        "iterations": 2000,
+        "milliseconds": 0.439,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 2,
+        "iterations": 2000,
+        "milliseconds": 0.4236,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 3,
+        "iterations": 2000,
+        "milliseconds": 0.4351,
+        "bytes": 800000
+      },
+      {
+        "workload": "statistics-unchanged",
+        "sample": 4,
+        "iterations": 2000,
+        "milliseconds": 0.7316,
+        "bytes": 800000
+      }
+    ],
+    "log": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\menu-pairs-fe8261b77205455fba2c1877a46058cb\\4-current.log"
+  }
+]

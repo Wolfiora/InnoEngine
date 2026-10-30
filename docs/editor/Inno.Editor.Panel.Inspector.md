@@ -18,7 +18,7 @@ Play Mode 中 Project scene 的运行副本保持可编辑；Inspector 的提示
 
 Target Header 右上角提供 lock/unlock 控件，其交互面积、图标居中与 hover 表现和 Panel Tab Bar 的关闭 X 使用同一套 compact icon widget。锁定只固定 Inspector 当前展示目标，不修改全局 Selection；Hierarchy 和 File Browser 可以继续选择其他对象，以便把它们拖到被锁定目标的属性上。Scene identity 只以 persistent ID 保留并从当前 Edit/Play Session 重新解析，因此 assembly reload 后会指向 replacement 或 Missing placeholder；没有稳定 identity 的 collectible target 只保留弱引用。锁定目标被销毁、移除或无法重解析时自动解锁，不会固定退休 Plugin/Script ALC。
 
-Asset target Drawer 由 FileBrowser 项目自身提供，并通过 `IInspectionIconProvider<AssetFileEntry>` 复用 `AssetEditorModule` 的 type/extension icon registry；因此 File Browser Tree/List/Grid 与 Inspector Header 始终一致，EditorScripts 热重载图标声明后两处会同时更新。第二行 source path 使用与 File Browser 底部 breadcrumb 相同的半透明 palette color。Plugin Source Mount 根使用 `IPlugin` 类型，不伪装成普通 Directory，也不创建 `.iplugin` companion asset。
+Asset target Drawer 由 FileBrowser 项目自身提供，并通过 `IInspectionIconProvider<AssetFileEntry>` 复用 `AssetEditingModule` 的 type/extension icon registry；因此 File Browser Tree/List/Grid 与 Inspector Header 始终一致，EditorScripts 热重载图标声明后两处会同时更新。第二行 source path 使用与 File Browser 底部 breadcrumb 相同的半透明 palette color。Plugin Source Mount 根使用 `IPlugin` 类型，不伪装成普通 Directory，也不创建 `.iplugin` companion asset。
 
 GameObject Header 的第二行包含 Active、项目 Tag picker 和 Layer picker。`SceneProjectSettingsModule` 按 `ProjectSettingsStore.revision` 刷新隔离的 `GameTagCatalog` 与 `GameLayerCatalog` 快照；Inspector 不从 `editor.ini` 或 `Settings.Editor.inno` 建立第二份 catalog。对象修改通过 `SceneEdits` 进入 Scene History。
 
@@ -87,57 +87,52 @@ EditorScripts 使用 `InnoEditor.Inspection`，可声明 InspectionDrawer、Prop
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
-
-### `Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 <!-- api: T:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget e32498012ea2d470ecba5cd0d6d0bbbbbc6765cbe00b21afb2bc6b13a128b86c -->
 <!-- api: M:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.#ctor(System.Type,System.Action{System.Guid}) e1b790e2d01bf3e88d8edda6db070f2d9b6c1cc83581ff54dddf24118265be81 -->
 <!-- api: P:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType 778a13e3cca26233ebc9f3ea4a18266655d93b6c01fa5a9c0ef0780c0696b3fa -->
 <!-- api: M:Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid) 6b8025e79d6da3f901bf9d6ec355a82208b0bed65bb0e11cb1e037906ea4d327 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-d72c6282bfc659c2"></a>[`public Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.AssetReferenceDropTarget(System.Type expectedType, System.Action<System.Guid> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L28) | Creates a drop target that validates an asset type and assigns its persistent identity to a property.<br>`expectedType`：The runtime asset type accepted by the property.<br>`assign`：The callback that writes an accepted persistent identity to the property. | — | `System.ArgumentNullException`：Thrown when either argument is null.<br>`System.InvalidOperationException`：Thrown when the type does not belong to the active type catalog. |
-| <a id="api-2f36c4f1da64891c"></a>[`public void Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid persistentId)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L48) | Assigns a persistent asset identity to the represented property.<br>`persistentId`：The stable persistent identity used for lookup. | — | — |
-| <a id="api-48390506697b388d"></a>[`public System.Type Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L40) | Gets the required asset type. | — | — |
-| <a id="api-1f4dfc47eff543a2"></a>[`public sealed class Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L8) | Provides an assignable asset-reference property drop target. | — | — |
-
-### `Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`
-
 <!-- api: T:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget ceb10cfb96ee0c22669ea634c19d22308c56fce6e83e89d959590c744c7e5637 -->
 <!-- api: M:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.#ctor(System.Type,System.Action{Inno.Scene.EngineObject}) 653e8db9f849419c5f3b5a53d8ed38cbaf074a05e685c71f2ba5ebb71685acba -->
 <!-- api: P:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType 8c2002a21ac32c8260365626f0397c1d373db6530fd32f67e6875305719556f0 -->
 <!-- api: M:Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject) 6b9ac1b1ef384a36f511242c3ba4d0297fc2bd4b8cdcfa42509afb39251c019f -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| API 与源码 | 契约与参数 | 返回值 | 重要异常 |
 | --- | --- | --- | --- |
-| <a id="api-acff67dfa6a7339c"></a>[`public Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.EngineObjectReferenceDropTarget(System.Type expectedType, System.Action<Inno.Scene.EngineObject> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L31) | Creates a drop target that validates and assigns an engine object to a serialized property.<br>`expectedType`：The engine object type accepted by the property.<br>`assign`：The callback that writes an accepted object to the property. | — | `System.ArgumentNullException`：Thrown when either argument is null.<br>`System.InvalidOperationException`：Thrown when the type does not belong to the active type catalog. |
-| <a id="api-a783be18a1b91ee0"></a>[`public void Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject value)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L51) | Assigns an accepted engine object to the represented property.<br>`value`：The concrete value read or transformed by this operation. | — | — |
-| <a id="api-af0659a33b66d9a5"></a>[`public System.Type Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L43) | Gets the required engine object type. | — | — |
-| <a id="api-379406779b0a6284"></a>[`public sealed class Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L11) | Provides an assignable engine-object-reference property drop target. | — | — |
+| <a id="api-1f4dfc47eff543a2"></a>[`public sealed class Inno.Editor.Panel.Inspector.AssetReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L12) | Borrows an asset property's type and assignment callback for one synchronous drop request. | — | — |
+| <a id="api-d72c6282bfc659c2"></a>[`public Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.AssetReferenceDropTarget(System.Type expectedType, System.Action<System.Guid> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L29) | Creates a drop target that validates an asset type and assigns its persistent identity to a property.<br>`expectedType`: The runtime asset type accepted by the property.<br>`assign`: The callback that writes an accepted persistent identity to the property. | — | `System.ArgumentNullException`: Thrown when either argument is . |
+| <a id="api-48390506697b388d"></a>[`public System.Type Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L41) | Gets the required asset type. | — | — |
+| <a id="api-2f36c4f1da64891c"></a>[`public void Inno.Editor.Panel.Inspector.AssetReferenceDropTarget.Assign(System.Guid persistentId)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/AssetReferenceDropTarget.cs#L49) | Assigns a persistent asset identity to the represented property.<br>`persistentId`: The stable persistent identity used for lookup. | — | — |
+| <a id="api-379406779b0a6284"></a>[`public sealed class Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L15) | Borrows an object property's type and assignment callback for one synchronous drop request. | — | — |
+| <a id="api-acff67dfa6a7339c"></a>[`public Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.EngineObjectReferenceDropTarget(System.Type expectedType, System.Action<Inno.Scene.EngineObject> assign)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L32) | Creates a drop target that validates and assigns an engine object to a serialized property.<br>`expectedType`: The engine object type accepted by the property.<br>`assign`: The callback that writes an accepted object to the property. | — | `System.ArgumentNullException`: Thrown when either argument is . |
+| <a id="api-af0659a33b66d9a5"></a>[`public System.Type Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.expectedType { get; }`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L44) | Gets the required engine object type. | — | — |
+| <a id="api-a783be18a1b91ee0"></a>[`public void Inno.Editor.Panel.Inspector.EngineObjectReferenceDropTarget.Assign(Inno.Scene.EngineObject value)`](../../src/composition/editor/panels/Inno.Editor.Panel.Inspector/DragDrop/EngineObjectReferenceDropTarget.cs#L52) | Assigns an accepted engine object to the represented property.<br>`value`: The concrete value read or transformed by this operation. | — | — |
 
 ## 项目依赖
 
-- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Identity](../core/Inno.Core.Identity.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scene.Assets](../scene/Inno.Scene.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Presentation.ImGui.Sdl3](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scene](../scene/Inno.Scene.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Editor.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Rendering` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Shaders.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Inspection` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Scene` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.PlayMode` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Assets.Pipeline` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Diagnostics` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Logging` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Identity` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Types` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Modules` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Scripting.Api` | 实现依赖；不传递 compile surface |
+| `Inno.Scene.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
+| `Inno.Scene` | 公开签名依赖 |
+| `Inno.Core.Serialization` | 公开签名依赖 |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |

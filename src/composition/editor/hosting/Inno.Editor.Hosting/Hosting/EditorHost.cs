@@ -297,7 +297,7 @@ internal sealed class EditorHost : ShellHost
             m_resources.Register(() => engineHost.logs.UnregisterSink(hostLog));
         }
         EditorAuthoringServices activeAuthoring = m_resources.Acquire(
-            () => EditorAuthoringServices.Start(projectDirectory, engineHost),
+            () => EditorAuthoringServices.Start(projectDirectory, engineHost, m_launch.buildContext.dotnetHost),
             static services => services.Dispose());
         m_authoring = activeAuthoring;
         _ = m_resources.Acquire(
@@ -435,7 +435,7 @@ internal sealed class EditorHost : ShellHost
                 presentation,
                 reloadCoordinator),
             static service => service.Dispose());
-        var editorContext = new EditorContext(projectDirectory, m_launch.keyboard);
+        var editorContext = new EditorContext(projectDirectory, m_launch.keyboard, EditorDefaultLayout.document);
         presentation.SetLayoutFile(null);
         presentation.LoadLayout(editorContext.imguiLayout);
         var playOptions = new RuntimeSessionOptions

@@ -30,9 +30,18 @@ public interface IEditorPlayMode
     LogSessionId activeSessionId { get; }
 
     /// <summary>
-    /// Occurs after <see cref="state"/> changes.
+    /// Subscribes to committed state transitions through the Core event lifetime.
     /// </summary>
-    event Action<EditorPlayModeState>? stateChanged;
+    /// <param name="listener">
+    /// The observer invoked synchronously after a transition.
+    /// </param>
+    /// <returns>
+    /// An independently disposable subscription; dispose it before retiring the observer.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The listener is null.
+    /// </exception>
+    IDisposable ListenStateChanges(Action<EditorPlayModeState> listener);
 
     /// <summary>
     /// Requests entry after the active script generation becomes ready.

@@ -1,69 +1,65 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Numerics;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using Inno.Native.ImGui;
-using Inno.Adapter.Presentation.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
 internal static class FileBrowserUtility
 {
+    internal static AssetBrowserStyle CurrentBrowserStyle => new(EditorUI.current.widgets.style);
+
     internal readonly record struct BreadcrumbPart(
         string label,
         AssetBrowserRoot root,
         string directory
     );
-
     internal static void PushBrowserStyle()
     {
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.assetText);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.WindowBg), EditorPalette.collectionHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.ChildBg), EditorPalette.collectionHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.assetBorder);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.TableHeaderBg), EditorPalette.collectionHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.TableBorderStrong), EditorPalette.assetBorder);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.TableBorderLight), EditorPalette.assetBorderSoft);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.TableRowBg), EditorPalette.collectionRow);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.assetAccent);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.assetAccent);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.assetAccent);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.WindowPadding), EditorWidget.style.assetWindowPadding);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ChildBorderSize), EditorWidget.style.borderSize);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.CellPadding), EditorWidget.style.assetCellPadding);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.ItemSpacing), EditorWidget.style.assetItemSpacing);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), EditorWidget.style.assetFrameRounding);
+        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contentText);
+        Ui.PushStyleColor((ImGuiCol.WindowBg), EditorPalette.collectionHeader);
+        Ui.PushStyleColor((ImGuiCol.ChildBg), EditorPalette.collectionHeader);
+        Ui.PushStyleColor((ImGuiCol.Border), EditorPalette.contentBorder);
+        Ui.PushStyleColor((ImGuiCol.TableHeaderBg), EditorPalette.collectionHeader);
+        Ui.PushStyleColor((ImGuiCol.TableBorderStrong), EditorPalette.contentBorder);
+        Ui.PushStyleColor((ImGuiCol.TableBorderLight), EditorPalette.contentBorderSoft);
+        Ui.PushStyleColor((ImGuiCol.TableRowBg), EditorPalette.collectionRow);
+        Ui.PushStyleColor((ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
+        Ui.PushStyleColor((ImGuiCol.Header), EditorPalette.contentAccent);
+        Ui.PushStyleColor((ImGuiCol.HeaderHovered), EditorPalette.contentAccent);
+        Ui.PushStyleColor((ImGuiCol.HeaderActive), EditorPalette.contentAccent);
+        Ui.PushStyleVar((ImGuiStyleVar.WindowPadding), CurrentBrowserStyle.windowPadding);
+        Ui.PushStyleVar((ImGuiStyleVar.ChildBorderSize), EditorUI.current.widgets.style.borderSize);
+        Ui.PushStyleVar((ImGuiStyleVar.CellPadding), CurrentBrowserStyle.cellPadding);
+        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), CurrentBrowserStyle.itemSpacing);
+        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), CurrentBrowserStyle.frameRounding);
     }
 
     internal static void PopBrowserStyle()
     {
-        NativeImGui.PopStyleVar(5);
-        NativeImGui.PopStyleColor(12);
+        Ui.PopStyleVar(5);
+        Ui.PopStyleColor(12);
     }
 
     internal static void PushButtonColors(Vector4 color)
     {
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Button), color);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.ButtonHovered), EditorPalette.GetHovered(color));
-        NativeImGui.PushStyleColor((int)(ImGuiCol.ButtonActive), EditorPalette.GetActive(color));
+        Ui.PushStyleColor((ImGuiCol.Button), color);
+        Ui.PushStyleColor((ImGuiCol.ButtonHovered), EditorPalette.GetHovered(color));
+        Ui.PushStyleColor((ImGuiCol.ButtonActive), EditorPalette.GetActive(color));
     }
 
     internal static bool IsDirectoryPath(
         AssetPipeline assets,
         string relativePath
-    )
-        => assets.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry)
-            && entry.isDirectory;
-
+    ) => assets.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry) && entry.isDirectory;
     internal static string GetDirectoryLabel(
         AssetBrowserRoot root,
         string relativePath
@@ -104,6 +100,7 @@ internal static class FileBrowserUtility
                 result = string.IsNullOrEmpty(directory) ? "~" : $"~/{directory}";
             }
         }
+
         return entry.isReadOnly ? $"{result} (read-only)" : result;
     }
 
@@ -113,9 +110,7 @@ internal static class FileBrowserUtility
             return AssetSample.fileType.TrimStart('.').ToUpperInvariant();
         if (entry.isDirectory)
             return "FOLDER";
-        string extension = string.IsNullOrEmpty(entry.extension)
-            ? Path.GetExtension(entry.assetPath.localPath)
-            : entry.extension;
+        string extension = string.IsNullOrEmpty(entry.extension) ? Path.GetExtension(entry.assetPath.localPath) : entry.extension;
         return string.IsNullOrEmpty(extension) ? "FILE" : extension.TrimStart('.').ToUpperInvariant();
     }
 
@@ -124,25 +119,20 @@ internal static class FileBrowserUtility
         string relativePath
     ) {
         if (root == AssetBrowserRoot.Plugins && string.IsNullOrEmpty(relativePath))
-            return [new BreadcrumbPart("Plugins", AssetBrowserRoot.Plugins, string.Empty)];
+            return[new BreadcrumbPart("Plugins", AssetBrowserRoot.Plugins, string.Empty)];
         AssetPath sourcePath = AssetPath.Parse(NormalizePath(relativePath));
         string sourceRoot = new AssetPath(sourcePath.source, string.Empty).ToString();
         var parts = new List<BreadcrumbPart>();
         if (root == AssetBrowserRoot.Plugins)
         {
             parts.Add(new BreadcrumbPart("Plugins", AssetBrowserRoot.Plugins, string.Empty));
-            parts.Add(new BreadcrumbPart(
-                GetSourceRootLabel(sourcePath.source),
-                AssetBrowserRoot.Plugins,
-                sourceRoot));
+            parts.Add(new BreadcrumbPart(GetSourceRootLabel(sourcePath.source), AssetBrowserRoot.Plugins, sourceRoot));
         }
         else
         {
-            parts.Add(new BreadcrumbPart(
-                "Assets",
-                AssetBrowserRoot.Assets,
-                sourceRoot));
+            parts.Add(new BreadcrumbPart("Assets", AssetBrowserRoot.Assets, sourceRoot));
         }
+
         if (string.IsNullOrEmpty(sourcePath.localPath))
             return parts;
         string[] segments = sourcePath.localPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -150,24 +140,17 @@ internal static class FileBrowserUtility
         for (int i = 0; i < segments.Length; i++)
         {
             path = string.IsNullOrEmpty(path) ? segments[i] : $"{path}/{segments[i]}";
-            parts.Add(new BreadcrumbPart(
-                segments[i],
-                root,
-                new AssetPath(sourcePath.source, path).ToString()));
+            parts.Add(new BreadcrumbPart(segments[i], root, new AssetPath(sourcePath.source, path).ToString()));
         }
+
         return parts;
     }
 
     internal static bool IsReadOnlyLocation(
         AssetPipeline assets,
         AssetBrowserState browser
-    )
-        => browser.root == AssetBrowserRoot.Plugins ||
-           IsReadOnlySource(assets, browser.currentDirectory);
-
-    internal static string NormalizePath(string? path)
-        => AssetPath.Parse(string.IsNullOrWhiteSpace(path) ? string.Empty : path.Replace('\\', '/').Trim()).ToString();
-
+    ) => browser.root == AssetBrowserRoot.Plugins || IsReadOnlySource(assets, browser.currentDirectory);
+    internal static string NormalizePath(string? path) => AssetPath.Parse(string.IsNullOrWhiteSpace(path) ? string.Empty : path.Replace('\\', '/').Trim()).ToString();
     internal static string GetParentDirectory(string relativePath)
     {
         AssetPath path = AssetPath.Parse(NormalizePath(relativePath));
@@ -185,6 +168,7 @@ internal static class FileBrowserUtility
             if (mount.id == source)
                 return mount.isReadOnly;
         }
+
         return true;
     }
 
@@ -207,9 +191,7 @@ internal static class FileBrowserUtility
         if (isDirectory)
             return name;
         string extension = Path.GetExtension(name);
-        return string.IsNullOrEmpty(extension)
-            ? name
-            : name[..^extension.Length];
+        return string.IsNullOrEmpty(extension) ? name : name[..^extension.Length];
     }
 
     /// <summary>
@@ -231,11 +213,7 @@ internal static class FileBrowserUtility
         string sourcePath,
         string editedName,
         bool isDirectory
-    )
-        => isDirectory
-            ? editedName
-            : editedName + Path.GetExtension(sourcePath);
-
+    ) => isDirectory ? editedName : editedName + Path.GetExtension(sourcePath);
     internal static string[] FitTextToLines(
         string text,
         float maxWidth,
@@ -243,22 +221,22 @@ internal static class FileBrowserUtility
     ) {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxLines, 1);
         if (string.IsNullOrEmpty(text))
-            return [string.Empty];
+            return[string.Empty];
         List<string> elements = [];
         TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(text);
         while (enumerator.MoveNext())
             elements.Add(enumerator.GetTextElement());
-
         List<string> lines = new(maxLines);
         int offset = 0;
         for (int lineIndex = 0; lineIndex < maxLines && offset < elements.Count; lineIndex++)
         {
             string remaining = string.Concat(elements.GetRange(offset, elements.Count - offset));
-            if (NativeImGui.CalcTextSize(remaining).X <= maxWidth)
+            if (Ui.MeasureText(remaining).X <= maxWidth)
             {
                 lines.Add(remaining);
                 break;
             }
+
             bool isLastLine = lineIndex == maxLines - 1;
             string suffix = isLastLine ? "..." : string.Empty;
             int count = 0;
@@ -266,20 +244,23 @@ internal static class FileBrowserUtility
             while (offset + count < elements.Count)
             {
                 string next = candidate + elements[offset + count];
-                if (NativeImGui.CalcTextSize(next + suffix).X > maxWidth)
+                if (Ui.MeasureText(next + suffix).X > maxWidth)
                     break;
                 candidate = next;
                 count++;
             }
+
             if (count == 0)
             {
-                lines.Add(isLastLine && NativeImGui.CalcTextSize("...").X <= maxWidth ? "..." : elements[offset]);
+                lines.Add(isLastLine && Ui.MeasureText("...").X <= maxWidth ? "..." : elements[offset]);
                 offset++;
                 continue;
             }
+
             lines.Add(candidate + suffix);
             offset += count;
         }
+
         return lines.Count == 0 ? [string.Empty] : lines.ToArray();
     }
 
@@ -293,20 +274,20 @@ internal static class FileBrowserUtility
             return false;
         if (ancestor.localPath.Length == 0 || string.Equals(ancestor.localPath, descendant.localPath, StringComparison.Ordinal))
             return true;
-        return descendant.localPath.Length > ancestor.localPath.Length &&
-               descendant.localPath.StartsWith(ancestor.localPath, StringComparison.Ordinal) &&
-               descendant.localPath[ancestor.localPath.Length] == '/';
+        return descendant.localPath.Length > ancestor.localPath.Length
+            && descendant.localPath.StartsWith(
+            ancestor.localPath,
+            StringComparison.Ordinal
+        )
+            && descendant.localPath[ancestor.localPath.Length] == '/';
     }
 
     private static string GetSourceRootLabel(AssetSourceId source) => source == AssetSourceId.project ? "Assets" : source.value;
-
     private static string FormatSourcePath(
         AssetSourceId source,
         string localPath
     ) {
-        string root = source == AssetSourceId.project
-            ? GetSourceRootLabel(source)
-            : $"Plugins/{GetSourceRootLabel(source)}";
+        string root = source == AssetSourceId.project ? GetSourceRootLabel(source) : $"Plugins/{GetSourceRootLabel(source)}";
         return string.IsNullOrEmpty(localPath) ? root : $"{root}/{localPath}";
     }
 

@@ -1,0 +1,2 @@
+# Preserve these recorded evidence bytes and their manifest hashes across checkout hosts.
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

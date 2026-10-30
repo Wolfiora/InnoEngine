@@ -5,15 +5,15 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
 using Inno.Editor.Interactions;
-using Inno.Editor.Panel.FileBrowser;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Rendering.Shaders;
 
 namespace Inno.Editor.Panel.ShaderEditor;
-
 [EditorAction("shader/create-asset", "panel/asset.file-browser")]
 internal sealed class CreateShaderAsset(
     ShaderEditorDocuments documents,
-    AssetEditorModule browser
+    AssetEditingModule browser
 ) : EditorAction<string, string>
 {
     /// <summary>
@@ -28,9 +28,9 @@ internal sealed class CreateShaderAsset(
     protected override EditorActionState Query(EditorActionContext<string, string> context)
     {
         AssetPath path = AssetPath.Parse(context.target);
-        return documents.assets.sourceMounts.Any(mount => mount.id == path.source && !mount.isReadOnly)
-            ? EditorActionState.enabled : EditorActionState.disabled;
+        return documents.assets.sourceMounts.Any(mount => mount.id == path.source && !mount.isReadOnly) ? EditorActionState.enabled : EditorActionState.disabled;
     }
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -51,10 +51,14 @@ internal sealed class CreateShaderAsset(
             path = new(parent.source, prefix + (index++ == 0 ? "New Shader" : "New Shader " + index) + ".ishader");
         }
         while (File.Exists(mount.Resolve(path.localPath)) || File.Exists(mount.Resolve(path.localPath) + ".imeta"));
-        GraphDocument graph = (documents.templates ?? throw new InvalidOperationException("Shader templates have not started."))
-            .Create(context.argument, documents.serialization, documents.context);
+        GraphDocument graph = (documents.templates ?? throw new InvalidOperationException("Shader templates have not started.")).Create(
+            context.argument,
+            documents.serialization,
+            documents.context
+        );
         AssetFileEntry created = browser.CreateSource(path, GraphDocumentCodec.Encode(graph, documents.serialization));
-        browser.BeginCreatedSourceRename(created);
+        _ = context.interactions.For("panel/asset.file-browser", created).Select();
+        _ = context.interactions.For("panel/asset.file-browser", created).Execute("file-browser/rename");
         context.interactions.OpenPanel("rendering.shader-editor");
     }
 }
@@ -71,19 +75,15 @@ internal sealed class ShaderTemplateMenu(ShaderEditorDocuments documents) : Edit
     /// <param name="builder">
     /// The builder consumed by build; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-public override void Build(
-    EditorMenuContext context,
-    EditorMenuBuilder builder
-) {
+    public override void Build(
+        EditorMenuContext context,
+        EditorMenuBuilder builder
+    ) {
         if (documents.templates is null)
             return;
         builder.AddGroup("Create/Rendering", order: 200, separatorBefore: true);
         builder.AddGroup("Create/Rendering/Shaders", order: 0);
         foreach (ShaderGraphTemplateInfo template in documents.templates.templates)
-            builder.Add(
-                "Create/Rendering/Shaders/" + template.displayName,
-                "shader/create-asset",
-                argument: template.id,
-                order: 0);
+            builder.Add("Create/Rendering/Shaders/" + template.displayName, "shader/create-asset", argument: template.id, order: 0);
     }
 }

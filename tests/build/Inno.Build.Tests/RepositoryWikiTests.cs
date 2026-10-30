@@ -1,5 +1,6 @@
 using Inno.Testing.Source;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -91,7 +92,8 @@ public sealed class RepositoryWikiTests
     public async Task CurrentWikiCompilesWithTheCurrentLogicalScriptContracts()
     {
         string repository = TestRepository.GetRoot(typeof(RepositoryWikiTests).Assembly);
-        string owner = Path.Combine(repository, "artifacts", "acceptance", "wiki-gate", Guid.NewGuid().ToString("N"));
+        string? artifacts = TestRepository.GetArtifactsPath(typeof(RepositoryWikiTests).Assembly);
+        string owner = Path.Combine(artifacts ?? Path.Combine(repository, "artifacts"), "acceptance", "wiki-gate", Guid.NewGuid().ToString("N"));
         string project = Path.Combine(owner, "Project");
         Directory.CreateDirectory(project);
         try
@@ -106,15 +108,22 @@ public sealed class RepositoryWikiTests
             TextWriter previousError = Console.Error;
             using var errors = new StringWriter();
             int result;
+            string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+            var arguments = new List<string>
+            {
+                "verify", repository, "--configuration", configuration, "--wiki", "--wiki-target", target,
+                "--dotnet", dotnet,
+                "--wiki-api", Path.Combine(owner, "api.json"),
+                "--wiki-examples", Path.Combine(owner, "examples.json"),
+                "--wiki-runtime-reference", runtime, "--wiki-editor-reference", editor
+            };
+            if (artifacts is not null)
+                arguments.AddRange(["--artifacts-path", artifacts]);
             try
             {
                 Console.SetError(errors);
                 result = await BuildApplication.Run(
-                    ["verify", repository, "--configuration", configuration, "--wiki", "--wiki-target", target,
-                        "--dotnet", ToolchainEnvironment.ResolveExecutable("dotnet"),
-                        "--wiki-api", Path.Combine(owner, "api.json"),
-                        "--wiki-examples", Path.Combine(owner, "examples.json"),
-                        "--wiki-runtime-reference", runtime, "--wiki-editor-reference", editor],
+                    arguments.ToArray(),
                     CancellationToken.None);
             }
             finally
@@ -160,7 +169,15 @@ public sealed class RepositoryWikiTests
             AssetSerializationContext.Create(assets));
         using var plugins = new PluginEnvironment(assets, settings, host.serialization, pluginsRoot,
             libraryRoot, scan, host.modules.generations);
-        var compiler = new ScriptCompiler(new ScriptCompilerOptions { projectRootDirectory = project }, assets, plugins);
+        string dotnetHost = Path.Combine(
+            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        var compiler = new ScriptCompiler(
+            new ScriptCompilerOptions
+            {
+                projectRootDirectory = project,
+                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, project)
+            }, assets, plugins);
         compiler.GenerateProjectFiles();
     }
 

@@ -1,3 +1,4 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System.Runtime.CompilerServices;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using BGCS.Runtime;
@@ -9,7 +10,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-
 using Inno.Extensibility.Modules;
 using Inno.Core.Logging;
 using Inno.Extensibility.Types;
@@ -21,35 +21,29 @@ using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using NativeImGui = Inno.Native.ImGui.ImGui;
-
 using Xunit;
 
 namespace Inno.Editor.Scripting.Tests;
-
 public sealed class InspectionPipelineTests : IDisposable
 {
-    private readonly string m_projectRoot = Path.Combine(
-        Path.GetTempPath(),
-        "InnoInspectionPipelineTests",
-        Guid.NewGuid().ToString("N"));
+    private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoInspectionPipelineTests", Guid.NewGuid().ToString("N"));
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
     private readonly LogRouter m_logs = new();
     private readonly EditorInteractionRuntime m_runtime;
-
     public InspectionPipelineTests()
     {
         Directory.CreateDirectory(m_projectRoot);
-        m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(InspectionPipelineTests).Assembly)        });
+        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(InspectionPipelineTests).Assembly) });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new EditorInteractionRuntime(
             new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
             m_logs,
-            [m_types, m_serialization]);
+            [m_types, m_serialization]
+        );
         m_runtime.Start();
     }
 
@@ -68,22 +62,9 @@ public sealed class InspectionPipelineTests : IDisposable
     public unsafe void InlineChildFailureIsConsumedAndReadonlyDisabledScopeRemainsBalanced()
     {
         EditorContext editor = m_runtime.context;
-        using var drawers = new PropertyDrawerRegistry(
-            m_runtime.interactions,
-            m_types,
-            m_serialization,
-            []);
-        using var attributes = new InspectorAttributeDrawerRegistry(
-            m_runtime.interactions,
-            m_types,
-            m_serialization,
-            []);
-        var renderer = new SerializedPropertyRenderer(
-            drawers,
-            attributes,
-            m_runtime.interactions,
-            new NoopEditService(),
-            m_logs);
+        using var drawers = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        using var attributes = new InspectorAttributeDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        var renderer = new SerializedPropertyRenderer(drawers, attributes, m_runtime.interactions, new NoopEditService(), m_logs);
         Assert.IsType<InlineParentDrawer>(drawers.Resolve(typeof(InlineParent)));
         var owner = new InlineOwner();
         SerializedProperty property = Assert.Single(m_serialization.GetProperties(owner));
@@ -91,13 +72,14 @@ public sealed class InspectionPipelineTests : IDisposable
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
             io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
             io->DeltaTime = 1f / 60f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
             float originalAlpha = NativeImGui.Raw.GetStyle()->Alpha;
-
             NativeImGui.NewFrame();
             using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Inline Property Test", allowsNull: false);
             _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
@@ -110,8 +92,8 @@ public sealed class InspectionPipelineTests : IDisposable
             {
                 NativeImGui.End();
             }
-            NativeImGui.Render();
 
+            NativeImGui.Render();
             Assert.True(InlineParentDrawer.drewAfterFailure);
             Assert.Equal(originalAlpha, NativeImGui.Raw.GetStyle()->Alpha);
         }
@@ -127,13 +109,11 @@ public sealed class InspectionPipelineTests : IDisposable
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             PrepareNativeFrame();
             bool isOpen = true;
-
-            Assert.Throws<InvalidOperationException>(() => EditorWidget.PanelWindow(
-                "Throwing Panel",
-                ref isOpen,
-                static () => throw new InvalidOperationException("panel")));
+            Assert.Throws<InvalidOperationException>(() => EditorUI.current.widgets.PanelWindow("Throwing Panel", ref isOpen, static () => throw new InvalidOperationException("panel")));
             using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Content After Panel Failure", allowsNull: false);
             _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, 0);
             NativeImGui.TextUnformatted("Still drawing.");
@@ -150,36 +130,26 @@ public sealed class InspectionPipelineTests : IDisposable
     public unsafe void TextEditStateIsScopedByRendererOwnerAndPropertyPath()
     {
         EditorContext editor = m_runtime.context;
-        using var drawers = new PropertyDrawerRegistry(
-            m_runtime.interactions,
-            m_types,
-            m_serialization,
-            []);
-        using var attributes = new InspectorAttributeDrawerRegistry(
-            m_runtime.interactions,
-            m_types,
-            m_serialization,
-            []);
-        var firstRenderer = new SerializedPropertyRenderer(
-            drawers,
-            attributes,
-            m_runtime.interactions,
-            new NoopEditService(),
-            m_logs);
-        var secondRenderer = new SerializedPropertyRenderer(
-            drawers,
-            attributes,
-            m_runtime.interactions,
-            new NoopEditService(),
-            m_logs);
-        var firstOwner = new TextStateOwner { value = new TextStateValue("First") };
-        var secondOwner = new TextStateOwner { value = new TextStateValue("Second") };
+        using var drawers = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        using var attributes = new InspectorAttributeDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        var firstRenderer = new SerializedPropertyRenderer(drawers, attributes, m_runtime.interactions, new NoopEditService(), m_logs);
+        var secondRenderer = new SerializedPropertyRenderer(drawers, attributes, m_runtime.interactions, new NoopEditService(), m_logs);
+        var firstOwner = new TextStateOwner
+        {
+            value = new TextStateValue("First")
+        };
+        var secondOwner = new TextStateOwner
+        {
+            value = new TextStateValue("Second")
+        };
         SerializedProperty firstProperty = Assert.Single(m_serialization.GetProperties(firstOwner));
         SerializedProperty secondProperty = Assert.Single(m_serialization.GetProperties(secondOwner));
         TextStateDrawer.observations.Clear();
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             DrawPropertyFrame(firstRenderer, editor, firstOwner, firstProperty);
             DrawPropertyFrame(firstRenderer, editor, firstOwner, firstProperty);
             DrawPropertyFrame(firstRenderer, editor, secondOwner, secondProperty);
@@ -190,46 +160,28 @@ public sealed class InspectionPipelineTests : IDisposable
             NativeImGui.Raw.DestroyContext(nativeContext);
         }
 
-        Assert.Equal(
-            ["First:<new>", "First:First", "Second:<new>", "First:<new>"],
-            TextStateDrawer.observations);
+        Assert.Equal(["First:<new>", "First:First", "Second:<new>", "First:<new>"], TextStateDrawer.observations);
     }
 
     [Fact]
     public unsafe void PresentationAttributesComposeAndCustomDrawersRemainExtensible()
     {
         EditorContext editor = m_runtime.context;
-        using var drawers = new PropertyDrawerRegistry(
-            m_runtime.interactions,
-            m_types,
-            m_serialization,
-            []);
-        using var attributes = new InspectorAttributeDrawerRegistry(
-            m_runtime.interactions,
-            m_types,
-            m_serialization,
-            []);
-        var renderer = new SerializedPropertyRenderer(
-            drawers,
-            attributes,
-            m_runtime.interactions,
-            new NoopEditService(),
-            m_logs);
+        using var drawers = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        using var attributes = new InspectorAttributeDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        var renderer = new SerializedPropertyRenderer(drawers, attributes, m_runtime.interactions, new NoopEditService(), m_logs);
         var owner = new AttributeOwner();
-        SerializedProperty property = Assert.Single(
-            m_serialization.GetProperties(owner),
-            static candidate => candidate.name == nameof(AttributeOwner.value));
+        SerializedProperty property = Assert.Single(m_serialization.GetProperties(owner), static candidate => candidate.name == nameof(AttributeOwner.value));
         AttributeValueDrawer.observations.Clear();
         ProbeInspectorAttributeDrawer.observations.Clear();
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using IDisposable uiScope = uiSession.Enter();
             DrawPropertyFrame(renderer, editor, owner, property);
             Assert.Empty(AttributeValueDrawer.observations);
-            Assert.Equal(
-                ["update:Friendly Value:False:2:8"],
-                ProbeInspectorAttributeDrawer.observations);
-
+            Assert.Equal(["update:Friendly Value:False:2:8"], ProbeInspectorAttributeDrawer.observations);
             owner.showValue = true;
             DrawPropertyFrame(renderer, editor, owner, property);
         }
@@ -238,14 +190,7 @@ public sealed class InspectionPipelineTests : IDisposable
             NativeImGui.Raw.DestroyContext(nativeContext);
         }
 
-        Assert.Equal(
-            [
-                "update:Friendly Value:False:2:8",
-                "update:Friendly Value:False:2:8",
-                "before",
-                "after"
-            ],
-            ProbeInspectorAttributeDrawer.observations);
+        Assert.Equal(["update:Friendly Value:False:2:8", "update:Friendly Value:False:2:8", "before", "after"], ProbeInspectorAttributeDrawer.observations);
         Assert.Equal(["Friendly Value:False:2:8"], AttributeValueDrawer.observations);
     }
 
@@ -276,6 +221,7 @@ public sealed class InspectionPipelineTests : IDisposable
         {
             NativeImGui.End();
         }
+
         NativeImGui.Render();
     }
 
@@ -285,7 +231,9 @@ public sealed class InspectionPipelineTests : IDisposable
             object owner,
             string propertyName,
             Action mutation,
-            string historyName
+            string historyName,
+            string? mergeKey,
+            string? componentName
         ) {
             mutation();
             return true;
@@ -305,7 +253,6 @@ internal sealed class InlineParent
 }
 
 internal sealed class InlineFailure;
-
 internal sealed class TextStateOwner : ISerializable
 {
     [SerializableProperty]
@@ -313,7 +260,6 @@ internal sealed class TextStateOwner : ISerializable
 }
 
 internal sealed record TextStateValue(string id);
-
 internal sealed class AttributeOwner : ISerializable
 {
     internal bool showValue { get; set; }
@@ -330,19 +276,14 @@ internal sealed class AttributeOwner : ISerializable
 }
 
 internal sealed class AttributeValue;
-
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
 internal sealed class ProbeInspectorAttribute : InspectorPresentationAttribute;
-
 [InspectorAttributeDrawer(typeof(ProbeInspectorAttribute), priority: 10_000)]
 internal sealed class ProbeInspectorAttributeDrawer : IInspectorAttributeDrawer
 {
     internal static List<string> observations { get; } = [];
 
-    public void Update(InspectorAttributeDrawContext context)
-        => observations.Add(
-            $"update:{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
-
+    public void Update(InspectorAttributeDrawContext context) => observations.Add($"update:{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         _ = context;
@@ -361,9 +302,7 @@ internal sealed class AttributeValueDrawer : IPropertyDrawer
 {
     internal static List<string> observations { get; } = [];
 
-    public void Draw(PropertyDrawContext context)
-        => observations.Add(
-            $"{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
+    public void Draw(PropertyDrawContext context) => observations.Add($"{context.label}:{context.isReadOnly}:{context.minimum}:{context.maximum}");
 }
 
 [PropertyDrawer(typeof(TextStateValue), priority: 10_000)]
@@ -384,16 +323,12 @@ internal sealed class TextStateDrawer : IPropertyDrawer
 internal sealed class InlineParentDrawer : IPropertyDrawer
 {
     internal static bool drewAfterFailure;
-
     public void Draw(PropertyDrawContext context)
     {
         var parent = (InlineParent)context.GetValue()!;
-        context.DrawInlineChild(
-            "child",
-            typeof(InlineFailure),
-            () => parent.child,
-            static _ => { },
-            readOnly: true);
+        context.DrawInlineChild("child", typeof(InlineFailure), () => parent.child, static _ =>
+        {
+        }, readOnly: true);
         drewAfterFailure = true;
     }
 }
@@ -401,6 +336,5 @@ internal sealed class InlineParentDrawer : IPropertyDrawer
 [PropertyDrawer(typeof(InlineFailure), priority: 10_000)]
 internal sealed class InlineFailureDrawer : IPropertyDrawer
 {
-    public void Draw(PropertyDrawContext context)
-        => throw new InvalidOperationException("Inline drawer failure.");
+    public void Draw(PropertyDrawContext context) => throw new InvalidOperationException("Inline drawer failure.");
 }

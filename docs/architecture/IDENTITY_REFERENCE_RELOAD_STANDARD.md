@@ -108,6 +108,8 @@ Editor 的 identity-aware API 必须从当前明确 scope 解析 allocator；不
 
 ### 3.3 Registry 的唯一权威性
 
+资产文件索引的无内容变化刷新不能无条件注销、重建全部 runtime identity。`AssetFileSystem` 以完整候选对账当前 persistent entry ID，复用有效条目并退休真正移除的条目；普通枚举失败保留原索引。UI 继续通过 Core Identity 解析，不另建 path → live object 表，也不依赖每帧全量重建来维持正确性。
+
 - live object 的 `persistentId/runtimeId → instance` 解析以 `IdentityAllocator` 为唯一权威。
 - 领域可以建立 `path/semantic ID → persistentId` 的二级索引，但不得再维护长期的 `path/semantic ID → collectible object` 权威表。
 - 内部 dense/sparse array 可以优化 allocator；slot 必须带 generation，slot 复用后旧 runtime ID 必须失效。
@@ -695,6 +697,7 @@ resolved
 - Undo 创建/删除 Missing Component/System/Asset reference。
 - redo branch、transaction compensation 和 disk-spilled payload 保持中立。
 - Scene/Asset history 始终获得完整 Asset/reference Serialization Context。
+- 局部 Scene 属性与元素状态通过所属 Core Identity domain 按需解析当前引用；禁止为每次标量编辑重建整场景的 live object 双向索引。同步作用域固定 Scene owner，拒绝过期、错误 domain、跨 Scene 和类型不匹配的引用；异常与嵌套回调必须恢复原作用域。元素别名只保留经校验的中立 Guid 映射。完整图、Prefab、子树与 reload 候选的冻结局部 ID 映射仍属于各自的当前图事务，不承担当前属性的 live object authority。
 - `Remove ScriptComponent → remove Plugin/Asset → Undo → recover → Redo` 全链通过。
 
 ### 13.5 GC barrier
@@ -761,3 +764,9 @@ Contributor snapshot、scratch、内容读取流与异步 clip 准备属于各�
 内容 store 的 reader generation 与代码 TypeCache/Assembly generation 具有不同语义：reader pin 只保护冻结内容，不成为 live object 第二索引；跨 generation live object 仍通过 Core.Identity 重新解析。Settings 与 Asset 引用使用 owner 的完整 SerializationContext。只读 Pack 与 Asset lease 不公开物理路径。
 
 本轮职责迁移保留显式 Stable Type ID，并固定迁移前推导出的持久 DTO ID；内部 parser、临时键和生成 catalog 不进入持久协议。退出顺序和 GC barrier 继续按本页原规范执行，不能把缓存 reader 已释放当作 collectible ALC 已退休。
+
+## 完整捕获 key 的瞬时边界
+
+Core Serialization 的可选捕获 key 仅保存中立 runtime identity/domain、计数和当前 metadata/generation stamp，用于同一进程的不可变状态观察；这些值不写入编码结果、History、Scene、Workspace 或插件状态。跨 callback 的临时 identity 验证复用 Core Identity 的弱 registry 绑定，不创建对象回查表。Builder 在同步回调退出时清空 context、metadata、临时 identity 检查与存储；持有快照或已退休 builder 不得阻止真实 Assembly/ALC 退休。
+
+Scene 在现有结构化对象数组中声明每个 owner 的完整写入 revision，以及精确 source/parent ID、sibling 位置和组件属性。结构、顺序、根属性、别名与 System 仍由原 writer 处理。未跟踪字段、自定义 Converter、可变引用、Missing 和 Prefab 等不完整证明仍执行权威 capture，不能以 UI 通知或局部 revision 跳过状态。Core 也禁止以父节点的局部 key 隐式证明嵌套 Converter 的状态，并从独立属性 payload 传播中立执行标记。变化期间输入不稳定或 identity 退休时拒绝发布新快照，原捕获保持有效。普通保存、Undo payload 与 Missing 恢复共用原二进制 writer/reader；捕获 key 不建立第二种数据格式或恢复协议。此处能力的完整失败和线程契约见 [Serialization](../core/Inno.Core.Serialization.md)。

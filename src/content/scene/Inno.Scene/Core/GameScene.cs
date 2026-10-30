@@ -69,6 +69,15 @@ public sealed class GameScene : EngineObject, ISerializable
     /// </summary>
     public bool isLoaded => m_isLoaded;
 
+    /// <summary>
+    /// Gets the owner-local change counter for object membership, parentage and sibling ordering.
+    /// </summary>
+    /// <remarks>
+    /// Use this counter only to invalidate derived views of this live scene. It is not a persistent
+    /// identity, data format or guarantee that object properties remain unchanged.
+    /// </remarks>
+    public ulong hierarchyRevision => m_hierarchy.revision;
+
     internal SceneTypeCatalog typeCatalog => m_types;
     internal long structureRevision => m_store.structureRevision;
 

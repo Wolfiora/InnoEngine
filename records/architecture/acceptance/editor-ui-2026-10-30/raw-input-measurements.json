@@ -1,0 +1,1502 @@
+[
+  {
+    "samples": [
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              10231.8143,
+              10604.0883,
+              10487.0991,
+              10223.4022,
+              10294.7269,
+              10448.7521,
+              10591.7461,
+              10280.5529,
+              10542.7718,
+              10649.9995
+            ],
+            "median": 10467.925599999999,
+            "p95": 10649.9995,
+            "allocatedBytes": 7542138384,
+            "totalAllocatedBytes": 7542156032,
+            "cpuMilliseconds": 104171.875,
+            "gen0Collections": 898,
+            "gen1Collections": 17,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              3510.8088,
+              3546.4224,
+              3511.2031,
+              3532.194,
+              3607.9724,
+              3523.3607,
+              3761.5666,
+              3379.4922,
+              3450.2559,
+              3786.8515
+            ],
+            "median": 3527.7773500000003,
+            "p95": 3786.8515,
+            "allocatedBytes": 2463527744,
+            "totalAllocatedBytes": 2463533888,
+            "cpuMilliseconds": 35546.875,
+            "gen0Collections": 294,
+            "gen1Collections": 4,
+            "gen2Collections": 1
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              3879.6799,
+              3956.3741,
+              3982.2865,
+              3836.7953,
+              3936.2182,
+              3974.4066,
+              3870.9267,
+              3932.3845,
+              3935.0407,
+              4082.0511
+            ],
+            "median": 3935.62945,
+            "p95": 4082.0511,
+            "allocatedBytes": 7264267232,
+            "totalAllocatedBytes": 7264343744,
+            "cpuMilliseconds": 39359.375,
+            "gen0Collections": 831,
+            "gen1Collections": 109,
+            "gen2Collections": 12
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              4529.5462,
+              4495.3389,
+              4450.2717,
+              4682.6979,
+              4560.1174,
+              4471.5824,
+              4508.4048,
+              4751.4065,
+              4496.5942,
+              4593.2799
+            ],
+            "median": 4518.9755000000005,
+            "p95": 4751.4065,
+            "allocatedBytes": 7090206536,
+            "totalAllocatedBytes": 7090295720,
+            "cpuMilliseconds": 45531.25,
+            "gen0Collections": 826,
+            "gen1Collections": 111,
+            "gen2Collections": 14
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      }
+    ],
+    "assemblySha256": "BD56CC91E3259213EBF4B6C66A38D8185486E7A668F0FC5D9F196CE0DBA68C24",
+    "pair": 0,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-original",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "original",
+    "wallMilliseconds": 490841.0031
+  },
+  {
+    "samples": [
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              77.469,
+              79.7892,
+              78.6792,
+              72.4184,
+              75.0092,
+              73.9088,
+              63.6526,
+              62.6626,
+              65.5949,
+              60.5379
+            ],
+            "median": 73.1636,
+            "p95": 79.7892,
+            "allocatedBytes": 78734992,
+            "totalAllocatedBytes": 78753576,
+            "cpuMilliseconds": 921.875,
+            "gen0Collections": 8,
+            "gen1Collections": 6,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.4442,
+              1.4391,
+              1.422,
+              1.562,
+              1.5107,
+              1.451,
+              1.4428,
+              1.453,
+              1.4265,
+              1.4151
+            ],
+            "median": 1.4435,
+            "p95": 1.562,
+            "allocatedBytes": 3009840,
+            "totalAllocatedBytes": 3010320,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.4237,
+              1.417,
+              1.4774,
+              1.4445,
+              1.4231,
+              1.4882,
+              1.4351,
+              1.4091,
+              1.5519,
+              1.455
+            ],
+            "median": 1.4398,
+            "p95": 1.5519,
+            "allocatedBytes": 2831936,
+            "totalAllocatedBytes": 2832416,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              14.5603,
+              14.2502,
+              15.3166,
+              14.9756,
+              14.6098,
+              16.4719,
+              14.8566,
+              14.8195,
+              14.4403,
+              14.2136
+            ],
+            "median": 14.714649999999999,
+            "p95": 16.4719,
+            "allocatedBytes": 9383928,
+            "totalAllocatedBytes": 9384408,
+            "cpuMilliseconds": 156.25,
+            "gen0Collections": 1,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      }
+    ],
+    "assemblySha256": "CB262A500BD081B545969F39E7038403E0355C5D2869DE49AE93C9692932CA52",
+    "pair": 0,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\0-current",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "current",
+    "wallMilliseconds": 118251.02
+  },
+  {
+    "samples": [
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.5024,
+              1.4827,
+              1.4803,
+              1.4962,
+              1.4709,
+              1.5591,
+              1.5163,
+              1.4767,
+              1.4848,
+              1.6529
+            ],
+            "median": 1.4905,
+            "p95": 1.6529,
+            "allocatedBytes": 2831936,
+            "totalAllocatedBytes": 2832416,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.4078,
+              1.379,
+              1.4139,
+              1.3906,
+              1.385,
+              1.4219,
+              1.4659,
+              1.4416,
+              1.4177,
+              1.4364
+            ],
+            "median": 1.4158,
+            "p95": 1.4659,
+            "allocatedBytes": 3009840,
+            "totalAllocatedBytes": 3010320,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              72.7355,
+              77.1866,
+              73.0883,
+              74.1993,
+              72.1001,
+              65.0174,
+              62.8437,
+              60.8431,
+              64.2667,
+              60.5218
+            ],
+            "median": 68.55875,
+            "p95": 77.1866,
+            "allocatedBytes": 78738216,
+            "totalAllocatedBytes": 78756800,
+            "cpuMilliseconds": 921.875,
+            "gen0Collections": 8,
+            "gen1Collections": 5,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              13.9153,
+              15.8653,
+              14.0934,
+              13.9633,
+              14.3194,
+              14.1654,
+              13.9258,
+              14.0944,
+              14.0263,
+              13.7638
+            ],
+            "median": 14.05985,
+            "p95": 15.8653,
+            "allocatedBytes": 9383928,
+            "totalAllocatedBytes": 9384408,
+            "cpuMilliseconds": 156.25,
+            "gen0Collections": 1,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      }
+    ],
+    "assemblySha256": "CB262A500BD081B545969F39E7038403E0355C5D2869DE49AE93C9692932CA52",
+    "pair": 1,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-current",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "current",
+    "wallMilliseconds": 108857.7708
+  },
+  {
+    "samples": [
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              10211.0511,
+              10180.8836,
+              10168.2307,
+              10179.5642,
+              10165.4065,
+              10283.1874,
+              10270.9341,
+              10234.9524,
+              10182.313,
+              10192.9922
+            ],
+            "median": 10187.652600000001,
+            "p95": 10283.1874,
+            "allocatedBytes": 7542136744,
+            "totalAllocatedBytes": 7542154392,
+            "cpuMilliseconds": 101875,
+            "gen0Collections": 898,
+            "gen1Collections": 16,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              3342.4177,
+              3370.2648,
+              3363.9175,
+              3357.0057,
+              3390.4197,
+              3346.9671,
+              3342.5212,
+              3396.2747,
+              3371.6665,
+              3369.4574
+            ],
+            "median": 3366.68745,
+            "p95": 3396.2747,
+            "allocatedBytes": 2463531792,
+            "totalAllocatedBytes": 2463537936,
+            "cpuMilliseconds": 33578.125,
+            "gen0Collections": 294,
+            "gen1Collections": 4,
+            "gen2Collections": 1
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              4054.6956,
+              4091.1858,
+              3952.9139,
+              4032.9159,
+              4076.5509,
+              4065.9845,
+              4425.4523,
+              4028.3543,
+              3992.7748,
+              4244.7616
+            ],
+            "median": 4060.34005,
+            "p95": 4425.4523,
+            "allocatedBytes": 7264268688,
+            "totalAllocatedBytes": 7264357872,
+            "cpuMilliseconds": 40875,
+            "gen0Collections": 833,
+            "gen1Collections": 107,
+            "gen2Collections": 14
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              4520.3332,
+              4741.383,
+              4382.5305,
+              4473.2678,
+              4466.5492,
+              4438.9156,
+              4507.5489,
+              4452.8046,
+              4444.0079,
+              4515.6066
+            ],
+            "median": 4469.9085,
+            "p95": 4741.383,
+            "allocatedBytes": 7090210736,
+            "totalAllocatedBytes": 7090299920,
+            "cpuMilliseconds": 44796.875,
+            "gen0Collections": 826,
+            "gen1Collections": 111,
+            "gen2Collections": 14
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      }
+    ],
+    "assemblySha256": "BD56CC91E3259213EBF4B6C66A38D8185486E7A668F0FC5D9F196CE0DBA68C24",
+    "pair": 1,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\1-original",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "original",
+    "wallMilliseconds": 478511.2481
+  },
+  {
+    "samples": [
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              4578.9381,
+              4606.4219,
+              4537.4535,
+              4468.4138,
+              4522.2851,
+              4539.4089,
+              4457.5512,
+              4597.5072,
+              4599.4958,
+              4456.9367
+            ],
+            "median": 4538.4312,
+            "p95": 4606.4219,
+            "allocatedBytes": 7090164064,
+            "totalAllocatedBytes": 7090240576,
+            "cpuMilliseconds": 45281.25,
+            "gen0Collections": 824,
+            "gen1Collections": 114,
+            "gen2Collections": 12
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              10324.398,
+              10294.8698,
+              10354.4547,
+              10394.0164,
+              10335.4606,
+              10660.8104,
+              10390.7406,
+              10319.0687,
+              10329.8278,
+              11417.2039
+            ],
+            "median": 10344.95765,
+            "p95": 11417.2039,
+            "allocatedBytes": 7542130336,
+            "totalAllocatedBytes": 7542147960,
+            "cpuMilliseconds": 104328.125,
+            "gen0Collections": 899,
+            "gen1Collections": 17,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              3391.8889,
+              3412.3441,
+              3384.7697,
+              3410.0279,
+              3441.4198,
+              3624.0777,
+              3595.9925,
+              3381.4736,
+              3530.5198,
+              3495.4015
+            ],
+            "median": 3426.88195,
+            "p95": 3624.0777,
+            "allocatedBytes": 2463534072,
+            "totalAllocatedBytes": 2463540216,
+            "cpuMilliseconds": 34640.625,
+            "gen0Collections": 294,
+            "gen1Collections": 4,
+            "gen2Collections": 1
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              3596.059,
+              3534.2568,
+              3614.6995,
+              3568.2203,
+              3608.2846,
+              3574.164,
+              3628.8166,
+              3601.7335,
+              3550.678,
+              3560.2323
+            ],
+            "median": 3585.1115,
+            "p95": 3628.8166,
+            "allocatedBytes": 7264282576,
+            "totalAllocatedBytes": 7264346200,
+            "cpuMilliseconds": 35906.25,
+            "gen0Collections": 829,
+            "gen1Collections": 127,
+            "gen2Collections": 10
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      }
+    ],
+    "assemblySha256": "BD56CC91E3259213EBF4B6C66A38D8185486E7A668F0FC5D9F196CE0DBA68C24",
+    "pair": 2,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-original",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "original",
+    "wallMilliseconds": 476834.7609
+  },
+  {
+    "samples": [
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              104.3352,
+              91.9632,
+              92.4848,
+              104.5284,
+              123.7802,
+              90.2223,
+              86.2752,
+              73.1374,
+              71.7355,
+              67.1693
+            ],
+            "median": 91.09275,
+            "p95": 123.7802,
+            "allocatedBytes": 79122720,
+            "totalAllocatedBytes": 79141256,
+            "cpuMilliseconds": 1218.75,
+            "gen0Collections": 8,
+            "gen1Collections": 4,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              18.1181,
+              15.9254,
+              16.2993,
+              15.1278,
+              15.4494,
+              15.2195,
+              14.8231,
+              15.2502,
+              15.0383,
+              17.9802
+            ],
+            "median": 15.3498,
+            "p95": 18.1181,
+            "allocatedBytes": 9385280,
+            "totalAllocatedBytes": 9385760,
+            "cpuMilliseconds": 187.5,
+            "gen0Collections": 2,
+            "gen1Collections": 1,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.466,
+              1.4602,
+              1.4937,
+              1.4591,
+              1.5722,
+              1.636,
+              1.6065,
+              1.5359,
+              1.5905,
+              1.9986
+            ],
+            "median": 1.5540500000000002,
+            "p95": 1.9986,
+            "allocatedBytes": 3009840,
+            "totalAllocatedBytes": 3010320,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.6382,
+              1.7711,
+              1.8761,
+              1.8493,
+              1.785,
+              1.7356,
+              1.7281,
+              1.6775,
+              1.8373,
+              1.7851
+            ],
+            "median": 1.77805,
+            "p95": 1.8761,
+            "allocatedBytes": 2831936,
+            "totalAllocatedBytes": 2832416,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      }
+    ],
+    "assemblySha256": "CB262A500BD081B545969F39E7038403E0355C5D2869DE49AE93C9692932CA52",
+    "pair": 2,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\2-current",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "current",
+    "wallMilliseconds": 137842.0408
+  },
+  {
+    "samples": [
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              18.942,
+              21.9723,
+              20.314,
+              20.6038,
+              20.5669,
+              19.6653,
+              17.2285,
+              20.0913,
+              20.6504,
+              18.6914
+            ],
+            "median": 20.20265,
+            "p95": 21.9723,
+            "allocatedBytes": 9384272,
+            "totalAllocatedBytes": 9384752,
+            "cpuMilliseconds": 234.375,
+            "gen0Collections": 1,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.6567,
+              1.635,
+              1.564,
+              1.7605,
+              1.9673,
+              2.1292,
+              2.0565,
+              2.0376,
+              1.9119,
+              1.9017
+            ],
+            "median": 1.9068,
+            "p95": 2.1292,
+            "allocatedBytes": 3009840,
+            "totalAllocatedBytes": 3010320,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.7735,
+              1.9541,
+              2.1459,
+              2.2456,
+              1.9084,
+              1.8009,
+              1.7605,
+              1.7685,
+              2.0797,
+              2.4219
+            ],
+            "median": 1.93125,
+            "p95": 2.4219,
+            "allocatedBytes": 2831936,
+            "totalAllocatedBytes": 2832416,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              90.7394,
+              84.4303,
+              77.8088,
+              74.8589,
+              76.0475,
+              64.0171,
+              66.8619,
+              69.4557,
+              64.972,
+              69.0475
+            ],
+            "median": 72.15729999999999,
+            "p95": 90.7394,
+            "allocatedBytes": 79119232,
+            "totalAllocatedBytes": 79137816,
+            "cpuMilliseconds": 968.75,
+            "gen0Collections": 9,
+            "gen1Collections": 3,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      }
+    ],
+    "assemblySha256": "CB262A500BD081B545969F39E7038403E0355C5D2869DE49AE93C9692932CA52",
+    "pair": 3,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-current",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "current",
+    "wallMilliseconds": 154739.1671
+  },
+  {
+    "samples": [
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              5772.2654,
+              5961.9365,
+              5842.2665,
+              6068.6114,
+              6493.7052,
+              5727.1596,
+              5749.1581,
+              5847.5731,
+              6853.4044,
+              6074.9406
+            ],
+            "median": 5904.7548,
+            "p95": 6853.4044,
+            "allocatedBytes": 7266708904,
+            "totalAllocatedBytes": 7266950032,
+            "cpuMilliseconds": 59921.875,
+            "gen0Collections": 857,
+            "gen1Collections": 141,
+            "gen2Collections": 38
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              6076.7855,
+              5834.3496,
+              5883.9603,
+              6251.2492,
+              8356.4387,
+              6923.7684,
+              7129.1422,
+              6829.8662,
+              6144.2936,
+              5308.9846
+            ],
+            "median": 6197.7714,
+            "p95": 8356.4387,
+            "allocatedBytes": 2463662544,
+            "totalAllocatedBytes": 2463668688,
+            "cpuMilliseconds": 63562.5,
+            "gen0Collections": 297,
+            "gen1Collections": 11,
+            "gen2Collections": 1
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              5850.4266,
+              5754.8221,
+              5997.663,
+              5987.595,
+              5428.186,
+              5964.4229,
+              5915.9711,
+              5667.4805,
+              5888.1751,
+              6654.2834
+            ],
+            "median": 5902.0731,
+            "p95": 6654.2834,
+            "allocatedBytes": 7092870424,
+            "totalAllocatedBytes": 7093092520,
+            "cpuMilliseconds": 58484.375,
+            "gen0Collections": 849,
+            "gen1Collections": 128,
+            "gen2Collections": 35
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              15109.747,
+              15284.5099,
+              15307.5502,
+              14625.2424,
+              14134.9201,
+              14309.8463,
+              14834.487,
+              16053.4,
+              14631.6931,
+              14419.829
+            ],
+            "median": 14733.090049999999,
+            "p95": 16053.4,
+            "allocatedBytes": 7542823736,
+            "totalAllocatedBytes": 7542852592,
+            "cpuMilliseconds": 147359.375,
+            "gen0Collections": 902,
+            "gen1Collections": 21,
+            "gen2Collections": 5
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      }
+    ],
+    "assemblySha256": "BD56CC91E3259213EBF4B6C66A38D8185486E7A668F0FC5D9F196CE0DBA68C24",
+    "pair": 3,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\3-original",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "original",
+    "wallMilliseconds": 747623.944
+  },
+  {
+    "samples": [
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              5011.2353,
+              5163.1566,
+              5043.1341,
+              4923.0403,
+              4324.8921,
+              4347.2222,
+              4834.3711,
+              4838.2464,
+              5159.7388,
+              4722.7954
+            ],
+            "median": 4880.64335,
+            "p95": 5163.1566,
+            "allocatedBytes": 2463527632,
+            "totalAllocatedBytes": 2463528112,
+            "cpuMilliseconds": 47906.25,
+            "gen0Collections": 294,
+            "gen1Collections": 6,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              14934.4839,
+              16488.3506,
+              19866.71,
+              14654.4286,
+              13903.3565,
+              14044.33,
+              14479.2196,
+              14050.7311,
+              14566.9374,
+              14737.6526
+            ],
+            "median": 14610.683,
+            "p95": 19866.71,
+            "allocatedBytes": 7542816200,
+            "totalAllocatedBytes": 7542845008,
+            "cpuMilliseconds": 149375,
+            "gen0Collections": 904,
+            "gen1Collections": 20,
+            "gen2Collections": 5
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              4549.0722,
+              4598.0554,
+              4585.3029,
+              4724.5218,
+              5687.0343,
+              4616.6273,
+              4535.0225,
+              4683.4078,
+              4429.5312,
+              4436.7932
+            ],
+            "median": 4591.67915,
+            "p95": 5687.0343,
+            "allocatedBytes": 7266975976,
+            "totalAllocatedBytes": 7267261528,
+            "cpuMilliseconds": 46515.625,
+            "gen0Collections": 864,
+            "gen1Collections": 138,
+            "gen2Collections": 45
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              4665.2651,
+              4441.5547,
+              4749.9316,
+              4431.9466,
+              4412.7075,
+              4534.8421,
+              4396.2234,
+              4459.3524,
+              4553.1784,
+              4555.7415
+            ],
+            "median": 4497.09725,
+            "p95": 4749.9316,
+            "allocatedBytes": 7092917080,
+            "totalAllocatedBytes": 7093151728,
+            "cpuMilliseconds": 45031.25,
+            "gen0Collections": 850,
+            "gen1Collections": 136,
+            "gen2Collections": 37
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      }
+    ],
+    "assemblySha256": "BD56CC91E3259213EBF4B6C66A38D8185486E7A668F0FC5D9F196CE0DBA68C24",
+    "pair": 4,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-original",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\original-managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "original",
+    "wallMilliseconds": 709030.3803
+  },
+  {
+    "samples": [
+      {
+        "workload": "hierarchy-edit",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.5396,
+              1.5539,
+              1.5665,
+              1.5835,
+              1.6024,
+              1.561,
+              1.7238,
+              1.6283,
+              1.6055,
+              1.5883
+            ],
+            "median": 1.5859,
+            "p95": 1.7238,
+            "allocatedBytes": 3009840,
+            "totalAllocatedBytes": 3010320,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "continuous-domain-gesture-and-actual-hierarchy-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "hierarchy-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              1.7233,
+              1.7522,
+              1.7663,
+              1.7182,
+              1.7413,
+              1.7661,
+              1.9979,
+              1.9237,
+              1.974,
+              1.9028
+            ],
+            "median": 1.7662,
+            "p95": 1.9979,
+            "allocatedBytes": 2831936,
+            "totalAllocatedBytes": 2832416,
+            "cpuMilliseconds": 15.625,
+            "gen0Collections": 0,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\hierarchy"
+      },
+      {
+        "workload": "assets-search",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              78.0047,
+              76.6079,
+              74.2931,
+              73.8806,
+              77.8859,
+              70.393,
+              80.7782,
+              76.663,
+              71.5461,
+              75.6864
+            ],
+            "median": 76.14715000000001,
+            "p95": 80.7782,
+            "allocatedBytes": 79128568,
+            "totalAllocatedBytes": 79147080,
+            "cpuMilliseconds": 812.5,
+            "gen0Collections": 9,
+            "gen1Collections": 4,
+            "gen2Collections": 3
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 4,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      },
+      {
+        "workload": "assets-scroll",
+        "samples": [
+          {
+            "repetition": 0,
+            "milliseconds": [
+              18.6575,
+              18.6492,
+              19.5928,
+              19.0607,
+              19.3357,
+              17.8883,
+              18.8015,
+              18.5207,
+              16.6373,
+              16.6758
+            ],
+            "median": 18.65335,
+            "p95": 19.5928,
+            "allocatedBytes": 9383928,
+            "totalAllocatedBytes": 9384408,
+            "cpuMilliseconds": 203.125,
+            "gen0Collections": 1,
+            "gen1Collections": 0,
+            "gen2Collections": 0
+          }
+        ],
+        "configuration": "Debug",
+        "viewport": "1000x800",
+        "warmupOperations": 5,
+        "measuredOperationsPerRepetition": 10,
+        "nativeFramesPerOperation": 1,
+        "consumer": "actual-native-input-and-panel-draw",
+        "sharedInput": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\shared-input\\assets"
+      }
+    ],
+    "assemblySha256": "CB262A500BD081B545969F39E7038403E0355C5D2869DE49AE93C9692932CA52",
+    "pair": 4,
+    "evidence": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\e11\\input-pairs-8a06aca274e64fe581cbe62288fac0e5\\4-current",
+    "assembly": "D:\\InnoEngine-Verification\\editor-ui-closure-2026-10-27\\managed\\bin\\Inno.Editor.PlayMode.Tests\\debug\\Inno.Editor.PlayMode.Tests.dll",
+    "producer": "current",
+    "wallMilliseconds": 181919.9031
+  }
+]

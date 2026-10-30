@@ -20,6 +20,24 @@ internal static class ReflectionStructMetadata
         return S_CACHE.GetValue(structType, static type => new MembersBox(BuildMembers(type))).members;
     }
 
+    internal static bool HasPureFieldAccess(
+        Type type,
+        SerializationTypeMetadata metadata
+    ) {
+        if (!type.IsValueType || metadata.requiresConverter || metadata.collection is not null || metadata.members.Count == 0)
+            return false;
+        foreach (SerializationMemberMetadata member in metadata.members)
+        {
+            if ((member.visibility & PropertyVisibility.Serialize) == 0) continue;
+            FieldInfo? field = type.GetField(member.name, C_MEMBERS);
+            if (field is null || field.FieldType != member.type ||
+                !(field.FieldType.IsPrimitive && field.FieldType != typeof(IntPtr) && field.FieldType != typeof(UIntPtr) && field.FieldType != typeof(char)
+                  || field.FieldType == typeof(decimal) || field.FieldType == typeof(System.Guid) || field.FieldType == typeof(string)))
+                return false;
+        }
+        return true;
+    }
+
     private static SerializationMemberMetadata[] BuildMembers(Type structType)
     {
         var members = new List<SerializationMemberMetadata>();

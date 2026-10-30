@@ -251,13 +251,23 @@ jobs:
             Tee-Object -FilePath 'artifacts/acceptance/ci-build/source-debug.log'
           if ($LASTEXITCODE -ne 0) { throw 'SourceDebug build failed.' }
 
-      - name: Enforce source and compiled public API architecture boundaries
+      - name: Build selected Player contract for repository checks
+        id: player_contract
         if: ${{ !cancelled() && steps.source.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          dotnet build '${{ matrix.player_project }}' --configuration Debug --disable-build-servers -m:1 -nr:false `
+            '-bl:artifacts/acceptance/ci-build/wiki-player.binlog' 2>&1 |
+            Tee-Object -FilePath 'artifacts/acceptance/ci-build/wiki-player.log'
+          if ($LASTEXITCODE -ne 0) { throw 'The current Wiki target reference closure could not be built.' }
+
+      - name: Enforce source and compiled public API architecture boundaries
+        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
         shell: pwsh
         run: dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- verify .
 
       - name: Run complete test suite
-        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
         shell: pwsh
         run: |
           $properties = Join-Path $PWD '${{ matrix.product_properties }}'
@@ -306,13 +316,9 @@ jobs:
           }
 
       - name: Validate current Wiki signatures and compiled examples
-        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
+        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
         shell: pwsh
         run: |
-          dotnet build '${{ matrix.player_project }}' --configuration Debug --disable-build-servers -m:1 -nr:false `
-            '-bl:artifacts/acceptance/ci-build/wiki-player.binlog' 2>&1 |
-            Tee-Object -FilePath 'artifacts/acceptance/ci-build/wiki-player.log'
-          if ($LASTEXITCODE -ne 0) { throw 'The current Wiki target reference closure could not be built.' }
           $project = Join-Path $env:RUNNER_TEMP 'InnoWikiProject'
           New-Item -ItemType Directory -Force (Join-Path $project 'Assets') | Out-Null
           'public sealed class WikiProbe { }' | Set-Content (Join-Path $project 'Assets/WikiProbe.cs') -Encoding utf8

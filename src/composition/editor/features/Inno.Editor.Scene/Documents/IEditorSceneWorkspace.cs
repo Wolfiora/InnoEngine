@@ -89,7 +89,7 @@ public interface IEditorSceneWorkspace
     /// The saved source-relative path.
     /// </returns>
     /// <exception cref="System.InvalidOperationException">
-    /// Thrown while Play Mode runtime copies are active or when the asset cannot be persisted.
+    /// Thrown while Play Mode runtime copies are active, when the asset cannot be persisted, or when saving would overwrite its unavailable assigned source.
     /// </exception>
     string Save(
         GameScene scene,
@@ -109,7 +109,7 @@ public interface IEditorSceneWorkspace
     /// The saved source-relative path.
     /// </returns>
     /// <exception cref="System.InvalidOperationException">
-    /// Thrown while Play Mode runtime copies are active or when the asset cannot be persisted.
+    /// Thrown while Play Mode runtime copies are active, when the asset cannot be persisted, or when saving would overwrite its unavailable assigned source.
     /// </exception>
     string SaveToDirectory(
         GameScene scene,
@@ -143,10 +143,10 @@ public interface IEditorSceneWorkspace
     /// The scene whose path is requested.
     /// </param>
     /// <param name="relativePath">
-    /// The saved path when available.
+    /// The assigned source-relative path, including a temporarily unavailable source.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> when the scene is backed by a scene asset.
+    /// <see langword="true"/> when a source remains assigned; availability is diagnosed separately.
     /// </returns>
     bool TryGetSourcePath(
         GameScene scene,

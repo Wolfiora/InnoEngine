@@ -12,8 +12,10 @@ namespace Inno.Scene.Components;
 /// Stores local transform data and exposes the scene hierarchy relationship.
 /// </summary>
 [StableTypeId("39a944b8-f021-4ac9-9f66-506f15a96848")]
+[SerializationRevision("m_serializationRevision")]
 public sealed class Transform : GameComponent
 {
+    private ulong? m_serializationRevision = 0;
     private readonly List<Transform> m_children = [];
     private readonly ReadOnlyCollection<Transform> m_readOnlyChildren;
     private Transform? m_parent;
@@ -42,6 +44,7 @@ public sealed class Transform : GameComponent
         get => m_localPosition;
         set
         {
+            AdvanceCaptureRevision();
             m_localPosition = value;
             RecomputeWorldFromLocal();
         }
@@ -56,6 +59,7 @@ public sealed class Transform : GameComponent
         get => m_localRotation;
         set
         {
+            AdvanceCaptureRevision();
             m_localRotation = value.normalized;
             RecomputeWorldFromLocal();
         }
@@ -70,6 +74,7 @@ public sealed class Transform : GameComponent
         get => m_localScale;
         set
         {
+            AdvanceCaptureRevision();
             m_localScale = value;
             RecomputeWorldFromLocal();
         }
@@ -205,6 +210,7 @@ public sealed class Transform : GameComponent
     /// </summary>
     protected override void Reset()
     {
+        AdvanceCaptureRevision();
         m_localPosition = Vector3.ZERO;
         m_localRotation = Quaternion.identity;
         m_localScale = Vector3.ONE;
@@ -247,6 +253,7 @@ public sealed class Transform : GameComponent
         Quaternion rotation,
         Vector3 scale
     ) {
+        AdvanceCaptureRevision();
         if (m_parent is null)
         {
             m_localPosition = position;
@@ -295,6 +302,12 @@ public sealed class Transform : GameComponent
 
         if (notifyChildren)
             NotifyChildrenWorldChanged();
+    }
+
+    private void AdvanceCaptureRevision()
+    {
+        if (m_serializationRevision is { } revision)
+            m_serializationRevision = revision == ulong.MaxValue ? null : revision + 1;
     }
 
     private void RecomputeMatrixFromLocal()

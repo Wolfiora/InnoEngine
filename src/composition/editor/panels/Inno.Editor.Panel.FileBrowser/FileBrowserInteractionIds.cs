@@ -1,5 +1,7 @@
-namespace Inno.Editor.Panel.FileBrowser;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 
+namespace Inno.Editor.Panel.FileBrowser;
 internal static class FileBrowserInteractionIds
 {
     internal const string C_AREA = "panel/asset.file-browser";

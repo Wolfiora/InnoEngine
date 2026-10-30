@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Inno.Scene;
@@ -12,6 +13,89 @@ namespace Inno.Scene.Tests;
 [Collection(SceneTestsCollection.NAME)]
 public sealed class SceneFacadeTests : IDisposable
 {
+    [Fact]
+    public void RootSiblingPositionsStayAuthoritativeAcrossHierarchyMutations()
+    {
+        var scene = new GameScene("Indexed Roots");
+        var destination = new GameScene("Transfer Target");
+        SceneManager.LoadSceneAdditive(scene);
+        SceneManager.LoadSceneAdditive(destination);
+        Transform destinationRoot = destination.CreateObject("Existing").transform;
+        var roots = new List<Transform>();
+        for (int index = 0; index < 64; index++)
+            roots.Add(scene.CreateObject("Root " + index).transform);
+        var random = new Random(27102026);
+        for (int iteration = 0; iteration < 200; iteration++)
+        {
+            ulong before = scene.hierarchyRevision;
+            int selectedIndex = random.Next(roots.Count);
+            Transform selected = roots[selectedIndex];
+            switch (iteration % 5)
+            {
+                case 0:
+                    int target = random.Next(roots.Count);
+                    selected.SetSiblingIndex(target);
+                    roots.RemoveAt(selectedIndex);
+                    roots.Insert(target, selected);
+                    break;
+                case 1:
+                    Transform parent = roots[(selectedIndex + 1) % roots.Count];
+                    selected.SetParent(parent);
+                    roots.RemoveAt(selectedIndex);
+                    Assert.Equal(0, selected.siblingIndex);
+                    Verify();
+                    selected.SetParent(null);
+                    roots.Add(selected);
+                    break;
+                case 2:
+                    SceneManager.MoveGameObjectToScene(selected.gameObject, destination);
+                    roots.RemoveAt(selectedIndex);
+                    Assert.Equal(0, destinationRoot.siblingIndex);
+                    Assert.Equal(1, selected.siblingIndex);
+                    Verify();
+                    SceneManager.MoveGameObjectToScene(selected.gameObject, scene);
+                    roots.Add(selected);
+                    break;
+                case 3:
+                    Assert.True(scene.DestroyObject(selected.gameObject));
+                    roots.RemoveAt(selectedIndex);
+                    roots.Add(scene.CreateObject("Replacement " + iteration).transform);
+                    break;
+                default:
+                    Assert.Throws<InvalidOperationException>(() => selected.SetParent(selected));
+                    Assert.Throws<InvalidOperationException>(() => selected.SetParent(destinationRoot));
+                    Assert.Equal(before, scene.hierarchyRevision);
+                    break;
+            }
+            Verify();
+        }
+
+        void Verify()
+        {
+            for (int index = 0; index < roots.Count; index++)
+                Assert.Equal(index, roots[index].siblingIndex);
+        }
+    }
+
+    [Fact]
+    public void ChildSiblingReorderInvalidatesTheSameSceneHierarchyView()
+    {
+        var scene = new GameScene("Child Order");
+        Transform parent = scene.CreateObject("Parent").transform;
+        Transform first = scene.CreateObject("First").transform;
+        Transform second = scene.CreateObject("Second").transform;
+        first.SetParent(parent);
+        second.SetParent(parent);
+        ulong before = scene.hierarchyRevision;
+        second.SetSiblingIndex(0);
+        Assert.True(scene.hierarchyRevision > before);
+        Assert.Equal(0, second.siblingIndex);
+        Assert.Equal(1, first.siblingIndex);
+        before = scene.hierarchyRevision;
+        second.SetSiblingIndex(0);
+        Assert.Equal(before, scene.hierarchyRevision);
+    }
+
     private readonly IDisposable m_sceneScope;
 
     public SceneFacadeTests(SceneTestsFixture fixture)

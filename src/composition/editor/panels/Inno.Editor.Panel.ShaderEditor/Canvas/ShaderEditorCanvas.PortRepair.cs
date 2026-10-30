@@ -1,12 +1,11 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Rendering.Shaders;
-using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using ImGuiApi = Inno.Native.ImGui.ImGui;
+using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
-
 internal sealed partial class ShaderEditorCanvas
 {
     private void RepairPorts(GraphNodeRecord node)
@@ -20,15 +19,15 @@ internal sealed partial class ShaderEditorCanvas
             return;
         try
         {
-            Widget.WrappedText("Removed ports retain their connections. Choose a replacement explicitly; occupied inputs are not overwritten.");
+            EditorUI.current.widgets.WrappedText("Removed ports retain their connections. Choose a replacement explicitly; occupied inputs are not overwritten.");
             foreach (GraphEndpoint endpoint in missing)
             {
                 ShaderNodePort old = Port(endpoint);
-                ImGuiApi.PushID(endpoint.portId.value);
+                ImGuiApi.PushId(endpoint.portId.value);
                 try
                 {
-                    ImGuiApi.TextUnformatted(endpoint.portId.value + " · " + old.type.id);
-                    if (!Widget.BeginBoundedCombo("##replacement", "Reconnect to…"))
+                    ImGuiApi.Text(endpoint.portId.value + " · " + old.type.id);
+                    if (!EditorUI.current.widgets.BeginBoundedCombo("##replacement", "Reconnect to…"))
                         continue;
                     foreach (ShaderNodePort replacement in draft.ports[node.id])
                     {
@@ -48,18 +47,22 @@ internal sealed partial class ShaderEditorCanvas
                             candidate.RemoveEdge(edge.id);
                             candidate.AddEdge(new(edge.id, edge.output == endpoint ? target : edge.output, edge.input == endpoint ? target : edge.input));
                         }
+
                         // Keep the retired declaration in metadata for a future source restoration and Undo.
-                        candidate.FindNode(node.id)!.SetValue(ShaderEditorDocuments.C_PORT_SNAPSHOT,
-                            ShaderGraphDocument.Encode(draft.portSnapshots[node.id], owner.serialization, owner.context));
+                        candidate.FindNode(node.id)!.SetValue(
+                            ShaderEditorDocuments.C_PORT_SNAPSHOT,
+                            ShaderGraphDocument.Encode(draft.portSnapshots[node.id], owner.serialization, owner.context)
+                        );
                         Controller.ReplaceDocument(candidate, "Reconnect Shader Port");
                         owner.Changed(draft);
                         break;
                     }
-                    Widget.EndBoundedCombo();
+
+                    EditorUI.current.widgets.EndBoundedCombo();
                 }
                 finally
                 {
-                    ImGuiApi.PopID();
+                    ImGuiApi.PopId();
                 }
             }
         }

@@ -241,7 +241,6 @@ internal sealed partial class EditorSceneWorkspace :
             try
             {
                 SynchronizeSource(document.scene, document);
-                m_diagnostics.ResolveSynchronization(sceneId);
             }
             catch (Exception exception)
             {

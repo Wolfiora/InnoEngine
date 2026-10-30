@@ -1,0 +1,1775 @@
+[
+  {
+    "page": "docs/animation/Inno.Animation.md",
+    "example": 1,
+    "line": 23,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+    "example": 1,
+    "line": 48,
+    "referenceMode": "framework",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/assets/Inno.Assets.md",
+    "example": 1,
+    "line": 12,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/assets/Inno.Assets.Pipeline.md",
+    "example": 1,
+    "line": 66,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/assets/Inno.Assets.Pipeline.md",
+    "example": 2,
+    "line": 142,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/assets/Inno.Assets.Pipeline.md",
+    "example": 3,
+    "line": 203,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/assets/Inno.Content.md",
+    "example": 1,
+    "line": 38,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/audio/Inno.Adapter.Audio.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/audio/Inno.Audio.Assets.md",
+    "example": 1,
+    "line": 17,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/audio/Inno.Audio.md",
+    "example": 1,
+    "line": 59,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/audio/Inno.Audio.Runtime.md",
+    "example": 1,
+    "line": 96,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Bindings.md",
+    "example": 1,
+    "line": 24,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Bindings.md",
+    "example": 2,
+    "line": 81,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Composition.md",
+    "example": 1,
+    "line": 20,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Distribution.Standard.md",
+    "example": 1,
+    "line": 25,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Managed.md",
+    "example": 1,
+    "line": 27,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.md",
+    "example": 1,
+    "line": 38,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Products.Standard.md",
+    "example": 1,
+    "line": 16,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.SupportPacks.Core.md",
+    "example": 1,
+    "line": 21,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Toolchains.md",
+    "example": 1,
+    "line": 56,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/build/Inno.Build.Toolchains.md",
+    "example": 2,
+    "line": 124,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Collections.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Collections.md",
+    "example": 2,
+    "line": 50,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Collections.md",
+    "example": 3,
+    "line": 101,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Coroutines.md",
+    "example": 1,
+    "line": 22,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Diagnostics.md",
+    "example": 1,
+    "line": 12,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Diagnostics.md",
+    "example": 2,
+    "line": 54,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Diagnostics.md",
+    "example": 3,
+    "line": 73,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Diagnostics.md",
+    "example": 4,
+    "line": 99,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Diagnostics.md",
+    "example": 5,
+    "line": 159,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Events.md",
+    "example": 1,
+    "line": 37,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Events.md",
+    "example": 2,
+    "line": 88,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Execution.md",
+    "example": 1,
+    "line": 66,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Graphs.md",
+    "example": 1,
+    "line": 35,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Identity.md",
+    "example": 1,
+    "line": 28,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Identity.md",
+    "example": 2,
+    "line": 53,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Input.md",
+    "example": 1,
+    "line": 30,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.IO.md",
+    "example": 1,
+    "line": 44,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.IO.md",
+    "example": 2,
+    "line": 63,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Layers.md",
+    "example": 1,
+    "line": 44,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Logging.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Logging.md",
+    "example": 2,
+    "line": 51,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Logging.md",
+    "example": 3,
+    "line": 119,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Mathematics.md",
+    "example": 1,
+    "line": 17,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Mathematics.md",
+    "example": 2,
+    "line": 74,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 1,
+    "line": 52,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 2,
+    "line": 100,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 3,
+    "line": 156,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 4,
+    "line": 178,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 5,
+    "line": 197,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 6,
+    "line": 231,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 7,
+    "line": 245,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Serialization.md",
+    "example": 8,
+    "line": 308,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/core/Inno.Core.Settings.md",
+    "example": 1,
+    "line": 12,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Annotations.md",
+    "example": 1,
+    "line": 36,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Assets.md",
+    "example": 1,
+    "line": 16,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Assets.md",
+    "example": 2,
+    "line": 76,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Audio.md",
+    "example": 1,
+    "line": 19,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Core.md",
+    "example": 1,
+    "line": 57,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Core.md",
+    "example": 2,
+    "line": 90,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Core.md",
+    "example": 3,
+    "line": 118,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Core.md",
+    "example": 4,
+    "line": 141,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Core.md",
+    "example": 5,
+    "line": 163,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Core.md",
+    "example": 6,
+    "line": 218,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Hosting.md",
+    "example": 1,
+    "line": 30,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.ImGui.md",
+    "example": 1,
+    "line": 123,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.ImGui.md",
+    "example": 2,
+    "line": 161,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.ImGui.md",
+    "example": 3,
+    "line": 226,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Inspection.md",
+    "example": 1,
+    "line": 12,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Inspection.md",
+    "example": 2,
+    "line": 56,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Inspection.md",
+    "example": 3,
+    "line": 83,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Inspection.md",
+    "example": 4,
+    "line": 108,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 1,
+    "line": 17,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 2,
+    "line": 42,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 3,
+    "line": 56,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 4,
+    "line": 74,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 5,
+    "line": 115,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 6,
+    "line": 132,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 7,
+    "line": 159,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 8,
+    "line": 170,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 9,
+    "line": 208,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 10,
+    "line": 220,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 11,
+    "line": 285,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 12,
+    "line": 303,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Interactions.md",
+    "example": 13,
+    "line": 323,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.FileBrowser.md",
+    "example": 1,
+    "line": 45,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.FileBrowser.md",
+    "example": 2,
+    "line": 80,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.FileBrowser.md",
+    "example": 3,
+    "line": 106,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.Hierarchy.md",
+    "example": 1,
+    "line": 21,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.Inspector.md",
+    "example": 1,
+    "line": 38,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.Settings.md",
+    "example": 1,
+    "line": 48,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.Settings.md",
+    "example": 2,
+    "line": 76,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.ShaderEditor.md",
+    "example": 1,
+    "line": 37,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Panel.Stats.md",
+    "example": 1,
+    "line": 17,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.PlayMode.md",
+    "example": 1,
+    "line": 68,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.PlayMode.md",
+    "example": 2,
+    "line": 81,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Rendering.md",
+    "example": 1,
+    "line": 66,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Scene.md",
+    "example": 1,
+    "line": 100,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Scripting.md",
+    "example": 1,
+    "line": 29,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Scripting.md",
+    "example": 2,
+    "line": 100,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Scripting.md",
+    "example": 3,
+    "line": 145,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Scripting.md",
+    "example": 4,
+    "line": 189,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Settings.md",
+    "example": 1,
+    "line": 25,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Settings.md",
+    "example": 2,
+    "line": 57,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Settings.md",
+    "example": 3,
+    "line": 75,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/editor/Inno.Editor.Shaders.md",
+    "example": 1,
+    "line": 20,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/extensibility/Inno.Extensibility.Catalogs.md",
+    "example": 1,
+    "line": 34,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/extensibility/Inno.Extensibility.Modules.md",
+    "example": 1,
+    "line": 51,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/extensibility/Inno.Extensibility.Reload.md",
+    "example": 1,
+    "line": 47,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/extensibility/Inno.Extensibility.Types.md",
+    "example": 1,
+    "line": 23,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/extensibility/Inno.Extensibility.Types.md",
+    "example": 2,
+    "line": 68,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/extensibility/Inno.Extensibility.Types.md",
+    "example": 3,
+    "line": 129,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/extensibility/Inno.Extensibility.Types.md",
+    "example": 4,
+    "line": 189,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/input/Inno.Input.md",
+    "example": 1,
+    "line": 18,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/Inno.Adapter.Platform.md",
+    "example": 1,
+    "line": 15,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/Inno.Adapter.Presentation.md",
+    "example": 1,
+    "line": 21,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/Inno.Platform.md",
+    "example": 1,
+    "line": 30,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/references/Inno.References.md",
+    "example": 1,
+    "line": 44,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Adapter.Rendering.md",
+    "example": 1,
+    "line": 18,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Rendering.Assets.Authoring.md",
+    "example": 1,
+    "line": 20,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Rendering.Assets.md",
+    "example": 1,
+    "line": 20,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Rendering.md",
+    "example": 1,
+    "line": 24,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Rendering.Runtime.md",
+    "example": 1,
+    "line": 28,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Rendering.Shaders.md",
+    "example": 1,
+    "line": 193,
+    "referenceMode": "editor-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2;Inno.ScriptApi.Editor:CF075B761880D3654205A07CC6D170305D919AB2A9BAA768A21C77A8AED21CB7",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Rendering.Shaders.md",
+    "example": 2,
+    "line": 218,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/rendering/Inno.Rendering.Shaders.md",
+    "example": 3,
+    "line": 252,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Adapter.Authoring.Default.md",
+    "example": 1,
+    "line": 13,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Adapter.Default.md",
+    "example": 1,
+    "line": 20,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Adapter.md",
+    "example": 1,
+    "line": 13,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Player.Runtime.md",
+    "example": 1,
+    "line": 22,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Runtime.Contracts.md",
+    "example": 1,
+    "line": 37,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Runtime.Contracts.md",
+    "example": 2,
+    "line": 68,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Runtime.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Shell.md",
+    "example": 1,
+    "line": 40,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/runtime/Inno.Shell.md",
+    "example": 2,
+    "line": 67,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.Assets.md",
+    "example": 1,
+    "line": 36,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 1,
+    "line": 24,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 2,
+    "line": 51,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 3,
+    "line": 81,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 4,
+    "line": 95,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 5,
+    "line": 127,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 6,
+    "line": 145,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 7,
+    "line": 173,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scene/Inno.Scene.md",
+    "example": 8,
+    "line": 270,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Api.md",
+    "example": 1,
+    "line": 31,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Api.md",
+    "example": 2,
+    "line": 45,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Api.md",
+    "example": 3,
+    "line": 63,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Api.md",
+    "example": 4,
+    "line": 74,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Api.md",
+    "example": 5,
+    "line": 90,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Api.md",
+    "example": 6,
+    "line": 108,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Api.md",
+    "example": 7,
+    "line": 129,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/scripting/Inno.Scripting.Compiler.md",
+    "example": 1,
+    "line": 69,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/storage/Inno.Adapter.Storage.md",
+    "example": 1,
+    "line": 15,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/storage/Inno.Storage.md",
+    "example": 1,
+    "line": 17,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/testing/Inno.Testing.Processes.md",
+    "example": 1,
+    "line": 22,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/testing/Inno.Testing.Source.md",
+    "example": 1,
+    "line": 23,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/text/Inno.Text.md",
+    "example": 1,
+    "line": 22,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/text/Inno.Text.Runtime.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/ui/Inno.UI.md",
+    "example": 1,
+    "line": 22,
+    "referenceMode": "runtime-script",
+    "referenceIdentity": "Inno.ScriptApi.Runtime:A13B00AEAC71043B29882484FC406548E9870F28C8BEDAD8EBD6DF3583D38CC2",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/ui/Inno.UI.Runtime.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/BrowserWasm32/Inno.Adapter.Storage.BrowserWasm32.md",
+    "example": 1,
+    "line": 28,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.Runtime.md",
+    "example": 1,
+    "line": 18,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Build.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Sdl3.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.md",
+    "example": 1,
+    "line": 16,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.Runtime.md",
+    "example": 1,
+    "line": 18,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Build.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Sdl3.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/Windows/Inno.Build.Windows.Host.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/WindowsX64/Inno.Editor.WindowsX64.md",
+    "example": 1,
+    "line": 24,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.md",
+    "example": 1,
+    "line": 16,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.Runtime.md",
+    "example": 1,
+    "line": 18,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Build.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Bgfx/Inno.Build.Toolchains.Bgfx.md",
+    "example": 1,
+    "line": 22,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Bgfx/Inno.Build.Toolchains.Bgfx.Shaders.md",
+    "example": 1,
+    "line": 10,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md",
+    "example": 1,
+    "line": 51,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md",
+    "example": 2,
+    "line": 96,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/DotNet/Inno.Adapter.Modules.DotNet.md",
+    "example": 1,
+    "line": 31,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/DotNet/Inno.Adapter.Serialization.DotNet.md",
+    "example": 1,
+    "line": 21,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/FileSystem/Inno.Adapter.Content.FileSystem.md",
+    "example": 1,
+    "line": 40,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/ImGui/Inno.Build.Toolchains.ImGui.md",
+    "example": 1,
+    "line": 12,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/ImGui/Inno.Build.Toolchains.ImGuizmo.md",
+    "example": 1,
+    "line": 12,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/ImGui/Inno.Native.ImGuizmo.md",
+    "example": 1,
+    "line": 48,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Interop/Inno.Native.LibraryLoading.md",
+    "example": 1,
+    "line": 24,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/MiniAudio/Inno.Adapter.Audio.MiniAudio.md",
+    "example": 1,
+    "line": 24,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/MiniAudio/Inno.Build.Toolchains.MiniAudio.md",
+    "example": 1,
+    "line": 10,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/MiniAudio/Inno.Native.MiniAudio.md",
+    "example": 1,
+    "line": 40,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/RmlUi/Inno.Adapter.UI.RmlUi.Authoring.md",
+    "example": 1,
+    "line": 31,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/RmlUi/Inno.Adapter.UI.RmlUi.md",
+    "example": 1,
+    "line": 12,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/RmlUi/Inno.Build.Toolchains.UI.md",
+    "example": 1,
+    "line": 10,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/RmlUi/Inno.Native.UI.md",
+    "example": 1,
+    "line": 31,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Sdl3/Inno.Build.Toolchains.Sdl3.md",
+    "example": 1,
+    "line": 10,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Text/Inno.Adapter.Text.FreeTypeHarfBuzz.md",
+    "example": 1,
+    "line": 14,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Text/Inno.Build.Toolchains.Text.md",
+    "example": 1,
+    "line": 10,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/backends/Text/Inno.Native.Text.md",
+    "example": 1,
+    "line": 20,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  }
+]

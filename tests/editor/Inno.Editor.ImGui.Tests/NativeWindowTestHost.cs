@@ -8,6 +8,11 @@ internal static class NativeWindowTestHost
 {
     private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
     {
+        ["ViewportMetricsTests.FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations"] = () => new ViewportMetricsTests().FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations(),
+        ["ViewportMetricsTests.FailedPreparationDoesNotBeginOrPublishANativeFrame"] = () => new ViewportMetricsTests().FailedPreparationDoesNotBeginOrPublishANativeFrame(),
+        ["ViewportMetricsTests.AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest"] = () => new ViewportMetricsTests().AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest(),
+        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.False"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(false),
+        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.True"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(true),
         ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.False"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(false),
         ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.True"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(true),
         ["ViewportMetricsTests.MetricRefreshPreservesRequestedViewportGeometry"] = () => new ViewportMetricsTests().MetricRefreshPreservesRequestedViewportGeometry(),
@@ -18,6 +23,15 @@ internal static class NativeWindowTestHost
         ["ViewportRetirementTests.DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement"] = () => new ViewportRetirementTests().DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement(),
         ["ViewportRetirementTests.IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint"] = () => new ViewportRetirementTests().IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint(),
         ["ViewportRetirementTests.CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup"] = () => new ViewportRetirementTests().CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup(),
+        ["FontCoverageTests.EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource.0.75"] = () => new FontCoverageTests().EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource(0.75f),
+        ["FontCoverageTests.EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource.1"] = () => new FontCoverageTests().EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource(1f),
+        ["FontCoverageTests.EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource.1.5"] = () => new FontCoverageTests().EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource(1.5f),
+        ["FontCoverageTests.EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource.2"] = () => new FontCoverageTests().EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource(2f),
+        ["FontCoverageTests.RejectOwnedContent.False"] = () => FontCoverageTests.RejectOwnedContent(false),
+        ["FontCoverageTests.RejectOwnedContent.True"] = () => FontCoverageTests.RejectOwnedContent(true),
+        ["FontCoverageTests.RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext"] = () => new FontCoverageTests().RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext(),
+        ["FontCoverageTests.SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow"] = () => new FontCoverageTests().SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow(),
+        ["FontCoverageTests.ApplicationShutdownRetiresBothRegisteredContexts"] = () => new FontCoverageTests().ApplicationShutdownRetiresBothRegisteredContexts(),
     };
     private static bool m_executingContract;
 

@@ -1,0 +1,13 @@
+{
+  "productionRevision": "dd5979c613b0fe8ebd9f7026f25001ceee9f8cee",
+  "status": "Passed",
+  "exitCode": 0,
+  "evaluatedProjectOwners": 241,
+  "apiInventoryEntries": 34582,
+  "compiledExamples": 197,
+  "errors": 0,
+  "unevaluatedExamples": 0,
+  "apiInventorySha256": "a4bab227f10b39e7a02298c29884559e59ba86f23529627a2a5d9e4becd6fec3",
+  "examplesSha256": "6c71b7d8cb35fd7106ed0a77b2e2fd0dfb0bca92fd6a3a2660d046f1c309cbfe",
+  "scope": "Official complete architecture/XML/Wiki after final current-document changes, selected Windows target, prepared independent Release output and freshly generated formal logical references; three foreign product API compilations explicitly outside this target. Exact delivery-head CI remains separately attached to PR26."
+}

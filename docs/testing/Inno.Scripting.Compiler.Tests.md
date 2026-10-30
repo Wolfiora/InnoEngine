@@ -17,5 +17,6 @@
 | `FrameworkContentChangesSelectNewArtifacts` | reference pack 内容变化后重新生成 API 与脚本产物；该用例修改进程环境，使用独立 testhost。 |
 | `GeneratedProjectsIgnoreAmbientBuildConfiguration` | 父目录存在拒绝构建的 `Directory.Build.props/targets` 时，生成的 Runtime 与 Editor 工程仍使用自己的完整输入完成构建。 |
 | `NestedSolutionRestoresOnlyItsOwnProjects` | 仓库子目录的 Solution 正常还原自己的工程；引擎的 Solution 还原规则只作用于所属 `InnoEngine.sln`。 |
+| `ScriptCachePublicationTests` | 从公开编译结果与进度观察拥有的产物：临时读取释放后发布，持续阻塞和取消不破坏前一 generation，失效缓存替换失败保留整棵原树，释放后显式编译完成修复。依赖 Windows 目录 sharing 语义的用例在其他宿主明确标为未执行。 |
 
 Fixture 使用临时项目、公开资产挂载和序列化服务；测试完成后释放宿主及临时文件。没有 `InternalsVisibleTo`、私有反射或测试后门。

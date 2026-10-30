@@ -1,63 +1,29 @@
-
-using System;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System.Collections.Generic;
-
-using Inno.Core.Identity;
-using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Editor.Settings;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Scene;
-using Inno.Adapter.Presentation.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
-
 internal sealed class HierarchySelection(
     IEditorSceneWorkspace workspace,
     EditorInteractions interactions,
     EditorSettings settings
 ) {
-    internal void Prune(EditorContext context)
+    internal void Prune()
     {
-        if (interactions.selection.TryGet(out GameScene? selectedScene) &&
-            (!selectedScene.isLoaded || !ContainsScene(workspace.scenes, selectedScene)))
+        if (interactions.selection.TryGet(out GameScene? selectedScene) && (!selectedScene.isLoaded || !ContainsScene(workspace.scenes, selectedScene)))
         {
             _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
             return;
         }
-        if (interactions.selection.TryGet(out GameObject? gameObject) &&
-            (!gameObject.isRuntimeValid || !ContainsScene(workspace.scenes, gameObject.scene)))
+
+        if (interactions.selection.TryGet(out GameObject? gameObject) && (!gameObject.isRuntimeValid || !ContainsScene(workspace.scenes, gameObject.scene)))
             _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
-    }
-
-    internal bool DeleteObject(
-        EditorContext context,
-        Guid persistentId
-    ) {
-        GameObject? gameObject = IdentityAllocator.current.Get<GameObject>(persistentId);
-        if (gameObject is null || !gameObject.isRuntimeValid || !ContainsScene(workspace.scenes, gameObject.scene))
-            return false;
-
-        _ = gameObject.scene.DestroyObject(gameObject);
-        if (interactions.selection.TryGet(out GameObject? selected) && ReferenceEquals(selected, gameObject))
-            _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
-        return true;
-    }
-
-    private static bool ContainsScene(
-        IReadOnlyList<GameScene> scenes,
-        GameScene scene
-    ) {
-        for (int i = 0; i < scenes.Count; i++)
-        {
-            if (ReferenceEquals(scenes[i], scene))
-                return true;
-        }
-        return false;
     }
 
     internal IReadOnlyList<GameObject> GetRootObjects(GameScene scene)
@@ -69,6 +35,7 @@ internal sealed class HierarchySelection(
             if (objects[i].transform.parent is null)
                 roots.Add(objects[i]);
         }
+
         roots.Sort(static (
             left,
             right
@@ -76,20 +43,30 @@ internal sealed class HierarchySelection(
         return roots;
     }
 
-    internal void DrawSceneRowContent(
-        EditorContext context,
-        GameScene scene
-    ) {
-        EditorWidget.IconText(
-            settings
-                .Get("Editor/Appearance/Icons/Scene")
-                .GetAsString("value", ImGuiIcon.Cubes)!,
+    internal void DrawSceneRowContent(GameScene scene)
+    {
+        EditorUI.current.widgets.IconText(
+            settings.Get("Editor/Appearance/Icons/Scene").GetAsString("value", ImGuiIcon.Cubes)!,
             scene.name,
-            ReferenceEquals(scene, workspace.activeScene));
+            ReferenceEquals(scene, workspace.activeScene)
+        );
         if (!workspace.IsDirty(scene))
             return;
-        NativeImGui.SameLine(0f, 0f);
+        Ui.SameLine(0f, 0f);
         using ImGuiFontScope font = ImGuiFont.PushStyle(ImGuiFontStyle.Italic);
-        NativeImGui.TextUnformatted(" *");
+        Ui.Text(" *");
+    }
+
+    private static bool ContainsScene(
+        IReadOnlyList<GameScene> scenes,
+        GameScene scene
+    ) {
+        for (int i = 0; i < scenes.Count; i++)
+        {
+            if (ReferenceEquals(scenes[i], scene))
+                return true;
+        }
+
+        return false;
     }
 }

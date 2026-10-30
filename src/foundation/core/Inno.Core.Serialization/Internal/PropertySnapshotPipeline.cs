@@ -1,11 +1,63 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Core.Serialization;
 
 internal static class PropertySnapshotPipeline
 {
+    internal static BinarySerializationNode CaptureData(
+        ISerializable value,
+        SerializationContext context,
+        ConverterRegistryLease converters,
+        BinarySerializationNode? previous
+    ) {
+        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(value.GetType()).members;
+        KeyValuePair<string, SerializationNode>[]? before = previous?.properties?.members;
+        List<KeyValuePair<string, SerializationNode>>? captured = before is null ? [] : null;
+        int count = 0;
+        var operation = new SerializationOperation(context, converters, snapshotCapture: previous is not null);
+        try
+        {
+            for (int index = 0; index < members.Count; index++)
+            {
+                SerializationMemberMetadata member = members[index];
+                if ((member.visibility & PropertyVisibility.Serialize) == 0)
+                    continue;
+                SerializationNode? prior = before is not null && count < before.Length &&
+                                           string.Equals(before[count].Key, member.name, StringComparison.Ordinal)
+                    ? before[count].Value
+                    : null;
+                SerializationNode node = ValuePipeline.Write(member.GetValue(value), member.type, operation,
+                    prior?.capturePath ?? AppendPath(member.name), allowDefaultObject: false, prior);
+                operation.RetireCaptureMember();
+                if (captured is null && !ReferenceEquals(node, prior))
+                {
+                    captured = new(before!);
+                    captured.RemoveRange(count, captured.Count - count);
+                }
+                captured?.Add(new(member.name, node));
+                count++;
+            }
+        }
+        finally
+        {
+            operation.Fail();
+        }
+        if (captured is null && before is not null && count == before.Length)
+            return previous!.properties!.hasConverters == (operation.converterWrites != 0) ? previous
+                : new BinarySerializationNode(previous.value)
+                {
+                    properties = new(before) { hasConverters = operation.converterWrites != 0 }
+                };
+        if (captured is null)
+        {
+            captured = new(before!);
+            captured.RemoveRange(count, captured.Count - count);
+        }
+        var state = new PropertyDataCapture([.. captured]) { hasConverters = operation.converterWrites != 0 };
+        return new BinarySerializationNode(PropertySnapshotBinaryFormat.Encode(state.members)) { properties = state };
+    }
+
     internal static SerializationPropertySnapshot CaptureProperty(
         ISerializable value,
         string propertyName,
@@ -13,11 +65,17 @@ internal static class PropertySnapshotPipeline
         ConverterRegistryLease converters
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
-        return Capture(value, context, converters).FirstOrDefault(snapshot =>
-                   string.Equals(snapshot.name, propertyName, StringComparison.Ordinal))
-               ?? throw new ArgumentException(
-                   $"Serializable property '{propertyName}' was not found on '{value.GetType().FullName}'.",
-                   nameof(propertyName));
+        IReadOnlyList<SerializationMemberMetadata> members = context.GetRequired<ISerializationMetadataSource>().GetMetadata(value.GetType()).members;
+        for (int index = 0; index < members.Count; index++)
+        {
+            SerializationMemberMetadata member = members[index];
+            if ((member.visibility & PropertyVisibility.Serialize) != 0 &&
+                string.Equals(member.name, propertyName, StringComparison.Ordinal))
+                return CaptureMember(value, member, context, converters);
+        }
+        throw new ArgumentException(
+            $"Serializable property '{propertyName}' was not found on '{value.GetType().FullName}'.",
+            nameof(propertyName));
     }
 
     internal static IReadOnlyList<SerializationPropertySnapshot> Capture(
@@ -33,24 +91,7 @@ internal static class PropertySnapshotPipeline
             if ((member.visibility & PropertyVisibility.Serialize) == 0)
                 continue;
 
-            var operation = new SerializationOperation(context, converters);
-            try
-            {
-                SerializationNode node = ValuePipeline.Write(
-                    member.GetValue(value),
-                    member.type,
-                    operation,
-                    AppendPath(member.name),
-                    allowDefaultObject: false);
-                snapshots.Add(new SerializationPropertySnapshot(
-                    member.name,
-                    member.type,
-                    BinarySerializationFormat.Encode(node)));
-            }
-            finally
-            {
-                operation.Fail();
-            }
+            snapshots.Add(CaptureMember(value, member, context, converters));
         }
         return snapshots;
     }
@@ -137,6 +178,32 @@ internal static class PropertySnapshotPipeline
                     $"Property snapshot key '{snapshot.name}' appears more than once.",
                     nameof(snapshots));
             }
+        }
+    }
+
+    private static SerializationPropertySnapshot CaptureMember(
+        ISerializable value,
+        SerializationMemberMetadata member,
+        SerializationContext context,
+        ConverterRegistryLease converters
+    ) {
+        var operation = new SerializationOperation(context, converters);
+        try
+        {
+            SerializationNode node = ValuePipeline.Write(
+                member.GetValue(value),
+                member.type,
+                operation,
+                AppendPath(member.name),
+                allowDefaultObject: false);
+            return new SerializationPropertySnapshot(
+                member.name,
+                member.type,
+                BinarySerializationFormat.Encode(node));
+        }
+        finally
+        {
+            operation.Fail();
         }
     }
 

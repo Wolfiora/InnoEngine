@@ -131,11 +131,14 @@
     Condition="'$(DesignTimeBuild)' != 'true'">
     <PropertyGroup>
       <_InnoFoundationExcludedProperties>$([System.String]::Copy('$(InnoTaskExcludedProperties)').Replace(';InnoTaskBootstrapOwner', ''))</_InnoFoundationExcludedProperties>
+      <_InnoFoundationArtifacts Condition="'$(ArtifactsPath)' != ''">$(ArtifactsPath)/.inno-task-foundation</_InnoFoundationArtifacts>
+      <_InnoFoundationArtifacts Condition="'$(ArtifactsPath)' == ''">$(InnoTaskArtifacts)/foundation</_InnoFoundationArtifacts>
     </PropertyGroup>
+    <!-- The neutral SDK bootstrap has its own stable output scope, never the caller's mutable source output. -->
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj"
       Targets="Restore;Build"
-      Properties="$(InnoTaskHostProperties);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)"
+      Properties="$(InnoTaskHostProperties);ArtifactsPath=$(_InnoFoundationArtifacts);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)"
       RemoveProperties="$(_InnoFoundationExcludedProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="_InnoFoundationOutput" />
     </MSBuild>

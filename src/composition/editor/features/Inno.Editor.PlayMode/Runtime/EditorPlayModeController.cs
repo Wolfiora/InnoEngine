@@ -2,6 +2,7 @@ using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
 using System;
+using Inno.Core.Events;
 using System.Collections.Generic;
 
 using Inno.Core.Logging;
@@ -30,6 +31,8 @@ public sealed class EditorPlayModeController :
     IEditorReloadGuard,
     IDisposable
 {
+    private readonly EventDispatcher m_stateDispatcher = new();
+    private readonly EventHub m_stateEvents;
     private readonly IEditorHistoryIsolation m_history;
     private readonly IEditorAudioHost? m_audio;
     private readonly EngineHost m_engineHost;
@@ -104,6 +107,7 @@ public sealed class EditorPlayModeController :
         m_audio = audio;
         ArgumentNullException.ThrowIfNull(logs);
         m_log = logs.CreateLogger<EditorPlayModeController>();
+        m_stateEvents = m_stateDispatcher.CreateHub();
     }
 
     /// <summary>
@@ -138,10 +142,23 @@ public sealed class EditorPlayModeController :
     /// </summary>
     public LogSessionId activeSessionId => m_activeSessionId;
 
-    /// <summary>
-    /// Occurs after the controller commits a state transition.
-    /// </summary>
-    public event Action<EditorPlayModeState>? stateChanged;
+    /// <inheritdoc />
+    public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        ArgumentNullException.ThrowIfNull(listener);
+        return m_stateEvents.Listen<StateTransitionEvent>(notification =>
+        {
+            try
+            {
+                listener(notification.state);
+            }
+            catch (Exception failure)
+            {
+                notification.failures.Add(failure);
+            }
+        });
+    }
 
     /// <summary>
     /// Requests a fresh script generation before preparing an isolated runtime session.
@@ -262,6 +279,7 @@ public sealed class EditorPlayModeController :
             m_engineHost.generations.Fault(failure);
             throw;
         }
+        m_stateEvents.Dispose();
         m_disposed = true;
     }
 
@@ -497,24 +515,16 @@ public sealed class EditorPlayModeController :
         if (m_state == value)
             return;
         m_state = value;
-        Action<EditorPlayModeState>? handlers = stateChanged;
-        if (handlers is null)
-            return;
-        List<Exception>? failures = null;
-        foreach (Action<EditorPlayModeState> handler in handlers.GetInvocationList())
-        {
-            try
-            {
-                handler(value);
-            }
-            catch (Exception exception)
-            {
-                failures ??= [];
-                failures.Add(exception);
-            }
-        }
-        if (failures is not null)
-            throw new AggregateException("One or more Play Mode state observers failed.", failures);
+        var notification = new StateTransitionEvent(value);
+        m_stateDispatcher.Emit(notification);
+        if (notification.failures.Count != 0)
+            throw new AggregateException("One or more Play Mode state observers failed.", notification.failures);
+    }
+
+    private sealed class StateTransitionEvent(EditorPlayModeState state) : Event
+    {
+        internal EditorPlayModeState state { get; } = state;
+        internal List<Exception> failures { get; } = [];
     }
 
     private static void DisposeResource<T>(

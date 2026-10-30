@@ -1,0 +1,108 @@
+## Continuation status — input coverage and product deadline
+
+This remains an in-progress report. Candidate `2434cd96` built the full neutral source, selected Player contract and twelve Release test suites; Core 97 and Scene 56 passed. Four actual input/edit preflights pass on each current/historical producer. Full profiles, controlled pairs, final products and CI remain required. A concurrent-load D3D11 trial completed all eight workflow stages but exceeded its unchanged 600-second process deadline, so it is **Failed**, not product acceptance. Retain its logs and investigate/repeat without weakening assertions. The historical visual replay now has both actual GPU viewport readbacks and no unavailable commands; final current replay/shutdown remains pending. The root closure ledger contains the authoritative remaining sequence.
+
+# Editor UI owner and acceptance continuation
+
+Latest refinement: #53 uses the current structured Writer's optional per-element capture callback, exact Guid inputs and bounded canonical encoding blocks. The all-or-nothing Scene root hint and rejected property-only prototype are removed. Core owns proof, effect classification, immutable nodes and encoding; Scene owns complete row inputs. Arbitrary nested converters invalidate enclosing reuse, including effects propagated from independent property payloads. Metadata certification, current identity validation, retired builders, canonical bytes and ordinary serialization remain required. No legacy overload, second serializer, identity table, event service or global block cache is introduced.
+
+Core 97 passes, covering independent non-Scene row reuse, changed/reordered/deleted rows, exact Guid validation, failed/declined keys, stateful nested property conversion, parent-converter effects, concurrent encoding, failed destinations, caller-owned arrays, bounded large-node streaming and the existing collectible barrier. Scene 56 passes before the final encoding refinement. A diagnostic producer using the ordinary SourceRelease graph and latest SDK-built Core passes all ten selected native cases; edit medians are 12.8–14.7 ms with ~2.51 MB allocation per inspection, idle medians about 9.5 ms with ~2.36 MB. All first-group spikes are retained. Formal full-graph, quiet five-process idle/edit pairs, complete profiles/products and exact-head CI remain pending. Earlier checkpoints below are historical, not the current architecture or completion claim.
+
+[Execution ledger](../EDITOR_UI_CLOSURE_PLAN.md) · [Parent #27](https://github.com/Wolfiora/InnoEngine/issues/27) · [PR #26](https://github.com/Wolfiora/InnoEngine/pull/26)
+
+This is a scoped continuation record, not whole-plan completion. Evidence root: `D:/InnoEngine-Verification/editor-ui-closure-2026-10-27`. SDK 10.0.402 / .NET 10 / C# 14 / BGCS 4.1.2 remain unchanged.
+
+## Latest continuation: explicit capture inputs (#53)
+
+The dated checkpoints below remain historical evidence. The corrected complete Wiki case passed under `e52/wiki-corrected`; all six prior-candidate FlappyBird Debug/Release/API combinations passed under `candidate-panel-prepared`. Each includes renderer smoke, eight actual workflows, and nine actual panels with 100 cycles/full-GC observations. Mac physical/manual operation remains unexecuted.
+
+#53 now implements the reviewed Core serialization capture-key capability. The Converter callback remains optional, executes on every snapshot and must declare all output/context inputs. Key storage contains only current domain-qualified runtime identities, revisions, metadata stamps and neutral values. Core validates borrowed identities before reuse and before/after a changed write. A retained retired builder contains no context, metadata, source or generation references. Snapshots keep no reader, Type, delegate or live object. Failure leaves previous snapshots usable.
+
+The existing authoritative Converter resolver supplies proof; a key query never constructs converters or maintains a second resolver. Untracked/plugin properties, custom/stateful converters, unknown declarations, Missing and Prefab state retain complete ordinary capture. Fresh equivalent metadata keeps valid capture but declines reuse. Nullable private counters stop certifying at exhaustion; no serialized counter or public Transform revision member is added. Scene owns every relevant mutation; reflection remains in its existing DotNet adapter. Static providers can omit optional proof and keep identical complete serialization.
+
+Ordinary SDK results: Core 90 passed (`e46/production/core-capture-keys-final.trx`), Scene 56 passed (`scene-capture-keys.trx`). Cases cover canonical output, exact float bits, source/context/generation changes, actual local/world/property/full-scene restoration, arbitrary plugin state, stateful converter order, detached/rebound identity, callback thread/retirement and actual collectible Assembly/ALC retirement with a held snapshot and retired builder. A preliminary native run also passes the three source recovery/rename cases. It overlaps the build; 7.8–9.1 ms due medians and ~2.16 MB per inspection are feasibility evidence only. Quiet independent repeated performance and the complete final-source profiles/products/CI remain pending.
+
+Public boundary necessity: the protected Converter hook and borrowed builder allow actual external Converter implementations to certify inputs; metadata capability methods and the revision attribute let replaceable providers certify complete pure access without a central type list. No new project or production test entry exists. Core now explicitly references its existing Identity owner; dynamic member discovery stays in the adapter. Source/API documentation is synchronized and still requires the full signature/example gate.
+
+The complete twelve-suite ordinary SDK build passed with zero warnings/errors. A later repeat was explicitly canceled for allocation refinement and is not passed evidence. First quiet preliminary due groups measured 6.7–7.1 ms medians but retained a 39.6 ms P95, so #46 remains open. The actual identity-check scratch now borrows a BCL array during the callback and always returns it cleared in `finally`; unchanged-node reuse validates the borrowed checks before retirement and avoids a redundant copy. Changed writes retain independent checks until post-write validation. Core 90 passes again (`core-capture-borrowed.trx`). This eliminates measured repeated scratch allocation without introducing a custom pool, retained source or parallel identity authority; final quiet measurements must verify its effect rather than assume the tail cause.
+
+### Export-form failure and changed-state performance
+
+E01 now includes an actual provider failure in Game Export. The form balances its three Table scopes, including property-column setup, with local `finally` blocks. Native verification through registered `IGameBuildTarget.displayName` checks the active table, preserved diagnostic, quarantine and drawing after refresh. `e28/export-label/export-table-current.trx` passes; the copied prior official Workbench producer fails the exact open-Table assertion in `export-table-prior.trx`. This is expected negative evidence, not a passing test count. Initial ambiguous enum imports and a missing log-delivery barrier are corrected in the fixture; ordinary SDK leaf compilation reports zero warnings/errors. Runtime retires before its Session/context. No production test hook or assertion suppression is used.
+
+At #53 candidate `be44532f`, neutral source and selected Player contract builds pass; the expanded suite initially fails the new fixture's enum imports, corrected above. Five independent idle processes retain all fifty samples each: median 5.72–6.02 ms, P95 17.84–19.57 ms, ~563 KB per inspection and maximum 33.9–35.4 ms. The unfiltered raw ten-sample groups remain available. A new changed-state test and actual History/direct-write dirty correctness pass functionally, but every owned change still costs 68.6–71.1 ms and ~16.8 MB per inspection. This is an unresolved editing-path performance gap, not whole #46 closure. Next work must reuse the existing property capture and complete input proof without another cache authority, reduced checks or timer changes.
+
+## Implemented owners
+
+- `e3f02ebe`, `23f0ceb2`, `397ae3ed`: the existing SDL/ImGui backend owns one content-validated, pinned CJK font source per Context; four text faces borrow it until native destruction. Successful Context retirement unregisters the exact application owner. Pending/failure preserves ownership; application shutdown freezes its set and rejects new Context publication. The upstream font/license bytes are preserved, without OS font discovery, a font manager, BGCS or generated-binding changes.
+- `8fd31cee`: Scene Workspace preserves an assigned persistent source identity, path, content and saved baseline when Asset Pipeline reconciliation marks the source unavailable. Ordinary Save refuses that unavailable assignment; explicit SaveToDirectory can establish a different source. Recovery, rename, Save and reopen use the existing asset/document protocols.
+- `6277db99`: GameObject borrows the existing Core-indexed SceneObjectRecord for owner-local liveness checks. Add/remove/Clear/transfer preserve exact-owner attachment. Core scalar captures avoid repeated ordinal lookup while retaining duplicate rejection, canonical bytes and converter execution. No new identity table, event bus, serialization format, public API or compatibility path is added.
+
+## Ordinary SDK results
+
+| Gate | Result | Evidence / precise scope |
+| --- | --- | --- |
+| Complete neutral Release solution | Passed | `candidate-next/Contracts/7e2833f5448346a09253da45e91aa2cc/Contracts/source-build.log`; zero warnings/errors, before the final scalar/attachment refinements |
+| Native glyph/context/retirement | 12 passed | `candidate-next/native-owner/fonts-context-selected-sdk.trx`; actual SDK output, including copied missing/corrupt font input and ten-context strict collection |
+| Core serialization | 75 passed | `candidate-next/native-owner/core-scene-assignment.trx`; includes reordered canonical scalar keys and duplicate rejection |
+| Scene | 53 passed | Same TRX; includes destruction, hierarchy transfers, restore and collectible recovery |
+| Assigned missing Scene source | 3 passed | Same TRX; two clean/edited recovery cases and explicit SaveToDirectory without recreating the missing original |
+| Expanded automated Visual | 524 passed | `candidate-next/Visual/76a7afdc3abf477d9a4521f651ce10be/summary.json`; actual native style preparation with independent zoom/density/size inputs, Console/Shader/input coverage; profiles overlap |
+| Complete Contracts | Failed; corrections/reverification in progress | The initial run lacked a selected Player compile closure and an explicit partial-type XML summary. Both corrections are implemented. A later test-owned DLL cleanup failure remains under #16 investigation. Preserve the failed run, not a success claim. |
+
+The first direct native command used the machine's older default dotnet for child processes and failed two cases. The official isolation entry already injects the selected SDK; the corrected direct command follows that same boundary and passes all twelve. Exploratory pre-reconciliation Missing assertions were invalid: ID loading intentionally retains last-good content until Asset Pipeline observes removal. The retained failed TRX and corrected public-boundary tests distinguish that premise from the actual #50 fix.
+
+## Acceptance orchestration
+
+The UI Contracts entry first prepares the neutral source graph and SDK-evaluated products for its declared target, then the selected test graph. It does not reuse an Editor/neutral DLL as a Player reference or relax Wiki checks. CI moves its existing selected-Player preparation before dependent architecture/tests; no duplicate product table is added. YAML parsing and prerequisite order/uniqueness checks pass.
+
+Actual product acceptance reuses the existing journey runner for Workflows and Lifecycle. The latter requires every actual Panel to complete 100 cycles, eleven full-GC observations and at most 4 MiB final live-memory growth. These requirements precede measurement; the new integrated product run is pending. Unattended windows are hidden. This does not certify physical monitors or manual visual quality.
+
+## Deep review and remaining sequence
+
+The execution-chain review preserves current owners, Core reuse, SDK output isolation, strict generation barriers, rollback, Missing state and failure diagnostics. Attachment backlinks and font completion callbacks do not create another authority; neither persists plugin instances or generation delegates. No BGCS, package, third-party source or generated binding is modified.
+
+1. Resolve the #16 cleanup observation without weakening context/assembly retirement or altering restored packages; complete corrected Contracts.
+2. Freeze and verify all current source/workflow/visual/lifecycle gates and actual FlappyBird Debug/Release/API journeys and panel loops.
+3. Complete #46 and controlled original/current performance. Earlier five independent due-inspection processes remain 41–43 ms and about 8.37 MB. Later 37 ms complete-inspection and 1.35–1.87 ms metadata-only prototype diagnostics are not final paired acceptance and do not pass the absolute latency budget.
+4. Finish matching visual evidence and all original-plan rows, update each issue's actual checklist/evidence, then produce the eleven-dimension final assessment and exact-head CI result.
+
+PR #26 and parent #27 remain incomplete while these gates are open. No physical Mac/manual display claim is made. Previously rejected cleanup of four diagnostic runtime copies remains unperformed; automatic approval review returned `blocked by policy` without a detailed reason. User/SDK/NuGet global data is untouched.
+
+
+## Exact-candidate continuation
+
+At `564e00d0`, ordinary Release Workflows passed 699 and Lifecycle passed 15. Debug and Release official Editor builds succeeded; each reported that automatic cache maintenance exceeded its five-second budget and retired no artifact. This warning is retained, not reported as a zero-warning product build.
+
+The complete Contracts source build failed on a live `Vertex.ishadersource.imeta.staging-<operation>` file. New issue #52 fixes actual source ownership: Core IO recognizes only its reserved candidate naming; source policy reuses it; shader build captures permanent sources and import metadata, hashes the same neutral declarations used by the Task, copies into a `ProcessOwnedDirectory`, and imports only the copy. Complete source inventory/content is verified before publication. Generic Native hashing still includes explicitly declared candidate-shaped files.
+
+Initial ordinary-SDK #52 checks: shader input cases 7 passed, Core IO suite 37 passed, build zero warnings/errors. Complete concurrent build and final Wiki acceptance remain pending. Related test-entry review also fixes a local product-evaluation variable overwriting its test solution selection.
+
+The strengthened #16 identity regression passed ten normal/isolated groups (40 executions), observing both loaded Assembly and collectible Context retirement. One historical test-copy deletion denial remains unexplained and preserved; no cleanup suppression, increased timeout or retry is added.
+
+A diagnostic catalog-only assignment prototype separately measures the existing `TryGetInfo` boundary for document path/status instead of importing source contents during a label query. It remains outside production pending semantic tests and controlled measurements. Its noisy complete inspection median is 31.24 ms, with an initial 123 ms P95; it does not meet #46 and is not closure evidence.
+
+
+### Shader input boundary refinement
+
+The frozen shader identity includes permanent directory inventory as well as source/import-setting bytes. Empty authored directories are preserved; transient atomic file names and derived artifacts remain excluded. The Task consumes the backend-owned frozen fingerprint, not its physical file list. Core IO candidate-name recognition does not authorize deletion and general Native input hashing remains unchanged.
+
+The compiler now borrows an explicit `ProcessOwnedDirectory` supplied by actual callers. Standard distribution registers `artifacts/build-tools/shaders/requests`; Task/CLI retain the directory through completion, and existing owner-exclusive maintenance retires absent payload claims and leaf locks. There is no new unmanaged global temporary owner. Workspace retirement precedes authoritative Task publication.
+
+Nine updated focused cases pass using actual SDK compilation plus an evidence-owned copy of the already built native test runtime (`e52/frozen-input-workspace.trx`); this is distinct from a complete final normal build. Normal shader-library build and focused test compilation report no warnings/errors. Initial full workspace build passed with four xUnit blocking-operation warnings; the tests now use async/await, and the frozen compilation has no such warnings. The earlier eight-case run and all initial failures are retained.
+
+The first simultaneous source/Editor experiment is not a concurrency pass: source build passed, while Debug correctly rejected changed `bgfx-tools` inputs after the Core IO source was edited during the build. `NativeBuildRecipe.Create` explicitly includes `AtomicFile.cs`; the strict post-wait validation is retained. Re-run with a complete frozen source inventory. Cache maintenance inspected 29,060,240,489 logical bytes, protected 5,345,891,157, reclaimed zero under the current budget and skipped 441; no unknown data was deleted. C free space subsequently measured 83.27 GiB, D 29.66 GiB.
+
+The Contracts source prerequisite now selects the existing `SourceDebug` / `SourceRelease` Solution configuration, preserving a neutral graph and preparing selected product references separately. Product evaluation no longer overwrites the test-solution path. Final SDK/contract and Wiki checks remain required.
+
+### Frozen 329568ba verification and lifecycle preparation
+
+- Ordinary Editor Debug and Release builds passed with zero errors. Each reports the existing automatic cache-maintenance budget deferral warning; no artifact was retired after the budget expired.
+- Two independent output owners completed while the exact test-created metadata candidate remained exclusively open. The source inventory contains ten permanent files before and after, with zero path/hash differences (`e52/frozen-authored-comparison.json`). The guard released and removed its exact candidate in `finally`; it did not modify authored metadata or authorize cleanup of unrelated candidates.
+- Complete Contracts executed 816 passing cases, one failure and two platform workspace-link fixture skips. The single failure is a Wiki content-boundary violation in `CURRENT_ISSUES.md`, not a shader/compiler/build failure. Its external consumer name has been replaced with the engine-owned description; the validator remains unchanged. The complete focused Wiki rerun is recorded under `e52/wiki-corrected` and is pending at this checkpoint.
+- The initial actual Debug/D3D11 product completed its eight workflows and all nine panels' 100 cycles, but retained 4,488,688 bytes against a 4 MiB budget. That run remains Failed. Public diagnostic heap observations identify initial asset/render preparation followed by a plateau; the tool warns that .NET 10 uses lossy heap-event buffering, so heap counts are diagnostic rather than complete ownership proof.
+- A separately prepared diagnostic drew all panels for 120 frames before its baseline and retained 712,056 bytes over the subsequent 100 cycles. The ordinary fixture now records both cold preparation observations in `panel-lifecycle-preparation.tsv`, then runs the existing eleven full-GC observations and unchanged limit. Pending events must also return to zero. Fresh ordinary Debug/D3D11 and Debug/D3D12 product runs passed under `candidate-panel-prepared`; other configuration/API cases remain pending.
+- The public presentation SPI produces actual native UI geometry and available CPU atlas pixels after rendering, without desktop control. Initial captures were rejected for stale readiness/initial GPU preparation. A later capture verifies both viewport image commands; software replay marks those two unavailable GPU textures explicitly. This is UI geometry/atlas evidence, not a physical screenshot or GPU-content claim. The matching original producer is being captured independently.
+- #46 experiments, including metadata-only source queries, topology-owned capture maps, primitive-field comparison and explicit state revisions, remain outside production. Reduced allocation or a best timing does not meet the absolute latency gate. No new serialization/domain API is committed on the strength of these experiments.
+
+The deep review still finds outstanding quantitative and original-plan evidence. Parent #27 and PR #26 remain incomplete; none of the results above is whole-plan closure. No BGCS, package, generated binding or vendor source was changed. Rejected cleanup of four earlier owned runtime copies remains unperformed; no alternate deletion route was used.

@@ -10,8 +10,19 @@ internal static class ArchitectureCommandFixture
     internal static (int exitCode, string output) Run(
         string root,
         params string[] arguments
+    ) => RunBounded(root, TimeSpan.FromMinutes(2), arguments);
+
+    internal static (int exitCode, string output) RunComplete(
+        string root,
+        params string[] arguments
+    ) => RunBounded(root, TimeSpan.FromMinutes(15), arguments);
+
+    private static (int exitCode, string output) RunBounded(
+        string root,
+        TimeSpan budget,
+        string[] arguments
     ) {
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        using var cancellation = new CancellationTokenSource(budget);
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         TextWriter previousOutput = Console.Out;
         TextWriter previousError = Console.Error;

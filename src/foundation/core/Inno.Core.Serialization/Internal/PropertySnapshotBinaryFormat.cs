@@ -9,6 +9,23 @@ internal static class PropertySnapshotBinaryFormat
 {
     private const string C_MAGIC = "INNO-PROPERTY-SNAPSHOT-CURRENT";
 
+    internal static byte[] Encode(IReadOnlyList<KeyValuePair<string, SerializationNode>> members)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
+        writer.Write(C_MAGIC);
+        writer.Write(members.Count);
+        foreach (var member in members)
+        {
+            byte[] data = BinarySerializationFormat.Encode(member.Value);
+            writer.Write(member.Key);
+            writer.Write(data.Length);
+            writer.Write(data);
+        }
+        writer.Flush();
+        return stream.ToArray();
+    }
+
     internal static byte[] Encode(IReadOnlyList<SerializationPropertySnapshot> snapshots)
     {
         using var stream = new MemoryStream();

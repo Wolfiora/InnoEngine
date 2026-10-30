@@ -57,12 +57,28 @@ internal sealed partial class EditorSceneWorkspace
                 runtimeSession,
                 snapshots,
                 activeSceneId,
-                selectedSceneObjectId);
-            MaterializeRuntimeSceneSet(session);
-            m_playModeSession = session;
-            if (selectedSceneObjectId is not null)
-                RestoreSelection(selectedSceneObjectId);
-            return session;
+                selectedSceneObjectId,
+                m_selection?.RegisterIdentityDomain(runtimeSession.identities));
+            try
+            {
+                MaterializeRuntimeSceneSet(session);
+                m_playModeSession = session;
+                if (selectedSceneObjectId is not null)
+                    RestoreSelection(selectedSceneObjectId);
+                return session;
+            }
+            catch (Exception startupFailure)
+            {
+                try
+                {
+                    session.Dispose();
+                }
+                catch (Exception cleanupFailure)
+                {
+                    throw new AggregateException("Play scene preparation and identity routing retirement failed.", startupFailure, cleanupFailure);
+                }
+                throw;
+            }
         }
         finally
         {
@@ -83,8 +99,16 @@ internal sealed partial class EditorSceneWorkspace
                                 m_runtimeSession.scenes.Find<EngineObject>(currentId) is not null
             ? currentId
             : session.editSelectionId;
-        if (runtimeSelection is EngineObject || runtimeSelection is null && session.editSelectionId is not null)
-            RestoreSelection(editSelectionId, selectActiveSceneWhenMissing: false);
+        try
+        {
+            if (runtimeSelection is EngineObject || runtimeSelection is null && session.editSelectionId is not null)
+                RestoreSelection(editSelectionId, selectActiveSceneWhenMissing: false);
+        }
+        catch
+        {
+            m_playModeSession = session;
+            throw;
+        }
     }
 
     private void MaterializeRuntimeSceneSet(PlayModeLease session)
@@ -137,7 +161,8 @@ internal sealed partial class EditorSceneWorkspace
         RuntimeSession playSession,
         SceneDocumentSnapshot[] sceneSnapshots,
         Guid? activeScene,
-        Guid? selectedSceneObject
+        Guid? selectedSceneObject,
+        IDisposable? identityDomain
     ) : IDisposable
     {
         private readonly Dictionary<Guid, SceneDocumentSnapshot> m_snapshotBySceneId =
@@ -162,8 +187,9 @@ internal sealed partial class EditorSceneWorkspace
         {
             if (m_disposed)
                 return;
-            m_disposed = true;
             workspace.ReleasePlayModeLease(this);
+            identityDomain?.Dispose();
+            m_disposed = true;
         }
 
         internal void Capture(EditorState state)

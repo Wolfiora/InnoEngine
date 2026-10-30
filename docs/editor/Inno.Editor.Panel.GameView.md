@@ -24,23 +24,24 @@ Editor 的通用 `RenderRuntime` 不注入任何隐式 Scene content。Scene Vie
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
-本项目没有公开入口，通过组合或扩展发现使用内部实现。
+本程序集没有对外公开类型；扩展由当前产品的 Registry 在内部发现。
 
 ## 项目依赖
 
-- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Settings](../core/Inno.Core.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Runtime](../runtime/Inno.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.PlayMode](Inno.Editor.PlayMode.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Scene](Inno.Editor.Scene.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Settings](Inno.Editor.Settings.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.References](../references/Inno.References.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Core.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Rendering` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.PlayMode` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Scene` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Settings` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering` | 实现依赖；不传递 compile surface |
+| `Inno.References` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |
+| `Inno.Core.Serialization` | 公开签名依赖 |

@@ -1,42 +1,31 @@
-using EditorImGui = Inno.Editor.ImGui.ImGui;
-using System.Runtime.CompilerServices;
-using NumericsVector2 = System.Numerics.Vector2;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using NumericsVector4 = System.Numerics.Vector4;
-using NativeVector4 = Inno.Native.ImGui.ImVec4C;
+using System.Numerics;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
-
-internal sealed unsafe class SettingsPageView(SettingsEditSession session)
+internal sealed class SettingsPageView(SettingsEditSession session)
 {
+    private static SettingsStyle settingsStyle => new(EditorUI.current.widgets.style);
+
     internal void Draw(
         SettingsPage page,
         Action<SettingsPage> navigate
     ) {
         DrawPageHeader(page);
-        NativeImGui.Spacing();
+        Ui.Spacing();
         PushDisabledText();
-        EditorWidget.WrappedText(page.description);
-        NativeImGui.PopStyleColor();
-        NativeImGui.Dummy(new System.Numerics.Vector2(
-            0f,
-            16f * EditorWidget.style.zoom));
-
+        EditorUI.current.widgets.WrappedText(page.description);
+        Ui.PopStyleColor();
+        Ui.Dummy(new System.Numerics.Vector2(0f, 16f * EditorUI.current.widgets.style.zoom));
         if (page.children.Count != 0)
         {
             DrawOverview(page.children, navigate);
-            NativeImGui.Dummy(new System.Numerics.Vector2(
-                0f,
-                8f * EditorWidget.style.zoom));
+            Ui.Dummy(new System.Numerics.Vector2(0f, 8f * EditorUI.current.widgets.style.zoom));
         }
 
         if (!page.hasSettings)
@@ -47,40 +36,30 @@ internal sealed unsafe class SettingsPageView(SettingsEditSession session)
         }
 
         int fieldIndex = 0;
-        foreach (IGrouping<string, SettingsField> group in page.settings.GroupBy(
-                     static setting => setting.section ?? string.Empty,
-                     StringComparer.OrdinalIgnoreCase))
+        foreach (IGrouping<string, SettingsField> group in page.settings.GroupBy(static setting => setting.section ?? string.Empty, StringComparer.OrdinalIgnoreCase))
         {
             if (!string.IsNullOrEmpty(group.Key))
-                NativeImGui.SeparatorText(group.Key);
+                Ui.SeparatorText(group.Key);
             DrawSection(group, ref fieldIndex);
-            NativeImGui.Spacing();
+            Ui.Spacing();
         }
     }
 
     private void DrawPageHeader(SettingsPage page)
     {
-        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp |
-                                ImGuiTableFlags.NoSavedSettings |
-                                ImGuiTableFlags.NoPadOuterX;
-        if (!NativeImGui.BeginTable("##settings_page_header", 2, (int)flags, default(System.Numerics.Vector2), 0f))
+        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX;
+        if (!Ui.BeginTable("##settings_page_header", 2, flags, default(System.Numerics.Vector2), 0f))
             return;
         try
         {
-            NativeImGui.TableSetupColumn(
-                "##settings_page_title",
-                (int)ImGuiTableColumnFlags.WidthStretch,
-                1f);
-            NativeImGui.TableSetupColumn(
-                "##settings_page_reset",
-                (int)ImGuiTableColumnFlags.WidthFixed,
-                GetResetColumnWidth());
-            NativeImGui.TableNextRow();
-            _ = NativeImGui.TableSetColumnIndex(0);
-            NativeImGui.AlignTextToFramePadding();
-            NativeImGui.TextUnformatted(page.label);
-            _ = NativeImGui.TableSetColumnIndex(1);
-            NativeImGui.PushID(page.path);
+            Ui.TableSetupColumn("##settings_page_title", ImGuiTableColumnFlags.WidthStretch, 1f);
+            Ui.TableSetupColumn("##settings_page_reset", ImGuiTableColumnFlags.WidthFixed, GetResetColumnWidth());
+            Ui.TableNextRow();
+            _ = Ui.TableSetColumnIndex(0);
+            Ui.AlignTextToFramePadding();
+            Ui.Text(page.label);
+            _ = Ui.TableSetColumnIndex(1);
+            Ui.PushId(page.path);
             try
             {
                 bool canReset = session.CanReset(page);
@@ -89,12 +68,12 @@ internal sealed unsafe class SettingsPageView(SettingsEditSession session)
             }
             finally
             {
-                NativeImGui.PopID();
+                Ui.PopId();
             }
         }
         finally
         {
-            NativeImGui.EndTable();
+            Ui.EndTable();
         }
     }
 
@@ -105,21 +84,19 @@ internal sealed unsafe class SettingsPageView(SettingsEditSession session)
         if (children.Count == 0)
         {
             PushDisabledText();
-            NativeImGui.TextUnformatted("No settings are currently registered on this page.");
-            NativeImGui.PopStyleColor();
+            Ui.Text("No settings are currently registered on this page.");
+            Ui.PopStyleColor();
             return;
         }
 
         for (int i = 0; i < children.Count; i++)
         {
             SettingsPage child = children[i];
-            bool clicked = EditorWidget.HoverText(
-                $"settings_overview_{child.path}",
-                child.label);
+            bool clicked = EditorUI.current.widgets.HoverText($"settings_overview_{child.path}", child.label);
             if (clicked)
                 navigate(child);
-            EditorWidget.DrawItemTooltip(child.description);
-            NativeImGui.Spacing();
+            EditorUI.current.widgets.DrawItemTooltip(child.description);
+            Ui.Spacing();
         }
     }
 
@@ -127,37 +104,25 @@ internal sealed unsafe class SettingsPageView(SettingsEditSession session)
         IEnumerable<SettingsField> settings,
         ref int fieldIndex
     ) {
-        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp |
-                                ImGuiTableFlags.NoSavedSettings |
-                                ImGuiTableFlags.NoPadOuterX;
-        float tableWidth = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
-        NativeImGui.PushStyleVar(
-            (int)ImGuiStyleVar.CellPadding,
-            EditorWidget.style.settingsFieldPadding);
+        ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX;
+        float tableWidth = MathF.Max(1f, Ui.GetContentRegionAvailable().X);
+        Ui.PushStyleVar(ImGuiStyleVar.CellPadding, settingsStyle.fieldPadding);
         bool tableStarted = false;
         try
         {
-            tableStarted = NativeImGui.BeginTable(
-                "##settings_section",
-                3,
-                (int)flags,
-                new System.Numerics.Vector2(tableWidth, 0f));
+            tableStarted = Ui.BeginTable("##settings_section", 3, flags, new System.Numerics.Vector2(tableWidth, 0f));
             if (!tableStarted)
                 return;
-
-            EditorWidget.SetupPropertyColumns();
-            NativeImGui.TableSetupColumn(
-                "##settings_reset",
-                (int)ImGuiTableColumnFlags.WidthFixed,
-                GetResetColumnWidth());
+            EditorUI.current.widgets.SetupPropertyColumns();
+            Ui.TableSetupColumn("##settings_reset", ImGuiTableColumnFlags.WidthFixed, GetResetColumnWidth());
             foreach (SettingsField setting in settings)
                 DrawFieldRow(setting, fieldIndex++);
         }
         finally
         {
             if (tableStarted)
-                NativeImGui.EndTable();
-            NativeImGui.PopStyleVar();
+                Ui.EndTable();
+            Ui.PopStyleVar();
         }
     }
 
@@ -165,33 +130,26 @@ internal sealed unsafe class SettingsPageView(SettingsEditSession session)
         SettingsField setting,
         int fieldIndex
     ) {
-        NativeImGui.TableNextRow();
-        uint background = NativeImGui.ColorConvertFloat4ToU32(
-            fieldIndex % 2 == 0
-                ? EditorPalette.settingsField
-                : EditorPalette.settingsFieldAlternate);
-        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg0, background);
-        NativeImGui.TableSetBgColor((int)ImGuiTableBgTarget.RowBg1, background);
-
-        NativeImGui.PushID(setting.path);
+        Ui.TableNextRow();
+        uint background = Ui.ToPackedColor(fieldIndex % 2 == 0 ? SettingsStyle.field : SettingsStyle.alternateField);
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, background);
+        Ui.TableSetBgColor(ImGuiTableBgTarget.RowBg1, background);
+        Ui.PushId(setting.path);
         try
         {
-            _ = NativeImGui.TableSetColumnIndex(0);
-            NativeImGui.SetCursorPosX(
-                NativeImGui.GetCursorPosX() + NativeImGui.Raw.GetStyle()->WindowPadding.X);
-            EditorWidget.PropertyLabel(setting.label, setting.description);
-
-            _ = NativeImGui.TableSetColumnIndex(1);
+            _ = Ui.TableSetColumnIndex(0);
+            Ui.SetCursorPosX(Ui.GetCursorPosX() + Ui.GetLayout().windowPadding.X);
+            EditorUI.current.widgets.PropertyLabel(setting.label, setting.description);
+            _ = Ui.TableSetColumnIndex(1);
             bool groupStarted = false;
             try
             {
-                NativeImGui.BeginGroup();
+                Ui.BeginGroup();
                 groupStarted = true;
                 session.UpdateDirty(setting, session.Draw(setting));
-                NativeImGui.EndGroup();
+                Ui.EndGroup();
                 groupStarted = false;
-
-                _ = NativeImGui.TableSetColumnIndex(2);
+                _ = Ui.TableSetColumnIndex(2);
                 bool canReset = session.CanReset(setting);
                 if (DrawResetButton(canReset))
                     session.Reset(setting);
@@ -199,92 +157,69 @@ internal sealed unsafe class SettingsPageView(SettingsEditSession session)
             finally
             {
                 if (groupStarted)
-                    NativeImGui.EndGroup();
+                    Ui.EndGroup();
             }
         }
         finally
         {
-            NativeImGui.PopID();
+            Ui.PopId();
         }
+
         DrawFieldBackgroundGutters(background);
     }
 
     private static void DrawFieldBackgroundGutters(uint background)
     {
-        ImGuiTable* table = NativeImGui.Raw.GetCurrentTable();
-        ImGuiWindow* window = NativeImGui.Raw.GetCurrentWindow();
-        float tableMinimumX = table->OuterRect.Min.X;
-        float tableMaximumX = table->OuterRect.Max.X;
-        float rowMinimumY = table->RowPosY1;
-        float rowMaximumY = table->RowPosY2;
-        float windowMinimumX = window->InnerRect.Min.X;
-        float windowMaximumX = window->InnerRect.Max.X;
+        var table = Ui.GetTableBounds();
+        var window = Ui.GetWindowBounds();
+        float tableMinimumX = table.minimumX;
+        float tableMaximumX = table.maximumX;
+        float rowMinimumY = table.rowMinimum;
+        float rowMaximumY = table.rowMaximum;
+        float windowMinimumX = window.minimumX;
+        float windowMaximumX = window.maximumX;
         if (rowMaximumY <= rowMinimumY)
             return;
-
-        ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        NativeVector2 clipMinimum = Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMinimumX, rowMinimumY));
-        NativeVector2 clipMaximum = Unsafe.BitCast<NumericsVector2, NativeVector2>(new System.Numerics.Vector2(windowMaximumX, rowMaximumY));
-        NativeImGui.Raw.PushClipRect(
-            drawList,
-            &clipMinimum,
-            &clipMaximum,
-            0
-        );
+        EditorDrawList drawList = Ui.GetDrawList();
+        drawList.PushClip(new Vector2(windowMinimumX, rowMinimumY), new Vector2(windowMaximumX, rowMaximumY), false);
         try
         {
             if (tableMinimumX > windowMinimumX)
             {
-                EditorImGui.DrawFilledRectangle(
-                    new System.Numerics.Vector2(windowMinimumX, rowMinimumY),
-                    new System.Numerics.Vector2(tableMinimumX, rowMaximumY),
-                    background,
-                    0
-                );
+                Ui.DrawFilledRectangle(new System.Numerics.Vector2(windowMinimumX, rowMinimumY), new System.Numerics.Vector2(tableMinimumX, rowMaximumY), background, 0);
             }
+
             if (tableMaximumX < windowMaximumX)
             {
-                EditorImGui.DrawFilledRectangle(
-                    new System.Numerics.Vector2(tableMaximumX, rowMinimumY),
-                    new System.Numerics.Vector2(windowMaximumX, rowMaximumY),
-                    background,
-                    0
-                );
+                Ui.DrawFilledRectangle(new System.Numerics.Vector2(tableMaximumX, rowMinimumY), new System.Numerics.Vector2(windowMaximumX, rowMaximumY), background, 0);
             }
         }
         finally
         {
-            NativeImGui.Raw.PopClipRect(drawList);
+            drawList.PopClip();
         }
     }
 
     private static float GetResetColumnWidth()
     {
-        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
-        return style->ItemSpacing.X +
-               NativeImGui.CalcTextSize("Reset").X +
-               style->FramePadding.X * 2f +
-               style->WindowPadding.X;
+        EditorUiLayout style = Ui.GetLayout();
+        return style.itemSpacing.X + Ui.MeasureText("Reset").X + style.framePadding.X * 2f + style.windowPadding.X;
     }
 
     private static bool DrawResetButton(bool enabled)
     {
-        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
-        NativeImGui.SetCursorPosX(NativeImGui.GetCursorPosX() + style->ItemSpacing.X);
-        NativeImGui.BeginDisabled(!enabled);
+        EditorUiLayout style = Ui.GetLayout();
+        Ui.SetCursorPosX(Ui.GetCursorPosX() + style.itemSpacing.X);
+        Ui.BeginDisabled(!enabled);
         try
         {
-            return NativeImGui.SmallButton("Reset");
+            return Ui.SmallButton("Reset");
         }
         finally
         {
-            NativeImGui.EndDisabled();
+            Ui.EndDisabled();
         }
     }
 
-    private static void PushDisabledText()
-        => NativeImGui.PushStyleColor(
-            (int)ImGuiCol.Text,
-            Unsafe.BitCast<NativeVector4, NumericsVector4>(NativeImGui.Raw.GetStyle()->Colors[(int)ImGuiCol.TextDisabled]));
-
+    private static void PushDisabledText() => Ui.PushStyleColor(ImGuiCol.Text, Ui.GetStyleColorValue(ImGuiCol.TextDisabled));
 }

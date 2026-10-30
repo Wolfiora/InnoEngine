@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Inno.Editor.Assets.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../scene/fixtures/Inno.Scene.Reload.TestModule/Inno.Scene.Reload.TestModule.csproj" ReferenceOutputAssembly="false" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
@@ -26,7 +27,7 @@
     <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.PlayMode/Inno.Editor.PlayMode.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Global/Inno.Editor.Panel.Global.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Workbench/Inno.Editor.Workbench.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/panels/Inno.Editor.Panel.Logging/Inno.Editor.Panel.Logging.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
@@ -53,7 +54,6 @@
   <Target Name="CopySceneReloadTestModule" AfterTargets="Build">
     <Copy SourceFiles="@(SceneReloadTestModule)" DestinationFolder="$(OutDir)Modules/SceneReload" />
   </Target>
-
   <ItemGroup>
     <ProjectReference Include="../../scene/fixtures/Inno.Scene.Reload.TestModule/Inno.Scene.Reload.TestModule.csproj" ReferenceOutputAssembly="false" OutputItemType="SceneReloadTestModule" PrivateAssets="compile" />
   </ItemGroup>

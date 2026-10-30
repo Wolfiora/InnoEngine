@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
@@ -27,25 +26,21 @@ using Inno.Scripting.Compiler;
 using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
-
 public sealed class EditorPlayModeTests : IDisposable
 {
-    private readonly string m_projectRoot = Path.Combine(
-        Path.GetTempPath(),
-        "InnoEditorPlayModeTests",
-        Guid.NewGuid().ToString("N"));
+    private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoEditorPlayModeTests", Guid.NewGuid().ToString("N"));
     private readonly EngineHost m_engineHost;
     private readonly RuntimeSession m_editSession;
     private readonly AssetPipeline m_authoringAssets;
     private readonly IDisposable m_editScope;
-
     public EditorPlayModeTests()
     {
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
-        m_engineHost = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(EditorPlayModeTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .Build();
+        m_engineHost = new EngineHostBuilder().UseMetadataSources(
+            new DotNetAssemblyCatalogSource(typeof(EditorPlayModeTests).Assembly),
+            new ReflectionTypeCatalogSource(),
+            new ReflectionSerializationMetadataSource()
+        ).Build();
         m_editSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Edit));
         m_editScope = m_editSession.EnterExecutionScope();
         m_authoringAssets = new AssetPipeline(
@@ -55,12 +50,8 @@ public sealed class EditorPlayModeTests : IDisposable
             new IdentityAllocator(),
             m_engineHost.diagnostics,
             m_engineHost.logs,
-            AssetPipelineOptions.Create(
-                Path.Combine(m_projectRoot, "Assets"),
-                Path.Combine(m_projectRoot, "Library")) with
-            {
-                enableFileSystemWatcher = false
-            });
+            AssetPipelineOptions.Create(Path.Combine(m_projectRoot, "Assets"), Path.Combine(m_projectRoot, "Library"))with { enableFileSystemWatcher = false }
+        );
     }
 
     public void Dispose()
@@ -74,24 +65,37 @@ public sealed class EditorPlayModeTests : IDisposable
     }
 
     [Fact]
+    public void StateSubscriptionsNotifyAllObserversAndReleaseIndependently()
+    {
+        using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, new FakeScriptCompilation(EditorScriptCompilationState.Ready), new FakeScenePlayMode());
+        int observed = 0;
+        using IDisposable failing = harness.playMode.ListenStateChanges(_ => throw new InvalidOperationException("Rejected observer."));
+        using IDisposable healthy = harness.playMode.ListenStateChanges(_ => observed++);
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        AggregateException error = Assert.Throws<AggregateException>(() => harness.playMode.EnterPlayMode());
+        Assert.Single(error.InnerExceptions);
+        Assert.Equal(1, observed);
+        Assert.Equal(EditorPlayModeState.Compiling, harness.playMode.state);
+        failing.Dispose();
+        healthy.Dispose();
+        Assert.True(harness.playMode.ExitPlayMode());
+        Assert.Equal(1, observed);
+    }
+
+    [Fact]
     public void PlayShortcutStopsTheSessionFromAFocusedGameView()
     {
-        using var harness = new PlayModeHarness(
-            m_projectRoot,
-            m_engineHost,
-            new FakeScriptCompilation(EditorScriptCompilationState.Ready),
-            new FakeScenePlayMode());
-        using var modules = new Inno.Extensibility.Modules.ModuleHost(
-            new Inno.Extensibility.Modules.ModuleHostOptions
-            {
-                catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorPlayModeController).Assembly)
-            });
+        using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, new FakeScriptCompilation(EditorScriptCompilationState.Ready), new FakeScenePlayMode());
+        using var modules = new Inno.Extensibility.Modules.ModuleHost(new Inno.Extensibility.Modules.ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorPlayModeController).Assembly) });
         using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         using var interactions = new EditorInteractionRuntime(
             new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             types,
             m_engineHost.logs,
-            [harness.playMode]);
+            [harness.playMode]
+        );
         interactions.Start();
         Assert.True(harness.playMode.EnterPlayMode());
         harness.Update();
@@ -134,8 +138,7 @@ public sealed class EditorPlayModeTests : IDisposable
     [Fact]
     public void ReleasingGuardRegistrationDoesNotRetainItsBlockingState()
     {
-        using var harness = new PlayModeHarness(m_projectRoot, m_engineHost,
-            new FakeScriptCompilation(EditorScriptCompilationState.Compiling), new FakeScenePlayMode());
+        using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, new FakeScriptCompilation(EditorScriptCompilationState.Compiling), new FakeScenePlayMode());
         var reloads = new EditorReloadCoordinator();
         IDisposable registration = reloads.RegisterGuard((IEditorReloadGuard)harness.playMode);
         Assert.True(harness.playMode.EnterPlayMode());
@@ -155,18 +158,14 @@ public sealed class EditorPlayModeTests : IDisposable
         harness.Update();
         Assert.Equal(EditorPlayModeState.Compiling, harness.playMode.state);
         Assert.Equal(0, scenes.beginCount);
-
         scripting.state = EditorScriptCompilationState.Ready;
         harness.Update();
         Assert.Equal(EditorPlayModeState.Preparing, harness.playMode.state);
         harness.Update();
-        Assert.True(
-            harness.playMode.state == EditorPlayModeState.Playing,
-            harness.playMode.lastFailure);
+        Assert.True(harness.playMode.state == EditorPlayModeState.Playing, harness.playMode.lastFailure);
         Assert.Equal(1, scenes.beginCount);
         Assert.Equal(1, harness.history.beginCount);
         Assert.Equal(0, harness.history.disposeCount);
-
         Assert.True(harness.playMode.ExitPlayMode());
         harness.Update();
         Assert.Equal(EditorPlayModeState.Editing, harness.playMode.state);
@@ -197,6 +196,7 @@ public sealed class EditorPlayModeTests : IDisposable
                 Assert.True(harness.playMode.ExitPlayMode());
                 harness.Update();
             }
+
             Assert.Equal(EditorPlayModeState.Stopping, harness.playMode.state);
             Assert.Equal(0, harness.history.disposeCount);
             Assert.Throws<InvalidOperationException>(() => m_engineHost.generations.EnsureReady("reload while stopping"));
@@ -223,10 +223,8 @@ public sealed class EditorPlayModeTests : IDisposable
         var scripting = new FakeScriptCompilation(EditorScriptCompilationState.Failed);
         var scenes = new FakeScenePlayMode();
         using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, scripting, scenes);
-
         Assert.True(harness.playMode.EnterPlayMode());
         harness.Update();
-
         Assert.Equal(EditorPlayModeState.Failed, harness.playMode.state);
         Assert.Contains("valid script generation", harness.playMode.lastFailure, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(0, scenes.beginCount);
@@ -238,11 +236,9 @@ public sealed class EditorPlayModeTests : IDisposable
         var scripting = new FakeScriptCompilation(EditorScriptCompilationState.Compiling);
         var scenes = new FakeScenePlayMode();
         using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, scripting, scenes);
-
         Assert.True(harness.playMode.EnterPlayMode());
         Assert.True(harness.playMode.ExitPlayMode());
         harness.Update();
-
         Assert.Equal(EditorPlayModeState.Editing, harness.playMode.state);
         Assert.Equal(0, scenes.beginCount);
     }
@@ -259,15 +255,12 @@ public sealed class EditorPlayModeTests : IDisposable
             world.LoadScene(scene);
         });
         using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, scripting, scenes);
-
         harness.Simulate(0.016f);
         Assert.Null(system);
-
         Assert.True(harness.playMode.EnterPlayMode());
         harness.Update();
         harness.Update();
         harness.Simulate(0.02f);
-
         Assert.NotNull(system);
         Assert.Equal(1, system.fixedCount);
         Assert.Equal(1, system.updateCount);
@@ -288,11 +281,9 @@ public sealed class EditorPlayModeTests : IDisposable
         Assert.True(harness.playMode.EnterPlayMode());
         harness.Update();
         harness.Update();
-
         harness.Simulate(0.016f);
         Assert.Equal(EditorPlayModeState.Stopping, harness.playMode.state);
         harness.Update();
-
         Assert.Equal(EditorPlayModeState.Editing, harness.playMode.state);
         Assert.Equal(1, scenes.restoreCount);
         Assert.Contains("update failed", harness.playMode.lastFailure, StringComparison.OrdinalIgnoreCase);
@@ -308,7 +299,8 @@ public sealed class EditorPlayModeTests : IDisposable
             m_engineHost.types,
             m_engineHost.serialization,
             m_engineHost.logs,
-            selection);
+            selection
+        );
         IEditorSceneWorkspace workspace = workspaceHost.workspace;
         var editScene = new GameScene("Edit Scene");
         GameObject editObject = editScene.CreateObject("Edit Object");
@@ -316,9 +308,7 @@ public sealed class EditorPlayModeTests : IDisposable
         Guid objectId = editObject.identity.persistentId;
         SceneManager.LoadScene(editScene);
         selection.SetSelection(editObject);
-
-        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
-            CreateSessionOptions(RuntimeSessionKind.Play));
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
         using IDisposable session = workspaceHost.playMode.BeginPlayMode(runtimeSession);
         GameScene runtimeScene;
         GameObject runtimeObject;
@@ -327,6 +317,7 @@ public sealed class EditorPlayModeTests : IDisposable
             runtimeScene = Assert.Single(SceneManager.loadedScenes);
             runtimeObject = Assert.Single(runtimeScene.GetObjects());
         }
+
         Assert.NotSame(editScene, runtimeScene);
         Assert.NotSame(editObject, runtimeObject);
         Assert.Equal(sceneId, runtimeScene.identity.persistentId);
@@ -341,11 +332,10 @@ public sealed class EditorPlayModeTests : IDisposable
             runtimeObject.name = "Runtime Object";
             _ = runtimeScene.CreateObject("Runtime Only");
         }
+
         Assert.False(workspace.IsDirty(runtimeScene));
         Assert.Throws<InvalidOperationException>(() => workspace.Save(runtimeScene, string.Empty));
-
         session.Dispose();
-
         GameScene restoredScene = Assert.Single(SceneManager.loadedScenes);
         GameObject restoredObject = Assert.Single(restoredScene.GetObjects());
         Assert.Same(editScene, restoredScene);
@@ -366,12 +356,11 @@ public sealed class EditorPlayModeTests : IDisposable
             m_authoringAssets,
             m_engineHost.types,
             m_engineHost.serialization,
-            m_engineHost.logs);
+            m_engineHost.logs
+        );
         var editScene = new GameScene("Edit Scene");
         SceneManager.LoadScene(editScene);
-
-        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
-            CreateSessionOptions(RuntimeSessionKind.Play));
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
         IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
         using (runtimeSession.EnterExecutionScope())
         {
@@ -382,7 +371,6 @@ public sealed class EditorPlayModeTests : IDisposable
         }
 
         playLease.Dispose();
-
         Assert.Same(editScene, Assert.Single(SceneManager.loadedScenes));
         Assert.Same(editScene, Assert.Single(workspaceHost.workspace.scenes));
         Assert.True(workspaceHost.workspace.canPersist);
@@ -397,29 +385,21 @@ public sealed class EditorPlayModeTests : IDisposable
         AssetPath assetPath = AssetPath.Project("Text/shared.txt");
         Assert.True(m_authoringAssets.Import(assetPath));
         TextAsset asset = m_authoringAssets.Load<TextAsset>(assetPath);
-
         using EditorSceneWorkspaceHost workspaceHost = EditorSceneWorkspaceFactory.Create(
             m_editSession,
             m_authoringAssets,
             m_engineHost.types,
             m_engineHost.serialization,
-            m_engineHost.logs);
+            m_engineHost.logs
+        );
         var editScene = new GameScene("Asset Reference Scene");
-        editScene.CreateObject("Asset Reference")
-            .AddComponent<PlayModeAssetReferenceBehavior>()
-            .asset = asset;
+        editScene.CreateObject("Asset Reference").AddComponent<PlayModeAssetReferenceBehavior>().asset = asset;
         SceneManager.LoadScene(editScene);
-
-        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
-            CreateSessionOptions(RuntimeSessionKind.Play));
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
         using IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
         using IDisposable runtimeScope = runtimeSession.EnterExecutionScope();
-        GameObject runtimeObject = Assert.Single(
-            Assert.Single(SceneManager.loadedScenes).GetObjects());
-        TextAsset? runtimeAsset = runtimeObject
-            .GetComponent<PlayModeAssetReferenceBehavior>()
-            .asset;
-
+        GameObject runtimeObject = Assert.Single(Assert.Single(SceneManager.loadedScenes).GetObjects());
+        TextAsset? runtimeAsset = runtimeObject.GetComponent<PlayModeAssetReferenceBehavior>().asset;
         Assert.Same(asset, runtimeAsset);
     }
 
@@ -431,42 +411,30 @@ public sealed class EditorPlayModeTests : IDisposable
             m_authoringAssets,
             m_engineHost.types,
             m_engineHost.serialization,
-            m_engineHost.logs);
+            m_engineHost.logs
+        );
         IEditorGameScenePresentation presentation = workspaceHost.gamePresentation;
         var editScene = new GameScene("Edit Presentation");
         GameObject editObject = editScene.CreateObject("Edit Object");
         SceneManager.LoadScene(editScene);
-
         using ContentReadScope editing = presentation.Capture();
         Assert.Same(editScene, Assert.Single(editing.GetValues<GameScene>()));
         Assert.Equal(editScene.identity.persistentId, editing.activeContent);
-
-        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
-            CreateSessionOptions(RuntimeSessionKind.Play));
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
         IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
         using ContentReadScope playing = presentation.Capture();
         GameScene runtimeScene = Assert.Single(playing.GetValues<GameScene>());
         GameObject runtimeObject = Assert.Single(runtimeScene.GetObjects());
-
         Assert.NotSame(editScene, runtimeScene);
         Assert.NotSame(editObject, runtimeObject);
         Assert.Equal(runtimeScene.identity.persistentId, playing.activeContent);
         runtimeObject.name = "Runtime Object";
-        runtimeObject.transform.localRotation = Quaternion.FromEulerAnglesXYZDegrees(
-            new Vector3(0f, 0f, 90f));
-        Assert.Equal(
-            "Runtime Object",
-            Assert.Single(Assert.Single(playing.GetValues<GameScene>()).GetObjects()).name);
-        Assert.Equal(
-            90f,
-            Assert.Single(Assert.Single(playing.GetValues<GameScene>()).GetObjects())
-                .transform.localRotation.ToEulerAnglesXYZDegrees().z,
-            precision: 3);
+        runtimeObject.transform.localRotation = Quaternion.FromEulerAnglesXYZDegrees(new Vector3(0f, 0f, 90f));
+        Assert.Equal("Runtime Object", Assert.Single(Assert.Single(playing.GetValues<GameScene>()).GetObjects()).name);
+        Assert.Equal(90f, Assert.Single(Assert.Single(playing.GetValues<GameScene>()).GetObjects()).transform.localRotation.ToEulerAnglesXYZDegrees().z, precision: 3);
         Assert.Equal("Edit Object", editObject.name);
         Assert.Equal(Quaternion.identity, editObject.transform.localRotation);
-
         playLease.Dispose();
-
         using ContentReadScope restored = presentation.Capture();
         Assert.Same(editScene, Assert.Single(restored.GetValues<GameScene>()));
         Assert.Equal(editScene.identity.persistentId, restored.activeContent);
@@ -481,19 +449,15 @@ public sealed class EditorPlayModeTests : IDisposable
             m_authoringAssets,
             m_engineHost.types,
             m_engineHost.serialization,
-            m_engineHost.logs);
+            m_engineHost.logs
+        );
         IEditorGameScenePresentation presentation = workspaceHost.gamePresentation;
         var editScene = new GameScene("Edit Presentation");
         SceneManager.LoadScene(editScene);
-
-        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
-            CreateSessionOptions(RuntimeSessionKind.Play));
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
         using (runtimeSession.EnterExecutionScope())
             runtimeSession.scenes.LoadScene(new GameScene("Unexpected Existing Runtime Scene"));
-
-        Assert.Throws<InvalidOperationException>(
-            () => workspaceHost.playMode.BeginPlayMode(runtimeSession));
-
+        Assert.Throws<InvalidOperationException>(() => workspaceHost.playMode.BeginPlayMode(runtimeSession));
         using ContentReadScope snapshot = presentation.Capture();
         Assert.Same(editScene, Assert.Single(snapshot.GetValues<GameScene>()));
         Assert.Equal(editScene.identity.persistentId, snapshot.activeContent);
@@ -504,20 +468,21 @@ public sealed class EditorPlayModeTests : IDisposable
     public void ScenePresentationScopeRejectsStalePlayRootsAfterStop()
     {
         using EditorSceneWorkspaceHost workspaceHost = EditorSceneWorkspaceFactory.Create(
-            m_editSession, m_authoringAssets, m_engineHost.types,
-            m_engineHost.serialization, m_engineHost.logs);
+            m_editSession,
+            m_authoringAssets,
+            m_engineHost.types,
+            m_engineHost.serialization,
+            m_engineHost.logs
+        );
         var editScene = new GameScene("Identity Presentation");
         SceneManager.LoadScene(editScene);
-        using RuntimeSession runtimeSession = m_engineHost.CreateSession(
-            CreateSessionOptions(RuntimeSessionKind.Play));
+        using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
         IDisposable playLease = workspaceHost.playMode.BeginPlayMode(runtimeSession);
         using ContentReadScope playing = workspaceHost.gamePresentation.Capture();
         Identity captured = Assert.Single(playing.contents);
         Assert.Equal(editScene.identity.persistentId, captured.persistentId);
         Assert.NotEqual(editScene.identity.runtimeIdentity, captured.runtimeIdentity);
-
         playLease.Dispose();
-
         runtimeSession.Dispose();
         Assert.Empty(playing.GetValues<GameScene>());
         Assert.False(playing.TryGetValue<GameScene>(captured.persistentId, out _));
@@ -540,60 +505,58 @@ public sealed class EditorPlayModeTests : IDisposable
 
     public sealed class ThrowingSystem : GameSystem
     {
-        protected override void OnUpdate()
-            => throw new InvalidOperationException("Injected simulation failure.");
+        protected override void OnUpdate() => throw new InvalidOperationException("Injected simulation failure.");
     }
 
     private sealed class PlayModeHarness : IDisposable
     {
         private readonly EditorPlayModeController m_controller;
         private readonly FakeHistoryIsolation m_history = new();
-
         internal PlayModeHarness(
             string projectRoot,
             EngineHost engineHost,
             IEditorScriptCompilation scripting,
             IEditorScenePlayMode scenes,
-            IRuntimeSubsystemFactory? factory = null)
-        {
+            IRuntimeSubsystemFactory? factory = null
+        ) {
             m_controller = new EditorPlayModeController(
                 engineHost,
-                new RuntimeSessionOptions
-                {
+                new RuntimeSessionOptions {
                     kind = RuntimeSessionKind.Play,
                     applicationId = "inno.tests.play",
-                    createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
-                        projectRoot,
-                        "PersistentData",
-                        "inno.tests.play"), "Logs")),
+                    createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(projectRoot, "PersistentData", "inno.tests.play"), "Logs")),
                     jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
                     createSubsystems = _ => factory is null ? [] : [factory]
                 },
                 scenes,
                 scripting,
                 m_history,
-                engineHost.logs);
+                engineHost.logs
+            );
         }
 
         internal IEditorPlayMode playMode => m_controller;
         internal FakeHistoryIsolation history => m_history;
 
         internal void Update() => m_controller.AdvanceTransition();
-
         internal void Simulate(float deltaTime) => m_controller.Tick(deltaTime);
-
         public void Dispose()
         {
             m_controller.Dispose();
         }
     }
 
-    private sealed class FakeScriptCompilation(EditorScriptCompilationState initialState)
-        : IEditorScriptCompilation
+    private sealed class FakeScriptCompilation(EditorScriptCompilationState initialState) : IEditorScriptCompilation
     {
+        public bool requiresExclusiveProgress => false;
+        public float progress => 0f;
+
+        public void CancelCompilation()
+        {
+        }
+
         private EditorScriptCompilationState m_state = initialState;
         private FakeCompilationTicket? m_ticket;
-
         public IScriptCompilationTicket RequestCompilation()
         {
             m_ticket = new FakeCompilationTicket();
@@ -620,12 +583,14 @@ public sealed class EditorPlayModeTests : IDisposable
     private sealed class PendingPlayFactory(PendingPlaySubsystem subsystem) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemId("test.pending-play"));
+
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => subsystem;
     }
 
     private sealed class PendingPlaySubsystem : RuntimeSubsystem
     {
         internal TaskCompletionSource work { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         internal bool stopped;
         protected override void OnStart() => lifetime.Track(work.Task);
         protected override void OnStop() => stopped = true;
@@ -634,18 +599,10 @@ public sealed class EditorPlayModeTests : IDisposable
     private sealed class FakeCompilationTicket : IScriptCompilationTicket
     {
         public long requestId => 1;
-
         public ScriptCompilationTicketState state { get; private set; }
-
         public string status => "Test compilation ticket.";
-
         public ScriptCompilationResult? result => null;
-
-        public bool isCompleted
-            => state is ScriptCompilationTicketState.Succeeded
-                or ScriptCompilationTicketState.Failed
-                or ScriptCompilationTicketState.Canceled
-                or ScriptCompilationTicketState.Superseded;
+        public bool isCompleted => state is ScriptCompilationTicketState.Succeeded or ScriptCompilationTicketState.Failed or ScriptCompilationTicketState.Canceled or ScriptCompilationTicketState.Superseded;
 
         internal void SetState(EditorScriptCompilationState value)
         {
@@ -673,7 +630,6 @@ public sealed class EditorPlayModeTests : IDisposable
         private sealed class Session(FakeScenePlayMode owner) : IDisposable
         {
             private bool m_restored;
-
             public void Dispose()
             {
                 if (m_restored)
@@ -686,6 +642,7 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private sealed class FakeSelectionCoordinator : IEditorSelectionCoordinator
     {
+        public IDisposable RegisterIdentityDomain(Inno.Core.Identity.IdentityAllocator allocator) => new Inno.Core.Execution.LifetimeScope();
         public object? selectedTarget { get; private set; }
 
         public void SetSelection(object? target) => selectedTarget = target;
@@ -694,7 +651,6 @@ public sealed class EditorPlayModeTests : IDisposable
     private sealed class FakeHistoryIsolation : IEditorHistoryIsolation
     {
         internal int beginCount { get; private set; }
-
         internal int disposeCount { get; private set; }
 
         public IDisposable BeginHistoryIsolation()
@@ -706,7 +662,6 @@ public sealed class EditorPlayModeTests : IDisposable
         private sealed class Lease(FakeHistoryIsolation owner) : IDisposable
         {
             private bool m_disposed;
-
             public void Dispose()
             {
                 if (m_disposed)
@@ -719,17 +674,12 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private RuntimeSessionOptions CreateSessionOptions(RuntimeSessionKind kind)
     {
-        string applicationId = kind == RuntimeSessionKind.Edit
-            ? "inno.tests.edit"
-            : "inno.tests.play";
+        string applicationId = kind == RuntimeSessionKind.Edit ? "inno.tests.edit" : "inno.tests.play";
         return new RuntimeSessionOptions
         {
             kind = kind,
             applicationId = applicationId,
-            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(
-                m_projectRoot,
-                "PersistentData",
-                applicationId), "Logs")),
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_projectRoot, "PersistentData", applicationId), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         };
     }

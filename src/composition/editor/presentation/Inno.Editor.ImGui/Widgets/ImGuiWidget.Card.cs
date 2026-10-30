@@ -1,15 +1,13 @@
 using System;
 using System.Numerics;
-
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
-
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
-public static unsafe partial class ImGuiWidget
+public sealed unsafe partial class ImGuiWidget
 {
     /// <summary>
     /// Draws a component-style collapsible card header.
@@ -41,7 +39,7 @@ public static unsafe partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when card content should be drawn; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool CollapsingCard(
+    public bool CollapsingCard(
         string id,
         string title,
         Action? drawLeadingControl = null,
@@ -51,26 +49,22 @@ public static unsafe partial class ImGuiWidget
         float trailingControlWidth = 0f,
         Action? drawContextMenu = null
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(title);
         if (trailingControlWidth < 0f)
         {
-            throw new ArgumentOutOfRangeException(
-                nameof(trailingControlWidth),
-                trailingControlWidth,
-                "Trailing control width cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(trailingControlWidth), trailingControlWidth, "Trailing control width cannot be negative.");
         }
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.SpanAvailWidth
-            | ImGuiTreeNodeFlags.AllowOverlap
-            | ImGuiTreeNodeFlags.OpenOnArrow;
+
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags.SpanAvailWidth | ImGuiTreeNodeFlags.AllowOverlap | ImGuiTreeNodeFlags.OpenOnArrow;
         if (defaultOpen)
             flags |= ImGuiTreeNodeFlags.DefaultOpen;
-
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.inspectorCardHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.inspectorCardHeader);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.inspectorCardHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Header), EditorPalette.cardHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderHovered), EditorPalette.cardHeader);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.HeaderActive), EditorPalette.cardHeader);
         NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.transparent);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inspectorCardHeaderPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.cardHeaderPadding);
         Vector2 itemHeaderMin;
         Vector2 headerMin;
         Vector2 headerMax;
@@ -86,7 +80,7 @@ public static unsafe partial class ImGuiWidget
                 NativeImGui.Raw.GetWindowDrawList(),
                 persistentHeaderMin,
                 persistentHeaderMax,
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardHeader),
+                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardHeader),
                 0f,
                 0
             );
@@ -100,7 +94,7 @@ public static unsafe partial class ImGuiWidget
                 NativeImGui.Raw.GetWindowDrawList(),
                 headerMin,
                 headerMax,
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardBodyBorder),
+                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardBodyBorder),
                 0f,
                 (int)(ImDrawFlags.RoundCornersNone),
                 style.borderSize
@@ -111,27 +105,17 @@ public static unsafe partial class ImGuiWidget
             NativeImGui.PopStyleVar();
             NativeImGui.PopStyleColor(4);
         }
+
         try
         {
             drawContextMenu?.Invoke();
-
             float contentX = itemHeaderMin.X + NativeImGui.GetTreeNodeToLabelSpacing();
-            DrawDisclosureIndicator(
-                new Vector2(itemHeaderMin.X, headerMin.Y),
-                new Vector2(contentX, headerMax.Y),
-                open,
-                dimmed);
-            float contentY = headerMin.Y + MathF.Max(
-                0f,
-                (headerMax.Y - headerMin.Y - NativeImGui.GetFrameHeight()) * 0.5f);
-            float trailingWidth = drawTrailingControl is null
-                ? 0f
-                : trailingControlWidth > 0f
-                    ? trailingControlWidth
-                    : NativeImGui.GetFrameHeight();
+            DrawDisclosureIndicator(new Vector2(itemHeaderMin.X, headerMin.Y), new Vector2(contentX, headerMax.Y), open, dimmed);
+            float contentY = headerMin.Y + MathF.Max(0f, (headerMax.Y - headerMin.Y - NativeImGui.GetFrameHeight()) * 0.5f);
+            float trailingWidth = drawTrailingControl is null ? 0f : trailingControlWidth > 0f ? trailingControlWidth : NativeImGui.GetFrameHeight();
             float titleRight = headerMax.X - trailingWidth;
             if (drawTrailingControl is not null)
-                titleRight -= style.inspectorHeaderControlSpacing;
+                titleRight -= style.headerControlSpacing;
             NativeImGui.SetCursorScreenPos(new Vector2(contentX, contentY));
             bool dimmedColorPushed = false;
             bool groupStarted = false;
@@ -139,26 +123,23 @@ public static unsafe partial class ImGuiWidget
             {
                 if (dimmed)
                 {
-                    NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.inspectorCardDisabledText);
+                    NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.cardDisabledText);
                     dimmedColorPushed = true;
                 }
+
                 NativeImGui.BeginGroup();
                 groupStarted = true;
                 if (drawLeadingControl is not null)
                 {
                     drawLeadingControl();
-                    NativeImGui.SameLine(0f, style.inspectorHeaderControlSpacing);
+                    NativeImGui.SameLine(0f, style.headerControlSpacing);
                 }
+
                 NativeImGui.AlignTextToFramePadding();
                 Vector2 titleCursor = NativeImGui.GetCursorScreenPos();
                 float titleWidth = MathF.Max(1f, titleRight - titleCursor.X);
                 ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-                ImGui.PushNativeClipRectangle(
-                    drawList,
-                    titleCursor,
-                    new Vector2(titleCursor.X + titleWidth, headerMax.Y),
-                    1
-                );
+                ImGui.PushNativeClipRectangle(drawList, titleCursor, new Vector2(titleCursor.X + titleWidth, headerMax.Y), 1);
                 try
                 {
                     ImGui.DrawNativeText(drawList, titleCursor, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), title);
@@ -167,15 +148,13 @@ public static unsafe partial class ImGuiWidget
                 {
                     NativeImGui.Raw.PopClipRect(drawList);
                 }
+
                 NativeImGui.Dummy(new Vector2(titleWidth, NativeImGui.GetFrameHeight()));
                 NativeImGui.EndGroup();
                 groupStarted = false;
-
                 if (drawTrailingControl is not null)
                 {
-                    NativeImGui.SetCursorScreenPos(new Vector2(
-                        MathF.Max(contentX, headerMax.X - trailingWidth),
-                        contentY));
+                    NativeImGui.SetCursorScreenPos(new Vector2(MathF.Max(contentX, headerMax.X - trailingWidth), contentY));
                     drawTrailingControl();
                 }
             }
@@ -187,6 +166,7 @@ public static unsafe partial class ImGuiWidget
                     NativeImGui.PopStyleColor();
                 NativeImGui.SetCursorScreenPos(contentCursor);
             }
+
             return open;
         }
         catch
@@ -212,27 +192,25 @@ public static unsafe partial class ImGuiWidget
     /// <param name="dimmed">
     /// Whether the indicator uses the inactive text color.
     /// </param>
-    public static void DrawDisclosureIndicator(
+    public void DrawDisclosureIndicator(
         Vector2 min,
         Vector2 max,
         bool open,
         bool dimmed = false
     ) {
+        m_session.EnsureDrawing();
         Vector2 availableSize = Vector2.Max(Vector2.Zero, max - min);
-        float buttonSize = MathF.Max(
-            1f,
-            MathF.Min(availableSize.X, availableSize.Y) - style.disclosureButtonInset * 2f);
+        float buttonSize = MathF.Max(1f, MathF.Min(availableSize.X, availableSize.Y) - style.disclosureButtonInset * 2f);
         Vector2 buttonMin = min + (availableSize - new Vector2(buttonSize)) * 0.5f;
         Vector2 buttonMax = buttonMin + new Vector2(buttonSize);
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        if (!IsPopupBlockingInteraction() &&
-            NativeImGui.IsMouseHoveringRect(buttonMin, buttonMax))
+        if (!IsPopupBlockingInteraction() && NativeImGui.IsMouseHoveringRect(buttonMin, buttonMax))
         {
             ImGui.DrawNativeFilledRectangle(
                 drawList,
                 buttonMin,
                 buttonMax,
-                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.inspectorCardDisclosureHovered),
+                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardDisclosureHovered),
                 NativeImGui.Raw.GetStyle()->FrameRounding,
                 0
             );
@@ -241,10 +219,7 @@ public static unsafe partial class ImGuiWidget
         string indicator = open ? "▼" : "▶";
         Vector2 indicatorSize = NativeImGui.CalcTextSize(indicator);
         Vector2 indicatorPosition = buttonMin + (new Vector2(buttonSize) - indicatorSize) * 0.5f;
-        uint color = NativeImGui.ColorConvertFloat4ToU32(
-            dimmed
-                ? EditorPalette.inspectorCardDisabledText
-                : EditorPalette.text);
+        uint color = NativeImGui.ColorConvertFloat4ToU32(dimmed ? EditorPalette.cardDisabledText : EditorPalette.text);
         ImGui.DrawNativeText(drawList, indicatorPosition, color, indicator);
     }
 
@@ -260,31 +235,25 @@ public static unsafe partial class ImGuiWidget
     /// <param name="dimmed">
     /// Whether content is visually disabled and non-interactive.
     /// </param>
-    public static void CardBody(
+    public void CardBody(
         string id,
         Action drawContent,
         bool dimmed = false
     ) {
+        m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(drawContent);
-
         Vector2 originalCursor = NativeImGui.GetCursorScreenPos();
         (float cardLeft, float cardRight) = GetFullWidthCardBounds(originalCursor);
         NativeImGui.SetCursorScreenPos(new Vector2(cardLeft, originalCursor.Y));
-        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), EditorPalette.inspectorCardBody);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.inspectorCardBodyBorder);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.FrameBg), EditorPalette.cardBody);
+        NativeImGui.PushStyleColor((int)(ImGuiCol.Border), EditorPalette.cardBodyBorder);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), NativeImGui.Raw.GetStyle()->FrameRounding);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameBorderSize), style.borderSize);
-        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inspectorCardBodyPadding);
+        NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.cardBodyPadding);
         ImGuiChildFlags childFlags = ImGuiChildFlags.FrameStyle | ImGuiChildFlags.AutoResizeY;
-        ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar |
-                                       ImGuiWindowFlags.NoScrollWithMouse |
-                                       ImGuiWindowFlags.NoSavedSettings;
-        bool visible = NativeImGui.BeginChild(
-            $"##card_body_{id}",
-            new Vector2(MathF.Max(1f, cardRight - cardLeft), 0f),
-            (int)(childFlags),
-            (int)(windowFlags));
+        ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
+        bool visible = NativeImGui.BeginChild($"##card_body_{id}", new Vector2(MathF.Max(1f, cardRight - cardLeft), 0f), (int)(childFlags), (int)(windowFlags));
         bool disabled = false;
         try
         {
@@ -293,6 +262,7 @@ public static unsafe partial class ImGuiWidget
                 NativeImGui.BeginDisabled(true);
                 disabled = true;
             }
+
             if (visible)
                 drawContent();
         }
@@ -308,7 +278,7 @@ public static unsafe partial class ImGuiWidget
         }
     }
 
-    private static (float left, float right) GetFullWidthCardBounds(Vector2 cursor)
+    private (float left, float right) GetFullWidthCardBounds(Vector2 cursor)
     {
         float horizontalPadding = NativeImGui.Raw.GetCurrentWindow()->WindowPadding.X;
         float left = cursor.X - horizontalPadding;

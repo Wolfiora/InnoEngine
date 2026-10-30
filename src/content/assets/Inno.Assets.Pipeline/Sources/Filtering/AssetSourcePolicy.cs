@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.IO;
 
 namespace Inno.Assets.Pipeline;
 
@@ -104,7 +105,7 @@ public sealed class AssetSourcePolicy
             return false;
         if (isDirectory && m_directoryNames.Contains(name))
             return true;
-        if (!isDirectory && (m_fileNames.Contains(name) || IsGeneratedPath(name)))
+        if (!isDirectory && (m_fileNames.Contains(name) || IsGeneratedPath(name) || AtomicFile.IsCandidatePath(name)))
             return true;
         for (int i = 0; i < m_prefixes.Length; i++)
         {

@@ -66,18 +66,21 @@ sealed partial class AssetLoader
             return true;
         if (!AssetSourceFileStamp.TryCapture(sourcePath, out AssetSourceFileStamp sourceStamp))
             return true;
-        if (!SourceStampMatches(record.meta, sourceStamp))
+        bool stampChanged = !SourceStampMatches(record.meta, sourceStamp);
+        if (!GetMount(record.relativePath).isReadOnly || stampChanged)
         {
-            byte[] sourceBytes = ReadStableSourceBytes(sourcePath, out sourceStamp);
             if (!string.Equals(
                     record.meta.sourceHash,
-                    ComputeSha256Hex(sourceBytes),
+                    ReadStableSourceHash(sourcePath, out sourceStamp),
                     StringComparison.Ordinal))
             {
                 return true;
             }
-            ApplySourceStamp(record.meta, sourceStamp);
-            catalogChanged = true;
+            if (stampChanged)
+            {
+                ApplySourceStamp(record.meta, sourceStamp);
+                catalogChanged = true;
+            }
         }
         for (int i = 0; i < record.meta.importDependencies.Length; i++)
         {
@@ -308,6 +311,27 @@ sealed partial class AssetLoader
             : throw new ArgumentException($"Asset source mount '{path.source}' is not active.", nameof(path));
 
     private string GetMetaPath(string relativePath) => GetSourcePath(relativePath) + C_META_POSTFIX;
+
+    private static string ReadStableSourceHash(
+        string sourcePath,
+        out AssetSourceFileStamp sourceStamp
+    ) {
+        const int C_MAX_ATTEMPTS = 3;
+        for (int attempt = 0; attempt < C_MAX_ATTEMPTS; attempt++)
+        {
+            if (!AssetSourceFileStamp.TryCapture(sourcePath, out AssetSourceFileStamp before))
+                throw new FileNotFoundException("Asset source is unavailable.", sourcePath);
+            using FileStream source = IOFile.OpenRead(sourcePath);
+            string hash = Convert.ToHexString(SHA256.HashData(source));
+            if (AssetSourceFileStamp.TryCapture(sourcePath, out AssetSourceFileStamp after)
+                && before == after && source.Length == after.length)
+            {
+                sourceStamp = after;
+                return hash;
+            }
+        }
+        throw new IOException($"Asset source '{sourcePath}' did not remain stable while its content was verified.");
+    }
 
     private static byte[] ReadStableSourceBytes(
         string sourcePath,

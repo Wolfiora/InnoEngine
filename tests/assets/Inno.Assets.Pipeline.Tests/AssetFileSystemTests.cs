@@ -14,6 +14,91 @@ namespace Inno.Assets.Pipeline.Tests;
 public sealed class AssetFileSystemTests
 {
     [Fact]
+    public void RefreshPreservesUnchangedEntryInstancesAndRuntimeIdentities()
+    {
+        string root = CreateRoot();
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(root, "Folder"));
+            File.WriteAllText(Path.Combine(root, "Folder", "value.txt"), "value");
+            using var fileSystem = new AssetFileSystem(root, autoStart: false);
+            AssetFileEntry[] previous = fileSystem.GetEntries().ToArray();
+            var identities = previous.Select(static entry => entry.identity.runtimeIdentity).ToArray();
+            fileSystem.Refresh();
+            for (int index = 0; index < previous.Length; index++)
+            {
+                Assert.True(fileSystem.TryGetEntry(previous[index].assetPath, out AssetFileEntry current));
+                Assert.Same(previous[index], current);
+                Assert.Equal(identities[index], current.identity.runtimeIdentity);
+            }
+        }
+        finally
+        {
+            DeleteRoot(root);
+        }
+    }
+
+    [Fact]
+    public void FailedEnumerationKeepsThePreviousCompleteIndexAndItsIdentities()
+    {
+        string root = CreateRoot();
+        string moved = root + ".temporarily-moved";
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "value.txt"), "value");
+            using var fileSystem = new AssetFileSystem(root, autoStart: false);
+            Assert.True(fileSystem.TryGetEntry(AssetPath.Project("value.txt"), out AssetFileEntry previous));
+            var identity = previous.identity.runtimeIdentity;
+            Directory.Move(root, moved);
+            try
+            {
+                Assert.Throws<DirectoryNotFoundException>(() => fileSystem.Refresh());
+                Assert.True(fileSystem.TryGetEntry(AssetPath.Project("value.txt"), out AssetFileEntry retained));
+                Assert.Same(previous, retained);
+                Assert.Equal(identity, retained.identity.runtimeIdentity);
+            }
+            finally
+            {
+                Directory.Move(moved, root);
+            }
+            fileSystem.Refresh();
+            Assert.True(fileSystem.TryGetEntry(AssetPath.Project("value.txt"), out AssetFileEntry restored));
+            Assert.Same(previous, restored);
+        }
+        finally
+        {
+            DeleteRoot(root);
+        }
+    }
+
+    [Fact]
+    public void RefreshRetiresRemovedEntriesAndPreservesUnaffectedEntries()
+    {
+        string root = CreateRoot();
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "keep.txt"), "keep");
+            File.WriteAllText(Path.Combine(root, "remove.txt"), "remove");
+            using var fileSystem = new AssetFileSystem(root, autoStart: false);
+            Assert.True(fileSystem.TryGetEntry(AssetPath.Project("keep.txt"), out AssetFileEntry keep));
+            Assert.True(fileSystem.TryGetEntry(AssetPath.Project("remove.txt"), out AssetFileEntry removed));
+            File.Delete(Path.Combine(root, "remove.txt"));
+            File.WriteAllText(Path.Combine(root, "added.txt"), "added");
+            fileSystem.Refresh();
+            Assert.True(fileSystem.TryGetEntry(AssetPath.Project("keep.txt"), out AssetFileEntry retained));
+            Assert.Same(keep, retained);
+            Assert.False(fileSystem.TryGetEntry(AssetPath.Project("remove.txt"), out _));
+            Assert.Null(removed.identity.runtimeIdentity);
+            Assert.True(fileSystem.TryGetEntry(AssetPath.Project("added.txt"), out AssetFileEntry added));
+            Assert.NotNull(added.identity.runtimeIdentity);
+        }
+        finally
+        {
+            DeleteRoot(root);
+        }
+    }
+
+    [Fact]
     public void Queries_RejectRootedAndTraversalPaths()
     {
         string root = CreateRoot();

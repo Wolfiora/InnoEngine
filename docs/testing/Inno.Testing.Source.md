@@ -6,13 +6,14 @@
 
 ## 职责与边界
 
-只为需要真实源码的测试解析显式 checkout 输入，不进入生产或发布闭包。读取器只有这个程序集作为源码 owner；消费项目通过 `tests/RepositoryInput.targets` 声明 `Inno.Testing.RepositoryRoot` assembly metadata 和项目引用，不重复编译共享 C# 文件。
+为需要真实源码和 SDK 输出的测试解析显式输入，不进入生产或发布闭包。消费项目通过 `tests/RepositoryInput.targets` 声明 checkout metadata 和项目引用，不重复编译共享 C# 文件。输出 owner 在 SDK 完成路径求值后、生成程序集属性前记录，涵盖显式 `ArtifactsPath` 与 `UseArtifactsOutput`；普通输出不伪造独立 owner。
 
 ## 公开 API
 
 | API | 语义与失败 |
 | --- | --- |
 | `TestRepository.GetRoot(Assembly testAssembly)` | 返回所属测试程序集明确声明的绝对 checkout。空程序集抛出 `ArgumentNullException`；缺失、重复、相对路径或没有引擎 Solution 标记的声明抛出 `InvalidOperationException`。不猜测执行目录、进程当前目录或其他 checkout。 |
+| `TestRepository.GetArtifactsPath(Assembly testAssembly)` | 返回编译该测试程序集时 SDK 选定的绝对输出 owner；没有独立输出声明时返回 null，继续使用正常 SDK 输出求值。空程序集、重复、空或相对声明明确失败，不从旧 bin/obj 猜测。 |
 
 ## 使用与生命周期
 

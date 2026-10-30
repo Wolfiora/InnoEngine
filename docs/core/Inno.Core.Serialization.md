@@ -4,6 +4,43 @@
 
 `Inno.Core.Serialization` 提供确定性的二进制对象图格式、基于 attribute 的属性持久化，以及通过 TypeRegistry 自动发现的 Converter。它既支持“序列化完整 `ISerializable` 根对象”，也支持用 Writer/Reader 显式定义 schema。
 
+### 完整状态捕获与复用
+
+Host 可以使用 `CaptureSnapshot(value, context, previous)` 捕获不可变 `SerializationSnapshot`。默认完整执行当前 generation 的 getter 和 Converter；未变化的中立节点以 copy-on-write 复用。Converter 可显式声明完整捕获 key，证明未变化时复用已有节点；普通 `Serialize` 从不查询 key。`ToArray()` 使用同一二进制编码器返回独立 bytes，修改返回数组不会修改捕获结果。快照只持有中立标量、字符串和复制的二进制数据，不持有源对象、`Type`、Converter、delegate 或 generation lease，可在原 Registry 退休后编码。
+
+该入口不导出到脚本。快照是 owner 所属的瞬时观察值，不是第二种文件格式，也不进入 History、Workspace 或资源元数据。比较失败时不发布新快照，旧快照保持有效。快照捕获期间，Converter 借用的 Writer 只属于其同步回调；不要在回调返回后继续写入。
+
+内部 Writer 对同序、同类型且 converter 选择不变的标量复用一次位置查询，不重复查找相同节点；重复 member 仍明确失败。对象 keys 的现有二进制规范顺序保持不变，因此 Converter 调整写入次序不会改变规范 bytes，数组顺序仍属于数据。所有优化共用当前编码器与 generation lease，不缓存业务对象或绕过自定义 Converter。
+
+`SerializationWriter.WritePropertiesData(name, value, context)` 将同一 generation 的独立属性快照写为现有 binary member，供 Scene 等需要保留独立恢复边界的 Converter 使用。它与 `CapturePropertiesData` 的 bytes 一致，并在重复捕获时复用未变化的属性节点和编码结果；传入的 context 必须保留 owner 的引用解析能力。普通序列化、保存与 Missing 恢复继续使用同一 pipeline，不建立领域专用 serializer。
+
+### 显式完整捕获 key
+
+`SerializationConverter<T>.TryCaptureKey(value, key)` 是可选 protected 扩展点，默认返回 false。只有当前注册的 Core Identity 根对象参与。回调每次捕获都会执行，必须纯读取并覆盖全部输出、上下文依赖与顺序；不能只报告 UI 编辑通知。Core 自动限定当前 runtime identity/domain、metadata 声明和 Converter generation。回调返回 true 且 key 完全相同时才省去 `Write`；变化时执行原 writer，随后再次验证 key 与所有借用 identity，失败不发布新快照。
+
+| API | 责任与限制 |
+| --- | --- |
+| `SerializationCaptureKeyBuilder.context` | 当前同步回调的完整 owner context；回调结束后失效。 |
+| `EnsureCapacity(int)` | 按已冻结输入的实际条目预留容量，不改变 key。 |
+| `TryAddOwner(IdentityObject, ulong?)` | 通过现有 Core Identity 记录 owner 与完整 revision；null、失效绑定或任何失败使整个 key 不可复用。 |
+| `TryAddProperties(ISerializable)` | 仅接受 metadata 显式证明的完整属性 revision，以及权威 Converter resolver 已确认没有自定义 Converter 的纯值成员；不在查询时构造 Converter。 |
+| `AddValue(ulong)` / `AddValue(Guid)` / `AddText(string?)` | 追加精确值、完整标识符和有序文本，区分 null 与空串；不使用有碰撞风险的标识符 hash。 |
+| `SerializationRevisionAttribute(string memberName)` / `memberName` | 选择 sealed serializable identity 对象所属的非持久化 ulong/nullable ulong 字段或属性；每次相关写入前递增，不能循环复用计数。 |
+| `SerializationTypeMetadata.WithCaptureRevision(Func<object, ulong?>)` | Metadata provider 显式声明上述完整 revision 读取器；null 结果拒绝复用。 |
+| `SerializationTypeMetadata.WithPureFieldAccess()` | Provider 证明值类型的持久成员仅为直接读取的 primitive 字段；任意 getter 不具备该资格。 |
+
+这些公开入口是 Converter 与 metadata provider 组合所需的最小能力。Builder 和 attribute 导出为逻辑脚本契约；metadata provider 的声明能力仍只由 Host/编译器 owner 使用。不得把 builder、metadata、访问委托或类型长期存入插件状态。Builder 只属于同步 owner 线程，跨线程、退休后访问明确失败；即使扩展错误地保留 builder，其退休也会清空 context、identity 检查与临时存储。
+
+不完整 revision、计数耗尽、可变引用、Missing、任意 getter、stateful Converter 和未证明的 metadata 继续执行原 capture。新返回的等价 metadata 可以正常捕获，但不会获得跨声明复用。Key 不进入二进制数据、History、Workspace 或 Asset metadata，不是第二套序列化或对象管理系统。静态 metadata provider 可以声明同样能力；未声明时保持完整捕获，不要求 Player 使用动态反射来源。
+
+`SerializationWriter.WriteObjectArray(name, values, writeElement, captureKey)` 将同一证明用于结构化数组元素。可选回调必须声明当前 Core identity owner，以及完整数据、顺序、布局和上下文输入。普通序列化逐次执行原 `writeElement`；Snapshot 只复用已经完整证明的相同元素，变化元素仍使用相同 writer。回调抛错、identity 失效或写入中输入变化均拒绝发布。未证明的元素继续完整捕获；初次获得 hint 不能单独改变数据未变化的既有节点。
+
+Core 跟踪当前同步写入范围中实际执行的 Converter，并从独立属性 payload 向外传播中立标记。嵌套 Converter 的状态不能由父元素的局部 revision 隐式证明，因此其执行会阻止父节点发布可复用 key；既有 Converter 本身仍遵守自己的捕获契约。标记不编码、不持有类型或回调，也不是另一个依赖解析或缓存服务。
+
+已证明的不可变对象节点可按需保存最多 64 KiB 的规范编码块。编码和流式写入复用同一编码器；只保留中立 bytes，并以并发安全方式发布完整块。更大的节点仍走原流式编码，不分配完整输出缓冲。未变化的对象可重复写出已有块，变化对象重新编码；没有第二套编码格式或全局块缓存。`ToArray()` 仍返回独立 caller-owned bytes，目标 Stream 失败不会破坏快照。Guid 写入直接使用借用 Span，规范字节顺序保持一致。
+
+Scene 的实际消费者在 Scene owner 中声明每个对象的元数据计数、精确 source/parent ID、sibling 位置及全部 Component 属性证明。结构、对象顺序、根属性、别名和 System 仍由现有 writer 处理；单个对象改变不强迫其他已证明对象重新编码。普通插件字段、自定义 Converter、Missing 和 Prefab 不会因这一优化失去变化检测。源状态必须在 owner 同步操作内稳定；此能力不是并发读写锁。
+
 ## 初始化
 
 Shader 等 Editor 创作回调可以借用宿主的 `SerializationRegistry`，脚本侧只导出数据编解码及属性读取。
@@ -154,7 +191,7 @@ public sealed class OrderedState : ISerializable
 
 ### 跨 generation 的独立成员恢复
 
-逐成员快照用于热重载和其他需要容忍 schema 演进的流程，不会改变普通 `Serialize` / `Deserialize` / `Restore` 的严格行为：
+逐成员快照用于当前会话中的扩展重载、成员暂时 Missing 及恢复；普通 `Serialize` / `Deserialize` / `Restore` 仍保持严格的当前格式：
 
 ```csharp
 using System.Collections.Generic;
@@ -175,7 +212,7 @@ static SerializationPropertyRestoreResult RestoreMatchingProperties(
 
 `SerializationPropertyRestoreMode.Strict` 在第一个匹配但不可解码的成员处抛异常。`Compatible` 使用独立的 operation checkpoint 跳过该成员，撤销它注册的 completion callback，保留目标对象构造后的默认值，并在 `failures` 中记录旧类型、新类型和错误信息。
 
-Editor History 等需要跨 assembly generation 保留数据的系统应使用 `CapturePropertyData` / `RestorePropertiesData`。该格式包含 property key 与原声明类型信息，但不包含 owning object 引用；调用方必须用 persistent ID 在当前 generation 解析目标。格式严格检查当前 magic、长度与 trailing bytes，损坏数据不会被部分接受。
+Editor History 等需要跨 assembly generation 保留数据的系统应使用 `CapturePropertyData` / `RestorePropertiesData`。该格式保存 property key 与独立编码的值节点，不保存 CLR Type 或 owning object；恢复时由当前目标的 metadata 决定声明类型。内存中的 `SerializationPropertySnapshot.propertyType` 只属于其创建代际，不能据此长期持有 collectible 类型。调用方必须用 persistent ID 在当前 generation 解析目标。格式严格检查当前 magic、长度与 trailing bytes，损坏数据不会被部分接受。
 
 已删除成员计入 `ignoredCount`，新增成员自然保持默认值。所有兼容成员完成后，目标的 `[OnSerializableRestored]` 仍只执行一次；对象级 restore hook 失败属于严重错误，不会被 compatible 模式吞掉。
 
@@ -247,7 +284,7 @@ Converter 应为无状态 class，并提供无参构造函数。选择优先级�
 | `Write<TValue>(name, value)` | 经统一 value pipeline 写命名值；名称必须非空且唯一。 |
 | `Write(name, object?, Type declaredType)` | 按明确声明写值；和泛型入口共用格式、Converter 与空值规则，不构造运行时泛型方法。 |
 | `WriteObject(name, Action<SerializationWriter>)` | 写一个结构化子对象。 |
-| `WriteObjectArray<T>(name, values, writeElement)` | 写有序结构化对象数组。 |
+| `WriteObjectArray<T>(name, values, writeElement, captureKey = null)` | 写有序结构化对象数组。 |
 | `WriteProperties(ISerializable)` | 把对象上标注的成员写入当前 object。 |
 
 ## SerializationReader
@@ -298,6 +335,12 @@ static (float x, float y)[] RoundTripPoints(
 - Restore callback 只在整个操作成功后提交完成通知；异常时不会执行 completion callbacks。
 - Compatible property restore 只跳过单个成员的数据/类型不兼容；对象结构或 restore hook 错误仍由上层事务处理。
 - 序列化层只实现当前二进制契约，不包含旧 schema 的兼容读取或迁移分支。不兼容数据会直接失败。
+
+单属性快照 CapturePropertyData 只读取指定的持久属性；其他 getter 不会因捕获该属性而执行。二进制节点编码先计算确定大小，再用标准库 BinaryWriter 写入独立的结果数组，避免增长缓冲区及最终复制。当前 magic、字段顺序、UTF-8 长度编码和调用方拥有的 bytes 语义保持一致；这是非公开实现，不增加格式或缓存协议。
+
+已解析 Converter 的查找复用当前 generation 自有的并发缓存；首次解析及实例创建仍受同一个 owner 协调，最后一个 lease 释放后才清空缓存并退休实例。冻结 generation 的并行调用仍要求 Converter 和被读写数据自身满足相应线程约束，调用方应在所有操作完成后释放 lease。这些内部查找改良不改变 Registry、Context 或业务对象的所有权。
+
+内部序列化操作仅在需要时创建回调、恢复去重与循环检测集合；不使用跨操作对象池。已有上下文只有在 TypeCatalog、Registry 和 metadata source 均属于当前 owner 时才复用，否则重新绑定这些依赖并保留调用方服务。`SerializationContext.With` 仍返回新的不可变上下文，确定性键排序和当前二进制格式保持不变。
 
 ## 当前源码公开 API 清单
 
@@ -603,13 +646,15 @@ static (float x, float y)[] RoundTripPoints(
 <!-- api: M:Inno.Core.Serialization.SerializationRegistry.Encode(System.Action{Inno.Core.Serialization.SerializationWriter},Inno.Core.Serialization.SerializationContext) 09c46545af6383da77d5cf4770bbdbe82b0c2707485e24df37a0ba0c6d850a85 -->
 <!-- api: M:Inno.Core.Serialization.SerializationRegistry.Decode``1(System.ReadOnlySpan{System.Byte},System.Func{Inno.Core.Serialization.SerializationReader,``0},Inno.Core.Serialization.SerializationContext) 7553cb1fe3aaaf07e8eae5a7b805664435cd986065e8da5d1b1ed496ae437e04 -->
 
+<!-- api: M:Inno.Core.Serialization.SerializationRegistry.CaptureSnapshot``1(``0,Inno.Core.Serialization.SerializationContext,Inno.Core.Serialization.SerializationSnapshot) 3ce45c702c1e6199badf94793717a299a4e6970f7b7b6dbd691f53f226506eab -->
+
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
 | <a id="api-41da8fccf82a6cc0"></a>[`public Inno.Core.Serialization.SerializationRegistry.SerializationRegistry(Inno.Extensibility.Types.TypeCatalog types, Inno.Core.Serialization.ISerializationMetadataSource metadata)`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L32) | Creates a serialization registry derived from one isolated type catalog.<br>`types`：The type catalog that owns converter extension generations.<br>`metadata`：The declaration access provider selected by the same composition root. | — | `System.ArgumentNullException`：Thrown when types is null. |
 | <a id="api-b3d26af74d8341e3"></a>[`public Inno.Core.Serialization.SerializationGeneration Inno.Core.Serialization.SerializationRegistry.CaptureGeneration()`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L65) | Captures the currently active converter generation for deterministic work that may cross asynchronous continuations.<br>返回：An immutable serialization generation owned by the caller. | — | `System.InvalidOperationException`：Thrown when serialization services have not been initialized. |
 | <a id="api-7c907daa79a2dcd7"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Core.Serialization.SerializationPropertySnapshot> Inno.Core.Serialization.SerializationRegistry.CaptureProperties(Inno.Core.Serialization.ISerializable value, Inno.Core.Serialization.SerializationContext? context = null)`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L146) | Captures each persistent property independently for reload-safe state restoration.<br>返回：Ordered independent property snapshots.<br>`value`：The object whose serializable properties should be captured.<br>`context`：Optional immutable converter context. | — | `System.ArgumentNullException`：Thrown when value is null.<br>`System.InvalidOperationException`：Thrown when the manager is not initialized. |
 | <a id="api-0e2037e47f8483d3"></a>[`public byte[] Inno.Core.Serialization.SerializationRegistry.CapturePropertiesData(Inno.Core.Serialization.ISerializable value, Inno.Core.Serialization.SerializationContext? context = null)`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L214) | Captures every persistent property as neutral bytes without serializing the owning object graph.<br>返回：Strictly validated bytes containing independently encoded property values.<br>`value`：The serializable object whose persistent properties should be captured.<br>`context`：Optional immutable converter context. | — | `System.ArgumentNullException`：Thrown when value is null.<br>`System.InvalidOperationException`：Thrown when the manager is not initialized. |
-| <a id="api-40358d50872e0291"></a>[`public byte[] Inno.Core.Serialization.SerializationRegistry.CapturePropertyData(Inno.Core.Serialization.ISerializable value, string propertyName, Inno.Core.Serialization.SerializationContext? context = null)`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L180) | Captures one persistent property as independently restorable neutral bytes.<br>返回：Neutral bytes containing the property name and encoded value.<br>`value`：The serializable object containing the requested property.<br>`propertyName`：The exact serialized member key to capture.<br>`context`：Optional immutable converter context. | — | `System.ArgumentNullException`：Thrown when value is null.<br>`System.ArgumentException`：Thrown when propertyName is empty or does not identify a persistent property.<br>`System.InvalidOperationException`：Thrown when the manager is not initialized. |
+| <a id="api-40358d50872e0291"></a>[`public byte[] Inno.Core.Serialization.SerializationRegistry.CapturePropertyData(Inno.Core.Serialization.ISerializable value, string propertyName, Inno.Core.Serialization.SerializationContext? context = null)`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L180) | Captures one persistent property as independently restorable neutral bytes without reading unrelated members.<br>返回：Neutral bytes containing the property name and encoded value.<br>`value`：The serializable object containing the requested property.<br>`propertyName`：The exact serialized member key to capture.<br>`context`：Optional immutable converter context. | — | `System.ArgumentNullException`：Thrown when value is null.<br>`System.ArgumentException`：Thrown when propertyName is empty or does not identify a persistent property.<br>`System.InvalidOperationException`：Thrown when the manager is not initialized. |
 | <a id="api-2116243245150f14"></a>[`public TResult Inno.Core.Serialization.SerializationRegistry.Decode<TResult>(System.ReadOnlySpan<byte> bytes, System.Func<Inno.Core.Serialization.SerializationReader, TResult> read, Inno.Core.Serialization.SerializationContext? context = null)`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L566) | Decodes a manually defined structured schema from deterministic binary data.<br>返回：The callback result after all completion callbacks succeed.<br>`bytes`：The encoded bytes.<br>`read`：The callback that reads the root object.<br>`context`：Optional immutable converter context. | — | `System.ArgumentNullException`：Thrown when read is null.<br>`System.InvalidOperationException`：Thrown when the manager is not initialized. |
 | <a id="api-83d3ade5b12e0225"></a>[`public T Inno.Core.Serialization.SerializationRegistry.Deserialize<T>(System.ReadOnlySpan<byte> bytes, Inno.Core.Serialization.SerializationContext? context = null) where T : class, Inno.Core.Serialization.ISerializable`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L415) | Deserializes a new serializable root object from deterministic binary data.<br>返回：The restored object.<br>`bytes`：The encoded bytes.<br>`context`：Optional immutable converter context. | — | `System.InvalidOperationException`：Thrown when the manager is not initialized. |
 | <a id="api-27023162af6ea6fe"></a>[`public void Inno.Core.Serialization.SerializationRegistry.Dispose()`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L45) | Releases every converter generation owned by this registry. | — | — |
@@ -622,6 +667,19 @@ static (float x, float y)[] RoundTripPoints(
 | <a id="api-e8b1ff3827c59576"></a>[`public Inno.Core.Serialization.SerializationPropertyRestoreResult Inno.Core.Serialization.SerializationRegistry.RestorePropertiesData(Inno.Core.Serialization.ISerializable target, System.ReadOnlySpan<byte> data, Inno.Core.Serialization.SerializationPropertyRestoreMode mode = Inno.Core.Serialization.SerializationPropertyRestoreMode.Strict, Inno.Core.Serialization.SerializationContext? context = null)`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L324) | Restores one or more independently encoded persistent properties from neutral bytes.<br>返回：A summary containing restored, ignored, and skipped properties.<br>`target`：The existing object receiving the captured values.<br>`data`：Strict property snapshot bytes created by Inno.Core.Serialization.SerializationRegistry.CapturePropertyData(Inno.Core.Serialization.ISerializable,System.String,Inno.Core.Serialization.SerializationContext) or Inno.Core.Serialization.SerializationRegistry.CapturePropertiesData(Inno.Core.Serialization.ISerializable,Inno.Core.Serialization.SerializationContext).<br>`mode`：The failure policy for matching but incompatible current properties.<br>`context`：Optional immutable converter context. | — | `System.ArgumentNullException`：Thrown when target is null.<br>`System.ArgumentOutOfRangeException`：Thrown when mode is unknown.<br>`System.IO.InvalidDataException`：Thrown when data is malformed or unsupported.<br>`System.InvalidOperationException`：Thrown when strict restoration or an object-level callback fails. |
 | <a id="api-9d0f261cec2f5d3f"></a>[`public byte[] Inno.Core.Serialization.SerializationRegistry.Serialize<T>(T value, Inno.Core.Serialization.SerializationContext? context = null) where T : class, Inno.Core.Serialization.ISerializable`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L364) | Serializes a complete serializable root object into deterministic binary data.<br>返回：The encoded bytes.<br>`value`：The root object to serialize.<br>`context`：Optional immutable converter context. | — | `System.ArgumentNullException`：Thrown when value is null.<br>`System.InvalidOperationException`：Thrown when the manager is not initialized. |
 | <a id="api-532d59aed512a0ec"></a>[`public sealed class Inno.Core.Serialization.SerializationRegistry : System.IDisposable`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L12) | Owns one generation-aware converter registry and provides deterministic root serialization operations. | — | — |
+| <a id="api-a5c1e5869b56e173"></a>[`public Inno.Core.Serialization.SerializationSnapshot Inno.Core.Serialization.SerializationRegistry.CaptureSnapshot<T>(T value, Inno.Core.Serialization.SerializationContext? context = null, Inno.Core.Serialization.SerializationSnapshot? previous = null) where T : class, Inno.Core.Serialization.ISerializable`](../../src/foundation/core/Inno.Core.Serialization/SerializationRegistry.cs#L395) | Captures complete serialized state while sharing unchanged neutral values with a previous capture.<br>The exact concrete root type, interpreted by the current converter generation.<br>`value`：The non-null root captured through its current converter and declared complete inputs.<br>`context`：The complete owner context, including required reference resolvers.<br>`previous`：An optional immutable capture to reuse; it is never changed or retained by this registry.<br>返回：The previous instance when all captured values can be reused, otherwise a new immutable snapshot. Reference equality proves unchanged bytes; different instances may still encode identically. Ordinary serialization and snapshot encoding produce identical bytes. Capture failure publishes no snapshot.<br>Writers borrowed by a snapshot converter belong to its synchronous callback and must not be used after it returns. Every capture still evaluates getters and converters; this is not a mutation-notification cache.<br>System.ArgumentNullException：The source value is null.<br>System.ObjectDisposedException：The registry has been disposed.<br>System.InvalidOperationException：A converter, unsupported value or reference context prevents capture. | 操作内借用；快照仅含中立值。 | 失败不发布部分捕获。 |
+
+### `Inno.Core.Serialization.SerializationSnapshot`
+
+<!-- api: T:Inno.Core.Serialization.SerializationSnapshot 883dcbcf6107904ff950202670cec521ec54015a55c5c575d0b13d37f76d0b1c -->
+<!-- api: M:Inno.Core.Serialization.SerializationSnapshot.ToArray a00c841730036584c0d4932feb4fa74d9d4ba0bd81b8ba3a094413eebbfc5ec1 -->
+<!-- api: M:Inno.Core.Serialization.SerializationSnapshot.WriteTo(System.IO.Stream) 2ad80e7b3b82905c0947b3072c2fde0b65008063c5393f1f983063160b61cb52 -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-839fb78ae8c26a3e"></a>[`public sealed class Inno.Core.Serialization.SerializationSnapshot`](../../src/foundation/core/Inno.Core.Serialization/SerializationSnapshot.cs#L14) | Holds an immutable, neutral capture of serialized values without retaining the source object or its generation.<br>Capture again through to reuse unchanged values. Readers may share a snapshot across threads. It owns only scalar values, strings and copied binary data, never source instances, metadata, converters or delegates. It is transient and is not a persistence format. | 操作内借用；快照仅含中立值。 | 失败不发布部分捕获。 |
+| <a id="api-34c92f5b1e07bfd5"></a>[`public byte[] Inno.Core.Serialization.SerializationSnapshot.ToArray()`](../../src/foundation/core/Inno.Core.Serialization/SerializationSnapshot.cs#L24) | Encodes this capture using the same deterministic binary format as ordinary serialization.<br>返回：A new caller-owned byte array; changing it cannot modify this snapshot. | 操作内借用；快照仅含中立值。 | 失败不发布部分捕获。 |
+| <a id="api-23e71b4b24a157b0"></a>[`public void Inno.Core.Serialization.SerializationSnapshot.WriteTo(System.IO.Stream destination)`](../../src/foundation/core/Inno.Core.Serialization/SerializationSnapshot.cs#L33) | Streams this capture in the ordinary deterministic binary format without requiring a contiguous complete-output buffer.<br>`destination`：The writable caller-owned stream, which remains open.<br>System.ArgumentNullException：The destination is null.<br>System.ArgumentException：The destination cannot be written.<br>System.IO.IOException：The destination rejects a write; its partial bytes remain the caller's responsibility. | 操作内借用；快照仅含中立值。 | 失败不发布部分捕获。 |
 
 ### `Inno.Core.Serialization.SerializationTypeMetadata`
 
@@ -654,20 +712,25 @@ static (float x, float y)[] RoundTripPoints(
 <!-- api: M:Inno.Core.Serialization.SerializationWriter.Write``1(System.String,``0) 0c61a07bec280ab01e7bba3e6fabd27fa81dead420b2055538776d0113d89145 -->
 <!-- api: M:Inno.Core.Serialization.SerializationWriter.Write(System.String,System.Object,System.Type) 681857d4266171ff3409d70aa6d221f5302ef8cad1cfcb9c2a93fa12bc08c989 -->
 <!-- api: M:Inno.Core.Serialization.SerializationWriter.WriteObject(System.String,System.Action{Inno.Core.Serialization.SerializationWriter}) 32a7ca695c18e8760348ad49c94c92a4804f060caf485451bc8cd0931fe19201 -->
-<!-- api: M:Inno.Core.Serialization.SerializationWriter.WriteObjectArray``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Action{Inno.Core.Serialization.SerializationWriter,``0}) adbe6fc9813f3d82fa2aa9275105e012efa1d10f687e5c259e1acfbd5b6261a6 -->
+<!-- api: M:Inno.Core.Serialization.SerializationWriter.WriteObjectArray``1(System.String,System.Collections.Generic.IEnumerable{``0},System.Action{Inno.Core.Serialization.SerializationWriter,``0},System.Func{``0,Inno.Core.Serialization.SerializationCaptureKeyBuilder,System.Boolean}) 49e9c85ae52c7da5bbfd94c601792876a083d9ca46845d10614710c569c6c3a8 -->
 <!-- api: M:Inno.Core.Serialization.SerializationWriter.WriteProperties(Inno.Core.Serialization.ISerializable) 72541ebb0931fbb270821e0b936892fd218b76546b82769419e664926f620da9 -->
+
+<!-- api: P:Inno.Core.Serialization.SerializationWriter.typeSnapshot 8b26d9032ad76550871d85a3a7dddb640a332fcb743e4c974622c4f98b7a28c6 -->
+<!-- api: M:Inno.Core.Serialization.SerializationWriter.WritePropertiesData(System.String,Inno.Core.Serialization.ISerializable,Inno.Core.Serialization.SerializationContext) dad3986fa87b4a62b6d9b501d7bc0d862d92fd57064e401975dc13d54447eb0b -->
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
 | <a id="api-aed44d097eab215e"></a>[`public void Inno.Core.Serialization.SerializationWriter.Write(string name, object? value, System.Type declaredType)`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L85) | Writes a value using its declared metadata type without constructing a generic method at runtime.<br>`name`：The unique non-empty member name.<br>`value`：The value to encode, including null when permitted by the declared type.<br>`declaredType`：The exact declaration whose converter and value semantics apply. | — | `System.ArgumentNullException`：The declared type is null.<br>`System.ArgumentException`：The member name is empty.<br>`System.InvalidOperationException`：The operation has ended, the name is duplicated, or the value is unsupported. |
 | <a id="api-6324d9176a45e173"></a>[`public void Inno.Core.Serialization.SerializationWriter.Write<TValue>(string name, TValue value)`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L59) | Writes a named value through the unified value pipeline.<br>`name`：The unique non-empty member name.<br>`value`：The value to write. | — | `System.ArgumentException`：Thrown when name is empty.<br>`System.InvalidOperationException`：Thrown when the name is duplicated or the value is unsupported. |
 | <a id="api-5cde4545c5255e8d"></a>[`public void Inno.Core.Serialization.SerializationWriter.WriteObject(string name, System.Action<Inno.Core.Serialization.SerializationWriter> write)`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L107) | Writes a named structured object.<br>`name`：The unique non-empty member name.<br>`write`：The callback that fills the child object. | — | `System.ArgumentNullException`：Thrown when write is null. |
-| <a id="api-1b4d21b6f2d5b529"></a>[`public void Inno.Core.Serialization.SerializationWriter.WriteObjectArray<TValue>(string name, System.Collections.Generic.IEnumerable<TValue> values, System.Action<Inno.Core.Serialization.SerializationWriter, TValue> writeElement)`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L136) | Writes an ordered array of structured objects.<br>`name`：The unique non-empty member name.<br>`values`：The elements to write.<br>`writeElement`：The callback that fills each element object. | — | `System.ArgumentNullException`：Thrown when an argument is null. |
+| <a id="api-235ba4940b04409b"></a>[`public void Inno.Core.Serialization.SerializationWriter.WriteObjectArray<TValue>(string name, System.Collections.Generic.IEnumerable<TValue> values, System.Action<Inno.Core.Serialization.SerializationWriter, TValue> writeElement, System.Func<TValue, Inno.Core.Serialization.SerializationCaptureKeyBuilder, bool>? captureKey = null)`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L204) | 写有序结构化对象数组。`name` 是唯一非空成员；`values` 是当前输入；`writeElement` 填充普通对象；可选 `captureKey` 只在 Snapshot 中声明完整的中立输入证明。 | Builder 仅借用于同步回调；嵌套 Converter 阻止父节点复用；失败不修改旧快照。 | `ArgumentNullException`：values/writeElement 为 null；`ArgumentException`：名称无效；`InvalidOperationException`：借用失效、重复成员或捕获中输入变化。 |
 | <a id="api-7b8a863cc76b6a81"></a>[`public void Inno.Core.Serialization.SerializationWriter.WriteProperties(Inno.Core.Serialization.ISerializable value)`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L168) | Writes annotated properties from a serializable object into the current structured object.<br>`value`：The object whose annotated properties should be written. | — | `System.ArgumentNullException`：Thrown when value is null. |
 | <a id="api-300839d749d9405c"></a>[`public Inno.Core.Serialization.SerializationContext Inno.Core.Serialization.SerializationWriter.context { get; }`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L29) | Gets the immutable context supplied to the current operation. | — | — |
 | <a id="api-cc80ec5f8d58fc03"></a>[`public string Inno.Core.Serialization.SerializationWriter.path { get; }`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L34) | Gets the current diagnostic path. | — | — |
 | <a id="api-afe33d543cdcbbc9"></a>[`public System.Type Inno.Core.Serialization.SerializationWriter.valueType { get; }`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L39) | Gets the declared value type represented by this writer. | — | — |
 | <a id="api-9e8e30016feba2fd"></a>[`public sealed class Inno.Core.Serialization.SerializationWriter`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L9) | Writes a structured object during the active serialization operation. | — | — |
+| <a id="api-fd613717a762d4ca"></a>[`public Inno.Extensibility.Types.TypeCacheSnapshot Inno.Core.Serialization.SerializationWriter.typeSnapshot { get; }`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L53) | Borrows the immutable type snapshot pinned by this operation's converter generation.<br>Use this snapshot for consistent type identities during a complete capture. It must not be retained beyond the writer's operation; keeping it would retain its collectible types after the converter lease is released.<br>System.InvalidOperationException：The writer no longer belongs to an active capture. | 操作内借用；快照仅含中立值。 | 失败不发布部分捕获。 |
+| <a id="api-50a81629de922ddd"></a>[`public void Inno.Core.Serialization.SerializationWriter.WritePropertiesData(string name, Inno.Core.Serialization.ISerializable value, Inno.Core.Serialization.SerializationContext? context = null)`](../../src/foundation/core/Inno.Core.Serialization/IO/SerializationWriter.cs#L241) | Writes independently restorable property bytes through the current converter generation.<br>`name`：The unique member receiving the binary property snapshot.<br>`value`：The object whose persistent properties are captured once.<br>`context`：The complete owner context, or null to use this writer's context.<br>System.ArgumentNullException：The source object is null.<br>System.InvalidOperationException：The writer has ended, a key is duplicated, or capture fails.<br>System.ArgumentException：The member name is empty. | 操作内借用；快照仅含中立值。 | 失败不发布部分捕获。 |
 
 ### `Inno.Core.Serialization.SerializedIdentityRemapper`
 
@@ -715,6 +778,43 @@ static (float x, float y)[] RoundTripPoints(
 
 ## 项目依赖
 
+- [Inno.Core.Identity](Inno.Core.Identity.md)：公开 key builder 使用现有 identity owner；不创建第二个对象路由表。
 - [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+
+## 捕获 key 源码 API 清单
+
+本节对应当前源码声明；完整线程、所有权、失败和脚本边界见前文。签名仍由正式 Wiki 门禁复核。
+
+<!-- api: T:Inno.Core.Serialization.SerializationCaptureKeyBuilder 6c97de0261870eb0b2ca7b43da673bbc954ac0cdb3d5651765f2c36f31bb68b9 -->
+<!-- api: P:Inno.Core.Serialization.SerializationCaptureKeyBuilder.context 2ef0aecc865385075552b213d81f74edbb099fd65ea180fa70bceb058a352085 -->
+<!-- api: M:Inno.Core.Serialization.SerializationCaptureKeyBuilder.EnsureCapacity(System.Int32) 85368cff5690182ff05680562168d382346aa6c09b171649a5c70802a2464da2 -->
+<!-- api: M:Inno.Core.Serialization.SerializationCaptureKeyBuilder.TryAddOwner(Inno.Core.Identity.IdentityObject,System.Nullable{System.UInt64}) ff96320ab89162c6486f565a3bd1a9174177bda8a104e44d0150b17877845efd -->
+<!-- api: M:Inno.Core.Serialization.SerializationCaptureKeyBuilder.TryAddProperties(Inno.Core.Serialization.ISerializable) dda539c1be3d7d72c4aa0a2c3b338840af0f399dad581cd3b0c7e32bc59a62cd -->
+<!-- api: M:Inno.Core.Serialization.SerializationCaptureKeyBuilder.AddValue(System.UInt64) da6b1c5af5b7a4064330c4c6454b600fe1d0153826f7563c9ba01439e91a8315 -->
+<!-- api: M:Inno.Core.Serialization.SerializationCaptureKeyBuilder.AddValue(System.Guid) d7df60a5ecaa3629190e2a1e1fd3e16a727574633203c1154c650771b12776a0 -->
+<!-- api: M:Inno.Core.Serialization.SerializationCaptureKeyBuilder.AddText(System.String) 6c9c299d231276f170056bd9e2df9e3d2138e9ddf81229fa2790493636c2b821 -->
+<!-- api: T:Inno.Core.Serialization.SerializationRevisionAttribute e49647c08c1f418466ab48adab7ddd73a70b19cc71fbe736c64f29102c42d02b -->
+<!-- api: M:Inno.Core.Serialization.SerializationRevisionAttribute.#ctor(System.String) 47d42e2a55ba785652056081a29a9de665d5352efe06e9156fd770ad238a9fa3 -->
+<!-- api: P:Inno.Core.Serialization.SerializationRevisionAttribute.memberName b7eb7e11d44a6f0466b3bfb3cb1afd2002595cbcaf75bef3c031735a4bb47772 -->
+<!-- api: M:Inno.Core.Serialization.SerializationTypeMetadata.WithPureFieldAccess 0da51207ebb97cea53f9f8d209c0fca3d2c68ada4293bc6836c205943df23b76 -->
+<!-- api: M:Inno.Core.Serialization.SerializationTypeMetadata.WithCaptureRevision(System.Func{System.Object,System.Nullable{System.UInt64}}) 6e24281b721a57687b72a2c39297a77d70c5d00b2342bb3135f227a741e1173a -->
+<!-- api: M:Inno.Core.Serialization.Converters.SerializationConverter`1.TryCaptureKey(`0,Inno.Core.Serialization.SerializationCaptureKeyBuilder) 242ab82d7388793f935010754f931138b8f1aed9eb9217dafffcfc85ab47121d -->
+
+| 源码声明 | 语义与约束 |
+| --- | --- |
+| [`public sealed class Inno.Core.Serialization.SerializationCaptureKeyBuilder`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L16) | 同步借用的完整 key builder；没有公开构造与释放权限。 |
+| [`public Inno.Core.Serialization.SerializationContext Inno.Core.Serialization.SerializationCaptureKeyBuilder.context { get; }`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L64) | 借用 owner context；退休或跨线程读取抛 InvalidOperationException。 |
+| [`public void Inno.Core.Serialization.SerializationCaptureKeyBuilder.EnsureCapacity(int capacity)`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L78) | capacity 是实际输入容量，负数拒绝；不改变 key。 |
+| [`public bool Inno.Core.Serialization.SerializationCaptureKeyBuilder.TryAddOwner(Inno.Core.Identity.IdentityObject source, ulong? revision)`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L105) | source 为当前 Core owner；revision 覆盖全部所属状态，null/无效 identity 返回 false 并拒绝整个 key。 |
+| [`public bool Inno.Core.Serialization.SerializationCaptureKeyBuilder.TryAddProperties(Inno.Core.Serialization.ISerializable source)`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L134) | source 为当前属性 owner；只有完整 revision、纯值与无自定义 Converter 证明时返回 true。 |
+| [`public void Inno.Core.Serialization.SerializationCaptureKeyBuilder.AddValue(ulong value)`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L170) | value 作为有序精确中立输入；不解析或保存 live object。 |
+| [`public void Inno.Core.Serialization.SerializationCaptureKeyBuilder.AddValue(System.Guid value)`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L181) | value 作为完整中立标识符比较，不编码为有碰撞风险的 hash。 |
+| [`public void Inno.Core.Serialization.SerializationCaptureKeyBuilder.AddText(string? value)`](../../src/foundation/core/Inno.Core.Serialization/Capture/SerializationCaptureKeyBuilder.cs#L192) | value 使用 ordinal 比较，null 与空串不同；不编码到持久数据。 |
+| [`public sealed class Inno.Core.Serialization.SerializationRevisionAttribute : System.Attribute`](../../src/foundation/core/Inno.Core.Serialization/Metadata/SerializationRevisionAttribute.cs#L13) | 声明 sealed identity source 的完整非持久化 revision 成员。 |
+| [`public Inno.Core.Serialization.SerializationRevisionAttribute.SerializationRevisionAttribute(string memberName)`](../../src/foundation/core/Inno.Core.Serialization/Metadata/SerializationRevisionAttribute.cs#L24) | memberName 选择可读 ulong/nullable ulong 成员；空名抛 ArgumentException。 |
+| [`public string Inno.Core.Serialization.SerializationRevisionAttribute.memberName { get; }`](../../src/foundation/core/Inno.Core.Serialization/Metadata/SerializationRevisionAttribute.cs#L33) | 取得唯一声明的 revision 成员名称。 |
+| [`public Inno.Core.Serialization.SerializationTypeMetadata Inno.Core.Serialization.SerializationTypeMetadata.WithPureFieldAccess()`](../../src/foundation/core/Inno.Core.Serialization/Metadata/SerializationTypeMetadata.cs#L108) | 返回声明纯 primitive 字段读取的不可变 metadata；非默认值类型抛 InvalidOperationException。 |
+| [`public Inno.Core.Serialization.SerializationTypeMetadata Inno.Core.Serialization.SerializationTypeMetadata.WithCaptureRevision(System.Func<object, ulong?> readRevision)`](../../src/foundation/core/Inno.Core.Serialization/Metadata/SerializationTypeMetadata.cs#L134) | readRevision 是 provider 所属的完整计数读取器；null 读取器拒绝，返回新 metadata，不改变原声明。 |
+| [`protected virtual bool Inno.Core.Serialization.Converters.SerializationConverter<T>.TryCaptureKey(T value, Inno.Core.Serialization.SerializationCaptureKeyBuilder key)`](../../src/foundation/core/Inno.Core.Serialization/Converters/SerializationConverter.cs#L81) | value 是当前根对象，key 只借用于本次同步回调；仅全部输出与上下文输入已覆盖时返回 true，默认 false。 |

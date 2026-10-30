@@ -31,14 +31,8 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
 
         SceneStructureSnapshot snapshot = value.CaptureStructure();
         IReadOnlyList<GameSystem> systems = value.GetSystems();
-        EngineObject[] engineObjects = snapshot.objects
-            .SelectMany(static entry => entry.components.Cast<EngineObject>().Prepend(entry.gameObject))
-            .Concat(systems)
-            .ToArray();
-        var sourceIds = new Dictionary<EngineObject, Guid>(ReferenceEqualityComparer.Instance);
-        for (int i = 0; i < engineObjects.Length; i++)
-            sourceIds.Add(engineObjects[i], engineObjects[i].identity.persistentId);
-        var references = new SceneGraphReferenceMap(value, engineObjects, sourceIds);
+        var sourceIds = new SceneGraphSourceIds(snapshot.CaptureObjectSourceIds(), systems);
+        var references = new SceneGraphReferenceMap(value, sourceIds);
 
         writer.Write(SceneGraphSerialization.C_SCENE_ID_KEY, value.identity.persistentId);
         writer.Write(SceneGraphSerialization.C_NAME_KEY, value.name);
@@ -48,6 +42,7 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
                 writer,
                 snapshot.objects,
                 sourceIds,
+                gameObject => sourceIds.ContainsKey(gameObject),
                 preserveRootSiblingOrder: true);
             SceneGraphSerialization.WriteSystems(writer, systems, sourceIds);
         }
@@ -87,6 +82,8 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
             throw;
         }
     }
+
+
 
     /// <summary>
     /// Restores the supplied snapshot while preserving current invariants.
@@ -162,4 +159,5 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
                 serialization.RestorePropertiesData(system, state, context: reader.context);
         }
     }
+
 }

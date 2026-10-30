@@ -10,24 +10,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Inno.Editor.Scripting/Inno.Editor.Scripting.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../../backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj"
-      PrivateAssets="compile" />
-    <ProjectReference
-      Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj"
-      PrivateAssets="compile" />
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />
+    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
+    <ProjectReference Include="../../../../runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj" />
     <ProjectReference Include="../../../../content/assets/Inno.Assets/Inno.Assets.csproj" />
     <ProjectReference Include="../../../../content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
-    <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
+    <ProjectReference Include="../../framework/Inno.Editor.Core/Inno.Editor.Core.csproj" />
     <ProjectReference Include="../../framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" />
-    <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
 </Project>

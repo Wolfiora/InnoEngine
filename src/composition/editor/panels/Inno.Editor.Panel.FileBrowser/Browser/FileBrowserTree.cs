@@ -1,4 +1,7 @@
-
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using Inno.Editor.Assets;
+using Inno.Core.Identity;
+using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,35 +10,29 @@ using Inno.Assets.Pipeline;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using Inno.Native.ImGui;
-using Inno.Adapter.Presentation.ImGui;
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
-
-internal sealed class FileBrowserTree
+internal sealed partial class FileBrowserTree
 {
     private readonly FileBrowserData m_data;
     private readonly FileBrowserNavigation m_navigation;
     private readonly FileBrowserDragDrop m_dragDrop;
     private readonly FileBrowserRename m_rename;
     private readonly FileBrowserContextMenu m_contextMenu;
-    private readonly AssetEditorModule m_assets;
-
+    private readonly AssetBrowserModule m_assets;
     private bool m_rootOpenRequest = true;
     private bool m_currentDirectoryOpenRequest;
     private string m_currentDirectoryOpenTarget = string.Empty;
     private string? m_lastCurrentDirectoryOpenTarget;
-
     internal FileBrowserTree(
         FileBrowserData data,
         FileBrowserNavigation navigation,
         FileBrowserDragDrop dragDrop,
         FileBrowserRename rename,
         FileBrowserContextMenu contextMenu,
-        AssetEditorModule assets
+        AssetBrowserModule assets
     ) {
         m_data = data;
         m_navigation = navigation;
@@ -45,149 +42,58 @@ internal sealed class FileBrowserTree
         m_assets = assets;
     }
 
-    internal void DrawEntry(
+    private void DrawRow(
         EditorContext context,
-        string relativePath,
-        string label,
-        bool isRoot
+        BrowserTreeRow row
     ) {
-        List<AssetFileEntry> sorted = m_data.SortTreeEntries(
-            m_data.GetVisibleChildren(relativePath));
-        bool isDirectory = isRoot || IsDirectoryPath(m_assets.pipeline, relativePath);
-        bool selected = string.Equals(m_assets.browser.GetSelectedPath(context), relativePath, StringComparison.Ordinal);
-        bool isLeaf = !isDirectory || (!isRoot && sorted.Count == 0);
-        bool isCurrentDirectory = isDirectory &&
-                                  string.Equals(m_assets.browser.currentDirectory, relativePath, StringComparison.Ordinal) &&
-                                  (m_assets.browser.root == AssetBrowserRoot.Assets) ==
-                                  (AssetPath.Parse(relativePath).source == AssetSourceId.project);
-        string icon = m_assets.folderIcon;
-        if (!isDirectory
-            && m_assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry iconEntry))
-            icon = m_assets.GetIcon(iconEntry);
-        bool editing = !isRoot && m_rename.IsEditing(
-            context,
-            relativePath,
-            FileBrowserPresentation.Tree);
-        string nodeId = $"tree_{(isRoot ? $"root_{relativePath}" : relativePath)}";
-        if (ShouldOpenTreeEntry(relativePath, isRoot, isDirectory))
-            EditorWidget.SetNextTreeNodeOpen(true);
-
-        TreeNodeResult result = EditorWidget.TreeNode(
-            nodeId,
-            drawContext => DrawRowContent(
-                context,
-                nodeId,
-                relativePath,
-                label,
-                icon,
-                isCurrentDirectory,
-                editing,
-                drawContext.rowHeight),
-            new TreeNodeOptions { selected = selected, isLeaf = isLeaf });
-
-        AssetFileEntry? treeEntry = null;
-        if (!isRoot
-            && m_assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry resolvedEntry))
-            treeEntry = resolvedEntry;
-        if (treeEntry is not null && result.isDoubleClicked)
+        AssetFileEntry? entry = null;
+        if (row.identity is { } identity)
+        {
+            if (!m_assets.edits.interactions.TryResolveIdentity(identity, out Inno.Core.Identity.IdentityObject? resolved)
+                || resolved is not AssetFileEntry current)
+            {
+                Ui.Dummy(new(1f, Ui.GetFrameHeight()));
+                return;
+            }
+            entry = current;
+        }
+        bool selected = entry is not null && m_assets.edits.interactions.selection.Contains(entry);
+        bool currentDirectory = row.virtualRoot ? string.IsNullOrEmpty(m_assets.browser.currentDirectory)
+            : (entry?.isDirectory ?? row.isRoot) && string.Equals(m_assets.browser.currentDirectory, row.path, StringComparison.Ordinal)
+                && (m_assets.browser.root == AssetBrowserRoot.Assets) == (AssetPath.Parse(row.path).source == AssetSourceId.project);
+        string icon = entry is { isDirectory: false } ? m_assets.GetIcon(entry) : m_assets.folderIcon;
+        bool editing = !row.isRoot && m_rename.IsEditing(context, row.path, FileBrowserPresentation.Tree);
+        TreeNodeResult result = EditorUI.current.widgets.TreeNode(
+            row.nodeId,
+            drawContext => DrawRowContent(context, row.nodeId, row.path, row.label, icon, currentDirectory, editing, drawContext.rowHeight),
+            new TreeNodeOptions { depth = row.depth, selected = selected, isLeaf = row.isLeaf,
+                requestFocus = RequestsKeyboardFocus(entry, row.isRoot), keepContentActive = editing });
+        if (!result.isSubmitted)
+            return;
+        if (entry is not null && result.isDoubleClicked)
         {
             m_rename.MarkInteraction(FileBrowserPresentation.Tree);
-            m_navigation.OpenEntry(context, treeEntry, this);
+            m_pendingSelection = entry.identity.runtimeIdentity;
+            m_pendingActivation = true;
         }
-        else if (treeEntry is not null && result.isClicked)
+        else if (entry is not null && result.isClicked)
         {
             m_rename.MarkInteraction(FileBrowserPresentation.Tree);
-            m_assets.browser.Select(context, relativePath);
+            m_pendingSelection = entry.identity.runtimeIdentity;
         }
-        else if (isRoot && (result.isClicked || result.isDoubleClicked))
+        else if (row.isRoot && (result.isClicked || result.isDoubleClicked))
+            m_pendingRootNavigation = true;
+        if (entry is not null && !editing)
         {
-            m_navigation.NavigateTo(context, relativePath);
-            m_assets.browser.Select(context, null);
+            m_dragDrop.DrawAssetSource(context, entry);
+            m_contextMenu.DrawEntry(context, "##asset_tree_context_" + row.path, row.path, FileBrowserPresentation.Tree);
+            if (entry.isDirectory && !entry.isReadOnly)
+                m_dragDrop.DrawDirectoryTarget(context, row.path);
         }
-        if (treeEntry is not null)
+        else if (row.isRoot && !row.virtualRoot)
         {
-            if (!editing)
-            {
-                m_dragDrop.DrawAssetSource(context, treeEntry);
-                m_contextMenu.DrawEntry(
-                    context,
-                    $"##asset_tree_context_{treeEntry.assetPath.ToString()}",
-                    treeEntry.assetPath.ToString(),
-                    FileBrowserPresentation.Tree);
-                if (treeEntry.isDirectory && !treeEntry.isReadOnly)
-                    m_dragDrop.DrawDirectoryTarget(context, treeEntry.assetPath.ToString());
-            }
-        }
-        else if (isRoot)
-        {
-            m_contextMenu.DrawDirectory(
-                context,
-                $"##asset_tree_root_context_{relativePath}",
-                relativePath,
-                FileBrowserPresentation.Tree);
-            m_dragDrop.DrawDirectoryTarget(context, relativePath);
-        }
-        if (!result.isOpen)
-            return;
-        try
-        {
-            for (int i = 0; i < sorted.Count; i++)
-            {
-                AssetFileEntry child = sorted[i];
-                DrawEntry(context, child.assetPath.ToString(), child.name, false);
-            }
-        }
-        finally
-        {
-            NativeImGui.TreePop();
-        }
-    }
-
-    internal void DrawPluginRoot(
-        EditorContext context,
-        IReadOnlyList<AssetSourceMount> sourceMounts
-    ) {
-        AssetSourceMount[] plugins = sourceMounts
-            .Where(mount => m_assets.IsPluginSource(mount.id))
-            .OrderBy(static mount => mount.id.value, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        bool hasPluginDirectoryOpenRequest = m_currentDirectoryOpenRequest &&
-                                             m_assets.IsPluginSource(
-                                                 AssetPath.Parse(m_currentDirectoryOpenTarget).source);
-        if (m_rootOpenRequest || hasPluginDirectoryOpenRequest)
-            EditorWidget.SetNextTreeNodeOpen(true);
-        bool isCurrentDirectory = m_assets.browser.root == AssetBrowserRoot.Plugins &&
-                                  string.IsNullOrEmpty(m_assets.browser.currentDirectory);
-
-        TreeNodeResult result = EditorWidget.TreeNode(
-            "tree_virtual_plugins",
-            _ => EditorWidget.IconText(m_assets.folderIcon, "Plugins", isCurrentDirectory),
-            new TreeNodeOptions
-            {
-                selected = false,
-                isLeaf = false
-            });
-        if (result.isClicked || result.isDoubleClicked)
-        {
-            m_navigation.NavigateToRoot(context, AssetBrowserRoot.Plugins);
-            m_assets.browser.Select(context, null);
-        }
-        if (!result.isOpen)
-            return;
-        try
-        {
-            for (int i = 0; i < plugins.Length; i++)
-            {
-                AssetSourceMount mount = plugins[i];
-                string root = new AssetPath(mount.id, string.Empty).ToString();
-                // A mount root is a normal directory below the virtual Plugins root. Treating it
-                // as a browser root would make a single click navigate instead of only selecting.
-                DrawEntry(context, root, mount.id.value, false);
-            }
-        }
-        finally
-        {
-            NativeImGui.TreePop();
+            m_contextMenu.DrawBackground(context, "##asset_tree_root_context", FileBrowserPresentation.Tree);
+            m_dragDrop.DrawDirectoryTarget(context, row.path);
         }
     }
 
@@ -203,26 +109,20 @@ internal sealed class FileBrowserTree
     ) {
         if (!editing)
         {
-            EditorWidget.IconText(icon, label, isCurrentDirectory);
+            EditorUI.current.widgets.IconText(icon, label, isCurrentDirectory);
             return;
         }
 
-        EditorWidget.IconText(icon, string.Empty, false);
-        NativeImGui.SameLine(0f, 0f);
-        m_rename.Draw(
-            context,
-            id,
-            relativePath,
-            FileBrowserPresentation.Tree,
-            NativeImGui.GetContentRegionAvail().X,
-            rowHeight);
+        EditorUI.current.widgets.IconText(icon, string.Empty, false);
+        Ui.SameLine(0f, 0f);
+        m_rename.Draw(context, id, relativePath, FileBrowserPresentation.Tree, Ui.GetContentRegionAvailable().X, rowHeight);
     }
 
     internal void PrepareOpenRequests()
     {
+        BeginNavigation();
         string currentDirectory = NormalizePath(m_assets.browser.currentDirectory);
-        if (!m_currentDirectoryOpenRequest &&
-            !string.Equals(m_lastCurrentDirectoryOpenTarget, currentDirectory, StringComparison.Ordinal))
+        if (!m_currentDirectoryOpenRequest && !string.Equals(m_lastCurrentDirectoryOpenTarget, currentDirectory, StringComparison.Ordinal))
         {
             m_currentDirectoryOpenTarget = currentDirectory;
             m_currentDirectoryOpenRequest = true;
@@ -234,16 +134,14 @@ internal sealed class FileBrowserTree
     {
         m_rootOpenRequest = false;
         m_currentDirectoryOpenRequest = false;
+        ClearNavigationFrame();
     }
 
     internal void RequestOpenRoot() => m_rootOpenRequest = true;
-
     internal void RequestOpenTreeToPath(string path)
     {
         string normalizedPath = NormalizePath(path);
-        string treePath = IsDirectoryPath(m_assets.pipeline, normalizedPath)
-            ? normalizedPath
-            : GetParentDirectory(normalizedPath);
+        string treePath = IsDirectoryPath(m_assets.edits.pipeline, normalizedPath) ? normalizedPath : GetParentDirectory(normalizedPath);
         m_currentDirectoryOpenTarget = treePath;
         m_currentDirectoryOpenRequest = true;
         m_lastCurrentDirectoryOpenTarget = treePath;
@@ -260,13 +158,12 @@ internal sealed class FileBrowserTree
         {
             if (string.IsNullOrEmpty(relativePath))
             {
-                return m_rootOpenRequest ||
-                       m_currentDirectoryOpenRequest;
+                return m_rootOpenRequest || m_currentDirectoryOpenRequest;
             }
-            return m_currentDirectoryOpenRequest &&
-                   IsAncestorOrSelf(relativePath, m_currentDirectoryOpenTarget);
+
+            return m_currentDirectoryOpenRequest && IsAncestorOrSelf(relativePath, m_currentDirectoryOpenTarget);
         }
-        return m_currentDirectoryOpenRequest &&
-               IsAncestorOrSelf(relativePath, m_currentDirectoryOpenTarget);
+
+        return m_currentDirectoryOpenRequest && IsAncestorOrSelf(relativePath, m_currentDirectoryOpenTarget);
     }
 }

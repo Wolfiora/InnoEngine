@@ -214,7 +214,8 @@ internal sealed class BuildWorkspace : IDisposable
             var compiler = new ScriptCompiler(
                 new ScriptCompilerOptions
                 {
-                    projectRootDirectory = projectRoot
+                    projectRootDirectory = projectRoot,
+                    compilationEnvironment = new SdkScriptCompilationEnvironment(context.dotnetHost, projectRoot)
                 },
                 assets,
                 plugins);

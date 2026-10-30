@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Inno.Core.Serialization.Tests;
 
-public sealed class SerializationBehaviorTests : IDisposable
+public sealed partial class SerializationBehaviorTests : IDisposable
 {
     private readonly string m_testRoot = Path.Combine(
         Path.GetTempPath(),

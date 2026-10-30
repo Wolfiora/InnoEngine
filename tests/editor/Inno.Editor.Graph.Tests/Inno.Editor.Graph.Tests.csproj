@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Graph.ImGui/Inno.Editor.Graph.ImGui.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" PrivateAssets="compile" />
@@ -27,7 +28,6 @@
   <Target Name="CopyGraphReloadFixture" AfterTargets="Build">
     <Copy SourceFiles="@(GraphReloadFixture)" DestinationFolder="$(OutDir)Modules" />
   </Target>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.6.6" />

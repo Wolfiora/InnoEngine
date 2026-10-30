@@ -15,6 +15,7 @@ using Inno.Assets.Pipeline;
 using Inno.Plugins.Authoring;
 using Inno.Extensibility.Modules;
 using Inno.Runtime.Generators;
+using Inno.Core.IO;
 using Inno.Core.Serialization.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -83,7 +84,7 @@ internal static class ScriptCompilerEngine
             : null;
         progress.Complete("Script API profile built.");
         progress.Begin("Resolving script references...");
-        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve(cancellationToken);
+        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve(options.compilationEnvironment, cancellationToken);
         ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(
             options, runtimeApi, environment, cancellationToken: cancellationToken);
         ScriptApiReferenceSet? editorApiReferences = editorApi is null
@@ -110,7 +111,7 @@ internal static class ScriptCompilerEngine
                 ? editorApiReferences ?? throw new InvalidOperationException(
                     "A runtime deployment cannot contain an editor script assembly.")
                 : runtimeApiReferences;
-            IReadOnlyList<string> defines = GetCompilationDefines(assembly, includeEditor);
+            IReadOnlyList<string> defines = GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols);
             assemblyKeys.Add(
                 assembly.name,
                 ComputeAssemblyBuildKey(
@@ -199,7 +200,7 @@ internal static class ScriptCompilerEngine
                 string.IsNullOrEmpty(assembly.ownerPluginId)
                     ? AssetSourceId.project.value
                     : assembly.ownerPluginId,
-                GetCompilationDefines(assembly, includeEditor),
+                GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols),
                 assembly.nullable,
                 assembly.allowUnsafe,
                 progress,
@@ -222,7 +223,8 @@ internal static class ScriptCompilerEngine
             CommitAssemblyCache(
                 assemblyStagingDirectory,
                 assemblyCacheDirectory,
-                assembly.name);
+                assembly.name,
+                cancellationToken);
             if (!TryCopyCachedAssembly(
                     assemblyCacheDirectory,
                     assembly.name,
@@ -239,7 +241,7 @@ internal static class ScriptCompilerEngine
         File.WriteAllBytes(
             GetDiagnosticsPath(stagingDirectory),
             ScriptCompilerCacheSerialization.EncodeDiagnostics(diagnostics));
-        CommitGenerationCache(stagingDirectory, outputDirectory, sources);
+        CommitGenerationCache(stagingDirectory, outputDirectory, sources, cancellationToken);
 
         progress.Begin("Preparing the script reload...");
         IReadOnlyList<ScriptModuleDeployment> requests = CreateModuleDeployments(
@@ -581,16 +583,17 @@ internal static class ScriptCompilerEngine
 
     private static IReadOnlyList<string> GetCompilationDefines(
         ScriptAssemblyInput assembly,
-        bool includeEditor
+        bool includeEditor,
+        IReadOnlyList<string> predefinedSymbols
     ) {
         ArgumentNullException.ThrowIfNull(assembly);
         return includeEditor
-            ? assembly.defines
+            ? assembly.defines.Concat(predefinedSymbols)
                 .Append(C_EDITOR_COMPILATION_SYMBOL)
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(static value => value, StringComparer.Ordinal)
                 .ToArray()
-            : assembly.defines;
+            : assembly.defines.Concat(predefinedSymbols).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
     }
 
     private static string ComputeGenerationBuildKey(
@@ -657,11 +660,12 @@ internal static class ScriptCompilerEngine
     private static void CommitAssemblyCache(
         string stagingDirectory,
         string cacheDirectory,
-        string assemblyName
+        string assemblyName,
+        CancellationToken cancellationToken
     ) {
         lock (S_CACHE_SYNC)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(cacheDirectory)!);
+            cancellationToken.ThrowIfCancellationRequested();
             if (Directory.Exists(cacheDirectory))
             {
                 if (IsCachedAssemblyComplete(cacheDirectory, assemblyName))
@@ -670,9 +674,10 @@ internal static class ScriptCompilerEngine
                     TryTouchCacheDirectory(cacheDirectory);
                     return;
                 }
-                DeleteStagingDirectory(cacheDirectory);
+                AtomicDirectory.Install(stagingDirectory, cacheDirectory, cancellationToken);
+                return;
             }
-            Directory.Move(stagingDirectory, cacheDirectory);
+            AtomicDirectory.Publish(stagingDirectory, cacheDirectory, cancellationToken);
         }
     }
 
@@ -718,11 +723,12 @@ internal static class ScriptCompilerEngine
     private static void CommitGenerationCache(
         string stagingDirectory,
         string outputDirectory,
-        ScriptSourceSet sources
+        ScriptSourceSet sources,
+        CancellationToken cancellationToken
     ) {
         lock (S_CACHE_SYNC)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(outputDirectory)!);
+            cancellationToken.ThrowIfCancellationRequested();
             if (Directory.Exists(outputDirectory))
             {
                 if (TryCreateCachedResult(outputDirectory, sources, out _))
@@ -731,9 +737,10 @@ internal static class ScriptCompilerEngine
                     TryTouchCacheDirectory(outputDirectory);
                     return;
                 }
-                DeleteStagingDirectory(outputDirectory);
+                AtomicDirectory.Install(stagingDirectory, outputDirectory, cancellationToken);
+                return;
             }
-            Directory.Move(stagingDirectory, outputDirectory);
+            AtomicDirectory.Publish(stagingDirectory, outputDirectory, cancellationToken);
         }
     }
 

@@ -1,13 +1,11 @@
+using Inno.Editor.ImGui;
 using EditorImGui = Inno.Editor.ImGui.ImGui;
-using Inno.Native.ImGui;
 
 namespace Inno.Editor.Inspection;
-
 [PropertyDrawer(typeof(string))]
 internal sealed class StringPropertyDrawer : IPropertyDrawer
 {
     private const int C_BUFFER_SIZE = 1024;
-
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>

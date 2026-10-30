@@ -1,21 +1,18 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
-
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.PlayMode;
 using Inno.Editor.Scene;
 using Inno.Scene;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
-
 /// <summary>
 /// Draws the registered inspector for the current editor selection.
 /// </summary>
@@ -29,12 +26,10 @@ internal sealed class InspectorPanel : EditorPanel
     private readonly InspectorTargetHeader m_targetHeader;
     private readonly Logger m_log;
     private string m_failureState = string.Empty;
-
     /// <summary>
     /// Gets whether use window padding is enabled for this implementation.
     /// </summary>
     public override bool useWindowPadding => false;
-
     /// <summary>
     /// Lets the inspector content child own vertical scrolling.
     /// </summary>
@@ -59,7 +54,7 @@ internal sealed class InspectorPanel : EditorPanel
     /// The application log router used for inspector presentation failures.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="inspection"/> or <paramref name="interactions"/> is <see langword="null"/>.
+    /// Thrown when <paramref name = "inspection"/> or <paramref name="interactions"/> is <see langword="null"/>.
     /// </exception>
     internal InspectorPanel(
         SceneInspectionModule inspection,
@@ -85,82 +80,63 @@ internal sealed class InspectorPanel : EditorPanel
     /// </param>
     protected override void OnDraw(EditorContext context)
     {
-        bool visible = NativeImGui.BeginChild(
-            "##InspectorScrollRegion",
-            Vector2.Zero,
-            (int)(ImGuiChildFlags.None),
-            (int)(ImGuiWindowFlags.NoSavedSettings));
+        bool visible = Ui.BeginChild("##InspectorScrollRegion", Vector2.Zero, (ImGuiChildFlags.None), (ImGuiWindowFlags.NoSavedSettings));
         try
         {
             if (visible)
             {
-                EditorWidget.ConstrainedContent(
-                    "##InspectorContent",
-                    () => DrawContent(context));
+                EditorUI.current.widgets.ConstrainedContent("##InspectorContent", () => DrawContent(context));
             }
         }
         finally
         {
-            NativeImGui.EndChild();
+            Ui.EndChild();
         }
     }
 
     private void DrawContent(EditorContext context)
     {
-        object? target = m_targetHeader.Resolve(m_interactions, m_interactions.selection.selectedTarget);
+        object? target = m_targetHeader.Resolve(m_interactions, m_interactions.selection.count > 1 ? m_interactions.selection.Capture() : m_interactions.selection.selectedTarget);
         if (target is null)
         {
             m_failureState = string.Empty;
-            EditorWidget.Hint("Select an asset or scene object.");
+            EditorUI.current.widgets.Hint("Select an asset or scene object.");
             return;
         }
 
-        if (!m_inspection.TryResolve(
-                context,
-                target,
-                out IInspectionDrawer? drawer,
-                out InspectionDrawContext? drawContext) ||
-            drawer is null ||
-            drawContext is null)
+        if (!m_inspection.TryResolve(context, target, out IInspectionDrawer? drawer, out InspectionDrawContext? drawContext) || drawer is null || drawContext is null)
         {
             m_failureState = string.Empty;
-            EditorWidget.Hint($"No inspector drawer is registered for {target.GetType().Name}.");
+            EditorUI.current.widgets.Hint($"No inspector drawer is registered for {target.GetType().Name}.");
             return;
         }
 
         bool sceneTarget = target is EngineObject;
         bool readOnlyScene = target is EngineObject sceneObject && !m_sceneEdits.CanEdit(sceneObject);
-        string? notice = readOnlyScene
-            ? "Read-only scene source. Import it into Project Assets to edit."
-            : sceneTarget && m_playMode.isPlaying
-                ? "Play Mode edits are temporary. Stopping Play restores the Edit scene."
-                : null;
+        string? notice = readOnlyScene ? "Read-only scene source. Import it into Project Assets to edit." : sceneTarget
+            && m_playMode.isPlaying ? "Play Mode edits are temporary. Stopping Play restores the Edit scene." : null;
         try
         {
             m_targetHeader.Draw(drawer, drawContext, readOnlyScene, notice);
-            NativeImGui.BeginDisabled(readOnlyScene);
+            Ui.BeginDisabled(readOnlyScene);
             try
             {
-                EditorWidget.SectionLayout(() => drawer.Draw(drawContext));
+                EditorUI.current.widgets.SectionLayout(() => drawer.Draw(drawContext));
             }
             finally
             {
-                NativeImGui.EndDisabled();
+                Ui.EndDisabled();
             }
+
             m_failureState = string.Empty;
         }
         catch (Exception exception)
         {
-            EditorWidget.ColoredText(
-                EditorPalette.error,
-                $"Inspector failed: {exception.Message}");
+            EditorUI.current.widgets.ColoredText(EditorPalette.error, $"Inspector failed: {exception.Message}");
             string failureState = $"{target.GetType().FullName}:{exception}";
             if (!string.Equals(m_failureState, failureState, StringComparison.Ordinal))
             {
-                m_log.Write(
-                    LogLevel.Error,
-                    "Inspector failed for target '{0}': {1}",
-                    [target.GetType().FullName ?? target.GetType().Name, exception]);
+                m_log.Write(LogLevel.Error, "Inspector failed for target '{0}': {1}", [target.GetType().FullName ?? target.GetType().Name, exception]);
                 m_failureState = failureState;
             }
         }

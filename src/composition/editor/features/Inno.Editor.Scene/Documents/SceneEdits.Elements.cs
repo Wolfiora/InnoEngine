@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Linq;
-
 using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
@@ -12,7 +11,6 @@ using Inno.Scene.Components;
 using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
-
 sealed partial class SceneEdits
 {
     /// <summary>
@@ -43,10 +41,7 @@ sealed partial class SceneEdits
         try
         {
             TypeRef typeRef = GetTypeRef(componentType);
-            byte[] state = SceneElementSerialization.CaptureState(
-                component,
-                m_workspace.serialization,
-                m_workspace.assets);
+            byte[] state = SceneElementSerialization.CaptureState(component, m_workspace.serialization, m_workspace.assets);
             RecordElement(
                 historyName ?? $"Add {componentType.Name}",
                 new SceneElementHistoryData(
@@ -61,7 +56,9 @@ sealed partial class SceneEdits
                     existsAfter: true,
                     beforeState: [],
                     afterState: state,
-                    incomingReferences: []));
+                    incomingReferences: []
+                )
+            );
             return component;
         }
         catch (Exception exception)
@@ -99,14 +96,8 @@ sealed partial class SceneEdits
         GameObject owner = component.gameObject;
         GameScene scene = owner.scene;
         TypeRef typeRef = GetElementType(component);
-        byte[] state = SceneElementSerialization.CaptureState(
-            component,
-            m_workspace.serialization,
-            m_workspace.assets);
-        SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(
-            component,
-            scene,
-            m_workspace);
+        byte[] state = SceneElementSerialization.CaptureState(component, m_workspace.serialization, m_workspace.assets);
+        SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(component, scene, m_workspace);
         int index = owner.GetComponentIndex(component);
         Guid componentId = component.identity.persistentId;
         Type componentType = component.GetType();
@@ -128,7 +119,9 @@ sealed partial class SceneEdits
                     existsAfter: false,
                     beforeState: state,
                     afterState: [],
-                    incoming));
+                    incoming
+                )
+            );
         }
         catch (Exception exception)
         {
@@ -136,20 +129,15 @@ sealed partial class SceneEdits
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
+
             RollbackAndRethrow(exception, () =>
             {
-                GameComponent restored = SceneElementSerialization.RestoreComponent(
-                    owner,
-                    typeRef,
-                    componentId,
-                    index,
-                    state,
-                    m_workspace.serialization,
-                    m_workspace.assets);
+                GameComponent restored = SceneElementSerialization.RestoreComponent(owner, typeRef, componentId, index, state, m_workspace.serialization, m_workspace.assets);
                 RequireElementRestore(restored, state);
                 RequireReferenceRestore(SceneReferenceIndex.RestoreIncoming(incoming, m_workspace));
             });
         }
+
         return true;
     }
 
@@ -170,24 +158,19 @@ sealed partial class SceneEdits
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(component.gameObject.scene);
         GameObject owner = component.gameObject;
-        byte[] before = SceneElementSerialization.CaptureState(
-            component,
-            m_workspace.serialization,
-            m_workspace.assets);
+        byte[] before = SceneElementSerialization.CaptureState(component, m_workspace.serialization, m_workspace.assets);
         byte[] after;
         try
         {
             owner.ResetComponent(component);
-            after = SceneElementSerialization.CaptureState(
-                component,
-                m_workspace.serialization,
-                m_workspace.assets);
+            after = SceneElementSerialization.CaptureState(component, m_workspace.serialization, m_workspace.assets);
         }
         catch (Exception exception)
         {
             RollbackAndRethrow(exception, () => RequireElementRestore(component, before));
             throw;
         }
+
         if (before.AsSpan().SequenceEqual(after))
             return;
         int index = owner.GetComponentIndex(component);
@@ -195,19 +178,22 @@ sealed partial class SceneEdits
             () => RecordElement(
                 historyName ?? $"Reset {component.GetType().Name}",
                 new SceneElementHistoryData(
-                SceneElementKind.Component,
-                owner.scene.identity.persistentId,
-                owner.identity.persistentId,
-                component.identity.persistentId,
-                GetElementType(component),
-                index,
-                index,
-                existsBefore: true,
-                existsAfter: true,
-                before,
-                after,
-                incomingReferences: [])),
-            () => RequireElementRestore(component, before));
+                    SceneElementKind.Component,
+                    owner.scene.identity.persistentId,
+                    owner.identity.persistentId,
+                    component.identity.persistentId,
+                    GetElementType(component),
+                    index,
+                    index,
+                    existsBefore: true,
+                    existsAfter: true,
+                    before,
+                    after,
+                    incomingReferences: []
+                )
+            ),
+            () => RequireElementRestore(component, before)
+        );
     }
 
     /// <summary>
@@ -244,25 +230,29 @@ sealed partial class SceneEdits
             RollbackAndRethrow(exception, () => owner.SetComponentIndex(component, beforeIndex));
             throw;
         }
+
         if (beforeIndex == afterIndex)
             return;
         RecordWithRollback(
             () => RecordElement(
                 historyName,
                 new SceneElementHistoryData(
-                SceneElementKind.Component,
-                owner.scene.identity.persistentId,
-                owner.identity.persistentId,
-                component.identity.persistentId,
-                GetElementType(component),
-                beforeIndex,
-                afterIndex,
-                existsBefore: true,
-                existsAfter: true,
-                beforeState: [],
-                afterState: [],
-                incomingReferences: [])),
-            () => owner.SetComponentIndex(component, beforeIndex));
+                    SceneElementKind.Component,
+                    owner.scene.identity.persistentId,
+                    owner.identity.persistentId,
+                    component.identity.persistentId,
+                    GetElementType(component),
+                    beforeIndex,
+                    afterIndex,
+                    existsBefore: true,
+                    existsAfter: true,
+                    beforeState: [],
+                    afterState: [],
+                    incomingReferences: []
+                )
+            ),
+            () => owner.SetComponentIndex(component, beforeIndex)
+        );
     }
 
     /// <summary>
@@ -305,11 +295,10 @@ sealed partial class SceneEdits
                     existsBefore: false,
                     existsAfter: true,
                     beforeState: [],
-                    afterState: SceneElementSerialization.CaptureState(
-                        system,
-                        m_workspace.serialization,
-                        m_workspace.assets),
-                    incomingReferences: []));
+                    afterState: SceneElementSerialization.CaptureState(system, m_workspace.serialization, m_workspace.assets),
+                    incomingReferences: []
+                )
+            );
             return system;
         }
         catch (Exception exception)
@@ -326,9 +315,6 @@ sealed partial class SceneEdits
     /// <summary>
     /// Removes the system from its scene and records a reversible serialized history change.
     /// </summary>
-    /// <param name="scene">
-    /// The scene currently owning the system.
-    /// </param>
     /// <param name="system">
     /// The registered system to remove.
     /// </param>
@@ -339,24 +325,19 @@ sealed partial class SceneEdits
     /// <see langword="true"/> when the system was removed and recorded.
     /// </returns>
     public bool RemoveSystem(
-        GameScene scene,
         GameSystem system,
         string? historyName = null
     ) {
-        ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(system);
+        if (system.isDestroyed)
+            return false;
+        GameScene scene = ResolveOwnerScene(system);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(scene);
         if (system.isDestroyed)
             return false;
-        byte[] state = SceneElementSerialization.CaptureState(
-            system,
-            m_workspace.serialization,
-            m_workspace.assets);
-        SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(
-            system,
-            scene,
-            m_workspace);
+        byte[] state = SceneElementSerialization.CaptureState(system, m_workspace.serialization, m_workspace.assets);
+        SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(system, scene, m_workspace);
         int index = scene.GetSystemIndex(system);
         Guid systemId = system.identity.persistentId;
         TypeRef typeRef = GetElementType(system);
@@ -368,18 +349,20 @@ sealed partial class SceneEdits
             RecordElement(
                 historyName ?? $"Remove {systemType.Name}",
                 new SceneElementHistoryData(
-                SceneElementKind.System,
-                scene.identity.persistentId,
-                Guid.Empty,
-                systemId,
-                typeRef,
-                beforeIndex: index,
-                afterIndex: -1,
-                existsBefore: true,
-                existsAfter: false,
-                beforeState: state,
+                    SceneElementKind.System,
+                    scene.identity.persistentId,
+                    Guid.Empty,
+                    systemId,
+                    typeRef,
+                    beforeIndex: index,
+                    afterIndex: -1,
+                    existsBefore: true,
+                    existsAfter: false,
+                    beforeState: state,
                     afterState: [],
-                    incoming));
+                    incoming
+                )
+            );
         }
         catch (Exception exception)
         {
@@ -387,29 +370,21 @@ sealed partial class SceneEdits
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
+
             RollbackAndRethrow(exception, () =>
             {
-                GameSystem restored = SceneElementSerialization.RestoreSystem(
-                    scene,
-                    typeRef,
-                    systemId,
-                    index,
-                    state,
-                    m_workspace.serialization,
-                    m_workspace.assets);
+                GameSystem restored = SceneElementSerialization.RestoreSystem(scene, typeRef, systemId, index, state, m_workspace.serialization, m_workspace.assets);
                 RequireElementRestore(restored, state);
                 RequireReferenceRestore(SceneReferenceIndex.RestoreIncoming(incoming, m_workspace));
             });
         }
+
         return true;
     }
 
     /// <summary>
     /// Resets one scene system and records its compact property state before and after Reset.
     /// </summary>
-    /// <param name="scene">
-    /// The scene currently owning the system.
-    /// </param>
     /// <param name="system">
     /// The registered system to reset.
     /// </param>
@@ -417,32 +392,26 @@ sealed partial class SceneEdits
     /// An optional user-facing history entry name.
     /// </param>
     public void ResetSystem(
-        GameScene scene,
         GameSystem system,
         string? historyName = null
     ) {
-        ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(system);
+        GameScene scene = ResolveOwnerScene(system);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(scene);
-        byte[] before = SceneElementSerialization.CaptureState(
-            system,
-            m_workspace.serialization,
-            m_workspace.assets);
+        byte[] before = SceneElementSerialization.CaptureState(system, m_workspace.serialization, m_workspace.assets);
         byte[] after;
         try
         {
             scene.ResetSystem(system);
-            after = SceneElementSerialization.CaptureState(
-                system,
-                m_workspace.serialization,
-                m_workspace.assets);
+            after = SceneElementSerialization.CaptureState(system, m_workspace.serialization, m_workspace.assets);
         }
         catch (Exception exception)
         {
             RollbackAndRethrow(exception, () => RequireElementRestore(system, before));
             throw;
         }
+
         if (before.AsSpan().SequenceEqual(after))
             return;
         int index = scene.GetSystemIndex(system);
@@ -450,19 +419,22 @@ sealed partial class SceneEdits
             () => RecordElement(
                 historyName ?? $"Reset {system.GetType().Name}",
                 new SceneElementHistoryData(
-                SceneElementKind.System,
-                scene.identity.persistentId,
-                Guid.Empty,
-                system.identity.persistentId,
-                GetElementType(system),
-                index,
-                index,
-                existsBefore: true,
-                existsAfter: true,
-                before,
-                after,
-                incomingReferences: [])),
-            () => RequireElementRestore(system, before));
+                    SceneElementKind.System,
+                    scene.identity.persistentId,
+                    Guid.Empty,
+                    system.identity.persistentId,
+                    GetElementType(system),
+                    index,
+                    index,
+                    existsBefore: true,
+                    existsAfter: true,
+                    before,
+                    after,
+                    incomingReferences: []
+                )
+            ),
+            () => RequireElementRestore(system, before)
+        );
     }
 
     /// <summary>
@@ -503,39 +475,38 @@ sealed partial class SceneEdits
             RollbackAndRethrow(exception, () => scene.SetSystemIndex(system, beforeIndex));
             throw;
         }
+
         if (beforeIndex == afterIndex)
             return;
         RecordWithRollback(
             () => RecordElement(
                 historyName,
                 new SceneElementHistoryData(
-                SceneElementKind.System,
-                scene.identity.persistentId,
-                Guid.Empty,
-                system.identity.persistentId,
-                GetElementType(system),
-                beforeIndex,
-                afterIndex,
-                existsBefore: true,
-                existsAfter: true,
-                beforeState: [],
-                afterState: [],
-                incomingReferences: [])),
-            () => scene.SetSystemIndex(system, beforeIndex));
+                    SceneElementKind.System,
+                    scene.identity.persistentId,
+                    Guid.Empty,
+                    system.identity.persistentId,
+                    GetElementType(system),
+                    beforeIndex,
+                    afterIndex,
+                    existsBefore: true,
+                    existsAfter: true,
+                    beforeState: [],
+                    afterState: [],
+                    incomingReferences: []
+                )
+            ),
+            () => scene.SetSystemIndex(system, beforeIndex)
+        );
     }
 
-    private TypeRef GetElementType(EngineObject element)
-        => element switch
-        {
-            MissingGameComponent missing => missing.missingType,
-            MissingGameSystem missing => missing.missingType,
-            _ => GetTypeRef(element.GetType())
-        };
-
+    private TypeRef GetElementType(EngineObject element) => element switch
+    {
+        MissingGameComponent missing => missing.missingType,
+        MissingGameSystem missing => missing.missingType,
+        _ => GetTypeRef(element.GetType())};
     private void RequireElementRestore(
         EngineObject element,
         ReadOnlySpan<byte> data
-    )
-        => SceneElementSerialization.RestoreState(element, data, m_workspace.serialization, m_workspace.assets);
-
+    ) => SceneElementSerialization.RestoreState(element, data, m_workspace.serialization, m_workspace.assets);
 }

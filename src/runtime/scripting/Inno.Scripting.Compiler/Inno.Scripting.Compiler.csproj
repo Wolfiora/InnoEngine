@@ -13,6 +13,9 @@
     <ProjectReference
       Include="../../../foundation/core/Inno.Core.Collections/Inno.Core.Collections.csproj"
       PrivateAssets="compile" />
+    <ProjectReference
+      Include="../../../foundation/core/Inno.Core.IO/Inno.Core.IO.csproj"
+      PrivateAssets="compile" />
     <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj" />
     <ProjectReference
       Include="../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj"

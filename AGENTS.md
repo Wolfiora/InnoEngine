@@ -115,6 +115,7 @@
 - 保存、打开、选择等纯工作流操作默认不进入数据 Undo；它们只有在确实修改项目数据时才记录对应的数据部分。
 - 跨启动的项目语义状态直接属于 Module/Panel；它们使用 Attribute 中必填、稳定且全局唯一的 ID，并通过 protected `Capture(EditorState)` / `Restore(EditorState)` hooks 参与持久化。扩展只调用参数对象的 `Get` / `Set`，不得在公开或 protected API 中暴露 JSON 实现。未 override Capture 的类型不进入状态 IO；不得恢复独立 Workspace interface、reader/writer 或第二个状态 ID。持久值只允许可重新解析的中立数据。
 - `editor.ini` 是统一且可读的项目级 Editor settings 文档：标准 ImGui section 保存 layout；每个 Module/Panel 分别使用 `[InnoEditor][Module.<id>]` / `[InnoEditor][Panel.<id>]`；Panel 开关使用 `[InnoEditor][Panels]`。禁止用 Base64 或单一 opaque payload 包装全部 Workspace。Undo 栈、dirty Scene 内容、runtime 引用和编译中间态不得持久化。
+- 新项目的默认 layout 由标准 Host 的嵌入资源提供，Core 只接收中立初始文档并复用 Core IO 原子写入。仅文件不存在时初始化，不能覆盖已有或刻意留空的 `editor.ini`；模板不得带入示例场景、Asset ID、插件状态、Selection、History 或临时弹窗。
 - Editor Selection 是当前 session 的瞬时交互状态，不得写入 `editor.ini`。Workspace 可以保存可独立解释的导航位置、已打开文档和 active document，但启动后不得自动恢复 Asset、Scene、GameObject、Component 或 System selection。
 - Editor 正常退出时必须先捕获全部有状态的 Module/Panel，再捕获最新 ImGui layout，最后在 Module 停止和 Scene 卸载前强制原子写入一次完整 `editor.ini`。运行期间仍可节流保存，但不能把它当作退出保存的替代品。
 - Editor Scene 修改统一进入 `Inno.Editor.Scene.SceneEdits`。普通属性只保存单 property bytes；Component/System 保存 element identity/type/index/state；GameObject 删除保存最小 subtree；层级只保存受影响 placement；禁止为小修改序列化或恢复完整 Scene。
@@ -192,6 +193,7 @@
 - UI 与插件事件的订阅、分发及生命周期统一复用 `Inno.Core.Events`。领域可以定义自己的事件类型及适配入口，但不能另建队列、监听器注册表或事件总线来取代核心事件管理。
 
 ## 23. 源码可读性与排版
+- 同一文件针对同一类型只保留一个语义清楚的别名，避免多个 facade 别名交替表达同一调用。XML 文档必须对应当前真实成员，一个成员只保留一个有意义的 summary，不保留已删除成员的说明。
 - 可读性是所有手写源码的持续要求，覆盖 InnoEngine、Canvas 与 Rendering2D；生成的 Bindings 和第三方 `extern` 源码不纳入手工排版。改进排版时不得改变执行顺序、初始化顺序、公开契约、序列化数据、诊断或用户体验。
 - 优先让读者一眼看清声明和意图：字段、属性、无参数或单参数函数、简单表达式在合理行宽内能完整写成一行时，保持一行；不得仅因机械行宽规则把名称、箭头表达式或成员修饰符随意拆散。
 - 所有参数超过一个的函数声明（包括方法、构造函数、局部函数、委托、运算符、主构造函数和 Lambda）必须在 `(` 后换行，每个参数独占一行，最后一个参数后换行，并让 `)` 与声明起始行对齐。紧随参数列表的函数体左花括号与 `)` 同行，写成 `) {`；表达式体、约束和初始化器则在 `)` 后接其语法所需内容。无参数及单参数函数不强制展开。新增和修改源码均执行此规则；自动格式化不能覆盖该规则。
@@ -296,6 +298,7 @@ public void AAA(
 - 冷 CMake producer 通过共同 executor 固定 recipe 声明的工作区输入；Browser 聚合的组件 include、bridge 与参数必须解析到同一复制树。热缓存命中不复制，外部 SDK 与输出保持自己的位置和 owner，不用字符串替换整个仓库根来误重定向输出。
 - Task runtime 只在 IBuildEngine4 Build 生命周期、同一完整请求身份内复用成功不可变 publication；registry 只存 BCL 数据，不持有 SDK owner、lease 或私有 ALC 类型。每个实际载入边界仍有独立 owner；失败/取消不缓存。共享 restore 写入由 Core.IO lease 协调，等待时 Yield/Reacquire，保留锁文件。
 - 独立并发托管构建必须通过 SDK 的明确 ArtifactsPath 使用各自 bin/obj owner；共同规则不得覆盖该输出选择。NuGet Runtime 资产按产品真实 Restore 图选择，Native 内容寻址缓存仍通过自身 lease 共享。普通 IDE bin/obj 仅属于一个活动构建，不能把两个独立进程同时写同一路径视为受支持的并发模式。
+- 同一 SDK 图中的中立与产品请求也必须隔离实际输出；使用 ArtifactsPath 时，在 SDK 建立默认路径前选择包含产品输入的 ArtifactsProjectName，保留 SDK configuration/TFM/RID pivots 和显式调用方设置。开发 Editor 入口通过现有 owned restore 准备所选产品的完整引用闭包后再构建，不能依赖平台子项目稍后还原来满足入口的直接或 SDK 添加的传递引用。
 - Owned NuGet Restore 必须使用标准 `ExcludeRestorePackageImports=true`，编译使用包含已恢复 imports 的独立求值配置。不得让同一缓存 ProjectInstance 把旧 package content items 带入新程序集输出，也不得通过包名特例、补写 NuGet imports 或删除缓存掩盖混装。
 - NuGet 依赖使用正常 `.csproj` 的 `PackageReference` 与 SDK Restore，不启用、生成或提交依赖锁文件，不维护逐工程、宿主、RID、AOT 或裁剪的锁清单与命名规则。包版本由正式声明维护，BGCS 包族继续使用统一精确版本；消费者读取 SDK 实际求值的 assets 和包内容。CI 使用普通还原并验证构建、包身份和源码卫生；不得以自制依赖解析器、清空真实 SDK 属性或 ignore 规则代替正确流程。用于并发读写、进程所有权和原子发布的 Core IO lease 不属于依赖锁定，必须保留。
 
@@ -308,6 +311,7 @@ public void AAA(
 - 检查新增或修改的基础能力是否能够直接复用 Core IO、Events、Identity、Serialization 等既有契约；在不破坏领域边界的前提下消除重复协议、平行管理器和重复实现。
 - 通过真实调用方、可替换边界及适用验证确认扩展能力。新增 backend 或平台时需要修改哪些 owner，必须能够从实际代码说明；不得用未执行的测试或抽象声明代替证据。
 - 每次最终交付必须简要说明上述自查结果、实际验证证据及尚未解决或无法执行的事项。没有完成验证时明确说明，不得宣称已经达到完美或全部通过。
+- 每次准备结束执行前，逐项复核本轮 issue 的实际解决条件、获批计划的功能与验收、架构清晰度、基础能力复用及新增回归。仍有可推进的工作时必须更新剩余执行计划并自动继续，不重复请求批准；仅在全部适用工作完成或明确记录无法独立解除的外部阻塞后交付，不能以阶段性进展或 CI 通过代替整个计划完成。
 
 ## 31. Issue 与 Pull Request 交付规范
 
@@ -316,3 +320,20 @@ public void AAA(
 - Pull Request 正文必须根据目标分支的完整差异说明问题、最终行为与实际验证，并明确未执行的检查；创建前检索已有 PR，避免重复，不得将部分验收描述为完整矩阵通过。
 - Git 提交的 author 和 committer 均使用 `Aaron Liao <hsuankailiao@gmail.com>`；不得使用 Codex/bot 身份或添加任何 `Co-authored-by` 署名。Pull Request 使用用户授权的 GitHub 账号创建。
 - BGCS 缺陷必须通过公开 API 独立复现并明确标记；不得修改 BGCS 源码、包、二进制或手工修改生成物来绕过缺陷。
+
+## 32. Editor UI ownership and acceptance
+
+- Domain editing in `features` must remain independent from native UI, Panels and Workbench. Panels compose feature APIs; they do not reference other Panels. Reusable controls belong to the session-owned ImGui adapter, and generic Graph presentation cannot depend on Shader semantics.
+- Every interactive host owns one `EditorUiSession`. Transient widget/menu state belongs to its session and stable presentation owner. Native drawing borrows cannot survive their frame, window, context or owner thread. `current` is only a synchronous scoped accessor, never a global state owner.
+- Continuous Inspector and viewport edits use one `EditorEditGesture` over `EditorInteractions.history`. Each sample records immediately; Escape rolls back the same transaction. Save, commands and generation changes finish the gesture before their own operation. No feature may delay History publication behind a separate UI-active flag.
+- Selection, deferred commands and cross-frame tools resolve identities through Core Identity. Batch operations validate the complete selection, normalize overlapping roots and roll back atomically. Mixed, Missing, read-only and unassigned states remain distinct.
+- Final delivery must evaluate architecture, organization, state/lifetime cleanliness, abstraction, reuse, visual consistency, extensibility, interaction, Undo/Redo, menu clarity and component granularity individually. Each evaluation must identify actual evidence, limitations and remaining improvements; directory changes and interface counts alone are insufficient.
+- Reassess completion against the original approved plan, including every functional and quantitative acceptance requirement. Separate missing implementation from missing evidence; green CI and focused benchmarks cannot establish untested scale, visual, reload or lifecycle guarantees. Correct stale completion statements and issue ledgers when later review finds a gap.
+- UI-neutral name formatting and Action/Menu queries must work without a native context or drawing session. Keep pure label formatting in Editor Core; only drawing and native borrows require an active UI scope.
+- Temporary presentation worlds register their borrowed Core allocator through the existing selection coordinator's routing lease. Restore Edit selection before releasing that lease; failed retirement must preserve its owner. The routing table never becomes a second live-object authority.
+- Boxed value types are not automatically neutral: a host struct may contain extension objects. Cross-callback targets retain only known neutral scalars strongly; all other non-identity objects use weak references, including boxed structs. Selection, focus and snapshots must not prolong their referenced objects' lifetime.
+- The formal script SDK host references the actual exported API owners directly, including reusable presentation libraries when required. It must not use concrete Panels as transitive dependency carriers for asset, shader or graph authoring APIs.
+- Session-owned zoom and density requests commit through the presentation preparation phase after selecting the owned context and display metrics, before native frame creation. Repeated preparation during the same drawing frame cannot publish a new metric snapshot. Standalone metrics remain usable without native UI.
+- Presentation preparation, drawing and publication form one owned operation. Reentry and retirement during that operation must fail before releasing resources. A callback failure ends only its owned native frame, preserves the original failure and never publishes partial draw data; it must not clear another context's stacks or lower native assertions.
+- Native presentation fixtures must create and enter an `EditorUiSession`, explicitly compose their feature/presentation owners, and resolve the exact service under test. Asynchronous shutdown fixtures must retry the public Pending retirement protocol until owned cleanup completes; they cannot rely on continuation timing or remove resource-release assertions.
+- Presentation input snapshots expose physical Core modifier semantics. Reverse native shortcut normalization at the presentation boundary using the owned context configuration; do not interpret normalized Control/Super flags as physical keys or add shared-layer OS detection. Native input fixtures explicitly select their conventions and cover both modifier policies and native modes.

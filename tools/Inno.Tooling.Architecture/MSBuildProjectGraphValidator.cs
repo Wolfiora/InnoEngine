@@ -17,10 +17,11 @@ internal static class MSBuildProjectGraphValidator
         "InnoEngine.Editor", "InnoEngine.Build"
     };
 
-    internal static async Task ValidateAsync(
+    internal static async Task<IReadOnlyDictionary<string, string>> ValidateAsync(
         string root,
         string configuration,
         string dotnetHost,
+        string? artifactsPath,
         string? outputPath,
         ICollection<string> failures,
         CancellationToken cancellationToken
@@ -38,7 +39,7 @@ internal static class MSBuildProjectGraphValidator
             try
             {
                 EvaluatedProject snapshot = await EvaluateAsync(root, project, configuration,
-                    dotnetHost, cancellationToken).ConfigureAwait(false);
+                    dotnetHost, artifactsPath, cancellationToken).ConfigureAwait(false);
                 evaluated.Add(snapshot);
                 ValidateProject(root, snapshot, failures);
             }
@@ -56,6 +57,8 @@ internal static class MSBuildProjectGraphValidator
                 new JsonSerializerOptions { WriteIndented = true }), cancellationToken).ConfigureAwait(false);
         }
         Console.WriteLine($"Evaluated MSBuild ownership for {evaluated.Count}/{projects.Length} projects without executing build targets.");
+        return evaluated.ToDictionary(project => Path.GetFullPath(project.path, root),
+            static project => project.targetPath, StringComparer.OrdinalIgnoreCase);
     }
 
     private static async Task<EvaluatedProject> EvaluateAsync(
@@ -63,6 +66,7 @@ internal static class MSBuildProjectGraphValidator
         string project,
         string configuration,
         string dotnetHost,
+        string? artifactsPath,
         CancellationToken cancellationToken
     ) {
         var start = new ProcessStartInfo(dotnetHost)
@@ -83,11 +87,13 @@ internal static class MSBuildProjectGraphValidator
         foreach (string argument in new[]
         {
             "msbuild", project, "-nologo", "-getItem:ProjectReference,Compile,Using",
-            "-getProperty:AssemblyName,OutputType,InnoProductId,InnoProductTarget,InnoNativeTarget,ImplicitUsings",
+            "-getProperty:AssemblyName,OutputType,InnoProductId,InnoProductTarget,InnoNativeTarget,ImplicitUsings,TargetPath",
             "-p:DesignTimeBuild=true", "-p:BuildProjectReferences=false", "-p:InnoProductRestore=false",
             "-p:Configuration=" + configuration
         })
             start.ArgumentList.Add(argument);
+        if (artifactsPath is not null)
+            start.ArgumentList.Add("-p:ArtifactsPath=" + artifactsPath);
         using var process = new Process { StartInfo = start };
         if (!process.Start())
             throw new InvalidDataException("The selected SDK did not start.");
@@ -125,7 +131,7 @@ internal static class MSBuildProjectGraphValidator
         return new(Relative(root, project), Value(properties, "AssemblyName"), Value(properties, "OutputType"),
             Value(properties, "InnoProductId"), Value(properties, "InnoProductTarget"),
             Value(properties, "InnoNativeTarget"), Value(properties, "ImplicitUsings"),
-            items.GetProperty("Using").GetArrayLength(), references, sources);
+            items.GetProperty("Using").GetArrayLength(), references, sources, Value(properties, "TargetPath"));
     }
 
     private static void ValidateProject(
@@ -237,7 +243,8 @@ internal static class MSBuildProjectGraphValidator
         string implicitUsings,
         int usingItems,
         IReadOnlyList<EvaluatedReference> references,
-        IReadOnlyList<EvaluatedSource> sources
+        IReadOnlyList<EvaluatedSource> sources,
+        string targetPath
     );
 
     private sealed record EvaluatedReference(

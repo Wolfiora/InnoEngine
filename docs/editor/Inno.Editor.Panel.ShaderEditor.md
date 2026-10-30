@@ -89,32 +89,36 @@ Stage Input 的 `Source = Builtin` 表示该值由 GPU 阶段或引擎/Adapter �
 
 ## 当前源码公开 API 清单
 
-只列当前源码的 public/protected 表面；内部实现不作为稳定 API。参数、返回、失败和 owner 以英文 XML 为准。
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
-本项目没有公开入口，通过组合或扩展发现使用内部实现。
+本程序集没有对外公开类型；扩展由当前产品的 Registry 在内部发现。
 
 ## 项目依赖
 
-- [Inno.Editor.Inspection](Inno.Editor.Inspection.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Shaders](Inno.Editor.Shaders.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Rendering](Inno.Editor.Rendering.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Panel.FileBrowser](Inno.Editor.Panel.FileBrowser.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Input](../core/Inno.Core.Input.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Native.ImGui](../backends/ImGui/Inno.Native.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.IO](../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets](../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets.Pipeline](../assets/Inno.Assets.Pipeline.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering](../rendering/Inno.Rendering.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering.Shaders](../rendering/Inno.Rendering.Shaders.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering.Assets](../rendering/Inno.Rendering.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Graph](Inno.Editor.Graph.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.ImGui](Inno.Editor.ImGui.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Graphs](../core/Inno.Core.Graphs.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Rendering.Assets.Authoring](../rendering/Inno.Rendering.Assets.Authoring.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Editor.Graph.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Shaders.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Assets.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Inspection` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Shaders` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Execution` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Rendering` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Input` | 实现依赖；不传递 compile surface |
+| `Inno.Core.IO` | 实现依赖；不传递 compile surface |
+| `Inno.Scripting.Api` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Types` | 实现依赖；不传递 compile surface |
+| `Inno.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Assets.Pipeline` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering.Shaders` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering.Assets` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Graph` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Graphs` | 实现依赖；不传递 compile surface |
+| `Inno.Rendering.Assets.Authoring` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Serialization` | 公开签名依赖 |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |

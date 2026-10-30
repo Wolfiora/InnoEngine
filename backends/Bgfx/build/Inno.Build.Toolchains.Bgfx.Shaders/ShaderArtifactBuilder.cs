@@ -28,8 +28,11 @@ public static class ShaderArtifactBuilder
     /// <summary>
     /// Imports and compiles one shader graph for an explicitly selected graphics target.
     /// </summary>
-    /// <param name="assetRoot">
-    /// The directory containing shader authoring sources.
+    /// <param name="inputs">
+    /// The operation's fixed source and permanent import-setting identity, copied before import.
+    /// </param>
+    /// <param name="workspace">
+    /// A fresh caller-owned operation directory retained until compilation returns. The caller releases it after all consumers finish.
     /// </param>
     /// <param name="shaderPath">
     /// The source-local shader graph path.
@@ -47,7 +50,16 @@ public static class ShaderArtifactBuilder
     /// Import or shader compilation fails.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// A required authoring path or output path is blank.
+    /// A required shader path or output path is blank.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The fixed input identity or workspace is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The borrowed workspace has been released or is not empty.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Import, copying, verification or compilation was canceled before publication.
     /// </exception>
     /// <param name="tools">
     /// The host-selected executable distribution, or null for the application's deployed tools.
@@ -56,7 +68,8 @@ public static class ShaderArtifactBuilder
     /// Cancels import and native compilation before replacing the destination artifact.
     /// </param>
     public static void Compile(
-        string assetRoot,
+        ShaderBuildInputs inputs,
+        ProcessOwnedDirectory workspace,
         string shaderPath,
         BgfxShaderTargetProfile platform,
         GraphicsApi backend,
@@ -65,16 +78,20 @@ public static class ShaderArtifactBuilder
         CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputFile);
-        RenderShaderArtifact artifact = CompileArtifact(assetRoot, shaderPath, platform, backend, tools, cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
-        AtomicFile.WriteAllBytes(Path.GetFullPath(outputFile), RenderShaderArtifactCodec.Encode(artifact));
+        RenderShaderArtifact artifact = CompileArtifact(inputs, workspace, shaderPath, platform, backend, tools, cancellationToken);
+        byte[] payload = RenderShaderArtifactCodec.Encode(artifact);
+        inputs.VerifyUnchanged(cancellationToken);
+        AtomicFile.WriteAllBytes(Path.GetFullPath(outputFile), payload);
     }
 
     /// <summary>
     /// Compiles one raster graph into device-only program facts for an embedded adapter distribution.
     /// </summary>
-    /// <param name="assetRoot">
-    /// The directory containing the graph and its source dependencies.
+    /// <param name="inputs">
+    /// The operation's fixed source and permanent import-setting identity, copied before import.
+    /// </param>
+    /// <param name="workspace">
+    /// A fresh caller-owned operation directory retained until compilation returns. The caller releases it after all consumers finish.
     /// </param>
     /// <param name="shaderPath">
     /// The source-local graph whose sole raster pass becomes the device program.
@@ -89,10 +106,19 @@ public static class ShaderArtifactBuilder
     /// The device artifact destination, atomically replaced after successful compilation.
     /// </param>
     /// <exception cref="ArgumentException">
-    /// A required authoring or output path is blank.
+    /// A required shader path or output path is blank.
     /// </exception>
     /// <exception cref="InvalidDataException">
     /// Compilation fails or the graph does not define exactly one raster program.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The fixed input identity or workspace is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The borrowed workspace has been released or is not empty.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Import, copying, verification or compilation was canceled before publication.
     /// </exception>
     /// <param name="tools">
     /// The host-selected executable distribution, or null for the application's deployed tools.
@@ -101,7 +127,8 @@ public static class ShaderArtifactBuilder
     /// Cancels import and native compilation before replacing the destination artifact.
     /// </param>
     public static void CompileGraphicsProgram(
-        string assetRoot,
+        ShaderBuildInputs inputs,
+        ProcessOwnedDirectory workspace,
         string shaderPath,
         BgfxShaderTargetProfile platform,
         GraphicsApi backend,
@@ -110,7 +137,7 @@ public static class ShaderArtifactBuilder
         CancellationToken cancellationToken = default
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputFile);
-        RenderShaderArtifact artifact = CompileArtifact(assetRoot, shaderPath, platform, backend, tools, cancellationToken);
+        RenderShaderArtifact artifact = CompileArtifact(inputs, workspace, shaderPath, platform, backend, tools, cancellationToken);
         if (artifact.passes.Count != 1 || artifact.passes[0].programKind != ShaderProgramKind.Raster)
             throw new InvalidDataException("A device graphics program requires exactly one raster pass.");
         RenderShaderPassArtifact pass = artifact.passes[0];
@@ -133,56 +160,55 @@ public static class ShaderArtifactBuilder
             pass.stages.Single(static stage => stage.stage == ShaderStage.Vertex).bytes.Span,
             pass.stages.Single(static stage => stage.stage == ShaderStage.Fragment).bytes.Span,
             bindings, null, pass.rasterState);
-        cancellationToken.ThrowIfCancellationRequested();
-        AtomicFile.WriteAllBytes(Path.GetFullPath(outputFile), GraphicsProgramArtifactCodec.Encode(descriptor));
+        byte[] payload = GraphicsProgramArtifactCodec.Encode(descriptor);
+        inputs.VerifyUnchanged(cancellationToken);
+        AtomicFile.WriteAllBytes(Path.GetFullPath(outputFile), payload);
     }
 
     private static RenderShaderArtifact CompileArtifact(
-        string assetRoot,
+        ShaderBuildInputs inputs,
+        ProcessOwnedDirectory workspace,
         string shaderPath,
         BgfxShaderTargetProfile platform,
         GraphicsApi backend,
         ToolRunner? tools,
         CancellationToken cancellationToken
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(assetRoot);
+        ArgumentNullException.ThrowIfNull(inputs);
+        ArgumentNullException.ThrowIfNull(workspace);
         ArgumentException.ThrowIfNullOrWhiteSpace(shaderPath);
-        string scratch = Path.Combine(Path.GetTempPath(), "InnoShaderBuild", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(scratch);
-        try
-        {
-            var identities = new IdentityAllocator();
-            using IDisposable identityScope = identities.EnterScope();
-            var diagnostics = new DiagnosticHub();
-            using IDisposable diagnosticScope = diagnostics.EnterScope();
-            diagnostics.RegisterSink(new DiagnosticOutput());
-            using var logs = new LogRouter();
-            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderArtifactBuilder).Assembly)});
-            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
-            using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
-            using var assets = new AssetPipeline(modules, types, serialization, identities, diagnostics, logs,
-                new() { assetRoot = Path.GetFullPath(assetRoot), libraryRoot = Path.Combine(scratch, "Library") });
-            AssetPath path = AssetPath.Project(shaderPath);
-            // A fresh source import must succeed. An earlier build artifact never masks current source errors.
-            if (!assets.Import(path))
-                throw new InvalidDataException($"Shader source '{path}' failed to import.");
-            ShaderAsset shader = assets.Load<ShaderAsset>(path);
-            GraphicsCapabilities capabilities = platform.Resolve(backend).capabilities;
-            var compiler = new ShaderCompiler(new BgfxShadercToolchain(platform, tools));
-            ShaderCompileTarget target = compiler.CreateTarget(capabilities);
-            ShaderCompilationResult result = compiler.CompileGraphAsync(shader, target, RenderShaderVariant.empty,
-                types, serialization, AssetSerializationContext.Create(assets), assets, cancellationToken).AsTask().GetAwaiter().GetResult();
-            foreach (ShaderDiagnostic diagnostic in result.diagnostics)
-                Console.Error.WriteLine($"{diagnostic.code}: {diagnostic.message}");
-            if (!result.succeeded || result.artifact is null)
-                throw new InvalidDataException("Shader compilation failed; the output was not replaced.");
-            Console.WriteLine($"Compiled {path}: {result.artifact.passes.Count} passes, {target.key}");
-            return result.artifact.CreateRuntimeArtifact();
-        }
-        finally
-        {
-            Directory.Delete(scratch, recursive: true);
-        }
+        string scratch = workspace.directory;
+        if (!Directory.Exists(scratch) || Directory.EnumerateFileSystemEntries(scratch).Any())
+            throw new InvalidOperationException("Shader compilation requires a fresh, retained operation directory.");
+        string assetRoot = inputs.Materialize(scratch, cancellationToken);
+        var identities = new IdentityAllocator();
+        using IDisposable identityScope = identities.EnterScope();
+        var diagnostics = new DiagnosticHub();
+        using IDisposable diagnosticScope = diagnostics.EnterScope();
+        diagnostics.RegisterSink(new DiagnosticOutput());
+        using var logs = new LogRouter();
+        using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderArtifactBuilder).Assembly)});
+        using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        using var serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
+        using var assets = new AssetPipeline(modules, types, serialization, identities, diagnostics, logs,
+            new() { assetRoot = Path.GetFullPath(assetRoot), libraryRoot = Path.Combine(scratch, "Library") });
+        AssetPath path = AssetPath.Project(shaderPath);
+        // A fresh source import must succeed. An earlier build artifact never masks current source errors.
+        if (!assets.Import(path))
+            throw new InvalidDataException($"Shader source '{path}' failed to import.");
+        ShaderAsset shader = assets.Load<ShaderAsset>(path);
+        GraphicsCapabilities capabilities = platform.Resolve(backend).capabilities;
+        var compiler = new ShaderCompiler(new BgfxShadercToolchain(platform, tools));
+        ShaderCompileTarget target = compiler.CreateTarget(capabilities);
+        ShaderCompilationResult result = compiler.CompileGraphAsync(shader, target, RenderShaderVariant.empty,
+            types, serialization, AssetSerializationContext.Create(assets), assets, cancellationToken).AsTask().GetAwaiter().GetResult();
+        foreach (ShaderDiagnostic diagnostic in result.diagnostics)
+            Console.Error.WriteLine($"{diagnostic.code}: {diagnostic.message}");
+        if (!result.succeeded || result.artifact is null)
+            throw new InvalidDataException("Shader compilation failed; the output was not replaced.");
+        Console.WriteLine($"Compiled {path}: {result.artifact.passes.Count} passes, {target.key}");
+        inputs.VerifyUnchanged(cancellationToken);
+        return result.artifact.CreateRuntimeArtifact();
     }
 
     private sealed class DiagnosticOutput : IDiagnosticSink

@@ -1,3 +1,4 @@
+using Inno.Editor.Graph.ImGui;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,7 +15,9 @@ using Inno.Editor.Graph;
 using Inno.Editor.Interactions;
 using Inno.Editor.Rendering;
 using Inno.Editor.Shaders;
-using Inno.Editor.Panel.FileBrowser;
+using Inno.Editor.Shaders.ImGui;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Rendering;
 using Inno.Extensibility.Types;
 using Inno.Rendering.Assets;
@@ -22,7 +25,6 @@ using Inno.Rendering.Shaders;
 using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Panel.ShaderEditor;
-
 [EditorModule("rendering.shader-documents", order: 170)]
 internal sealed partial class ShaderEditorDocuments : EditorModule
 {
@@ -49,7 +51,6 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     internal readonly SerializationRegistry serialization;
     internal readonly EditorInteractions interactions;
     internal ShaderClipboardData? clipboard;
-
     internal ShaderEditorDocuments(
         AssetPipeline assets,
         SerializationRegistry serialization,
@@ -79,9 +80,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     internal EditorShaderDraftCompilationSnapshot? Preview(Draft draft)
     {
         GraphDocumentController controller = Controller(draft);
-        return draft.checkedRevision == controller.revision && draft.checkedState is not null
-            ? draft.preview
-            : null;
+        return draft.checkedRevision == controller.revision && draft.checkedState is not null ? draft.preview : null;
     }
 
     internal EditorShaderDraftCompilationSnapshot Check(Draft draft)
@@ -98,21 +97,22 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or FormatException or NotSupportedException)
                 && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
             {
-                nodeSnapshot = new(EditorShaderCompilationState.Failed, false,
-                    [new ShaderDiagnostic("SHADER_GRAPH_NODE_INTERFACE", DiagnosticSeverity.Error, failure.Message)], null);
+                nodeSnapshot = new(
+                    EditorShaderCompilationState.Failed,
+                    false,
+                    [new ShaderDiagnostic("SHADER_GRAPH_NODE_INTERFACE", DiagnosticSeverity.Error, failure.Message)],
+                    null
+                );
             }
+
             draft.checkedRevision = controller.revision;
             draft.checkedState = nodeSnapshot.state;
             return draft.preview = nodeSnapshot;
         }
-        EditorShaderDraftCompilationSnapshot snapshot = m_compilation.RequestDraft(
-            draft.id,
-            controller.document,
-            controller.revision,
-            RenderShaderVariant.empty);
+
+        EditorShaderDraftCompilationSnapshot snapshot = m_compilation.RequestDraft(draft.id, controller.document, controller.revision, RenderShaderVariant.empty);
         if (snapshot.state == EditorShaderCompilationState.Compiling)
             return snapshot;
-
         draft.checkedRevision = controller.revision;
         draft.checkedState = snapshot.state;
         if (snapshot.state == EditorShaderCompilationState.Failed)
@@ -122,11 +122,11 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             m_compilation.ReleaseDraft(draft.id);
             snapshot = new(EditorShaderCompilationState.Failed, false, snapshot.diagnostics, null);
         }
+
         return draft.preview = snapshot;
     }
 
     internal void ShowCheck(Draft draft) => m_checkDraftId = draft.id;
-
     internal bool TryGetCheckDraft(out Draft draft)
     {
         draft = null!;
@@ -134,7 +134,6 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     }
 
     internal void CloseCheck() => m_checkDraftId = null;
-
     internal void ReleasePreview(Draft draft)
     {
         m_compilation.ReleaseDraft(draft.id);
@@ -145,20 +144,12 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
 
     internal void PublishNodeDiagnostics(Draft draft)
     {
-        Diagnostic[] diagnostics = draft.nodeErrors.Select(pair => new Diagnostic(
-            "SHADER_NODE_INVALID",
-            $"Node '{pair.Key.value}' cannot be evaluated: {pair.Value}",
-            DiagnosticSeverity.Error,
-            semanticId: pair.Key.value,
-            objectId: draft.id,
-            location: new DiagnosticLocation(draft.path.ToString()))).ToArray();
+        Diagnostic[] diagnostics = draft.nodeErrors.Select(pair => new Diagnostic("SHADER_NODE_INVALID", $"Node '{pair.Key.value}' cannot be evaluated: {pair.Value}", DiagnosticSeverity.Error, semanticId: pair.Key.value, objectId: draft.id, location: new DiagnosticLocation(draft.path.ToString()))).ToArray();
         Diagnostics.Set(draft.id, C_NODE_DIAGNOSTIC_GROUP, diagnostics, draft.path.ToString());
     }
 
     private static void ClearNodeDiagnostics(Draft draft) => Diagnostics.Clear(draft.id, C_NODE_DIAGNOSTIC_GROUP);
-
     internal Draft Open(AssetFileEntry entry) => Open(entry, AssetId(entry));
-
     private Draft Open(
         AssetFileEntry entry,
         Guid id
@@ -180,14 +171,16 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         return true;
     }
 
-    internal GraphDocumentController Controller(Draft draft)
-        => m_graphs.TryOpenDocument(draft.id, interactions.history, out GraphDocumentController? controller)
-            ? controller! : throw new InvalidOperationException("The Shader graph document is not available.");
-
-    internal Guid AssetId(AssetFileEntry entry)
-        => assets.TryGetInfo(entry.assetPath, out AssetInfo? info) && info is not null ? info.persistentId
-            : throw new InvalidOperationException("The shader asset identity is not available yet.");
-
+    internal GraphDocumentController Controller(Draft draft) => m_graphs.TryOpenDocument(
+        draft.id,
+        interactions.history,
+        out GraphDocumentController? controller
+    ) ? controller! : throw new InvalidOperationException("The Shader graph document is not available.");
+    internal Guid AssetId(AssetFileEntry entry) => assets.TryGetInfo(
+        entry.assetPath,
+        out AssetInfo? info
+    )
+        && info is not null ? info.persistentId : throw new InvalidOperationException("The shader asset identity is not available yet.");
     internal bool TryGet(
         AssetFileEntry entry,
         out Draft draft
@@ -213,22 +206,26 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
                 draft.compilationDiagnostics = "";
                 return;
             }
+
             if (!assets.TryGetInfo(draft.id, out AssetInfo? info) || info is null)
             {
                 draft.compilationStatus = "Source unavailable";
                 return;
             }
+
             if (info.status != AssetImportStatus.Imported)
             {
                 draft.compilationStatus = "Import " + info.status + " · see diagnostics";
                 draft.compilationDiagnostics = string.Join("\n", info.diagnostics);
                 return;
             }
+
             if (!assets.TryLoad(draft.id, out ShaderAsset? shader) || shader is null || shader.isMissing)
             {
                 draft.compilationStatus = "Waiting for import";
                 return;
             }
+
             // Compilation observes only the imported asset, never the unsaved document.
             EditorShaderCompilationSnapshot snapshot = m_compilation.Request(shader, RenderShaderVariant.empty);
             draft.compilationStatus = snapshot.state switch
@@ -240,7 +237,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             draft.compilationDiagnostics = string.Join("\n", snapshot.diagnostics.Select(static value => value.code + ": " + value.message));
             draft.diagnostics = snapshot.diagnostics.ToArray();
         }
-        catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException)
+            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             draft.compilationStatus = "Compilation unavailable";
             draft.compilationDiagnostics = failure.Message;
@@ -265,9 +263,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         if (draft.activeStage is GraphNodeId stage && controller.document.FindNode(stage) is null)
             draft.activeStage = null;
         draft.navigation.Cancel();
-        draft.dragging = draft.boxSelecting = false;
-        draft.dragPreview.Clear();
-        draft.canvas.CancelConnection();
+        draft.pointer.Cancel();
     }
 
     internal void Changed(Draft draft)
@@ -284,12 +280,14 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
                 File.Delete(recovery);
             return;
         }
+
         try
         {
             PreserveRecovery(draft, controller);
             draft.error = "";
         }
-        catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException)
+            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             draft.error = "Recovery could not be written: " + failure.Message;
         }
@@ -318,7 +316,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             // Import runs at the next editor update, independently of persistence success and watcher timing.
             return true;
         }
-        catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException)
+            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             draft.error = failure.Message;
             draft.status = "Not saved · recovery retained";
@@ -344,7 +343,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
                 File.Delete(recovery);
             return true;
         }
-        catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException)
+            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             draft.error = failure.Message;
             return false;
@@ -368,6 +368,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             templates = m_lifetime.Own(new ShaderGraphTemplateRegistry(m_types));
             targets = m_lifetime.Own(new ShaderTargetRegistry(m_types));
             _ = m_lifetime.Own(interactions.documents.RegisterProvider(new Provider(this)));
+            var operations = m_lifetime.Own(interactions.events.CreateHub(int.MaxValue - 1));
+            operations.Listen<EditorOperationPreparingEvent>(_ => CompleteCanvasEdits());
         }
         catch (Exception failure)
         {
@@ -379,6 +381,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             {
                 throw new AggregateException(failure, retirement);
             }
+
             throw;
         }
     }
@@ -398,7 +401,8 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             {
                 _ = assets.Import(path);
             }
-            catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+            catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException or FormatException)
+                && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
             {
                 foreach (Draft draft in m_drafts.Values.Where(draft => draft.path == path))
                 {
@@ -407,11 +411,13 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
                 }
             }
         }
+
         if (m_sourceRevision != assets.revision)
         {
             SynchronizeSources();
             m_sourceRevision = assets.revision;
         }
+
         foreach (Draft draft in m_drafts.Values)
         {
             GraphDocumentController controller = Controller(draft);
@@ -459,11 +465,13 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         // Recovery is not an asset save. Closing the panel, shutdown and reload must not apply a draft.
         foreach (Draft draft in m_drafts.Values)
         {
+            CancelCanvasEdit(draft);
             if (Controller(draft).isDirty)
                 PreserveRecovery(draft, Controller(draft));
             ClearNodeDiagnostics(draft);
             ReleasePreview(draft);
         }
+
         m_lifetime?.Dispose();
         m_lifetime = null;
         m_frontends = null;
@@ -486,21 +494,26 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             if (recovery.assetId != document.assetId)
                 throw new InvalidDataException("Shader recovery identity does not match its document.");
         }
+
         if (assets.TryGetInfo(document.assetId, out AssetInfo? info) && info is not null && info.status != AssetImportStatus.Missing)
         {
             path = info.assetPath;
             interactions.documents.UpdateAssetPath(document.documentId, path.ToString());
         }
+
         ShaderGraphSourceSnapshot? source = null;
         string missing = "";
         try
         {
             source = m_sources.Read(path);
         }
-        catch (Exception failure) when ((recovery is not null && failure is IOException or InvalidOperationException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when ((recovery is not null
+            && failure is IOException or InvalidOperationException or FormatException)
+            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
         {
             missing = failure.Message;
         }
+
         GraphDocumentController controller = m_graphs.OpenDocument(document.assetId, source?.document ?? new GraphDocument(), interactions.history);
         string staleRecovery = "";
         bool canRecover = recovery is not null && (source is null || recovery.hash == source.contentHash);
@@ -509,7 +522,9 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         else if (recovery is not null)
             staleRecovery = ArchiveStaleRecovery(document.assetId, recoveryPath);
         var draft = new Draft(document.assetId, document.documentId, path, recovery?.hash ?? source!.contentHash, source?.isReadOnly ?? true)
-        { observedRevision = controller.revision };
+        {
+            observedRevision = controller.revision
+        };
         if (m_views.TryGetValue(draft.id, out ViewState view))
             draft.canvas.SetViewport(new(view.x, view.y), view.zoom);
         else
@@ -523,6 +538,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             draft.status = "Source updated · stale recovery was not applied";
             draft.error = "An unsaved recovery belonged to an older source revision and was archived at: " + staleRecovery;
         }
+
         if (source is null)
         {
             m_graphs.SetAvailability(draft.id, false);
@@ -533,10 +549,10 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     private void PreserveRecovery(
         Draft draft,
         GraphDocumentController controller
-    )
-        => AtomicFile.WriteAllBytes(RecoveryPath(draft.id), serialization.Serialize(new RecoveryData
-        { assetId = draft.id, path = draft.path.ToString(), hash = draft.hash, graph = GraphDocumentCodec.Encode(CaptureSource(draft, controller.document), serialization) }));
-
+    ) => AtomicFile.WriteAllBytes(
+        RecoveryPath(draft.id),
+        serialization.Serialize(new RecoveryData { assetId = draft.id, path = draft.path.ToString(), hash = draft.hash, graph = GraphDocumentCodec.Encode(CaptureSource(draft, controller.document), serialization) })
+    );
     private GraphDocument CaptureSource(
         Draft draft,
         GraphDocument graph
@@ -549,16 +565,12 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     }
 
     private string RecoveryPath(Guid id) => Path.Combine(assets.libraryRoot, "Editor", "ShaderRecovery", id.ToString("N") + ".inno");
-
     private static string ArchiveStaleRecovery(
         Guid id,
         string recoveryPath
     ) {
-        string directory = Path.GetDirectoryName(recoveryPath)
-            ?? throw new InvalidOperationException("The Shader recovery directory is unavailable.");
-        string archive = Path.Combine(
-            directory,
-            id.ToString("N") + "." + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff") + ".stale.inno");
+        string directory = Path.GetDirectoryName(recoveryPath) ?? throw new InvalidOperationException("The Shader recovery directory is unavailable.");
+        string archive = Path.Combine(directory, id.ToString("N") + "." + DateTime.UtcNow.ToString("yyyyMMddHHmmssfff") + ".stale.inno");
         File.Move(recoveryPath, archive);
         return archive;
     }
@@ -581,6 +593,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
                 draft.error = "Source missing · graph and undo history retained";
                 continue;
             }
+
             try
             {
                 bool wasMissing = !controller.isAvailable;
@@ -595,19 +608,22 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
                         draft.error = "";
                     continue;
                 }
+
                 if (controller.isDirty)
                 {
                     PreserveRecovery(draft, controller);
                     draft.error = "Source changed externally · reload from disk or copy these edits to a project shader";
                     continue;
                 }
+
                 m_graphs.RebindDocument(draft.id, source.document);
                 draft.hash = source.contentHash;
                 draft.observedRevision = controller.revision;
                 draft.error = "";
                 draft.status = "Source updated · compilation is separate";
             }
-            catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException or FormatException) && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+            catch (Exception failure) when ((failure is IOException or UnauthorizedAccessException or InvalidOperationException or FormatException)
+                && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
             {
                 draft.error = failure.Message;
             }
@@ -615,20 +631,19 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     }
 
     private void RememberView(Draft draft) => m_views[draft.id] = new(draft.id, draft.canvas.pan.x, draft.canvas.pan.y, draft.canvas.zoom);
-
     private readonly record struct ViewState(
         Guid assetId,
         float x,
         float y,
         float zoom
     );
-
     private sealed class Provider(ShaderEditorDocuments owner) : EditorDocumentProvider
     {
         /// <summary>
         /// Gets the stable identity used to reference this value across subsystem boundaries.
         /// </summary>
-public override string id => "inno.shader.graph";
+        public override string id => "inno.shader.graph";
+
         /// <summary>
         /// Checks whether this document handler supports the selected asset.
         /// </summary>
@@ -638,14 +653,14 @@ public override string id => "inno.shader.graph";
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-public override bool CanOpen(string assetPath) => assetPath.EndsWith(".ishader", StringComparison.OrdinalIgnoreCase);
+        public override bool CanOpen(string assetPath) => assetPath.EndsWith(".ishader", StringComparison.OrdinalIgnoreCase);
         /// <summary>
         /// Opens the requested resource and establishes its active lifetime.
         /// </summary>
         /// <param name="context">
         /// The operation scope that provides state, services, and ownership boundaries.
         /// </param>
-public override void Open(EditorDocumentContext context) => owner.Open(context);
+        public override void Open(EditorDocumentContext context) => owner.Open(context);
         /// <summary>
         /// Persists the supplied value through the configured storage contract.
         /// </summary>
@@ -655,7 +670,7 @@ public override void Open(EditorDocumentContext context) => owner.Open(context);
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-public override bool Save(EditorDocumentContext context) => owner.Save(owner.m_drafts[context.assetId]);
+        public override bool Save(EditorDocumentContext context) => owner.Save(owner.m_drafts[context.assetId]);
         /// <summary>
         /// Restores the draft from the latest imported asset state.
         /// </summary>
@@ -665,14 +680,14 @@ public override bool Save(EditorDocumentContext context) => owner.Save(owner.m_d
         /// <returns>
         /// <see langword="true"/> when the documented condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-public override bool Revert(EditorDocumentContext context) => owner.Reload(owner.m_drafts[context.assetId]);
+        public override bool Revert(EditorDocumentContext context) => owner.Reload(owner.m_drafts[context.assetId]);
         /// <summary>
         /// Closes the active resource and releases its operation-scoped state.
         /// </summary>
         /// <param name="context">
         /// The operation scope that provides state, services, and ownership boundaries.
         /// </param>
-public override void Close(EditorDocumentContext context)
+        public override void Close(EditorDocumentContext context)
         {
             // The shared host already applied Save/Discard/Cancel policy. Close must never turn Discard into Save.
             if (!owner.m_drafts.TryGetValue(context.assetId, out Draft? draft))
@@ -681,6 +696,7 @@ public override void Close(EditorDocumentContext context)
             if (File.Exists(recovery))
                 File.Delete(recovery);
             owner.RememberView(draft);
+            CancelCanvasEdit(draft);
             ClearNodeDiagnostics(draft);
             owner.ReleasePreview(draft);
             draft.navigation.Cancel();
@@ -695,7 +711,8 @@ public override void Close(EditorDocumentContext context)
         AssetPath path,
         string hash,
         bool readOnly
-    ) {
+    )
+    {
         internal readonly Guid id = id;
         internal readonly Guid documentId = documentId;
         internal AssetPath path = path;
@@ -726,16 +743,20 @@ public override void Close(EditorDocumentContext context)
         internal GraphNodeId? activeStage;
         internal string inspectedPass = "";
         internal GraphNodeId[] inspectedNodes = [];
+        internal ShaderInspectionSelection? inspectionSelection;
         internal string valueGesture = Guid.NewGuid().ToString("N");
         internal readonly EditorPlanarNavigation navigation = new();
-        internal bool dragging;
-        internal bool boxSelecting;
+        private GraphCanvasPointerController? m_pointer;
+        internal GraphCanvasPointerController pointer => m_pointer ??= new(canvas);
+        internal IReadOnlyDictionary<GraphNodeId, GraphPosition>? pendingMove;
+        internal readonly GraphCanvasLayout layout = new();
+        internal ulong layoutRevision = ulong.MaxValue;
+        internal long layoutAssetRevision = long.MinValue;
+        internal long layoutTypeRevision = long.MinValue;
         internal GraphNodeId? resizingNode;
         internal float resizeStartWidth;
         internal float resizePreviewWidth;
-        internal System.Numerics.Vector2 pointerStart;
-        internal readonly Dictionary<GraphNodeId, GraphPosition> dragStart = [];
-        internal readonly Dictionary<GraphNodeId, GraphPosition> dragPreview = [];
+        internal System.Numerics.Vector2 resizePointerStart;
         internal ulong portRevision = ulong.MaxValue;
         internal long assetRevision = long.MinValue;
         internal long typeRevision = long.MinValue;
@@ -750,19 +771,26 @@ public override void Close(EditorDocumentContext context)
         /// <summary>
         /// Gets or sets the persistent asset identity.
         /// </summary>
-        [SerializableProperty] public Guid assetId { get; set; }
+        [SerializableProperty]
+        public Guid assetId { get; set; }
+
         /// <summary>
         /// Gets or sets the diagnostic source path.
         /// </summary>
-        [SerializableProperty] public string path { get; set; } = "";
+        [SerializableProperty]
+        public string path { get; set; } = "";
+
         /// <summary>
         /// Gets or sets the expected disk source fingerprint.
         /// </summary>
-        [SerializableProperty] public string hash { get; set; } = "";
+        [SerializableProperty]
+        public string hash { get; set; } = "";
+
         /// <summary>
         /// Gets or sets the complete neutral unsaved graph.
         /// </summary>
-        [SerializableProperty] public byte[] graph { get; set; } = [];
+        [SerializableProperty]
+        public byte[] graph { get; set; } = [];
     }
 }
 
@@ -771,17 +799,17 @@ internal struct ShaderPortSnapshot
     /// <summary>
     /// Gets the stable identity used to reference this value across subsystem boundaries.
     /// </summary>
-public string id { get; set; }
+    public string id { get; set; }
     /// <summary>
     /// Gets the graph port's shader value type.
     /// </summary>
-public ShaderGraphType type { get; set; }
+    public ShaderGraphType type { get; set; }
     /// <summary>
     /// Gets the graph port's input or output direction.
     /// </summary>
-public GraphPortDirection direction { get; set; }
+    public GraphPortDirection direction { get; set; }
     /// <summary>
     /// Gets whether required is active for the current instance.
     /// </summary>
-public bool required { get; set; }
+    public bool required { get; set; }
 }

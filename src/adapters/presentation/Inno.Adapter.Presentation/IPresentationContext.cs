@@ -65,7 +65,20 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
     /// <param name="drawFrame">
     /// Callback that emits presentation commands for the current frame.
     /// </param>
-    void RenderFrame(Action drawFrame);
+    /// <param name="prepareFrame">
+    /// Optional synchronous preparation after the owned context and display metrics are selected,
+    /// before frame creation. Failure prevents drawing and no partial frame is published.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The draw callback is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Another frame operation is active on this context.
+    /// </exception>
+    void RenderFrame(
+        Action drawFrame,
+        Action? prepareFrame = null
+    );
 
     /// <summary>
     /// Registers a persistent render texture for presentation drawing.

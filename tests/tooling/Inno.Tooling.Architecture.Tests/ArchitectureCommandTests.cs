@@ -88,6 +88,7 @@ public sealed class ArchitectureCommandTests
             Assert.Contains(expected, output, StringComparison.Ordinal);
             Assert.True(File.Exists(graph));
             Assert.False(Directory.Exists(Path.Combine(project, "bin")));
+            Assert.False(Directory.Exists(Path.Combine(project, "obj")));
         }
         finally
         {
@@ -161,6 +162,14 @@ public sealed class ArchitectureCommandTests
     [InlineData("src/content/assets/Probe.cs", "internal class Probe { void Read() { context.With<IAssetReferenceResolver>(resolver); } }", "owner-complete", true)]
     [InlineData("src/services/audio/Probe.cs", "public class Probe { public MaEngine engine; }", "native implementation", true)]
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { OnCleanupFailed(phase, failure); } }", "diagnostic-only", true)]
+    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); DrawRow(); if (i == 1) break; Ui.PopId(); } } }", "presentation loop ID scopes", true)]
+    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); try { DrawRow(); if (i == 1) break; } finally { Ui.PopId(); } } } }", "presentation loop ID scopes", false)]
+    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; using Other = Inno.Editor.ImGui.ImGui; internal class Probe { }", "multiple presentation aliases", true)]
+    [InlineData("src/composition/editor/panels/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; using NativeUi = Inno.Native.ImGui.ImGui; internal class Probe { }", "multiple presentation aliases", false)]
+    [InlineData("src/composition/editor/panels/Probe.cs", "/// <summary>\n/// Removed identity.\n/// </summary>\n/// <summary>\n/// Actual section.\n/// </summary>\ninternal class Probe { }", "multiple XML summary elements", true)]
+    [InlineData("src/composition/editor/panels/Probe.cs", "/// <summary>\n/// Actual section.\n/// </summary>\ninternal class Probe { }", "multiple XML summary elements", false)]
+    [InlineData("src/services/Probe.cs", "using Ui = Inno.Editor.ImGui.ImGui; internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { Ui.PushId(i); DrawRow(); Ui.PopId(); } } }", "presentation loop ID scopes", false)]
+    [InlineData("src/composition/editor/panels/Probe.cs", "internal class Probe { void Draw() { for (int i = 0; i < 2; i++) { collector.PushId(i); DrawRow(); collector.PopId(); } } }", "presentation loop ID scopes", false)]
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (RetirementPendingException) { throw; } } }", "wrapped pending ownership", true)]
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (Inno.Core.Execution.RetirementTimeoutException failure) { throw; } } }", "wrapped pending ownership", true)]
     [InlineData("src/services/audio/Probe.cs", "internal class Probe { void Release() { try { } catch (Exception error) when (RetirementPendingException.Find(error) is not null) { throw; } } }", "wrapped pending ownership", false)]

@@ -13,26 +13,33 @@ internal sealed class HierarchyService
 {
     private readonly GameScene m_scene;
     private readonly List<Transform> m_roots = [];
+    private readonly Dictionary<Transform, int> m_rootIndices = new(ReferenceEqualityComparer.Instance);
 
     internal HierarchyService(GameScene scene)
     {
         m_scene = scene;
     }
 
+    internal ulong revision { get; private set; }
+
     internal void Register(Transform transform)
     {
-        if (!m_roots.Contains(transform))
+        if (m_rootIndices.TryAdd(transform, m_roots.Count))
+        {
             m_roots.Add(transform);
+            revision++;
+        }
     }
 
     internal void Unregister(Transform transform)
     {
         Transform? parent = transform.parent;
         if (parent is null)
-            m_roots.Remove(transform);
+            RemoveRoot(transform);
         else
             parent.RemoveChildDirect(transform);
         transform.SetParentDirect(null);
+        revision++;
     }
 
     internal void SetParent(
@@ -66,13 +73,13 @@ internal sealed class HierarchyService
 
         Transform? previousParent = transform.parent;
         if (previousParent is null)
-            m_roots.Remove(transform);
+            RemoveRoot(transform);
         else
             previousParent.RemoveChildDirect(transform);
 
         transform.SetParentDirect(parent);
         if (parent is null)
-            m_roots.Add(transform);
+            Register(transform);
         else
             parent.AddChildDirect(transform);
 
@@ -89,13 +96,14 @@ internal sealed class HierarchyService
         }
 
         m_scene.RecomputeActiveSubtree(transform.gameObject);
+        revision++;
     }
 
     internal int GetSiblingIndex(Transform transform)
     {
         if (transform.parent is Transform parent)
             return parent.IndexOfChild(transform);
-        return m_roots.IndexOf(transform);
+        return m_rootIndices.GetValueOrDefault(transform, -1);
     }
 
     internal void SetSiblingIndex(
@@ -109,11 +117,14 @@ internal sealed class HierarchyService
                 throw new InvalidOperationException("Transform is missing from its parent child collection.");
             int target = Math.Clamp(siblingIndex, 0, parent.children.Count - 1);
             if (current != target)
+            {
                 parent.MoveChild(current, target);
+                revision++;
+            }
             return;
         }
 
-        int rootIndex = m_roots.IndexOf(transform);
+        int rootIndex = m_rootIndices.GetValueOrDefault(transform, -1);
         if (rootIndex < 0)
             throw new InvalidOperationException("Transform is missing from the scene hierarchy index.");
         int rootTarget = Math.Clamp(siblingIndex, 0, m_roots.Count - 1);
@@ -121,9 +132,30 @@ internal sealed class HierarchyService
             return;
         m_roots.RemoveAt(rootIndex);
         m_roots.Insert(rootTarget, transform);
+        RefreshRootIndices(Math.Min(rootIndex, rootTarget), Math.Max(rootIndex, rootTarget) + 1);
+        revision++;
     }
 
-    internal IReadOnlyList<Transform> GetRoots() => m_roots.ToArray();
+    internal void Clear()
+    {
+        m_roots.Clear();
+        m_rootIndices.Clear();
+        revision++;
+    }
 
-    internal void Clear() => m_roots.Clear();
+    private void RemoveRoot(Transform transform)
+    {
+        if (!m_rootIndices.Remove(transform, out int index))
+            return;
+        m_roots.RemoveAt(index);
+        RefreshRootIndices(index, m_roots.Count);
+    }
+
+    private void RefreshRootIndices(
+        int start,
+        int end
+    ) {
+        for (int index = start; index < end; index++)
+            m_rootIndices[m_roots[index]] = index;
+    }
 }

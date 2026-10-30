@@ -154,7 +154,7 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     /// <summary>
-    /// Captures one persistent property as independently restorable neutral bytes.
+    /// Captures one persistent property as independently restorable neutral bytes without reading unrelated members.
     /// </summary>
     /// <param name="value">
     /// The serializable object containing the requested property.
@@ -218,8 +218,7 @@ public sealed class SerializationRegistry : IDisposable
         EnsureInitialized();
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
-        return PropertySnapshotBinaryFormat.Encode(
-            PropertySnapshotPipeline.Capture(value, CreateContext(context), converters));
+        return PropertySnapshotPipeline.CaptureData(value, CreateContext(context), converters, null).value;
     }
 
     /// <summary>
@@ -371,6 +370,62 @@ public sealed class SerializationRegistry : IDisposable
         ArgumentNullException.ThrowIfNull(value);
         using ConverterRegistryLease converters = m_converters.Capture();
         return Serialize(value, converters, context);
+    }
+
+    /// <summary>
+    /// Captures complete serialized state while sharing unchanged neutral values with a previous capture.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The exact concrete root type, interpreted by the current converter generation.
+    /// </typeparam>
+    /// <param name="value">
+    /// The non-null root captured through its current converter and declared complete inputs.
+    /// </param>
+    /// <param name="context">
+    /// The complete owner context, including required reference resolvers.
+    /// </param>
+    /// <param name="previous">
+    /// An optional immutable capture to reuse; it is never changed or retained by this registry.
+    /// </param>
+    /// <returns>
+    /// The previous instance when all captured values can be reused, otherwise a new immutable snapshot.
+    /// Reference equality proves unchanged bytes; different instances may still encode identically.
+    /// Ordinary serialization and snapshot encoding produce identical bytes. Capture failure publishes no snapshot.
+    /// </returns>
+    /// <remarks>
+    /// Writers borrowed by a snapshot converter belong to its synchronous callback and must not be used after it returns.
+    /// Default capture evaluates getters and converters in full. An explicitly opted-in converter may
+    /// reuse its prior node only after every current capture-key input has been verified. Ordinary
+    /// serialization never uses these keys; incomplete or unavailable declarations retain complete capture.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// The source value is null.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The registry has been disposed.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A converter, unsupported value or reference context prevents capture.
+    /// </exception>
+    [ScriptingApiIgnore]
+    public SerializationSnapshot CaptureSnapshot<T>(
+        T value,
+        SerializationContext? context = null,
+        SerializationSnapshot? previous = null
+    ) where T : class, ISerializable {
+        EnsureInitialized();
+        ArgumentNullException.ThrowIfNull(value);
+        using ConverterRegistryLease converters = m_converters.Capture();
+        var operation = new SerializationOperation(CreateContext(context), converters, snapshotCapture: true);
+        try
+        {
+            SerializationNode root = ValuePipeline.WriteRoot(value, typeof(T), operation, previous?.root);
+            return ReferenceEquals(root, previous?.root) ? previous! : new SerializationSnapshot(root);
+        }
+        finally
+        {
+            operation.Fail();
+        }
     }
 
     internal byte[] Serialize<T>(
@@ -529,9 +584,9 @@ public sealed class SerializationRegistry : IDisposable
         var operation = new SerializationOperation(CreateContext(context), converters);
         try
         {
-            var root = new ObjectSerializationNode();
-            write(new SerializationWriter(operation, root, "$", typeof(object)));
-            return BinarySerializationFormat.Encode(root);
+            var writer = new SerializationWriter(operation, null, "$", typeof(object));
+            write(writer);
+            return BinarySerializationFormat.Encode(writer.Complete());
         }
         finally
         {
@@ -609,5 +664,12 @@ public sealed class SerializationRegistry : IDisposable
     }
 
     private SerializationContext CreateContext(SerializationContext? context)
-        => (context ?? SerializationContext.empty).With(m_types).With(this).With<ISerializationMetadataSource>(m_metadata);
+    {
+        context ??= SerializationContext.empty;
+        if (context.TryGet<TypeCatalog>(out TypeCatalog? types) && ReferenceEquals(types, m_types)
+            && context.TryGet<SerializationRegistry>(out SerializationRegistry? registry) && ReferenceEquals(registry, this)
+            && context.TryGet<ISerializationMetadataSource>(out ISerializationMetadataSource? metadata) && ReferenceEquals(metadata, m_metadata))
+            return context;
+        return context.With(m_types).With(this).With<ISerializationMetadataSource>(m_metadata);
+    }
 }

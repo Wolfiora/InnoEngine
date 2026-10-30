@@ -1,7 +1,6 @@
 using Inno.Scripting.Compiler;
 
 namespace Inno.Editor.Scripting;
-
 /// <summary>
 /// Identifies whether the active project script generation can safely start game simulation.
 /// </summary>
@@ -11,17 +10,14 @@ public enum EditorScriptCompilationState
     /// The script service has not produced its initial active generation.
     /// </summary>
     Initializing,
-
     /// <summary>
     /// A requested script generation is compiling, activating, or completing unload verification.
     /// </summary>
     Compiling,
-
     /// <summary>
     /// The most recent compilation succeeded, its generation is active, and retired generations passed GC verification.
     /// </summary>
     Ready,
-
     /// <summary>
     /// Compilation, activation, or generation retirement failed, so game simulation must not start.
     /// </summary>
@@ -34,6 +30,20 @@ public enum EditorScriptCompilationState
 public interface IEditorScriptCompilation
 {
     /// <summary>
+    /// Gets whether compiler or activation work currently requires a blocking progress presentation.
+    /// </summary>
+    bool requiresExclusiveProgress { get; }
+
+    /// <summary>
+    /// Gets the most recent compiler progress fraction in the inclusive range zero to one.
+    /// </summary>
+    float progress { get; }
+
+    /// <summary>
+    /// Requests cancellation while retaining ownership until compilation and retirement finish.
+    /// </summary>
+    void CancelCompilation();
+    /// <summary>
     /// Queues a fresh cache-aware compilation for a build or simulation workflow.
     /// </summary>
     /// <returns>
@@ -41,7 +51,6 @@ public interface IEditorScriptCompilation
     /// a faulted host returns a failed ticket and requires restart.
     /// </returns>
     IScriptCompilationTicket RequestCompilation();
-
     /// <summary>
     /// Gets the most recently requested compilation ticket, or <see langword="null"/> when no explicit request exists.
     /// </summary>

@@ -1,3 +1,5 @@
+using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System.Runtime.CompilerServices;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using NativeVector4 = Inno.Native.ImGui.ImVec4C;
@@ -11,23 +13,30 @@ using NativeImGui = Inno.Native.ImGui.ImGui;
 using Xunit;
 
 namespace Inno.Editor.Scripting.Tests;
-
+[Trait("Acceptance", "Visual")]
 public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
 {
     private readonly ImGuiNativeContext* m_context = NativeImGui.Raw.CreateContext(null);
-
+    private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
+    private readonly IDisposable m_uiScope;
     public InspectorPresentationLayoutTests()
     {
+        m_uiScope = m_ui.Enter();
         ImGuiIO* io = NativeImGui.Raw.GetIO();
         io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640, 480));
         io->DeltaTime = 1f / 60f;
         io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
         io->Fonts->RendererHasTextures = 1;
-        EditorWidget.style.ResetZoom();
-        EditorWidget.SetupStyle();
+        EditorUI.current.widgets.style.ResetZoom();
+        EditorUI.current.widgets.SetupStyle();
     }
 
-    public void Dispose() => NativeImGui.Raw.DestroyContext(m_context);
+    public void Dispose()
+    {
+        m_uiScope.Dispose();
+        m_ui.Dispose();
+        NativeImGui.Raw.DestroyContext(m_context);
+    }
 
     [Fact]
     public void FloatingPanelCloseButtonClosesOnMouseRelease()
@@ -38,9 +47,10 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             NativeImGui.NewFrame();
             NativeImGui.SetNextWindowPos(new Vector2(30, 30));
             NativeImGui.SetNextWindowSize(new Vector2(320, 180));
-            EditorWidget.PanelWindow("Floating acceptance", ref open, () => NativeImGui.TextUnformatted("Body"));
+            EditorUI.current.widgets.PanelWindow("Floating acceptance", ref open, () => NativeImGui.TextUnformatted("Body"));
             NativeImGui.Render();
         }
+
         Frame();
         Frame();
         using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Floating acceptance", allowsNull: false);
@@ -66,8 +76,8 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
     ) {
         ImGuiIO* io = NativeImGui.Raw.GetIO();
         io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(width, height));
-        EditorWidget.style.SetZoom(zoom);
-        EditorWidget.SetupStyle();
+        EditorUI.current.widgets.style.SetZoom(zoom);
+        EditorUI.current.widgets.SetupStyle();
         Vector2 hover = default;
         const string text = "The profile is evaluated after this camera stack is composed. The final words must remain readable.";
         void Frame()
@@ -79,14 +89,16 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, 0);
             NativeImGui.Button("Hover near edge");
             hover = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
-            EditorWidget.DrawItemTooltip(text);
+            EditorUI.current.widgets.DrawItemTooltip(text);
             NativeImGui.End();
             NativeImGui.Render();
         }
+
         Frame();
         Frame();
         NativeImGui.Raw.AddMousePosEvent(io, hover.X, hover.Y);
-        for (int index = 0; index < 4; index++) Frame();
+        for (int index = 0; index < 4; index++)
+            Frame();
         using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("##Tooltip_00", allowsNull: false);
         ImGuiWindow* tooltip = NativeImGui.Raw.FindWindowByName((sbyte*)nativeTestText2.pointer);
         Assert.False((tooltip == null));
@@ -109,7 +121,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             using NativeStringLease nativeTestText3 = Utf8Codec.EncodeNullTerminated("HelpBox acceptance", allowsNull: false);
             NativeImGui.Raw.Begin((sbyte*)nativeTestText3.pointer, null, 0);
             float width = NativeImGui.GetContentRegionAvail().X;
-            EditorWidget.HelpBox("Assign a Sprite to enable atlas geometry, borders, pixel density, and sampling controls.", "i", EditorPalette.warning);
+            EditorUI.current.widgets.HelpBox("Assign a Sprite to enable atlas geometry, borders, pixel density, and sampling controls.", "i", EditorPalette.warning);
             Vector2 size = NativeImGui.GetItemRectSize();
             Assert.Equal(width, size.X, 2);
             Assert.True(size.Y > NativeImGui.GetTextLineHeight() * 2);
@@ -130,8 +142,8 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
         float framebufferScale
     ) {
         NativeImGui.Raw.GetIO()->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(framebufferScale));
-        EditorWidget.style.SetZoom(zoom);
-        EditorWidget.SetupStyle();
+        EditorUI.current.widgets.style.SetZoom(zoom);
+        EditorUI.current.widgets.SetupStyle();
         NativeImGui.Raw.GetStyle()->WindowRounding = 6f * zoom;
         NativeImGui.Raw.GetStyle()->FrameBorderSize = 0;
         for (int frame = 0; frame < 2; frame++)
@@ -156,13 +168,14 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             float coverage = CoverageAt(window->DrawList, point);
             Assert.True(coverage >= 0.999f, $"Transparent title/body join: zoom={zoom}, scale={framebufferScale}, y={point.Y}, alpha={coverage}");
         }
+
         for (int pixel = -2; pixel <= 2; pixel++)
         {
             float y = (MathF.Floor(seam * framebufferScale) + pixel + 0.5f) / framebufferScale;
             Vector2 point = new(window->Pos.X + window->Size.X * 0.47f, y);
-            Assert.True(CoverageAt(window->DrawList, point) >= 0.999f,
-                $"Transparent device pixel: zoom={zoom}, scale={framebufferScale}, y={y}");
+            Assert.True(CoverageAt(window->DrawList, point) >= 0.999f, $"Transparent device pixel: zoom={zoom}, scale={framebufferScale}, y={y}");
         }
+
         Assert.True(NativeImGui.Raw.GetStyle()->AntiAliasedFill != 0);
         Assert.Equal(6f * zoom, window->WindowRounding);
     }
@@ -187,15 +200,18 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
                 Vector2 bPosition = Unsafe.BitCast<ImVec2C, Vector2>(b.Pos);
                 Vector2 cPosition = Unsafe.BitCast<ImVec2C, Vector2>(c.Pos);
                 float area = Cross(bPosition - aPosition, cPosition - aPosition);
-                if (MathF.Abs(area) < 0.000001f) continue;
+                if (MathF.Abs(area) < 0.000001f)
+                    continue;
                 float wa = Cross(bPosition - point, cPosition - point) / area;
                 float wb = Cross(cPosition - point, aPosition - point) / area;
                 float wc = 1 - wa - wb;
-                if (wa < 0 || wb < 0 || wc < 0) continue;
+                if (wa < 0 || wb < 0 || wc < 0)
+                    continue;
                 float alpha = (wa * (a.Col >> 24) + wb * (b.Col >> 24) + wc * (c.Col >> 24)) / 255f;
                 result = alpha + result * (1 - alpha);
             }
         }
+
         return result;
     }
 

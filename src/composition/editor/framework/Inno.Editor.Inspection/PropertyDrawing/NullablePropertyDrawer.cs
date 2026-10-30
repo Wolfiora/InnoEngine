@@ -1,10 +1,8 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
-
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
-
 [PropertyDrawer(typeof(Nullable<>))]
 internal sealed class NullablePropertyDrawer : IPropertyDrawer
 {
@@ -16,15 +14,11 @@ internal sealed class NullablePropertyDrawer : IPropertyDrawer
     /// </param>
     public void Draw(PropertyDrawContext context)
     {
-        Type underlyingType = Nullable.GetUnderlyingType(context.propertyType)
-            ?? throw new InvalidOperationException("Nullable drawer requires a nullable property type.");
+        Type underlyingType = Nullable.GetUnderlyingType(context.propertyType) ?? throw new InvalidOperationException("Nullable drawer requires a nullable property type.");
         object? value = context.GetValue();
         bool hasValue = value is not null;
         bool previousHasValue = hasValue;
-        _ = EditorWidget.Checkbox(
-            $"##{context.path}_has_value",
-            ref hasValue,
-            context.tooltip);
+        _ = EditorUI.current.widgets.Checkbox($"##{context.path}_has_value", ref hasValue, context.tooltip);
         if (hasValue != previousHasValue)
         {
             value = hasValue ? Activator.CreateInstance(underlyingType) : null;
@@ -33,16 +27,12 @@ internal sealed class NullablePropertyDrawer : IPropertyDrawer
 
         if (!hasValue)
         {
-            NativeImGui.SameLine(0f, -1f);
-            NativeImGui.TextUnformatted("Null");
+            Ui.SameLine(0f, -1f);
+            Ui.Text("Null");
             return;
         }
 
-        NativeImGui.SameLine(0f, -1f);
-        context.DrawInlineChild(
-            "Value",
-            underlyingType,
-            context.GetValue,
-            context.SetValue);
+        Ui.SameLine(0f, -1f);
+        context.DrawInlineChild("Value", underlyingType, context.GetValue, value => context.SetValue(value));
     }
 }

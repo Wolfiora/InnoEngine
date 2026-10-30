@@ -61,6 +61,20 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         return true;
     }
 
+    internal void PublishSourceUnavailable(
+        GameScene scene,
+        string sourcePath
+    ) {
+        Guid sceneId = scene.identity.persistentId;
+        string state = "SCENE-SOURCE-MISSING:" + sourcePath;
+        if (m_synchronizationStates.TryGetValue(sceneId, out string? previous) &&
+            string.Equals(previous, state, StringComparison.Ordinal))
+            return;
+        Diagnostics.Set(sceneId, C_SYNCHRONIZATION_GROUP,
+            Diagnostic.Warning("SCENE-SOURCE-MISSING", $"Scene source '{sourcePath}' is unavailable; its assignment and current edits are preserved."), scene.name);
+        m_synchronizationStates[sceneId] = state;
+    }
+
     internal void ResolveSynchronization(Guid sceneId)
     {
         if (!m_synchronizationStates.Remove(sceneId))

@@ -3,9 +3,11 @@ param(
     [string]$ResultsDirectory = 'artifacts/acceptance/ci-tests',
     [string]$Dotnet = 'dotnet',
     [string]$Target,
+    [string]$ToolTarget,
     [string]$ProductProperties,
     [string]$ArtifactsPath,
     [string]$Filter,
+    [string]$TemporaryDirectory,
     [string]$Solution = 'InnoEngine.sln'
 )
 
@@ -14,13 +16,26 @@ $Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
 $sdkDirectory = Split-Path $Dotnet -Parent
 $sdkEnvironment = @('--environment', "DOTNET_ROOT=$sdkDirectory",
     '--environment', "PATH=$sdkDirectory$([IO.Path]::PathSeparator)$env:PATH")
-# Project-mode dotnet test supplies DOTNET_HOST_PATH itself; assembly-mode VSTest needs the explicit host.
-$assemblyEnvironment = @($sdkEnvironment) + @('--environment', "DOTNET_HOST_PATH=$Dotnet")
+# Assembly-mode VSTest derives DOTNET_ROOT from the explicit host; passing both duplicates its environment key.
+$assemblyEnvironment = @('--environment', "DOTNET_HOST_PATH=$Dotnet",
+    '--environment', "PATH=$sdkDirectory$([IO.Path]::PathSeparator)$env:PATH")
 
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $solutionPath = [System.IO.Path]::GetFullPath($Solution, $repositoryRoot)
 $resultsRoot = [System.IO.Path]::GetFullPath($ResultsDirectory, $repositoryRoot)
 New-Item -ItemType Directory -Force -Path $resultsRoot | Out-Null
+if ($TemporaryDirectory) {
+    $temporaryOwner = [IO.Path]::GetFullPath($TemporaryDirectory, $repositoryRoot)
+    New-Item -ItemType Directory -Force -Path $temporaryOwner | Out-Null
+    $processTemp = Join-Path $temporaryOwner ([Guid]::NewGuid().ToString('N').Substring(0, 12))
+    New-Item -ItemType Directory -Path $processTemp | Out-Null
+    @{ directory = $processTemp; purpose = 'Owned temporary files for the selected test processes.' } |
+        ConvertTo-Json | Set-Content -LiteralPath (Join-Path $resultsRoot 'temporary-owner.json') -Encoding utf8
+    $tempEnvironment = @('--environment', "TMP=$processTemp", '--environment', "TEMP=$processTemp",
+        '--environment', "TMPDIR=$processTemp")
+    $sdkEnvironment += $tempEnvironment
+    $assemblyEnvironment += $tempEnvironment
+}
 $checks = [System.Collections.Generic.List[object]]::new()
 
 function Add-CheckResult(
@@ -53,8 +68,16 @@ if ($Filter) {
 }
 if ($Target) {
     if (-not $ProductProperties) { throw 'A target test build requires explicit product properties.' }
-    $productArguments += @("-p:InnoNativeTarget=$Target", "-p:InnoToolTarget=$Target",
-        "-p:InnoProductBuildProperties=$ProductProperties", "-p:InnoTestNativeTarget=$Target", '-p:InnoTestNativeProduct=editor')
+    if (-not $ToolTarget) {
+        $entry = Join-Path $repositoryRoot 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj'
+        $selectedTool = @(& $Dotnet msbuild $entry -nologo -getProperty:InnoToolTarget)
+        if ($LASTEXITCODE -ne 0 -or $selectedTool.Count -ne 1 -or -not $selectedTool[0]) {
+            throw 'The SDK-selected development host did not provide a tool target.'
+        }
+        $ToolTarget = $selectedTool[0].Trim()
+    }
+    $productArguments += @("-p:InnoNativeTarget=$Target", "-p:InnoToolTarget=$ToolTarget",
+        "-p:InnoProductBuildProperties=$ProductProperties")
 }
 
 # Process-global Native state and deliberately retained Faulted owners require separate hosts.
@@ -100,7 +123,9 @@ foreach ($project in $projects) {
         $assembly = $targetPath[0]
         $listed = @(& $Dotnet test $assembly --list-tests --filter $isolatedFilter @assemblyEnvironment 2>&1)
         $discoveryExit = $LASTEXITCODE
-        if ($discoveryExit -ne 0) {
+        $listed | Set-Content -LiteralPath (Join-Path $resultsRoot ($project.BaseName + '.discovery.log')) -Encoding utf8
+        $discoveryErrors = @($listed | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
+        if ($discoveryExit -ne 0 -or $discoveryErrors.Count -ne 0) {
             Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine)
             continue
         }

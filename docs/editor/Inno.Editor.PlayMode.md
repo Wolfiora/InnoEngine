@@ -58,7 +58,7 @@ flowchart LR
 | `isPlaying` | 仅在 `Playing` 时为 `true`。 |
 | `lastFailure` | 最近一次编译门禁、切换或模拟失败；新 entry 请求会清空。 |
 | `activeSessionId` | 当前 Play 日志 Session；不在 Play 请求内时为 `none`。 |
-| `stateChanged` | 状态实际变化后触发；单个订阅者异常被隔离。 |
+| `ListenStateChanges(callback)` | 通过 Core Events 订阅状态变化；返回值由订阅者释放。通知全部观察者后聚合异常。 |
 | `EnterPlayMode()` | 从 `Editing` 或 `Failed` 接受 fresh 请求；返回值表示是否接受。 |
 | `ExitPlayMode()` | 取消 Compiling、停止 Preparing/Playing，或把 `Failed` 清回 `Editing`；其他状态返回 `false`。 |
 
@@ -142,57 +142,15 @@ Command/Ctrl + `P` 与 icon 使用同一个 Action 和状态查询，因此不�
 - 编译门禁：[Inno.Editor.Scripting](Inno.Editor.Scripting.md)
 - 下一页：[Inno.Editor.Hosting](Inno.Editor.Hosting.md)
 
+
+
+## 状态观察生命周期
+
+IEditorPlayMode.ListenStateChanges 返回 Core Events 的独立订阅 lease；Console 在 Start 注册并在 Dispose 释放。Controller 的私有 Core EventHub 在成功退休后释放，pending retirement 保留 owner。观察者异常仍在所有观察者得到通知后聚合报告，不吞掉错误。没有第二个 UI 监听器注册表或事件总线。
+
 ## 当前源码公开 API 清单
 
-签名来自当前 SDK 求值与语义符号；按类型列出 public/protected 契约。工作流与生命周期见本页前文。
-
-### `Inno.Editor.PlayMode.EditorPlayModeController`
-
-<!-- api: T:Inno.Editor.PlayMode.EditorPlayModeController a85413018fb9723a7daa8ba7d89391635eeed4e93c08e98ad7bf35c19e98bd38 -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.#ctor(Inno.Runtime.EngineHost,Inno.Runtime.RuntimeSessionOptions,Inno.Editor.Scene.IEditorScenePlayMode,Inno.Editor.Scripting.IEditorScriptCompilation,Inno.Editor.Interactions.IEditorHistoryIsolation,Inno.Core.Logging.LogRouter,Inno.Editor.Audio.IEditorAudioHost) 0bc283c26075c11cc02c02bb09919fe6b4662a90cd424e73021493d8aab7965f -->
-<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.state bd5e26ee3a1716374314aeada6782818849ef345bd248ac426e519b076e2cfaa -->
-<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.isPlaying 1cc41bfc46803069ea9d1192cac0cd919022b1027898ca076015dc0dd2404435 -->
-<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.lastFailure 9be2869aae1113699bce9e3a3db6f4dd307888a12d0ebb97f7f85abf40f528df -->
-<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.activeSessionId 8eed81cf2b3916d47dffeeff137c50bf3ef3d5418be24143a38144e366c949c0 -->
-<!-- api: E:Inno.Editor.PlayMode.EditorPlayModeController.stateChanged 35affb50c360bd0ea79e0b2cc8bd9c9246969269c531b581f6e748d4bc379093 -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.EnterPlayMode b1a87c10339a0163c40ac5c6827a150cf6f275c2f1be3a1a0881049fd17a86fc -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.ExitPlayMode 12d399ce43e1b556f20d6016ca746c3ddb60514dcb0d20bdd204e193b6c3aca1 -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.AdvanceTransition e591120e3a76ee1230e3d7eabaa7b9251f47d5d1da89148f337ccf2df00263d2 -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.Tick(System.Single) e54b988cffa9ace3909caefba3e6bcebd5c603d0991ca4e0a4bd8f1f47bfb783 -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.Dispose fe2fe6005aff6d024110a32dc6989819b35bf95281add58c72b80cd50f250550 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-fa140b484be47e03"></a>[`public System.Action<Inno.Editor.PlayMode.EditorPlayModeState>? Inno.Editor.PlayMode.EditorPlayModeController.stateChanged`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L144) | Occurs after the controller commits a state transition. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-8a83f18cc10d7856"></a>[`public Inno.Editor.PlayMode.EditorPlayModeController.EditorPlayModeController(Inno.Runtime.EngineHost engineHost, Inno.Runtime.RuntimeSessionOptions runtimeOptions, Inno.Editor.Scene.IEditorScenePlayMode scenes, Inno.Editor.Scripting.IEditorScriptCompilation scripting, Inno.Editor.Interactions.IEditorHistoryIsolation history, Inno.Core.Logging.LogRouter logs, Inno.Editor.Audio.IEditorAudioHost? audio = null)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L84) | Creates a Play Mode controller around the runtime host, scene snapshot, scripting, and history boundaries.<br>`engineHost`：The application host that owns every isolated Play Mode runtime session.<br>`runtimeOptions`：The validated Play Mode storage and timing policy used for every accepted request.<br>`scenes`：The scene workspace that creates isolated runtime scene sessions.<br>`scripting`：The script compilation service that publishes generation readiness.<br>`history`：The editor history boundary isolated during simulation.<br>`logs`：The application log router that receives Play Mode lifecycle failures.<br>`audio`：Optional Editor audio host that creates an isolated backend generation for Play Mode. | 约束由所属类型与本页生命周期定义。 | `System.ArgumentNullException`：Thrown when any dependency is null. |
-| <a id="api-e40848c2064247ac"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeController.AdvanceTransition()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L206) | Advances at most one Play Mode transition at an editor-controlled frame-safe point. | 约束由所属类型与本页生命周期定义。 | `System.ObjectDisposedException`：Thrown after the controller has been disposed. |
-| <a id="api-36e4b08af4c8a6f9"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeController.Dispose()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L242) | Releases the isolated runtime session and history scope owned by this controller. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-f592c1a1b44dabcc"></a>[`public bool Inno.Editor.PlayMode.EditorPlayModeController.EnterPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L155) | Requests a fresh script generation before preparing an isolated runtime session.<br>返回：true when the controller accepted a new request; otherwise, false. | 约束由所属类型与本页生命周期定义。 | `System.ObjectDisposedException`：Thrown after the controller has been disposed. |
-| <a id="api-63e0df825ec0858f"></a>[`public bool Inno.Editor.PlayMode.EditorPlayModeController.ExitPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L179) | Requests cancellation, runtime-session disposal, or dismissal of a failed transition.<br>返回：true when the current state accepted the request; otherwise, false. | 约束由所属类型与本页生命周期定义。 | `System.ObjectDisposedException`：Thrown after the controller has been disposed. |
-| <a id="api-360228a4d92246f1"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeController.Tick(float deltaTime)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L230) | Advances the isolated runtime session by one complete frame.<br>`deltaTime`：The elapsed editor frame time in seconds. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-f1f36c3f847ac78e"></a>[`public Inno.Core.Logging.LogSessionId Inno.Editor.PlayMode.EditorPlayModeController.activeSessionId { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L139) | Gets the isolated runtime log session associated with the current request. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-df13bc1e0dfb7eca"></a>[`public bool Inno.Editor.PlayMode.EditorPlayModeController.isPlaying { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L117) | Gets whether isolated runtime scenes are actively simulating. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-5879632dfc21294e"></a>[`public string? Inno.Editor.PlayMode.EditorPlayModeController.lastFailure { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L134) | Gets the most recent transition or simulation failure. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-647bb00bc3d77434"></a>[`public Inno.Editor.PlayMode.EditorPlayModeState Inno.Editor.PlayMode.EditorPlayModeController.state { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L112) | Gets the current Play Mode transition state. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-ca14c24fbc73933a"></a>[`public sealed class Inno.Editor.PlayMode.EditorPlayModeController : Inno.Editor.PlayMode.IEditorPlayMode, Inno.Editor.Core.IEditorReloadGuard, System.IDisposable`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L28) | Implements the deterministic state machine for one editor Play Mode workflow. | The editor host advances transitions at frame-safe points. Editable scenes remain owned by the scene workspace while the controller owns only the isolated runtime session. | 具体失败按方法与类型契约处理。 |
-
-### `Inno.Editor.PlayMode.EditorPlayModeLoop`
-
-<!-- api: T:Inno.Editor.PlayMode.EditorPlayModeLoop 4268cc2db0e09e0dcb97f2606ba854160f772e4e7028404e9a8e3cd6109cbc2b -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.Tick(System.Single) e43e91aaa084a0607925ed8b8dd45c7e061ba39e93b1a93e5a16dcfdebfa3fb4 -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.EnterPresentationScope 5b6f48948503b80d20b04a20ee94032b1020240fc8da312c07dfaf46be0cc014 -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.Quiesce ce69521273a1cab820ee5b65bcff770f435223ee8723b900403b0ec74616873d -->
-<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.#ctor a9727bfc98b0320dfd26c89600b8cf7c2122422d40a9e09491c5c83f0b4cd501 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-9ae4b4d3b23ada13"></a>[`public Inno.Editor.PlayMode.EditorPlayModeLoop.EditorPlayModeLoop()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L8) | C# 生成的声明；状态与值语义遵循所属类型契约。 | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-1608ab01cea48f6e"></a>[`public System.IDisposable Inno.Editor.PlayMode.EditorPlayModeLoop.EnterPresentationScope()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L29) | Binds editor presentation and interaction work to the isolated Play session while simulation is active, or returns an inert scope while the editor is not presenting runtime copies.<br>返回：A scope that must be disposed after the current editor presentation phase completes. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-fd48f78305f6ab6f"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeLoop.Quiesce()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L37) | Drains the active Play session before the product tears down editor modules, history or presentation. | 约束由所属类型与本页生命周期定义。 | `System.InvalidOperationException`：The session cannot retire within its deadline; the host is faulted and its dependencies must remain alive. |
-| <a id="api-de0d21db86662da1"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeLoop.Tick(float deltaTime)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L20) | Advances the active simulation by one complete frame when Play Mode is running.<br>`deltaTime`：The elapsed frame time in seconds. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-d5a8d006ea1cf669"></a>[`public sealed class Inno.Editor.PlayMode.EditorPlayModeLoop`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L8) | Bridges the editor host frame clock to the active Play Mode session. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-
-### `Inno.Editor.PlayMode.EditorPlayModeState`
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 <!-- api: T:Inno.Editor.PlayMode.EditorPlayModeState adf2567f0f1733e24d323b15c09274e97a0815dec3f594b284839941d971522b -->
 <!-- api: F:Inno.Editor.PlayMode.EditorPlayModeState.Editing 183dbd387a8a3fa478b81ef9625d4b0dc9a97709985ae35bfd2594c79a675c49 -->
@@ -201,55 +159,86 @@ Command/Ctrl + `P` 与 icon 使用同一个 Action 和状态查询，因此不�
 <!-- api: F:Inno.Editor.PlayMode.EditorPlayModeState.Playing 3576a152773ffa7ceee0d35e0f671a41d1981737be04e24c1121d07c92cf983d -->
 <!-- api: F:Inno.Editor.PlayMode.EditorPlayModeState.Stopping 25918310c03f6f70437f8aa2c9cfaad7baaeaf19adcf31f9e42cfec7efb3d494 -->
 <!-- api: F:Inno.Editor.PlayMode.EditorPlayModeState.Failed 6a66229c7a85c554f5142c7d1c3a285978b91193ecf9d92d3dac2fc3528e426c -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-ec60e99b27f8857b"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Compiling = 1`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L16) | Play Mode is waiting for the requested script generation to become active. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-27814f6c91ebf262"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Editing = 0`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L11) | Editable scene documents are loaded and game simulation is stopped. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-47d739aae8f15f69"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Failed = 5`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L36) | The most recent transition failed and its diagnostic remains available for inspection. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-26641219af9a603e"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Playing = 3`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L26) | Isolated runtime scenes are receiving the game update lifecycle. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-10ff0c598d1007e6"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Preparing = 2`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L21) | The active script generation is ready and isolated runtime state is being prepared. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-584c569ce060140e"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Stopping = 4`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L31) | The isolated runtime session is stopping and releasing its owned state. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-d7ec9ccecc5de6a4"></a>[`public enum Inno.Editor.PlayMode.EditorPlayModeState : int`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L6) | Identifies the current relationship between editor documents and game simulation. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-
-### `Inno.Editor.PlayMode.IEditorPlayMode`
-
 <!-- api: T:Inno.Editor.PlayMode.IEditorPlayMode 5beb83a248feec7b28f19ae14e278879dbc93d2f4f2447fd63a5b918a6610426 -->
 <!-- api: P:Inno.Editor.PlayMode.IEditorPlayMode.state 4504a739d9b5d26b51056ef5056fbf3b31a26e5b5a1d35511e90edba3a0967a4 -->
 <!-- api: P:Inno.Editor.PlayMode.IEditorPlayMode.isPlaying d466fb26c7285b436f26043b8874fbeee209b5f0e28bfec611c23f875b515929 -->
 <!-- api: P:Inno.Editor.PlayMode.IEditorPlayMode.lastFailure 79215248e6a2157833f32c617798db37604190748fab6ecd029e2d5566f106c9 -->
 <!-- api: P:Inno.Editor.PlayMode.IEditorPlayMode.activeSessionId a8a3b1c668ff811a0b9351cb0b58171d32ffbc60221a61da54bc782f807fd7e6 -->
-<!-- api: E:Inno.Editor.PlayMode.IEditorPlayMode.stateChanged 82cd26deacd4ddbabe35b0f473a338d6828eb2bd1a222efbaee7bccd65d76065 -->
+<!-- api: M:Inno.Editor.PlayMode.IEditorPlayMode.ListenStateChanges(System.Action{Inno.Editor.PlayMode.EditorPlayModeState}) 1cddeb61a737accbe4679d0c5164b1e9449e35a0376c8a699d9fb595601407c8 -->
 <!-- api: M:Inno.Editor.PlayMode.IEditorPlayMode.EnterPlayMode 0e15c2bcb18884139c64df74cec02f3f63572fd8ff18904072d24f6705036533 -->
 <!-- api: M:Inno.Editor.PlayMode.IEditorPlayMode.ExitPlayMode 762a151d253f06162984580a5b44f4c4fc93cd2e95d0848ac61b6651eb686922 -->
+<!-- api: T:Inno.Editor.PlayMode.EditorPlayModeController a85413018fb9723a7daa8ba7d89391635eeed4e93c08e98ad7bf35c19e98bd38 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.#ctor(Inno.Runtime.EngineHost,Inno.Runtime.RuntimeSessionOptions,Inno.Editor.Scene.IEditorScenePlayMode,Inno.Editor.Scripting.IEditorScriptCompilation,Inno.Editor.Interactions.IEditorHistoryIsolation,Inno.Core.Logging.LogRouter,Inno.Editor.Audio.IEditorAudioHost) 0bc283c26075c11cc02c02bb09919fe6b4662a90cd424e73021493d8aab7965f -->
+<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.state bd5e26ee3a1716374314aeada6782818849ef345bd248ac426e519b076e2cfaa -->
+<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.isPlaying 1cc41bfc46803069ea9d1192cac0cd919022b1027898ca076015dc0dd2404435 -->
+<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.lastFailure 9be2869aae1113699bce9e3a3db6f4dd307888a12d0ebb97f7f85abf40f528df -->
+<!-- api: P:Inno.Editor.PlayMode.EditorPlayModeController.activeSessionId 8eed81cf2b3916d47dffeeff137c50bf3ef3d5418be24143a38144e366c949c0 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.ListenStateChanges(System.Action{Inno.Editor.PlayMode.EditorPlayModeState}) 32e388b9c50f64e7b06145bc554ad818eeb3ebd43bb511e7f63fa6d1508e9212 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.EnterPlayMode b1a87c10339a0163c40ac5c6827a150cf6f275c2f1be3a1a0881049fd17a86fc -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.ExitPlayMode 12d399ce43e1b556f20d6016ca746c3ddb60514dcb0d20bdd204e193b6c3aca1 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.AdvanceTransition e591120e3a76ee1230e3d7eabaa7b9251f47d5d1da89148f337ccf2df00263d2 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.Tick(System.Single) e54b988cffa9ace3909caefba3e6bcebd5c603d0991ca4e0a4bd8f1f47bfb783 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeController.Dispose fe2fe6005aff6d024110a32dc6989819b35bf95281add58c72b80cd50f250550 -->
+<!-- api: T:Inno.Editor.PlayMode.EditorPlayModeLoop 4268cc2db0e09e0dcb97f2606ba854160f772e4e7028404e9a8e3cd6109cbc2b -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.Tick(System.Single) e43e91aaa084a0607925ed8b8dd45c7e061ba39e93b1a93e5a16dcfdebfa3fb4 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.EnterPresentationScope 5b6f48948503b80d20b04a20ee94032b1020240fc8da312c07dfaf46be0cc014 -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.Quiesce ce69521273a1cab820ee5b65bcff770f435223ee8723b900403b0ec74616873d -->
+<!-- api: M:Inno.Editor.PlayMode.EditorPlayModeLoop.#ctor a9727bfc98b0320dfd26c89600b8cf7c2122422d40a9e09491c5c83f0b4cd501 -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| API 与源码 | 契约与参数 | 返回值 | 重要异常 |
 | --- | --- | --- | --- |
-| <a id="api-75115a3d5b9c13b7"></a>[`System.Action<Inno.Editor.PlayMode.EditorPlayModeState>? Inno.Editor.PlayMode.IEditorPlayMode.stateChanged`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L35) | Occurs after P:Inno.Editor.PlayMode.IEditorPlayMode.state changes. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-791b2fe37f3c7e6b"></a>[`bool Inno.Editor.PlayMode.IEditorPlayMode.EnterPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L43) | Requests entry after the active script generation becomes ready.<br>返回：true when a new entry request was accepted. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-9d02689b36c5c6f6"></a>[`bool Inno.Editor.PlayMode.IEditorPlayMode.ExitPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L51) | Requests disposal of the active runtime session or dismisses a failed transition.<br>返回：true when entry was cancelled or a new exit request was accepted. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-6486e544d3786d14"></a>[`Inno.Core.Logging.LogSessionId Inno.Editor.PlayMode.IEditorPlayMode.activeSessionId { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L30) | Gets the active isolated runtime log session, or P:Inno.Core.Logging.LogSessionId.none outside a Play Mode request. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-4fd7458bc3658a2d"></a>[`bool Inno.Editor.PlayMode.IEditorPlayMode.isPlaying { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L20) | Gets whether isolated runtime scenes are actively simulating. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-ece56d9c83f11001"></a>[`string? Inno.Editor.PlayMode.IEditorPlayMode.lastFailure { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L25) | Gets the most recent transition or simulation failure, or null when no failure is active. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-ed080788229232d2"></a>[`Inno.Editor.PlayMode.EditorPlayModeState Inno.Editor.PlayMode.IEditorPlayMode.state { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L15) | Gets the current Play Mode transition state. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
-| <a id="api-9ce09b2dc7b41bf3"></a>[`public interface Inno.Editor.PlayMode.IEditorPlayMode`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L10) | Controls the editor's isolated game-simulation session. | 约束由所属类型与本页生命周期定义。 | 具体失败按方法与类型契约处理。 |
+| <a id="api-d7ec9ccecc5de6a4"></a>[`public enum Inno.Editor.PlayMode.EditorPlayModeState : int`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L6) | Identifies the current relationship between editor documents and game simulation. | — | — |
+| <a id="api-27814f6c91ebf262"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Editing = 0`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L11) | Editable scene documents are loaded and game simulation is stopped. | — | — |
+| <a id="api-ec60e99b27f8857b"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Compiling = 1`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L16) | Play Mode is waiting for the requested script generation to become active. | — | — |
+| <a id="api-10ff0c598d1007e6"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Preparing = 2`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L21) | The active script generation is ready and isolated runtime state is being prepared. | — | — |
+| <a id="api-26641219af9a603e"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Playing = 3`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L26) | Isolated runtime scenes are receiving the game update lifecycle. | — | — |
+| <a id="api-584c569ce060140e"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Stopping = 4`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L31) | The isolated runtime session is stopping and releasing its owned state. | — | — |
+| <a id="api-47d739aae8f15f69"></a>[`Inno.Editor.PlayMode.EditorPlayModeState.Failed = 5`](../../src/composition/editor/features/Inno.Editor.PlayMode/EditorPlayModeState.cs#L36) | The most recent transition failed and its diagnostic remains available for inspection. | — | — |
+| <a id="api-9ce09b2dc7b41bf3"></a>[`public interface Inno.Editor.PlayMode.IEditorPlayMode`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L10) | Controls the editor's isolated game-simulation session. | — | — |
+| <a id="api-ed080788229232d2"></a>[`Inno.Editor.PlayMode.EditorPlayModeState Inno.Editor.PlayMode.IEditorPlayMode.state { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L15) | Gets the current Play Mode transition state. | — | — |
+| <a id="api-4fd7458bc3658a2d"></a>[`bool Inno.Editor.PlayMode.IEditorPlayMode.isPlaying { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L20) | Gets whether isolated runtime scenes are actively simulating. | — | — |
+| <a id="api-ece56d9c83f11001"></a>[`string? Inno.Editor.PlayMode.IEditorPlayMode.lastFailure { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L25) | Gets the most recent transition or simulation failure, or when no failure is active. | — | — |
+| <a id="api-6486e544d3786d14"></a>[`Inno.Core.Logging.LogSessionId Inno.Editor.PlayMode.IEditorPlayMode.activeSessionId { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L30) | Gets the active isolated runtime log session, or outside a Play Mode request. | — | — |
+| <a id="api-8b2653acec2de0f8"></a>[`System.IDisposable Inno.Editor.PlayMode.IEditorPlayMode.ListenStateChanges(System.Action<Inno.Editor.PlayMode.EditorPlayModeState> listener)`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L44) | Subscribes to committed state transitions through the Core event lifetime.<br>`listener`: The observer invoked synchronously after a transition. | An independently disposable subscription; dispose it before retiring the observer. | `System.ArgumentNullException`: The listener is null. |
+| <a id="api-791b2fe37f3c7e6b"></a>[`bool Inno.Editor.PlayMode.IEditorPlayMode.EnterPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L52) | Requests entry after the active script generation becomes ready. | when a new entry request was accepted. | — |
+| <a id="api-9d02689b36c5c6f6"></a>[`bool Inno.Editor.PlayMode.IEditorPlayMode.ExitPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/IEditorPlayMode.cs#L60) | Requests disposal of the active runtime session or dismisses a failed transition. | when entry was cancelled or a new exit request was accepted. | — |
+| <a id="api-ca14c24fbc73933a"></a>[`public sealed class Inno.Editor.PlayMode.EditorPlayModeController : Inno.Editor.PlayMode.IEditorPlayMode, Inno.Editor.Core.IEditorReloadGuard, System.IDisposable`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L29) | Implements the deterministic state machine for one editor Play Mode workflow. | — | — |
+| <a id="api-8a83f18cc10d7856"></a>[`public Inno.Editor.PlayMode.EditorPlayModeController.EditorPlayModeController(Inno.Runtime.EngineHost engineHost, Inno.Runtime.RuntimeSessionOptions runtimeOptions, Inno.Editor.Scene.IEditorScenePlayMode scenes, Inno.Editor.Scripting.IEditorScriptCompilation scripting, Inno.Editor.Interactions.IEditorHistoryIsolation history, Inno.Core.Logging.LogRouter logs, Inno.Editor.Audio.IEditorAudioHost? audio = null)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L87) | Creates a Play Mode controller around the runtime host, scene snapshot, scripting, and history boundaries.<br>`engineHost`: The application host that owns every isolated Play Mode runtime session.<br>`runtimeOptions`: The validated Play Mode storage and timing policy used for every accepted request.<br>`scenes`: The scene workspace that creates isolated runtime scene sessions.<br>`scripting`: The script compilation service that publishes generation readiness.<br>`history`: The editor history boundary isolated during simulation.<br>`logs`: The application log router that receives Play Mode lifecycle failures.<br>`audio`: Optional Editor audio host that creates an isolated backend generation for Play Mode. | — | `System.ArgumentNullException`: Thrown when any dependency is . |
+| <a id="api-647bb00bc3d77434"></a>[`public Inno.Editor.PlayMode.EditorPlayModeState Inno.Editor.PlayMode.EditorPlayModeController.state { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L116) | Gets the current Play Mode transition state. | — | — |
+| <a id="api-df13bc1e0dfb7eca"></a>[`public bool Inno.Editor.PlayMode.EditorPlayModeController.isPlaying { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L121) | Gets whether isolated runtime scenes are actively simulating. | — | — |
+| <a id="api-5879632dfc21294e"></a>[`public string? Inno.Editor.PlayMode.EditorPlayModeController.lastFailure { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L138) | Gets the most recent transition or simulation failure. | — | — |
+| <a id="api-f1f36c3f847ac78e"></a>[`public Inno.Core.Logging.LogSessionId Inno.Editor.PlayMode.EditorPlayModeController.activeSessionId { get; }`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L143) | Gets the isolated runtime log session associated with the current request. | — | — |
+| <a id="api-66a17435b70dca56"></a>[`public System.IDisposable Inno.Editor.PlayMode.EditorPlayModeController.ListenStateChanges(System.Action<Inno.Editor.PlayMode.EditorPlayModeState> listener)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L146) | Subscribes to committed state transitions through the Core event lifetime.<br>`listener`: The observer invoked synchronously after a transition. | An independently disposable subscription; dispose it before retiring the observer. | `System.ArgumentNullException`: The listener is null. |
+| <a id="api-f592c1a1b44dabcc"></a>[`public bool Inno.Editor.PlayMode.EditorPlayModeController.EnterPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L172) | Requests a fresh script generation before preparing an isolated runtime session. | when the controller accepted a new request; otherwise, . | `System.ObjectDisposedException`: Thrown after the controller has been disposed. |
+| <a id="api-63e0df825ec0858f"></a>[`public bool Inno.Editor.PlayMode.EditorPlayModeController.ExitPlayMode()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L196) | Requests cancellation, runtime-session disposal, or dismissal of a failed transition. | when the current state accepted the request; otherwise, . | `System.ObjectDisposedException`: Thrown after the controller has been disposed. |
+| <a id="api-e40848c2064247ac"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeController.AdvanceTransition()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L223) | Advances at most one Play Mode transition at an editor-controlled frame-safe point. | — | `System.ObjectDisposedException`: Thrown after the controller has been disposed. |
+| <a id="api-360228a4d92246f1"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeController.Tick(float deltaTime)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L247) | Advances the isolated runtime session by one complete frame.<br>`deltaTime`: The elapsed editor frame time in seconds. | — | — |
+| <a id="api-36e4b08af4c8a6f9"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeController.Dispose()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeController.cs#L259) | Releases the isolated runtime session and history scope owned by this controller. | — | — |
+| <a id="api-d5a8d006ea1cf669"></a>[`public sealed class Inno.Editor.PlayMode.EditorPlayModeLoop`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L8) | Bridges the editor host frame clock to the active Play Mode session. | — | — |
+| <a id="api-de0d21db86662da1"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeLoop.Tick(float deltaTime)`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L20) | Advances the active simulation by one complete frame when Play Mode is running.<br>`deltaTime`: The elapsed frame time in seconds. | — | — |
+| <a id="api-1608ab01cea48f6e"></a>[`public System.IDisposable Inno.Editor.PlayMode.EditorPlayModeLoop.EnterPresentationScope()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L29) | Binds editor presentation and interaction work to the isolated Play session while simulation is active, or returns an inert scope while the editor is not presenting runtime copies. | A scope that must be disposed after the current editor presentation phase completes. | — |
+| <a id="api-fd48f78305f6ab6f"></a>[`public void Inno.Editor.PlayMode.EditorPlayModeLoop.Quiesce()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L37) | Drains the active Play session before the product tears down editor modules, history or presentation. | — | `System.InvalidOperationException`: The session cannot retire within its deadline; the host is faulted and its dependencies must remain alive. |
+| <a id="api-9ae4b4d3b23ada13"></a>[`public Inno.Editor.PlayMode.EditorPlayModeLoop.EditorPlayModeLoop()`](../../src/composition/editor/features/Inno.Editor.PlayMode/Runtime/EditorPlayModeLoop.cs#L8) | Inherited or compiler-provided contract. | — | — |
 
 ## 项目依赖
 
-- [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.UI.Runtime](../ui/Inno.UI.Runtime.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scripting.Compiler](../scripting/Inno.Scripting.Compiler.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Input](../core/Inno.Core.Input.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scripting.Api](../scripting/Inno.Scripting.Api.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Scene](../scene/Inno.Scene.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Diagnostics](../core/Inno.Core.Diagnostics.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Reload](../extensibility/Inno.Extensibility.Reload.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Audio](Inno.Editor.Audio.md)：公开引用边界由实际签名核对。
-- [Inno.Editor.Core](Inno.Editor.Core.md)：公开引用边界由实际签名核对。
-- [Inno.Runtime](../runtime/Inno.Runtime.md)：公开引用边界由实际签名核对。
-- [Inno.Editor.Interactions](Inno.Editor.Interactions.md)：公开引用边界由实际签名核对。
-- [Inno.Editor.Scene](Inno.Editor.Scene.md)：公开引用边界由实际签名核对。
-- [Inno.Editor.Scripting](Inno.Editor.Scripting.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Logging](../core/Inno.Core.Logging.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Serialization](../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+| 工程 | 边界 |
+| --- | --- |
+| `Inno.Core.Events` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Execution` | 实现依赖；不传递 compile surface |
+| `Inno.UI.Runtime` | 实现依赖；不传递 compile surface |
+| `Inno.Scripting.Compiler` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Input` | 实现依赖；不传递 compile surface |
+| `Inno.Scripting.Api` | 实现依赖；不传递 compile surface |
+| `Inno.Scene` | 实现依赖；不传递 compile surface |
+| `Inno.Core.Diagnostics` | 实现依赖；不传递 compile surface |
+| `Inno.Extensibility.Reload` | 实现依赖；不传递 compile surface |
+| `Inno.Editor.Audio` | 公开签名依赖 |
+| `Inno.Editor.Core` | 公开签名依赖 |
+| `Inno.Runtime` | 公开签名依赖 |
+| `Inno.Editor.Interactions` | 公开签名依赖 |
+| `Inno.Editor.Scene` | 公开签名依赖 |
+| `Inno.Editor.Scripting` | 公开签名依赖 |
+| `Inno.Core.Logging` | 公开签名依赖 |
+| `Inno.Core.Serialization` | 公开签名依赖 |
+| `Inno.Extensibility.Catalogs` | 公开签名依赖 |

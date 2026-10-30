@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
     <ProjectReference
       Include="../../../DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj"
       PrivateAssets="compile" />

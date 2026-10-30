@@ -19,7 +19,9 @@ public sealed class GameObject : EngineObject, ISerializable
     /// </summary>
     public const string defaultTag = "Untagged";
 
+    private ulong? m_serializationRevision = 0;
     private GameScene? m_scene;
+    private SceneObjectRecord? m_attachment;
     private Transform? m_transform;
     private PrefabInstanceInfo? m_prefabInstance;
     private PrefabConnectionRecord? m_prefabConnection;
@@ -66,6 +68,7 @@ public sealed class GameObject : EngineObject, ISerializable
             string requestedName = value ?? string.Empty;
             if (string.Equals(m_name, requestedName, StringComparison.Ordinal))
                 return;
+            AdvanceCaptureRevision();
             m_name = requestedName;
             owner.NotifyObjectMetadataChanged(this);
         }
@@ -94,6 +97,7 @@ public sealed class GameObject : EngineObject, ISerializable
             string requestedTag = NormalizeTag(value);
             if (string.Equals(m_tag, requestedTag, StringComparison.Ordinal))
                 return;
+            AdvanceCaptureRevision();
             m_tag = requestedTag;
             owner.NotifyObjectMetadataChanged(this);
         }
@@ -118,6 +122,7 @@ public sealed class GameObject : EngineObject, ISerializable
             GameScene owner = EnsureAlive();
             if (m_layer == value)
                 return;
+            AdvanceCaptureRevision();
             m_layer = value;
             owner.NotifyObjectMetadataChanged(this);
         }
@@ -363,6 +368,7 @@ public sealed class GameObject : EngineObject, ISerializable
         return EnsureAlive().RemoveComponent(this, component);
     }
 
+    internal ulong? captureRevision => m_serializationRevision;
     internal string storedName => m_name;
     internal string storedTag => m_tag;
     internal GameLayer storedLayer => m_layer;
@@ -380,6 +386,7 @@ public sealed class GameObject : EngineObject, ISerializable
         string requestedName = value ?? string.Empty;
         if (string.Equals(m_name, requestedName, StringComparison.Ordinal))
             return;
+        AdvanceCaptureRevision();
         m_name = requestedName;
         m_scene?.NotifyObjectMetadataChanged(this);
     }
@@ -389,6 +396,7 @@ public sealed class GameObject : EngineObject, ISerializable
         string requestedTag = NormalizeTag(value);
         if (string.Equals(m_tag, requestedTag, StringComparison.Ordinal))
             return;
+        AdvanceCaptureRevision();
         m_tag = requestedTag;
         m_scene?.NotifyObjectMetadataChanged(this);
     }
@@ -397,11 +405,38 @@ public sealed class GameObject : EngineObject, ISerializable
     {
         if (m_layer == value)
             return;
+        AdvanceCaptureRevision();
         m_layer = value;
         m_scene?.NotifyObjectMetadataChanged(this);
     }
-    internal void SetActiveSelfDirect(bool value) => m_activeSelf = value;
+
+    internal void SetActiveSelfDirect(bool value)
+    {
+        AdvanceCaptureRevision();
+        m_activeSelf = value;
+    }
     internal void SetActiveInHierarchyDirect(bool value) => m_activeInHierarchy = value;
+
+    /// <summary>
+    /// Borrows the existing indexed attachment for this exact store, without creating another object authority.
+    /// </summary>
+    internal SceneObjectRecord? GetAttachment(SceneStore store)
+        => m_attachment is { } record && ReferenceEquals(record.store, store) ? record : null;
+
+    internal void AttachRecord(SceneObjectRecord record)
+    {
+        if (m_attachment is not null)
+            throw new InvalidOperationException("The object already owns a scene-store attachment.");
+        m_attachment = record;
+    }
+
+    internal void ReleaseRecord(SceneObjectRecord record)
+    {
+        if (!ReferenceEquals(m_attachment, record))
+            throw new InvalidOperationException("The object no longer owns the retiring scene-store attachment.");
+        m_attachment = null;
+    }
+
     internal void SetSceneDirect(GameScene scene) => m_scene = scene ?? throw new ArgumentNullException(nameof(scene));
     internal void SetPrefabInstanceDirect(PrefabInstanceInfo? value) => m_prefabInstance = value;
     internal void SetPrefabConnectionDirect(PrefabConnectionRecord? value) => m_prefabConnection = value;
@@ -439,4 +474,11 @@ public sealed class GameObject : EngineObject, ISerializable
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return value.Trim();
     }
+    private void AdvanceCaptureRevision()
+    {
+        if (m_serializationRevision is { } revision)
+            m_serializationRevision = revision == ulong.MaxValue ? null : revision + 1;
+    }
+
+
 }

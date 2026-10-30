@@ -1,16 +1,15 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
+using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using Inno.Editor.Scene;
 using Inno.Scene;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
-
 /// <summary>
 /// Draws the project-defined tag picker used by GameObject target headers.
 /// </summary>
@@ -18,7 +17,6 @@ internal sealed class GameObjectTagSelector
 {
     private readonly SceneProjectSettingsModule m_settings;
     private readonly SceneEdits m_edits;
-
     /// <summary>
     /// Creates a tag selector backed by the effective Project Settings snapshot.
     /// </summary>
@@ -29,7 +27,7 @@ internal sealed class GameObjectTagSelector
     /// The Scene editing service used to record GameObject tag changes.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="settings"/> or <paramref name="edits"/> is <see langword="null"/>.
+    /// Thrown when <paramref name = "settings"/> or <paramref name="edits"/> is <see langword="null"/>.
     /// </exception>
     internal GameObjectTagSelector(
         SceneProjectSettingsModule settings,
@@ -42,48 +40,54 @@ internal sealed class GameObjectTagSelector
     /// <summary>
     /// Draws a compact tag selector for one live GameObject.
     /// </summary>
-    /// <param name="target">
+    /// <param name="targets">
     /// The GameObject whose tag should be displayed and edited.
+    /// </param>
+    /// <param name="interactions">
+    /// The authoritative shared History owner.
     /// </param>
     /// <param name="width">
     /// The width reserved for the selector.
     /// </param>
     internal void Draw(
-        GameObject target,
+        IReadOnlyList<GameObject> targets,
+        EditorInteractions interactions,
         float width
     ) {
-        ArgumentNullException.ThrowIfNull(target);
+        ArgumentNullException.ThrowIfNull(targets);
+        if (targets.Count == 0)
+            return;
+        GameObject target = targets[0];
+        bool mixed = targets.Any(value => value.tag != target.tag);
         IReadOnlyList<string> tags = m_settings.tagCatalog.GetTags();
-        string preview = m_settings.tagCatalog.IsDefined(target.tag)
-            ? target.tag
-            : $"{target.tag} (Undefined)";
-        EditorWidget.LabelChip("Tag", EditorPalette.inspectorTagLabel);
-        NativeImGui.SameLine(0f, 0f);
+        string preview = m_settings.tagCatalog.IsDefined(target.tag) ? target.tag : $"{target.tag} (Undefined)";
+        if (mixed)
+            preview = "Mixed values";
+        EditorUI.current.widgets.LabelChip("Tag", InspectorTargetStyle.tagLabel);
+        Ui.SameLine(0f, 0f);
         float selectorWidth = MathF.Max(1f, width);
-        if (!EditorWidget.BeginMenuSelector(
-                $"game_object_tag_{target.identity.persistentId:N}",
-                preview,
-                selectorWidth,
-                selectorWidth))
+        if (!EditorUI.current.widgets.BeginMenuSelector($"game_object_tag_{target.identity.persistentId:N}", preview, selectorWidth, selectorWidth))
         {
             return;
         }
+
         try
         {
             for (int i = 0; i < tags.Count; i++)
             {
                 string tag = tags[i];
-                if (NativeImGui.Selectable(
-                        tag,
-                        string.Equals(target.tag, tag, StringComparison.Ordinal)))
+                if (Ui.Selectable(tag, string.Equals(target.tag, tag, StringComparison.Ordinal)))
                 {
-                    m_edits.SetGameObjectTag(target, tag);
+                    using EditorHistoryTransaction transaction = interactions.history.BeginTransaction("Set Selection Tag");
+                    foreach (GameObject selected in targets)
+                        m_edits.SetGameObjectTag(selected, tag);
+                    transaction.Commit();
                 }
             }
         }
         finally
         {
-            EditorWidget.EndMenuSelector();
+            EditorUI.current.widgets.EndMenuSelector();
         }
     }
 

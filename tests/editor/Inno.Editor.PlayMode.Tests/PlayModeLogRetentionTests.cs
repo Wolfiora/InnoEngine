@@ -196,7 +196,16 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
         public LogSessionId activeSessionId { get; private set; }
 
-        public event Action<EditorPlayModeState>? stateChanged;
+        private readonly Inno.Core.Events.EventDispatcher m_stateDispatcher = new();
+        private readonly Inno.Core.Events.EventHub m_stateEvents;
+
+        internal FakePlayMode() => m_stateEvents = m_stateDispatcher.CreateHub();
+        public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
+            => m_stateEvents.Listen<StateNotification>(notification => listener(notification.state));
+        private sealed class StateNotification(EditorPlayModeState state) : Inno.Core.Events.Event
+        {
+            internal EditorPlayModeState state { get; } = state;
+        }
 
         public bool EnterPlayMode() => false;
 
@@ -218,7 +227,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         internal void SetState(EditorPlayModeState value)
         {
             state = value;
-            stateChanged?.Invoke(value);
+            m_stateDispatcher.Emit(new StateNotification(value));
         }
     }
 }

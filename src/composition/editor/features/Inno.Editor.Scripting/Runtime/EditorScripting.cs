@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Plugins.Authoring;
@@ -12,7 +11,6 @@ using Inno.Scripting.Compiler;
 using Inno.Scripting.Reload;
 
 namespace Inno.Editor.Scripting;
-
 /// <summary>
 /// Owns script compilation and activation for one editor project.
 /// </summary>
@@ -39,7 +37,6 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     private bool m_reportedReloadWait;
     private string? m_activationFailure;
     private long m_nextRequestId;
-
     internal EditorScripting(
         AssetPipeline assets,
         PluginEnvironment plugins,
@@ -65,25 +62,20 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// Gets whether blocks following updates is enabled for this implementation.
     /// </summary>
     public override bool blocksFollowingUpdates => m_blockFollowingUpdates;
-
     /// <summary>
     /// Gets whether script compilation is currently active.
     /// </summary>
-    internal bool isCompiling
-        => m_manager?.isFaulted != true &&
-           (m_showCompilation ||
-            m_compilation is not null ||
-            m_pendingCompletion is not null ||
-            m_manager?.isCompiling == true ||
-            m_manager?.isUnloadVerificationPending == true ||
-            m_manager?.isCompilationPending == true);
-
+    internal bool isCompiling => m_manager?.isFaulted != true
+        && (m_showCompilation
+        || m_compilation is not null
+        || m_pendingCompletion is not null
+        || m_manager?.isCompiling == true
+        || m_manager?.isUnloadVerificationPending == true
+        || m_manager?.isCompilationPending == true);
     internal bool isAvailable => m_manager is not null;
-
-    internal bool requiresExclusiveProgress => isCompiling && m_reloads.CanActivateReload(out _);
-
-    internal bool canReload => m_manager is not null && !isCompiling && !m_manager.isFaulted
-        && m_reloads.CanRequestReload(out _);
+    /// <inheritdoc/>
+    public bool requiresExclusiveProgress => isCompiling && m_reloads.CanActivateReload(out _);
+    internal bool canReload => m_manager is not null && !isCompiling && !m_manager.isFaulted && m_reloads.CanRequestReload(out _);
 
     /// <summary>
     /// Gets the current lifecycle state observed by callers.
@@ -113,15 +105,11 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// <summary>
     /// Gets the current compiler progress.
     /// </summary>
-    internal float progress => m_manager?.compilationProgress ?? 0f;
-
+    public float progress => m_manager?.compilationProgress ?? 0f;
     /// <summary>
     /// Gets the current compiler stage.
     /// </summary>
-    public string status => m_activationFailure ?? (!m_reloads.CanActivateReload(out string? reason)
-        ? reason ?? "Waiting for Play Mode to stop."
-        : m_manager?.compilationStatus ?? "Initializing project scripting.");
-
+    public string status => m_activationFailure ?? (!m_reloads.CanActivateReload(out string? reason) ? reason ?? "Waiting for Play Mode to stop." : m_manager?.compilationStatus ?? "Initializing project scripting.");
     /// <summary>
     /// Gets the most recently completed compiler result, which may still await activation and retirement verification.
     /// </summary>
@@ -135,22 +123,23 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// </returns>
     public IScriptCompilationTicket RequestCompilation()
     {
-        var ticket = new ScriptCompilationTicket(
-            ++m_nextRequestId,
-            "Script compilation is queued.");
+        var ticket = new ScriptCompilationTicket(++m_nextRequestId, "Script compilation is queued.");
         ScriptReloadHost? manager = m_manager;
         if (!m_reloads.CanRequestReload(out string? reason))
         {
             ticket.MarkFailed(result: null, reason ?? "Stop Play Mode before requesting compilation.");
             return ticket;
         }
+
         if (manager is null || manager.isFaulted)
         {
-            ticket.MarkFailed(result: null, manager?.isFaulted == true
-                ? "Generation retirement failed. Restart the host before requesting compilation."
-                : "Project scripting is not available.");
+            ticket.MarkFailed(
+                result: null,
+                manager?.isFaulted == true ? "Generation retirement failed. Restart the host before requesting compilation." : "Project scripting is not available."
+            );
             return ticket;
         }
+
         m_currentTicket?.MarkSuperseded();
         m_currentTicket = ticket;
         QueueReload(static value => value.RecompileScripting(), supersedeCurrentTicket: false);
@@ -174,8 +163,8 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             QueueReload(static manager => manager.ReloadPlugins(), supersedeCurrentTicket: true);
     }
 
-    internal void CancelCompilation() => m_manager?.CancelCompilation();
-
+    /// <inheritdoc />
+    public void CancelCompilation() => m_manager?.CancelCompilation();
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -184,15 +173,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// </param>
     protected override void OnStart(EditorContext context)
     {
-        m_manager = new ScriptReloadHost(
-            new ScriptReloadOptions(),
-            m_compiler,
-            m_assets,
-            m_plugins,
-            m_modules,
-            m_settings,
-            m_reloads,
-            m_moduleSourceFactory);
+        m_manager = new ScriptReloadHost(new ScriptReloadOptions(), m_compiler, m_assets, m_plugins, m_modules, m_settings, m_reloads, m_moduleSourceFactory);
         m_manager.Start();
         if (m_manager.TryCompilePending(out Task<ScriptCompilationResult>? compilation))
         {
@@ -216,11 +197,13 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             m_hideCompilationOnNextUpdate = false;
             m_showCompilation = false;
         }
+
         if (m_manager?.isFaulted == true)
         {
             AdvanceUnloadVerification();
             return;
         }
+
         if (!m_reloads.CanActivateReload(out string? waitingReason))
         {
             if (m_manager?.isCompilationPending == true && !m_reportedReloadWait)
@@ -228,8 +211,10 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
                 m_log.Write(LogLevel.Info, "{0}", [waitingReason ?? "Script changes are queued until Play Mode stops."]);
                 m_reportedReloadWait = true;
             }
+
             return;
         }
+
         m_reportedReloadWait = false;
         CompleteCompilation();
         if (m_manager is null || m_compilation is not null)
@@ -239,6 +224,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             AdvanceUnloadVerification();
             return;
         }
+
         if (m_manager.isFaulted)
             return;
         if (!context.isFocused && !m_explicitReloadPending)
@@ -259,12 +245,10 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnStop(EditorContext context) => DisposeManager();
-
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.
     /// </summary>
     protected override void OnDispose() => DisposeManager();
-
     private void CompleteCompilation()
     {
         Task<ScriptCompilationResult>? compilation = m_compilation;
@@ -286,10 +270,10 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
                     ticket?.MarkSuperseded();
                     return;
                 }
+
                 m_activationFailure = null;
                 ScriptDiagnosticPublisher.ClearReload();
-                CompleteAfterRetirement(new PendingCompletion(ticket, result, true,
-                    "Script generation compiled, activated, and retired successfully."));
+                CompleteAfterRetirement(new PendingCompletion(ticket, result, true, "Script generation compiled, activated, and retired successfully."));
             }
             else
             {
@@ -299,9 +283,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
                     m_blockFollowingUpdates = true;
                     m_activationFailure = null;
                     ScriptDiagnosticPublisher.ClearReload();
-                    CompleteAfterRetirement(new PendingCompletion(ticket, result, false,
-                        "Script compilation failed after a Plugin availability change; unavailable types were " +
-                        "preserved as Missing."));
+                    CompleteAfterRetirement(new PendingCompletion(ticket, result, false, "Script compilation failed after a Plugin availability change; unavailable types were " + "preserved as Missing."));
                 }
                 else
                 {
@@ -315,18 +297,14 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         {
             m_plugins.RollbackPending();
             ticket?.MarkCanceled("Script compilation was canceled; the active generation was retained.");
-            m_log.Write(
-                LogLevel.Info,
-                "Script compilation was canceled; the active generation was retained.");
+            m_log.Write(LogLevel.Info, "Script compilation was canceled; the active generation was retained.");
         }
         catch (Exception exception)
         {
             if (!m_manager.isFaulted)
                 m_plugins.RollbackPending();
             m_activationFailure = $"Script generation activation failed: {exception.Message}";
-            ticket?.MarkFailed(
-                ticket.result,
-                $"Script generation activation failed: {exception.Message}");
+            ticket?.MarkFailed(ticket.result, $"Script generation activation failed: {exception.Message}");
             ScriptDiagnosticPublisher.PublishReloadFailure(exception);
             m_log.Write(LogLevel.Error, "Script assembly reload failed: {0}", [exception]);
         }
@@ -334,9 +312,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         {
             m_compilation = null;
             m_compilationTicket = null;
-            m_hideCompilationOnNextUpdate = m_pendingCompletion is null &&
-                m_manager?.isUnloadVerificationPending != true &&
-                m_manager?.isCompilationPending != true;
+            m_hideCompilationOnNextUpdate = m_pendingCompletion is null && m_manager?.isUnloadVerificationPending != true && m_manager?.isCompilationPending != true;
         }
     }
 
@@ -347,6 +323,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             m_pendingCompletion = completion;
             return;
         }
+
         FinishCompletion(completion);
     }
 
@@ -357,9 +334,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         bool projected = GenerateIdeProjection();
         if (completion.succeeded)
         {
-            completion.ticket?.MarkSucceeded(completion.result, projected
-                ? completion.status
-                : "Script generation retired successfully, but IDE project generation failed.");
+            completion.ticket?.MarkSucceeded(completion.result, projected ? completion.status : "Script generation retired successfully, but IDE project generation failed.");
         }
         else
         {
@@ -383,11 +358,13 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             {
                 ScriptDiagnosticPublisher.PublishUnloadFailure(failure);
             }
+
             m_activationFailure = status;
             m_showCompilation = false;
             m_hideCompilationOnNextUpdate = false;
             return;
         }
+
         ScriptDiagnosticPublisher.ClearUnload();
         if (completion is not null)
             FinishCompletion(completion);
@@ -398,8 +375,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     {
         try
         {
-            ScriptReloadHost manager = m_manager
-                ?? throw new InvalidOperationException("Project scripting is not available.");
+            ScriptReloadHost manager = m_manager ?? throw new InvalidOperationException("Project scripting is not available.");
             manager.GenerateProjectFiles();
             ScriptDiagnosticPublisher.ClearIdeProjection();
             return true;
@@ -407,10 +383,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         catch (Exception exception)
         {
             ScriptDiagnosticPublisher.PublishIdeProjectionFailure(exception);
-            m_log.Write(
-                LogLevel.Warn,
-                "Script generation activated, but IDE project generation failed: {0}",
-                [exception]);
+            m_log.Write(LogLevel.Warn, "Script generation activated, but IDE project generation failed: {0}", [exception]);
             return false;
         }
     }
@@ -447,6 +420,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             ScriptDiagnosticPublisher.ClearAll();
             return;
         }
+
         m_manager.Dispose();
         m_currentTicket?.MarkCanceled("Project scripting stopped before this request could activate.");
         m_manager = null;

@@ -36,8 +36,13 @@ sealed partial class AssetLoader
     /// The required assignable asset type.
     /// </param>
     /// <returns>
-    /// The canonical asset, or <see langword="null"/> when unavailable or incompatible.
+    /// The canonical asset, including retained last-good content after a diagnosed import failure,
+    /// or <see langword="null"/> when unavailable or incompatible.
     /// </returns>
+    /// <remarks>
+    /// Writable source content is verified independently of timestamps. Temporarily blocked source
+    /// verification follows the existing failed-import protocol; it does not certify cached content as current.
+    /// </remarks>
     public AssetObject? Load(
         AssetPath path,
         Type requestedAssetType
@@ -256,7 +261,17 @@ sealed partial class AssetLoader
         bool stale = false;
         bool catalogChanged = false;
         if (record is not null && sourceExists)
-            stale = IsStale(record, out catalogChanged);
+        {
+            try
+            {
+                stale = IsStale(record, out catalogChanged);
+            }
+            catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
+            {
+                // Import owns failure diagnostics and the retained last-good artifact.
+                stale = true;
+            }
+        }
         if (catalogChanged && !stale)
             CommitCatalogLocked();
         if (record is null || stale)

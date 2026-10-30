@@ -10,6 +10,8 @@ owned Restore 使用 NuGet 标准属性 `ExcludeRestorePackageImports=true`；Ta
 
 工程使用标准 PackageReference 和 SDK Restore。输入快照读取实际求值的 assets 路径及包内容，不回查另一配置的默认 obj；独立 ArtifactsPath 隔离所属还原与编译输出。工具保留其真实 SDK 输入，规则与更新方式见[依赖还原](DEPENDENCY_SUBMISSION.md)。
 
+最早的 Core.IO 引导采用独立、中立的 SDK 编译 scope。有调用方 `ArtifactsPath` 时，其位置为该 owner 下的 `.inno-task-foundation`；普通输出使用 Task artifacts 下固定的 `foundation`。它是按配置复用的 SDK 中间输出，不是每次操作发布一个新 generation。引导请求继续剥离产品 TFM、RID、Browser、AOT 和发布参数；不会以不同全局属性写入调用方同一个可变 Core.IO 输出。随后仍由原有 Core.IO 协议声明 publisher owner，并进行私有加载、冻结、校验和原子发布。
+
 ## 职责与边界
 
 这是 MSBuild 引导边界的库，负责协调 Task 运行闭包的编译、发布及退休，并在读取保护期间复制生成绑定。它依赖 Core IO、中立 Toolchains 与 MSBuild 契约，
@@ -21,6 +23,8 @@ Solution 命令构建通过 `Directory.Solution.targets` 为同一次构建传�
 owner 表示本次执行的所有权，其随机值本身不进入完整 Task runtime 的输入指纹。请求求值仍保留该属性；若导入文件、源码选择或 `DefineConstants` 等实际编译输入由它改变，这些求值结果仍参与指纹，不能误用上次结果。Design-time Build 不准备 publisher。
 IDE 可以把已经求值的 `ProjectInstance` 交给另一个 MSBuild worker。worker 重建 `UsingTask` 注册时可能再次求值，因此不能假设其随机加载身份仍等于传入的普通属性。共同 targets 使用 SDK inline task 捕获任务注册阶段的加载身份，再令 publisher 复制、runtime 发布与后续输入使用该身份。加载路径仍按实际注册隔离，不依赖 IDE 设置、固定机器路径或预先存在的缓存。
 最小 owner 引导消费 SDK Build 实际返回的 Foundation 程序集路径，并保留调用方明确选择的 `ArtifactsPath`，不拼接目标框架或强制写入普通 bin。它从已构建文件读取字节执行公开协议，不让长寿命 IDE 构建宿主锁住 SDK 输出；下一次编译可以正常更新该文件。此阶段只交换 BCL 字符串与 Task，不把 Foundation 类型或委托保存到共享注册表。
+
+生成器通过 SDK `AdditionalTargetFrameworkInfoProperty` 声明自身的 `IsRoslynComponent` 角色。同一工具无论经 Analyzer、脚本编译器的私有运行引用，还是 SDK 追加的传递引用到达，都使用同一中立工具求值；产品参数、父级 `BuildProjectReferences` 和 Task 操作 owner 不属于工具编译输入。`ArtifactsPath` 和 Configuration 仍保留，正式源码与私有 Task 输出继续隔离。直接对生成器显式传入的 RID 仍由 SDK 正常求值，此规则只规范消费工具的项目引用，不改写用户的直接请求。
 `BuildTaskRuntimeTask` 使用同一 `artifacts/build-tools/tasks/workspaces/shared` 根的 `FileLease` 协调完整 Task 项目编译；等待时通过 MSBuild `Yield`/`Reacquire` 释放节点，失败、取消或异常都释放写 lease。
 私有 Task 编译明确禁用共享 C# compiler server；可复用源码 workspace 的 SDK 子进程同样使用 `--disable-build-servers`。编译完成后不会让另一个长寿命编译宿主持有 workspace 中的生成器 DLL。普通 IDE 的编译服务器配置不由此改变。
 SDK 与项目构建仍由当前 MSBuild engine 执行，保留明确属性和移除产品属性的机制，不创建第二个 CLI 或通过 PATH 重新选择 SDK。完整 Task 项目返回实际运行文件的逻辑路径及 SHA-256。

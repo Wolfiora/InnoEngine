@@ -1,0 +1,102 @@
+{
+  "frames": [
+    {
+      "workload": "hierarchy",
+      "frameMedianMs": {
+        "original": 5117.206249999999,
+        "current": 345.1355,
+        "ratio": 0.06744607958688396
+      },
+      "frameP95Ms": {
+        "original": 5594.0916,
+        "current": 402.6929,
+        "ratio": 0.07198539616333777
+      },
+      "allocatedBytesPerFrame": {
+        "original": 709019083.2,
+        "current": 139061423.2,
+        "ratio": 0.19613213028396523
+      },
+      "cpuMsPerFrame": {
+        "original": 5206.25,
+        "current": 350.0,
+        "ratio": 0.06722689075630252
+      }
+    },
+    {
+      "workload": "assets",
+      "frameMedianMs": {
+        "original": 4104.3914,
+        "current": 18.730150000000002,
+        "ratio": 0.004563441488548095
+      },
+      "frameP95Ms": {
+        "original": 4320.2758,
+        "current": 27.5775,
+        "ratio": 0.006383273030856039
+      },
+      "allocatedBytesPerFrame": {
+        "original": 249232384.0,
+        "current": 980183.2,
+        "ratio": 0.003932808346446664
+      },
+      "cpuMsPerFrame": {
+        "original": 4103.125,
+        "current": 21.875,
+        "ratio": 0.005331302361005331
+      }
+    },
+    {
+      "workload": "shader",
+      "frameMedianMs": {
+        "original": 29.0076,
+        "current": 28.78145,
+        "ratio": 0.9922037672885726
+      },
+      "frameP95Ms": {
+        "original": 33.1747,
+        "current": 33.3918,
+        "ratio": 1.006544143579294
+      },
+      "allocatedBytesPerFrame": {
+        "original": 4364964.8,
+        "current": 3629920.8,
+        "ratio": 0.8316036821190402
+      },
+      "cpuMsPerFrame": {
+        "original": 31.25,
+        "current": 31.25,
+        "ratio": 1.0
+      }
+    }
+  ],
+  "menu": [
+    {
+      "workload": "menu-open",
+      "millisecondsPerOperation": {
+        "original": 0.01060585,
+        "current": 0.00617565,
+        "ratio": 0.582287133987375
+      },
+      "bytesPerOperation": {
+        "original": 8544.288,
+        "current": 4240.144,
+        "ratio": 0.49625480789037074
+      }
+    },
+    {
+      "workload": "statistics-unchanged",
+      "millisecondsPerOperation": {
+        "original": 0.030400200000000002,
+        "current": 0.0002407,
+        "ratio": 0.007917711067690344
+      },
+      "bytesPerOperation": {
+        "original": 16792.0,
+        "current": 400.0,
+        "ratio": 0.023820867079561697
+      }
+    }
+  ],
+  "scope": "Median of five process-level samples for frame workloads; menu samples include five samples per process across five alternating process pairs. Native command validation only; no whole-product/GPU claim."
+}

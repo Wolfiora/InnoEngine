@@ -41,6 +41,8 @@ public sealed unsafe partial class PlatformImGuiContext
     private SDLWindow* m_textInputWindow = null;
     private TimeSpan m_lastFrameTime;
     private TimeSpan m_lastLiveResizeLockTime;
+    private Action<PlatformImGuiContext>? m_releaseRegistration;
+    private byte[]? m_supplementalFontData;
     private IntPtr m_iniFilename;
     private uint m_liveResizeLockedWindowId;
     private uint m_mousePendingLeaveWindowId;
@@ -50,6 +52,7 @@ public sealed unsafe partial class PlatformImGuiContext
     private readonly bool m_enableSmoothResize;
     private bool m_hasStartedFrame;
     private bool m_isFrameActive;
+    private bool m_isFrameOperationActive;
     private bool m_textInputActive;
     private bool m_disposed;
 
@@ -58,8 +61,10 @@ public sealed unsafe partial class PlatformImGuiContext
         Sdl3PlatformWindow window,
         ImGuiContextFlags contextFlags,
         ImGuiInteractionOptions interaction,
-        IPlatformImGuiRenderer? renderer
+        IPlatformImGuiRenderer? renderer,
+        Action<PlatformImGuiContext> releaseRegistration
     ) {
+        m_releaseRegistration = releaseRegistration ?? throw new ArgumentNullException(nameof(releaseRegistration));
         var enableViewports = (contextFlags & ImGuiContextFlags.EnableViewports) != 0;
         var enableDocking = (contextFlags & ImGuiContextFlags.EnableDocking) != 0;
         m_enableSmoothResize = (contextFlags & ImGuiContextFlags.EnableSmoothResize) != 0;
@@ -97,11 +102,14 @@ public sealed unsafe partial class PlatformImGuiContext
             io->MouseDrawCursor = 0;
             io->Fonts->RendererHasTextures = 1;
             ConfigureKeyRepeat(io);
-            ConfigureFonts(m_context, io);
+            m_supplementalFontData = ReadSupplementalFontData();
+            ConfigureFonts(m_context, io, m_supplementalFontData);
             ImGuiPackedColor.EnsureInitialized();
 
             UpdateDisplayMetrics(io);
             m_renderer = renderer ?? new PlatformImGuiSdlRenderer(window);
+            if (m_renderer.supportsVertexOffsets)
+                io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasVtxOffset;
             m_viewports = enableViewports ? new PlatformImGuiViewportBackend(application, window, m_renderer) : null;
             RegisterClipboardCallbacks();
         }
@@ -110,6 +118,8 @@ public sealed unsafe partial class PlatformImGuiContext
             m_viewports?.Dispose();
             ImGuiFont.UnregisterContext(m_context);
             ImGuiNative.Raw.DestroyContext(m_context);
+            GC.KeepAlive(m_supplementalFontData);
+            m_supplementalFontData = null;
             if (renderer is null)
                 m_renderer?.Dispose();
             throw;
@@ -313,6 +323,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
         ResolveFontPaths(out _, out List<string> iconFontPaths);
         MergeIconFontsIntoCurrentBaseFont(io->Fonts, iconFontPaths);
+        MergeSupplementalFont(io->Fonts, m_supplementalFontData!);
         ImGuiFont.RegisterStyle(m_context, style, (nint)loadedFont);
         if (style == ImGuiFontStyle.Regular)
             io->FontDefault = loadedFont;
@@ -320,7 +331,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static void ConfigureFonts(
         ImGuiNativeContext* context,
-        ImGuiIO* io
+        ImGuiIO* io,
+        byte[] supplementalFontData
     ) {
         var fonts = io->Fonts;
         ImGuiNative.Raw.Clear(fonts);
@@ -338,6 +350,7 @@ public sealed unsafe partial class PlatformImGuiContext
             }
 
             MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
+            MergeSupplementalFont(fonts, supplementalFontData);
             styleFonts[GetFontStyle(fontPaths[i])] = (nint)loadedFont;
             if (i == preferredIndex)
             {
@@ -355,6 +368,7 @@ public sealed unsafe partial class PlatformImGuiContext
             if (defaultFont != null)
             {
                 MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
+                MergeSupplementalFont(fonts, supplementalFontData);
             }
         }
 
@@ -658,35 +672,73 @@ public sealed unsafe partial class PlatformImGuiContext
     /// <param name="drawFrame">
     /// The callback invoked by render frame within the operation's owned lifetime.
     /// </param>
+    /// <param name="prepareFrame">
+    /// Optional callback invoked with the owned context before native frame creation.
+    /// </param>
     /// <returns>
-    /// The validated int ptr that represents the completed operation.
+    /// Borrowed native draw data for the completed frame, valid until the next frame or retirement.
     /// </returns>
-    public partial IntPtr RenderFrame(Action drawFrame)
-    {
+    public partial IntPtr RenderFrame(
+        Action drawFrame,
+        Action? prepareFrame
+    ) {
         ArgumentNullException.ThrowIfNull(drawFrame);
-        if (m_isFrameActive)
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (m_isFrameOperationActive || m_isFrameActive)
             throw new InvalidOperationException("An ImGui frame cannot be reentered.");
 
         var now = m_frameTimer.Elapsed;
         var deltaSeconds = (float)(now - m_lastFrameTime).TotalSeconds;
         m_lastFrameTime = now;
 
-        SynchronizePendingLiveResizeWindows();
-        BeginFrame(deltaSeconds);
+        m_isFrameOperationActive = true;
         try
         {
+            SynchronizePendingLiveResizeWindows();
+            BeginFrame(deltaSeconds, prepareFrame);
             drawFrame();
             return EndFrame();
         }
-        catch
+        catch (Exception failure)
+        {
+            try
+            {
+                AbortNativeFrame();
+            }
+            catch (Exception cleanupFailure)
+            {
+                throw new AggregateException("Presentation failed and its native frame could not retire.", failure, cleanupFailure);
+            }
+            throw;
+        }
+        finally
         {
             m_isFrameActive = false;
-            throw;
+            m_isFrameOperationActive = false;
         }
     }
 
-    private void BeginFrame(float deltaTimeSeconds)
+    private void AbortNativeFrame()
     {
+        if (m_disposed || m_context->WithinFrameScope == 0)
+            return;
+        ImGuiNativeContext* previous = ImGuiNative.Raw.GetCurrentContext();
+        ImGuiNative.Raw.SetCurrentContext(m_context);
+        try
+        {
+            ImGuiNative.Raw.EndFrame();
+        }
+        finally
+        {
+            if (previous != m_context)
+                ImGuiNative.Raw.SetCurrentContext(previous);
+        }
+    }
+
+    private void BeginFrame(
+        float deltaTimeSeconds,
+        Action? prepareFrame
+    ) {
         if (m_disposed)
         {
             throw new ObjectDisposedException(nameof(PlatformImGuiContext));
@@ -707,6 +759,7 @@ public sealed unsafe partial class PlatformImGuiContext
         UpdateTextInputState(io);
 
         m_viewports?.SynchronizeMetrics();
+        prepareFrame?.Invoke();
         m_isFrameActive = true;
         ImGuiNative.NewFrame();
 
@@ -800,14 +853,24 @@ public sealed unsafe partial class PlatformImGuiContext
     }
 
     /// <summary>
-    /// Releases the resources owned by this instance.
+    /// Retires the context and its owned resources after the current frame operation has completed.
     /// </summary>
+    /// <remarks>
+    /// Successful retirement removes this context's application registration and releases its borrowed font data.
+    /// Pending or failed retirement preserves both registration and ownership for a subsequent retry.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// A frame operation still owns the context; the caller must retry after that operation completes.
+    /// </exception>
     public partial void Dispose()
     {
         if (m_disposed)
         {
             return;
         }
+
+        if (m_isFrameOperationActive)
+            throw new InvalidOperationException("A presentation context cannot retire during its frame operation.");
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         var io = ImGuiNative.Raw.GetIO();
@@ -846,12 +909,17 @@ public sealed unsafe partial class PlatformImGuiContext
         m_renderer.Dispose();
         ImGuiFont.UnregisterContext(m_context);
         ImGuiNative.Raw.DestroyContext(m_context);
+        GC.KeepAlive(m_supplementalFontData);
+        m_supplementalFontData = null;
         if (m_iniFilename != IntPtr.Zero)
         {
             Marshal.FreeCoTaskMem(m_iniFilename);
             m_iniFilename = IntPtr.Zero;
         }
         m_disposed = true;
+        Action<PlatformImGuiContext>? releaseRegistration = m_releaseRegistration;
+        m_releaseRegistration = null;
+        releaseRegistration?.Invoke(this);
     }
 
     private void UpdateDisplayMetrics(ImGuiIO* io)

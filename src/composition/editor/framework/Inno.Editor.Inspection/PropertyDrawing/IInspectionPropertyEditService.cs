@@ -1,7 +1,6 @@
 using System;
 
 namespace Inno.Editor.Inspection;
-
 /// <summary>
 /// Applies one root serialized-property mutation through the history mechanism owned by a feature.
 /// </summary>
@@ -22,21 +21,29 @@ public interface IInspectionPropertyEditService
     /// <param name="historyName">
     /// The user-facing name for the resulting history entry.
     /// </param>
+    /// <param name="mergeKey">
+    /// The current shared gesture key, or null for a discrete edit.
+    /// </param>
+    /// <param name="componentName">
+    /// An optional public value component; null replaces the complete root value.
+    /// </param>
     /// <returns>
     /// <see langword="true"/> when the value changed and the owning feature recorded the edit;
     /// otherwise, <see langword="false"/>.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="owner"/> or <paramref name="mutation"/> is
+    /// Thrown when <paramref name = "owner"/> or <paramref name="mutation"/> is
     /// <see langword="null"/>.
     /// </exception>
     /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="propertyName"/> or <paramref name="historyName"/> is empty.
+    /// Thrown when <paramref name = "propertyName"/> or <paramref name="historyName"/> is empty.
     /// </exception>
     bool ChangeProperty(
         object owner,
         string propertyName,
         Action mutation,
-        string historyName
+        string historyName,
+        string? mergeKey,
+        string? componentName
     );
 }

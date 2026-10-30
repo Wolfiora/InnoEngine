@@ -10,6 +10,7 @@ namespace Inno.Core.Serialization;
 public sealed class SerializationTypeMetadata
 {
     private readonly Func<object>? m_factory;
+    private readonly Guid m_captureIdentity = Guid.NewGuid();
 
     /// <summary>
     /// Copies complete declaration metadata before it participates in a serialization generation.
@@ -96,6 +97,57 @@ public sealed class SerializationTypeMetadata
     public bool requiresConverter { get; }
 
     /// <summary>
+    /// Declares that every serialized member of this value type reads a direct primitive field.
+    /// </summary>
+    /// <returns>
+    /// An immutable declaration with pure field access; the original declaration remains unchanged.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The declaration is not a default value type with primitive serialized members.
+    /// </exception>
+    public SerializationTypeMetadata WithPureFieldAccess()
+    {
+        if (!type.IsValueType || requiresConverter || collection is not null ||
+            members.Any(static member => (member.visibility & PropertyVisibility.Serialize) != 0 && !ValuePipeline.IsPrimitive(member.type)))
+            throw new InvalidOperationException("Pure field capture requires a default value type containing only primitive serialized fields.");
+        return new SerializationTypeMetadata(type, members, m_factory, restored, collection, requiresConverter)
+        {
+            hasPureFieldAccess = true
+        };
+    }
+
+    /// <summary>
+    /// Declares complete pure serialized-property revision access for a sealed serializable identity source.
+    /// </summary>
+    /// <param name="readRevision">
+    /// The owner-controlled revision reader; null results decline reuse and counters must not repeat for different state.
+    /// </param>
+    /// <returns>
+    /// An immutable declaration; snapshots never retain this reader or metadata.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The revision reader is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The declaration is not a sealed identity reference type.
+    /// </exception>
+    public SerializationTypeMetadata WithCaptureRevision(Func<object, ulong?> readRevision)
+    {
+        ArgumentNullException.ThrowIfNull(readRevision);
+        if (!type.IsSealed || type.IsValueType || !typeof(ISerializable).IsAssignableFrom(type) ||
+            !typeof(Inno.Core.Identity.IdentityObject).IsAssignableFrom(type))
+        {
+            throw new InvalidOperationException(
+                "Capture revision metadata requires a sealed serializable Core identity source.");
+        }
+        return new SerializationTypeMetadata(type, members, m_factory, restored, collection, requiresConverter)
+        {
+            hasPureFieldAccess = hasPureFieldAccess,
+            captureRevision = readRevision
+        };
+    }
+
+    /// <summary>
     /// Creates a new instance through the declaration's selected constructor.
     /// </summary>
     /// <returns>
@@ -117,4 +169,8 @@ public sealed class SerializationTypeMetadata
             throw new InvalidOperationException($"The parameterless constructor for serialization type '{type}' failed.", exception);
         }
     }
+
+    internal Guid captureIdentity => m_captureIdentity;
+    internal bool hasPureFieldAccess { get; private init; }
+    internal Func<object, ulong?>? captureRevision { get; private init; }
 }

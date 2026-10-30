@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Core.Execution;
 using Inno.Core.Logging;
 using Inno.Extensibility.Types;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
-
 internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatalog.Snapshot>
 {
     private readonly EditorContext m_context;
@@ -24,7 +22,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
     private Snapshot? m_active;
     private ActivationState? m_activation;
     private Snapshot? m_staging;
-
     internal EditorExtensionCatalog(
         TypeCatalog types,
         EditorContext context,
@@ -32,16 +29,13 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         Logger log,
         IEnumerable<object> hostServices,
         Action extensionsChanged
-    )
-        : base(types)
+    ) : base(types)
     {
         m_context = context ?? throw new ArgumentNullException(nameof(context));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_log = log ?? throw new ArgumentNullException(nameof(log));
         ArgumentNullException.ThrowIfNull(hostServices);
-        m_hostServices = hostServices.Select(static service =>
-            service ?? throw new ArgumentException("Host services cannot contain null.", nameof(hostServices)))
-            .ToArray();
+        m_hostServices = hostServices.Select(static service => service ?? throw new ArgumentException("Host services cannot contain null.", nameof(hostServices))).ToArray();
         m_extensionsChanged = extensionsChanged ?? throw new ArgumentNullException(nameof(extensionsChanged));
         m_state = new EditorExtensionStateStore(context, log);
     }
@@ -57,18 +51,18 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
     }
 
-    internal bool TryGetModule<TModule>(out TModule? module) where TModule : EditorModule
+    internal bool TryGetModule<TModule>(out TModule? module)
+        where TModule : EditorModule
     {
         Snapshot? snapshot = m_active;
         if (snapshot is not null)
             foreach (ModuleRegistration registration in snapshot.modules)
-                if (registration.module is TModule candidate
-                    && snapshot.startedModules.Contains(candidate)
-                    && !snapshot.quarantinedModules.Contains(candidate))
+                if (registration.module is TModule candidate && snapshot.startedModules.Contains(candidate) && !snapshot.quarantinedModules.Contains(candidate))
                 {
                     module = candidate;
                     return true;
                 }
+
         module = null;
         return false;
     }
@@ -90,12 +84,11 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             catch (Exception exception)
             {
                 snapshot.quarantinedModules.Add(registration.module);
-                LogError("Editor module '{0}' failed to update and was quarantined: {1}",
-                    registration.attribute.id,
-                    exception);
+                LogError("Editor module '{0}' failed to update and was quarantined: {1}", registration.attribute.id, exception);
                 continue;
             }
         }
+
         m_state.Update(m_context.frame.totalTime, GetAvailableState(snapshot), GetAvailablePanels(snapshot));
     }
 
@@ -112,11 +105,11 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal) ||
-                snapshot.quarantinedPanels.Contains(registration.panel))
+            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal) || snapshot.quarantinedPanels.Contains(registration.panel))
             {
                 continue;
             }
+
             registration.panel.isOpen = !registration.panel.isOpen;
             if (registration.panel.isOpen)
                 m_pendingPanelFocus.Add(panelId);
@@ -124,6 +117,25 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
                 m_pendingPanelFocus.Remove(panelId);
             return true;
         }
+
+        return false;
+    }
+
+    internal IReadOnlyList<EditorPanelAttribute> GetPanelDeclarations() => extensions.panelDeclarations;
+    internal bool TryGetPanelState(
+        string panelId,
+        out bool isOpen
+    ) {
+        Snapshot snapshot = extensions;
+        foreach (PanelRegistration registration in snapshot.panels)
+        {
+            if (registration.attribute.id != panelId || snapshot.quarantinedPanels.Contains(registration.panel))
+                continue;
+            isOpen = registration.panel.isOpen;
+            return true;
+        }
+
+        isOpen = false;
         return false;
     }
 
@@ -134,15 +146,16 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal) ||
-                snapshot.quarantinedPanels.Contains(registration.panel))
+            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal) || snapshot.quarantinedPanels.Contains(registration.panel))
             {
                 continue;
             }
+
             registration.panel.isOpen = true;
             m_pendingPanelFocus.Add(panelId);
             return true;
         }
+
         return false;
     }
 
@@ -153,20 +166,20 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal) ||
-                snapshot.quarantinedPanels.Contains(registration.panel))
+            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal) || snapshot.quarantinedPanels.Contains(registration.panel))
             {
                 continue;
             }
+
             registration.panel.isOpen = false;
             m_pendingPanelFocus.Remove(panelId);
             return true;
         }
+
         return false;
     }
 
     internal bool TakePanelFocusRequest(string panelId) => m_pendingPanelFocus.Remove(panelId);
-
     internal void PrepareShutdown()
     {
         if (m_active is not null)
@@ -174,7 +187,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
     }
 
     internal ActionRegistration[] GetActionsForShutdown() => m_active?.actions ?? [];
-
     internal void QuarantinePanel(
         Snapshot snapshot,
         PanelRegistration registration,
@@ -188,9 +200,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         registration.panel.isOpen = false;
         m_diagnostics.ReportPanelFailure(registration.attribute.id, exception);
         m_diagnostics.Commit();
-        LogError("Editor panel '{0}' failed to draw and was quarantined: {1}",
-            registration.attribute.id,
-            exception);
+        LogError("Editor panel '{0}' failed to draw and was quarantined: {1}", registration.attribute.id, exception);
     }
 
     internal void QuarantineModal(
@@ -216,6 +226,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
                 AttemptCleanup(() => m_state.PrepareShutdown(GetAvailableState(active), GetAvailablePanels(active)), failures);
             AttemptCleanup(() => Deactivate(active), failures);
         }
+
         m_active = null;
         NotifyExtensionsChanged();
         m_diagnostics.Dispose();
@@ -235,99 +246,71 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
     protected override Snapshot Build(TypeCacheSnapshot types)
     {
         CapturePanelStates();
-        Type[] moduleTypes = types.GetTypesWithAttribute<EditorModuleAttribute>()
-            .Select(typeRef => typeRef.Resolve(types))
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .ToArray();
+        Type[] moduleTypes = types.GetTypesWithAttribute<EditorModuleAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.FullName,
+            StringComparer.Ordinal
+        ).ToArray();
         var activator = new EditorExtensionActivator(
             m_context,
             m_interactions,
             moduleTypes,
             types.types.Select(typeRef => typeRef.Resolve(types)).ToArray(),
             m_hostServices,
-            m_active?.instances);
-
-        ModuleRegistration[] modules = moduleTypes
-            .Where(activator.CanCreate)
-            .Select(type => new ModuleRegistration(
-                type.GetCustomAttribute<EditorModuleAttribute>(false)!,
-                type,
-                activator.CreateModule(type)))
-            .OrderBy(static value => value.attribute.order)
-            .ThenBy(static value => value.type.FullName, StringComparer.Ordinal)
-            .ToArray();
-
-        ActionRegistration[] actions = types.GetTypesWithAttribute<EditorActionAttribute>()
-            .Select(typeRef => typeRef.Resolve(types))
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .Where(activator.CanCreate)
-            .Select(type => CreateActionRegistration(type, activator))
-            .ToArray();
+            m_active?.instances
+        );
+        ModuleRegistration[] modules = moduleTypes.Where(activator.CanCreate).Select(type => new ModuleRegistration(type.GetCustomAttribute<EditorModuleAttribute>(false)!, type, activator.CreateModule(type))).OrderBy(static value => value.attribute.order).ThenBy(
+            static value => value.type.FullName,
+            StringComparer.Ordinal
+        ).ToArray();
+        ActionRegistration[] actions = types.GetTypesWithAttribute<EditorActionAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.FullName,
+            StringComparer.Ordinal
+        ).Where(activator.CanCreate).Select(type => CreateActionRegistration(type, activator)).ToArray();
         ValidateActions(actions);
         ValidateShortcuts(actions);
         ValidateToolbars(actions);
-
-        MenuSourceRegistration[] menuSources = types.GetTypesWithAttribute<EditorMenuSourceAttribute>()
-            .Select(typeRef => typeRef.Resolve(types))
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .Where(activator.CanCreate)
-            .SelectMany(type => CreateMenuSourceRegistrations(type, activator))
-            .OrderByDescending(static value => value.priority)
-            .ThenBy(static value => value.type.FullName, StringComparer.Ordinal)
-            .ToArray();
-
-        DropRegistration[] drops = types.GetTypesWithAttribute<EditorDropAttribute>()
-            .Select(typeRef => typeRef.Resolve(types))
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .Where(activator.CanCreate)
-            .SelectMany(type => CreateDropRegistrations(type, activator))
-            .ToArray();
+        MenuSourceRegistration[] menuSources = types.GetTypesWithAttribute<EditorMenuSourceAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.FullName,
+            StringComparer.Ordinal
+        ).Where(activator.CanCreate).SelectMany(type => CreateMenuSourceRegistrations(type, activator)).OrderByDescending(static value => value.priority).ThenBy(
+            static value => value.type.FullName,
+            StringComparer.Ordinal
+        ).ToArray();
+        DropRegistration[] drops = types.GetTypesWithAttribute<EditorDropAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.FullName,
+            StringComparer.Ordinal
+        ).Where(activator.CanCreate).SelectMany(type => CreateDropRegistrations(type, activator)).ToArray();
         ValidateDrops(drops);
-
-        PanelRegistration[] panels = types.GetTypesWithAttribute<EditorPanelAttribute>()
-            .Select(typeRef => typeRef.Resolve(types))
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .Where(activator.CanCreate)
-            .Select(type => CreatePanelRegistration(type, activator))
-            .OrderBy(static value => value.attribute.order)
-            .ThenBy(static value => value.type.FullName, StringComparer.Ordinal)
-            .ToArray();
+        PanelRegistration[] panels = types.GetTypesWithAttribute<EditorPanelAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.FullName,
+            StringComparer.Ordinal
+        ).Where(activator.CanCreate).Select(type => CreatePanelRegistration(type, activator)).OrderBy(static value => value.attribute.order).ThenBy(
+            static value => value.type.FullName,
+            StringComparer.Ordinal
+        ).ToArray();
         ValidatePanels(panels);
         ValidateExtensionIds(modules, panels);
-
-        ModalRegistration[] modals = types.GetTypesWithAttribute<EditorModalAttribute>()
-            .Select(typeRef => typeRef.Resolve(types))
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .Where(activator.CanCreate)
-            .Select(type => CreateModalRegistration(type, activator))
-            .OrderBy(static value => value.attribute.order)
-            .ThenBy(static value => value.type.FullName, StringComparer.Ordinal)
-            .ToArray();
+        ModalRegistration[] modals = types.GetTypesWithAttribute<EditorModalAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.FullName,
+            StringComparer.Ordinal
+        ).Where(activator.CanCreate).Select(type => CreateModalRegistration(type, activator)).OrderBy(static value => value.attribute.order).ThenBy(
+            static value => value.type.FullName,
+            StringComparer.Ordinal
+        ).ToArray();
         ValidateModals(modals);
-
-        HistoryHandlerRegistration[] historyHandlers = types
-            .GetTypesWithAttribute<EditorHistoryHandlerAttribute>()
-            .Select(typeRef => typeRef.Resolve(types))
-            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
-            .Where(activator.CanCreate)
-            .Select(type => CreateHistoryHandlerRegistration(type, activator))
-            .OrderBy(static value => value.attribute.kind, StringComparer.Ordinal)
-            .ThenBy(static value => value.type.FullName, StringComparer.Ordinal)
-            .ToArray();
+        HistoryHandlerRegistration[] historyHandlers = types.GetTypesWithAttribute<EditorHistoryHandlerAttribute>().Select(typeRef => typeRef.Resolve(types)).OrderBy(
+            static type => type.FullName,
+            StringComparer.Ordinal
+        ).Where(activator.CanCreate).Select(type => CreateHistoryHandlerRegistration(type, activator)).OrderBy(
+            static value => value.attribute.kind,
+            StringComparer.Ordinal
+        ).ThenBy(
+            static value => value.type.FullName,
+            StringComparer.Ordinal
+        ).ToArray();
         ValidateHistoryHandlers(historyHandlers);
-
         StateRegistration[] state = CreateStateRegistrations(modules, panels);
-
-        return new Snapshot(
-            modules,
-            actions,
-            menuSources,
-            drops,
-            panels,
-            modals,
-            historyHandlers,
-            state,
-            activator.instances.ToArray());
+        return new Snapshot(modules, actions, menuSources, drops, panels, modals, historyHandlers, state, activator.instances.ToArray());
     }
 
     /// <summary>
@@ -345,23 +328,18 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
     ) {
         if (m_activation is not null)
             throw new InvalidOperationException("An extension generation transition is already active.");
-
+        m_interactions.PrepareOperation();
         if (previous is not null)
             CapturePanelStates(previous);
         if (previous is not null)
             m_state.Save(GetAvailableState(previous), GetAvailablePanels(previous));
-
-        var existing = previous is null
-            ? new HashSet<object>(ReferenceEqualityComparer.Instance)
-            : new HashSet<object>(previous.instances, ReferenceEqualityComparer.Instance);
-        EditorHistory.HandlerUpdate handlers = m_interactions.historyHost.PrepareHandlerUpdate(
-            CreateHistoryHandlerMap(candidate.historyHandlers));
+        var existing = previous is null ? new HashSet<object>(ReferenceEqualityComparer.Instance) : new HashSet<object>(previous.instances, ReferenceEqualityComparer.Instance);
+        EditorHistory.HandlerUpdate handlers = m_interactions.historyHost.PrepareHandlerUpdate(CreateHistoryHandlerMap(candidate.historyHandlers));
         var activation = new ActivationState(previous, candidate, existing, handlers);
         m_activation = activation;
         m_staging = candidate;
         m_interactions.PrepareGenerationTransition();
         handlers.Activate();
-
         if (previous is not null)
         {
             foreach (ModuleRegistration registration in candidate.modules)
@@ -369,6 +347,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
                 if (existing.Contains(registration.module) && previous.startedModules.Contains(registration.module))
                     candidate.startedModules.Add(registration.module);
             }
+
             foreach (PanelRegistration registration in candidate.panels)
             {
                 if (existing.Contains(registration.panel) && previous.attachedPanels.Contains(registration.panel))
@@ -378,7 +357,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
 
         if (previous is not null)
             RetirePrevious(previous, candidate, activation);
-
         for (int i = 0; i < candidate.modules.Length; i++)
         {
             ModuleRegistration registration = candidate.modules[i];
@@ -390,10 +368,9 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
 
         var retainedPanelIds = new HashSet<string>(
-            candidate.panels
-                .Where(registration => existing.Contains(registration.panel))
-                .Select(static registration => registration.attribute.id),
-            StringComparer.Ordinal);
+            candidate.panels.Where(registration => existing.Contains(registration.panel)).Select(static registration => registration.attribute.id),
+            StringComparer.Ordinal
+        );
         m_diagnostics.RetainPanels(retainedPanelIds);
         for (int i = 0; i < candidate.panels.Length; i++)
         {
@@ -418,6 +395,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
                 LogError("Editor panel '{0}' failed to attach: {1}", registration.attribute.id, exception);
             }
         }
+
         m_diagnostics.Commit();
         m_state.Restore(GetAvailableState(candidate));
         m_active = candidate;
@@ -441,7 +419,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         m_staging = null;
         if (activation is null || !ReferenceEquals(activation.candidate, candidate))
             return;
-
         List<Exception> failures = [];
         AttemptCleanup(activation.handlers.Rollback, failures);
         AttemptCleanup(m_interactions.RollbackGenerationTransition, failures);
@@ -451,20 +428,20 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             AttemptCleanup(() => DetachPanel(registration, "activation rollback"), failures);
             candidate.attachedPanels.Remove(registration.panel);
         }
+
         for (int i = activation.startedModules.Count - 1; i >= 0; i--)
         {
             ModuleRegistration registration = activation.startedModules[i];
             AttemptCleanup(() => StopModule(registration, "activation rollback"), failures);
             candidate.startedModules.Remove(registration.module);
         }
+
         AttemptCleanup(() => RestorePrevious(activation), failures);
         m_activation = null;
-
-        var previousPanelIds = previous is null
-            ? new HashSet<string>(StringComparer.Ordinal)
-            : new HashSet<string>(
-                GetAvailablePanels(previous).Select(static registration => registration.attribute.id),
-                StringComparer.Ordinal);
+        var previousPanelIds = previous is null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(
+            GetAvailablePanels(previous).Select(static registration => registration.attribute.id),
+            StringComparer.Ordinal
+        );
         m_diagnostics.RetainPanels(previousPanelIds);
         m_diagnostics.Commit();
         ThrowCleanupFailures(failures);
@@ -486,7 +463,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         ActivationState? activation = m_activation;
         if (activation is null || !ReferenceEquals(activation.candidate, currentSnapshot))
             return;
-
         activation.handlers.Complete();
         m_interactions.CompleteGenerationTransition();
         NotifyExtensionsChanged();
@@ -502,9 +478,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
     /// </param>
     protected override void DisposeSnapshot(Snapshot snapshot)
     {
-        HashSet<object>? retained = m_active is null
-            ? null
-            : new HashSet<object>(m_active.instances, ReferenceEqualityComparer.Instance);
+        HashSet<object>? retained = m_active is null ? null : new HashSet<object>(m_active.instances, ReferenceEqualityComparer.Instance);
         DisposeExtensions(snapshot.instances.Where(instance => retained?.Contains(instance) != true));
     }
 
@@ -519,6 +493,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             AttemptCleanup(() => DetachPanel(registration, "shutdown"), failures);
             snapshot.attachedPanels.Remove(registration.panel);
         }
+
         for (int i = snapshot.modules.Length - 1; i >= 0; i--)
         {
             ModuleRegistration registration = snapshot.modules[i];
@@ -527,6 +502,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             AttemptCleanup(() => StopModule(registration, "shutdown"), failures);
             snapshot.startedModules.Remove(registration.module);
         }
+
         if (ReferenceEquals(m_active, snapshot))
             m_active = null;
         m_diagnostics.RetainPanels(new HashSet<string>(StringComparer.Ordinal));
@@ -549,10 +525,10 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             DetachPanel(registration, "generation retirement");
             previous.attachedPanels.Remove(registration.panel);
         }
+
         for (int i = previous.modules.Length - 1; i >= 0; i--)
         {
-            if (!retained.Contains(previous.modules[i].module) &&
-                previous.startedModules.Contains(previous.modules[i].module))
+            if (!retained.Contains(previous.modules[i].module) && previous.startedModules.Contains(previous.modules[i].module))
             {
                 activation.stoppedPreviousModules.Add(previous.modules[i]);
                 StopModule(previous.modules[i], "generation retirement");
@@ -579,12 +555,10 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             {
                 previous.quarantinedModules.Add(registration.module);
                 failures.Add(exception);
-                LogError(
-                    "Editor module '{0}' failed while restoring the previous generation: {1}",
-                    registration.attribute.id,
-                    exception);
+                LogError("Editor module '{0}' failed while restoring the previous generation: {1}", registration.attribute.id, exception);
             }
         }
+
         for (int i = activation.detachedPreviousPanels.Count - 1; i >= 0; i--)
         {
             PanelRegistration registration = activation.detachedPreviousPanels[i];
@@ -599,12 +573,10 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
                 failures.Add(exception);
                 registration.panel.isOpen = false;
                 m_diagnostics.ReportPanelFailure(registration.attribute.id, exception);
-                LogError(
-                    "Editor panel '{0}' failed while restoring the previous generation: {1}",
-                    registration.attribute.id,
-                    exception);
+                LogError("Editor panel '{0}' failed while restoring the previous generation: {1}", registration.attribute.id, exception);
             }
         }
+
         ThrowCleanupFailures(failures);
     }
 
@@ -618,28 +590,13 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
     {
         foreach (PanelRegistration registration in snapshot.panels)
         {
-            ReadOnlyMemory<byte> payload = registration.panel is IEditorPanelReloadState reloadable
-                ? reloadable.CaptureReloadState().ToArray()
-                : ReadOnlyMemory<byte>.Empty;
-            m_panelStates[registration.attribute.id] = new PanelState(
-                registration.panel.isOpen,
-                payload);
+            ReadOnlyMemory<byte> payload = registration.panel is IEditorPanelReloadState reloadable ? reloadable.CaptureReloadState().ToArray() : ReadOnlyMemory<byte>.Empty;
+            m_panelStates[registration.attribute.id] = new PanelState(registration.panel.isOpen, payload);
         }
     }
 
-    private static StateRegistration[] GetAvailableState(Snapshot snapshot)
-        => snapshot.state
-            .Where(registration => registration.kind != StateOwnerKind.Panel ||
-                                   !snapshot.quarantinedPanels.Contains((EditorPanel)registration.owner))
-            .Where(registration => registration.kind != StateOwnerKind.Module ||
-                                   !snapshot.quarantinedModules.Contains((EditorModule)registration.owner))
-            .ToArray();
-
-    private static PanelRegistration[] GetAvailablePanels(Snapshot snapshot)
-        => snapshot.panels
-            .Where(registration => !snapshot.quarantinedPanels.Contains(registration.panel))
-            .ToArray();
-
+    private static StateRegistration[] GetAvailableState(Snapshot snapshot) => snapshot.state.Where(registration => registration.kind != StateOwnerKind.Panel || !snapshot.quarantinedPanels.Contains((EditorPanel)registration.owner)).Where(registration => registration.kind != StateOwnerKind.Module || !snapshot.quarantinedModules.Contains((EditorModule)registration.owner)).ToArray();
+    private static PanelRegistration[] GetAvailablePanels(Snapshot snapshot) => snapshot.panels.Where(registration => !snapshot.quarantinedPanels.Contains(registration.panel)).ToArray();
     private void StopModule(
         ModuleRegistration registration,
         string phase
@@ -720,33 +677,19 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         EditorMenuAttribute[] menus = type.GetCustomAttributes<EditorMenuAttribute>(false).ToArray();
         EditorToolbarItemAttribute[] toolbars = type.GetCustomAttributes<EditorToolbarItemAttribute>(false).ToArray();
         EditorShortcutAttribute[] shortcuts = type.GetCustomAttributes<EditorShortcutAttribute>(false).ToArray();
-        return new ActionRegistration(
-            attribute,
-            type,
-            action,
-            action.targetType,
-            action.argumentType,
-            menus,
-            toolbars,
-            shortcuts);
+        return new ActionRegistration(attribute, type, action, action.targetType, action.argumentType, menus, toolbars, shortcuts);
     }
 
     private void LogError(
         string message,
-        params object?[] arguments
+        params object? [] arguments
     ) => m_log.Write(LogLevel.Error, message, arguments);
-
     private static IEnumerable<MenuSourceRegistration> CreateMenuSourceRegistrations(
         Type type,
         EditorExtensionActivator activator
     ) {
         EditorMenuSource source = activator.CreateExtension<EditorMenuSource>(type);
-        return type.GetCustomAttributes<EditorMenuSourceAttribute>(false)
-            .Select(attribute => new MenuSourceRegistration(
-                attribute.area,
-                attribute.priority,
-                type,
-                source));
+        return type.GetCustomAttributes<EditorMenuSourceAttribute>(false).Select(attribute => new MenuSourceRegistration(attribute.area, attribute.priority, type, source));
     }
 
     private static IEnumerable<DropRegistration> CreateDropRegistrations(
@@ -756,14 +699,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         EditorDrop drop = activator.CreateExtension<EditorDrop>(type);
         Type sourceType = drop.sourceType;
         Type targetType = drop.targetType;
-        return type.GetCustomAttributes<EditorDropAttribute>(false)
-            .Select(attribute => new DropRegistration(
-                sourceType,
-                targetType,
-                attribute.area,
-                attribute.priority,
-                type,
-                drop));
+        return type.GetCustomAttributes<EditorDropAttribute>(false).Select(attribute => new DropRegistration(sourceType, targetType, attribute.area, attribute.priority, type, drop));
     }
 
     private PanelRegistration CreatePanelRegistration(
@@ -780,46 +716,27 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
         else
         {
-            panel.isOpen = m_state.TryGetPanelOpen(attribute.id, out bool isOpen)
-                ? isOpen
-                : attribute.defaultOpen;
+            panel.isOpen = m_state.TryGetPanelOpen(attribute.id, out bool isOpen) ? isOpen : attribute.defaultOpen;
         }
+
         return new PanelRegistration(attribute, type, panel);
     }
 
     private static ModalRegistration CreateModalRegistration(
         Type type,
         EditorExtensionActivator activator
-    )
-        => new(
-            type.GetCustomAttribute<EditorModalAttribute>(false)!,
-            type,
-            activator.CreateExtension<EditorModal>(type));
-
+    ) => new(type.GetCustomAttribute<EditorModalAttribute>(false)!, type, activator.CreateExtension<EditorModal>(type));
     private static HistoryHandlerRegistration CreateHistoryHandlerRegistration(
         Type type,
         EditorExtensionActivator activator
-    )
-        => new(
-            type.GetCustomAttribute<EditorHistoryHandlerAttribute>(false)!,
-            type,
-            activator.CreateExtension<EditorHistoryHandler>(type));
-
+    ) => new(type.GetCustomAttribute<EditorHistoryHandlerAttribute>(false)!, type, activator.CreateExtension<EditorHistoryHandler>(type));
     private static void ValidateActions(ActionRegistration[] actions)
     {
-        foreach (IGrouping<(string Action, string Area, Type? Target, int Priority), ActionRegistration> group in
-                 actions.GroupBy(static value => (
-                     value.attribute.action,
-                     value.attribute.area,
-                     value.targetType,
-                     value.attribute.priority)))
+        foreach (IGrouping<(string Action, string Area, Type? Target, int Priority), ActionRegistration> group in actions.GroupBy(static value => (value.attribute.action, value.attribute.area, value.targetType, value.attribute.priority)))
         {
             if (group.Count() > 1)
             {
-                throw new InvalidOperationException(
-                    $"Editor action '{group.Key.Action}' has conflicting registrations for area " +
-                    $"'{(string.IsNullOrEmpty(group.Key.Area) ? "*" : group.Key.Area)}' and target " +
-                    $"'{group.Key.Target?.FullName ?? "*"}'.");
+                throw new InvalidOperationException($"Editor action '{group.Key.Action}' has conflicting registrations for area " + $"'{(string.IsNullOrEmpty(group.Key.Area) ? "*" : group.Key.Area)}' and target " + $"'{group.Key.Target?.FullName ?? "*"}'.");
             }
         }
     }
@@ -833,21 +750,19 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             for (int shortcutIndex = 0; shortcutIndex < registration.shortcuts.Length; shortcutIndex++)
             {
                 EditorShortcutAttribute shortcut = registration.shortcuts[shortcutIndex];
-                if (!string.IsNullOrEmpty(registration.attribute.area) &&
-                    !string.IsNullOrEmpty(shortcut.area) &&
-                    !string.Equals(registration.attribute.area, shortcut.area, StringComparison.Ordinal))
+                if (!string.IsNullOrEmpty(registration.attribute.area)
+                    && !string.IsNullOrEmpty(shortcut.area)
+                    && !string.Equals(
+                    registration.attribute.area,
+                    shortcut.area,
+                    StringComparison.Ordinal
+                ))
                 {
-                    throw new InvalidOperationException(
-                        $"Editor shortcut on '{registration.id}' targets area '{shortcut.area}', " +
-                        $"outside its action area '{registration.attribute.area}'.");
+                    throw new InvalidOperationException($"Editor shortcut on '{registration.id}' targets area '{shortcut.area}', " + $"outside its action area '{registration.attribute.area}'.");
                 }
-                string effectiveArea = string.IsNullOrEmpty(shortcut.area)
-                    ? registration.attribute.area
-                    : shortcut.area;
-                shortcuts.Add(new ShortcutValidationEntry(
-                    registration,
-                    effectiveArea,
-                    CreateShortcutGesture(shortcut)));
+
+                string effectiveArea = string.IsNullOrEmpty(shortcut.area) ? registration.attribute.area : shortcut.area;
+                shortcuts.Add(new ShortcutValidationEntry(registration, effectiveArea, CreateShortcutGesture(shortcut)));
             }
         }
 
@@ -857,31 +772,28 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             for (int rightIndex = leftIndex + 1; rightIndex < shortcuts.Count; rightIndex++)
             {
                 ShortcutValidationEntry right = shortcuts[rightIndex];
-                bool sameAction = string.Equals(
-                    left.registration.id,
-                    right.registration.id,
-                    StringComparison.Ordinal);
-                if (left.gesture != right.gesture ||
-                    left.registration.attribute.priority != right.registration.attribute.priority ||
-                    !string.Equals(left.area, right.area, StringComparison.Ordinal) ||
-                    !MayHaveEqualTargetSpecificity(
-                        left.registration.targetType,
-                        right.registration.targetType))
+                bool sameAction = string.Equals(left.registration.id, right.registration.id, StringComparison.Ordinal);
+                if (left.gesture != right.gesture
+                    || left.registration.attribute.priority != right.registration.attribute.priority
+                    || !string.Equals(
+                    left.area,
+                    right.area,
+                    StringComparison.Ordinal
+                )
+                    || !MayHaveEqualTargetSpecificity(
+                    left.registration.targetType,
+                    right.registration.targetType
+                ))
                 {
                     continue;
                 }
 
                 if (sameAction)
                 {
-                    throw new InvalidOperationException(
-                        $"Editor action '{left.registration.id}' declares duplicate shortcut " +
-                        $"'{left.gesture}' for area '{(string.IsNullOrEmpty(left.area) ? "*" : left.area)}'.");
+                    throw new InvalidOperationException($"Editor action '{left.registration.id}' declares duplicate shortcut " + $"'{left.gesture}' for area '{(string.IsNullOrEmpty(left.area) ? "*" : left.area)}'.");
                 }
 
-                throw new InvalidOperationException(
-                    $"Editor shortcut '{left.gesture}' is ambiguous between actions " +
-                    $"'{left.registration.id}' and '{right.registration.id}' for area " +
-                    $"'{(string.IsNullOrEmpty(left.area) ? "*" : left.area)}'.");
+                throw new InvalidOperationException($"Editor shortcut '{left.gesture}' is ambiguous between actions " + $"'{left.registration.id}' and '{right.registration.id}' for area " + $"'{(string.IsNullOrEmpty(left.area) ? "*" : left.area)}'.");
             }
         }
     }
@@ -906,46 +818,39 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
                 continue;
             if (registration.targetType is not null || registration.argumentType is not null)
             {
-                throw new InvalidOperationException(
-                    $"Editor toolbar action '{registration.id}' must not require a target or argument.");
+                throw new InvalidOperationException($"Editor toolbar action '{registration.id}' must not require a target or argument.");
             }
+
             for (int toolbarIndex = 0; toolbarIndex < registration.toolbars.Length; toolbarIndex++)
             {
                 EditorToolbarItemAttribute toolbar = registration.toolbars[toolbarIndex];
-                if (!string.IsNullOrEmpty(registration.attribute.area) &&
-                    !string.Equals(registration.attribute.area, toolbar.area, StringComparison.Ordinal))
+                if (!string.IsNullOrEmpty(registration.attribute.area) && !string.Equals(registration.attribute.area, toolbar.area, StringComparison.Ordinal))
                 {
-                    throw new InvalidOperationException(
-                        $"Editor toolbar placement on '{registration.id}' targets area '{toolbar.area}', " +
-                        $"outside its action area '{registration.attribute.area}'.");
+                    throw new InvalidOperationException($"Editor toolbar placement on '{registration.id}' targets area '{toolbar.area}', " + $"outside its action area '{registration.attribute.area}'.");
                 }
             }
         }
 
-        IGrouping<(string id, string area), (string id, string area)>? duplicate = actions
-            .SelectMany(static registration => registration.toolbars.Select(toolbar => (
-                registration.id,
-                toolbar.area)))
-            .GroupBy(static placement => placement, EqualityComparer<(string id, string area)>.Default)
-            .FirstOrDefault(static group => group.Count() > 1);
+        IGrouping<(string id, string area), (string id, string area)>? duplicate = actions.SelectMany(static registration => registration.toolbars.Select(toolbar => (registration.id, toolbar.area))).GroupBy(
+            static placement => placement,
+            EqualityComparer<(string id, string area)>.Default
+        ).FirstOrDefault(static group => group.Count() > 1);
         if (duplicate is not null)
-            throw new InvalidOperationException(
-                $"Editor action '{duplicate.Key.id}' has duplicate toolbar placements.");
+            throw new InvalidOperationException($"Editor action '{duplicate.Key.id}' has duplicate toolbar placements.");
     }
 
-    private HotKeyGesture CreateShortcutGesture(EditorShortcutAttribute shortcut)
-        => shortcut.primary
-            ? HotKeyGesture.Primary(shortcut.key, m_context.keyboard, shortcut.modifiers)
-            : new HotKeyGesture(shortcut.key, shortcut.modifiers, m_context.keyboard.superModifierLabel);
-
+    private HotKeyGesture CreateShortcutGesture(EditorShortcutAttribute shortcut) => shortcut.primary ? HotKeyGesture.Primary(
+        shortcut.key,
+        m_context.keyboard,
+        shortcut.modifiers
+    ) : new HotKeyGesture(
+        shortcut.key,
+        shortcut.modifiers,
+        m_context.keyboard.superModifierLabel
+    );
     private static void ValidateDrops(DropRegistration[] drops)
     {
-        foreach (IGrouping<(Type Source, Type Target, string Area, int Priority), DropRegistration> group in
-                 drops.GroupBy(static value => (
-                     value.sourceType,
-                     value.targetType,
-                     value.area,
-                     value.priority)))
+        foreach (IGrouping<(Type Source, Type Target, string Area, int Priority), DropRegistration> group in drops.GroupBy(static value => (value.sourceType, value.targetType, value.area, value.priority)))
         {
             if (group.Count() > 1)
                 throw new InvalidOperationException("Editor drop registrations contain an ambiguous match.");
@@ -954,36 +859,28 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
 
     private static void ValidatePanels(PanelRegistration[] panels)
     {
-        string? duplicate = panels
-            .GroupBy(static value => value.attribute.id, StringComparer.Ordinal)
-            .FirstOrDefault(static group => group.Count() > 1)?.Key;
+        string? duplicate = panels.GroupBy(static value => value.attribute.id, StringComparer.Ordinal).FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicate is not null)
             throw new InvalidOperationException($"Editor panel id '{duplicate}' is registered more than once.");
     }
 
     private static void ValidateModals(ModalRegistration[] modals)
     {
-        string? duplicate = modals
-            .GroupBy(static value => value.attribute.id, StringComparer.Ordinal)
-            .FirstOrDefault(static group => group.Count() > 1)?.Key;
+        string? duplicate = modals.GroupBy(static value => value.attribute.id, StringComparer.Ordinal).FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicate is not null)
             throw new InvalidOperationException($"Editor modal id '{duplicate}' is registered more than once.");
     }
 
     private static void ValidateHistoryHandlers(HistoryHandlerRegistration[] handlers)
     {
-        string? duplicate = handlers
-            .GroupBy(static value => value.attribute.kind, StringComparer.Ordinal)
-            .FirstOrDefault(static group => group.Count() > 1)?.Key;
+        string? duplicate = handlers.GroupBy(static value => value.attribute.kind, StringComparer.Ordinal).FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicate is not null)
         {
-            throw new InvalidOperationException(
-                $"Editor history handler kind '{duplicate}' is registered more than once.");
+            throw new InvalidOperationException($"Editor history handler kind '{duplicate}' is registered more than once.");
         }
     }
 
-    private static IReadOnlyDictionary<string, EditorHistoryHandler> CreateHistoryHandlerMap(
-        IReadOnlyList<HistoryHandlerRegistration> handlers)
+    private static IReadOnlyDictionary<string, EditorHistoryHandler> CreateHistoryHandlerMap(IReadOnlyList<HistoryHandlerRegistration> handlers)
     {
         var result = new Dictionary<string, EditorHistoryHandler>(handlers.Count, StringComparer.Ordinal);
         for (int i = 0; i < handlers.Count; i++)
@@ -995,14 +892,12 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         IReadOnlyList<ModuleRegistration> modules,
         IReadOnlyList<PanelRegistration> panels
     ) {
-        string? duplicate = modules
-            .Select(static value => value.attribute.id)
-            .Concat(panels.Select(static value => value.attribute.id))
-            .GroupBy(static id => id, StringComparer.Ordinal)
-            .FirstOrDefault(static group => group.Count() > 1)?.Key;
+        string? duplicate = modules.Select(static value => value.attribute.id).Concat(panels.Select(static value => value.attribute.id)).GroupBy(
+            static id => id,
+            StringComparer.Ordinal
+        ).FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicate is not null)
-            throw new InvalidOperationException(
-                $"Editor extension id '{duplicate}' is registered more than once.");
+            throw new InvalidOperationException($"Editor extension id '{duplicate}' is registered more than once.");
     }
 
     private static StateRegistration[] CreateStateRegistrations(
@@ -1013,30 +908,20 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         for (int i = 0; i < modules.Count; i++)
         {
             ModuleRegistration module = modules[i];
-            StateRegistration? registration = CreateStateRegistration(
-                module.attribute.id,
-                StateOwnerKind.Module,
-                module.type,
-                module.module,
-                typeof(EditorModule));
+            StateRegistration? registration = CreateStateRegistration(module.attribute.id, StateOwnerKind.Module, module.type, module.module, typeof(EditorModule));
             if (registration is not null)
                 result.Add(registration);
         }
+
         for (int i = 0; i < panels.Count; i++)
         {
             PanelRegistration panel = panels[i];
-            StateRegistration? registration = CreateStateRegistration(
-                panel.attribute.id,
-                StateOwnerKind.Panel,
-                panel.type,
-                panel.panel,
-                typeof(EditorPanel));
+            StateRegistration? registration = CreateStateRegistration(panel.attribute.id, StateOwnerKind.Panel, panel.type, panel.panel, typeof(EditorPanel));
             if (registration is not null)
                 result.Add(registration);
         }
-        return result
-            .OrderBy(static value => value.id, StringComparer.Ordinal)
-            .ToArray();
+
+        return result.OrderBy(static value => value.id, StringComparer.Ordinal).ToArray();
     }
 
     private static StateRegistration? CreateStateRegistration(
@@ -1052,8 +937,8 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             flags,
             binder: null,
             [typeof(EditorState)],
-            modifiers: null) ?? throw new InvalidOperationException(
-                $"Editor extension '{type.FullName}' has no state capture hook.");
+            modifiers: null
+        ) ?? throw new InvalidOperationException($"Editor extension '{type.FullName}' has no state capture hook.");
         if (capture.DeclaringType == baseType)
             return null;
         MethodInfo restore = type.GetMethod(
@@ -1061,14 +946,9 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             flags,
             binder: null,
             [typeof(EditorState)],
-            modifiers: null) ?? throw new InvalidOperationException(
-                $"Editor extension '{type.FullName}' has no state restore hook.");
-        return new StateRegistration(
-            id,
-            kind,
-            owner,
-            capture.CreateDelegate<Action<EditorState>>(owner),
-            restore.CreateDelegate<Action<EditorState>>(owner));
+            modifiers: null
+        ) ?? throw new InvalidOperationException($"Editor extension '{type.FullName}' has no state restore hook.");
+        return new StateRegistration(id, kind, owner, capture.CreateDelegate<Action<EditorState>>(owner), restore.CreateDelegate<Action<EditorState>>(owner));
     }
 
     internal sealed record Snapshot(
@@ -1081,21 +961,14 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         HistoryHandlerRegistration[] historyHandlers,
         StateRegistration[] state,
         object[] instances
-    ) {
-        internal HashSet<EditorModule> quarantinedModules { get; } =
-            new(ReferenceEqualityComparer.Instance);
-
-        internal HashSet<EditorPanel> quarantinedPanels { get; } =
-            new(ReferenceEqualityComparer.Instance);
-
-        internal HashSet<EditorModal> quarantinedModals { get; } =
-            new(ReferenceEqualityComparer.Instance);
-
-        internal HashSet<EditorModule> startedModules { get; } =
-            new(ReferenceEqualityComparer.Instance);
-
-        internal HashSet<EditorPanel> attachedPanels { get; } =
-            new(ReferenceEqualityComparer.Instance);
+    )
+    {
+        internal IReadOnlyList<EditorPanelAttribute> panelDeclarations { get; } = Array.AsReadOnly(panels.Select(static registration => registration.attribute).ToArray());
+        internal HashSet<EditorModule> quarantinedModules { get; } = new(ReferenceEqualityComparer.Instance);
+        internal HashSet<EditorPanel> quarantinedPanels { get; } = new(ReferenceEqualityComparer.Instance);
+        internal HashSet<EditorModal> quarantinedModals { get; } = new(ReferenceEqualityComparer.Instance);
+        internal HashSet<EditorModule> startedModules { get; } = new(ReferenceEqualityComparer.Instance);
+        internal HashSet<EditorPanel> attachedPanels { get; } = new(ReferenceEqualityComparer.Instance);
     }
 
     internal sealed record ModuleRegistration(
@@ -1103,7 +976,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         Type type,
         EditorModule module
     );
-
     internal sealed record ActionRegistration(
         EditorActionAttribute attribute,
         Type type,
@@ -1113,12 +985,10 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         EditorMenuAttribute[] menus,
         EditorToolbarItemAttribute[] toolbars,
         EditorShortcutAttribute[] shortcuts
-    ) {
+    )
+    {
         internal string id { get; } = attribute.action;
-
-        internal string? area { get; } = string.IsNullOrEmpty(attribute.area)
-            ? null
-            : attribute.area;
+        internal string? area { get; } = string.IsNullOrEmpty(attribute.area) ? null : attribute.area;
     }
 
     internal sealed record MenuSourceRegistration(
@@ -1127,7 +997,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         Type type,
         EditorMenuSource source
     );
-
     internal sealed record DropRegistration(
         Type sourceType,
         Type targetType,
@@ -1136,25 +1005,21 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         Type type,
         EditorDrop drop
     );
-
     internal sealed record PanelRegistration(
         EditorPanelAttribute attribute,
         Type type,
         EditorPanel panel
     );
-
     internal sealed record ModalRegistration(
         EditorModalAttribute attribute,
         Type type,
         EditorModal modal
     );
-
     internal sealed record HistoryHandlerRegistration(
         EditorHistoryHandlerAttribute attribute,
         Type type,
         EditorHistoryHandler handler
     );
-
     internal sealed record StateRegistration(
         string id,
         StateOwnerKind kind,
@@ -1162,7 +1027,6 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         Action<EditorState> capture,
         Action<EditorState> restore
     );
-
     internal enum StateOwnerKind
     {
         Module,
@@ -1173,19 +1037,18 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         bool isOpen,
         ReadOnlyMemory<byte> payload
     );
-
     private readonly record struct ShortcutValidationEntry(
         ActionRegistration registration,
         string area,
         HotKeyGesture gesture
     );
-
     private sealed class ActivationState(
         Snapshot? previous,
         Snapshot candidate,
         HashSet<object> existing,
         EditorHistory.HandlerUpdate handlers
-    ) {
+    )
+    {
         internal Snapshot? previous { get; } = previous;
         internal Snapshot candidate { get; } = candidate;
         internal HashSet<object> existing { get; } = existing;

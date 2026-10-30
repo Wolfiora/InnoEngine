@@ -1,29 +1,14 @@
 using Inno.Scripting.Api;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using Inno.Native.ImGui;
-using Inno.Adapter.Presentation.ImGui;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.ImGui",
-    "Inno.Editor.ImGui",
-    ScriptingApiScope.Editor)]
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.ImGui",
-    "Inno.Editor.ImGui.ImGuiWidget",
-    ScriptingApiScope.Editor)]
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.ImGui",
-    "Inno.Native.ImGui",
-    ScriptingApiScope.Editor)]
-[assembly: ScriptingApiNamespace(
-    "InnoEditor.ImGui",
-    "Inno.Adapter.Presentation.ImGui",
-    ScriptingApiScope.Editor)]
-
+[assembly: ScriptingApiNamespace("InnoEditor.ImGui", "Inno.Editor.ImGui", ScriptingApiScope.Editor)]
+[assembly: ScriptingApiNamespace("InnoEditor.ImGui", "Inno.Editor.ImGui.ImGuiWidget", ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorUiSession), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorPalette), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorStyleMetrics), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ListNavigationResult), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(Inno.Editor.ImGui.ImGui), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorWidget), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(InlineRenameResult), ScriptingApiScope.Editor)]
@@ -48,3 +33,20 @@ using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 [assembly: ScriptingApiExport(typeof(ImGuiTableFlags), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(ImGuiTreeNodeFlags), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(ImGuiWindowFlags), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorDrawList), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorUiLayout), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(EditorUiInput), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(TransformGizmoOperation), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(TransformGizmoSpace), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(TransformGizmoOptions), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(TransformGizmoResult), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiButtonFlags), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiCond), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiFocusedFlags), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiKey), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiMouseCursor), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiTableBgTarget), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiTableRowFlags), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiFont), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiFontScope), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGuiFontStyle), ScriptingApiScope.Editor)]

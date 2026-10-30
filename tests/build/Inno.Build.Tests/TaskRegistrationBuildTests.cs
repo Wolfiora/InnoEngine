@@ -31,8 +31,10 @@ public sealed class TaskRegistrationBuildTests
                     <OutputType>Exe</OutputType>
                     <ImplicitUsings>disable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                   </PropertyGroup>
                   <ItemGroup>
+                    <Compile Include="Program.cs" />
                     <Reference Include="Microsoft.Build" HintPath="$(MSBuildBinPath)/Microsoft.Build.dll" />
                     <Reference Include="Microsoft.Build.Framework" HintPath="$(MSBuildBinPath)/Microsoft.Build.Framework.dll" />
                     <Reference Include="Microsoft.Build.Utilities.Core" HintPath="$(MSBuildBinPath)/Microsoft.Build.Utilities.Core.dll" />
@@ -50,6 +52,7 @@ public sealed class TaskRegistrationBuildTests
                 using System.Collections.Concurrent;
                 using System.Collections.Generic;
                 using System.IO;
+                using System.Linq;
                 using System.Text.Json;
                 using System.Threading;
                 using Microsoft.Build.Evaluation;
@@ -98,8 +101,7 @@ public sealed class TaskRegistrationBuildTests
                         if (copies.count != 0)
                             return 3;
                         ProjectInstance completed = result.ProjectStateAfterBuild!;
-                        string foundationProject = Path.Combine(args[3], "src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj");
-                        string foundationAssembly = projects.LoadProject(foundationProject).GetPropertyValue("TargetPath");
+                        string foundationAssembly = completed.GetItems("_InnoFoundationOutput").Single().EvaluatedInclude;
                         using (FileStream writable = File.Open(foundationAssembly, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                         {
                             if (writable.Length == 0)

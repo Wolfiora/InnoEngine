@@ -24,6 +24,31 @@ namespace Inno.Scripting.Compiler.Tests;
 /// </summary>
 public sealed class CSharp14ScriptingTests
 {
+    [Theory]
+    [InlineData("LangVersion", "preview")]
+    [InlineData("ImplicitUsings", "enable")]
+    [InlineData("DefineConstants", "UNEXPECTED")]
+    [InlineData("DisableImplicitConfigurationDefines", "false")]
+    public async Task IdeRejectsOverridesOfTheFrozenCompilerContract(
+        string property,
+        string value
+    ) {
+        using var fixture = new CompilerFixture();
+        fixture.Write("Probe.cs", "public sealed class Probe { }");
+        fixture.Rescan();
+        fixture.compiler.GenerateProjectFiles();
+        string project = Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj");
+        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(host, project);
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ToolchainEnvironment.RunAsync(sdk.hostPath,
+            [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:" + property + "=" + value],
+            fixture.projectRoot, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath), output, errors));
+        Assert.Contains("IDE compiler input '" + property + "' differs", output.ToString() + errors, StringComparison.Ordinal);
+    }
+
     /// <summary>
     /// Projects installed extension properties and field-backed plugin properties into the IDE contract.
     /// </summary>
@@ -81,9 +106,7 @@ public sealed class CSharp14ScriptingTests
         string projectPath = Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj");
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(host, projectPath);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "build", projectPath, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
-            fixture.projectRoot, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+        _ = await BuildIdeAsync(sdk, projectPath, fixture.projectRoot);
     }
 
     /// <summary>
@@ -206,10 +229,28 @@ public sealed class CSharp14ScriptingTests
         Assert.Equal("14.0", Assert.Single(project.Descendants("LangVersion")).Value);
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(host, projectPath);
-        string output = await ToolchainEnvironment.CaptureOutputAsync(sdk.hostPath,
-            [sdk.cliPath, "build", projectPath, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
-            fixture.projectRoot, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+        string output = await BuildIdeAsync(sdk, projectPath, fixture.projectRoot);
         Assert.DoesNotContain("CS8032", output, StringComparison.Ordinal);
+    }
+
+    private static async Task<string> BuildIdeAsync(
+        DotNetSdkDescriptor sdk,
+        string project,
+        string directory
+    ) {
+        using var output = new StringWriter();
+        using var errors = new StringWriter();
+        try
+        {
+            await ToolchainEnvironment.RunAsync(sdk.hostPath,
+                [sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
+                directory, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath), output, errors);
+            return output.ToString();
+        }
+        catch (InvalidOperationException failure)
+        {
+            throw new InvalidOperationException(output + Environment.NewLine + errors, failure);
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -236,40 +277,42 @@ public sealed class CSharp14ScriptingTests
     /// Invalidates reference and script artifacts when framework bytes change without changing the public contract.
     /// </summary>
     [Fact]
-    [Trait("ProcessIsolation", "Required")]
     public void FrameworkContentChangesSelectNewArtifacts()
     {
-        using var fixture = new CompilerFixture();
+        var environment = new MutableCompilationEnvironment();
+        using var fixture = new CompilerFixture(compilationEnvironment: environment);
         fixture.Write("Counter.cs", "public sealed class Counter { public int count { get; set; } }");
         fixture.Rescan();
-        string dotnetRoot = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", ".."));
-        string source = Directory.EnumerateDirectories(Path.Combine(dotnetRoot, "packs", "Microsoft.NETCore.App.Ref"))
-            .Where(path => Path.GetFileName(path).StartsWith("10.0.", StringComparison.Ordinal))
-            .OrderByDescending(path => Version.Parse(Path.GetFileName(path))).First();
-        string selectedRoot = Path.Combine(fixture.projectRoot, "Framework");
-        string destination = Path.Combine(selectedRoot, "packs", "Microsoft.NETCore.App.Ref", Path.GetFileName(source), "ref", "net10.0");
+        string host = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        ScriptCompilationInputs selected = new Inno.Build.SdkScriptCompilationEnvironment(host, fixture.projectRoot).Capture();
+        string destination = Path.Combine(fixture.projectRoot, "Framework");
         Directory.CreateDirectory(destination);
-        foreach (string path in Directory.EnumerateFiles(Path.Combine(source, "ref", "net10.0"), "*.dll"))
+        foreach (string path in selected.frameworkReferences)
             File.Copy(path, Path.Combine(destination, Path.GetFileName(path)));
-        string? previous = Environment.GetEnvironmentVariable("DOTNET_ROOT");
-        try
+        environment.inputs = new ScriptCompilationInputs(selected.sdkIdentity,
+            Directory.EnumerateFiles(destination, "*.dll"), selected.predefinedSymbols);
+        ScriptCompilationResult first = fixture.Compile();
+        Assert.True(first.success, string.Join(Environment.NewLine, first.diagnostics));
+        string referenceRoot = Path.Combine(fixture.projectRoot, "Library", "ScriptApi", "Runtime");
+        string[] references = Directory.GetDirectories(referenceRoot);
+        using (FileStream changed = new(Path.Combine(destination, "System.Runtime.dll"), FileMode.Append))
+            changed.WriteByte(0);
+        ScriptCompilationResult second = fixture.Compile();
+        Assert.True(second.success, string.Join(Environment.NewLine, second.diagnostics));
+        Assert.NotEqual(first.outputDirectory, second.outputDirectory);
+        Assert.NotEmpty(second.compiledAssemblyNames);
+        Assert.NotEmpty(Directory.GetDirectories(referenceRoot).Except(references));
+    }
+
+    private sealed class MutableCompilationEnvironment : IScriptCompilationEnvironmentProvider
+    {
+        internal ScriptCompilationInputs inputs { get; set; } = null!;
+
+        public ScriptCompilationInputs Capture(CancellationToken cancellationToken = default)
         {
-            Environment.SetEnvironmentVariable("DOTNET_ROOT", selectedRoot);
-            ScriptCompilationResult first = fixture.Compile();
-            Assert.True(first.success, string.Join(Environment.NewLine, first.diagnostics));
-            string referenceRoot = Path.Combine(fixture.projectRoot, "Library", "ScriptApi", "Runtime");
-            string[] references = Directory.GetDirectories(referenceRoot);
-            using (FileStream changed = new(Path.Combine(destination, "System.Runtime.dll"), FileMode.Append))
-                changed.WriteByte(0);
-            ScriptCompilationResult second = fixture.Compile();
-            Assert.True(second.success, string.Join(Environment.NewLine, second.diagnostics));
-            Assert.NotEqual(first.outputDirectory, second.outputDirectory);
-            Assert.NotEmpty(second.compiledAssemblyNames);
-            Assert.NotEmpty(Directory.GetDirectories(referenceRoot).Except(references));
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("DOTNET_ROOT", previous);
+            cancellationToken.ThrowIfCancellationRequested();
+            return inputs;
         }
     }
 }

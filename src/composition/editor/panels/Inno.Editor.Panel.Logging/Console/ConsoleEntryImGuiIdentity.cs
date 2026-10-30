@@ -1,16 +1,15 @@
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
-
 internal static class ConsoleEntryImGuiIdentity
 {
     internal static void Push(string identity)
     {
-        NativeImGui.PushID(identity);
+        Ui.PushId(identity);
     }
 
     internal static void Pop()
     {
-        NativeImGui.PopID();
+        Ui.PopId();
     }
 }

@@ -88,6 +88,11 @@ public sealed class PlatformImGuiViewportTarget
 public interface IPlatformImGuiRenderer : IDisposable
 {
     /// <summary>
+    /// Gets whether every draw-data consumer applies per-command vertex offsets to 16-bit indices.
+    /// </summary>
+    bool supportsVertexOffsets { get; }
+
+    /// <summary>
     /// Gets whether detached viewport windows are rendered by this backend.
     /// </summary>
     bool supportsViewports { get; }

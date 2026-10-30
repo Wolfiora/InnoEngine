@@ -33,7 +33,7 @@ internal static class ScriptProjectGenerator
             .ToArray();
         ScriptApiProfile runtimeApi = ScriptApiCatalog.Build(includeEditor: false);
         ScriptApiProfile editorApi = ScriptApiCatalog.Build(includeEditor: true);
-        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve();
+        ScriptCompilationEnvironment environment = FrameworkReferenceResolver.Resolve(options.compilationEnvironment);
         ScriptApiReferenceSet runtimeApiReferences = ScriptApiReferenceBuilder.Build(options, runtimeApi, environment);
         ScriptApiReferenceSet editorApiReferences = ScriptApiReferenceBuilder.Build(
             options,
@@ -162,6 +162,7 @@ internal static class ScriptProjectGenerator
         bool allowUnsafe,
         string sourcePathMap
     ) {
+        string frozenDefines = string.Join(";", defines.Concat(apiReferences.environment.inputs.predefinedSymbols).Distinct(StringComparer.Ordinal));
         var earlyPropertyGroup = new XElement("PropertyGroup",
             new XElement("ImportDirectoryBuildProps", "false"),
             new XElement("ImportDirectoryBuildTargets", "false"),
@@ -178,7 +179,11 @@ internal static class ScriptProjectGenerator
             new XElement("ImplicitUsings", "disable"),
             new XElement("Nullable", nullable ? "enable" : "disable"),
             new XElement("AllowUnsafeBlocks", allowUnsafe ? "true" : "false"),
-            new XElement("DefineConstants", string.Join(";", defines)),
+            new XElement("DisableImplicitFrameworkReferences", "true"),
+            new XElement("DisableImplicitFrameworkDefines", "true"),
+            new XElement("DisableImplicitConfigurationDefines", "true"),
+            new XElement("NoStdLib", "true"),
+            new XElement("DefineConstants", frozenDefines),
             new XElement("PathMap", sourcePathMap),
             new XElement("LangVersion", ScriptCompilationEnvironment.C_LANGUAGE_VERSION));
         var compileGroup = new XElement(
@@ -191,7 +196,7 @@ internal static class ScriptProjectGenerator
                 new XElement("None", new XAttribute("Include", $"Assets/**/*{extension}"))));
 
         var referenceGroup = new XElement("ItemGroup");
-        foreach (string path in apiReferences.ideReferencePaths)
+        foreach (string path in apiReferences.ideReferencePaths.Concat(apiReferences.environment.inputs.frameworkReferences))
             AddReference(referenceGroup, path);
         foreach (string path in plugins
                      .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -219,6 +224,28 @@ internal static class ScriptProjectGenerator
             contentGroup,
             referenceGroup,
             codeAnalysisGroup);
+        project.Add(new XElement("Target", new XAttribute("Name", "ValidateInnoScriptSdk"),
+            new XAttribute("BeforeTargets", "ResolveReferences"),
+            new XElement("Error", new XAttribute("Condition", "'$(NETCoreSdkVersion)' != '" + apiReferences.environment.inputs.sdkIdentity + "'"),
+                new XAttribute("Text", "The IDE selected a different SDK from the active script compilation. Regenerate project files with the intended SDK selection."))));
+        XElement validation = project.Elements("Target").Single();
+        foreach ((string property, string expected) in new[]
+        {
+            ("TargetFramework", ScriptCompilationEnvironment.C_TARGET_FRAMEWORK),
+            ("LangVersion", ScriptCompilationEnvironment.C_LANGUAGE_VERSION),
+            ("ImplicitUsings", "disable"), ("DisableImplicitFrameworkReferences", "true"),
+            ("DisableImplicitFrameworkDefines", "true"), ("NoStdLib", "true"),
+            ("DisableImplicitConfigurationDefines", "true"),
+            ("Nullable", nullable ? "enable" : "disable"), ("AllowUnsafeBlocks", allowUnsafe ? "true" : "false"),
+            ("DefineConstants", frozenDefines)
+        })
+        {
+            string condition = property == "DefineConstants"
+                ? "$([System.String]::CompareOrdinal('$(DefineConstants)', '" + expected + "')) != 0"
+                : "'$(" + property + ")' != '" + expected + "'";
+            validation.Add(new XElement("Error", new XAttribute("Condition", condition),
+                new XAttribute("Text", "The IDE compiler input '" + property + "' differs from the active script contract. Actual: '$(" + property + ")'. Expected: '" + expected + "'. Regenerate project files instead of overriding derived compiler inputs.")));
+        }
         project.Add(folderGroup);
         if (projectReferences.Count > 0)
         {

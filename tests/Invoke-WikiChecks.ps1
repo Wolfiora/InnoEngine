@@ -6,7 +6,8 @@ param(
     [string]$Dotnet = 'dotnet',
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
-    [string]$ResultsDirectory = 'artifacts/acceptance/wiki-gate'
+    [string]$ResultsDirectory = 'artifacts/acceptance/wiki-gate',
+    [string]$ArtifactsPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -16,7 +17,14 @@ $project = [IO.Path]::GetFullPath($ProjectDirectory, $repository)
 $results = [IO.Path]::GetFullPath($ResultsDirectory, $repository)
 New-Item -ItemType Directory -Force -Path $results | Out-Null
 $entryProject = Join-Path $repository 'entry/InnoEngine.Build/InnoEngine.Build.csproj'
-$entry = @(& $Dotnet msbuild $entryProject -nologo -m:1 -nr:false "-p:Configuration=$Configuration" -getProperty:TargetPath)
+$outputArguments = @()
+$verificationArguments = @()
+if ($ArtifactsPath) {
+    $outputOwner = [IO.Path]::GetFullPath($ArtifactsPath, $repository)
+    $outputArguments = @("-p:ArtifactsPath=$outputOwner")
+    $verificationArguments = @('--artifacts-path', $outputOwner)
+}
+$entry = @(& $Dotnet msbuild $entryProject -nologo -m:1 -nr:false "-p:Configuration=$Configuration" -getProperty:TargetPath @outputArguments)
 if ($LASTEXITCODE -ne 0 -or $entry.Count -ne 1 -or -not (Test-Path -LiteralPath $entry[0])) {
     throw 'Build the selected Build entry and product references before running the Wiki gate.'
 }
@@ -38,7 +46,7 @@ $runtimeReference = Read-Reference 'Inno.ScriptApi.Runtime'
 $editorReference = Read-Reference 'Inno.ScriptApi.Editor'
 @{ runtime = $runtimeReference; editor = $editorReference } | ConvertTo-Json |
     Set-Content -LiteralPath (Join-Path $results 'script-references.json') -Encoding utf8
-& $Dotnet $entry[0] verify $repository --dotnet $Dotnet --configuration $Configuration --wiki --wiki-target $Target `
+& $Dotnet $entry[0] verify $repository --dotnet $Dotnet --configuration $Configuration --wiki --wiki-target $Target @verificationArguments `
     --wiki-runtime-reference $runtimeReference --wiki-editor-reference $editorReference `
     --wiki-api (Join-Path $results 'api.json') --wiki-examples (Join-Path $results 'examples.json') 2>&1 |
     Tee-Object -FilePath (Join-Path $results 'wiki.log')

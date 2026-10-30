@@ -1,10 +1,9 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.Core.Graphs;
 using Inno.Rendering.Shaders;
-using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using ImGuiApi = Inno.Native.ImGui.ImGui;
+using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
-
 internal sealed partial class ShaderEditorCanvas
 {
     private void DrawTarget()
@@ -15,7 +14,7 @@ internal sealed partial class ShaderEditorCanvas
         {
             InspectorRow("target", "Target", () =>
             {
-                if (!Widget.BeginBoundedCombo("##target", current.Length == 0 ? "Explicit Stages" : current))
+                if (!EditorUI.current.widgets.BeginBoundedCombo("##target", current.Length == 0 ? "Explicit Stages" : current))
                     return;
                 try
                 {
@@ -28,7 +27,7 @@ internal sealed partial class ShaderEditorCanvas
                 }
                 finally
                 {
-                    Widget.EndBoundedCombo();
+                    EditorUI.current.widgets.EndBoundedCombo();
                 }
             });
         }
@@ -36,6 +35,7 @@ internal sealed partial class ShaderEditorCanvas
         {
             ImGuiApi.EndDisabled();
         }
+
         void Assign(string id)
         {
             if (id == current)

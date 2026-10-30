@@ -1,25 +1,19 @@
+using UiDrawing = Inno.Editor.ImGui.ImGui;
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
-
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
-
-internal sealed unsafe class HierarchyDropVisual
+internal sealed class HierarchyDropVisual
 {
     internal EditorDropPlacement GetScenePlacement(
         in TreeNodeResult result,
         float mouseY
-    )
-        => mouseY >= (result.min.Y + result.max.Y) * 0.5f
-            ? EditorDropPlacement.After
-            : EditorDropPlacement.Before;
-
+    ) => mouseY >= (result.min.Y + result.max.Y) * 0.5f ? EditorDropPlacement.After : EditorDropPlacement.Before;
     internal EditorDropPlacement GetObjectPlacement(
         in TreeNodeResult result,
         float mouseY
@@ -38,18 +32,16 @@ internal sealed unsafe class HierarchyDropVisual
         switch (visual)
         {
             case EditorDropVisual.InsertBefore:
-                EditorWidget.InsertionLine(result.min.X, result.max.X, result.min.Y);
+                EditorUI.current.widgets.InsertionLine(result.min.X, result.max.X, result.min.Y);
                 break;
             case EditorDropVisual.InsertAfter:
-                EditorWidget.InsertionLine(result.min.X, result.max.X, result.max.Y);
+                EditorUI.current.widgets.InsertionLine(result.min.X, result.max.X, result.max.Y);
                 break;
             case EditorDropVisual.Highlight:
             {
                 Vector2 highlightMin = result.contentMin;
-                highlightMin.X = MathF.Max(
-                    result.min.X,
-                    highlightMin.X - NativeImGui.Raw.GetStyle()->ItemInnerSpacing.X);
-                EditorWidget.DropTargetHighlight(highlightMin, result.max);
+                highlightMin.X = MathF.Max(result.min.X, highlightMin.X - UiDrawing.GetLayout().itemInnerSpacing.X);
+                EditorUI.current.widgets.DropTargetHighlight(highlightMin, result.max);
                 break;
             }
         }

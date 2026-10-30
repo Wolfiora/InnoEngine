@@ -60,10 +60,12 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
     )
         => m_context.TryCaptureIniSettings(out settings, force);
 
-    void IPresentationContext.RenderFrame(Action drawFrame)
-    {
+    void IPresentationContext.RenderFrame(
+        Action drawFrame,
+        Action? prepareFrame
+    ) {
         ArgumentNullException.ThrowIfNull(drawFrame);
-        _ = m_context.RenderFrame(drawFrame);
+        _ = m_context.RenderFrame(drawFrame, prepareFrame);
     }
 
     PresentationTextureHandle IPresentationContext.RegisterTexture(PersistentTextureHandle texture)

@@ -1,27 +1,25 @@
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Reflection;
-
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Extensibility.Modules;
-using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
-
 internal static class InspectorTypeOrigin
 {
     internal static void Draw(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        NativeImGui.PushStyleColor((int)(ImGuiCol.Text), EditorPalette.assetBreadcrumbText);
+        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.contextText);
         try
         {
-            ImGuiWidget.WrappedText("Source: " + Describe(type));
+            EditorUI.current.widgets.WrappedText("Source: " + Describe(type));
         }
         finally
         {
-            NativeImGui.PopStyleColor();
+            Ui.PopStyleColor();
         }
     }
 

@@ -1,0 +1,10 @@
+{
+  "manifestBefore": "e11/final-integrity-before.json",
+  "bytes": 583137380,
+  "menuEvidence": "e11/menu-pairs-fe8261b77205455fba2c1877a46058cb",
+  "manifestSha256": "aa6887634f004af8ab7ca931a9d40267f142d4942a00fd5d54c220cf57e1665e",
+  "manifestAfter": "e11/final-integrity-after.json",
+  "files": 12778,
+  "unchanged": true,
+  "frameEvidence": "e11/pairs-f78ce703511e45d28d031a7617df2d8b"
+}
