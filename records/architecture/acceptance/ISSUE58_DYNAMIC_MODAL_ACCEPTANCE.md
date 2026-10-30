@@ -19,6 +19,7 @@
 - Shader Check 的诊断发布和完成处理移至原 owner 的 Update，测量和绘制不执行编译或发布。
 - 脚本编译的 80% 明确表示等待激活、状态恢复和退休验证。Full GC、finalizer、弱 monitor、Faulted 和原子发布规则未放宽。
 - 未知总量显示活动状态，不显示虚假的 0%。Support Pack 的真实阶段采集仍由 #57 负责。
+- 活动指示只在工作仍持有资源时显示；失败或取消完成后的淡出不会把空进度重新标为 Working。取消请求仍等待实际工作退休。
 
 ## 实际文件与职责
 
@@ -80,7 +81,7 @@ tests/
 | 输入、异常与生命周期 | 原生鼠标、Tab/Enter/Escape、取消、异常后下一帧、两个 Session、字体变化、100 次开关循环。见同一原生 TRX 的输出和几何记录。 |
 | 脚本与 Sample | 七项独立进程回归通过：旧操作回调、编译失败、取消后的依赖保留、复制取消、Missing 激活、旧代退休、快照不保留 ALC。对应同名 TRX。 |
 | Shader Check | 通过；`shader-verified.trx`，实际工作流、History 与文件选择不被绘制修改。 |
-| 导出表单/状态/退休 | 5 passed / 0 failed / 0 skipped；`export-accepted.trx`，包含非合作 Support Pack 准备的严格退休。没有生成完整 Support Pack。 |
+| 导出表单/状态/退休 | 5 passed / 0 failed / 0 skipped；`export-terminal.trx`，包含非合作 Support Pack 准备的严格退休。没有生成完整 Support Pack。 |
 | 正式 IDE 投影 | Canvas、Rendering2D、FlappyBird 均通过；`projection-*.log`，未编辑生成文件。 |
 | 架构、XML、脚本导出与 Wiki | 通过；`wiki-verified.log` 及目录，241/241 项目所有权求值、34,656 API entries、198 示例均无编译错误、0 未求值示例。其他平台产品编译单列未执行。 |
 | CI 范围策略 | 19 项通过；`ci-policy-verified.log`。真实 Git 移动/删除、PR merge-base、混合/未知输入、手动 Full、过滤器空集和引用可见性证明。 |

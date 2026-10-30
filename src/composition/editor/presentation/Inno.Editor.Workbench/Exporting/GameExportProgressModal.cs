@@ -23,7 +23,7 @@ internal sealed class GameExportProgressModal(ExportWindowModule window) : Edito
         m_content = new(
             string.IsNullOrEmpty(snapshot.error) ? snapshot.status : snapshot.error,
             snapshot.fraction,
-            indeterminate: !snapshot.fraction.HasValue,
+            indeterminate: snapshot.isBusy && !snapshot.fraction.HasValue,
             actionLabel: snapshot.isBusy ? "Cancel" : null,
             actionEnabled: !snapshot.cancellationRequested,
             cancelOnEscape: true

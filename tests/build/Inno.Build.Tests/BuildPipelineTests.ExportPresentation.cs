@@ -152,6 +152,7 @@ public sealed partial class BuildPipelineTests
         Assert.True(exports.progress.cancellationRequested);
         Assert.False(observed.cancellationRequested);
         exports.Stop(context);
+        Assert.False(exports.progress.isBusy);
     }
 
     private static unsafe bool DrawExportFrame(
