@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../Inno.Editor.Scripting/Inno.Editor.Scripting.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
@@ -17,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../../runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj" />
     <ProjectReference Include="../../../../foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj" />

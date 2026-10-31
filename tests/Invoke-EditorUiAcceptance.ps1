@@ -9,6 +9,7 @@ param(
     [string]$ProductProject,
     [string[]]$GraphicsApis = @(),
     [string]$BackendPattern,
+    [switch]$EditorOnly,
     [switch]$NoBuild
 )
 
@@ -101,11 +102,16 @@ foreach ($selected in $profiles) {
             'Lifecycle' { @('Inno.Editor.ImGui.Tests', 'Inno.Editor.Graph.Tests', 'Inno.Editor.PlayMode.Tests', 'Inno.Editor.Scripting.Tests') }
             'Performance' { @('Inno.Editor.Interactions.Tests', 'Inno.Editor.PlayMode.Tests', 'Inno.Editor.Scripting.Tests') }
         }
+        if ($EditorOnly) { $names = @($names | Where-Object { $_ -notin @('Inno.Build.Tests', 'Inno.Tooling.Architecture.Tests') }) }
+        if ($EditorOnly -and $selected -eq 'Workflows') { $names += 'Inno.Build.Tests' }
         $filter = switch ($selected) {
             'Visual' { 'FullyQualifiedName~WidgetLayoutTests|FullyQualifiedName~ViewportMetricsTests|Acceptance=Visual' }
             'Lifecycle' { 'Acceptance=Lifecycle' }
             'Performance' { 'Acceptance=Performance|Category=Performance' }
             default { '(Acceptance!=Performance)&(Category!=Performance)' }
+        }
+        if ($EditorOnly -and $selected -eq 'Workflows') {
+            $filter = "($filter)&(FullyQualifiedName!~Inno.Build.Tests|FullyQualifiedName~BuildPipelineTests.Export|FullyQualifiedName~BuildPipelineTests.EditorShutdownDrainsSupportPackCleanupBeforeReleasingExportServices)"
         }
         $projects = foreach ($name in $names) {
             $projectFiles = @(Get-ChildItem -LiteralPath (Join-Path $repository 'tests') -Filter "$name.csproj" -Recurse)
@@ -116,7 +122,7 @@ foreach ($selected in $profiles) {
         @{ solution = @{ path = (Join-Path $repository 'InnoEngine.sln'); projects = @($projects) } } |
             ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $selection -Encoding utf8
         if (-not $NoBuild) {
-            if ($selected -eq 'Contracts') {
+            if ($selected -eq 'Contracts' -and -not $EditorOnly) {
                 $sourceConfiguration = "Source$Configuration"
                 & $Dotnet build (Join-Path $repository 'InnoEngine.sln') -c $sourceConfiguration "-p:ArtifactsPath=$artifacts" `
                     *> (Join-Path $stageRoot 'source-build.log')

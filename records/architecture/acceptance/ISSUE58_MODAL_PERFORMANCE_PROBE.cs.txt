@@ -1,0 +1,171 @@
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Text.Json;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Core.Input;
+using Inno.Core.Logging;
+using Inno.Editor.Core;
+using Inno.Editor.ImGui;
+using Inno.Editor.ImGui.ImGuiWidget;
+using System.Threading;
+using System.Reflection;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
+using Inno.Native.ImGui;
+using Gui = Inno.Native.ImGui.ImGui;
+
+[assembly: AssemblyMetadata("Inno.AssemblyDomain", "InnoInternal")]
+[assembly: AssemblyMetadata("Inno.AssemblyScope", "Editor")]
+
+internal static unsafe class Program
+{
+    private static void Main(string[] args)
+    {
+        var currentProcess = Process.GetCurrentProcess();
+        long allowed = currentProcess.ProcessorAffinity.ToInt64();
+        currentProcess.ProcessorAffinity = new IntPtr(1L << (63 - System.Numerics.BitOperations.LeadingZeroCount((ulong)allowed)));
+        string owner = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoIssue58Perf"));
+        string root = Path.GetFullPath(Path.Combine(owner, Guid.NewGuid().ToString("N")));
+        if (!root.StartsWith(owner + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Invalid probe owner.");
+        Directory.CreateDirectory(root);
+        var native = Gui.Raw.CreateContext(null);
+        try
+        {
+            var io = Gui.Raw.GetIO();
+            io->DisplaySize = new ImVec2C { X = 1280, Y = 720 };
+            io->DeltaTime = 1f / 60f;
+            io->IniFilename = null;
+            io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
+            io->Fonts->RendererHasTextures = 1;
+            using var logs = new LogRouter();
+            logs.RegisterSink(new ConsoleLogSink());
+            using var modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(PerfModal).Assembly) });
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+            var state = new PerfState();
+            using var runtime = new ImGuiEditorRuntime(new EditorContext(root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")), types, logs, [state]);
+            runtime.Start();
+            string shortText = "Preparing the current operation…";
+            string longText = string.Join("\n", Enumerable.Repeat("Long diagnostic text / 中文 / current operation. This wraps to the same controlled width.", 8));
+            string scrollText = string.Join("\n", Enumerable.Repeat(longText, 12));
+            string scenario = args[0];
+            string text = scenario == "short" ? shortText : scenario == "scroll" ? scrollText : longText;
+            var transitionTrace = new List<object>();
+            foreach (string message in new[] { "Short", "Short", "First\nSecond\nThird\nFourth\nFifth", "Short" })
+            {
+                state.message = message;
+                runtime.PrepareFrame();
+                Gui.NewFrame();
+                runtime.Draw();
+                Gui.Render();
+                transitionTrace.Add(new { messageLength = message.Length, windowWidth = state.windowSize.X,
+                    windowHeight = state.windowSize.Y, actionBottom = state.actionMax.Y, windowBottom = state.windowMax.Y });
+            }
+            Thread.Sleep(160);
+            // Compare identical visible work; the old auto-height renderer clips alternating content.
+            state.fixedSize = true;
+            for (int frame = 0; frame < 1000; frame++) Draw(frame);
+            state.prepTicks = state.drawTicks = 0;
+            double frequency = Stopwatch.Frequency;
+            var timings = new double[100000];
+            int beforeDraws = state.draws;
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            TimeSpan cpuBefore = Process.GetCurrentProcess().TotalProcessorTime;
+            for (int frame = 0; frame < timings.Length; frame++)
+            {
+                long start = Stopwatch.GetTimestamp();
+                Draw(frame);
+                timings[frame] = Stopwatch.GetElapsedTime(start).TotalMicroseconds;
+            }
+            double cpu = (Process.GetCurrentProcess().TotalProcessorTime - cpuBefore).TotalMilliseconds;
+            long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            if (state.draws - beforeDraws != timings.Length)
+                throw new InvalidOperationException($"The declared workload drew {state.draws-beforeDraws} frames; total={state.draws}, prepared={state.preparations}, classified={typeof(PerfModal).Assembly.TryGetInnoAssemblyClassification(out _, out _)}.");
+            if (state.windowSize != new Vector2(460f, 684f))
+                throw new InvalidOperationException("The paired workload did not preserve its declared visible window area.");
+            Array.Sort(timings);
+            File.WriteAllText(args[1], JsonSerializer.Serialize(new
+            {
+                scenario, transitionTrace, frames = timings.Length, cpuMilliseconds = cpu,
+                allocatedBytesPerFrame = (double)allocated / timings.Length,
+                medianMicroseconds = timings[timings.Length / 2], p95Microseconds = timings[(int)(timings.Length * 0.95)],
+                preparations = state.preparations, draws = state.draws, fontFacts = state.fontFacts, prepMicroseconds = state.prepTicks / frequency * 1_000_000 / timings.Length, drawMicroseconds = state.drawTicks / frequency * 1_000_000 / timings.Length,
+                windowWidth = state.windowSize.X, windowHeight = state.windowSize.Y
+            }));
+            void Draw(int frame)
+            {
+                state.message = scenario == "alternating" && frame % 2 == 0 ? shortText : text;
+                runtime.PrepareFrame();
+                Gui.NewFrame();
+                runtime.Draw();
+                Gui.Render();
+            }
+        }
+        finally
+        {
+            Gui.Raw.DestroyContext(native);
+            Directory.Delete(root, true);
+        }
+    }
+}
+
+public sealed class PerfState
+{
+    public bool fixedSize;
+    public string message = "Short";
+    public string? fontFacts;
+    public long prepTicks;
+    public long drawTicks;
+    public int preparations;
+    public int draws;
+    public Vector2 windowSize;
+    public Vector2 windowMax;
+    public Vector2 actionMax;
+}
+
+[EditorModal("probe.dialog", "Dialog performance")]
+public sealed unsafe class PerfModal(PerfState state) : EditorModal
+{
+    public override Vector2 initialSize => state.fixedSize ? new(460f, 684f) : Vector2.Zero;
+#if CANDIDATE
+    private DialogPresentation m_content;
+    private DialogLayout m_layout;
+    public override bool allowScrolling => false;
+    protected override Vector2? OnPrepare(
+        EditorContext context,
+        Vector2 availableContentSize
+    ) {
+        long started = Stopwatch.GetTimestamp();
+        state.preparations++;
+        m_content = new(state.message, 0.5f, actionLabel: "Cancel");
+        m_layout = EditorUiSession.current.widgets.MeasureDialog(m_content, availableContentSize);
+        state.prepTicks += Stopwatch.GetTimestamp() - started;
+        return m_layout.size;
+    }
+#endif
+    public override bool isVisible => true;
+    protected override void OnDraw(EditorContext context)
+    {
+        long started = Stopwatch.GetTimestamp();
+        state.draws++;
+        state.windowSize = Gui.GetWindowSize();
+        state.windowMax = Gui.GetWindowPos() + state.windowSize;
+#if CANDIDATE
+        EditorUiSession.current.widgets.DrawDialog(m_content, m_layout);
+#else
+        EditorUiSession.current.widgets.WrappedText(state.message);
+        EditorUiSession.current.widgets.CenteredProgressBar(0.5f, new Vector2(-1f, 0f), $"{0.5f:P0}");
+        EditorUiSession.current.widgets.CenteredButton("Cancel", EditorUiSession.current.widgets.style.itemSpacing.Y);
+#endif
+        state.actionMax = Gui.GetItemRectMax();
+        state.drawTicks += Stopwatch.GetTimestamp() - started;
+        if(state.draws == 204) {
+            var ctx = Gui.Raw.GetCurrentContext();
+            state.fontFacts = $"owned={ctx->Font->OwnerAtlas->OwnerContext == ctx}; remaps={ctx->Font->RemapPairs.Data.Size}; font={ctx->Font->FontId}; baked={ctx->FontBaked->BakedId}; glyphs={ctx->FontBaked->Glyphs.Size}; size={ctx->FontSize}";
+        }
+    }
+}

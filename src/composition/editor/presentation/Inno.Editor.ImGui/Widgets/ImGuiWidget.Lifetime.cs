@@ -33,5 +33,6 @@ public sealed unsafe partial class ImGuiWidget
     {
         CancelEdits();
         m_treeStatesByWindow.Clear();
+        ClearDialogMeasurements();
     }
 }

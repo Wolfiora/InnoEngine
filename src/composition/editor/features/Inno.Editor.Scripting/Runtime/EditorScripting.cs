@@ -105,11 +105,20 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// <summary>
     /// Gets the current compiler progress.
     /// </summary>
-    public float progress => m_manager?.compilationProgress ?? 0f;
-    /// <summary>
-    /// Gets the current compiler stage.
-    /// </summary>
-    public string status => m_activationFailure ?? (!m_reloads.CanActivateReload(out string? reason) ? reason ?? "Waiting for Play Mode to stop." : m_manager?.compilationStatus ?? "Initializing project scripting.");
+    public EditorScriptCompilationProgress progress
+    {
+        get
+        {
+            ScriptReloadProgress? current = m_manager?.progress;
+            string message = m_activationFailure ?? (!m_reloads.CanActivateReload(out string? reason)
+                ? reason ?? "Waiting for Play Mode to stop."
+                : current?.stage ?? "Initializing project scripting.");
+            if (m_manager?.isCompilationTakingLong == true && m_activationFailure is null)
+                message = $"Long-running compilation ({m_manager.compilationElapsed.TotalSeconds:F1}s). {message}";
+            return new(current?.operationId ?? 0, current?.fraction ?? 0f, message,
+                current?.cancellationRequested ?? false, current?.canCancel ?? false);
+        }
+    }
     /// <summary>
     /// Gets the most recently completed compiler result, which may still await activation and retirement verification.
     /// </summary>
@@ -164,7 +173,14 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     }
 
     /// <inheritdoc />
-    public void CancelCompilation() => m_manager?.CancelCompilation();
+    /// <param name="operationId">
+    /// The observed request identity; stale actions are ignored.
+    /// </param>
+    public void CancelCompilation(long operationId)
+    {
+        if (m_manager?.progress.operationId == operationId)
+            m_manager.CancelCompilation(operationId);
+    }
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>

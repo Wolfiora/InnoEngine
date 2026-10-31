@@ -950,7 +950,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         using EditorInteractionRuntime runtime = fixture.CreateEditorRuntime();
         runtime.Start();
         IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
-        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.status);
+        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.progress.status);
         Assert.True(fixture.assets.TryGetFileSystemEntry(new AssetPath(new AssetSourceId("tests.samples"), "~Starter"), out AssetFileEntry sample));
         Assert.True(runtime.interactions.For("panel/asset.file-browser", sample).Execute("file-browser/import-sample"));
         EditorModalExtension modal = runtime.modals.Single(value => value.id == "asset-sample-import.progress");
@@ -961,7 +961,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         EditorModalExtension compilationModal = runtime.modals.Single(value => value.id == "scripting.compilation");
         Assert.True(compilationModal.TryGetPresentation(out EditorModalExtension.Presentation compilationPolicy));
         Assert.Equal(compilationPolicy.allowScrolling, presentation.allowScrolling);
-        PumpEditorUntil(fixture, runtime, () => modal.TryGetPresentation(out EditorModalExtension.Presentation state) && !state.isVisible, () => scripting.status);
+        PumpEditorUntil(fixture, runtime, () => modal.TryGetPresentation(out EditorModalExtension.Presentation state) && !state.isVisible, () => scripting.progress.status);
         Assert.True(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
         Assert.True(runtime.interactions.history.Undo().succeeded);
         Assert.False(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
@@ -976,7 +976,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         using EditorInteractionRuntime runtime = fixture.CreateEditorRuntime();
         runtime.Start();
         IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
-        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.status);
+        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.progress.status);
         using var control = new ControlledSampleSourceRewriter.Control();
         ControlledSampleSourceRewriter.current = control;
         try
@@ -1753,7 +1753,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         using EditorInteractionRuntime runtime = m_fixture.CreateEditorRuntime();
         runtime.Start();
         IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
-        PumpEditorUntil(m_fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.status);
+        PumpEditorUntil(m_fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.progress.status);
         AssertCompilationModalHidden(runtime);
         ScriptCompilationResult initial = Assert.IsType<ScriptCompilationResult>(scripting.lastCompilation);
         for (int frame = 0; frame < 150; frame++)
@@ -1770,13 +1770,13 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             m_fixture.WriteVersionedBehavior(2);
             m_fixture.Rescan();
             IScriptCompilationTicket ticket = scripting.RequestCompilation();
-            PumpEditorUntil(m_fixture, runtime, () => m_fixture.host.modules.generations.state == GenerationState.AwaitingCollection, () => scripting.status);
+            PumpEditorUntil(m_fixture, runtime, () => m_fixture.host.modules.generations.state == GenerationState.AwaitingCollection, () => scripting.progress.status);
             Assert.Equal(ScriptCompilationTicketState.Compiling, ticket.state);
             Assert.False(ticket.isCompleted);
             retained.Clear();
             // Publication readiness may be advanced by another host boundary before the next editor update.
             m_fixture.host.modules.generations.Wait();
-            PumpEditorUntil(m_fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready && ticket.isCompleted, () => scripting.status, focused: false);
+            PumpEditorUntil(m_fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready && ticket.isCompleted, () => scripting.progress.status, focused: false);
             Assert.Equal(ScriptCompilationTicketState.Succeeded, ticket.state);
             AssertCompilationModalHidden(runtime);
             Assert.Equal(2, ReadVersion(m_fixture.ResolveActiveType("VersionedBehavior")));
@@ -1801,7 +1801,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             fixture,
             runtime,
             () => scripting.state == EditorScriptCompilationState.Ready,
-            () => $"{scripting.state}: {scripting.status}; ticket={scripting.currentTicket?.state}",
+            () => $"{scripting.state}: {scripting.progress.status}; ticket={scripting.currentTicket?.state}",
             timeoutMilliseconds: 120000
         );
         ScriptCompilationResult initial = Assert.IsType<ScriptCompilationResult>(scripting.lastCompilation);
@@ -1826,7 +1826,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
 
             Assert.Same(initial, scripting.lastCompilation);
             Assert.Same(accepted, scripting.currentTicket);
-            Assert.Contains("fixture active Play", scripting.status);
+            Assert.Contains("fixture active Play", scripting.progress.status);
             AssertCompilationModalHidden(runtime);
         }
 
@@ -1835,7 +1835,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             fixture,
             runtime,
             () => scripting.state == EditorScriptCompilationState.Ready && !ReferenceEquals(initial, scripting.lastCompilation),
-            () => $"{scripting.state}: {scripting.status}; ticket={scripting.currentTicket?.state}",
+            () => $"{scripting.state}: {scripting.progress.status}; ticket={scripting.currentTicket?.state}",
             timeoutMilliseconds: 120000
         );
         Assert.Equal(GenerationState.Ready, fixture.host.generations.state);
@@ -2265,9 +2265,9 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     private sealed class ReadyScriptCompilation : IEditorScriptCompilation
     {
         public bool requiresExclusiveProgress => false;
-        public float progress => 0f;
+        public EditorScriptCompilationProgress progress => new(0, 0f, "Test script status.", false);
 
-        public void CancelCompilation()
+        public void CancelCompilation(long operationId)
         {
         }
 
@@ -2275,7 +2275,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         public IScriptCompilationTicket RequestCompilation() => m_ticket;
         public IScriptCompilationTicket? currentTicket => m_ticket;
         public EditorScriptCompilationState state => EditorScriptCompilationState.Ready;
-        public string status => "The test script generation is ready.";
         public ScriptCompilationResult? lastCompilation => null;
 
         private sealed class ReadyCompilationTicket : IScriptCompilationTicket

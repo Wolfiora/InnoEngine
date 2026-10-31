@@ -1,33 +1,40 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System.Numerics;
 using Inno.Editor.Core;
-
+using Inno.Editor.ImGui;
+using Inno.Editor.ImGui.ImGuiWidget;
 namespace Inno.Editor.Workbench;
 [EditorModal("export.game.progress", "Exporting Game", order: 311)]
 internal sealed class GameExportProgressModal(ExportWindowModule window) : EditorModal
 {
-    /// <summary>
-    /// Gets whether the export progress overlay should be displayed.
-    /// </summary>
+    private DialogPresentation m_content;
+    private DialogLayout m_layout;
+    private long m_operation;
+    /// <inheritdoc />
     public override bool isVisible => window.isGameProgressVisible;
-    /// <summary>
-    /// Gets whether export progress prevents interaction with the Editor beneath it.
-    /// </summary>
-    public override bool blocksInteraction => true;
-
-    /// <summary>
-    /// Draws the current export status and cancellation action while work is active.
-    /// </summary>
-    /// <param name="context">
-    /// The active Editor context for the current frame.
-    /// </param>
+    /// <inheritdoc />
+    public override bool allowScrolling => false;
+    /// <inheritdoc />
+    protected override Vector2? OnPrepare(
+        EditorContext context,
+        Vector2 availableContentSize
+    ) {
+        var snapshot = window.progress;
+        m_operation = snapshot.operationId;
+        m_content = new(
+            string.IsNullOrEmpty(snapshot.error) ? snapshot.status : snapshot.error,
+            snapshot.fraction,
+            indeterminate: snapshot.isBusy && !snapshot.fraction.HasValue,
+            actionLabel: snapshot.isBusy ? "Cancel" : null,
+            actionEnabled: !snapshot.cancellationRequested,
+            cancelOnEscape: true
+        );
+        m_layout = EditorUiSession.current.widgets.MeasureDialog(m_content, availableContentSize);
+        return m_layout.size;
+    }
+    /// <inheritdoc />
     protected override void OnDraw(EditorContext context)
     {
-        string message = string.IsNullOrEmpty(window.error) ? window.status : window.error;
-        EditorUI.current.widgets.WrappedText(message);
-        EditorUI.current.widgets.CenteredProgressBar(window.gameProgress, new Vector2(-1f, 0f), $"{window.gameProgress:P0}");
-        if (!window.isGameBusy || !EditorUI.current.widgets.CenteredButton("Cancel", EditorUI.current.widgets.style.itemSpacing.Y))
-            return;
-        window.CancelGameExport();
+        if (EditorUiSession.current.widgets.DrawDialog(m_content, m_layout))
+            window.CancelGameExport(m_operation);
     }
 }

@@ -21,7 +21,11 @@ public sealed class EditorExportService : EditorModule
 {
     private readonly BuildPipeline m_buildPipeline;
     private readonly Logger m_log;
-    private readonly ConcurrentQueue<BuildProgress> m_progress = new();
+    private readonly ConcurrentQueue<(long operation, BuildProgress value)> m_progress = new();
+    private long m_operation;
+    private string m_status = string.Empty;
+    private string m_error = string.Empty;
+    private float? m_fraction;
     private CancellationTokenSource? m_cancellation;
     private Task<PlayerSupportPackLease>? m_gamePreparation;
     private Task<BuildResult>? m_gameExport;
@@ -45,17 +49,23 @@ public sealed class EditorExportService : EditorModule
     /// </summary>
     public bool isGameBusy => m_gamePreparation is not null || m_gameExport is not null;
     /// <summary>
-    /// Gets the latest owner-thread progress message.
+    /// Gets one owner-thread snapshot for the current export, including cancellation and action identity.
     /// </summary>
-    public string status { get; private set; } = string.Empty;
+    public EditorExportProgress progress => new(m_operation, m_fraction, m_status, m_error,
+        isGameBusy || isPluginBusy, m_cancellation?.IsCancellationRequested == true);
+
     /// <summary>
-    /// Gets the last failure or cancellation diagnostic, or an empty string.
+    /// Cancels the observed export only while that operation still owns this service.
     /// </summary>
-    public string error { get; private set; } = string.Empty;
-    /// <summary>
-    /// Gets monotonic progress for the current game build, from zero through one.
-    /// </summary>
-    public float gameProgress { get; private set; }
+    /// <param name="operationId">
+    /// The operation observed by the caller.
+    /// </param>
+    public void Cancel(long operationId)
+    {
+        if (operationId == m_operation)
+            CancelCurrent();
+    }
+
     /// <summary>
     /// Gets the targets registered by the active Build distribution.
     /// </summary>
@@ -98,9 +108,9 @@ public sealed class EditorExportService : EditorModule
         ArgumentNullException.ThrowIfNull(request);
         EnsureIdle();
         StartCancellation();
-        status = "Capturing the current Plugin source and dependency generation...";
-        error = string.Empty;
-        m_pluginExport = m_buildPipeline.BuildPluginAsync(request, new BuildProgressSink(m_progress), m_cancellation!.Token).AsTask();
+        m_status = "Capturing the current Plugin source and dependency generation...";
+        m_error = string.Empty;
+        m_pluginExport = m_buildPipeline.BuildPluginAsync(request, new BuildProgressSink(m_progress, m_operation), m_cancellation!.Token).AsTask();
     }
 
     /// <summary>
@@ -117,9 +127,9 @@ public sealed class EditorExportService : EditorModule
         ArgumentNullException.ThrowIfNull(request);
         EnsureIdle();
         StartCancellation();
-        gameProgress = 0f;
-        status = "Checking or preparing the Player Support Pack...";
-        error = string.Empty;
+        m_fraction = null;
+        m_status = "Checking or preparing the Player Support Pack...";
+        m_error = string.Empty;
         m_pendingGameRequest = request;
         try
         {
@@ -129,17 +139,6 @@ public sealed class EditorExportService : EditorModule
         {
             m_gamePreparation = Task.FromException<PlayerSupportPackLease>(exception);
         }
-    }
-
-    /// <summary>
-    /// Requests cancellation without releasing resources before their owned work drains.
-    /// </summary>
-    public void Cancel()
-    {
-        if (m_cancellation is null)
-            return;
-        status = "Canceling export...";
-        m_cancellation.Cancel();
     }
 
     private void EnsureIdle()
@@ -156,11 +155,14 @@ public sealed class EditorExportService : EditorModule
     /// </param>
     protected override void OnUpdate(EditorContext context)
     {
-        while (m_progress.TryDequeue(out BuildProgress progress))
+        while (m_progress.TryDequeue(out var update))
         {
-            status = progress.message;
-            if (isGameBusy)
-                gameProgress = MathF.Max(gameProgress, (float)progress.fraction);
+            if (update.operation != m_operation || m_cancellation is null || m_cancellation.IsCancellationRequested)
+                continue;
+            BuildProgress progress = update.value;
+            m_status = progress.message;
+            if (isGameBusy || isPluginBusy)
+                m_fraction = MathF.Max(m_fraction ?? 0f, (float)progress.fraction);
         }
 
         CompletePluginExport();
@@ -249,8 +251,9 @@ public sealed class EditorExportService : EditorModule
 
             string outputPath = result.outputPath ?? throw new InvalidOperationException("A successful Plugin build has no output path.");
             string contentHash = result.contentHash ?? throw new InvalidOperationException("A successful Plugin build has no content identity.");
-            status = $"Exported {result.assetCount} source files to {outputPath}";
-            error = string.Empty;
+            m_fraction = 1f;
+            m_status = $"Exported {result.assetCount} source files to {outputPath}";
+            m_error = string.Empty;
             m_log.Write(
                 LogLevel.Info,
                 "Exported Plugin '{0}' to '{1}' ({2} assets, {3} embedded dependencies, {4}).",
@@ -259,14 +262,14 @@ public sealed class EditorExportService : EditorModule
         }
         catch (OperationCanceledException)
         {
-            status = string.Empty;
-            error = "Plugin export was canceled; no partial package was installed.";
+            m_status = string.Empty;
+            m_error = "Plugin export was canceled; no partial package was installed.";
             m_log.Write(LogLevel.Info, "Plugin export was canceled.");
         }
         catch (Exception exception)
         {
-            status = string.Empty;
-            error = exception.Message;
+            m_status = string.Empty;
+            m_error = exception.Message;
             m_log.Write(LogLevel.Error, "Plugin export failed: {0}", [exception]);
         }
         finally
@@ -291,9 +294,9 @@ public sealed class EditorExportService : EditorModule
             }
 
             string outputPath = result.outputPath ?? throw new InvalidOperationException("A successful game build has no output path.");
-            status = $"Exported {result.assetCount} assets and {result.runtimeAssemblyCount} runtime assemblies to {outputPath}";
-            error = string.Empty;
-            gameProgress = 1f;
+            m_status = $"Exported {result.assetCount} assets and {result.runtimeAssemblyCount} runtime assemblies to {outputPath}";
+            m_error = string.Empty;
+            m_fraction = 1f;
             m_log.Write(
                 LogLevel.Info,
                 "Exported game to '{0}' ({1}, {2} assets, {3} artifact bundles, {4} runtime assemblies).",
@@ -302,14 +305,14 @@ public sealed class EditorExportService : EditorModule
         }
         catch (OperationCanceledException)
         {
-            status = string.Empty;
-            error = "Game build was canceled; no partial output was installed.";
+            m_status = string.Empty;
+            m_error = "Game build was canceled; no partial output was installed.";
             m_log.Write(LogLevel.Info, "Game build was canceled.");
         }
         catch (Exception exception)
         {
-            status = string.Empty;
-            error = exception.Message;
+            m_status = string.Empty;
+            m_error = exception.Message;
             m_log.Write(LogLevel.Error, "Game build failed: {0}", [exception]);
         }
         finally
@@ -330,22 +333,22 @@ public sealed class EditorExportService : EditorModule
             m_cancellation!.Token.ThrowIfCancellationRequested();
             GameBuildRequest request = m_pendingGameRequest ?? throw new InvalidOperationException("The prepared game build has no request.");
             m_pendingGameRequest = null;
-            status = "Capturing the authoring generation and compiling runtime scripts...";
-            m_gameExport = m_buildPipeline.BuildGameAsync(request, new BuildProgressSink(m_progress), m_cancellation.Token).AsTask();
+            m_status = "Capturing the authoring generation and compiling runtime scripts...";
+            m_gameExport = m_buildPipeline.BuildGameAsync(request, new BuildProgressSink(m_progress, m_operation), m_cancellation.Token).AsTask();
         }
         catch (OperationCanceledException)
         {
             m_pendingGameRequest = null;
-            status = string.Empty;
-            error = "Game build was canceled; no partial output was installed.";
+            m_status = string.Empty;
+            m_error = "Game build was canceled; no partial output was installed.";
             m_log.Write(LogLevel.Info, "Game build was canceled while preparing its Support Pack.");
             ReleaseCancellation();
         }
         catch (Exception exception)
         {
             m_pendingGameRequest = null;
-            status = string.Empty;
-            error = exception.Message;
+            m_status = string.Empty;
+            m_error = exception.Message;
             m_log.Write(LogLevel.Error, "Game Support Pack preparation failed: {0}", [exception]);
             ReleaseCancellation();
         }
@@ -353,8 +356,18 @@ public sealed class EditorExportService : EditorModule
 
     private void StartCancellation()
     {
+        m_operation++;
+        m_fraction = null;
         m_cancellation?.Dispose();
         m_cancellation = new CancellationTokenSource();
+    }
+
+    private void CancelCurrent()
+    {
+        if (m_cancellation is null)
+            return;
+        m_status = "Canceling export...";
+        m_cancellation.Cancel();
     }
 
     private void ReleaseCancellation()
@@ -368,12 +381,15 @@ public sealed class EditorExportService : EditorModule
         BuildResult result
     ) {
         string message = string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => $"[{diagnostic.code}] {diagnostic.message}"));
-        status = string.Empty;
-        error = message;
+        m_status = string.Empty;
+        m_error = message;
         m_log.Write(LogLevel.Error, "{0} failed:{1}{2}", [operation, Environment.NewLine, message]);
     }
 
-    private sealed class BuildProgressSink(ConcurrentQueue<BuildProgress> progress) : IProgress<BuildProgress>
+    private sealed class BuildProgressSink(
+        ConcurrentQueue<(long operation, BuildProgress value)> progress,
+        long operation
+    ) : IProgress<BuildProgress>
     {
         /// <summary>
         /// Publishes one progress update to the receiving workflow.
@@ -381,6 +397,6 @@ public sealed class EditorExportService : EditorModule
         /// <param name="value">
         /// The concrete value read or transformed by this operation.
         /// </param>
-        public void Report(BuildProgress value) => progress.Enqueue(value);
+        public void Report(BuildProgress value) => progress.Enqueue((operation, value));
     }
 }

@@ -116,3 +116,20 @@ Settings 的一次 Apply 复用单一 History transaction，所有 dirty owner �
 `EditorUiInput` 的 Control/Super 表示物理修饰键，不继承原生控件内部的快捷键归一化。呈现边界依据当前 Context 的键盘配置还原这些值，列表选择复用同一快照语义，平台仍通过 `EditorKeyboardPolicy` 选择 primary modifier。原生文本控件继续使用该 Context 的输入习惯；测试必须显式声明自己的键盘配置，并覆盖 Control/Super 与两种原生模式的组合，不能依赖 runner 的默认值。
 
 最终报告分别评价架构、组织、状态与生命周期、抽象、复用、样式、扩展、交互、Undo/Redo、菜单和颗粒度；每项列出证据与限制。目录整齐、测试数量或正常启动不能代替视觉、输入、重复 reload、资源收敛和成对性能验收。
+
+## 动态 Modal 的状态与尺寸
+
+- 窗口尺寸、换行和绘制使用本帧同一快照，不依赖上一条消息的高度。
+- 准备只读取和测量；实际动作由原领域 owner 校验 operation 后执行。禁止双次绘制回调测量。
+- 统一 metrics 表达 padding、item spacing、按钮高度和字体尺度。业务 Modal 不通过额外空行、固定大高度或零散数字补偿布局。
+- 消息与详情共用一个正文滚动 owner，操作行保持可达。Child 不重复承担父窗口已经提供的外层 padding。
+- 明确区分声明尺寸、自适应尺寸及用户调整尺寸；部分指定尺寸也必须得到正确解释。
+- 当前帧内容增长、缩短、空文本、动作变化及非整数尺度都属于必要回归。
+
+### 按职责选择 CI 验收
+
+Engine CI 根据完整 Git 变更集合选择检查，不能按 issue 编号或为了节省时间临时跳过失败项。仅涉及 Editor 创作层（包括脚本 reload owner）及对应测试、文档时使用 Editor 范围：Debug Editor、真实原生 smoke、Editor 契约与工作流、架构和 Wiki 检查。Release、NativeAOT 还原、十次热构建、其他领域完整测试及 Player Support Pack 留给完整范围。SDK、工程图、build、platform、backend、共享 Runtime 或未知 owner 的变化保守选择完整范围。手动工作流仍执行完整范围。
+
+脚本 `tests/ci/Select-ValidationScope.ps1` 只编排验收，不改变生产构建或缓存校验。移动文件同时核对旧 owner 和新 owner；选择理由与省略项写入 GitHub job summary。Editor 范围不等于完整产品矩阵通过；完整源码和 Player contract 编译仍服务于当前架构/Wiki 的真实引用验证，不执行 Player 导出或 Support Pack 生产。
+
+UI 范围的生产源码检查由当前 Solution 生成 169 个生产工程的 `.slnf`，引用闭包仍由 MSBuild 求值，不编译全部无关测试工程。只有通过完整 Git 差异证明为标准 SDK 工程中、相同无条件引用边的 `PrivateAssets=compile` 收紧时，才允许保留 Editor 范围；新增引用、包、TFM、SDK、条件或构建目标变化仍走完整范围。PR 使用 merge base，push 使用 before/head，避免把目标分支的无关改动混进 PR 检查。

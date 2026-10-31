@@ -64,10 +64,59 @@ public abstract class EditorModal
     }
 
     /// <summary>
+    /// Captures presentation state before submitting content. Content-sized windows prepare before opening;
+    /// explicitly sized resizable windows prepare after current input establishes their content bounds.
+    /// </summary>
+    /// <param name="context">
+    /// The owner-thread editor context for this frame.
+    /// </param>
+    /// <param name="availableContentSize">
+    /// The bounded content area in current presentation coordinates, already scaled.
+    /// </param>
+    /// <returns>
+    /// The required content size, or null for an explicitly sized window.
+    /// </returns>
+    /// <exception cref="System.ArgumentNullException">
+    /// The context is null.
+    /// </exception>
+    /// <exception cref="System.ArgumentOutOfRangeException">
+    /// The available extent is not finite and positive.
+    /// </exception>
+    [ScriptingApiIgnore]
+    public Vector2? Prepare(
+        EditorContext context,
+        Vector2 availableContentSize
+    ) {
+        System.ArgumentNullException.ThrowIfNull(context);
+        if (!float.IsFinite(availableContentSize.X) || !float.IsFinite(availableContentSize.Y) ||
+            availableContentSize.X <= 0f || availableContentSize.Y <= 0f)
+            throw new System.ArgumentOutOfRangeException(nameof(availableContentSize));
+        return OnPrepare(context, availableContentSize);
+    }
+
+    /// <summary>
     /// Draws the modal body inside the runtime-managed centered window.
     /// </summary>
     /// <param name="context">
     /// The shared editor context containing current project and frame state.
     /// </param>
     protected abstract void OnDraw(EditorContext context);
+
+    /// <summary>
+    /// Captures the state consumed by OnDraw and measures it without drawing or performing domain operations.
+    /// Content-sized modals must return a finite, nonnegative size. Fixed-size modals may return null.
+    /// </summary>
+    /// <param name="context">
+    /// The current owner-thread context.
+    /// </param>
+    /// <param name="availableContentSize">
+    /// The bounded, already scaled content area.
+    /// </param>
+    /// <returns>
+    /// The content extent required by the captured state, or null for explicit sizing.
+    /// </returns>
+    protected virtual Vector2? OnPrepare(
+        EditorContext context,
+        Vector2 availableContentSize
+    ) => null;
 }

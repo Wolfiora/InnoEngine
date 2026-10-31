@@ -1041,6 +1041,47 @@ public static unsafe partial class ImGui
     }
 
     /// <summary>
+    /// Measures literal text using the same current font and wrap width as wrapped drawing.
+    /// </summary>
+    /// <param name="text">
+    /// The literal text, including explicit line breaks.
+    /// </param>
+    /// <param name="wrapWidth">
+    /// The available width in already scaled presentation coordinates.
+    /// </param>
+    /// <returns>
+    /// The copied natural text extent at the specified width.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The text is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The text contains an embedded zero code unit.
+    /// </exception>
+    /// <exception cref="System.Text.EncoderFallbackException">
+    /// The text contains invalid Unicode.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The width is not finite and positive.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// No drawing scope is active on the owning UI thread and native context.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The active UI session has retired.
+    /// </exception>
+    public static Vector2 MeasureWrappedText(
+        string text,
+        float wrapWidth
+    ) {
+        EditorUiSession.current.EnsureDrawing();
+        ArgumentNullException.ThrowIfNull(text);
+        if (!float.IsFinite(wrapWidth) || wrapWidth <= 0f)
+            throw new ArgumentOutOfRangeException(nameof(wrapWidth));
+        return ImGuiUtf8Buffer.MeasureText(text, wrapWidth);
+    }
+
+    /// <summary>
     /// Gets whether the previous item is hovered.
     /// </summary>
     /// <param name="flags">

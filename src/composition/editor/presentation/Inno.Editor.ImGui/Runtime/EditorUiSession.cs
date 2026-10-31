@@ -164,7 +164,11 @@ public sealed unsafe class EditorUiSession : IDisposable
         return context;
     }
 
-    private ImGuiNativeContext* RequireContext()
+    /// <summary>
+    /// Borrows the owned native context for the current synchronous presentation operation.
+    /// The caller must not retain this pointer after that operation.
+    /// </summary>
+    internal ImGuiNativeContext* RequireContext()
     {
         EnsureOwner();
         ObjectDisposedException.ThrowIf(m_disposed, this);
