@@ -130,16 +130,16 @@
     DependsOnTargets="BindInnoTaskLoadIdentity"
     Condition="'$(DesignTimeBuild)' != 'true'">
     <PropertyGroup>
-      <_InnoFoundationExcludedProperties>$([System.String]::Copy('$(InnoTaskExcludedProperties)').Replace(';InnoTaskBootstrapOwner', ''))</_InnoFoundationExcludedProperties>
       <_InnoFoundationArtifacts Condition="'$(ArtifactsPath)' != ''">$(ArtifactsPath)/.inno-task-foundation</_InnoFoundationArtifacts>
       <_InnoFoundationArtifacts Condition="'$(ArtifactsPath)' == ''">$(InnoTaskArtifacts)/foundation</_InnoFoundationArtifacts>
     </PropertyGroup>
-    <!-- The neutral SDK bootstrap has its own stable output scope, never the caller's mutable source output. -->
+    <!-- Foundation has one neutral SDK request per output scope. Operation identities belong to
+         publisher ownership and must not create concurrent requests writing the same Foundation files. -->
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj"
       Targets="Restore;Build"
-      Properties="$(InnoTaskHostProperties);ArtifactsPath=$(_InnoFoundationArtifacts);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)"
-      RemoveProperties="$(_InnoFoundationExcludedProperties)">
+      Properties="$(InnoTaskHostProperties);ArtifactsPath=$(_InnoFoundationArtifacts)"
+      RemoveProperties="$(InnoTaskExcludedProperties)">
       <Output TaskParameter="TargetOutputs" ItemName="_InnoFoundationOutput" />
     </MSBuild>
     <Error Condition="'@(_InnoFoundationOutput->Count())' != '1'" Text="Foundation bootstrap must return one SDK-selected assembly." />

@@ -8,6 +8,8 @@
 
 最初的 Foundation 引导是独立的普通 SDK 编译工作区：显式 `ArtifactsPath` owner 下的 `.inno-task-foundation`，或默认 Task artifacts 下的固定 `foundation`。其配置目录复用，不按 Build 次数增加；它不属于不可变 publication，也不参与根据后缀猜测删除。中立引导和调用方源码不能以不同 SDK 属性共享同一个编译输出。实际 publisher 与 runtime publication 仍使用既有 Core.IO owner、lease 和维护协议。
 
+Foundation 的 SDK 请求不携带 publisher 操作编号 `InnoTaskBootstrapOwner`：该编号不改变编译结果，却会改变 MSBuild 请求身份，导致并行入口重复写入同一输出。中立请求由 SDK 复用，publisher 操作目录继续独立；完整 Task runtime 的共享写入仍由原有 Core IO lease 保护。不同独立构建使用各自的 `ArtifactsPath`，不增加另一套锁、重试写入或 IDE 专属构建路径。
+
 绑定 generation 同时携带不可变产物目录与实际发布 owner；selection 将两者一起传入后续 MSBuild。冻结源码树只改变组件源码位置，不改变产物的协调域。生成 Task 也输出同一 owner，materialization 不从源码工作区推测它，并继续校验产物必须属于声明 owner。
 
 托管输入规划使用 `artifacts/managed/evaluations/<request identity>` 下独立的 SDK `ArtifactsPath`，不改写普通 IDE 的 `obj`。还原、声明的输入工程还原、求值与内容读取都在同一 owner/叶锁范围内；不同全局属性的辅助工程拥有独立子布局，避免 RID 图相互覆盖。派生图可以重建，源输入变化仍在 fresh 校验中拒绝。
