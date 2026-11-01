@@ -12,6 +12,8 @@ owned Restore 使用 NuGet 标准属性 `ExcludeRestorePackageImports=true`；Ta
 
 最早的 Core.IO 引导采用独立、中立的 SDK 编译 scope。有调用方 `ArtifactsPath` 时，其位置为该 owner 下的 `.inno-task-foundation`；普通输出使用 Task artifacts 下固定的 `foundation`。它是按配置复用的 SDK 中间输出，不是每次操作发布一个新 generation。引导请求继续剥离产品 TFM、RID、Browser、AOT 和发布参数；不会以不同全局属性写入调用方同一个可变 Core.IO 输出。随后仍由原有 Core.IO 协议声明 publisher owner，并进行私有加载、冻结、校验和原子发布。
 
+`InnoTaskBootstrapOwner` 只负责 publisher 的操作所有权，不进入 Foundation 的全局编译属性。多个并行入口可以请求同一 Foundation 输出，SDK 按相同中立身份复用编译；不能让临时操作编号将它拆成同时写入同一 `obj` 的不同编译。Publisher 的操作目录和每次私有加载身份继续保留。独立并发构建仍分别指定自己的 `ArtifactsPath`，与日常 IDE 输出隔离。
+
 ## 职责与边界
 
 这是 MSBuild 引导边界的库，负责协调 Task 运行闭包的编译、发布及退休，并在读取保护期间复制生成绑定。它依赖 Core IO、中立 Toolchains 与 MSBuild 契约，
