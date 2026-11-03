@@ -25,7 +25,7 @@ using Xunit;
 
 namespace Inno.UI.Tests;
 
-public sealed class UiServiceTests : IDisposable
+public sealed partial class UiServiceTests : IDisposable
 {
     private readonly DiagnosticHub m_diagnostics = new();
     private readonly IdentityAllocator m_identities = new();

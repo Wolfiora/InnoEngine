@@ -21,9 +21,8 @@ public abstract class AssetObject : IdentityObject, ISerializable
     private WeakReference<IAssetPropertyStateResolver>? m_propertyStateOwner;
 
     /// <summary>
-    /// Gets the isolated source path associated with this asset.
+    /// Gets the isolated source path assigned by the asset owner, independently of serialized content.
     /// </summary>
-    [SerializableProperty(PropertyVisibility.Hide)]
     public AssetPath assetPath { get; private set; } = AssetPath.Project(string.Empty);
 
     /// <summary>

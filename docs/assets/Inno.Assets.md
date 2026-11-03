@@ -23,6 +23,12 @@ ArtifactLease 固定内容身份，每个打开的流取得独立 pin；释放�
 
 Residency 管理加载、依赖 retention、预算、预加载取消和退休；RetirementPendingException 保留仍在释放的值及 callback，普通终止失败不得重复执行释放。Missing Asset 保留 persistent ID、Stable Type ID、原数据与依赖，恢复进入统一候选事务。所有包含引用的数据使用 owner 的完整 SerializationContext。
 
+## 资产路径的唯一归属
+
+`AssetObject.assetPath` 由当前资产 owner 从 source-aware Catalog 赋值，不属于资产内容的序列化属性。导入、改名、Missing 恢复及安装来源切换使用同一个 Catalog 事实；内容恢复不得覆盖该路径。字体等资产不维护第二张路径表，也不从显示名称推断来源。
+
+完整 authoring 加载可通过资产实例或 Catalog 查询来源。Player 只保证其运行资源和引用闭包，不能把裁剪后的创作路径当作运行资源定位协议。持久引用继续使用既有 Asset reference 与 persistent identity。
+
 ## 当前源码公开 API 清单
 
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
@@ -276,7 +282,7 @@ Residency 管理加载、依赖 retention、预算、预加载取消和退休；
 | <a id="api-329e061ce8d3574b"></a>[`protected virtual void Inno.Assets.AssetObject.OnRuntimePayloadChanged(System.ReadOnlyMemory<byte> previousPayload, System.ReadOnlyMemory<byte> currentPayload)`](../../src/content/assets/Inno.Assets/AssetObject.cs#L89) | Called after a new runtime payload has been committed to this instance.<br>`previousPayload`：The previously committed payload.<br>`currentPayload`：The newly committed payload. | — | — |
 | <a id="api-9823bc68dfd0135e"></a>[`protected virtual void Inno.Assets.AssetObject.OnUnloading()`](../../src/content/assets/Inno.Assets/AssetObject.cs#L105) | Releases the runtime resources owned by this asset without clearing its payload before quiescence. | An unfinished release may throw RetirementPendingException. The owner retains the asset and retries this hook; completed steps must not be repeated. Other failures are terminal and are reported by the owner. | `Inno.Core.Execution.RetirementPendingException`：Owned work has not quiesced; runtime payload and ownership must remain intact until a later attempt. |
 | <a id="api-90e82823cb2203d2"></a>[`public void Inno.Assets.AssetObject.RestoreProperties<TValue>(System.Guid stableTypeId, byte[] propertyData, TValue target) where TValue : class, Inno.Core.Serialization.ISerializable`](../../src/content/assets/Inno.Assets/AssetObject.cs#L69) | Restores detached extension settings using this asset's actual owner and converter generation.<br>`stableTypeId`：Persisted settings type identity.<br>`propertyData`：Native property payload to restore.<br>`target`：Detached target, never retained by the asset. | — | `System.InvalidOperationException`：The asset is unowned, retired, or lacks property-state services. |
-| <a id="api-8f17abdce88a7fb5"></a>[`public Inno.Assets.AssetPath Inno.Assets.AssetObject.assetPath { get; private set; }`](../../src/content/assets/Inno.Assets/AssetObject.cs#L27) | Gets the isolated source path associated with this asset. | — | — |
+| <a id="api-8f17abdce88a7fb5"></a>[`public Inno.Assets.AssetPath Inno.Assets.AssetObject.assetPath { get; private set; }`](../../src/content/assets/Inno.Assets/AssetObject.cs#L27) | Gets the isolated source path assigned by the asset owner, independently of serialized content. | — | — |
 | <a id="api-2d5d446413325a4d"></a>[`public long Inno.Assets.AssetObject.contentVersion { get; }`](../../src/content/assets/Inno.Assets/AssetObject.cs#L44) | Gets the version of the currently committed runtime content. | — | — |
 | <a id="api-29eea3f355266536"></a>[`public bool Inno.Assets.AssetObject.isMissing { get; }`](../../src/content/assets/Inno.Assets/AssetObject.cs#L39) | Gets whether this instance represents an unavailable persistent asset. | — | — |
 | <a id="api-3830ac0f06fce813"></a>[`public string Inno.Assets.AssetObject.name { get; }`](../../src/content/assets/Inno.Assets/AssetObject.cs#L32) | Gets a display name derived from the source-local path. | — | — |
