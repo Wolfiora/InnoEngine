@@ -14,6 +14,7 @@ internal sealed record ScenePropertyValueDelta(
 
 internal sealed record ScenePropertyHistoryData(
     Guid targetId,
+    Guid targetTypeId,
     string propertyName,
     ScenePropertyValueDelta[] deltas,
     long timestamp
@@ -23,6 +24,7 @@ internal sealed record ScenePropertyHistoryData(
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         writer.Write(targetId.ToByteArray());
+        writer.Write(targetTypeId.ToByteArray());
         writer.Write(propertyName);
         writer.Write(deltas.Length);
         for (int index = 0; index < deltas.Length; index++)
@@ -39,6 +41,7 @@ internal sealed record ScenePropertyHistoryData(
 
     internal static ScenePropertyHistoryData Create(
         Guid targetId,
+        Guid targetTypeId,
         string propertyName,
         IReadOnlyList<ScenePropertyValueDelta> deltas
     ) {
@@ -48,6 +51,7 @@ internal sealed record ScenePropertyHistoryData(
             throw new ArgumentException("A scene property history change requires at least one delta.", nameof(deltas));
         return new ScenePropertyHistoryData(
             targetId,
+            targetTypeId,
             propertyName,
             [.. deltas],
             Stopwatch.GetTimestamp());
@@ -58,6 +62,9 @@ internal sealed record ScenePropertyHistoryData(
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
         Guid targetId = new(reader.ReadBytes(16));
+        Guid targetTypeId = new(reader.ReadBytes(16));
+        if (targetId == Guid.Empty || targetTypeId == Guid.Empty)
+            throw new InvalidDataException("Scene property history requires object and stable type identities.");
         string propertyName = reader.ReadString();
         int count = reader.ReadInt32();
         if (count <= 0)
@@ -77,7 +84,7 @@ internal sealed record ScenePropertyHistoryData(
         long timestamp = reader.ReadInt64();
         if (stream.Position != stream.Length)
             throw new InvalidDataException("Scene property history payload contains trailing data.");
-        return new ScenePropertyHistoryData(targetId, propertyName, deltas, timestamp);
+        return new ScenePropertyHistoryData(targetId, targetTypeId, propertyName, deltas, timestamp);
     }
 
     private static void WriteBytes(

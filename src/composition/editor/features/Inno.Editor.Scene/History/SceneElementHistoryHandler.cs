@@ -41,51 +41,13 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
-            if (scene is not { isLoaded: true, isDestroyed: false })
-                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
-            bool shouldExist = direction == EditorHistoryDirection.Undo
-                ? data.existsBefore
-                : data.existsAfter;
-            EngineObject? current = m_workspace.Find<EngineObject>(data.elementId);
-            if (!shouldExist)
-            {
-                return current is { isDestroyed: false }
-                    ? EditorHistoryAvailability.Available()
-                    : EditorHistoryAvailability.Unavailable(
-                        $"Scene element '{data.elementId}' is no longer available.");
-            }
-            if (current is { isDestroyed: false })
-            {
-                TypeRef typeRef = data.type;
-                bool typeMatches = current switch
-                {
-                    MissingGameComponent missing => missing.missingType.stableId == typeRef.stableId,
-                    MissingGameSystem missing => missing.missingType.stableId == typeRef.stableId,
-                    _ => m_workspace.types.TryResolve(typeRef, out Type? resolvedType) && current.GetType() == resolvedType
-                };
-                bool kindMatches = data.elementKind switch
-                {
-                    SceneElementKind.Component => current is GameComponent,
-                    SceneElementKind.System => current is GameSystem,
-                    _ => false
-                };
-                return typeMatches && kindMatches
-                    ? EditorHistoryAvailability.Available()
-                    : EditorHistoryAvailability.Unavailable(
-                        $"Scene element '{data.elementId}' no longer matches stable type '{data.type.stableId}'.");
-            }
-            if (data.elementKind == SceneElementKind.Component &&
-                m_workspace.Find<GameObject>(data.ownerId) is not { isRuntimeValid: true })
-            {
-                return EditorHistoryAvailability.Unavailable(
-                    $"Component owner '{data.ownerId}' is no longer available.");
-            }
-            return EditorHistoryAvailability.Available();
+            return m_workspace.Find<GameScene>(data.sceneId) is { isLoaded: true, isDestroyed: false }
+                ? EditorHistoryAvailability.Available()
+                : EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
         }
         catch (Exception exception)
         {
-            return EditorHistoryAvailability.Unavailable($"Scene element history payload is invalid: {exception.Message}");
+            return EditorHistoryAvailability.Unavailable($"Scene history payload is invalid: {exception.Message}");
         }
     }
 
@@ -109,6 +71,10 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         EditorHistoryChange change,
         EditorHistoryDirection direction
     ) {
+        EditorHistoryAvailability availability = ValidateExecution(change, direction);
+        if (!availability.isAvailable)
+            return EditorHistoryResult.Failure(availability.message);
+
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
@@ -369,4 +335,60 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         string cleanup
     )
         => string.IsNullOrWhiteSpace(cleanup) ? failure : $"{failure} {cleanup}";
+
+    private EditorHistoryAvailability ValidateExecution(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) {
+        try
+        {
+            SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            if (scene is not { isLoaded: true, isDestroyed: false })
+                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
+            bool shouldExist = direction == EditorHistoryDirection.Undo
+                ? data.existsBefore
+                : data.existsAfter;
+            EngineObject? current = m_workspace.Find<EngineObject>(data.elementId);
+            if (!shouldExist)
+            {
+                return current is { isDestroyed: false }
+                    ? EditorHistoryAvailability.Available()
+                    : EditorHistoryAvailability.Unavailable(
+                        $"Scene element '{data.elementId}' is no longer available.");
+            }
+            if (current is { isDestroyed: false })
+            {
+                TypeRef typeRef = data.type;
+                bool typeMatches = current switch
+                {
+                    MissingGameComponent missing => missing.missingType.stableId == typeRef.stableId,
+                    MissingGameSystem missing => missing.missingType.stableId == typeRef.stableId,
+                    _ => m_workspace.types.TryResolve(typeRef, out Type? resolvedType) && current.GetType() == resolvedType
+                };
+                bool kindMatches = data.elementKind switch
+                {
+                    SceneElementKind.Component => current is GameComponent,
+                    SceneElementKind.System => current is GameSystem,
+                    _ => false
+                };
+                return typeMatches && kindMatches
+                    ? EditorHistoryAvailability.Available()
+                    : EditorHistoryAvailability.Unavailable(
+                        $"Scene element '{data.elementId}' no longer matches stable type '{data.type.stableId}'.");
+            }
+            if (data.elementKind == SceneElementKind.Component &&
+                m_workspace.Find<GameObject>(data.ownerId) is not { isRuntimeValid: true })
+            {
+                return EditorHistoryAvailability.Unavailable(
+                    $"Component owner '{data.ownerId}' is no longer available.");
+            }
+            return EditorHistoryAvailability.Available();
+        }
+        catch (Exception exception)
+        {
+            return EditorHistoryAvailability.Unavailable($"Scene element history payload is invalid: {exception.Message}");
+        }
+    }
+
 }

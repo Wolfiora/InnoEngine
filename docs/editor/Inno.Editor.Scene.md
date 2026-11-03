@@ -22,6 +22,8 @@ flowchart LR
 - `IEditorGameScenePresentation` 是 Game View 与 Scene View 的只读游戏场景来源；它在 Play 世界完整物化成功后才从 Edit SceneWorld 原子切换到 Play SceneWorld。
 - `SceneEdits` 是 Scene 内容修改的唯一高层入口，负责“修改成功后记录最小可逆数据”。
 - History Handler 根据 persistent ID 和 Stable Type ID 在当前 generation 重新解析对象，不保留旧实例。
+- History 可用性查询只读取中立 payload、当前类型／属性声明和必要的外部 Scene 状态，不通过捕获对象属性求值。对象存在性、父子关系和当前实例类型在每一步实际执行前重新验证。因此一个事务可以依次创建 GameObject、添加 Component、修改属性，并作为一个 Undo 单元按依赖顺序 Redo。
+- Property History 保存目标 Stable Type ID。类型或属性契约暂时不可用时保留可恢复 barrier；执行中失败则补偿已完成的 child，保持原栈和 payload。可用性查询不是对后续可变对象状态的成功保证。
 - `Inno.Scene` 提供通用 property/subtree/element 序列化能力，但不知道 Editor History；`Inno.Scene.Assets` 只负责导入器。
 - Scene feature 通过 [Inno.Editor.Core](Inno.Editor.Core.md) 中 `EditorReloadCoordinator` 的中立 participant contract 接入 assembly reload，并自行拥有 Scene migration、Coroutine 清理和 Missing/reload diagnostics；`Inno.Editor.Scripting` 不引用 Scene 项目或 Scene 类型。
 - `EditorReloadCoordinator.Register` 返回的 registration lease 强持有 participant，而 Coordinator 只保留弱引用。只要 Workspace 持有 lease，GC 就不能移除 Scene migration；Workspace Dispose 会注销并释放 participant，避免新 TypeCache 激活后仍遗留旧 collectible `Type` 的 Component/System。该所有权契约适用于所有 Editor reload feature，不是 Scene 私有补丁。

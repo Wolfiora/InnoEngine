@@ -47,49 +47,15 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         try
         {
             SceneHierarchyHistoryData data = SceneHierarchyHistoryData.Decode(change.payload.ReadBytes());
-            SceneObjectPlacement[] placements = direction == EditorHistoryDirection.Undo
-                ? data.before
-                : data.after;
-            IReadOnlyDictionary<Guid, Guid> destinationScenes = placements.ToDictionary(
-                static placement => placement.objectId,
-                static placement => placement.sceneId);
-            for (int i = 0; i < placements.Length; i++)
-            {
-                SceneObjectPlacement placement = placements[i];
-                if (ResolveScene(placement.sceneId) is null)
-                {
-                    return EditorHistoryAvailability.Unavailable(
-                        $"Scene '{placement.sceneId}' is no longer loaded.");
-                }
-                if (m_workspace.Find<GameObject>(placement.objectId) is not { isRuntimeValid: true })
-                {
-                    return EditorHistoryAvailability.Unavailable(
-                        $"GameObject '{placement.objectId}' is no longer available.");
-                }
-                GameObject? parent = null;
-                if (placement.parentId is Guid parentId)
-                {
-                    parent = m_workspace.Find<GameObject>(parentId);
-                    if (parent is not { isRuntimeValid: true })
-                    {
-                        return EditorHistoryAvailability.Unavailable(
-                            $"Parent GameObject '{parentId}' is no longer available.");
-                    }
-                }
-                if (parent is not null &&
-                    parent.scene.identity.persistentId != placement.sceneId &&
-                    (!destinationScenes.TryGetValue(parent.identity.persistentId, out Guid parentDestination) ||
-                     parentDestination != placement.sceneId))
-                {
-                    return EditorHistoryAvailability.Unavailable(
-                        $"Parent GameObject '{parent.identity.persistentId}' does not belong to destination scene '{placement.sceneId}'.");
-                }
-            }
+            SceneObjectPlacement[] destination = direction == EditorHistoryDirection.Undo ? data.before : data.after;
+            foreach (SceneObjectPlacement placement in destination)
+                if (m_workspace.Find<GameScene>(placement.sceneId) is not { isLoaded: true, isDestroyed: false })
+                    return EditorHistoryAvailability.Unavailable($"Scene '{placement.sceneId}' is no longer loaded.");
             return EditorHistoryAvailability.Available();
         }
         catch (Exception exception)
         {
-            return EditorHistoryAvailability.Unavailable($"Scene hierarchy history payload is invalid: {exception.Message}");
+            return EditorHistoryAvailability.Unavailable($"Scene history payload is invalid: {exception.Message}");
         }
     }
 
@@ -113,6 +79,10 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         EditorHistoryChange change,
         EditorHistoryDirection direction
     ) {
+        EditorHistoryAvailability availability = ValidateExecution(change, direction);
+        if (!availability.isAvailable)
+            return EditorHistoryResult.Failure(availability.message);
+
         try
         {
             SceneHierarchyHistoryData data = SceneHierarchyHistoryData.Decode(change.payload.ReadBytes());
@@ -236,4 +206,58 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
         => m_workspace.Find<GameScene>(sceneId) is { isLoaded: true, isDestroyed: false } scene
             ? scene
             : null;
+
+    private EditorHistoryAvailability ValidateExecution(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) {
+        try
+        {
+            SceneHierarchyHistoryData data = SceneHierarchyHistoryData.Decode(change.payload.ReadBytes());
+            SceneObjectPlacement[] placements = direction == EditorHistoryDirection.Undo
+                ? data.before
+                : data.after;
+            IReadOnlyDictionary<Guid, Guid> destinationScenes = placements.ToDictionary(
+                static placement => placement.objectId,
+                static placement => placement.sceneId);
+            for (int i = 0; i < placements.Length; i++)
+            {
+                SceneObjectPlacement placement = placements[i];
+                if (ResolveScene(placement.sceneId) is null)
+                {
+                    return EditorHistoryAvailability.Unavailable(
+                        $"Scene '{placement.sceneId}' is no longer loaded.");
+                }
+                if (m_workspace.Find<GameObject>(placement.objectId) is not { isRuntimeValid: true })
+                {
+                    return EditorHistoryAvailability.Unavailable(
+                        $"GameObject '{placement.objectId}' is no longer available.");
+                }
+                GameObject? parent = null;
+                if (placement.parentId is Guid parentId)
+                {
+                    parent = m_workspace.Find<GameObject>(parentId);
+                    if (parent is not { isRuntimeValid: true })
+                    {
+                        return EditorHistoryAvailability.Unavailable(
+                            $"Parent GameObject '{parentId}' is no longer available.");
+                    }
+                }
+                if (parent is not null &&
+                    parent.scene.identity.persistentId != placement.sceneId &&
+                    (!destinationScenes.TryGetValue(parent.identity.persistentId, out Guid parentDestination) ||
+                     parentDestination != placement.sceneId))
+                {
+                    return EditorHistoryAvailability.Unavailable(
+                        $"Parent GameObject '{parent.identity.persistentId}' does not belong to destination scene '{placement.sceneId}'.");
+                }
+            }
+            return EditorHistoryAvailability.Available();
+        }
+        catch (Exception exception)
+        {
+            return EditorHistoryAvailability.Unavailable($"Scene hierarchy history payload is invalid: {exception.Message}");
+        }
+    }
+
 }

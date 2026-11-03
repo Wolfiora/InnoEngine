@@ -40,11 +40,8 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
     ) {
         try
         {
-            SceneScalarHistoryData data = SceneScalarHistoryData.Decode(change.payload.ReadBytes());
-            return Resolve(data) is not null
-                ? EditorHistoryAvailability.Available()
-                : EditorHistoryAvailability.Unavailable(
-                    $"Scene target '{data.targetId}' is no longer available for '{data.scalarKind}'.");
+            _ = SceneScalarHistoryData.Decode(change.payload.ReadBytes());
+            return EditorHistoryAvailability.Available();
         }
         catch (Exception exception)
         {

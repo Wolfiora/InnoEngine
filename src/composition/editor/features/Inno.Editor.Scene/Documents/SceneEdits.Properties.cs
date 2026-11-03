@@ -269,6 +269,7 @@ sealed partial class SceneEdits
             return false;
         ScenePropertyHistoryData data = ScenePropertyHistoryData.Create(
             target.identity.persistentId,
+            GetTypeRef(target.GetType()).stableId,
             propertyName,
             deltas);
         RecordWithRollback(

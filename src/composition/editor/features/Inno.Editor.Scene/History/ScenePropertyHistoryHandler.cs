@@ -5,6 +5,7 @@ using System.Linq;
 
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 
 namespace Inno.Editor.Scene;
@@ -43,19 +44,15 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
         try
         {
             ScenePropertyHistoryData data = ScenePropertyHistoryData.Decode(change.payload.ReadBytes());
-            EngineObject? target = m_workspace.Find<EngineObject>(data.targetId);
-            if (target is null || target.isDestroyed)
-                return EditorHistoryAvailability.Unavailable($"Scene object '{data.targetId}' is no longer available.");
-            if (target is not ISerializable serializable)
+            if (!m_workspace.types.TryResolve(new TypeRef(data.targetTypeId), out Type? targetType) ||
+                !typeof(ISerializable).IsAssignableFrom(targetType))
             {
                 return EditorHistoryAvailability.Unavailable(
-                    $"Scene object '{data.targetId}' is not serializable in the current generation.");
+                    $"Scene property type '{data.targetTypeId}' is unavailable in the current generation.");
             }
-            HashSet<string> currentProperties = ScenePropertySerialization
-                .CapturePropertySnapshots(target, m_workspace.serialization, m_workspace.assets)
-                .Select(static property => property.name)
-                .ToHashSet(StringComparer.Ordinal);
-            bool propertiesExist = data.deltas.All(delta => currentProperties.Contains(delta.propertyName));
+            IReadOnlyList<SerializationMemberMetadata> members = m_workspace.serialization.GetMetadata(targetType).members;
+            bool propertiesExist = data.deltas.All(delta => members.Any(member =>
+                string.Equals(member.name, delta.propertyName, StringComparison.Ordinal)));
             return propertiesExist
                 ? EditorHistoryAvailability.Available()
                 : EditorHistoryAvailability.Unavailable(
@@ -96,6 +93,8 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
             target = m_workspace.Find<EngineObject>(data.targetId);
             if (target is null || target.isDestroyed)
                 return EditorHistoryResult.Failure($"Scene object '{data.targetId}' is no longer available.");
+            if (!m_workspace.types.TryResolve(new TypeRef(data.targetTypeId), out Type? targetType) || target.GetType() != targetType)
+                return EditorHistoryResult.Failure($"Scene object '{data.targetId}' no longer has stable type '{data.targetTypeId}'.");
         }
         catch (Exception exception)
         {
@@ -191,7 +190,7 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
         {
             ScenePropertyHistoryData previous = ScenePropertyHistoryData.Decode(older.payload.ReadBytes());
             ScenePropertyHistoryData current = ScenePropertyHistoryData.Decode(newer.payload.ReadBytes());
-            if (previous.targetId != current.targetId ||
+            if (previous.targetId != current.targetId || previous.targetTypeId != current.targetTypeId ||
                 !string.Equals(previous.propertyName, current.propertyName, StringComparison.Ordinal) ||
                 Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > C_MERGE_WINDOW_SECONDS)
             {
@@ -223,6 +222,7 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
                 return false;
             var data = new ScenePropertyHistoryData(
                 previous.targetId,
+                previous.targetTypeId,
                 previous.propertyName,
                 deltas,
                 current.timestamp);

@@ -46,32 +46,13 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
         try
         {
             SceneSubtreeHistoryData data = SceneSubtreeHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
-            if (scene is not { isLoaded: true, isDestroyed: false })
-                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
-            bool shouldExist = direction == EditorHistoryDirection.Undo
-                ? data.existsBefore
-                : data.existsAfter;
-            GameObject? current = m_workspace.Find<GameObject>(data.rootId);
-            if (!shouldExist)
-            {
-                return current is { isRuntimeValid: true }
-                    ? EditorHistoryAvailability.Available()
-                    : EditorHistoryAvailability.Unavailable($"GameObject '{data.rootId}' is no longer available.");
-            }
-            if (current is { isRuntimeValid: true })
-                return EditorHistoryAvailability.Available();
-            if (data.parentId is Guid parentId &&
-                m_workspace.Find<GameObject>(parentId) is not { isRuntimeValid: true })
-            {
-                return EditorHistoryAvailability.Unavailable(
-                    $"Parent GameObject '{parentId}' is no longer available.");
-            }
-            return EditorHistoryAvailability.Available();
+            return m_workspace.Find<GameScene>(data.sceneId) is { isLoaded: true, isDestroyed: false }
+                ? EditorHistoryAvailability.Available()
+                : EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
         }
         catch (Exception exception)
         {
-            return EditorHistoryAvailability.Unavailable($"Scene subtree history payload is invalid: {exception.Message}");
+            return EditorHistoryAvailability.Unavailable($"Scene history payload is invalid: {exception.Message}");
         }
     }
 
@@ -95,6 +76,10 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
         EditorHistoryChange change,
         EditorHistoryDirection direction
     ) {
+        EditorHistoryAvailability availability = ValidateExecution(change, direction);
+        if (!availability.isAvailable)
+            return EditorHistoryResult.Failure(availability.message);
+
         try
         {
             SceneSubtreeHistoryData data = SceneSubtreeHistoryData.Decode(change.payload.ReadBytes());
@@ -215,4 +200,41 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
         string cleanup
     )
         => string.IsNullOrWhiteSpace(cleanup) ? failure : $"{failure} {cleanup}";
+
+    private EditorHistoryAvailability ValidateExecution(
+        EditorHistoryChange change,
+        EditorHistoryDirection direction
+    ) {
+        try
+        {
+            SceneSubtreeHistoryData data = SceneSubtreeHistoryData.Decode(change.payload.ReadBytes());
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            if (scene is not { isLoaded: true, isDestroyed: false })
+                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
+            bool shouldExist = direction == EditorHistoryDirection.Undo
+                ? data.existsBefore
+                : data.existsAfter;
+            GameObject? current = m_workspace.Find<GameObject>(data.rootId);
+            if (!shouldExist)
+            {
+                return current is { isRuntimeValid: true }
+                    ? EditorHistoryAvailability.Available()
+                    : EditorHistoryAvailability.Unavailable($"GameObject '{data.rootId}' is no longer available.");
+            }
+            if (current is { isRuntimeValid: true })
+                return EditorHistoryAvailability.Available();
+            if (data.parentId is Guid parentId &&
+                m_workspace.Find<GameObject>(parentId) is not { isRuntimeValid: true })
+            {
+                return EditorHistoryAvailability.Unavailable(
+                    $"Parent GameObject '{parentId}' is no longer available.");
+            }
+            return EditorHistoryAvailability.Available();
+        }
+        catch (Exception exception)
+        {
+            return EditorHistoryAvailability.Unavailable($"Scene subtree history payload is invalid: {exception.Message}");
+        }
+    }
+
 }
