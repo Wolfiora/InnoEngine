@@ -1,394 +1,202 @@
 name: Engine CI
 
 on:
+  pull_request:
+  push:
+    branches: [master]
+  merge_group:
+    types: [checks_requested]
+  schedule:
+    - cron: '17 19 * * *' # 03:17 Asia/Taipei; Sunday is owned by the weekly run.
+    - cron: '17 20 * * 6' # Sunday 04:17 Asia/Taipei.
   workflow_dispatch:
     inputs:
-      native_product_acceptance:
-        description: Run native products with the selected BGCS toolchain
+      full:
+        description: Run the complete supported functional matrix
         type: boolean
         default: true
-  pull_request:
-    paths:
-      - ".github/workflows/rendering-ci.yml"
-      - ".github/actions/setup-dotnet/**"
-      - "build/**"
-      - "extern/**"
-      - "entry/**"
-      - "backends/**"
-      - "platforms/**"
-      - "src/**"
-      - "tools/**"
-      - "docs/**"
-      - "tests/**"
-      - ".gitmodules"
-      - "Directory.Build.props"
-      - "global.json"
-      - "Directory.Build.targets"
-      - "Directory.Solution.props"
-      - "Directory.Solution.targets"
-      - "InnoEngine.sln"
-  push:
-    branches:
-      - master
-    paths:
-      - ".github/workflows/rendering-ci.yml"
-      - ".github/actions/setup-dotnet/**"
-      - "build/**"
-      - "extern/**"
-      - "entry/**"
-      - "backends/**"
-      - "platforms/**"
-      - "src/**"
-      - "tools/**"
-      - "docs/**"
-      - "tests/**"
-      - ".gitmodules"
-      - "Directory.Build.props"
-      - "global.json"
-      - "Directory.Build.targets"
-      - "Directory.Solution.props"
-      - "Directory.Solution.targets"
-      - "InnoEngine.sln"
+      extended:
+        description: Require cold native input, ten warm samples and extended lifecycle acceptance
+        type: boolean
+        default: false
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
-  group: engine-ci-${{ github.ref }}
+  group: engine-validation-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
-  CMAKE_BUILD_PARALLEL_LEVEL: "2"
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+  CMAKE_BUILD_PARALLEL_LEVEL: '2'
 
 jobs:
-  scope:
-    name: Validation scope
-    runs-on: ubuntu-latest
+  cadence:
+    name: Select validation cadence
+    runs-on: windows-2022
+    timeout-minutes: 5
     outputs:
-      profile: ${{ steps.select.outputs.profile }}
+      run: ${{ steps.select.outputs.run }}
+      full: ${{ steps.select.outputs.full }}
+      extended: ${{ steps.select.outputs.extended }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
-      - name: Test and select validation scope
-        id: select
+          persist-credentials: false
+      - id: select
         shell: pwsh
         env:
-          BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
-          FORCE_FULL: ${{ github.event_name == 'workflow_dispatch' }}
-          IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_COMMIT: ${{ github.sha }}
         run: |
-          ./tests/ci/Test-ValidationScope.ps1
-          if ($env:FORCE_FULL -eq 'true' -or $env:BASE_REVISION -match '^0+$') {
-            $selection = ./tests/ci/Select-ValidationScope.ps1 -Full
-          } else {
-            git fetch --no-tags origin $env:BASE_REVISION $env:HEAD_REVISION
-            if ($LASTEXITCODE -ne 0) { throw 'The exact validation comparison could not be fetched.' }
-            $selection = ./tests/ci/Select-ValidationScope.ps1 -BaseRevision $env:BASE_REVISION -HeadRevision $env:HEAD_REVISION `
-              -PullRequest:($env:IS_PULL_REQUEST -eq 'true')
-          }
-          "profile=$($selection.profile)" >> $env:GITHUB_OUTPUT
-          '## Selected validation scope' >> $env:GITHUB_STEP_SUMMARY
-          ($selection | ConvertTo-Json -Depth 5) >> $env:GITHUB_STEP_SUMMARY
+          ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
+            -Commit $env:CANDIDATE_COMMIT -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL
 
-  managed:
-    needs: scope
-    if: needs.scope.outputs.profile == 'full'
-    name: Managed / ${{ matrix.os }}
+  validation:
+    needs: cadence
+    if: needs.cadence.outputs.run == 'true'
+    name: Validate / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
         os: [windows-2022, macos-15]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           submodules: recursive
+          persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
-      - name: Restore managed source dependencies
-        shell: pwsh
-        run: |
-          dotnet restore InnoEngine.sln -p:Configuration=SourceDebug --disable-parallel -nr:false
-          if ($LASTEXITCODE -ne 0) { throw 'The solution dependency restore failed.' }
-      - name: Build and test the independent managed graph
-        shell: pwsh
-        run: |
-          ./tests/Invoke-ManagedChecks.ps1 -ArtifactsPath (Join-Path $env:RUNNER_TEMP 'InnoManaged')
-      - name: Verify source hygiene after managed tests
-        shell: pwsh
-        run: |
-          git diff --exit-code
-          if ($LASTEXITCODE -ne 0) { throw 'Managed verification changed tracked source files.' }
-          $untracked = @(git ls-files --others --exclude-standard)
-          if ($LASTEXITCODE -ne 0 -or $untracked.Count -ne 0) {
-            throw "Managed verification created untracked source files: $($untracked -join ', ')"
-          }
-      - name: Upload managed results and deferred dependencies
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: managed-${{ matrix.os }}
-          path: artifacts/acceptance/managed/**
-          if-no-files-found: error
-
-  rendering:
-    needs: scope
-    if: github.event_name != 'workflow_dispatch' || inputs.native_product_acceptance
-    name: ${{ matrix.platform }}
-    runs-on: ${{ matrix.os }}
-    # Cold Debug/Release native builds, ten hot builds and the complete contract suite share this job.
-    timeout-minutes: 360
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-2022
-            platform: windows-x64
-            build_target: windows-x64
-            runtime_identifier: win-x64
-            architecture: X64
-            backend_pattern: "Rendering initialized with Direct3D(11|12)"
-            product_properties: platforms/WindowsX64/build/Inno.Build.WindowsX64/EditorProduct.props
-            player_project: platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj
-          - os: macos-15
-            platform: osx-arm64
-            build_target: macos-arm64
-            runtime_identifier: osx-arm64
-            architecture: Arm64
-            backend_pattern: "Rendering initialized with Metal"
-            product_properties: platforms/MacOSArm64/build/Inno.Build.MacOSArm64/EditorProduct.props
-            player_project: platforms/MacOSArm64/player/Inno.Player.MacOSArm64/Inno.Player.MacOSArm64.csproj
-
-    steps:
-      - name: Checkout repository and native dependencies
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install .NET SDK
-        uses: ./.github/actions/setup-dotnet
-
-      - name: Install MSBuild
+        id: sdk
+      - uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
         if: runner.os == 'Windows'
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Verify runner architecture
+      - name: Prepare one plan on the actual merge candidate
+        id: plan
         shell: pwsh
+        env:
+          BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before || github.sha }}
+          EXPECTED_COMMIT: ${{ github.sha }}
+          FORCE_FULL: ${{ needs.cadence.outputs.full }}
+          EXTENDED: ${{ needs.cadence.outputs.extended }}
+          VALIDATION_PLATFORM: ${{ matrix.os }}
         run: |
-          $actual = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString()
-          if ($actual -ne '${{ matrix.architecture }}') {
-            throw "Runner architecture '$actual' does not match required '${{ matrix.architecture }}'."
-          }
-
-      - name: Record selected SDK and compiler
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force 'artifacts/acceptance/ci-build' | Out-Null
-          dotnet --info | Set-Content 'artifacts/acceptance/ci-build/dotnet-info.txt'
-          $selection = @(dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
-            -nologo -m:1 -nr:false -p:DesignTimeBuild=true `
-            -getProperty:RoslynTargetsPath,NETCoreSdkVersion,LangVersion,MSBuildVersion)
-          if ($LASTEXITCODE -ne 0) { throw 'SDK and compiler inspection failed.' }
-          $selection | Set-Content 'artifacts/acceptance/ci-build/compiler-selection.json'
-          $compiler = (($selection -join [Environment]::NewLine) | ConvertFrom-Json).Properties.RoslynTargetsPath
-          dotnet (Join-Path $compiler 'bincore/csc.dll') -version |
-            Set-Content 'artifacts/acceptance/ci-build/compiler-version.txt'
-          if ($LASTEXITCODE -ne 0) { throw 'The selected compiler could not report its version.' }
-
-      - name: Restore Editor and NativeAOT dependencies
-        shell: pwsh
-        run: |
-          dotnet restore entry/InnoEngine.Editor/InnoEngine.Editor.csproj -p:Configuration=Debug --disable-parallel -nr:false
-          if ($LASTEXITCODE -ne 0) { throw 'The Debug Editor dependency restore failed.' }
-          if ('${{ needs.scope.outputs.profile }}' -eq 'editor') { exit 0 }
-          dotnet restore entry/InnoEngine.Editor/InnoEngine.Editor.csproj -p:Configuration=Release --disable-parallel -nr:false
-          if ($LASTEXITCODE -ne 0) { throw 'The Release Editor dependency restore failed.' }
-          dotnet restore '${{ matrix.player_project }}' -p:Configuration=Release `
-            -r '${{ matrix.runtime_identifier }}' -p:PublishAot=true --disable-parallel -nr:false
-          if ($LASTEXITCODE -ne 0) { throw 'The NativeAOT Player dependency restore failed.' }
-
-      - name: Build development Build entry
-        id: build_entry
-        shell: pwsh
-        run: |
-          dotnet build "entry/InnoEngine.Build/InnoEngine.Build.csproj" --disable-build-servers -m:1 -nr:false `
-            -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/entry.binlog' 2>&1 |
-            Tee-Object -FilePath 'artifacts/acceptance/ci-build/entry.log'
-          if ($LASTEXITCODE -ne 0) { throw "Build entry preparation failed." }
-
-      - name: Build host Editor Debug
-        id: native_debug
-        shell: pwsh
-        run: |
-          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Debug 2>&1 |
-            Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-debug.log'
-          if ($LASTEXITCODE -ne 0) { throw "Debug host Editor build failed." }
-
-      - name: Run real renderer smoke
-        if: ${{ !cancelled() && steps.native_debug.outcome == 'success' }}
-        timeout-minutes: 5
-        shell: pwsh
-        run: |
-          $editor = @(dotnet msbuild 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj' `
-            -nologo -m:1 -nr:false -p:Configuration=Debug -getProperty:TargetPath)
-          if ($LASTEXITCODE -ne 0 -or $editor.Count -ne 1) {
-            throw 'The built Editor entry has no unambiguous evaluated TargetPath.'
-          }
-          ./tests/Invoke-EditorSmoke.ps1 -EditorAssembly $editor[0] `
-            -ProjectDirectory (Join-Path $env:RUNNER_TEMP 'InnoRenderingSmoke') `
-            -BackendPattern '${{ matrix.backend_pattern }}' -Dotnet (Get-Command dotnet).Source
-
-      - name: Upload renderer smoke logs
-        if: always()
-        uses: actions/upload-artifact@v4
+          $baseline = $env:BASE_REVISION
+          if ($baseline -match '^0+$') { $baseline = $env:EXPECTED_COMMIT; $env:FORCE_FULL = 'true' }
+          ./tests/ci/Invoke-ValidationCi.ps1 -Stage Plan -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT `
+            -Full:($env:FORCE_FULL -eq 'true') -Extended:($env:EXTENDED -eq 'true')
+      - name: Restore immutable candidates for publisher verification
+        id: native-cache
+        if: steps.plan.outputs.native == 'true' && needs.cadence.outputs.extended != 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
-          name: rendering-smoke-${{ matrix.platform }}
-          path: ${{ runner.temp }}/InnoRenderingSmoke/Logs/**
-          if-no-files-found: warn
-
-      - name: Build host Editor Release
-        id: native_release
-        if: ${{ !cancelled() && needs.scope.outputs.profile == 'full' && steps.native_debug.outcome == 'success' }}
+          key: inno-immutable-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.sdk.outputs.dotnet-version }}-lookup-${{ github.run_id }}
+          restore-keys: inno-immutable-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.sdk.outputs.dotnet-version }}-
+          path: artifacts/validation/native-cache.zip
+      - name: Execute and reconcile the frozen plan
+        id: execute
         shell: pwsh
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+          FORCE_FULL: ${{ needs.cadence.outputs.full }}
+          EXTENDED: ${{ needs.cadence.outputs.extended }}
+          VALIDATION_PLATFORM: ${{ matrix.os }}
         run: |
-          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- editor --configuration Release 2>&1 |
-            Tee-Object -FilePath 'artifacts/acceptance/ci-build/editor-release.log'
-          if ($LASTEXITCODE -ne 0) { throw "Release host Editor build failed." }
-
-      - name: Verify restored BGCS package and repeated cache reuse
-        if: ${{ !cancelled() && steps.native_release.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          $assets = @(dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
-            -nologo -m:1 -nr:false -getProperty:ProjectAssetsFile,InnoBgcsPackageVersion)
-          if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve BGCS restore ownership.' }
-          $evaluation = ($assets -join [Environment]::NewLine) | ConvertFrom-Json
-          $expectedVersion = $evaluation.Properties.InnoBgcsPackageVersion
-          $restored = Get-Content -LiteralPath $evaluation.Properties.ProjectAssetsFile -Raw | ConvertFrom-Json
-          $packages = @($restored.libraries.PSObject.Properties.Name | Where-Object { $_ -match '^BGCS(?:\.[^/]+)?/' })
-          if ($packages.Count -eq 0 -or @($packages | Where-Object { ($_ -split '/')[-1] -ne $expectedVersion }).Count -ne 0) {
-            throw ('Every restored BGCS package must use exactly '+$expectedVersion+'.')
-          }
-          $packages | Set-Content 'artifacts/acceptance/ci-build/bgcs-packages.txt'
-          ./tests/Invoke-BuildCacheChecks.ps1 -ResultsDirectory 'artifacts/acceptance/ci-build/cache'
-
-      - name: Build managed solution
-        id: source
-        if: ${{ !cancelled() && steps.build_entry.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          $source = 'InnoEngine.sln'
-          if ('${{ needs.scope.outputs.profile }}' -eq 'editor') {
-            $source = Join-Path $PWD 'artifacts/acceptance/ci-build/contracts.slnf'
-            ./tests/ci/New-ValidationSolutionFilter.ps1 -OutputPath $source
-          }
-          dotnet build $source --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
-            -p:UseSharedCompilation=false '-bl:artifacts/acceptance/ci-build/source-debug.binlog' 2>&1 |
-            Tee-Object -FilePath 'artifacts/acceptance/ci-build/source-debug.log'
-          if ($LASTEXITCODE -ne 0) { throw 'SourceDebug build failed.' }
-
-      - name: Build selected Player contract for repository checks
-        id: player_contract
-        if: ${{ !cancelled() && steps.source.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          dotnet build '${{ matrix.player_project }}' --configuration Debug --disable-build-servers -m:1 -nr:false `
-            '-bl:artifacts/acceptance/ci-build/wiki-player.binlog' 2>&1 |
-            Tee-Object -FilePath 'artifacts/acceptance/ci-build/wiki-player.log'
-          if ($LASTEXITCODE -ne 0) { throw 'The current Wiki target reference closure could not be built.' }
-
-      - name: Enforce source and compiled public API architecture boundaries
-        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
-        shell: pwsh
-        run: dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- verify .
-
-      - name: Run complete test suite
-        if: ${{ needs.scope.outputs.profile == 'full' && !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          $properties = Join-Path $PWD '${{ matrix.product_properties }}'
-          New-Item -ItemType Directory -Force 'artifacts/acceptance/ci-tests' | Out-Null
-          dotnet --info | Set-Content 'artifacts/acceptance/ci-tests/dotnet-info.txt'
-          dotnet msbuild 'build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj' `
-            -nologo -m:1 -nr:false -p:DesignTimeBuild=true -p:UseSharedCompilation=false `
-            -p:InnoNativeTarget='${{ matrix.build_target }}' `
-            -getProperty:MSBuildRuntimeType,MSBuildRuntimeVersion,NETCoreSdkVersion,CscToolPath,CscToolExe,UseSharedCompilation,NETCoreSdkRuntimeIdentifier `
-            | Set-Content 'artifacts/acceptance/ci-tests/compiler-selection.json'
-          if ($LASTEXITCODE -ne 0) { throw "Compiler selection inspection failed." }
-          dotnet build InnoEngine.sln --configuration SourceDebug --disable-build-servers -m:1 -nr:false `
-            -p:UseSharedCompilation=false `
-            -p:InnoNativeTarget='${{ matrix.build_target }}' -p:InnoToolTarget='${{ matrix.build_target }}' `
-            -p:InnoProductBuildProperties=$properties -p:InnoTestNativeProduct=editor -p:InnoTestNativeTarget='${{ matrix.build_target }}' `
-            '-bl:artifacts/acceptance/ci-tests/target-build.binlog' 2>&1 |
-            Tee-Object -FilePath 'artifacts/acceptance/ci-tests/target-build.log'
-          if ($LASTEXITCODE -ne 0) { throw "Target test closure compilation failed." }
-          ./tests/Invoke-IsolatedTests.ps1 -Configuration SourceDebug -Target '${{ matrix.build_target }}' -ProductProperties $properties
-
-      - name: Run affected Editor contract and workflow suites
-        if: ${{ needs.scope.outputs.profile == 'editor' && !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          $output = Join-Path $env:RUNNER_TEMP 'InnoEditorChecks'
-          foreach ($profile in @('Contracts', 'Workflows')) {
-            ./tests/Invoke-EditorUiAcceptance.ps1 -Profile $profile -EditorOnly `
-              -ArtifactsPath $output -ResultsDirectory 'artifacts/acceptance/ci-tests'
-          }
-
-      - name: Generate source-independent Player Support Pack
-        if: ${{ !cancelled() && steps.native_release.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          $supportPacks = Join-Path $env:RUNNER_TEMP "InnoSupportPacks"
-          dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" --no-build -- support-pack `
-            --engine-root $PWD `
-            --output $supportPacks `
-            --target '${{ matrix.build_target }}' `
-            --tools-target '${{ matrix.build_target }}' `
-            --dotnet (Get-Command dotnet).Source
-          $expectedMiniAudio = if ($IsWindows) { "miniaudio-release.dll" } else { "libminiaudio-release.dylib" }
-          $targetRoot = Join-Path $supportPacks '${{ matrix.build_target }}'
-          $fingerprint = (Get-Content -LiteralPath (Join-Path $targetRoot 'current') -Raw).Trim()
-          if ($fingerprint -cnotmatch '^[0-9a-f]{64}$') {
-            throw 'The Support Pack selection has no valid content identity.'
-          }
-          $selectedPack = Join-Path $targetRoot $fingerprint
-          $runtimeFiles = @(Get-ChildItem -LiteralPath (Join-Path $selectedPack 'native') -Recurse -File -Filter $expectedMiniAudio)
-          $linkFiles = @(Get-ChildItem -LiteralPath (Join-Path $selectedPack 'PlayerLink/native') -Recurse -File -Filter $expectedMiniAudio)
-          if ($runtimeFiles.Count -ne 1 -or $linkFiles.Count -ne 1) {
-            throw "Expected one '$expectedMiniAudio' in each selected runtime and PlayerLink closure."
-          }
-          if ((Get-FileHash -LiteralPath $runtimeFiles[0].FullName).Hash -cne (Get-FileHash -LiteralPath $linkFiles[0].FullName).Hash) {
-            throw 'The runtime and PlayerLink Native inputs do not match.'
-          }
-
-      - name: Validate current Wiki signatures and compiled examples
-        if: ${{ !cancelled() && steps.source.outcome == 'success' && steps.player_contract.outcome == 'success' }}
-        shell: pwsh
-        run: |
-          $project = Join-Path $env:RUNNER_TEMP 'InnoWikiProject'
-          New-Item -ItemType Directory -Force (Join-Path $project 'Assets') | Out-Null
-          'public sealed class WikiProbe { }' | Set-Content (Join-Path $project 'Assets/WikiProbe.cs') -Encoding utf8
-          ./tests/Invoke-WikiChecks.ps1 -ProjectDirectory $project -Target '${{ matrix.build_target }}'
-
-      - name: Upload contract and Wiki evidence
-        if: always()
-        uses: actions/upload-artifact@v4
+          ./tests/ci/Invoke-ValidationCi.ps1 -Stage Run -BaseRevision $env:EXPECTED_COMMIT -ExpectedCommit $env:EXPECTED_COMMIT `
+            -Full:($env:FORCE_FULL -eq 'true') -Extended:($env:EXTENDED -eq 'true')
+      - name: Save only complete immutable generations from trusted default-branch validation
+        if: github.ref_name == github.event.repository.default_branch && steps.plan.outputs.native == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
-          name: contract-evidence-${{ matrix.build_target }}
-          path: |
-            artifacts/acceptance/ci-tests/**
-            artifacts/acceptance/ci-build/**
-            artifacts/acceptance/wiki-gate/**
-          if-no-files-found: warn
-
-      - name: Upload Player E2E output
-        if: always()
-        uses: actions/upload-artifact@v4
+          key: inno-immutable-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.sdk.outputs.dotnet-version }}-${{ hashFiles('artifacts/validation/native-cache.zip') }}
+          path: artifacts/validation/native-cache.zip
+      - name: Retain verified deliverables without rebuilding
+        if: steps.execute.outputs.deliverables != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: player-e2e-${{ matrix.build_target }}
-          path: ${{ runner.temp }}/InnoPlayerE2E/**
-          if-no-files-found: warn
+          name: deliverable-${{ matrix.os }}-attempt-${{ github.run_attempt }}
+          path: ${{ steps.execute.outputs.deliverables }}/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Retain the first failure, complete plan, logs and test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: validation-${{ matrix.os }}-attempt-${{ github.run_attempt }}
+          path: artifacts/validation/ci/
+          if-no-files-found: error
+          retention-days: 30
+
+  engine-validation:
+    name: Engine validation
+    if: always()
+    needs: [cadence, validation]
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: needs.cadence.outputs.run == 'true'
+        with:
+          pattern: validation-*
+          path: artifacts/validation/received
+      - name: Reconcile every required platform and planned result
+        id: reconcile
+        shell: pwsh
+        env:
+          PRODUCER_CONCLUSION: ${{ needs.validation.result }}
+          EXPECTED_COMMIT: ${{ github.sha }}
+          CADENCE_CONCLUSION: ${{ needs.cadence.result }}
+          SHOULD_RUN: ${{ needs.cadence.outputs.run }}
+        run: |
+          if ($env:CADENCE_CONCLUSION -cne 'success') { throw 'Cadence selection did not succeed.' }
+          if ($env:SHOULD_RUN -ceq 'false') {
+            if ($env:GITHUB_EVENT_NAME -cne 'schedule') { throw 'Candidate validation cannot be skipped.' }
+            exit 0
+          }
+          if ($env:SHOULD_RUN -cne 'true') { throw 'Cadence selection did not produce an explicit decision.' }
+          $receipts = foreach ($platform in @('windows-2022', 'macos-15')) {
+            $available = @(Get-ChildItem artifacts/validation/received -Directory | ForEach-Object { [pscustomobject]@{ name = $_.Name; directory = $_.FullName } })
+            $selected = ./tests/ci/Select-ValidationArtifact.ps1 -Artifacts $available -Name "validation-$platform" -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
+            $directory = $selected.directory
+            $receipt = ./tests/ci/Test-ValidationReport.ps1 -PlanPath "$directory/plan.json" -ResultsPath "$directory/results.json" `
+              -ExpectedCommit $env:EXPECTED_COMMIT -JobConclusion $env:PRODUCER_CONCLUSION
+            [pscustomobject]@{ platform = $platform; receipt = $receipt }
+          }
+          $receipts | ConvertTo-Json -Depth 10 | Set-Content artifacts/validation/certification.json
+          $full = @($receipts | Where-Object { -not $_.receipt.full }).Count -eq 0
+          "full=$($full.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          foreach ($receipt in $receipts) {
+            "$($receipt.platform): $($receipt.receipt.passed) passed, $($receipt.receipt.reused) reused, $($receipt.receipt.notApplicable) explicitly not applicable." >> $env:GITHUB_STEP_SUMMARY
+          }
+      - name: Summarize failures and comparable duration changes
+        if: always() && needs.cadence.outputs.run == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          ./tests/ci/Write-ValidationSummary.ps1 -ReceivedDirectory artifacts/validation/received -Repository $env:GITHUB_REPOSITORY `
+            -DefaultBranch $env:DEFAULT_BRANCH -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -RunId ([long]$env:GITHUB_RUN_ID) -ApiUrl $env:GITHUB_API_URL
+      - name: Retain reconciled certification
+        if: needs.cadence.outputs.run == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: engine-certification-attempt-${{ github.run_attempt }}
+          path: artifacts/validation/certification.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Retain complete functional certification
+        if: steps.reconcile.outputs.full == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: engine-full-certification-attempt-${{ github.run_attempt }}
+          path: artifacts/validation/certification.json
+          if-no-files-found: error
+          retention-days: 30

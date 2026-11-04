@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>domain</InnoValidationLayer>
+    <InnoValidationReusable>false</InnoValidationReusable>
     <RootNamespace>Inno.Core.JobsSystem.Tests</RootNamespace>
   </PropertyGroup>
 

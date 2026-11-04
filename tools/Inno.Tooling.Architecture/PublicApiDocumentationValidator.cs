@@ -16,7 +16,8 @@ internal static class PublicApiDocumentationValidator
         string source,
         ICollection<string> failures,
         SemanticModel? model,
-        DocumentationSourceModels models
+        DocumentationSourceModels models,
+        bool validateInheritedContract = true
     ) {
         SyntaxNode root = model?.SyntaxTree.GetRoot()
             ?? CSharpSyntaxTree.ParseText(source, path: relativePath).GetRoot();
@@ -42,6 +43,8 @@ internal static class PublicApiDocumentationValidator
                 .FirstOrDefault(static element => element.Name.LocalName.Text == "inheritdoc");
             if (inherited is not null)
             {
+                if (!validateInheritedContract)
+                    continue;
                 SyntaxNode declaration = member is EventFieldDeclarationSyntax signal
                     ? signal.Declaration.Variables[0]
                     : member;

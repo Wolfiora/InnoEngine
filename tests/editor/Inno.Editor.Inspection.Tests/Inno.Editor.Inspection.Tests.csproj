@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>contract</InnoValidationLayer>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
     <DefineConstants>$(DefineConstants);INNO_EDITOR</DefineConstants>
   </PropertyGroup>

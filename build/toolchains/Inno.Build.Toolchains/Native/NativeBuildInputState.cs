@@ -74,6 +74,12 @@ internal sealed class NativeBuildInputState
             return m_initialInputs.CaptureRecordedInputs(engineRoot);
     }
 
+    internal string[][] CaptureRootMembership()
+    {
+        lock (m_gate)
+            return m_initialInputs.CaptureRootMembership();
+    }
+
     internal void RecordReuse(string phase)
     {
         lock (m_gate)

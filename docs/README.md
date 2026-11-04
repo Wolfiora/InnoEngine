@@ -53,6 +53,8 @@
 
 全量项目、API 和示例审查正在进行；有同名页面不代表其内容已经完整验收。历史执行记录保存在仓库的 records 目录，不作为当前 API 使用说明。当前格式随源码共同演进，不提供旧格式读取或旧接口转发。
 
+AI 工作流迁移新增 [统一验证库](tooling/Inno.Tooling.Validation.md)、[验证工具回归](tooling/Inno.Tooling.Validation.Tests.md) 与 [RmlUi 原生测试](ui/Inno.Adapter.UI.RmlUi.Tests.md) 的独立项目页；实际完成范围见各页与实施记录。
+
 独立的 [Inno.Scripting.Compiler.Tests](testing/Inno.Scripting.Compiler.Tests.md) 覆盖当前语言契约、跨插件 IDE 引用和框架内容缓存失效，纳入托管验证图。[Inno.Build.Toolchains.Tests](testing/Inno.Build.Toolchains.Tests.md) 独立验证中立原生编译清单、冻结根映射与完整性契约。
 
 [Inno.Testing.Source](testing/Inno.Testing.Source.md) 为需要 checkout 的测试读取显式 SDK 输入，源码只属于该测试支持程序集。

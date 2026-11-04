@@ -5,6 +5,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$OutputEncoding = [Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding = $OutputEncoding
 $repository = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
 $ruleRoot = Join-Path $repository 'docs/architecture/rules'
 $manifest = Get-Content -LiteralPath (Join-Path $ruleRoot 'coverage.json') -Raw | ConvertFrom-Json

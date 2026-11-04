@@ -8,7 +8,7 @@
 
 ## 运行
 
-先构建 Solution 的 SourceDebug 配置，再执行 `tests/Invoke-IsolatedTests.ps1`；独立托管 CI 使用 `tests/Invoke-ManagedChecks.ps1`。普通用例与隔离用例均保留 xUnit/VSTest。
+通过 Build 入口的 `validate run` 选择实际受影响的脚本契约，先构建计划并集，再由 `tests/Invoke-IsolatedTests.ps1` 消费同一 SDK 图执行。普通用例与隔离用例均保留 xUnit/VSTest。
 
 | 场景 | 验证内容 |
 | --- | --- |

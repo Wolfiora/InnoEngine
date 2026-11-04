@@ -48,6 +48,16 @@ public sealed class ManagedInputGraphTask : Task
     public string CompilerInputsTargets { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets project roots for a shared, evaluation-only repository snapshot.
+    /// </summary>
+    public ITaskItem[] RepositoryProjects { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets whether repository snapshots include SDK-resolved compile references and symbols.
+    /// </summary>
+    public bool ResolveRepositoryReferences { get; set; }
+
+    /// <summary>
     /// Writes complete source declarations and reports SDK evaluation failures.
     /// </summary>
     /// <returns>
@@ -60,6 +70,8 @@ public sealed class ManagedInputGraphTask : Task
 
             var globals = (Properties ?? new Microsoft.Build.Framework.ITaskItem[0])
                 .ToDictionary(item => item.ItemSpec, item => item.GetMetadata("Value"), StringComparer.OrdinalIgnoreCase);
+            if (RepositoryProjects.Length != 0)
+                return CaptureRepository(globals);
             var result = new XElement("ManagedInputs");
             var paths = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
             var compilerProperties = new[] {
@@ -240,4 +252,90 @@ public sealed class ManagedInputGraphTask : Task
             return false;
         }
     }
+    private bool CaptureRepository(Dictionary<string, string> globals)
+    {
+        string[] propertyNames = ["AssemblyName", "OutputType", "InnoProductId", "InnoProductTarget", "InnoNativeTarget",
+            "ImplicitUsings", "TargetPath", "IsTestProject", "IsRoslynComponent", "TargetFramework", "RuntimeIdentifier",
+            "InnoTestNativeProduct", "InnoTestNativeTarget", "InnoValidationLayer", "InnoValidationEnvironment",
+            "InnoValidationIsolation", "InnoValidationReusable", "NETCoreSdkVersion", "NETCoreSdkRuntimeIdentifier", "ProjectAssetsFile",
+            "InnoValidationBackendPattern",
+            "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks", "BindGenGeneratedBindings",
+            "InnoDevelopmentTarget", "InnoDevelopmentEditorBuildProperties", "InnoDevelopmentEditorProject"];
+        string[] itemNames = ["ProjectReference", "Compile", "Using", "EmbeddedResource", "Content", "None", "Analyzer",
+            "AdditionalFiles", "EditorConfigFiles", "AdditionalCompileInputs", "InnoBuildInputProject", "InnoValidationInput"];
+        var snapshots = new List<object>();
+        using var collection = new ProjectCollection(globals);
+        var graph = new ProjectGraph(RepositoryProjects.Select(item => new ProjectGraphEntryPoint(item.ItemSpec, globals)), collection,
+            (path, selected, owner) =>
+            {
+                lock (owner)
+                    return owner.LoadProject(path, selected, null).CreateProjectInstance();
+            }, Math.Min(Environment.ProcessorCount, 4), System.Threading.CancellationToken.None);
+        var variants = graph.ProjectNodes.GroupBy(node => node.ProjectInstance.FullPath,
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Select(node => node.ProjectInstance).ToArray(),
+                OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        foreach (ITaskItem root in RepositoryProjects.OrderBy(item => item.ItemSpec, StringComparer.Ordinal))
+        {
+            var project = collection.LoadProject(root.ItemSpec);
+            var items = new Dictionary<string, object>(StringComparer.Ordinal);
+            var properties = propertyNames.ToDictionary(name => name, name => project.GetPropertyValue(name), StringComparer.Ordinal);
+            foreach (string name in itemNames)
+                items[name] = project.GetItems(name).Select(item =>
+                {
+                    var metadata = item.Metadata.ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
+                    metadata["Identity"] = item.EvaluatedInclude;
+                    metadata["FullPath"] = item.GetMetadataValue("FullPath");
+                    return metadata;
+                }).ToArray();
+            if (ResolveRepositoryReferences)
+            {
+                var selected = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);
+                foreach (var property in globals)
+                    selected[property.Key] = property.Value;
+                selected["InnoOriginalCustomAfterMicrosoftCommonTargets"] = project.GetPropertyValue("CustomAfterMicrosoftCommonTargets");
+                selected["CustomAfterMicrosoftCommonTargets"] = CompilerInputsTargets;
+                var outputs = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);
+                if (!BuildEngine.BuildProjectFile(project.FullPath, new[] { "CaptureInnoRepositoryReferences" }, selected, outputs))
+                    throw new InvalidOperationException("SDK repository reference resolution failed: " + project.FullPath);
+                var captured = (ITaskItem[])outputs["CaptureInnoRepositoryReferences"];
+                foreach (string name in new[] { "ReferencePath", "Compile" })
+                    items[name] = captured.Where(item => item.GetMetadata("CaptureKind") == name).Select(item =>
+                    {
+                        var metadata = item.MetadataNames.Cast<string>().ToDictionary(key => key, item.GetMetadata, StringComparer.OrdinalIgnoreCase);
+                        metadata["Identity"] = item.ItemSpec;
+                        metadata["FullPath"] = item.GetMetadata("FullPath");
+                        return metadata;
+                    }).ToArray();
+                foreach (ITaskItem item in captured.Where(item => item.GetMetadata("CaptureKind") == "Property"))
+                    properties[item.ItemSpec] = item.GetMetadata("Value");
+            }
+            snapshots.Add(new
+            {
+                Path = project.FullPath,
+                GlobalProperties = globals,
+                Properties = properties,
+                Items = items,
+                Imports = project.Imports.Select(import => import.ImportedProject.FullPath).Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray(),
+                Variants = variants[project.FullPath].OrderBy(instance => string.Join(";", instance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                    .Select(pair => pair.Key + "=" + pair.Value)), StringComparer.Ordinal).Select(instance => new
+                {
+                    Path = instance.FullPath,
+                    GlobalProperties = instance.GlobalProperties,
+                    Properties = propertyNames.ToDictionary(name => name, instance.GetPropertyValue, StringComparer.Ordinal),
+                    Items = itemNames.ToDictionary(name => name, name => instance.GetItems(name).Select(item =>
+                    {
+                        var metadata = item.Metadata.ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
+                        metadata["Identity"] = item.EvaluatedInclude;
+                        metadata["FullPath"] = item.GetMetadataValue("FullPath");
+                        return metadata;
+                    }).ToArray(), StringComparer.Ordinal),
+                    Imports = instance.ImportPaths.Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray()
+                }).ToArray()
+            });
+        }
+        File.WriteAllText(OutputPath, JsonSerializer.Serialize(snapshots));
+        return true;
+    }
+
 }

@@ -20,16 +20,24 @@ internal static class WikiExampleValidator
         WikiProjectReferences? projectReferences,
         string? inventoryPath,
         ICollection<string> failures,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        IReadOnlySet<string>? selectedPages = null
     ) {
         var results = new List<WikiExampleResult>();
         var owners = projects.ToDictionary(static project => Path.GetFullPath(project.page),
             StringComparer.OrdinalIgnoreCase);
         foreach (string pagePath in RepositorySourceInventory.Files(Path.Combine(root, "docs"), "*.md"))
         {
+            if (selectedPages is not null && !selectedPages.Contains(Path.GetFullPath(pagePath)))
+                continue;
+            // Agent rules contain instructional fragments, not consumer API examples; their lossless coverage has its own gate.
+            if (Path.GetRelativePath(root, pagePath).Replace('\\', '/').StartsWith("docs/architecture/rules/", StringComparison.Ordinal))
+                continue;
             owners.TryGetValue(Path.GetFullPath(pagePath), out WikiProjectPage? project);
             bool excluded = project is not null && models.IsExcludedProduct(Path.GetDirectoryName(project.project)!);
             string[] lines = File.ReadAllLines(pagePath);
+            if (!lines.Any(static line => line.Trim() is "```csharp" or "```cs"))
+                continue;
             Compilation? owner = project is null ? null
                 : models.GetCompilation(Path.GetDirectoryName(project.project)!);
             CSharpCompilation? compiler = owner as CSharpCompilation;

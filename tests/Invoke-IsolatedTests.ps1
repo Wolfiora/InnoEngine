@@ -8,6 +8,7 @@ param(
     [string]$ArtifactsPath,
     [string]$Filter,
     [string]$TemporaryDirectory,
+    [Parameter(Mandatory)][string]$SdkSnapshot,
     [string]$Solution = 'InnoEngine.sln'
 )
 
@@ -69,12 +70,7 @@ if ($Filter) {
 if ($Target) {
     if (-not $ProductProperties) { throw 'A target test build requires explicit product properties.' }
     if (-not $ToolTarget) {
-        $entry = Join-Path $repositoryRoot 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj'
-        $selectedTool = @(& $Dotnet msbuild $entry -nologo -getProperty:InnoToolTarget)
-        if ($LASTEXITCODE -ne 0 -or $selectedTool.Count -ne 1 -or -not $selectedTool[0]) {
-            throw 'The SDK-selected development host did not provide a tool target.'
-        }
-        $ToolTarget = $selectedTool[0].Trim()
+        throw 'A planned target test requires its explicitly evaluated tool target.'
     }
     $productArguments += @("-p:InnoNativeTarget=$Target", "-p:InnoToolTarget=$ToolTarget",
         "-p:InnoProductBuildProperties=$ProductProperties")
@@ -98,25 +94,22 @@ $selectedProjects = if ([System.IO.Path]::GetExtension($solutionPath) -eq '.slnf
         if ($_ -match '^Project\("[^"]+"\) = "[^"]+", "([^"]+\.csproj)"') { $Matches[1] }
     }
 }
+$snapshots = @(Get-Content -LiteralPath $SdkSnapshot -Raw | ConvertFrom-Json)
 $projects = @($selectedProjects | ForEach-Object {
         $relativeProject = $_.Replace([char]92, [System.IO.Path]::DirectorySeparatorChar)
         $projectPath = [System.IO.Path]::GetFullPath($relativeProject, $repositoryRoot)
-        if (([xml](Get-Content -LiteralPath $projectPath -Raw)).Project.PropertyGroup.IsTestProject -contains 'true') {
+        $evaluated = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $projectPath })
+        if ($evaluated.Count -ne 1) { throw "The selected SDK graph does not uniquely declare this project: $projectPath" }
+        if ($evaluated[0].Properties.IsTestProject -eq 'true') {
             Get-Item -LiteralPath $projectPath
         }
 })
 
-$projectConfiguration = switch ($Configuration) {
-    'SourceDebug' { 'Debug' }
-    'SourceRelease' { 'Release' }
-    default { $Configuration }
-}
-
 foreach ($project in $projects) {
     try {
-        $targetPath = @(& $Dotnet msbuild $project.FullName -nologo -getProperty:TargetPath `
-            "-p:Configuration=$projectConfiguration" -m:1 -nr:false @productArguments)
-        if ($LASTEXITCODE -ne 0 -or $targetPath.Count -ne 1 -or -not (Test-Path -LiteralPath $targetPath[0])) {
+        $matches = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $project.FullName })
+        $targetPath = @($matches[0].Properties.TargetPath)
+        if ($targetPath.Count -ne 1 -or -not (Test-Path -LiteralPath $targetPath[0])) {
             Add-CheckResult 'Discovery' $project.FullName 'Blocked' -1 'The compiled test assembly is unavailable.'
             continue
         }
@@ -141,9 +134,13 @@ foreach ($project in $projects) {
         # A failed independent contract does not prevent the remaining isolated hosts from running.
         $caseFilter = "($isolatedFilter)&(FullyQualifiedName=$name)"
         try {
+            $reportName = 'isolated-' + [Guid]::NewGuid().ToString('N') + '.trx'
             & $Dotnet test $assembly --filter $caseFilter `
-                --blame-hang-timeout 10m --blame-hang-dump-type none --logger 'trx' --results-directory $resultsRoot @assemblyEnvironment
+                --blame-hang-timeout 10m --blame-hang-dump-type none --logger "trx;LogFileName=$reportName" --results-directory $resultsRoot @assemblyEnvironment
             $caseExit = $LASTEXITCODE
+            if ($caseExit -eq 0) {
+                & (Join-Path $PSScriptRoot 'ci/Test-IsolatedExecution.ps1') -Report (Join-Path $resultsRoot $reportName) -Contract $name
+            }
             Add-CheckResult 'Isolated' $name $(if ($caseExit -eq 0) { 'Passed' } else { 'Failed' }) $caseExit ''
         } catch {
             Add-CheckResult 'Isolated' $name 'Failed' -1 $_.Exception.Message

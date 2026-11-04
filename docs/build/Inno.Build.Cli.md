@@ -6,6 +6,8 @@
 
 统一构建应用库，接收明确命令并组合现有 Build、发行、工具链和创作服务。它由 `InnoEngine.Build` 调用，不是第三个 IDE 日常启动项目。
 
+`validate plan|run|full|evidence` 委托给 [Inno.Tooling.Validation](../tooling/Inno.Tooling.Validation.md)，统一范围选择与证据核验。该库是工具实现依赖，不向运行时增加入口。
+
 通用 Build 和运行时不得反向引用 CLI。平台、内容编译器、Native 组件与托管部署的注册属于标准发行组合；命令不维护第二套注册表。
 
 创作闭包显式包含 Animation 资产导入及其公开脚本契约。CLI 生成的 Runtime reference 与产品可用能力保持一致；不能只用含额外测试引用的程序集验证示例。生成入口继续读取项目自己的 scripting 清单，不增加中央类型白名单。
@@ -48,6 +50,8 @@ CLI 与平台 Editor 组合库显式启用共同的 `InnoExposeRuntimeClosure` S
 `clean --scope cache` 只退休明确登记的无引用 generation；`--dry-run` 输出同一份候选计划。默认成功构建按 64 GiB、20 GiB 空闲阈值和 5 秒完整操作预算评估回收。未知、重复、缺值以及不属于该命令的参数会被拒绝。
 
 Editor 配置独立于游戏发布配置。Support Pack 保持 Release 准备语义；Browser 的最终链接与 workload 由明确的 Browser 发布目标选择。
+
+`support-pack --archive <caller-owned.zip>` 在发布器验证 Pack 且持有读取 lease 时导出不可变内容，原子替换调用方拥有的归档文件。归档不包含活动 lease、目录登记或 current 选择索引；失败或取消不会安装半成品。CI 使用已验证的同一归档进行草稿交付，发布阶段不重新构建。
 
 项目命令也接受 `--engine-root <checkout>`，用于通过 SDK 的独立输出目录运行工具时明确指定 Native 工具的源码输入。该路径在启动工具或创建 Project 工作状态前校验；普通 checkout 内的开发入口可以自动定位。游戏使用独立输出目录时先通过 `support-pack --engine-root ...` 准备所需 Pack，再传入 `--support-packs`。
 

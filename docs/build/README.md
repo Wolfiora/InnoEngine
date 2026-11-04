@@ -38,9 +38,9 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 `Invoke-IsolatedTests.ps1` 同时执行普通套件、隔离用例发现和逐进程执行；`-Filter` 作用于三个阶段。真实 Native 测试使用明确的 `-Target` 与 `-ProductProperties`，不以中立 fixture 代替 ABI 验收。
 
-`Invoke-ManagedChecks.ps1` 从实际引用图选择不依赖 Native 生成及产品准备的工程。标记 `BuildGraph=Complete` 的仓库集成测试要求完整 `SourceDebug` 输出，在产品 CI 的完整套件中执行；独立托管阶段将其前置条件写入 `deferred-test-context.json`，其余架构 fixture 测试继续执行。引擎 target 与 .NET `RuntimeIdentifier` 分别传递，Editor 入口的直接引用与宿主产品引用共用同一目标上下文。
+现有 Build 入口的 `validate plan/run/full/evidence` 是统一验收入口，见 [验证计划](../tooling/Inno.Tooling.Validation.md)。计划从批量 SDK 图选择实际 owner 和传递消费者，将托管领域与原生产品前提分开；每个配置先构建并集，之后执行各套件。全仓源码检查、受影响编译元数据和 Wiki 检查具有独立证据，不由某个测试项目隐式重复全仓构建。引擎 target 与 .NET `RuntimeIdentifier` 分别传递，Editor 入口的直接引用与宿主产品引用共用同一目标上下文。
 
-需要验证全新托管输出或并行验收时，可对 `Invoke-ManagedChecks.ps1` 指定独立的 `-ArtifactsPath`；构建、普通测试、隔离发现和隔离执行共用该 SDK 输出 owner。
+构建输出使用稳定的 `validate --artifacts-path <owned-directory>`；运行日志使用独立的 `--output`，不因更换日志目录制造冷构建。构建、普通测试、隔离发现和隔离执行消费同一 SDK 图和输出 owner，并通过现有登记与 lease 协议保护。
 
 共同 props 在 SDK 默认输出路径建立前，为具有产品输入的工程选择独立 `ArtifactsProjectName`：身份覆盖 Native target、工具 target、产品 props 和 Native build fingerprint。中立工程与 Roslyn 工具保持中立，SDK 自身的 configuration、TFM 和 RID pivots 不变；还原和编译消费同一 owner。调用者显式设置的 SDK 输出属性仍由调用者负责，构建工具必须读取求值后的实际路径，不能拼接 `ArtifactsPath/bin/<project>`。这避免两个正式开发入口在同一个 SDK 构建图中争写共享工程的 DLL；不靠串行构建或清空真实 RID 规避。
 
@@ -52,12 +52,12 @@ Wiki 脚本 fixture 从测试工程实际求值的 framework `ReferencePath` 编
 
 Task fixture 通过官方 binlog replay 的 `Csc` 事件核对实际编译次数，并验证每次根构建的 owner、私有加载位置和完整请求身份复用。RID 命名 fixture 显式请求 untrimmed 图，工具包 scope 由独立用例验证 SDK 推导的能力，避免让是否安装 Wasm workload 改变测试输入。Browser 绑定 fixture 使用正式 `LibraryImport` Profile，并验证 `FunctionTable` 被 SDK 拒绝后 last-good 产物仍可校验和复用。
 
-`Invoke-BuildCacheChecks.ps1` 准备一次 Editor 后连续执行十次热构建，要求 Native 进程数与 binding generation 数均为零，并核对 current 内容及时间戳稳定。
+`Invoke-BuildCacheChecks.ps1` 消费统一计划已经准备的 Editor，连续执行十次热构建，要求 Native 进程数与 binding generation 数均为零，并核对 current 内容及时间戳稳定。
 
-`Invoke-WikiChecks.ps1` 在已构建的 Build entry 和所选 Player 引用闭包上运行，先通过正式脚本工作流更新 IDE 投影，再从该投影读取准确的裁剪 reference。它检查 Wiki 链接、项目覆盖、源码签名及可编译示例，不按缓存目录时间猜测 reference。
+统一计划中的 Wiki 检查消费已构建的实际引用闭包；脚本示例先通过正式脚本工作流更新 IDE 投影，再从该投影读取准确的裁剪 reference。它检查 Wiki 链接、项目覆盖、源码签名及可编译示例，不按缓存目录时间猜测 reference。
 
 ```powershell
-./tests/Invoke-WikiChecks.ps1 -ProjectDirectory /path/to/Project -Target windows-x64
+dotnet run --project entry/InnoEngine.Build -- validate run --base origin/master
 ```
 
 `verify-native` 要求目标注册 Editor test host，并在生成前解析对应 SDK；没有该 runner 的目标明确拒绝。Browser 的正式生成和产品验收通过其 `bindings --product player`、Support Pack 和游戏发布流程执行。

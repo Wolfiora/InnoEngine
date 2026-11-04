@@ -52,6 +52,7 @@
 - [Inno.Editor.Inspection.Tests](Inno.Editor.Inspection.Tests.md)
 - [Inno.Editor.Interactions.Tests](Inno.Editor.Interactions.Tests.md)
 - [Inno.Editor.PlayMode.Tests](Inno.Editor.PlayMode.Tests.md)
+- [Inno.Editor.Presentation.Tests](Inno.Editor.Presentation.Tests.md)
 - [Inno.Extensibility.Modules.Tests](Inno.Extensibility.Modules.Tests.md)
 - [Inno.Extensibility.Reload.Tests](Inno.Extensibility.Reload.Tests.md)
 - [Inno.Extensibility.Types.Tests](Inno.Extensibility.Types.Tests.md)
@@ -88,7 +89,7 @@ Native 测试部署在成功 Build 后执行；CI 的目标 Build 明确设置 I
 
 ## .NET 10 托管检查
 
-四仓库使用 `global.json` 的 SDK 10.0.402（`latestPatch`，禁止预览）和 C# 14，保留 xUnit/VSTest。执行 `./tests/Invoke-ManagedChecks.ps1` 会按 MSBuild 实际求值的引用图选出不需要绑定生成或原生产品准备的工程，构建后运行普通及进程隔离测试。`-InventoryOnly` 只生成清单。日志、SDK 信息、TRX 和明确依赖链保存在 `artifacts/acceptance/managed/`。
+四仓库使用 `global.json` 的 SDK 10.0.402（`latestPatch`，禁止预览）和 C# 14，保留 xUnit/VSTest。Build 入口的 `validate plan` 根据批量 MSBuild 图生成 owner、依赖和排除原因，`validate run` 执行构建并集与普通及进程隔离测试，`validate full` 显式执行完整验收。日志、计划、TRX 和证据保存在本次 `--output`；构建产物由稳定的 `--artifacts-path` owner 复用，详见 [统一验证](../tooling/Inno.Tooling.Validation.md)。
 
 `Invoke-IsolatedTests.ps1 -Filter` 将调用者明确选择的同一筛选同时用于普通套件、隔离发现及隔离执行。正式完整验收包含 BGCS，用例分类不作为默认排除条件。独立托管检查只覆盖其实际选中的工程；完整原生产品准备和测试使用正常生产入口，未选中的消费工程不能计为通过。
 

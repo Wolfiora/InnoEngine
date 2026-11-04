@@ -8,6 +8,8 @@
 
 `NativeBindingCompilationTests` 经公开的 Load、ResolveRoot、VerifyInputs 契约验证文件身份与映射。fixture 只创建当前描述格式，每例使用独立临时目录，并在 Dispose 中释放文件。
 
+`ManagedProjectGraphCaptureTests` 检查真实 SDK 的批量属性、引用与编译符号；`ProductNativePreparationTests` 检查冻结请求、独立读取保护、内容失效及等待取消。`BuildCacheInventoryProgressTests` 覆盖只读 dry-run、单个 writer 使其分片失效，以及保护关系不完整时不得退休任何分片。`NativeArtifactImportTests` 将纯 payload/manifest 导入另一个 fixture checkout，验证发布器重新登记 owner，并拒绝同长度篡改、漏文件、额外成员和错误身份；真实 producer 的首次失败不会被缓存隐藏。
+
 ## 公开测试入口
 
 | 方法 | 场景 |

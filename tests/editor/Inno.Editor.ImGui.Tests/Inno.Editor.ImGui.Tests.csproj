@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>native</InnoValidationLayer>
     <OutputType>Exe</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>
     <StartupObject>Inno.Editor.ImGui.Tests.NativeWindowTestHost</StartupObject>

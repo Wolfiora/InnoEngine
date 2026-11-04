@@ -1,6 +1,5 @@
 using System;
 using Inno.Adapter.Platform;
-using Inno.Adapter.Platform.Sdl3;
 using Inno.Platform;
 using Xunit;
 
@@ -20,23 +19,4 @@ public sealed class NativeWindowSurfaceTests
         Assert.Throws<ArgumentException>(() => new PlatformNativeHandleId("tests. surface"));
     }
 
-    [Fact]
-    public void DisposedWindowRejectsBorrowingItsNativeSurface()
-    {
-        if (!OperatingSystem.IsWindows())
-            return;
-        using var application = new Sdl3PlatformApplication(new Inno.Integration.WindowsX64.Sdl3.WindowsX64Sdl3HostIntegration());
-        using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
-        {
-            title = "Native surface lifetime test",
-            width = 32,
-            height = 32,
-            visible = false
-        });
-        INativeWindowSurface surface = window;
-        Assert.Equal(PlatformNativeHandleId.win32, surface.nativeHandles.handleKind);
-        Assert.NotEqual(IntPtr.Zero, surface.nativeHandles.windowHandle);
-        window.Dispose();
-        Assert.Throws<ObjectDisposedException>(() => surface.nativeHandles);
-    }
 }

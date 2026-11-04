@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Build.Framework;
@@ -8,6 +9,7 @@ using Inno.Build;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -89,7 +91,17 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
                 .ResolveAsync(context, execution.host, TargetId, cancellation.Token).AsTask().GetAwaiter().GetResult();
             context = context.WithToolchain(toolchain);
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
-            using var products = contribution.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
+            IBuildEngine4 engine = BuildEngine as IBuildEngine4
+                ?? throw new InvalidOperationException("Native preparation requires MSBuild build-lifetime ownership.");
+            string requestIdentity = ProductNativePreparation.FreezeAsync(context, plan, cancellation.Token).GetAwaiter().GetResult();
+            string cacheKey = "Inno.Build.NativePreparation/" + requestIdentity;
+            using FileLease preparation = AcquirePreparation(engine,
+                Path.Combine(context.engineRoot, "artifacts", "build-tools", "tasks", "native", requestIdentity + ".lock"), cancellation.Token);
+            string[][]? captured = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[][];
+            ProductNativeBuildResult? prepared = captured is null ? null
+                : ProductNativePreparation.TryAcquireAsync(context, plan, captured, requestIdentity, cancellation.Token).GetAwaiter().GetResult();
+            bool reused = prepared is not null;
+            using var products = prepared ?? contribution.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
             var generations = products.Select((
                 product,
@@ -109,11 +121,21 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             ProductNativeDeployment.InstallAsync(products, plan, OutputDirectory, cancellation.Token).GetAwaiter().GetResult();
             if (BindingSelectionOutputPath.Length != 0)
                 NativeBindingGenerationDescriptor.WriteSelection(BindingSelectionOutputPath, generations, linkage);
+            string[][]? completed = reused ? null : ProductNativePreparation.Capture(context, plan, products, requestIdentity);
+            // Release the actual consumer before registering success; failed disposal must not cache a successful preparation.
+            products.Dispose();
+            cancellation.Token.ThrowIfCancellationRequested();
+            if (completed is not null)
+            {
+                engine.UnregisterTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build);
+                engine.RegisterTaskObject(cacheKey, completed, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
+            }
             NativeBuildStatistics statistics = context.statistics;
             Log.LogMessage(MessageImportance.High,
                 $"INNO-NATIVE-PREPARE elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} "
                 + $"hashedFiles={statistics.hashedFiles} hashedBytes={statistics.hashedBytes} "
                 + $"processes={statistics.nativeProcesses} products={products.Count} "
+                + $"reusedPreparation={(reused ? 1 : 0)} "
                 + $"bindingBatches={statistics.bindingBatches} bindingGenerations={statistics.bindingGenerations} "
                 + $"outputFiles={statistics.outputFiles} outputBytes={statistics.outputBytes} "
                 + $"materializedBytes={statistics.materializedBytes} managedProcesses={statistics.managedProcesses}");
@@ -153,5 +175,24 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             || generation.bindingsPath != selected.bindingsPath || generation.nativeDirectory != selected.nativeDirectory))
             throw new InvalidOperationException("Native products sharing a binding owner must select the same complete generation.");
         return selected;
+    }
+
+    private static FileLease AcquirePreparation(
+        IBuildEngine4 engine,
+        string path,
+        CancellationToken cancellation
+    ) {
+        System.Threading.Tasks.Task<FileLease> pending = FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellation).AsTask();
+        if (pending.IsCompleted)
+            return pending.GetAwaiter().GetResult();
+        engine.Yield();
+        try
+        {
+            return pending.GetAwaiter().GetResult();
+        }
+        finally
+        {
+            engine.Reacquire();
+        }
     }
 }

@@ -1,0 +1,15 @@
+# Inno.Tooling.Validation.Tests
+
+[Tooling 索引](README.md) · [验证入口](Inno.Tooling.Validation.md) · [Wiki 首页](../README.md)
+
+通过公开 `ValidationCommand.ExecuteAsync` 驱动真实临时 Git 仓库和选定 SDK，不使用 IVT、私有反射或生产后门。fixture 拥有临时源码、输出和 Git 元数据，排空子进程后清理明确的临时目录；测试程序集不进入产品。
+
+`ValidationPlanningTests` 覆盖新增/移动/删除、imports、动态发现输入、纯文档范围、未知 owner、领域测试传递 native 依赖、空行为测试、缺失与旧输入证据、基础分支推进后的实际 merge base，以及从 development product 声明选择原生上下文而保留独立领域 owner。
+
+另外覆盖未初始化 submodule 的明确身份、script-only Wiki 的真实产品准备、输出竞争和取消、拒绝接管未知目录，以及深层计划中的冷输入、十轮热构建和 Release 产品前提。CI PowerShell 契约分别检查结果汇总、日程、发布来源、压缩包边界和产物字节；这些负例不能替代 Windows/macOS 上的真实产品执行。
+
+需要 Git 与 .NET 10 SDK。环境不可用应失败。测试类的 public 方法仅是 xUnit 发现入口，没有产品 public/protected 契约。
+
+```powershell
+dotnet test tests/tooling/Inno.Tooling.Validation.Tests/Inno.Tooling.Validation.Tests.csproj --configuration Debug
+```

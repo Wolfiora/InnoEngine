@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>integration</InnoValidationLayer>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoTestNativeProduct>editor</InnoTestNativeProduct>
     <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
@@ -17,6 +18,7 @@
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <InnoValidationInput Include="../../../entry/**/*.csproj;../../../platforms/**/*.props;../../../platforms/**/*.targets;../../../platforms/**/build/**/*.cs;../../../build/**/*.props;../../../build/**/*.targets;../../../Directory.Solution.props;../../../Directory.Solution.targets" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows.Host/Inno.Build.Windows.Host.csproj" PrivateAssets="compile" />

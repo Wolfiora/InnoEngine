@@ -1,7 +1,6 @@
 using System;
 using Inno.Build.Toolchains;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -24,30 +23,51 @@ internal static class MSBuildProjectGraphValidator
         string? artifactsPath,
         string? outputPath,
         ICollection<string> failures,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        string? capturedGraph = null,
+        IReadOnlySet<string>? selectedOwners = null
     ) {
         if (!Path.IsPathFullyQualified(dotnetHost) || !File.Exists(dotnetHost))
             throw new ArgumentException("Architecture SDK evaluation requires an existing absolute dotnet executable.", nameof(dotnetHost));
         string[] projects = new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" }
             .SelectMany(owner => RepositorySourceInventory.Files(Path.Combine(root, owner), "*.csproj"))
+            .Where(project => selectedOwners is null || selectedOwners.Contains(Relative(root, project)))
             .Order(StringComparer.Ordinal).ToArray();
         var evaluated = new List<EvaluatedProject>();
-        foreach (string project in projects)
+        var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Configuration"] = configuration,
+            ["DesignTimeBuild"] = "true",
+            ["BuildProjectReferences"] = "false",
+            ["InnoProductRestore"] = "false"
+        };
+        if (artifactsPath is not null)
+            properties.Add("ArtifactsPath", artifactsPath);
+        string graph = capturedGraph ?? await ManagedProjectGraphCapture.CaptureAsync(root, dotnetHost, projects, properties, cancellationToken).ConfigureAwait(false);
+        using JsonDocument snapshots = JsonDocument.Parse(graph);
+        foreach (JsonElement snapshot in snapshots.RootElement.EnumerateArray())
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string relative = Relative(root, project);
-            try
+            EvaluatedProject project = ReadSnapshot(root, snapshot);
+            if (selectedOwners is not null && !selectedOwners.Contains(project.path))
+                continue;
+            ValidateProject(root, project, failures);
+            if (snapshot.TryGetProperty("Variants", out JsonElement variants))
             {
-                EvaluatedProject snapshot = await EvaluateAsync(root, project, configuration,
-                    dotnetHost, artifactsPath, cancellationToken).ConfigureAwait(false);
-                evaluated.Add(snapshot);
-                ValidateProject(root, snapshot, failures);
+                EvaluatedProject[] effective = variants.EnumerateArray().Select(variant => ReadSnapshot(root, variant)).ToArray();
+                foreach (EvaluatedProject variant in effective)
+                    ValidateProject(root, variant, failures);
+                project = project with
+                {
+                    references = effective.SelectMany(static variant => variant.references).Concat(project.references).Distinct().ToArray(),
+                    native = project.native || effective.Any(static variant => variant.native)
+                };
             }
-            catch (Exception failure) when (failure is InvalidDataException or JsonException)
-            {
-                failures.Add($"{relative}: effective MSBuild evaluation failed: {failure.Message}");
-            }
+            evaluated.Add(project);
         }
+        if (!projects.Select(project => Relative(root, project)).Order(StringComparer.Ordinal)
+                .SequenceEqual(evaluated.Select(static project => project.path).Order(StringComparer.Ordinal)))
+            throw new InvalidDataException("The SDK snapshot does not cover the exact current project inventory.");
         ValidateGraph(evaluated, failures);
         if (outputPath is not null)
         {
@@ -61,66 +81,13 @@ internal static class MSBuildProjectGraphValidator
             static project => project.targetPath, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static async Task<EvaluatedProject> EvaluateAsync(
+    private static EvaluatedProject ReadSnapshot(
         string root,
-        string project,
-        string configuration,
-        string dotnetHost,
-        string? artifactsPath,
-        CancellationToken cancellationToken
+        JsonElement snapshot
     ) {
-        var start = new ProcessStartInfo(dotnetHost)
-        {
-            WorkingDirectory = root,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-        foreach ((string name, string? value) in DotNetSdkEnvironment.Create(dotnetHost))
-        {
-            if (value is null)
-                start.Environment.Remove(name);
-            else
-                start.Environment[name] = value;
-        }
-        foreach (string argument in new[]
-        {
-            "msbuild", project, "-nologo", "-getItem:ProjectReference,Compile,Using",
-            "-getProperty:AssemblyName,OutputType,InnoProductId,InnoProductTarget,InnoNativeTarget,ImplicitUsings,TargetPath",
-            "-p:DesignTimeBuild=true", "-p:BuildProjectReferences=false", "-p:InnoProductRestore=false",
-            "-p:Configuration=" + configuration
-        })
-            start.ArgumentList.Add(argument);
-        if (artifactsPath is not null)
-            start.ArgumentList.Add("-p:ArtifactsPath=" + artifactsPath);
-        using var process = new Process { StartInfo = start };
-        if (!process.Start())
-            throw new InvalidDataException("The selected SDK did not start.");
-        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        bounded.CancelAfter(TimeSpan.FromSeconds(60));
-        Task<string> standardOutput = process.StandardOutput.ReadToEndAsync();
-        Task<string> standardError = process.StandardError.ReadToEndAsync();
-        try
-        {
-            await process.WaitForExitAsync(bounded.Token).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            if (!process.HasExited)
-                process.Kill(entireProcessTree: true);
-            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
-            await Task.WhenAll(standardOutput, standardError).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
-            throw new InvalidDataException("SDK project evaluation exceeded its one-minute process budget.");
-        }
-        string output = await standardOutput.ConfigureAwait(false);
-        string errors = await standardError.ConfigureAwait(false);
-        if (process.ExitCode != 0)
-            throw new InvalidDataException($"SDK exit code {process.ExitCode}: {errors}{output}");
-        using JsonDocument document = JsonDocument.Parse(output);
-        JsonElement properties = document.RootElement.GetProperty("Properties");
-        JsonElement items = document.RootElement.GetProperty("Items");
+        string project = snapshot.GetProperty("Path").GetString()!;
+        JsonElement properties = snapshot.GetProperty("Properties");
+        JsonElement items = snapshot.GetProperty("Items");
         EvaluatedReference[] references = items.GetProperty("ProjectReference").EnumerateArray()
             .Select(item => new EvaluatedReference(Relative(root, item.GetProperty("FullPath").GetString()!),
                 !string.Equals(Value(item, "ReferenceOutputAssembly"), "false", StringComparison.OrdinalIgnoreCase),
@@ -131,7 +98,10 @@ internal static class MSBuildProjectGraphValidator
         return new(Relative(root, project), Value(properties, "AssemblyName"), Value(properties, "OutputType"),
             Value(properties, "InnoProductId"), Value(properties, "InnoProductTarget"),
             Value(properties, "InnoNativeTarget"), Value(properties, "ImplicitUsings"),
-            items.GetProperty("Using").GetArrayLength(), references, sources, Value(properties, "TargetPath"));
+            items.GetProperty("Using").GetArrayLength(), references, sources, Value(properties, "TargetPath"),
+            Value(properties, "InnoValidationLayer"), Value(properties, "IsTestProject").Equals("true", StringComparison.OrdinalIgnoreCase),
+            Value(properties, "InnoTestNativeProduct").Length != 0 || Value(properties, "InnoProductId").Length != 0
+                || Value(properties, "BindGenGeneratedBindings").Equals("true", StringComparison.OrdinalIgnoreCase));
     }
 
     private static void ValidateProject(
@@ -141,6 +111,8 @@ internal static class MSBuildProjectGraphValidator
     ) {
         bool test = project.path.StartsWith("tests/", StringComparison.Ordinal)
             || project.path.Contains("/tests/", StringComparison.Ordinal);
+        if (project.isTest && project.layer is not ("domain" or "contract" or "integration" or "native" or "product" or "performance"))
+            failures.Add($"{project.path}: test execution layer must declare its actual execution requirements.");
         if (project.implicitUsings.Equals("enable", StringComparison.OrdinalIgnoreCase)
             || project.implicitUsings.Equals("true", StringComparison.OrdinalIgnoreCase)
             || project.usingItems != 0)
@@ -205,6 +177,24 @@ internal static class MSBuildProjectGraphValidator
         }
         foreach (EvaluatedProject project in projects)
             Visit(project);
+        foreach (EvaluatedProject domain in projects.Where(static project => project.isTest && project.layer == "domain"))
+        {
+            var pending = new Stack<EvaluatedProject>();
+            visited.Clear();
+            pending.Push(domain);
+            while (pending.TryPop(out EvaluatedProject? current))
+            {
+                if (!visited.Add(current.path))
+                    continue;
+                if (current.native)
+                    failures.Add($"{domain.path}: domain test build closure requires native preparation through {current.path}.");
+                foreach (EvaluatedReference reference in current.references)
+                    if (graph.TryGetValue(reference.path, out EvaluatedProject? dependency))
+                        pending.Push(dependency);
+                    else
+                        failures.Add($"{domain.path}: domain test build dependency has no evaluated owner: {reference.path}.");
+            }
+        }
         foreach (EvaluatedProject player in projects.Where(static project => project.assemblyName.StartsWith("Inno.Player.", StringComparison.Ordinal)))
         {
             var pending = new Stack<EvaluatedProject>();
@@ -244,7 +234,10 @@ internal static class MSBuildProjectGraphValidator
         int usingItems,
         IReadOnlyList<EvaluatedReference> references,
         IReadOnlyList<EvaluatedSource> sources,
-        string targetPath
+        string targetPath,
+        string layer,
+        bool isTest,
+        bool native
     );
 
     private sealed record EvaluatedReference(

@@ -1,5 +1,7 @@
 # UI API
 
+原生实现验收：[Inno.Adapter.UI.RmlUi.Tests](Inno.Adapter.UI.RmlUi.Tests.md)。
+
 [Wiki 首页](../README.md) · [Text](../text/README.md) · [Rendering](../rendering/README.md)
 
 UI 是内建的 retained-mode 文档与交互基础服务；它接收显式语言的文档、输入、字体和命名纹理，输出后端中立的帧几何及事件，不持有图形设备。调用方通过 Rendering 的资源与命令契约上传增量几何，并在所属渲染模型中决定混合、排序和输出目标。

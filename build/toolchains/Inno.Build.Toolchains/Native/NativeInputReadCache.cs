@@ -40,6 +40,10 @@ internal sealed class NativeInputReadCache
         => new(m_readingPaths.Select(entry => new NativeInputSnapshot.Entry(
             NativeBuildInput.FromPath(engineRoot, entry.Key).logicalPath, entry.Key, m_hashes[entry.Value])));
 
+    internal string[][] CaptureRootMembership()
+        => m_roots.OrderBy(static pair => pair.Key, pathComparer)
+            .Select(pair => new[] { pair.Key }.Concat(pair.Value.Select(static entry => entry.relative).Order(StringComparer.Ordinal)).ToArray()).ToArray();
+
     internal IReadOnlyList<(string relative, string physical)> Enumerate(
         string path,
         CancellationToken cancellationToken

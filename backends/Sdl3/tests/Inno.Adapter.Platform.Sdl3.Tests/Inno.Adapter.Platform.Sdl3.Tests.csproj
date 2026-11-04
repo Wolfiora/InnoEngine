@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>native</InnoValidationLayer>
     <OutputType>Exe</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>
     <StartupObject>Inno.Adapter.Platform.Sdl3.Tests.NativeWindowTestHost</StartupObject>

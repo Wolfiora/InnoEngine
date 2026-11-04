@@ -6,3 +6,4 @@
 - [最终平台、Reload 与 NuGet 收口](FINAL_PLATFORM_RELOAD_NUGET_PLAN.md)
 - [构建成本、工具宿主与磁盘收口](BUILD_COST_TOOL_HOST_DISK_CLOSURE_PLAN.md)
 - [五项局部边界整改](LOCAL_BOUNDARY_REFINEMENT_PLAN.md)
+- [AI 工作流与 CI/CD 实施记录](AI_PIPELINE_IMPLEMENTATION.md)

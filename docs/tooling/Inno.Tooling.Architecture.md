@@ -26,6 +26,16 @@ Editor 源码还检查同类型重复别名、重复 XML summary，以及循环�
 
 ## 检查范围
 
+`--source-only` 只执行全仓廉价源码/所有权规则，不声称编译元数据已经验证。`--metadata-only` 与重复的 `--api-project <repo-relative.csproj>` 核对所选已构建公开边界；默认 `verify` 仍保留完整行为。统一计划将两类证据分别登记，并要求元数据阶段的编译前提通过。
+
+XML 存在性、格式和参数说明在源码阶段检查；`inheritdoc` 的真实继承契约、内容层调用和平台字段的类型语义在所选 owner 的编译阶段使用 SDK 引用验证。干净 checkout 的源码门禁不借用旧 bin；语义规则仍是必须通过的独立证据。
+
+SDK 图现在复用 `ManagedProjectGraphCapture` 的单进程批量求值。`--sdk-snapshot <file>` 供持有当前输入身份的统一计划消费同一 snapshot；校验器核对当前完整项目集合，或明确选定的 API owner 集合，调用方负责保证对应配置与内容身份。此选项不能用于把旧图当作当前输入认证。
+
+`--wiki --wiki-only` 单独核对文档，避免重复执行源码和已登记的编译 API 门禁。重复的 `--wiki-page <docs-relative.md>` 限定语义签名与示例检查；项目页唯一性、分类索引、内容边界和链接仍全仓检查。页面必须真实存在且属于 docs。编译引用和隐式符号按所选上下文在同一个 SDK 进程批量解析，缺失输出不会退回不完整的参考程序集。规范目录由完整规则覆盖检查负责，其中的说明性代码片段不作为消费者 Wiki 示例执行。
+
+实际 SDK 依赖图同时检查测试层次声明；领域测试的传递构建依赖不得包含绑定生成或原生产品准备，即使相关引用不是运行时引用也不能绕过这一限制。
+
 SDK 工程图检查读取实际程序集身份、产品目标、ProjectReference、Compile 和 using 项，验证依赖方向、源码 owner 与可执行入口。`--project-graph` 的非公开诊断模型只描述真实求值结果，不维护 NuGet 解析规则；[依赖还原](../build/DEPENDENCY_SUBMISSION.md)直接使用标准 SDK 流程。
 
 `--wiki` 同时检查项目页、公开符号、链接、内容边界与独立示例。`--wiki-api inventory.json` 和 `--wiki-examples examples.json` 输出核查清单。

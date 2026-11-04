@@ -105,7 +105,7 @@ Presentation 的准备、绘制与发布属于同一次 owner 操作；期间拒
 
 变更必须同步源码、调用方、项目引用、公开 XML、Wiki 和适用测试。使用真实公开契约与可替换边界，不使用 IVT、私有反射或测试后门。
 
-`tests/Invoke-EditorUiAcceptance.ps1` 编排既有 xUnit/VSTest，按 Contracts、Workflows、Visual、Lifecycle、Performance、Products 分组。每次保留独立 SDK、源码身份、TRX 和结果摘要；空发现不能视为成功。Products 必须显式提供平台产品的 `-GraphicsApis` 和启动日志期望 `-BackendPattern`；共享入口不内嵌 backend 名称作为默认断言。`-ArtifactsPath` 与 `-ResultsDirectory` 指定输出 owner；需要把大量临时文件放到其他卷时，使用 `-TemporaryDirectory` 明确指定较短的临时根。默认保留操作系统的 TEMP/TMP，不把它们隐式嵌套到深层结果目录。该参数同样传递给隔离测试入口，普通测试与独立进程使用同一临时 owner。
+Build 入口的统一 `validate` 计划编排既有 xUnit/VSTest 和真实产品旅程，分别记录领域、公共契约、集成、Native、产品与性能证据。契约、工作流、视觉和生命周期断言随实际依赖选择，不按多个 profile 重复构建同一工程。每次保留 SDK、源码身份、TRX 和结果摘要；空发现或隔离进程零执行不能视为成功。产品验收使用实际平台声明的 renderer 与启动期望；共享入口不内嵌 backend 名称作为默认断言。稳定的 `--artifacts-path` 与独立 `--output` 分别指定构建 owner 和运行日志。隔离入口的 `-TemporaryDirectory` 可显式指定较短临时根；默认保留操作系统 TEMP/TMP，不隐式嵌套到深层结果目录，普通与隔离进程使用同一临时 owner。
 
 Settings 的一次 Apply 复用单一 History transaction，所有 dirty owner 成功后才接受新基线。失败先尝试回滚并保留草稿；可恢复的文件/校验错误在窗口内反馈并记录完整诊断。History 完整性丢失后禁止继续 Apply，不能把错误吞掉后重试。打开的设置窗口借用当前 generation 的编辑对象，使用现有 admission guard 延迟 reload，关闭后恢复许可；不为此建立另一套状态恢复或 History 系统。
 
@@ -128,8 +128,8 @@ Settings 的一次 Apply 复用单一 History transaction，所有 dirty owner �
 
 ### 按职责选择 CI 验收
 
-Engine CI 根据完整 Git 变更集合选择检查，不能按 issue 编号或为了节省时间临时跳过失败项。仅涉及 Editor 创作层（包括脚本 reload owner）及对应测试、文档时使用 Editor 范围：Debug Editor、真实原生 smoke、Editor 契约与工作流、架构和 Wiki 检查。Release、NativeAOT 还原、十次热构建、其他领域完整测试及 Player Support Pack 留给完整范围。SDK、工程图、build、platform、backend、共享 Runtime 或未知 owner 的变化保守选择完整范围。手动工作流仍执行完整范围。
+Engine CI 根据完整 Git 变更集合及实际 SDK 依赖选择检查，不能按 issue 编号或为了节省时间临时跳过失败项。Editor 领域、呈现、工作流与生命周期按执行前提隔离；所选产品保留真实原生 smoke 和产品旅程。Release、NativeAOT 还原、Player Support Pack 与完整功能矩阵属于显式完整验收；build、native、reload 等相关变更提前选择相应深层检查，周验收增加冷构建、十轮热缓存和长期运行。未知 owner 或无法推导的共同输入必须产生可见诊断并保守扩大范围，手动工作流支持完整验收。
 
-脚本 `tests/ci/Select-ValidationScope.ps1` 只编排验收，不改变生产构建或缓存校验。移动文件同时核对旧 owner 和新 owner；选择理由与省略项写入 GitHub job summary。Editor 范围不等于完整产品矩阵通过；完整源码和 Player contract 编译仍服务于当前架构/Wiki 的真实引用验证，不执行 Player 导出或 Support Pack 生产。
+`Inno.Tooling.Validation` 是唯一计划 owner，不改变生产构建的完整性要求。移动文件同时覆盖旧、新 owner，PR 使用实际合并候选与 merge base，本地包含 staged、unstaged、untracked；选择理由与排除项写入计划。有限范围通过不等于完整产品或设备矩阵通过；必要环境不可用、缺少结果或必要测试为空必须失败或阻塞。
 
-UI 范围的生产源码检查由当前 Solution 生成 169 个生产工程的 `.slnf`，引用闭包仍由 MSBuild 求值，不编译全部无关测试工程。只有通过完整 Git 差异证明为标准 SDK 工程中、相同无条件引用边的 `PrivateAssets=compile` 收紧时，才允许保留 Editor 范围；新增引用、包、TFM、SDK、条件或构建目标变化仍走完整范围。PR 使用 merge base，push 使用 before/head，避免把目标分支的无关改动混进 PR 检查。
+廉价架构规则保持全仓执行；编译元数据和 Wiki 示例按真实依赖准备，批量图由架构、测试和文档共同消费。项目引用、imports、源码、资源和生成输入变化均进入影响分析，SDK、TFM 与共同构建机制不能按文本相似度判为无影响。日志目录、报告、commit/push 和会话恢复不是重复验收的依据；仅输入、工具、环境与产物一致的确定性证据可以复用。

@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>domain</InnoValidationLayer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,8 +15,6 @@
     <ProjectReference Include="../../../src/services/ui/Inno.UI.Runtime/Inno.UI.Runtime.csproj" />
     <ProjectReference Include="../../../src/services/text/Inno.Text.Assets/Inno.Text.Assets.csproj" />
     <ProjectReference Include="../../../src/services/input/Inno.Input/Inno.Input.csproj" />
-    <ProjectReference Include="../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi/Inno.Adapter.UI.RmlUi.csproj" />
-    <ProjectReference Include="../../../backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/Inno.Adapter.UI.RmlUi.Authoring.csproj" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj" />
     <ProjectReference Include="../../../src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj" />
@@ -29,8 +28,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="../../../extern/RmlUi/Samples/assets/LatoLatin-Regular.ttf" Link="TestData\LatoLatin-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="../../../extern/RmlUi/Samples/assets/LatoLatin-Bold.ttf" Link="TestData\LatoLatin-Bold.ttf" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

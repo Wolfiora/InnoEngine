@@ -6,5 +6,7 @@
 | --- | --- |
 | [Inno.Tooling.Architecture](Inno.Tooling.Architecture.md) | 扫描源码、项目图、XML、Player closure、Native 泄漏和禁止实现 |
 | [Inno.Tooling.Architecture.Tests](Inno.Tooling.Architecture.Tests.md) | 真实 CLI 源码与编译符号正反例矩阵，不使用 internal 测试入口 |
+| [Inno.Tooling.Validation](Inno.Tooling.Validation.md) | SDK 图、影响计划、统一执行与证据核验 |
+| [Inno.Tooling.Validation.Tests](Inno.Tooling.Validation.Tests.md) | Git 变化、动态输入、依赖隔离与错误证据拒绝 |
 
 该工具属于本地构建与 CI gate，不是 runtime dependency。

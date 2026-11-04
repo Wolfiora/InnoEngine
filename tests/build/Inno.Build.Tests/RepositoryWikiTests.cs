@@ -1,13 +1,9 @@
-using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using System.Threading;
-using System.Threading.Tasks;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
@@ -84,61 +80,6 @@ public sealed class RepositoryWikiTests
         finally
         {
             Directory.Delete(project, recursive: true);
-        }
-    }
-
-    [Fact]
-    [Trait("ExternalDependency", "NativeProduct")]
-    public async Task CurrentWikiCompilesWithTheCurrentLogicalScriptContracts()
-    {
-        string repository = TestRepository.GetRoot(typeof(RepositoryWikiTests).Assembly);
-        string? artifacts = TestRepository.GetArtifactsPath(typeof(RepositoryWikiTests).Assembly);
-        string owner = Path.Combine(artifacts ?? Path.Combine(repository, "artifacts"), "acceptance", "wiki-gate", Guid.NewGuid().ToString("N"));
-        string project = Path.Combine(owner, "Project");
-        Directory.CreateDirectory(project);
-        try
-        {
-            GenerateReferences(project, typeof(RepositoryWikiTests).Assembly,
-                typeof(EditorApplication).Assembly, typeof(BuildApplication).Assembly);
-            string references = Path.Combine(project, "Library", "ScriptApi");
-            string runtime = Directory.EnumerateFiles(references, "Inno.ScriptApi.Runtime.dll", SearchOption.AllDirectories).Single();
-            string editor = Directory.EnumerateFiles(references, "Inno.ScriptApi.Editor.dll", SearchOption.AllDirectories).Single();
-            string target = OperatingSystem.IsWindows() ? "windows-x64" : "macos-arm64";
-            string configuration = typeof(RepositoryWikiTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
-            TextWriter previousError = Console.Error;
-            using var errors = new StringWriter();
-            int result;
-            string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-            var arguments = new List<string>
-            {
-                "verify", repository, "--configuration", configuration, "--wiki", "--wiki-target", target,
-                "--dotnet", dotnet,
-                "--wiki-api", Path.Combine(owner, "api.json"),
-                "--wiki-examples", Path.Combine(owner, "examples.json"),
-                "--wiki-runtime-reference", runtime, "--wiki-editor-reference", editor
-            };
-            if (artifacts is not null)
-                arguments.AddRange(["--artifacts-path", artifacts]);
-            try
-            {
-                Console.SetError(errors);
-                result = await BuildApplication.Run(
-                    arguments.ToArray(),
-                    CancellationToken.None);
-            }
-            finally
-            {
-                Console.SetError(previousError);
-                File.WriteAllText(Path.Combine(owner, "validation-errors.txt"), errors.ToString());
-            }
-            Assert.True(result == 0, $"Current Wiki validation failed; inventories are retained at '{owner}'.\n{errors}");
-        }
-        finally
-        {
-            // Only this test's empty project and generated references are disposable.
-            // Keep the inventories for CI and local diagnosis.
-            if (Directory.Exists(project))
-                Directory.Delete(project, recursive: true);
         }
     }
 

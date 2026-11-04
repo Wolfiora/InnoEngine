@@ -1,5 +1,11 @@
 # Inno.UI.Tests
 
-[UI 索引](README.md)
+[UI 索引](README.md) · [Wiki 首页](../README.md) · [RmlUi 实现验收](Inno.Adapter.UI.RmlUi.Tests.md)
 
-验证 RML 导入、Context/文档生命周期、DOM 操作、输入事件、帧几何与纹理释放；还反复销毁带有活动文档和字体纹理的 Context，以覆盖 RmlUi 全局字体缓存回调的生命周期。原生测试要求当前构建配置已有对应的 `inno-ui` 动态库。执行：`dotnet test tests/ui/Inno.UI.Tests/Inno.UI.Tests.csproj`。
+验证中立 `UiRuntime` 的帧作用域、输入与脚本 facade 绑定，通过公开可替换 backend 边界运行；不引用 RmlUi，不要求窗口、GPU 或 native 部署。原 RmlUi 导入、字体、DOM、Context 与原生生命周期断言全部属于独立 backend 测试项目。
+
+测试入口不属于产品 API，没有 protected 扩展契约。fixture 在结束时释放自己创建的 Runtime 和借用边界。
+
+```powershell
+dotnet test tests/ui/Inno.UI.Tests/Inno.UI.Tests.csproj
+```

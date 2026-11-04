@@ -20,6 +20,9 @@ internal static class WikiContentBoundaryValidator
     ) {
         foreach (string page in RepositorySourceInventory.Files(Path.Combine(root, "docs"), "*.md"))
         {
+            // Canonical agent policies preserve their original cross-repository restrictions; they are not consumer API pages.
+            if (Path.GetRelativePath(root, page).Replace('\\', '/').StartsWith("docs/architecture/rules/", StringComparison.Ordinal))
+                continue;
             string source = File.ReadAllText(page);
             foreach (Regex rule in new[] { S_EXTERNAL_CONSUMERS, S_REMOVED_ENTRIES })
                 foreach (Match match in rule.Matches(source))

@@ -1,0 +1,317 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Inno.Build.Toolchains;
+
+namespace Inno.Tooling.Validation;
+
+internal static class ValidationPlanner
+{
+    internal static async Task<ValidationPlan> CreateAsync(
+        string root,
+        string baseline,
+        string dotnet,
+        string configuration,
+        string artifacts,
+        bool full,
+        CancellationToken cancellation,
+        bool extended = false
+    ) {
+        Dictionary<string, string> inputs = await ValidationInputs.CaptureAsync(root, cancellation).ConfigureAwait(false);
+        string commit = (await GitAsync("rev-parse", "HEAD").ConfigureAwait(false)).Trim();
+        string mergeBase = (await GitAsync("merge-base", baseline, commit).ConfigureAwait(false)).Trim();
+        var changes = new HashSet<string>((await GitAsync("diff", "--name-only", "-z", "--no-renames", mergeBase, "HEAD").ConfigureAwait(false))
+            .Split('\0', StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal);
+        changes.UnionWith((await GitAsync("diff", "--name-only", "-z", "--no-renames", "HEAD").ConfigureAwait(false)).Split('\0', StringSplitOptions.RemoveEmptyEntries));
+        changes.UnionWith((await GitAsync("ls-files", "--others", "--exclude-standard", "-z").ConfigureAwait(false)).Split('\0', StringSplitOptions.RemoveEmptyEntries));
+        string[] paths = inputs.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal)
+            && path.Split('/')[0] is "src" or "entry" or "build" or "backends" or "platforms" or "tools" or "tests")
+            .Where(path => inputs[path] != "missing").Order(StringComparer.Ordinal).ToArray();
+        var properties = new Dictionary<string, string>
+        {
+            ["Configuration"] = configuration,
+            ["DesignTimeBuild"] = "true",
+            ["BuildProjectReferences"] = "false",
+            ["InnoProductRestore"] = "false",
+            ["ArtifactsPath"] = artifacts
+        };
+        string captured = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
+            paths.Select(path => Path.Combine(root, path)).ToArray(), properties, cancellation).ConfigureAwait(false);
+        using JsonDocument graph = JsonDocument.Parse(captured);
+        ValidationProject[] projects = graph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot)).ToArray();
+        var byPath = projects.ToDictionary(static project => project.path, StringComparer.Ordinal);
+        var affected = new HashSet<string>(StringComparer.Ordinal);
+        var documentationOwners = new HashSet<string>(StringComparer.Ordinal);
+        string[] wikiPages = inputs.Keys.Where(static path => path.StartsWith("docs/", StringComparison.Ordinal)
+            && path.EndsWith(".md", StringComparison.OrdinalIgnoreCase) && !path.StartsWith("docs/architecture/rules/", StringComparison.Ordinal)).ToArray();
+        var selectedWikiPages = new HashSet<string>(StringComparer.Ordinal);
+        var diagnostics = new List<string>();
+        foreach (string change in changes)
+        {
+            if (wikiPages.Contains(change, StringComparer.Ordinal) && inputs[change] != "missing")
+            {
+                selectedWikiPages.Add(change);
+                foreach (ValidationProject owner in projects.Where(project => Path.GetFileNameWithoutExtension(project.path) == Path.GetFileNameWithoutExtension(change)))
+                    documentationOwners.Add(owner.path);
+            }
+            ValidationProject[] owners = projects.Where(project => project.inputs.Contains(change, StringComparer.Ordinal)
+                || change.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal)).ToArray();
+            foreach (ValidationProject owner in owners)
+                affected.Add(owner.path);
+            if (owners.Length == 0 && !IsDocumentation(change))
+            {
+                diagnostics.Add($"Unknown or shared input '{change}': conservatively selecting every owner.");
+                full = true;
+            }
+        }
+        if (extended)
+            full = true;
+        if (full)
+            affected.UnionWith(paths);
+        bool expanded;
+        do
+        {
+            expanded = false;
+            foreach (ValidationProject project in projects)
+                if (project.references.Any(affected.Contains))
+                    expanded |= affected.Add(project.path);
+        } while (expanded);
+        foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full || affected.Any(owner =>
+            Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page)))))
+            selectedWikiPages.Add(page);
+        bool scriptWiki = selectedWikiPages.Any(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)));
+        if (scriptWiki)
+        {
+            const string C_BUILD_ENTRY = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
+            if (!byPath.ContainsKey(C_BUILD_ENTRY))
+                throw new InvalidDataException("Script Wiki examples require the existing Build entry and its evaluated projection closure.");
+            documentationOwners.Add(C_BUILD_ENTRY);
+            const string C_EDITOR_ENTRY = "entry/InnoEngine.Editor/InnoEngine.Editor.csproj";
+            if (!byPath.ContainsKey(C_EDITOR_ENTRY))
+                throw new InvalidDataException("Script Wiki examples require the declared Editor product and its public script closure.");
+            documentationOwners.Add(C_EDITOR_ENTRY);
+        }
+
+        var nativeOwners = new HashSet<string>(projects.Where(static project => project.native).Select(static project => project.path), StringComparer.Ordinal);
+        do
+        {
+            expanded = false;
+            foreach (ValidationProject project in projects)
+                if (project.references.Any(nativeOwners.Contains))
+                    expanded |= nativeOwners.Add(project.path);
+        } while (expanded);
+        foreach (ValidationProject project in projects.Where(static project => project.layer == "domain"))
+            if (nativeOwners.Contains(project.path))
+                throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
+        var contexts = new Dictionary<string, ValidationContext>(StringComparer.Ordinal)
+        {
+            ["managed"] = new(new Dictionary<string, string> { ["Configuration"] = configuration, ["ArtifactsPath"] = artifacts }, graph.RootElement.Clone())
+        };
+        Dictionary<string, ValidationProject> nativeProjects = byPath;
+        string target = string.Empty;
+        if (scriptWiki || nativeOwners.Any(owner => affected.Contains(owner) || documentationOwners.Contains(owner)))
+        {
+            string[] unavailable = inputs.Where(static pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)).Select(static pair => pair.Key).ToArray();
+            if (unavailable.Length != 0)
+                throw new InvalidDataException("Required native source checkouts are unavailable: " + string.Join(", ", unavailable));
+            JsonElement? development = graph.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
+                Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!).Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
+            if (development is null)
+                throw new InvalidDataException("Native validation requires the existing development product declaration.");
+            JsonElement host = development.Value.GetProperty("Properties");
+            target = host.GetProperty("InnoDevelopmentTarget").GetString() ?? string.Empty;
+            string productProperties = host.GetProperty("InnoDevelopmentEditorBuildProperties").GetString() ?? string.Empty;
+            if (target.Length == 0 || !File.Exists(productProperties))
+                throw new InvalidDataException("This SDK host has no supported native validation product. Required checks are blocked.");
+            var nativeProperties = new Dictionary<string, string>(contexts["managed"].properties)
+            {
+                ["InnoNativeTarget"] = target,
+                ["InnoToolTarget"] = target,
+                ["InnoProductBuildProperties"] = productProperties,
+                ["InnoTestNativeTarget"] = target
+            };
+            var evaluationProperties = new Dictionary<string, string>(properties);
+            foreach (var pair in nativeProperties)
+                evaluationProperties[pair.Key] = pair.Value;
+            string nativeCapture = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
+                paths.Select(path => Path.Combine(root, path)).ToArray(), evaluationProperties, cancellation).ConfigureAwait(false);
+            using JsonDocument nativeGraph = JsonDocument.Parse(nativeCapture);
+            contexts.Add("native", new(nativeProperties, nativeGraph.RootElement.Clone()));
+            nativeProjects = nativeGraph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot))
+                .ToDictionary(static project => project.path, StringComparer.Ordinal);
+        }
+
+        string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith("docs/architecture/rules/", StringComparison.Ordinal)
+            || path.StartsWith(".agents/", StringComparison.Ordinal) || path == "tests/ci/Test-AgentRules.ps1").Order(StringComparer.Ordinal).ToArray();
+        string[] toolingInputs = inputs.Keys.Where(static path => path.StartsWith("tools/", StringComparison.Ordinal)
+            || path.StartsWith("build/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
+            || path is "global.json" or "Directory.Build.props" or "Directory.Build.targets" or "InnoEngine.sln").ToArray();
+        var inputSets = projects.ToDictionary(static project => project.path,
+            project => project.inputs.Concat(nativeProjects[project.path].inputs).Where(inputs.ContainsKey).Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
+        inputSets.Add("tooling", toolingInputs);
+        var checks = new List<ValidationCheck>
+        {
+            new("instructions", "instructions", "AGENTS.md", "Rule preservation, discoverability, budgets and links.", "any", [], policyInputs, true, null),
+            new("architecture", "architecture", "tools/Inno.Tooling.Architecture", "Cheap repository-wide source, ownership and architecture invariants.", "any", [],
+                inputs.Keys.Where(static path => path.Split('/')[0] is "src" or "entry" or "backends" or "platforms" or "build" or "tools"
+                    || path.StartsWith("tests/", StringComparison.Ordinal) && path.EndsWith(".csproj", StringComparison.Ordinal)
+                    || path is "InnoEngine.sln" or "Directory.Build.props" or "Directory.Build.targets")
+                    .Order(StringComparer.Ordinal).ToArray(), true, null)
+        };
+        if (changes.Any(IsDocumentation) || full)
+            checks.Add(new("documentation", "documentation", "docs", "Changed documentation or explicit full validation.", "any", [],
+                inputs.Keys.Where(static path => path.StartsWith("docs/", StringComparison.Ordinal)).Concat(toolingInputs).Order(StringComparer.Ordinal).ToArray(), true, null));
+        if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
+            || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)))
+            checks.Add(new("ci-contracts", "ci-contracts", "tests/ci", "Fail-closed aggregation contracts for missing, skipped, canceled, empty and tampered evidence.",
+                "any", [], inputs.Keys.Where(static path => path.StartsWith("tests/ci/", StringComparison.Ordinal)).Append("@tooling").ToArray(), true, null));
+        foreach (ValidationProject project in projects.OrderBy(static project => project.path, StringComparer.Ordinal))
+        {
+            bool native = nativeOwners.Contains(project.path);
+            string context = native ? "native" : "managed";
+            Dictionary<string, ValidationProject> selectedGraph = native ? nativeProjects : byPath;
+            var closure = new HashSet<string>(StringComparer.Ordinal);
+            Visit(selectedGraph[project.path]);
+            if (project.test && project.layer is not ("domain" or "contract" or "integration" or "native" or "product" or "performance"))
+                throw new InvalidDataException($"Test execution layer is absent or unknown: {project.path} ({project.layer})");
+            if (project.layer == "domain" && native)
+                throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
+            string[] selectedInputs = closure.Select(static path => "@" + path).Append("@tooling").Order(StringComparer.Ordinal).ToArray();
+            bool selected = affected.Contains(project.path);
+            bool compile = selected || documentationOwners.Contains(project.path);
+            string environment = project.environment.Length != 0 ? project.environment : native ? "native-host" : "any";
+            string? exclusion = project.productTarget.Length != 0 && target.Length != 0 && project.productTarget != target
+                ? $"Product '{project.productTarget}' requires its own supported target environment; current SDK host selects '{target}'." : null;
+            if (compile)
+                checks.Add(new("build:" + project.path, "build", project.path, "Changed owner or transitive consumer; compile the shared union once.",
+                    environment, [], selectedInputs, false, exclusion, context, "compilation"));
+            if (project.test)
+                checks.Add(new("test:" + project.path, "test", project.path, selected ? "Behavior or contract consumer of affected inputs." : "No affected input in its evaluated closure.",
+                    environment, ["build:" + project.path], selectedInputs, project.reusable && project.layer is not ("performance" or "product"),
+                    selected ? exclusion : "Outside the affected evaluated dependency closure.", context, project.layer));
+
+            void Visit(ValidationProject node)
+            {
+                if (!closure.Add(node.path))
+                    return;
+                foreach (string dependency in node.references)
+                    if (selectedGraph.TryGetValue(dependency, out ValidationProject? next))
+                        Visit(next);
+                    else
+                        throw new InvalidDataException($"Unknown evaluated dependency '{dependency}' from '{node.path}'.");
+            }
+        }
+        if (affected.Count != 0 && !checks.Any(static check => check.kind == "test" && check.exclusion is null))
+            throw new InvalidDataException("Affected production inputs have no selected behavior tests. Declare their real public contract consumers.");
+        ValidationCheck[] builds = checks.Where(static check => check.kind == "build" && check.exclusion is null).ToArray();
+        foreach (IGrouping<string?, ValidationCheck> group in builds.GroupBy(static check => check.context))
+            checks.Add(new("compiled-api:" + group.Key, "api", "tools/Inno.Tooling.Architecture", "Public/protected signatures in affected owners and their evaluated dependencies.",
+                "any", group.Select(static check => check.id).ToArray(), group.SelectMany(static check => check.inputs).Distinct().Order(StringComparer.Ordinal).ToArray(), true, null, group.Key, "contract"));
+        foreach (IGrouping<string, string> pages in selectedWikiPages.GroupBy(page => nativeOwners.Any(owner =>
+            Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page))
+                || ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)) ? "native" : "managed"))
+        {
+            ValidationCheck[] requiredBuilds = builds.Where(check => check.context == pages.Key
+                || scriptWiki && pages.Key == "native" && check.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj").ToArray();
+            checks.Add(new("wiki:" + pages.Key, "wiki", "docs", "Current public signatures and compilable examples in changed or affected project pages.",
+                "any", requiredBuilds.Select(static check => check.id).ToArray(), pages.Concat(requiredBuilds.SelectMany(static check => check.inputs))
+                    .Distinct().Order(StringComparer.Ordinal).ToArray(), true, null, pages.Key));
+        }
+        ValidationCheck? editorBuild = builds.SingleOrDefault(static check => check.owner == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
+        if (editorBuild is not null)
+            checks.Add(new("editor-products", "products", editorBuild.owner, "Real renderer startup, product workflows and native panel retirement for the affected Editor product.",
+                "native-host", [editorBuild.id], editorBuild.inputs.Concat(inputs.Keys.Where(static path => path.StartsWith("tests/fixtures/editor-ui/", StringComparison.Ordinal)
+                    || path is "tests/Invoke-EditorSmoke.ps1" or "tests/Invoke-EditorUiProductJourney.ps1")).Distinct().Order(StringComparer.Ordinal).ToArray(), false, null, "native", "product"));
+        if (editorBuild is not null && (extended || changes.Any(static path => path.StartsWith("build/", StringComparison.Ordinal)
+                || path.StartsWith("extern/", StringComparison.Ordinal) || path.Contains("Reload", StringComparison.Ordinal)
+                || path is "Directory.Build.props" or "Directory.Build.targets" or "global.json")))
+            checks.Add(new("native-hot-builds", "hot-builds", editorBuild.owner,
+                "Ten unchanged native builds must retain content selections and start no native compiler or binding generation.",
+                "native-host", [editorBuild.id], editorBuild.inputs.Append("tests/Invoke-BuildCacheChecks.ps1").ToArray(), false, null, "native", "performance"));
+        if (extended)
+            checks.Insert(0, new("cold-inputs", "cold-inputs", "build", "Explicit cold acceptance requires an initially unprepared native cache.",
+                "native-host", [], ["@tooling"], false, null, "native", "performance"));
+        if (full && editorBuild?.context == "native")
+        {
+            const string C_BUILD_ENTRY = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
+            if (!byPath.ContainsKey(C_BUILD_ENTRY))
+                throw new InvalidDataException("Complete product acceptance requires the declared Build entry.");
+            string releaseContext = configuration == "Release" ? "native" : "native-release";
+            Dictionary<string, ValidationProject> releaseProjects = nativeProjects;
+            if (releaseContext != "native")
+            {
+                var releaseProperties = new Dictionary<string, string>(contexts["native"].properties) { ["Configuration"] = "Release" };
+                var evaluationProperties = new Dictionary<string, string>(properties);
+                foreach (var pair in releaseProperties)
+                    evaluationProperties[pair.Key] = pair.Value;
+                string releaseCapture = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
+                    paths.Select(path => Path.Combine(root, path)).ToArray(), evaluationProperties, cancellation).ConfigureAwait(false);
+                using JsonDocument releaseGraph = JsonDocument.Parse(releaseCapture);
+                contexts.Add(releaseContext, new(releaseProperties, releaseGraph.RootElement.Clone()));
+                releaseProjects = releaseGraph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot))
+                    .ToDictionary(static project => project.path, StringComparer.Ordinal);
+                foreach (ValidationProject project in releaseProjects.Values)
+                    inputSets[project.path] = inputSets[project.path].Concat(project.inputs.Where(inputs.ContainsKey)).Distinct(StringComparer.Ordinal).ToArray();
+            }
+            var releaseInputs = new HashSet<string>(StringComparer.Ordinal) { "@tooling" };
+            var releaseBuilds = new List<string>();
+            foreach (string owner in new[] { editorBuild.owner, C_BUILD_ENTRY })
+            {
+                VisitRelease(owner);
+                string id = (releaseContext == "native" ? "build:" : "release-build:") + owner;
+                releaseBuilds.Add(id);
+                if (releaseContext != "native")
+                    checks.Add(new(id, "build", owner, "Release product acceptance prepares its configuration once before execution and packaging.",
+                        "native-host", [], releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "compilation"));
+            }
+            if (releaseContext != "native")
+            {
+                checks.Add(new("compiled-api:release", "api", "tools/Inno.Tooling.Architecture", "Release symbols retain the same public boundary requirements.",
+                    "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), true, null, releaseContext, "contract"));
+                checks.Add(new("editor-release-products", "products", editorBuild.owner, "Execute the actual Release Editor renderer, workflow and lifecycle before packaging.",
+                    "native-host", releaseBuilds.ToArray(), editorBuild.inputs.Concat(releaseInputs).Distinct(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product"));
+            }
+            checks.Add(new("support-pack", "support-pack", C_BUILD_ENTRY, "Publish and verify the source-independent Release Player Support Pack under its existing read lease.",
+                "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product"));
+            JsonElement[] players = contexts[releaseContext].sdkGraph.EnumerateArray().Where(snapshot =>
+                snapshot.GetProperty("Properties").GetProperty("InnoProductId").GetString() == "player"
+                && snapshot.GetProperty("Properties").GetProperty("InnoProductTarget").GetString() == target).ToArray();
+            if (players.Length != 1)
+                throw new InvalidDataException("Full host acceptance requires exactly one actual Player product declaration.");
+            string playerOwner = Path.GetRelativePath(root, players[0].GetProperty("Path").GetString()!).Replace('\\', '/');
+            VisitRelease(playerOwner);
+            checks.Add(new("native-aot-restore", "restore-aot", playerOwner,
+                "Restore the actual host Player with NativeAOT SDK inputs in an independently owned restore layout.",
+                "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "contract"));
+            checks.Add(new("release-bundle", "release-bundle", editorBuild.owner, "Archive the exact verified Release outputs after every required functional result passes.",
+                "native-host", checks.Where(static check => check.exclusion is null).Select(static check => check.id).ToArray(),
+                releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product"));
+
+            void VisitRelease(string owner)
+            {
+                if (!releaseInputs.Add("@" + owner))
+                    return;
+                if (!releaseProjects.TryGetValue(owner, out ValidationProject? project))
+                    throw new InvalidDataException($"Unknown Release dependency: {owner}");
+                foreach (string reference in project.references)
+                    VisitRelease(reference);
+            }
+        }
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnet, root, cancellation).ConfigureAwait(false);
+        string environmentIdentity = await ValidationEnvironment.CaptureAsync(root, sdk.hostPath, cancellation).ConfigureAwait(false);
+        return new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
+            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), checks.ToArray(), diagnostics.ToArray(), inputs, inputSets, contexts, extended);
+
+        Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
+    }
+
+    private static string DirectoryOf(string project) => project[..(project.LastIndexOf('/') + 1)];
+
+    private static bool IsDocumentation(string path)
+        => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase) || path.StartsWith("docs/", StringComparison.Ordinal)
+            || path.StartsWith("records/", StringComparison.Ordinal) || path.StartsWith(".agents/", StringComparison.Ordinal);
+}

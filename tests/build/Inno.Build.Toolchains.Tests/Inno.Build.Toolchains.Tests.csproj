@@ -6,10 +6,12 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>integration</InnoValidationLayer>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
   </ItemGroup>
 
   <ItemGroup>

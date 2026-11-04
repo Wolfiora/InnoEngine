@@ -4,7 +4,7 @@
 
 ## 职责与边界
 
-验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
+验证 Graph 文档、事务、历史和 reload 领域契约，传递构建依赖不进入 native 准备。原 Canvas 投影与交互断言归属 [呈现测试](Inno.Editor.Presentation.Tests.md)。验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
 - [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)
 - [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)

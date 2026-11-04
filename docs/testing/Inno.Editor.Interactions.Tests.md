@@ -4,7 +4,7 @@
 
 ## 职责与边界
 
-验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
+验证历史、场景和导航的领域契约；传递构建依赖不进入 native 准备。原面板、工作台、资源浏览、Console 设置发现与呈现生命周期断言迁至 [呈现测试](Inno.Editor.Presentation.Tests.md)。验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
 - [Inno.Extensibility.Reload](../extensibility/Inno.Extensibility.Reload.md)
 - [Inno.Scene.Reload.TestModule 项目](../../tests/scene/fixtures/Inno.Scene.Reload.TestModule/Inno.Scene.Reload.TestModule.csproj)
@@ -18,12 +18,6 @@
 - [Inno.Core.Settings](../core/Inno.Core.Settings.md)
 - [Inno.References](../references/Inno.References.md)
 - [Inno.Editor.Scene](../editor/Inno.Editor.Scene.md)
-- [Inno.Editor.Diagnostics](../editor/Inno.Editor.Diagnostics.md)
-- [Inno.Editor.PlayMode](../editor/Inno.Editor.PlayMode.md)
-- [Inno.Editor.Settings](../editor/Inno.Editor.Settings.md)
-- [Inno.Editor.Panel.FileBrowser](../editor/Inno.Editor.Panel.FileBrowser.md)
-- [Inno.Editor.Workbench](../editor/Inno.Editor.Workbench.md)
-- [Inno.Editor.Panel.Logging](../editor/Inno.Editor.Panel.Logging.md)
 - [Inno.Extensibility.Modules](../extensibility/Inno.Extensibility.Modules.md)
 - [Inno.Extensibility.Types](../extensibility/Inno.Extensibility.Types.md)
 - [Inno.Scene](../scene/Inno.Scene.md)
@@ -31,7 +25,6 @@
 - [Inno.Runtime](../runtime/Inno.Runtime.md)
 - [Inno.Editor.Interactions](../editor/Inno.Editor.Interactions.md)
 - [Inno.Editor.Core](../editor/Inno.Editor.Core.md)
-- [Inno.Editor.ImGui](../editor/Inno.Editor.ImGui.md)
 - [Inno.Adapter.Modules.DotNet](../backends/DotNet/Inno.Adapter.Modules.DotNet.md)
 - [Inno.Adapter.Serialization.DotNet](../backends/DotNet/Inno.Adapter.Serialization.DotNet.md)
 
@@ -53,11 +46,8 @@ dotnet test tests/editor/Inno.Editor.Interactions.Tests/Inno.Editor.Interactions
 
 | 测试文件 | 场景入口示例 |
 | --- | --- |
-| [AssetHistoryTests.cs](../../tests/editor/Inno.Editor.Interactions.Tests/AssetHistoryTests.cs) | `CreateFolderUndoAndRedoUseTheAssetDatabase`、`DeleteFolderUndoRestoresIdentityMetadataAndEmptyDescendants`、`AssetDeleteHistorySurvivesATypeCatalogRefresh`、`FileBrowserDropMovesFilesAndFoldersWithUndoRedo` |
 | [EditorHistoryTests.cs](../../tests/editor/Inno.Editor.Interactions.Tests/EditorHistoryTests.cs) | `ExecuteUndoAndRedoMoveNeutralChangeBetweenStacks`、`FailedTransitionRemainsAvailableForRetry`、`AdjacentChangesWithTheSameStableMergeKeyCoalesce`、`TransactionCommitsAndRevertsAtomically` |
 | [EditorPlanarNavigationTests.cs](../../tests/editor/Inno.Editor.Interactions.Tests/EditorPlanarNavigationTests.cs) | `PanOwnsPointerOutsideCanvasAndReleasesWithoutLocalReleaseEvent`、`AltOrbitDoesNotStealPanAndCancelReleasesCapture`、`ZoomPreservesPointerAnchorAndIsIndependentOfDisplayDensity` |
-| [EditorRuntimeTests.cs](../../tests/editor/Inno.Editor.Interactions.Tests/EditorRuntimeTests.cs) | `FeatureLookupReturnsOnlyStartedNonQuarantinedModules`、`HistoryAndExtensionStateContractsDoNotExposeStandaloneWorkspaceTypes`、`EditorDensityDefaultsToComfortableAndCanSwitchIdempotently`、`InteractionRuntimeInjectsOneStableAssignableHostService` |
-| [EditorSettingsTests.cs](../../tests/editor/Inno.Editor.Interactions.Tests/EditorSettingsTests.cs) | `ApplyPersistsObjectsAtTheProjectRootAndPublishesOnlyTheService`、`ChangedSubscriberFailureDoesNotChangeHistoryResultOrSkipLaterSubscribers`、`GetReturnsIsolatedObjectsAndRejectsPagesOrMissingPaths`、`ResetRemovesThePathOverrideAndRestoresTheDefinitionObject` |
 | [SceneHistoryTests.cs](../../tests/editor/Inno.Editor.Interactions.Tests/SceneHistoryTests.cs) | `PropertyUndoRestoresOnlyThePropertyOnTheExistingSceneGraph`、`PropertyUndoRestoresEverySiblingChangedByThePrimarySetter`、`TransformManipulationTransactionUndoesAllLocalValuesAtomically`、`WorldPositionEditRestoresLocalStorageAndWorldResultThroughHistory` |
 
 ## 生命周期与失败

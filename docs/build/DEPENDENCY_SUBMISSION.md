@@ -29,9 +29,9 @@ Native 第三方源码属于 `extern/`。BGCS 生成缓存、构建缓存、进�
 
 ## CI
 
-[`nuget-dependencies.yml`](../../.github/workflows/nuget-dependencies.yml) 使用仓库声明的 SDK 执行普通 Solution Restore，并保留日志和 binlog。push 与手动运行可以提交 SDK 实际解析的依赖 snapshot；PR 不执行写入步骤。
+GitHub 的 Automatic Dependency Submission 是唯一依赖图提交 owner；仓库不再另跑一份 Solution Restore 和重复 snapshot 提交。平台提交只服务依赖图，不是引擎构建或测试通过的证据。平台自动发现的普通 NuGet 清单与 Engine CI 的平台/配置还原具有不同职责，不能因删除重复提交而删除 Windows/macOS 产品与 NativeAOT 的验收。
 
-Engine CI 分别验证托管源码、Editor Debug/Release 和实际 NativeAOT RID 的普通还原。托管测试后检查 tracked 与 untracked 源码变化。包身份回归通过真实 SDK Restore，核对声明的 BGCS 版本、归档 SHA-512 与 SDK 元数据；assets 中的 NuGet 内容身份与 `.nupkg.metadata` 对照，不与包含签名的 ZIP 原始哈希混淆。
+Engine CI 的统一 `validate` 计划通过每个配置的构建并集执行必要还原；完整验收另以实际宿主 Player、SDK RID 和 `PublishAot=true` 验证 NativeAOT 输入，使用独立还原输出，避免覆盖普通构建的 assets。验证后检查 tracked 与 untracked 源码变化。包身份回归通过真实 SDK Restore，核对声明的 BGCS 版本、归档 SHA-512 与 SDK 元数据；assets 中的 NuGet 内容身份与 `.nupkg.metadata` 对照，不与包含签名的 ZIP 原始哈希混淆。
 
 这种方式使用标准 NuGet 依赖解析，不承诺冻结所有未来包源状态；SDK 基线、包版本声明、实际解析身份和构建测试共同作为当前可验证输入。
 

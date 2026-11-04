@@ -75,8 +75,10 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.Contains("absent from its category index", Run(), StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void LinksValidatePathsAndAnchorsOutsideCodeFences()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LinksValidatePathsAndAnchorsOutsideCodeFences(bool structureOnly)
     {
         Write("docs/core/Inno.Core.Probe.md", """
             # Probe
@@ -88,7 +90,7 @@ public sealed class WikiCoverageTests : IDisposable
             [Example syntax](example-only.md)
             ```
             """);
-        string diagnostics = Run();
+        string diagnostics = structureOnly ? Run(null, "--documentation-only") : Run();
         Assert.Contains("missing anchor '#missing'", diagnostics, StringComparison.Ordinal);
         Assert.Contains("missing path 'absent.md'", diagnostics, StringComparison.Ordinal);
         Assert.DoesNotContain("example-only.md", diagnostics, StringComparison.Ordinal);
@@ -408,10 +410,11 @@ public sealed class WikiCoverageTests : IDisposable
     {
         string projectDirectory = Path.Combine(m_root, "src/foundation/core/Inno.Core.Probe");
         string project = Path.Combine(projectDirectory, "Inno.Core.Probe.csproj");
+        File.WriteAllText(Path.Combine(projectDirectory, "Framework.props"), "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
         File.WriteAllText(project, """
             <Project Sdk="Microsoft.NET.Sdk">
+              <Import Project="Framework.props" />
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
                 <DefineConstants>SELECTED_CONTRACT</DefineConstants>
               </PropertyGroup>
               <ItemGroup><Compile Remove="Excluded.cs" /><Compile Include="obj/SelectedBindings.cs" /></ItemGroup>
@@ -480,7 +483,7 @@ public sealed class WikiCoverageTests : IDisposable
             "# Probe\n```csharp\npublic static class Example { public static string Read() => Inno.Core.Probe.Probe.Read(); "
             + "public static int Count(params System.ReadOnlySpan<int> values) => values.Length; }\n```\n");
         string inventory = Path.Combine(m_root, "sdk-api.json");
-        Assert.DoesNotContain("example 1 at line", Run(inventory, "--dotnet", host), StringComparison.Ordinal);
+        Assert.DoesNotContain("example 1 at line", Run(inventory, "--dotnet", host, "--wiki-page", "docs/core/Inno.Core.Probe.md"), StringComparison.Ordinal);
         string api = File.ReadAllText(inventory);
         Assert.Contains("T:Inno.Core.Probe.Selected", api, StringComparison.Ordinal);
         Assert.Contains("T:Inno.Core.Probe.GeneratedContract", api, StringComparison.Ordinal);
@@ -543,7 +546,8 @@ public sealed class WikiCoverageTests : IDisposable
         {
             Console.SetOut(captured);
             Console.SetError(captured);
-            string[] arguments = inventory is null ? [m_root, "--wiki"] : [m_root, "--wiki", "--wiki-api", inventory];
+            string[] arguments = extraArguments.Contains("--documentation-only", StringComparer.Ordinal) ? [m_root]
+                : inventory is null ? [m_root, "--wiki"] : [m_root, "--wiki", "--wiki-api", inventory];
             _ = ArchitectureValidator.Execute(arguments.Concat(extraArguments).ToArray());
             return captured.ToString();
         }

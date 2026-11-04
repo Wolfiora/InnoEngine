@@ -6,7 +6,23 @@
 
 [分类索引](README.md) · [Wiki 首页](../README.md) · [平台归属与扩展](../architecture/PLATFORM_EXTENSION_GUIDE.md)
 
+## 仓库批量求值
+
+`ManagedProjectGraphCapture.CaptureAsync(engineRoot, dotnetHost, projects, properties, cancellationToken, resolveReferences)` 在明确选定的 SDK 中一次求值多个绝对项目路径，返回属性、ProjectReference、源码/资源/附加输入与 imports 的内部 JSON snapshot。`resolveReferences` 默认为 false；显式启用后，在同一 SDK 进程解析已还原的编译引用与隐式编译符号，供 Wiki 使用。它复用既有受 owner/lease 保护的求值器，不执行工程 Build、Restore 或 native target；求值器本身缺失时会先准备不可变工具产物。
+
+`ProductNativePreparation` 负责将已完成准备转成中立数据供同一 MSBuild 根构建复用：`FreezeAsync` 冻结 recipe、生成器、源码及 SDK 的内容身份；`Capture` 仅从成功且仍持有读取保护的完整产品闭包收集 BCL 数据；`TryAcquireAsync` 为下一消费者独立取得读取 lease，并在等待后重新检查目录成员与内容哈希。未命中返回 null，调用方必须正常准备；它不表示验收通过。聚合静态产物或无 owner 的绑定产物不支持此复用。失败、取消、部署或释放失败均不得登记成功状态。
+
+这是验证工具组合所需的最小公开入口，不进入脚本导出，没有 protected 扩展点。输入为空、路径非绝对、项目缺失、SDK 失败或取消均明确失败，不能返回部分图冒充完整覆盖。相同全局属性共享 ProjectCollection；不同配置或目标必须分别捕获。
+
 ## 原生生成输入的中立契约
+
+`NativeArtifactTransfer` 负责 runner 之间的不可变产物传输。`ExportAsync(engineRoot, archivePath, cancellationToken)` 仅导出当前 checkout 已登记且通过完整清单校验的 native/bindings 生成物；导出期间保留各产物读取 lease，完成后原子替换归档，返回生成物数量。`ImportAsync` 先在登记的临时 owner 中检查完整归档、路径、文件集合和内容哈希，再安装候选，返回新增候选数量。已有目标由原 publisher 继续负责，活动读取者不受影响；候选只有在真实消费者重新验证请求输入后才能登记采用。
+
+归档不包含 owner、PID、lease、可写 obj 或工作目录。损坏、越界、链接和不完整 payload 抛出 `IOException`，取消抛出 `OperationCanceledException`；失败归档保留供诊断，真实构建仍需通过。这些入口不证明测试通过，也不提供脚本或 protected 扩展接口。
+
+<!-- api: T:Inno.Build.Toolchains.NativeArtifactTransfer 0e63aa46f32d1412cb9d5fc7cf3ff7074d619a05b1b60ba6270dfe0e7f2125a3 -->
+<!-- api: M:Inno.Build.Toolchains.NativeArtifactTransfer.ExportAsync(System.String,System.String,System.Threading.CancellationToken) 577932ed79b8d8541f52ce6daa4284f08be35ee3b3101f777b48bef7cc0976a6 -->
+<!-- api: M:Inno.Build.Toolchains.NativeArtifactTransfer.ImportAsync(System.String,System.String,System.Threading.CancellationToken) 030a4376b9a5f172fa2a144aa8cfa004f3985cdc8012e7b772076ed6ab037767 -->
 
 `NativeBindingCompilation` 描述已选定生成结果的编译要求，不包含 BGCS 类型或平台选择逻辑。`NativeBindingSourceRoot` 标识组件内的根；`NativeBindingSourceFile` 保存相对路径、长度、SHA-256 与是否编译；`NativeBindingIncludeDirectory` 保留 include 顺序、system 与 framework 搜索语义。生成器适配层负责转换，具体平台 provider 负责选择真实 SDK。
 
@@ -45,6 +61,10 @@ Native 工作目录中的 `recipe.json` 是内部诊断资料，记录实际有�
 `BuildCachePublisher.RecordProcessUse` 累积同一进程操作的实际依赖，后续登记不会移除此前仍被该操作使用的 host 或 workspace。依赖仅是现有缓存图中的明确目录，不授予新路径所有权；进程退出后的统一退休释放整条保护关系。MSBuild Task 通过这一契约保护同一构建中已完成 Restore、但后续项目仍会复用的编译工作区。
 
 `BuildCacheCleanupPlan.Create` 返回固定候选，预览与执行共用此提案。`ExecuteAsync` 在删除前重新检查清单、根和活动 reader；不会强行等待或删除活动 generation，也不删除持久协调文件。循环依赖、未登记依赖或保护根、重叠目录或路径越界在删除前失败。预算及返回结果详见[缓存架构](../architecture/BUILD_CACHE_ARCHITECTURE.md)。
+
+`BuildMaintenanceApplication` 在既有登记目录中按产物保存已经完成的容量盘点。盘点身份包含生产者完整登记内容；下一次 writer 的 `BeginWorkingDirectory` 会使旧盘点失效。活动 writer 的变化中容量不保存为完成状态；中断后可以复用其他已完成分片。进度不是产物完整性证明，也不保存退休授权或旧保护关系；每次仍重新读取全部 owner、当前根和依赖，删除前在锁内检查文件边界。dry-run 不创建或更新盘点进度。
+
+跨 runner 仅运输不可变 generation 的 payload 与 manifest。`NativeArtifactPublisher` 和产品批次读取路径仍按当前 recipe 验证完整内容并重新登记本地 owner；缺失文件、额外文件、同长度篡改或不匹配身份均不能绕过真实 producer。修复失败保留失败，不能因为存在一个缓存目录而报告成功。
 
 ## 固定托管编译输入
 
@@ -1256,3 +1276,10 @@ BuildCacheOwnerCatalog 由实际发行登记 publisher 根、ID 和生命周期�
 | --- | --- |
 | `Inno.Extensibility.Catalogs` | 公开签名依赖 |
 | `Inno.Core.IO` | 公开签名依赖 |
+
+<!-- api: T:Inno.Build.Toolchains.ManagedProjectGraphCapture a22e24db053bedc612d43cb42774802f045c86aeac1cad89283794470f4d169b -->
+<!-- api: M:Inno.Build.Toolchains.ManagedProjectGraphCapture.CaptureAsync(System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Threading.CancellationToken,System.Boolean) 207a40418a4761b0d96675232421a3d98e0a9191f2a11d4172a067b712c8225a -->
+<!-- api: T:Inno.Build.Toolchains.ProductNativePreparation 70d9105cbdf791c2b87ceb8bebbe0e9c90882b7a23174ededd45087aca29a0a9 -->
+<!-- api: M:Inno.Build.Toolchains.ProductNativePreparation.FreezeAsync(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.ProductNativeBuildPlan,System.Threading.CancellationToken) 1f9c78f6949ad63810b4fdb2be8c1ae66c96d576029b12b73a6ba89487e19ba7 -->
+<!-- api: M:Inno.Build.Toolchains.ProductNativePreparation.Capture(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.ProductNativeBuildPlan,Inno.Build.Toolchains.ProductNativeBuildResult,System.String) 16f8422ba8f05ed588a00cf1de13d03cac8a3e7e01cb810af951af338d4eedb2 -->
+<!-- api: M:Inno.Build.Toolchains.ProductNativePreparation.TryAcquireAsync(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.ProductNativeBuildPlan,System.String[][],System.String,System.Threading.CancellationToken) ff10e3a2521861ecffabeb17794fa7ff22bb05c0882d302517d4c2774c3de270 -->

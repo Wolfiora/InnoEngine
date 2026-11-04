@@ -6,8 +6,6 @@
 
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
-- [Inno.Integration.WindowsX64.Sdl3](../platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md)
-- [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)
 - [Inno.Input](../input/Inno.Input.md)
 - [Inno.Input.Runtime](../input/Inno.Input.Runtime.md)
 - [Inno.Adapter.Input](../input/Inno.Adapter.Input.md)
@@ -27,7 +25,7 @@
 dotnet test tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj --configuration Debug --disable-build-servers -m:1 -nodeReuse:false
 ```
 
-包含 Native 或窗口相关消费；执行前准备匹配目标与配置的原生产物。缺库、缺 SDK 或无法建立真实窗口属于未通过/未执行，不能记为通过。
+此领域套件无需窗口、GPU 或原生准备。SDL 窗口销毁后的借用拒绝断言迁至 backend 的 `NativeSurfaceLifetimeTests`，继续通过真实窗口运行，并使用现有 macOS 主线程宿主。
 
 可以用 `--filter FullyQualifiedName~方法名` 选择下表的场景；完整项目验证仍使用上面的命令。
 
@@ -38,7 +36,7 @@ dotnet test tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj --configuration
 | 测试文件 | 场景入口示例 |
 | --- | --- |
 | [InputRuntimeTests.cs](../../tests/input/Inno.Input.Tests/InputRuntimeTests.cs) | `DirectEventBackendRejectsGloballyConsumedInput`、`WindowSourcesRemainIsolatedAcrossTextWheelAndRelease`、`ApplicationSuspensionClearsTransientInputAndRejectsBackgroundPresses`、`GloballyConsumedPlatformEventsNeverReachSessionInput` |
-| [NativeWindowSurfaceTests.cs](../../tests/input/Inno.Input.Tests/NativeWindowSurfaceTests.cs) | `NativeSurfaceIdentifiersAreOpenAndRejectWhitespace`、`DisposedWindowRejectsBorrowingItsNativeSurface` |
+| [NativeWindowSurfaceTests.cs](../../tests/input/Inno.Input.Tests/NativeWindowSurfaceTests.cs) | `NativeSurfaceIdentifiersAreOpenAndRejectWhitespace` |
 | [ShellFrameDriverTests.cs](../../tests/input/Inno.Input.Tests/ShellFrameDriverTests.cs) | `PollingFramesKeepCallingThreadAndStopAtCallbackBoundary`、`ScheduledFramesWaitBeforeAdvancingAndStopWithoutSchedulingAgain`、`CancellationDuringSchedulingPreventsTheNextFrame`、`SchedulingAndFrameFailuresPropagateToTheShellOwner` |
 | [ShellLifecycleTests.cs](../../tests/input/Inno.Input.Tests/ShellLifecycleTests.cs) | `SuspensionReasonsComposeWithoutFramesOrBackgroundClockCatchUp`、`SecondaryWindowAndVisibilityPolicyDoNotSuspendTheHost`、`ExecutionAndStoppingFailuresAreBothRetainedAndCallbacksDetach`、`CancellationStopsWithoutClaimingSmokeCompletion` |
 

@@ -70,6 +70,7 @@
   <!-- Repository verification. -->
   <ItemGroup>
     <ProjectReference Include="../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj" PrivateAssets="compile" />
   </ItemGroup>
 
 </Project>

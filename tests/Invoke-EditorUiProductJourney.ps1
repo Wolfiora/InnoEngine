@@ -6,11 +6,13 @@ param(
     [Parameter(Mandatory)][string]$GraphicsApi,
     [ValidateSet('Workflows', 'Lifecycle')][string]$Scenario = 'Workflows',
     [int]$Frames = 30000,
-    [int]$TimeoutSeconds = 600
+    [int]$TimeoutSeconds = 600,
+    [ValidateRange(100, 10000)][int]$Cycles = 100
 )
 
 $ErrorActionPreference = 'Stop'
 if ($Frames -lt 120 -or $TimeoutSeconds -le 0) { throw 'The journey needs at least 120 frames and a positive deadline.' }
+if ($Cycles % 10 -ne 0) { throw 'Lifecycle sampling requires a whole number of ten-cycle intervals.' }
 $repository = Split-Path $PSScriptRoot -Parent
 $source = [IO.Path]::GetFullPath($ProjectDirectory)
 $editor = [IO.Path]::GetFullPath($EditorAssembly)
@@ -48,6 +50,7 @@ $start.WindowStyle = [Diagnostics.ProcessWindowStyle]::Hidden
 $start.RedirectStandardOutput = $true
 $start.RedirectStandardError = $true
 $start.WorkingDirectory = $project
+$start.Environment['INNO_ACCEPTANCE_PANEL_CYCLES'] = [string]$Cycles
 foreach ($argument in @($editor, $project, '--window-visible', 'false', '--smoke-frames', [string]$Frames,
                         '--graphics-api', $GraphicsApi)) { $start.ArgumentList.Add($argument) }
 $process = [Diagnostics.Process]::new()
@@ -70,15 +73,15 @@ try {
         if ($verified.Count -ne 8) { throw "Expected eight completed workflow stages, got $($verified.Count)." }
     } else {
         $panels = @(Import-Csv -LiteralPath $evidence -Delimiter "`t" | Where-Object panel -ne 'protocol')
-        if ($panels.Count -lt 9 -or @($panels | Where-Object 'completed-open-close-cycles' -ne '100').Count -ne 0) {
-            throw 'Every actual product panel must complete 100 open/close cycles.'
+        if ($panels.Count -lt 9 -or @($panels | Where-Object 'completed-open-close-cycles' -ne ([string]$Cycles)).Count -ne 0) {
+            throw "Every actual product panel must complete $Cycles open/close cycles."
         }
         $resources = @(Import-Csv -LiteralPath (Join-Path $project 'Library/Acceptance/panel-lifecycle-resources.tsv') -Delimiter "`t")
         $preparation = @(Import-Csv -LiteralPath (Join-Path $project 'Library/Acceptance/panel-lifecycle-preparation.tsv') -Delimiter "`t")
         if ($preparation.Count -ne 2 -or $preparation[0].phase -ne 'before-first-panel-draw' -or $preparation[1].phase -ne 'after-120-drawn-frames') {
             throw 'The lifecycle run must record cold resource preparation separately from its repeated open/close baseline.'
         }
-        if ($resources.Count -ne 11 -or [int]$resources[0].'completed-cycles' -ne 0 -or [int]$resources[-1].'completed-cycles' -ne 100) {
+        if ($resources.Count -ne ($Cycles / 10 + 1) -or [int]$resources[0].'completed-cycles' -ne 0 -or [int]$resources[-1].'completed-cycles' -ne $Cycles) {
             throw 'The lifecycle run did not record its complete full-GC resource series.'
         }
         $growth = [long]$resources[-1].'managed-bytes-after-full-gc' - [long]$resources[0].'managed-bytes-after-full-gc'
