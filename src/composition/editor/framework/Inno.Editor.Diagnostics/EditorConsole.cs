@@ -24,6 +24,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     private int m_capacity = 1024;
     private long m_nextSequence;
     private long m_revision;
+    private EditorConsoleSnapshot? m_snapshot;
     private IDisposable? m_playModeSubscription;
     private bool m_started;
     private bool m_disposed;
@@ -72,7 +73,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
                     return;
                 m_capacity = normalized;
                 TrimLogsUnsafe();
-                m_revision++;
+                InvalidateSnapshot();
             }
         }
     }
@@ -123,7 +124,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         {
             m_logs.Enqueue(FromLog(NextSequence(), entry));
             TrimLogsUnsafe();
-            m_revision++;
+            InvalidateSnapshot();
         }
     }
 
@@ -142,7 +143,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         lock (m_sync)
         {
             m_diagnostics[report.source.id] = entries;
-            m_revision++;
+            InvalidateSnapshot();
         }
     }
 
@@ -157,7 +158,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         lock (m_sync)
         {
             if (m_diagnostics.Remove(source.id))
-                m_revision++;
+                InvalidateSnapshot();
         }
     }
 
@@ -171,6 +172,8 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
     {
         lock (m_sync)
         {
+            if (m_snapshot is not null && m_snapshot.revision == m_revision)
+                return m_snapshot;
             EditorConsoleOccurrence[] occurrences = m_logs
                 .Concat(m_diagnostics.Values.SelectMany(static entries => entries))
                 .OrderBy(static occurrence => occurrence.sequence)
@@ -180,7 +183,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
                 .Select(static group => new EditorConsoleGroup(group.Key, group.ToArray()))
                 .OrderBy(static group => group.latest.sequence)
                 .ToArray();
-            return new EditorConsoleSnapshot(m_revision, occurrences, groups);
+            return m_snapshot = new EditorConsoleSnapshot(m_revision, occurrences, groups);
         }
     }
 
@@ -194,7 +197,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             if (m_logs.Count == 0)
                 return;
             m_logs.Clear();
-            m_revision++;
+            InvalidateSnapshot();
         }
     }
 
@@ -216,6 +219,12 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
         m_disposed = true;
     }
 
+    private void InvalidateSnapshot()
+    {
+        m_revision++;
+        m_snapshot = null;
+    }
+
     private void OnPlayModeStateChanged(EditorPlayModeState state)
     {
         if (state == EditorPlayModeState.Compiling && clearOnPlay)
@@ -230,7 +239,7 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             if (m_logs.Count == 0)
                 return;
             m_logs.Clear();
-            m_revision++;
+            InvalidateSnapshot();
         }
     }
 
@@ -252,7 +261,9 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             entry.line,
             0,
             entry.stackTrace,
-            entry.sessionId);
+            entry.sessionId,
+            null,
+            null);
 
     private static EditorConsoleOccurrence FromDiagnostic(
         long sequence,
@@ -280,7 +291,9 @@ public sealed class EditorConsole : IEditorConsole, ILogSink, IDiagnosticSink, I
             location?.line ?? 0,
             location?.column ?? 0,
             string.Empty,
-            LogSessionId.none);
+            LogSessionId.none,
+            diagnostic.semanticId,
+            diagnostic.objectId);
     }
 
     private long NextSequence() => Interlocked.Increment(ref m_nextSequence);

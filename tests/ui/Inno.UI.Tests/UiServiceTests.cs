@@ -255,7 +255,7 @@ public sealed partial class UiServiceTests : IDisposable
         Assert.Empty(unchanged.textureUpdates);
         Assert.NotEmpty(unchanged.commands);
 
-        backend.Update(context, new UiInputSnapshot(
+        backend.Update(context, FrameInput(
             new Vector2(20f, 20f),
             default,
             KeyModifier.None,
@@ -341,8 +341,34 @@ public sealed partial class UiServiceTests : IDisposable
     private AssetLoader CreateLoader()
         => new(m_types, m_serialization, m_identities, m_diagnostics, m_logs, m_assets, m_library);
 
+    private static UiInputSnapshot FrameInput(
+        Vector2 position,
+        Vector2 scroll,
+        KeyModifier modifiers,
+        IReadOnlyCollection<KeyCode> pressed,
+        IReadOnlyCollection<KeyCode> released,
+        IReadOnlyCollection<MouseButton> buttonsPressed,
+        IReadOnlyCollection<MouseButton> buttonsReleased,
+        IReadOnlyList<string> text
+    ) {
+        var changes = new List<InputChange>();
+        if (scroll != default)
+            changes.Add(new PointerScrollInputChange(position, scroll, modifiers));
+        foreach (MouseButton button in buttonsPressed)
+            changes.Add(new PointerButtonInputChange(position, button, true, modifiers));
+        foreach (MouseButton button in buttonsReleased)
+            changes.Add(new PointerButtonInputChange(position, button, false, modifiers));
+        foreach (KeyCode key in pressed)
+            changes.Add(new KeyInputChange(key, true, false, modifiers));
+        foreach (KeyCode key in released)
+            changes.Add(new KeyInputChange(key, false, false, modifiers));
+        foreach (string commit in text)
+            changes.Add(new TextInputChange(commit, modifiers));
+        return new UiInputSnapshot(position, modifiers, new InputSequence(changes));
+    }
+
     private static UiInputSnapshot EmptyInput()
-        => new(default, default, KeyModifier.None, [], [], [], [], []);
+        => new(default, KeyModifier.None, InputSequence.empty);
 
     private static UiDocumentSource Rml(string text)
         => new(RmlUiIdentifiers.documentLanguage, text);

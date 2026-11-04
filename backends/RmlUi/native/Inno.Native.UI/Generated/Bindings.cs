@@ -47,43 +47,55 @@ namespace Inno.Native.UI
     {
         public const string NativeLibraryName = "inno-ui";
         private readonly global::BGCS.Runtime.NativeModuleSession m_session;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function0;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> m_function1;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterDrawCommandNative*, ulong, Result*, BgcsInnoRmluiError**, int> m_function2;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function3;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, uint*, ulong, Result*, BgcsInnoRmluiError**, int> m_function4;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterVertexNative*, ulong, Result*, BgcsInnoRmluiError**, int> m_function5;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> m_function6;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> m_function7;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, byte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function8;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, sbyte*, int, int, float, ulong*, Result*, BgcsInnoRmluiError**, int> m_function9;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function10;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function11;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> m_function12;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterEventInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function13;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterMeshInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function14;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterTextureInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function15;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, byte*, Result*, BgcsInnoRmluiError**, int> m_function16;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> m_function17;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, sbyte*, ulong*, Result*, BgcsInnoRmluiError**, int> m_function18;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, byte*, ulong, sbyte*, int, int, byte, Result*, BgcsInnoRmluiError**, int> m_function19;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> m_function20;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> m_function21;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, int, Result*, BgcsInnoRmluiError**, int> m_function22;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, float, float, int, Result*, BgcsInnoRmluiError**, int> m_function23;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, Result*, BgcsInnoRmluiError**, int> m_function24;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, int, int, byte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function25;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterFrameInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function26;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime**, BgcsInnoRmluiError**, int> m_function27;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> m_function28;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte, byte*, Result*, BgcsInnoRmluiError**, int> m_function29;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> m_function30;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, float, Result*, BgcsInnoRmluiError**, int> m_function31;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> m_function32;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function33;
-        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, BgcsInnoRmluiError**, int> m_function34;
-        private readonly delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, void> m_function35;
-        private readonly delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, sbyte*> m_function36;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, double, Result*, BgcsInnoRmluiError**, int> m_function0;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function1;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, byte*, Result*, BgcsInnoRmluiError**, int> m_function2;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> m_function3;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterDrawCommandNative*, ulong, Result*, BgcsInnoRmluiError**, int> m_function4;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function5;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function6;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, uint*, ulong, Result*, BgcsInnoRmluiError**, int> m_function7;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterVertexNative*, ulong, Result*, BgcsInnoRmluiError**, int> m_function8;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> m_function9;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> m_function10;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, byte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function11;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, sbyte*, int, int, float, ulong*, Result*, BgcsInnoRmluiError**, int> m_function12;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function13;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function14;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, FocusOutcome*, Result*, BgcsInnoRmluiError**, int> m_function15;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> m_function16;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterEventInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function17;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, sbyte*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> m_function18;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterMeshInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function19;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterTextureInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function20;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, double*, byte*, Result*, BgcsInnoRmluiError**, int> m_function21;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, InnoUIRmlUiAdapterControlValueInfoNative*, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function22;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, byte*, Result*, BgcsInnoRmluiError**, int> m_function23;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> m_function24;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, sbyte*, ulong*, Result*, BgcsInnoRmluiError**, int> m_function25;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, byte*, ulong, sbyte*, int, int, byte, Result*, BgcsInnoRmluiError**, int> m_function26;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> m_function27;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> m_function28;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> m_function29;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, int, Result*, BgcsInnoRmluiError**, int> m_function30;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, float, float, int, Result*, BgcsInnoRmluiError**, int> m_function31;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, Result*, BgcsInnoRmluiError**, int> m_function32;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, InnoUIRmlUiAdapterElementLayoutInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function33;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function34;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, int, int, byte*, ulong, Result*, BgcsInnoRmluiError**, int> m_function35;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterFrameInfoNative*, Result*, BgcsInnoRmluiError**, int> m_function36;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime**, BgcsInnoRmluiError**, int> m_function37;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> m_function38;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte, byte*, Result*, BgcsInnoRmluiError**, int> m_function39;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> m_function40;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, byte, Result*, BgcsInnoRmluiError**, int> m_function41;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ControlValueKind, sbyte*, double, byte, byte*, Result*, BgcsInnoRmluiError**, int> m_function42;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, float, Result*, BgcsInnoRmluiError**, int> m_function43;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> m_function44;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> m_function45;
+        private readonly delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, BgcsInnoRmluiError**, int> m_function46;
+        private readonly delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, void> m_function47;
+        private readonly delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, sbyte*> m_function48;
         public RawApi Raw { get; }
 
         private UiNativeContext(global::BGCS.Runtime.INativeModuleProvider provider)
@@ -99,7 +111,25 @@ namespace Inno.Native.UI
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(NativeArray_eefffd4ad3ec208d) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(EditPhase) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(InnoUIRmlUiAdapterEventInfo) != 64)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("Type").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("Document").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("TargetIdLength").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("Value").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("Phase").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("Origin").ToInt64() != 60)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (sizeof(NativeArray_78bd09dc87a774a8) != 3)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(FocusOutcome) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(InnoUIRmlUiAdapterTextureInfo) != 32)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -112,6 +142,16 @@ namespace Inno.Native.UI
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterTextureInfo>("Height").ToInt64() != 20)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterTextureInfo>("ByteLength").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (sizeof(InnoUIRmlUiAdapterControlValueInfo) != 32)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterControlValueInfo>("Kind").ToInt64() != 0)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterControlValueInfo>("Number").ToInt64() != 8)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterControlValueInfo>("Checked").ToInt64() != 16)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterControlValueInfo>("TextLength").ToInt64() != 24)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (sizeof(EventType) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
@@ -131,14 +171,74 @@ namespace Inno.Native.UI
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterDrawCommand>("ScissorHeight").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (sizeof(InnoUIRmlUiAdapterEventInfo) != 24)
+                if (sizeof(ControlValueKind) != 4)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("Type").ToInt64() != 0)
+                if (sizeof(InnoUIRmlUiAdapterElementLayoutInfo) != 128)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("Status").ToInt64() != 0)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("Document").ToInt64() != 8)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("Revision").ToInt64() != 8)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterEventInfo>("TargetIdLength").ToInt64() != 16)
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ContentX").ToInt64() != 16)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ContentY").ToInt64() != 20)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ContentWidth").ToInt64() != 24)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ContentHeight").ToInt64() != 28)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("BorderX").ToInt64() != 32)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("BorderY").ToInt64() != 36)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("BorderWidth").ToInt64() != 40)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("BorderHeight").ToInt64() != 44)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ClipX").ToInt64() != 48)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ClipY").ToInt64() != 52)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ClipWidth").ToInt64() != 56)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("ClipHeight").ToInt64() != 60)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M11").ToInt64() != 64)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M12").ToInt64() != 68)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M13").ToInt64() != 72)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M14").ToInt64() != 76)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M21").ToInt64() != 80)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M22").ToInt64() != 84)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M23").ToInt64() != 88)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M24").ToInt64() != 92)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M31").ToInt64() != 96)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M32").ToInt64() != 100)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M33").ToInt64() != 104)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M34").ToInt64() != 108)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M41").ToInt64() != 112)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M42").ToInt64() != 116)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M43").ToInt64() != 120)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterElementLayoutInfo>("M44").ToInt64() != 124)
+                    throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
+                if (sizeof(EventOrigin) != 4)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
+                if (sizeof(NativeArray_ddadfd40a13315f3) != 7)
+                    throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (sizeof(InnoUIRmlUiAdapterVertex) != 20)
                     throw new global::System.TypeLoadException("A managed storage carrier differs from the recorded native size.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterVertex>("X").ToInt64() != 0)
@@ -173,44 +273,56 @@ namespace Inno.Native.UI
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
                 if (global::System.Runtime.InteropServices.Marshal.OffsetOf<InnoUIRmlUiAdapterFrameInfo>("ReleasedTextureCount").ToInt64() != 32)
                     throw new global::System.TypeLoadException("A managed field offset differs from the recorded native offset.");
-                var symbols = m_session.ResolveRequiredSymbols(new string[] { "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearEvents_94ee3ab71b3b9162", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CloseDocument_7519deef3f965800", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyCommands_2cb14af3c9732e87", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyEventTargetId_4a6f987808428ab6", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshIndices_e1dbb6d383264720", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshVertices_6817d1f0dc558233", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedMeshes_70c06192246aba15", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedTextures_617d1e6d2dc228ea", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyTexturePixels_a5ca74f49309074b", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CreateContext_5b988c6b56152d40", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_DestroyContext_bbe30ed7e7cba5e8", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_FinishFrame_03185f36e37d62d8", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventCount_8acc04f091e90f06", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventInfo_b5e838df0f820470", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetMeshInfo_b926a7aa9749cbc3", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTextureInfo_bd3f8d4de21960a4", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HasElementAtPoint_c41a82c57472cc45", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HideDocument_b911df46231a1340", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadDocument_e1e2ef6eb18bae50", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadFont_30982f7cad8a1290", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessKey_2b03c3d21e2a2573", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseButton_992574a7c3145b2f", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseMove_46a889b93055b341", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseWheel_f0cd4325ef53ddb7", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessText_7541512155857a5d", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_RegisterTexture_abbcef7fc1e87569", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Render_d0121f4f96b5e93d", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Runtime_adbece7a44bfa9d1", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetAttribute_f3a27092538fe6e5", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetClass_5ea39a27615d6e0a", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetInnerMarkup_046cbc209eba48fc", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetViewport_6e31eea2758fbcd9", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ShowDocument_c07988fd3877ea3b", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Update_c415381f8a41d3c6", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_destroy_cbaa4b0ab5ba5681", "bgcs_inno_rmlui_error_release", "bgcs_inno_rmlui_error_message" });
-                m_function0 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearEvents_94ee3ab71b3b9162"];
-                m_function1 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CloseDocument_7519deef3f965800"];
-                m_function2 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterDrawCommandNative*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyCommands_2cb14af3c9732e87"];
-                m_function3 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyEventTargetId_4a6f987808428ab6"];
-                m_function4 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, uint*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshIndices_e1dbb6d383264720"];
-                m_function5 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterVertexNative*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshVertices_6817d1f0dc558233"];
-                m_function6 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedMeshes_70c06192246aba15"];
-                m_function7 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedTextures_617d1e6d2dc228ea"];
-                m_function8 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, byte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyTexturePixels_a5ca74f49309074b"];
-                m_function9 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, sbyte*, int, int, float, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CreateContext_5b988c6b56152d40"];
-                m_function10 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_DestroyContext_bbe30ed7e7cba5e8"];
-                m_function11 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_FinishFrame_03185f36e37d62d8"];
-                m_function12 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventCount_8acc04f091e90f06"];
-                m_function13 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterEventInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventInfo_b5e838df0f820470"];
-                m_function14 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterMeshInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetMeshInfo_b926a7aa9749cbc3"];
-                m_function15 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterTextureInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTextureInfo_bd3f8d4de21960a4"];
-                m_function16 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HasElementAtPoint_c41a82c57472cc45"];
-                m_function17 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HideDocument_b911df46231a1340"];
-                m_function18 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, sbyte*, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadDocument_e1e2ef6eb18bae50"];
-                m_function19 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, byte*, ulong, sbyte*, int, int, byte, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadFont_30982f7cad8a1290"];
-                m_function20 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessKey_2b03c3d21e2a2573"];
-                m_function21 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseButton_992574a7c3145b2f"];
-                m_function22 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseMove_46a889b93055b341"];
-                m_function23 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, float, float, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseWheel_f0cd4325ef53ddb7"];
-                m_function24 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessText_7541512155857a5d"];
-                m_function25 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, int, int, byte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_RegisterTexture_abbcef7fc1e87569"];
-                m_function26 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterFrameInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Render_d0121f4f96b5e93d"];
-                m_function27 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime**, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Runtime_adbece7a44bfa9d1"];
-                m_function28 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetAttribute_f3a27092538fe6e5"];
-                m_function29 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetClass_5ea39a27615d6e0a"];
-                m_function30 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetInnerMarkup_046cbc209eba48fc"];
-                m_function31 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, float, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetViewport_6e31eea2758fbcd9"];
-                m_function32 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ShowDocument_c07988fd3877ea3b"];
-                m_function33 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Update_c415381f8a41d3c6"];
-                m_function34 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_destroy_cbaa4b0ab5ba5681"];
-                m_function35 = (delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, void> )symbols["bgcs_inno_rmlui_error_release"];
-                m_function36 = (delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, sbyte*> )symbols["bgcs_inno_rmlui_error_message"];
+                var symbols = m_session.ResolveRequiredSymbols(new string[] { "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_AdvanceTime_161a880702065828", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearEvents_94ee3ab71b3b9162", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearFocus_17e8f665328ad116", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CloseDocument_7519deef3f965800", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyCommands_2cb14af3c9732e87", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyEventTargetId_4a6f987808428ab6", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyEventValue_51bc23e5f2e95948", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshIndices_e1dbb6d383264720", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshVertices_6817d1f0dc558233", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedMeshes_70c06192246aba15", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedTextures_617d1e6d2dc228ea", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyTexturePixels_a5ca74f49309074b", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CreateContext_5b988c6b56152d40", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_DestroyContext_bbe30ed7e7cba5e8", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_FinishFrame_03185f36e37d62d8", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_FocusElement_89a088ebf3455eab", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventCount_8acc04f091e90f06", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventInfo_b5e838df0f820470", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetFocusedElement_b7ec18189fc840f2", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetMeshInfo_b926a7aa9749cbc3", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTextureInfo_bd3f8d4de21960a4", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTime_acf18105d341fd31", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetValue_e433bf0a571bbfe4", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HasElementAtPoint_c41a82c57472cc45", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HideDocument_b911df46231a1340", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadDocument_e1e2ef6eb18bae50", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadFont_30982f7cad8a1290", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_PrepareLayout_1b0d5e4a203bc9db", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessKey_2b03c3d21e2a2573", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseButton_992574a7c3145b2f", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseMove_46a889b93055b341", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseWheel_f0cd4325ef53ddb7", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessText_7541512155857a5d", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ReadLayout_246ab70e143753d8", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_RefreshLayout_97801f2baa1f9b6a", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_RegisterTexture_abbcef7fc1e87569", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Render_d0121f4f96b5e93d", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Runtime_adbece7a44bfa9d1", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetAttribute_f3a27092538fe6e5", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetClass_5ea39a27615d6e0a", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetInnerMarkup_046cbc209eba48fc", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetTimePaused_3bfb94526a6bff91", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetValue_6ab7819eebab9f31", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetViewport_6e31eea2758fbcd9", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ShowDocument_c07988fd3877ea3b", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Update_c415381f8a41d3c6", "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_destroy_cbaa4b0ab5ba5681", "bgcs_inno_rmlui_error_release", "bgcs_inno_rmlui_error_message" });
+                m_function0 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, double, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_AdvanceTime_161a880702065828"];
+                m_function1 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearEvents_94ee3ab71b3b9162"];
+                m_function2 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearFocus_17e8f665328ad116"];
+                m_function3 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CloseDocument_7519deef3f965800"];
+                m_function4 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterDrawCommandNative*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyCommands_2cb14af3c9732e87"];
+                m_function5 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyEventTargetId_4a6f987808428ab6"];
+                m_function6 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyEventValue_51bc23e5f2e95948"];
+                m_function7 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, uint*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshIndices_e1dbb6d383264720"];
+                m_function8 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterVertexNative*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyMeshVertices_6817d1f0dc558233"];
+                m_function9 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedMeshes_70c06192246aba15"];
+                m_function10 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyReleasedTextures_617d1e6d2dc228ea"];
+                m_function11 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, byte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyTexturePixels_a5ca74f49309074b"];
+                m_function12 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, sbyte*, int, int, float, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CreateContext_5b988c6b56152d40"];
+                m_function13 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_DestroyContext_bbe30ed7e7cba5e8"];
+                m_function14 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_FinishFrame_03185f36e37d62d8"];
+                m_function15 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, FocusOutcome*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_FocusElement_89a088ebf3455eab"];
+                m_function16 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventCount_8acc04f091e90f06"];
+                m_function17 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterEventInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventInfo_b5e838df0f820470"];
+                m_function18 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, sbyte*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetFocusedElement_b7ec18189fc840f2"];
+                m_function19 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterMeshInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetMeshInfo_b926a7aa9749cbc3"];
+                m_function20 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, InnoUIRmlUiAdapterTextureInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTextureInfo_bd3f8d4de21960a4"];
+                m_function21 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, double*, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTime_acf18105d341fd31"];
+                m_function22 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, InnoUIRmlUiAdapterControlValueInfoNative*, sbyte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetValue_e433bf0a571bbfe4"];
+                m_function23 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HasElementAtPoint_c41a82c57472cc45"];
+                m_function24 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_HideDocument_b911df46231a1340"];
+                m_function25 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, sbyte*, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadDocument_e1e2ef6eb18bae50"];
+                m_function26 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, byte*, ulong, sbyte*, int, int, byte, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_LoadFont_30982f7cad8a1290"];
+                m_function27 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_PrepareLayout_1b0d5e4a203bc9db"];
+                m_function28 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessKey_2b03c3d21e2a2573"];
+                m_function29 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, byte, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseButton_992574a7c3145b2f"];
+                m_function30 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseMove_46a889b93055b341"];
+                m_function31 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, float, float, int, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessMouseWheel_f0cd4325ef53ddb7"];
+                m_function32 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessText_7541512155857a5d"];
+                m_function33 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ulong, InnoUIRmlUiAdapterElementLayoutInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ReadLayout_246ab70e143753d8"];
+                m_function34 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_RefreshLayout_97801f2baa1f9b6a"];
+                m_function35 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, sbyte*, int, int, byte*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_RegisterTexture_abbcef7fc1e87569"];
+                m_function36 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, InnoUIRmlUiAdapterFrameInfoNative*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Render_d0121f4f96b5e93d"];
+                m_function37 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime**, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Runtime_adbece7a44bfa9d1"];
+                m_function38 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetAttribute_f3a27092538fe6e5"];
+                m_function39 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetClass_5ea39a27615d6e0a"];
+                m_function40 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, sbyte*, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetInnerMarkup_046cbc209eba48fc"];
+                m_function41 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, byte, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetTimePaused_3bfb94526a6bff91"];
+                m_function42 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, sbyte*, ControlValueKind, sbyte*, double, byte, byte*, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetValue_6ab7819eebab9f31"];
+                m_function43 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, int, int, float, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetViewport_6e31eea2758fbcd9"];
+                m_function44 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ShowDocument_c07988fd3877ea3b"];
+                m_function45 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, ulong, Result*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_Update_c415381f8a41d3c6"];
+                m_function46 = (delegate* unmanaged[Cdecl]<InnoUIRmlUiAdapterRuntime*, BgcsInnoRmluiError**, int> )symbols["bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_destroy_cbaa4b0ab5ba5681"];
+                m_function47 = (delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, void> )symbols["bgcs_inno_rmlui_error_release"];
+                m_function48 = (delegate* unmanaged[Cdecl]<BgcsInnoRmluiError*, sbyte*> )symbols["bgcs_inno_rmlui_error_message"];
                 Raw = new RawApi(this);
             }
             catch
@@ -248,12 +360,28 @@ namespace Inno.Native.UI
         {
             private readonly UiNativeContext m_owner;
             internal RawApi(UiNativeContext owner) => m_owner = owner;
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::AdvanceTime")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int AdvanceTime([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "seconds")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "double")] double seconds, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function0(bgcs_self, context, seconds, bgcs_result, bgcs_error);
+            }
+
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ClearEvents")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
             public int ClearEvents([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function0(bgcs_self, context, bgcs_result, bgcs_error);
+                return this.m_owner.m_function1(bgcs_self, context, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ClearFocus")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int ClearFocus([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "cleared")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* cleared, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function2(bgcs_self, context, cleared, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CloseDocument")]
@@ -261,7 +389,7 @@ namespace Inno.Native.UI
             public int CloseDocument([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function1(bgcs_self, context, document, bgcs_result, bgcs_error);
+                return this.m_owner.m_function3(bgcs_self, context, document, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyCommands")]
@@ -269,7 +397,7 @@ namespace Inno.Native.UI
             public int CopyCommands([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "commands")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_DrawCommand_object_f848ef5db5cb21fe *")] InnoUIRmlUiAdapterDrawCommandNative* commands, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "command_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong command_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function2(bgcs_self, context, commands, command_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function4(bgcs_self, context, commands, command_capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyEventTargetId")]
@@ -277,7 +405,15 @@ namespace Inno.Native.UI
             public int CopyEventTargetId([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "index")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong index, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "target_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t *")] sbyte* target_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "target_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong target_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function3(bgcs_self, context, index, target_id, target_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function5(bgcs_self, context, index, target_id, target_capacity, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyEventValue")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int CopyEventValue([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "index")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong index, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "text")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t *")] sbyte* text, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function6(bgcs_self, context, index, text, capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyMeshIndices")]
@@ -285,7 +421,7 @@ namespace Inno.Native.UI
             public int CopyMeshIndices([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "mesh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong mesh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "indices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint32_t *")] uint* indices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "index_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong index_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function4(bgcs_self, context, mesh, indices, index_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function7(bgcs_self, context, mesh, indices, index_capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyMeshVertices")]
@@ -293,7 +429,7 @@ namespace Inno.Native.UI
             public int CopyMeshVertices([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "mesh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong mesh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "vertices")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Vertex_object_e30329981f1847b2 *")] InnoUIRmlUiAdapterVertexNative* vertices, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "vertex_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong vertex_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function5(bgcs_self, context, mesh, vertices, vertex_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function8(bgcs_self, context, mesh, vertices, vertex_capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyReleasedMeshes")]
@@ -301,7 +437,7 @@ namespace Inno.Native.UI
             public int CopyReleasedMeshes([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "meshes")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* meshes, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "mesh_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong mesh_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function6(bgcs_self, context, meshes, mesh_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function9(bgcs_self, context, meshes, mesh_capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyReleasedTextures")]
@@ -309,7 +445,7 @@ namespace Inno.Native.UI
             public int CopyReleasedTextures([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "textures")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* textures, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "texture_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong texture_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function7(bgcs_self, context, textures, texture_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function10(bgcs_self, context, textures, texture_capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CopyTexturePixels")]
@@ -317,7 +453,7 @@ namespace Inno.Native.UI
             public int CopyTexturePixels([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "texture")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong texture, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "pixels")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* pixels, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "pixel_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong pixel_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function8(bgcs_self, context, texture, pixels, pixel_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function11(bgcs_self, context, texture, pixels, pixel_capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::CreateContext")]
@@ -325,7 +461,7 @@ namespace Inno.Native.UI
             public int CreateContext([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "density")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float density, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function9(bgcs_self, name, width, height, density, context, bgcs_result, bgcs_error);
+                return this.m_owner.m_function12(bgcs_self, name, width, height, density, context, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::DestroyContext")]
@@ -333,7 +469,7 @@ namespace Inno.Native.UI
             public int DestroyContext([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function10(bgcs_self, context, bgcs_result, bgcs_error);
+                return this.m_owner.m_function13(bgcs_self, context, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::FinishFrame")]
@@ -341,7 +477,15 @@ namespace Inno.Native.UI
             public int FinishFrame([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function11(bgcs_self, context, bgcs_result, bgcs_error);
+                return this.m_owner.m_function14(bgcs_self, context, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::FocusElement")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int FocusElement([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "outcome")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_FocusOutcome_b783e665f6764090 *")] FocusOutcome* outcome, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function15(bgcs_self, context, document, element_id, outcome, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::GetEventCount")]
@@ -349,15 +493,23 @@ namespace Inno.Native.UI
             public int GetEventCount([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "count")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* count, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function12(bgcs_self, context, count, bgcs_result, bgcs_error);
+                return this.m_owner.m_function16(bgcs_self, context, count, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::GetEventInfo")]
             [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
-            public int GetEventInfo([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "index")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong index, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "event_info")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_object_3ad1de19e30e0756 *")] InnoUIRmlUiAdapterEventInfoNative* event_info, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            public int GetEventInfo([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "index")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong index, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "event_info")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_object_f19a45278fd6f17b *")] InnoUIRmlUiAdapterEventInfoNative* event_info, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function13(bgcs_self, context, index, event_info, bgcs_result, bgcs_error);
+                return this.m_owner.m_function17(bgcs_self, context, index, event_info, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::GetFocusedElement")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int GetFocusedElement([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "length")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* length, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function18(bgcs_self, context, document, element_id, capacity, length, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::GetMeshInfo")]
@@ -365,7 +517,7 @@ namespace Inno.Native.UI
             public int GetMeshInfo([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "index")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong index, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "mesh")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_MeshInfo_object_15d30c42a87516be *")] InnoUIRmlUiAdapterMeshInfoNative* mesh, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function14(bgcs_self, context, index, mesh, bgcs_result, bgcs_error);
+                return this.m_owner.m_function19(bgcs_self, context, index, mesh, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::GetTextureInfo")]
@@ -373,7 +525,23 @@ namespace Inno.Native.UI
             public int GetTextureInfo([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "index")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong index, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "texture")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_TextureInfo_object_b3dd028c8723354d *")] InnoUIRmlUiAdapterTextureInfoNative* texture, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function15(bgcs_self, context, index, texture, bgcs_result, bgcs_error);
+                return this.m_owner.m_function20(bgcs_self, context, index, texture, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::GetTime")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int GetTime([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "seconds")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "double *")] double* seconds, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "paused")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* paused, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function21(bgcs_self, context, seconds, paused, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::GetValue")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int GetValue([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_object_41bd928a195fb261 *")] InnoUIRmlUiAdapterControlValueInfoNative* value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "text")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t *")] sbyte* text, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function22(bgcs_self, context, document, element_id, value, text, capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::HasElementAtPoint")]
@@ -381,7 +549,7 @@ namespace Inno.Native.UI
             public int HasElementAtPoint([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "hit")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* hit, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function16(bgcs_self, context, x, y, hit, bgcs_result, bgcs_error);
+                return this.m_owner.m_function23(bgcs_self, context, x, y, hit, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::HideDocument")]
@@ -389,7 +557,7 @@ namespace Inno.Native.UI
             public int HideDocument([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function17(bgcs_self, context, document, bgcs_result, bgcs_error);
+                return this.m_owner.m_function24(bgcs_self, context, document, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::LoadDocument")]
@@ -397,7 +565,7 @@ namespace Inno.Native.UI
             public int LoadDocument([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "markup")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* markup, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "source_url")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* source_url, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function18(bgcs_self, context, markup, source_url, document, bgcs_result, bgcs_error);
+                return this.m_owner.m_function25(bgcs_self, context, markup, source_url, document, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::LoadFont")]
@@ -405,7 +573,15 @@ namespace Inno.Native.UI
             public int LoadFont([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "data")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t const *")] byte* data, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "data_length")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong data_length, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "family")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* family, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "style")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int style, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "weight")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int weight, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "fallback")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte fallback, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function19(bgcs_self, data, data_length, family, style, weight, fallback, bgcs_result, bgcs_error);
+                return this.m_owner.m_function26(bgcs_self, data, data_length, family, style, weight, fallback, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::PrepareLayout")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int PrepareLayout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "revision")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t *")] ulong* revision, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function27(bgcs_self, context, revision, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ProcessKey")]
@@ -413,7 +589,7 @@ namespace Inno.Native.UI
             public int ProcessKey([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "key")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int key, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "down")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte down, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "modifiers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int modifiers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function20(bgcs_self, context, key, down, modifiers, bgcs_result, bgcs_error);
+                return this.m_owner.m_function28(bgcs_self, context, key, down, modifiers, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ProcessMouseButton")]
@@ -421,7 +597,7 @@ namespace Inno.Native.UI
             public int ProcessMouseButton([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "button")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int button, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "down")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte down, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "modifiers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int modifiers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function21(bgcs_self, context, button, down, modifiers, bgcs_result, bgcs_error);
+                return this.m_owner.m_function29(bgcs_self, context, button, down, modifiers, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ProcessMouseMove")]
@@ -429,7 +605,7 @@ namespace Inno.Native.UI
             public int ProcessMouseMove([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "modifiers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int modifiers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function22(bgcs_self, context, x, y, modifiers, bgcs_result, bgcs_error);
+                return this.m_owner.m_function30(bgcs_self, context, x, y, modifiers, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ProcessMouseWheel")]
@@ -437,7 +613,7 @@ namespace Inno.Native.UI
             public int ProcessMouseWheel([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "x")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float x, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "y")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float y, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "modifiers")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int modifiers, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function23(bgcs_self, context, x, y, modifiers, bgcs_result, bgcs_error);
+                return this.m_owner.m_function31(bgcs_self, context, x, y, modifiers, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ProcessText")]
@@ -445,7 +621,23 @@ namespace Inno.Native.UI
             public int ProcessText([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "text")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* text, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function24(bgcs_self, context, text, bgcs_result, bgcs_error);
+                return this.m_owner.m_function32(bgcs_self, context, text, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ReadLayout")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int ReadLayout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "revision")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong revision, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "layout")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_object_6415a7d66a35943c *")] InnoUIRmlUiAdapterElementLayoutInfoNative* layout, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function33(bgcs_self, context, document, element_id, revision, layout, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::RefreshLayout")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int RefreshLayout([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function34(bgcs_self, context, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::RegisterTexture")]
@@ -453,7 +645,7 @@ namespace Inno.Native.UI
             public int RegisterTexture([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "source")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* source, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "pixels")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* pixels, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "pixel_capacity")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong pixel_capacity, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function25(bgcs_self, context, source, width, height, pixels, pixel_capacity, bgcs_result, bgcs_error);
+                return this.m_owner.m_function35(bgcs_self, context, source, width, height, pixels, pixel_capacity, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::Render")]
@@ -461,7 +653,7 @@ namespace Inno.Native.UI
             public int Render([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "frame")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_FrameInfo_object_87a83d942b2f139f *")] InnoUIRmlUiAdapterFrameInfoNative* frame, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function26(bgcs_self, context, frame, bgcs_result, bgcs_error);
+                return this.m_owner.m_function36(bgcs_self, context, frame, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::Runtime")]
@@ -469,7 +661,7 @@ namespace Inno.Native.UI
             public int CreateRuntime([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * *")] InnoUIRmlUiAdapterRuntime** bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function27(bgcs_result, bgcs_error);
+                return this.m_owner.m_function37(bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::SetAttribute")]
@@ -477,7 +669,7 @@ namespace Inno.Native.UI
             public int SetAttribute([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "value")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* value, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "changed")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* changed, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function28(bgcs_self, context, document, element_id, name, value, changed, bgcs_result, bgcs_error);
+                return this.m_owner.m_function38(bgcs_self, context, document, element_id, name, value, changed, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::SetClass")]
@@ -485,7 +677,7 @@ namespace Inno.Native.UI
             public int SetClass([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "class_name")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* class_name, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "active")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte active, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "changed")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* changed, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function29(bgcs_self, context, document, element_id, class_name, active, changed, bgcs_result, bgcs_error);
+                return this.m_owner.m_function39(bgcs_self, context, document, element_id, class_name, active, changed, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::SetInnerMarkup")]
@@ -493,7 +685,23 @@ namespace Inno.Native.UI
             public int SetInnerMarkup([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "markup")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* markup, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "changed")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* changed, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function30(bgcs_self, context, document, element_id, markup, changed, bgcs_result, bgcs_error);
+                return this.m_owner.m_function40(bgcs_self, context, document, element_id, markup, changed, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::SetTimePaused")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int SetTimePaused([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "paused")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte paused, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function41(bgcs_self, context, paused, bgcs_result, bgcs_error);
+            }
+
+            [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::SetValue")]
+            [return: global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")]
+            public int SetValue([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "element_id")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* element_id, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "kind")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_ControlValueKind_4a8cb716a37c5aa0")] ControlValueKind kind, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "text")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int8_t const *")] sbyte* text, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "number")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "double")] double number, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "checked")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t")] byte @checked, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "accepted")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint8_t *")] byte* accepted, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
+            {
+                using var __bgcsCall = this.m_owner.m_session.AcquireCall();
+                return this.m_owner.m_function42(bgcs_self, context, document, element_id, kind, text, number, @checked, accepted, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::SetViewport")]
@@ -501,7 +709,7 @@ namespace Inno.Native.UI
             public int SetViewport([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "width")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int width, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "height")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "int32_t")] int height, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "density")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "float")] float density, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function31(bgcs_self, context, width, height, density, bgcs_result, bgcs_error);
+                return this.m_owner.m_function43(bgcs_self, context, width, height, density, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::ShowDocument")]
@@ -509,7 +717,7 @@ namespace Inno.Native.UI
             public int ShowDocument([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "document")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong document, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function32(bgcs_self, context, document, bgcs_result, bgcs_error);
+                return this.m_owner.m_function44(bgcs_self, context, document, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::Update")]
@@ -517,7 +725,7 @@ namespace Inno.Native.UI
             public int Update([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "context")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "uint64_t")] ulong context, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_result")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Result_27eacae197510b4d *")] Result* bgcs_result, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function33(bgcs_self, context, bgcs_result, bgcs_error);
+                return this.m_owner.m_function45(bgcs_self, context, bgcs_result, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "Inno::UI::RmlUiAdapter::Runtime::~Runtime")]
@@ -525,7 +733,7 @@ namespace Inno.Native.UI
             public int DestroyRuntime([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_self")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 *")] InnoUIRmlUiAdapterRuntime* bgcs_self, [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "bgcs_error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error * *")] BgcsInnoRmluiError** bgcs_error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function34(bgcs_self, bgcs_error);
+                return this.m_owner.m_function46(bgcs_self, bgcs_error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgcs_inno_rmlui_error_release")]
@@ -533,7 +741,7 @@ namespace Inno.Native.UI
             public void BgcsInnoRmluiErrorRelease([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error *")] BgcsInnoRmluiError* error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                this.m_owner.m_function35(error);
+                this.m_owner.m_function47(error);
             }
 
             [global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Func, "bgcs_inno_rmlui_error_message")]
@@ -541,7 +749,7 @@ namespace Inno.Native.UI
             public sbyte* BgcsInnoRmluiErrorMessage([global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Param, "error")][global::BGCS.Runtime.NativeNameAttribute(global::BGCS.Runtime.NativeNameType.Type, "bgcs_inno_rmlui_error const *")] BgcsInnoRmluiError* error)
             {
                 using var __bgcsCall = this.m_owner.m_session.AcquireCall();
-                return this.m_owner.m_function36(error);
+                return this.m_owner.m_function48(error);
             }
         }
     }
@@ -563,6 +771,47 @@ namespace Inno.Native.UI
 #pragma warning disable CS1591
 namespace Inno.Native.UI
 {
+    public enum ControlValueKind : uint
+    {
+        None = 0U,
+        Text = 1U,
+        Boolean = 2U,
+        Number = 3U,
+        Selection = 4U,
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    public enum EditPhase : uint
+    {
+        None = 0U,
+        Editing = 1U,
+        Committed = 2U,
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    public enum EventOrigin : uint
+    {
+        Backend = 0U,
+        UserInput = 1U,
+        Programmatic = 2U,
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
     public enum EventType : uint
     {
         Click = 0U,
@@ -572,6 +821,51 @@ namespace Inno.Native.UI
         Blur = 4U,
         MouseEnter = 5U,
         MouseLeave = 6U,
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    public enum FocusOutcome : uint
+    {
+        Focused = 0U,
+        Unchanged = 1U,
+        NotFound = 2U,
+        NotFocusable = 3U,
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 32)]
+    public unsafe partial struct InnoUIRmlUiAdapterControlValueInfo
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public ControlValueKind Kind;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public double Number;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public byte Checked;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public ulong TextLength;
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    // Opaque native marker: storage size and by-value use are intentionally unavailable.
+    public unsafe partial struct InnoUIRmlUiAdapterControlValueInfoNative
+    {
     }
 }
 
@@ -618,7 +912,90 @@ namespace Inno.Native.UI
 namespace Inno.Native.UI
 {
     // Native allocation alignment: 8 bytes. Use aligned native memory when required.
-    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 24)]
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 128)]
+    public unsafe partial struct InnoUIRmlUiAdapterElementLayoutInfo
+    {
+        [global::System.Runtime.InteropServices.FieldOffset(0)]
+        public uint Status;
+        [global::System.Runtime.InteropServices.FieldOffset(8)]
+        public ulong Revision;
+        [global::System.Runtime.InteropServices.FieldOffset(16)]
+        public float ContentX;
+        [global::System.Runtime.InteropServices.FieldOffset(20)]
+        public float ContentY;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public float ContentWidth;
+        [global::System.Runtime.InteropServices.FieldOffset(28)]
+        public float ContentHeight;
+        [global::System.Runtime.InteropServices.FieldOffset(32)]
+        public float BorderX;
+        [global::System.Runtime.InteropServices.FieldOffset(36)]
+        public float BorderY;
+        [global::System.Runtime.InteropServices.FieldOffset(40)]
+        public float BorderWidth;
+        [global::System.Runtime.InteropServices.FieldOffset(44)]
+        public float BorderHeight;
+        [global::System.Runtime.InteropServices.FieldOffset(48)]
+        public float ClipX;
+        [global::System.Runtime.InteropServices.FieldOffset(52)]
+        public float ClipY;
+        [global::System.Runtime.InteropServices.FieldOffset(56)]
+        public float ClipWidth;
+        [global::System.Runtime.InteropServices.FieldOffset(60)]
+        public float ClipHeight;
+        [global::System.Runtime.InteropServices.FieldOffset(64)]
+        public float M11;
+        [global::System.Runtime.InteropServices.FieldOffset(68)]
+        public float M12;
+        [global::System.Runtime.InteropServices.FieldOffset(72)]
+        public float M13;
+        [global::System.Runtime.InteropServices.FieldOffset(76)]
+        public float M14;
+        [global::System.Runtime.InteropServices.FieldOffset(80)]
+        public float M21;
+        [global::System.Runtime.InteropServices.FieldOffset(84)]
+        public float M22;
+        [global::System.Runtime.InteropServices.FieldOffset(88)]
+        public float M23;
+        [global::System.Runtime.InteropServices.FieldOffset(92)]
+        public float M24;
+        [global::System.Runtime.InteropServices.FieldOffset(96)]
+        public float M31;
+        [global::System.Runtime.InteropServices.FieldOffset(100)]
+        public float M32;
+        [global::System.Runtime.InteropServices.FieldOffset(104)]
+        public float M33;
+        [global::System.Runtime.InteropServices.FieldOffset(108)]
+        public float M34;
+        [global::System.Runtime.InteropServices.FieldOffset(112)]
+        public float M41;
+        [global::System.Runtime.InteropServices.FieldOffset(116)]
+        public float M42;
+        [global::System.Runtime.InteropServices.FieldOffset(120)]
+        public float M43;
+        [global::System.Runtime.InteropServices.FieldOffset(124)]
+        public float M44;
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    // Opaque native marker: storage size and by-value use are intentionally unavailable.
+    public unsafe partial struct InnoUIRmlUiAdapterElementLayoutInfoNative
+    {
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    // Native allocation alignment: 8 bytes. Use aligned native memory when required.
+    [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit, Pack = 1, Size = 64)]
     public unsafe partial struct InnoUIRmlUiAdapterEventInfo
     {
         [global::System.Runtime.InteropServices.FieldOffset(0)]
@@ -627,6 +1004,12 @@ namespace Inno.Native.UI
         public ulong Document;
         [global::System.Runtime.InteropServices.FieldOffset(16)]
         public ulong TargetIdLength;
+        [global::System.Runtime.InteropServices.FieldOffset(24)]
+        public InnoUIRmlUiAdapterControlValueInfo Value;
+        [global::System.Runtime.InteropServices.FieldOffset(56)]
+        public EditPhase Phase;
+        [global::System.Runtime.InteropServices.FieldOffset(60)]
+        public EventOrigin Origin;
     }
 }
 
@@ -789,6 +1172,18 @@ namespace Inno.Native.UI
 {
     [global::System.Runtime.CompilerServices.InlineArray(3)]
     public partial struct NativeArray_78bd09dc87a774a8
+    {
+        private byte _element0;
+    }
+}
+
+// <auto-generated/>
+#nullable enable
+#pragma warning disable CS1591
+namespace Inno.Native.UI
+{
+    [global::System.Runtime.CompilerServices.InlineArray(7)]
+    public partial struct NativeArray_ddadfd40a13315f3
     {
         private byte _element0;
     }

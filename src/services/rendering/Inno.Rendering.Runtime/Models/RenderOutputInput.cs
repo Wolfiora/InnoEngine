@@ -13,73 +13,55 @@ namespace Inno.Rendering.Runtime;
 public sealed class RenderOutputInput
 {
     /// <summary>
-    /// Creates an input snapshot for one output viewport.
+    /// Creates a viewport-local view of an immutable input sequence.
     /// </summary>
     /// <param name="pointerPosition">
-    /// Pointer coordinates relative to the viewport's top-left corner.
+    /// Final pointer position in viewport pixels.
     /// </param>
     /// <param name="pointerInside">
-    /// Whether the pointer is within this output.
-    /// </param>
-    /// <param name="scrollDelta">
-    /// Pointer wheel movement.
+    /// Whether the final pointer is inside this output.
     /// </param>
     /// <param name="modifiers">
-    /// Current keyboard modifiers.
+    /// Physical modifiers at the frame boundary.
     /// </param>
-    /// <param name="keysPressed">
-    /// Keys pressed this frame.
-    /// </param>
-    /// <param name="keysReleased">
-    /// Keys released this frame.
-    /// </param>
-    /// <param name="buttonsPressed">
-    /// Pointer buttons pressed this frame.
-    /// </param>
-    /// <param name="buttonsReleased">
-    /// Pointer buttons released this frame.
-    /// </param>
-    /// <param name="textInput">
-    /// Ordered Unicode text commits.
+    /// <param name="sequence">
+    /// Ordered changes mapped to the output coordinate space.
     /// </param>
     /// <param name="interactionEnabled">
-    /// Whether the output may dispatch game interaction.
+    /// Whether gameplay interaction is allowed.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The sequence is null.
+    /// </exception>
     public RenderOutputInput(
         Vector2 pointerPosition,
         bool pointerInside,
-        Vector2 scrollDelta,
         KeyModifier modifiers,
-        IReadOnlyCollection<KeyCode> keysPressed,
-        IReadOnlyCollection<KeyCode> keysReleased,
-        IReadOnlyCollection<MouseButton> buttonsPressed,
-        IReadOnlyCollection<MouseButton> buttonsReleased,
-        IReadOnlyList<string> textInput,
+        InputSequence sequence,
         bool interactionEnabled = true
     ) {
+        ArgumentNullException.ThrowIfNull(sequence);
         this.pointerPosition = pointerPosition;
         this.pointerInside = pointerInside;
-        this.scrollDelta = scrollDelta;
         this.modifiers = modifiers;
-        this.keysPressed = keysPressed ?? throw new ArgumentNullException(nameof(keysPressed));
-        this.keysReleased = keysReleased ?? throw new ArgumentNullException(nameof(keysReleased));
-        this.buttonsPressed = buttonsPressed ?? throw new ArgumentNullException(nameof(buttonsPressed));
-        this.buttonsReleased = buttonsReleased ?? throw new ArgumentNullException(nameof(buttonsReleased));
-        this.textInput = textInput ?? throw new ArgumentNullException(nameof(textInput));
+        this.sequence = sequence;
         this.interactionEnabled = interactionEnabled;
     }
 
     /// <summary>
+    /// Gets the immutable input changes in acquisition order.
+    /// </summary>
+    public InputSequence sequence { get; }
+
+    /// <summary>
     /// Gets a snapshot with no active input.
     /// </summary>
-    public static RenderOutputInput empty { get; } = new(default, false, default,
-        KeyModifier.None, [], [], [], [], []);
+    public static RenderOutputInput empty { get; } = new(default, false, KeyModifier.None, InputSequence.empty);
 
     /// <summary>
     /// Gets a snapshot that clears gameplay interaction while retaining the rendered output.
     /// </summary>
-    public static RenderOutputInput suspended { get; } = new(default, false, default,
-        KeyModifier.None, [], [], [], [], [], interactionEnabled: false);
+    public static RenderOutputInput suspended { get; } = new(default, false, KeyModifier.None, InputSequence.empty, interactionEnabled: false);
 
     /// <summary>
     /// Gets viewport-local pointer coordinates.
@@ -92,7 +74,7 @@ public sealed class RenderOutputInput
     /// <summary>
     /// Gets wheel movement.
     /// </summary>
-    public Vector2 scrollDelta { get; }
+    public Vector2 scrollDelta => sequence.scrollDelta;
     /// <summary>
     /// Gets active keyboard modifiers.
     /// </summary>
@@ -100,23 +82,23 @@ public sealed class RenderOutputInput
     /// <summary>
     /// Gets keys pressed this frame.
     /// </summary>
-    public IReadOnlyCollection<KeyCode> keysPressed { get; }
+    public IReadOnlyCollection<KeyCode> keysPressed => sequence.keysPressed;
     /// <summary>
     /// Gets keys released this frame.
     /// </summary>
-    public IReadOnlyCollection<KeyCode> keysReleased { get; }
+    public IReadOnlyCollection<KeyCode> keysReleased => sequence.keysReleased;
     /// <summary>
     /// Gets buttons pressed this frame.
     /// </summary>
-    public IReadOnlyCollection<MouseButton> buttonsPressed { get; }
+    public IReadOnlyCollection<MouseButton> buttonsPressed => sequence.buttonsPressed;
     /// <summary>
     /// Gets buttons released this frame.
     /// </summary>
-    public IReadOnlyCollection<MouseButton> buttonsReleased { get; }
+    public IReadOnlyCollection<MouseButton> buttonsReleased => sequence.buttonsReleased;
     /// <summary>
     /// Gets ordered text commits.
     /// </summary>
-    public IReadOnlyList<string> textInput { get; }
+    public IReadOnlyList<string> textInput => sequence.textInput;
 
     /// <summary>
     /// Gets whether game pointer and keyboard interaction is enabled.

@@ -19,7 +19,8 @@ public sealed class ScriptCompilationResult
         IReadOnlyList<ScriptModuleDeployment>? moduleDeployments,
         IReadOnlyList<string>? compiledAssemblies = null,
         IReadOnlyList<string>? reusedAssemblies = null,
-        IReadOnlyList<ScriptCompilationStageTiming>? stageTimings = null
+        IReadOnlyList<ScriptCompilationStageTiming>? stageTimings = null,
+        IReadOnlyList<ScriptTypeSource>? typeSources = null
     ) {
         this.success = success;
         this.diagnostics = diagnostics;
@@ -39,6 +40,7 @@ public sealed class ScriptCompilationResult
         this.compiledAssemblies = compiledAssemblies ?? [];
         this.reusedAssemblies = reusedAssemblies ?? [];
         this.stageTimings = stageTimings ?? [];
+        this.typeSources = Array.AsReadOnly((typeSources ?? []).ToArray());
     }
 
     /// <summary>
@@ -70,6 +72,13 @@ public sealed class ScriptCompilationResult
     /// Gets the immutable module artifacts and dependency topology produced by this compilation.
     /// </summary>
     public IReadOnlyList<ScriptModuleDeployment> moduleDeployments { get; }
+
+    /// <summary>
+    /// Gets canonical declaration locations from the exact completed candidate, including cached outputs.
+    /// Failed compilation results contain no declaration locations. These neutral records do not
+    /// retain loaded types, assets, or a generation lease.
+    /// </summary>
+    public IReadOnlyList<ScriptTypeSource> typeSources { get; }
 
     /// <summary>
     /// Gets assembly names compiled during this request instead of reused from the artifact cache.

@@ -10,7 +10,7 @@
 | --- | --- |
 | `IInputBackend.Capture(frameIndex)` | 在帧边界产生完整不可变快照，并消费瞬时 pressed/released/delta。 |
 | `IInputService.snapshot` | 当前 Session 当前帧的唯一输入状态。 |
-| `InputSnapshot` | 键鼠 down/pressed/released、位置、delta、wheel、按顺序提交的 Unicode 文本与 frame index。 |
+| `InputSnapshot` | Session 帧边界的 held state、不可变 `sequence`、最终位置及 frame index；pressed/released、文本和 delta 均由该序列派生。 |
 | `InputExecutionContext` | `AsyncLocal` 隔离、严格 LIFO 的服务绑定。 |
 | `Input` | 游戏脚本使用的无状态 façade。 |
 
@@ -23,13 +23,15 @@ if (Input.WasKeyPressed(KeyCode.Space))
 }
 ```
 
+窗口失焦、隐藏、关闭或应用暂停会释放已持有输入，并丢弃尚未交付的普通输入变化；只向所属窗口交付释放，不污染其他窗口。暂停期间拒绝普通输入。
+
 无活动 scope 时 façade 明确抛出异常。Snapshot 不受查询顺序影响；状态 owner 是 Runtime Subsystem，而不是静态类。SDL3 的 UTF-8 文本提交通过 `TextInputEvent` 进入 `textInput`，供 UI Context 消费；IME 预编辑/候选区、Gamepad 与 touch 尚未进入当前稳定契约。
 
 [下一页：Inno.Input.Runtime](Inno.Input.Runtime.md)
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 ### `Inno.Input.IInputBackend`
 
@@ -50,6 +52,20 @@ if (Input.WasKeyPressed(KeyCode.Space))
 | --- | --- | --- | --- |
 | <a id="api-e76435d5ccb6ac16"></a>[`Inno.Input.InputSnapshot Inno.Input.IInputService.snapshot { get; }`](../../src/services/input/Inno.Input/IInputService.cs#L11) | Gets the snapshot captured at the current frame boundary. | — | — |
 | <a id="api-bf368dad86821e50"></a>[`public interface Inno.Input.IInputService`](../../src/services/input/Inno.Input/IInputService.cs#L6) | Exposes the current immutable input snapshot to runtime systems and scripts. | — | — |
+
+### `Inno.Input.InputExecutionContext`
+
+<!-- api: T:Inno.Input.InputExecutionContext 76f0d1a7520d2b9c4aa9d31e9c38180aaa27651cd964d16226b483ae3a84836a -->
+<!-- api: P:Inno.Input.InputExecutionContext.current 418ed6b958d95472009d390e8f163cd45d66d11160ea38ba68683355464c867e -->
+<!-- api: M:Inno.Input.InputExecutionContext.TryGet(Inno.Input.IInputService@) 1f76ef4b4f9de4a53b0a50d02d9ef79a8987735a5249c91c43148fa4d60d2d38 -->
+<!-- api: M:Inno.Input.InputExecutionContext.EnterScope(Inno.Input.IInputService) 2365f5b098710f3e56639c267b82f3370261355334396de02c2edbfc972489fb -->
+
+| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
+| --- | --- | --- | --- |
+| <a id="api-1951673d9de5925d"></a>[`public static System.IDisposable Inno.Input.InputExecutionContext.EnterScope(Inno.Input.IInputService input)`](../../src/services/input/Inno.Input/Input.cs#L45) | Binds an input service until the returned strict last-in-first-out scope is disposed.<br>返回：A strict last-in-first-out execution scope.<br>`input`：The host-owned input service. | — | — |
+| <a id="api-ca5afd1c01ee0194"></a>[`public static bool Inno.Input.InputExecutionContext.TryGet(out Inno.Input.IInputService? input)`](../../src/services/input/Inno.Input/Input.cs#L34) | Tries to read input when a host has installed an input subsystem for this frame.<br>返回：Whether a live input service is bound.<br>`input`：Bound service, or null when unavailable. | — | — |
+| <a id="api-31b6aa69f06eca5c"></a>[`public static Inno.Input.IInputService Inno.Input.InputExecutionContext.current { get; }`](../../src/services/input/Inno.Input/Input.cs#L23) | Gets the input service bound to the current execution context. | — | `System.InvalidOperationException`：Thrown when no input scope is active. |
+| <a id="api-626f3678b873994f"></a>[`public static class Inno.Input.InputExecutionContext`](../../src/services/input/Inno.Input/Input.cs#L13) | Binds one input service to the current asynchronous execution context. | — | — |
 
 ### `Inno.Input.Input`
 
@@ -79,24 +95,11 @@ if (Input.WasKeyPressed(KeyCode.Space))
 | <a id="api-e39d5bda6d54431f"></a>[`public static Inno.Input.InputSnapshot Inno.Input.Input.snapshot { get; }`](../../src/services/input/Inno.Input/Input.cs#L61) | Gets the complete immutable current-frame snapshot. | — | — |
 | <a id="api-297f3ef80d095b3e"></a>[`public static class Inno.Input.Input`](../../src/services/input/Inno.Input/Input.cs#L56) | Provides script-friendly access to the current frame's input snapshot. | — | — |
 
-### `Inno.Input.InputExecutionContext`
-
-<!-- api: T:Inno.Input.InputExecutionContext 76f0d1a7520d2b9c4aa9d31e9c38180aaa27651cd964d16226b483ae3a84836a -->
-<!-- api: P:Inno.Input.InputExecutionContext.current 418ed6b958d95472009d390e8f163cd45d66d11160ea38ba68683355464c867e -->
-<!-- api: M:Inno.Input.InputExecutionContext.TryGet(Inno.Input.IInputService@) 1f76ef4b4f9de4a53b0a50d02d9ef79a8987735a5249c91c43148fa4d60d2d38 -->
-<!-- api: M:Inno.Input.InputExecutionContext.EnterScope(Inno.Input.IInputService) 2365f5b098710f3e56639c267b82f3370261355334396de02c2edbfc972489fb -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-1951673d9de5925d"></a>[`public static System.IDisposable Inno.Input.InputExecutionContext.EnterScope(Inno.Input.IInputService input)`](../../src/services/input/Inno.Input/Input.cs#L45) | Binds an input service until the returned strict last-in-first-out scope is disposed.<br>返回：A strict last-in-first-out execution scope.<br>`input`：The host-owned input service. | — | — |
-| <a id="api-ca5afd1c01ee0194"></a>[`public static bool Inno.Input.InputExecutionContext.TryGet(out Inno.Input.IInputService? input)`](../../src/services/input/Inno.Input/Input.cs#L34) | Tries to read input when a host has installed an input subsystem for this frame.<br>返回：Whether a live input service is bound.<br>`input`：Bound service, or null when unavailable. | — | — |
-| <a id="api-31b6aa69f06eca5c"></a>[`public static Inno.Input.IInputService Inno.Input.InputExecutionContext.current { get; }`](../../src/services/input/Inno.Input/Input.cs#L23) | Gets the input service bound to the current execution context. | — | `System.InvalidOperationException`：Thrown when no input scope is active. |
-| <a id="api-626f3678b873994f"></a>[`public static class Inno.Input.InputExecutionContext`](../../src/services/input/Inno.Input/Input.cs#L13) | Binds one input service to the current asynchronous execution context. | — | — |
-
 ### `Inno.Input.InputSnapshot`
 
 <!-- api: T:Inno.Input.InputSnapshot 5eff2acf31902d9cc2724ee51fb276e355310ad654f72276a00fda3f0b02758c -->
-<!-- api: M:Inno.Input.InputSnapshot.#ctor(System.Int64,System.Collections.Generic.IEnumerable{Inno.Core.Input.KeyCode},System.Collections.Generic.IEnumerable{Inno.Core.Input.KeyCode},System.Collections.Generic.IEnumerable{Inno.Core.Input.KeyCode},System.Collections.Generic.IEnumerable{Inno.Core.Input.MouseButton},System.Collections.Generic.IEnumerable{Inno.Core.Input.MouseButton},System.Collections.Generic.IEnumerable{Inno.Core.Input.MouseButton},Inno.Core.Mathematics.Vector2,Inno.Core.Mathematics.Vector2,Inno.Core.Mathematics.Vector2,Inno.Core.Input.KeyModifier,System.Collections.Generic.IEnumerable{System.String}) a8b64f6a598dfeea18deb0ff3a98b8260b63c2e8957aa6acd8ec863d7d3b5d00 -->
+<!-- api: M:Inno.Input.InputSnapshot.#ctor(System.Int64,Inno.Core.Input.InputSequence,System.Collections.Generic.IEnumerable{Inno.Core.Input.KeyCode},System.Collections.Generic.IEnumerable{Inno.Core.Input.MouseButton},Inno.Core.Mathematics.Vector2,Inno.Core.Input.KeyModifier) 3c772edcfd575192fe2892267255600ad99c39740cafb79fc304dd5c155430be -->
+<!-- api: P:Inno.Input.InputSnapshot.sequence 44e5524487d85eded68800177ea269e585dea5db5bbc494396c5a597336e77a0 -->
 <!-- api: P:Inno.Input.InputSnapshot.empty f2ccd24494786f7be411203b7736615a5b0afd7d01b86d57104918c96b5e84cb -->
 <!-- api: P:Inno.Input.InputSnapshot.frameIndex 3ac9f077995161e0d790c7934b952d72b72b25ac939298109440b5147800271a -->
 <!-- api: P:Inno.Input.InputSnapshot.mousePosition 773319159770ce92fb9c0d9d19c1099f5f80b1e3eed3b77f6f584c6188954455 -->
@@ -115,27 +118,28 @@ if (Input.WasKeyPressed(KeyCode.Space))
 <!-- api: M:Inno.Input.InputSnapshot.WasMouseButtonPressed(Inno.Core.Input.MouseButton) b54779d383e7079ea1247806850e1d9a95de506f2fa15994690bf1a646334c9e -->
 <!-- api: M:Inno.Input.InputSnapshot.WasMouseButtonReleased(Inno.Core.Input.MouseButton) 152280991afded45ac7136f549d328b22132d6d24d926a8c320f8db26cd8bcbb -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-c95e45587772040f"></a>[`public Inno.Input.InputSnapshot.InputSnapshot(long frameIndex, System.Collections.Generic.IEnumerable<Inno.Core.Input.KeyCode>? keysDown = null, System.Collections.Generic.IEnumerable<Inno.Core.Input.KeyCode>? keysPressed = null, System.Collections.Generic.IEnumerable<Inno.Core.Input.KeyCode>? keysReleased = null, System.Collections.Generic.IEnumerable<Inno.Core.Input.MouseButton>? mouseButtonsDown = null, System.Collections.Generic.IEnumerable<Inno.Core.Input.MouseButton>? mouseButtonsPressed = null, System.Collections.Generic.IEnumerable<Inno.Core.Input.MouseButton>? mouseButtonsReleased = null, Inno.Core.Mathematics.Vector2 mousePosition = default(Inno.Core.Mathematics.Vector2), Inno.Core.Mathematics.Vector2 mouseDelta = default(Inno.Core.Mathematics.Vector2), Inno.Core.Mathematics.Vector2 scrollDelta = default(Inno.Core.Mathematics.Vector2), Inno.Core.Input.KeyModifier modifiers = Inno.Core.Input.KeyModifier.None, System.Collections.Generic.IEnumerable<string>? textInput = null)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L62) | Creates a complete immutable input snapshot.<br>`frameIndex`：The runtime frame that owns the snapshot.<br>`keysDown`：Keys held at the frame boundary.<br>`keysPressed`：Keys newly pressed since the previous snapshot.<br>`keysReleased`：Keys newly released since the previous snapshot.<br>`mouseButtonsDown`：Pointer buttons held at the frame boundary.<br>`mouseButtonsPressed`：Pointer buttons newly pressed since the previous snapshot.<br>`mouseButtonsReleased`：Pointer buttons newly released since the previous snapshot.<br>`mousePosition`：Current pointer position in window coordinates.<br>`mouseDelta`：Pointer movement accumulated since the previous snapshot.<br>`scrollDelta`：Wheel movement accumulated since the previous snapshot.<br>`modifiers`：Active keyboard modifiers at the frame boundary.<br>`textInput`：Ordered Unicode text commits captured since the previous snapshot. | — | — |
-| <a id="api-d5bb346610d28635"></a>[`public bool Inno.Input.InputSnapshot.IsKeyDown(Inno.Core.Input.KeyCode key)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L156) | Determines whether a key is currently held.<br>返回：true when the key is held.<br>`key`：The backend-neutral physical key. | — | — |
-| <a id="api-2c48955d7588600b"></a>[`public bool Inno.Input.InputSnapshot.IsMouseButtonDown(Inno.Core.Input.MouseButton button)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L189) | Determines whether a pointer button is currently held.<br>返回：true when the button is held.<br>`button`：The backend-neutral pointer button. | — | — |
-| <a id="api-c39fcc823212dc84"></a>[`public bool Inno.Input.InputSnapshot.WasKeyPressed(Inno.Core.Input.KeyCode key)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L167) | Determines whether a key was newly pressed during this frame.<br>返回：true when the key transitioned to down.<br>`key`：The backend-neutral physical key. | — | — |
-| <a id="api-1eb55aa315473f2d"></a>[`public bool Inno.Input.InputSnapshot.WasKeyReleased(Inno.Core.Input.KeyCode key)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L178) | Determines whether a key was newly released during this frame.<br>返回：true when the key transitioned to up.<br>`key`：The backend-neutral physical key. | — | — |
-| <a id="api-eb9ccd48efdfb5a2"></a>[`public bool Inno.Input.InputSnapshot.WasMouseButtonPressed(Inno.Core.Input.MouseButton button)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L200) | Determines whether a pointer button was newly pressed during this frame.<br>返回：true when the button transitioned to down.<br>`button`：The backend-neutral pointer button. | — | — |
-| <a id="api-3559726883b45532"></a>[`public bool Inno.Input.InputSnapshot.WasMouseButtonReleased(Inno.Core.Input.MouseButton button)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L211) | Determines whether a pointer button was newly released during this frame.<br>返回：true when the button transitioned to up.<br>`button`：The backend-neutral pointer button. | — | — |
-| <a id="api-f73fd16e95a3c4f1"></a>[`public static Inno.Input.InputSnapshot Inno.Input.InputSnapshot.empty { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L95) | Gets an empty initial snapshot. | — | — |
-| <a id="api-b20af045199099aa"></a>[`public long Inno.Input.InputSnapshot.frameIndex { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L100) | Gets the runtime frame that owns this snapshot. | — | — |
-| <a id="api-7886892514333c2d"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.Input.InputSnapshot.keysPressed { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L130) | Gets the physical keys newly pressed during this frame. | — | — |
-| <a id="api-25f5787f0e8e5e76"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.Input.InputSnapshot.keysReleased { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L135) | Gets the physical keys newly released during this frame. | — | — |
-| <a id="api-fa0446ab0a6bbd16"></a>[`public Inno.Core.Input.KeyModifier Inno.Input.InputSnapshot.modifiers { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L120) | Gets the active keyboard modifier mask at this frame boundary. | — | — |
-| <a id="api-4f3226b19f7909d3"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.Input.InputSnapshot.mouseButtonsPressed { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L140) | Gets the pointer buttons newly pressed during this frame. | — | — |
-| <a id="api-4a2b431c63ec43b2"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.Input.InputSnapshot.mouseButtonsReleased { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L145) | Gets the pointer buttons newly released during this frame. | — | — |
-| <a id="api-9e6bda69f4fc365a"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Input.InputSnapshot.mouseDelta { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L110) | Gets pointer movement accumulated since the previous snapshot. | — | — |
-| <a id="api-3e952018362314df"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Input.InputSnapshot.mousePosition { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L105) | Gets the current pointer position in window coordinates. | — | — |
-| <a id="api-907bc25cf89324e8"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Input.InputSnapshot.scrollDelta { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L115) | Gets wheel movement accumulated since the previous snapshot. | — | — |
-| <a id="api-19780866cf37c9bd"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.Input.InputSnapshot.textInput { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L125) | Gets the ordered UTF-8 text commits captured during this frame. | — | — |
-| <a id="api-61d5c3d11ee69c9d"></a>[`public sealed class Inno.Input.InputSnapshot`](../../src/services/input/Inno.Input/InputSnapshot.cs#L13) | Captures immutable keyboard and pointer state at one runtime frame boundary. | — | — |
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-61d5c3d11ee69c9d"></a>[`public sealed class Inno.Input.InputSnapshot`](../../src/services/input/Inno.Input/InputSnapshot.cs#L13) | Captures immutable keyboard and pointer state at one runtime frame boundary. | — |
+| <a id="api-a18b37316d12d255"></a>[`public Inno.Input.InputSnapshot.InputSnapshot(long frameIndex, Inno.Core.Input.InputSequence sequence, System.Collections.Generic.IEnumerable<Inno.Core.Input.KeyCode>? keysDown = null, System.Collections.Generic.IEnumerable<Inno.Core.Input.MouseButton>? mouseButtonsDown = null, Inno.Core.Mathematics.Vector2 mousePosition = default(Inno.Core.Mathematics.Vector2), Inno.Core.Input.KeyModifier modifiers = Inno.Core.Input.KeyModifier.None)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L45) | Captures held state and an immutable ordered sequence at one frame boundary.<br>`frameIndex`：The nonnegative owner frame index.<br>`sequence`：The ordered changes; all transient summaries derive from this value.<br>`keysDown`：Physical keys held after the captured changes.<br>`mouseButtonsDown`：Pointer buttons held after the captured changes.<br>`mousePosition`：Final pointer coordinates in the owning window.<br>`modifiers`：Physical modifiers at the frame boundary. | `System.ArgumentNullException`：The sequence is null.<br>`System.ArgumentOutOfRangeException`：The frame index is negative. |
+| <a id="api-0876cd0d525fd497"></a>[`public Inno.Core.Input.InputSequence Inno.Input.InputSnapshot.sequence { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L67) | Gets the immutable input changes in acquisition order. | — |
+| <a id="api-f73fd16e95a3c4f1"></a>[`public static Inno.Input.InputSnapshot Inno.Input.InputSnapshot.empty { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L72) | Gets an empty initial snapshot. | — |
+| <a id="api-b20af045199099aa"></a>[`public long Inno.Input.InputSnapshot.frameIndex { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L77) | Gets the runtime frame that owns this snapshot. | — |
+| <a id="api-3e952018362314df"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Input.InputSnapshot.mousePosition { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L82) | Gets the current pointer position in window coordinates. | — |
+| <a id="api-9e6bda69f4fc365a"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Input.InputSnapshot.mouseDelta { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L87) | Gets pointer movement accumulated since the previous snapshot. | — |
+| <a id="api-907bc25cf89324e8"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Input.InputSnapshot.scrollDelta { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L92) | Gets wheel movement accumulated since the previous snapshot. | — |
+| <a id="api-fa0446ab0a6bbd16"></a>[`public Inno.Core.Input.KeyModifier Inno.Input.InputSnapshot.modifiers { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L97) | Gets the active keyboard modifier mask at this frame boundary. | — |
+| <a id="api-19780866cf37c9bd"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.Input.InputSnapshot.textInput { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L102) | Gets the ordered UTF-8 text commits captured during this frame. | — |
+| <a id="api-7886892514333c2d"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.Input.InputSnapshot.keysPressed { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L107) | Gets the physical keys newly pressed during this frame. | — |
+| <a id="api-25f5787f0e8e5e76"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.Input.InputSnapshot.keysReleased { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L112) | Gets the physical keys newly released during this frame. | — |
+| <a id="api-4f3226b19f7909d3"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.Input.InputSnapshot.mouseButtonsPressed { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L117) | Gets the pointer buttons newly pressed during this frame. | — |
+| <a id="api-4a2b431c63ec43b2"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.Input.InputSnapshot.mouseButtonsReleased { get; }`](../../src/services/input/Inno.Input/InputSnapshot.cs#L122) | Gets the pointer buttons newly released during this frame. | — |
+| <a id="api-d5bb346610d28635"></a>[`public bool Inno.Input.InputSnapshot.IsKeyDown(Inno.Core.Input.KeyCode key)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L133) | Determines whether a key is currently held.<br>`key`：The backend-neutral physical key.<br>返回：`true` when the key is held. | — |
+| <a id="api-c39fcc823212dc84"></a>[`public bool Inno.Input.InputSnapshot.WasKeyPressed(Inno.Core.Input.KeyCode key)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L144) | Determines whether a key was newly pressed during this frame.<br>`key`：The backend-neutral physical key.<br>返回：`true` when the key transitioned to down. | — |
+| <a id="api-1eb55aa315473f2d"></a>[`public bool Inno.Input.InputSnapshot.WasKeyReleased(Inno.Core.Input.KeyCode key)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L155) | Determines whether a key was newly released during this frame.<br>`key`：The backend-neutral physical key.<br>返回：`true` when the key transitioned to up. | — |
+| <a id="api-2c48955d7588600b"></a>[`public bool Inno.Input.InputSnapshot.IsMouseButtonDown(Inno.Core.Input.MouseButton button)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L166) | Determines whether a pointer button is currently held.<br>`button`：The backend-neutral pointer button.<br>返回：`true` when the button is held. | — |
+| <a id="api-eb9ccd48efdfb5a2"></a>[`public bool Inno.Input.InputSnapshot.WasMouseButtonPressed(Inno.Core.Input.MouseButton button)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L177) | Determines whether a pointer button was newly pressed during this frame.<br>`button`：The backend-neutral pointer button.<br>返回：`true` when the button transitioned to down. | — |
+| <a id="api-3559726883b45532"></a>[`public bool Inno.Input.InputSnapshot.WasMouseButtonReleased(Inno.Core.Input.MouseButton button)`](../../src/services/input/Inno.Input/InputSnapshot.cs#L188) | Determines whether a pointer button was newly released during this frame.<br>`button`：The backend-neutral pointer button.<br>返回：`true` when the button transitioned to up. | — |
 
 ## 项目依赖
 

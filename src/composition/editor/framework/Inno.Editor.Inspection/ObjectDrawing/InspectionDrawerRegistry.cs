@@ -234,7 +234,7 @@ public sealed class InspectionDrawerRegistry : IDisposable
             {
                 IInspectionDrawer drawer = drawers.TryGetValue(drawerType, out IInspectionDrawer? existing)
                     ? existing
-                    : OwnCandidateExtension(m_factory(drawerType));
+                    : CreateExtension(drawerType, implementation => m_factory(implementation));
                 if (!drawerType.IsInstanceOfType(drawer))
                 {
                     throw new InvalidOperationException(

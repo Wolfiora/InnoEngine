@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Frozen;
 
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
@@ -12,87 +12,64 @@ namespace Inno.Input;
 /// </summary>
 public sealed class InputSnapshot
 {
-    private readonly HashSet<KeyCode> m_keysDown;
-    private readonly HashSet<KeyCode> m_keysPressed;
-    private readonly HashSet<KeyCode> m_keysReleased;
-    private readonly HashSet<MouseButton> m_mouseButtonsDown;
-    private readonly HashSet<MouseButton> m_mouseButtonsPressed;
-    private readonly HashSet<MouseButton> m_mouseButtonsReleased;
-    private readonly string[] m_textInput;
+    private readonly FrozenSet<KeyCode> m_keysDown;
+    private readonly FrozenSet<MouseButton> m_mouseButtonsDown;
 
     /// <summary>
-    /// Creates a complete immutable input snapshot.
+    /// Captures held state and an immutable ordered sequence at one frame boundary.
     /// </summary>
     /// <param name="frameIndex">
-    /// The runtime frame that owns the snapshot.
+    /// The nonnegative owner frame index.
+    /// </param>
+    /// <param name="sequence">
+    /// The ordered changes; all transient summaries derive from this value.
     /// </param>
     /// <param name="keysDown">
-    /// Keys held at the frame boundary.
-    /// </param>
-    /// <param name="keysPressed">
-    /// Keys newly pressed since the previous snapshot.
-    /// </param>
-    /// <param name="keysReleased">
-    /// Keys newly released since the previous snapshot.
+    /// Physical keys held after the captured changes.
     /// </param>
     /// <param name="mouseButtonsDown">
-    /// Pointer buttons held at the frame boundary.
-    /// </param>
-    /// <param name="mouseButtonsPressed">
-    /// Pointer buttons newly pressed since the previous snapshot.
-    /// </param>
-    /// <param name="mouseButtonsReleased">
-    /// Pointer buttons newly released since the previous snapshot.
+    /// Pointer buttons held after the captured changes.
     /// </param>
     /// <param name="mousePosition">
-    /// Current pointer position in window coordinates.
-    /// </param>
-    /// <param name="mouseDelta">
-    /// Pointer movement accumulated since the previous snapshot.
-    /// </param>
-    /// <param name="scrollDelta">
-    /// Wheel movement accumulated since the previous snapshot.
+    /// Final pointer coordinates in the owning window.
     /// </param>
     /// <param name="modifiers">
-    /// Active keyboard modifiers at the frame boundary.
+    /// Physical modifiers at the frame boundary.
     /// </param>
-    /// <param name="textInput">
-    /// Ordered Unicode text commits captured since the previous snapshot.
-    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The sequence is null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The frame index is negative.
+    /// </exception>
     public InputSnapshot(
         long frameIndex,
+        InputSequence sequence,
         IEnumerable<KeyCode>? keysDown = null,
-        IEnumerable<KeyCode>? keysPressed = null,
-        IEnumerable<KeyCode>? keysReleased = null,
         IEnumerable<MouseButton>? mouseButtonsDown = null,
-        IEnumerable<MouseButton>? mouseButtonsPressed = null,
-        IEnumerable<MouseButton>? mouseButtonsReleased = null,
         Vector2 mousePosition = default,
-        Vector2 mouseDelta = default,
-        Vector2 scrollDelta = default,
-        KeyModifier modifiers = KeyModifier.None,
-        IEnumerable<string>? textInput = null
+        KeyModifier modifiers = KeyModifier.None
     ) {
+        ArgumentNullException.ThrowIfNull(sequence);
         if (frameIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(frameIndex));
         this.frameIndex = frameIndex;
+        this.sequence = sequence;
         m_keysDown = Copy(keysDown);
-        m_keysPressed = Copy(keysPressed);
-        m_keysReleased = Copy(keysReleased);
         m_mouseButtonsDown = Copy(mouseButtonsDown);
-        m_mouseButtonsPressed = Copy(mouseButtonsPressed);
-        m_mouseButtonsReleased = Copy(mouseButtonsReleased);
-        m_textInput = textInput?.Where(static value => !string.IsNullOrEmpty(value)).ToArray() ?? [];
         this.mousePosition = mousePosition;
-        this.mouseDelta = mouseDelta;
-        this.scrollDelta = scrollDelta;
         this.modifiers = modifiers;
     }
 
     /// <summary>
+    /// Gets the immutable input changes in acquisition order.
+    /// </summary>
+    public InputSequence sequence { get; }
+
+    /// <summary>
     /// Gets an empty initial snapshot.
     /// </summary>
-    public static InputSnapshot empty { get; } = new(0);
+    public static InputSnapshot empty { get; } = new(0, InputSequence.empty);
 
     /// <summary>
     /// Gets the runtime frame that owns this snapshot.
@@ -107,12 +84,12 @@ public sealed class InputSnapshot
     /// <summary>
     /// Gets pointer movement accumulated since the previous snapshot.
     /// </summary>
-    public Vector2 mouseDelta { get; }
+    public Vector2 mouseDelta => sequence.mouseDelta;
 
     /// <summary>
     /// Gets wheel movement accumulated since the previous snapshot.
     /// </summary>
-    public Vector2 scrollDelta { get; }
+    public Vector2 scrollDelta => sequence.scrollDelta;
 
     /// <summary>
     /// Gets the active keyboard modifier mask at this frame boundary.
@@ -122,27 +99,27 @@ public sealed class InputSnapshot
     /// <summary>
     /// Gets the ordered UTF-8 text commits captured during this frame.
     /// </summary>
-    public IReadOnlyList<string> textInput => m_textInput;
+    public IReadOnlyList<string> textInput => sequence.textInput;
 
     /// <summary>
     /// Gets the physical keys newly pressed during this frame.
     /// </summary>
-    public IReadOnlyCollection<KeyCode> keysPressed => m_keysPressed;
+    public IReadOnlyCollection<KeyCode> keysPressed => sequence.keysPressed;
 
     /// <summary>
     /// Gets the physical keys newly released during this frame.
     /// </summary>
-    public IReadOnlyCollection<KeyCode> keysReleased => m_keysReleased;
+    public IReadOnlyCollection<KeyCode> keysReleased => sequence.keysReleased;
 
     /// <summary>
     /// Gets the pointer buttons newly pressed during this frame.
     /// </summary>
-    public IReadOnlyCollection<MouseButton> mouseButtonsPressed => m_mouseButtonsPressed;
+    public IReadOnlyCollection<MouseButton> mouseButtonsPressed => sequence.buttonsPressed;
 
     /// <summary>
     /// Gets the pointer buttons newly released during this frame.
     /// </summary>
-    public IReadOnlyCollection<MouseButton> mouseButtonsReleased => m_mouseButtonsReleased;
+    public IReadOnlyCollection<MouseButton> mouseButtonsReleased => sequence.buttonsReleased;
 
     /// <summary>
     /// Determines whether a key is currently held.
@@ -164,7 +141,7 @@ public sealed class InputSnapshot
     /// <returns>
     /// <see langword="true"/> when the key transitioned to down.
     /// </returns>
-    public bool WasKeyPressed(KeyCode key) => m_keysPressed.Contains(key);
+    public bool WasKeyPressed(KeyCode key) => sequence.keysPressed.Contains(key);
 
     /// <summary>
     /// Determines whether a key was newly released during this frame.
@@ -175,7 +152,7 @@ public sealed class InputSnapshot
     /// <returns>
     /// <see langword="true"/> when the key transitioned to up.
     /// </returns>
-    public bool WasKeyReleased(KeyCode key) => m_keysReleased.Contains(key);
+    public bool WasKeyReleased(KeyCode key) => sequence.keysReleased.Contains(key);
 
     /// <summary>
     /// Determines whether a pointer button is currently held.
@@ -197,7 +174,7 @@ public sealed class InputSnapshot
     /// <returns>
     /// <see langword="true"/> when the button transitioned to down.
     /// </returns>
-    public bool WasMouseButtonPressed(MouseButton button) => m_mouseButtonsPressed.Contains(button);
+    public bool WasMouseButtonPressed(MouseButton button) => sequence.buttonsPressed.Contains(button);
 
     /// <summary>
     /// Determines whether a pointer button was newly released during this frame.
@@ -208,9 +185,9 @@ public sealed class InputSnapshot
     /// <returns>
     /// <see langword="true"/> when the button transitioned to up.
     /// </returns>
-    public bool WasMouseButtonReleased(MouseButton button) => m_mouseButtonsReleased.Contains(button);
+    public bool WasMouseButtonReleased(MouseButton button) => sequence.buttonsReleased.Contains(button);
 
-    private static HashSet<TValue> Copy<TValue>(IEnumerable<TValue>? values)
+    private static FrozenSet<TValue> Copy<TValue>(IEnumerable<TValue>? values)
         where TValue : struct, Enum
-        => values is null ? [] : values.ToHashSet();
+        => values is null ? FrozenSet<TValue>.Empty : values.ToFrozenSet();
 }

@@ -2,7 +2,7 @@
 
 [Wiki 首页](../README.md) · [Runtime](../runtime/README.md) · [Assets](../assets/README.md)
 
-Animation 是本体的后端中立采样机制；Scene property、Transform、Sprite、骨骼、Timeline 与 Visual Novel 编排不是本体世界观。
+Animation 是本体的后端中立采样机制；Scene property、Transform、Sprite、骨骼、Timeline 与叙事编排不是本体世界观。
 
 | 项目 | 职责 |
 | --- | --- |

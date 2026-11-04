@@ -154,6 +154,36 @@ public sealed partial class EditorRuntimeTests : IDisposable
     }
 
     [Fact]
+    public void RejectedDependencyDiagnosticsAreTypedAndScopedToTheirRuntime()
+    {
+        var sink = new TestDiagnosticSink();
+        m_diagnostics.RegisterSink(sink);
+        try
+        {
+            Guid typeId = m_types.current.GetTypeRef(typeof(HostServicePanel)).stableId;
+            DiagnosticReport original = Assert.Single(sink.reports.Values.Where(static report => report.source.displayName == "Extension Dependencies"));
+            Diagnostic rejection = Assert.Single(original.diagnostics.Where(item => item.semanticId == typeId.ToString("D")));
+            Assert.Contains(typeof(ITestHostService).FullName!, rejection.message);
+            Assert.Contains(typeof(HostServicePanel).FullName!, rejection.message);
+            Assert.Contains($"generation {m_types.current.version}", rejection.message);
+            using (EditorInteractionRuntime other = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))))
+            {
+                other.Start();
+                Assert.Equal(2, sink.reports.Values.Count(static report => report.source.displayName == "Extension Dependencies"));
+            }
+            Assert.Same(original, sink.reports[original.source.id]);
+            using EditorInteractionRuntime available = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), new TestHostService());
+            available.Start();
+            Assert.Contains(available.panels, static panel => panel.id == "tests.host-service");
+            Assert.Same(original, sink.reports[original.source.id]);
+        }
+        finally
+        {
+            m_diagnostics.UnregisterSink(sink);
+        }
+    }
+
+    [Fact]
     public void InteractionIdentifiersArePlainValidatedStringsWithoutWrapperTypes()
     {
         Assembly assembly = typeof(EditorInteractions).Assembly;

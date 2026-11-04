@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using Inno.Core.Input;
@@ -240,11 +241,26 @@ public sealed class UiEvent : Inno.Core.Events.Event
     /// <param name="targetId">
     /// The target element identifier, which can be empty.
     /// </param>
+    /// <param name="value">
+    /// The control value captured when this event occurred.
+    /// </param>
+    /// <param name="phase">
+    /// The editing or commit phase of this event.
+    /// </param>
+    /// <param name="origin">
+    /// The operation that caused the event.
+    /// </param>
     public UiEvent(
         UiEventType type,
         UiDocumentHandle document,
-        string targetId
+        string targetId,
+        UiControlValue value,
+        UiEventPhase phase,
+        UiEventOrigin origin
     ) {
+        this.value = value;
+        this.phase = phase;
+        this.origin = origin;
         this.type = type;
         this.document = document;
         this.targetId = targetId ?? throw new ArgumentNullException(nameof(targetId));
@@ -254,6 +270,21 @@ public sealed class UiEvent : Inno.Core.Events.Event
     /// Gets the kind of document interaction.
     /// </summary>
     public UiEventType type { get; }
+
+    /// <summary>
+    /// Gets the immutable value at event time, not the current control value.
+    /// </summary>
+    public UiControlValue value { get; }
+
+    /// <summary>
+    /// Gets the edit phase of this event.
+    /// </summary>
+    public UiEventPhase phase { get; }
+
+    /// <summary>
+    /// Gets the cause of this event.
+    /// </summary>
+    public UiEventOrigin origin { get; }
 
     /// <summary>
     /// Gets the source document.
@@ -272,51 +303,35 @@ public sealed class UiEvent : Inno.Core.Events.Event
 public sealed class UiInputSnapshot
 {
     /// <summary>
-    /// Creates one backend-neutral UI input snapshot.
+    /// Creates a context-local view of one immutable ordered input sequence.
     /// </summary>
     /// <param name="mousePosition">
-    /// Pointer position in surface coordinates.
-    /// </param>
-    /// <param name="scrollDelta">
-    /// Pointer wheel movement.
+    /// Final pointer position in context pixels.
     /// </param>
     /// <param name="modifiers">
-    /// Active keyboard modifiers.
+    /// Physical modifiers at the frame boundary.
     /// </param>
-    /// <param name="keysPressed">
-    /// Physical keys pressed this frame.
+    /// <param name="sequence">
+    /// Input changes already mapped into context pixels, in acquisition order.
     /// </param>
-    /// <param name="keysReleased">
-    /// Physical keys released this frame.
-    /// </param>
-    /// <param name="buttonsPressed">
-    /// Pointer buttons pressed this frame.
-    /// </param>
-    /// <param name="buttonsReleased">
-    /// Pointer buttons released this frame.
-    /// </param>
-    /// <param name="textInput">
-    /// Ordered Unicode text commits.
-    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// The sequence is null.
+    /// </exception>
     public UiInputSnapshot(
         Vector2 mousePosition,
-        Vector2 scrollDelta,
         KeyModifier modifiers,
-        IReadOnlyCollection<KeyCode> keysPressed,
-        IReadOnlyCollection<KeyCode> keysReleased,
-        IReadOnlyCollection<MouseButton> buttonsPressed,
-        IReadOnlyCollection<MouseButton> buttonsReleased,
-        IReadOnlyList<string> textInput
+        InputSequence sequence
     ) {
+        ArgumentNullException.ThrowIfNull(sequence);
         this.mousePosition = mousePosition;
-        this.scrollDelta = scrollDelta;
         this.modifiers = modifiers;
-        this.keysPressed = keysPressed ?? throw new ArgumentNullException(nameof(keysPressed));
-        this.keysReleased = keysReleased ?? throw new ArgumentNullException(nameof(keysReleased));
-        this.buttonsPressed = buttonsPressed ?? throw new ArgumentNullException(nameof(buttonsPressed));
-        this.buttonsReleased = buttonsReleased ?? throw new ArgumentNullException(nameof(buttonsReleased));
-        this.textInput = textInput ?? throw new ArgumentNullException(nameof(textInput));
+        this.sequence = sequence;
     }
+
+    /// <summary>
+    /// Gets the ordered immutable changes without retaining a platform event or callback.
+    /// </summary>
+    public InputSequence sequence { get; }
 
     /// <summary>
     /// Gets the pointer position.
@@ -325,7 +340,7 @@ public sealed class UiInputSnapshot
     /// <summary>
     /// Gets pointer wheel movement.
     /// </summary>
-    public Vector2 scrollDelta { get; }
+    public Vector2 scrollDelta => sequence.scrollDelta;
     /// <summary>
     /// Gets active keyboard modifiers.
     /// </summary>
@@ -333,21 +348,21 @@ public sealed class UiInputSnapshot
     /// <summary>
     /// Gets physical keys pressed this frame.
     /// </summary>
-    public IReadOnlyCollection<KeyCode> keysPressed { get; }
+    public IReadOnlyCollection<KeyCode> keysPressed => sequence.keysPressed;
     /// <summary>
     /// Gets physical keys released this frame.
     /// </summary>
-    public IReadOnlyCollection<KeyCode> keysReleased { get; }
+    public IReadOnlyCollection<KeyCode> keysReleased => sequence.keysReleased;
     /// <summary>
     /// Gets pointer buttons pressed this frame.
     /// </summary>
-    public IReadOnlyCollection<MouseButton> buttonsPressed { get; }
+    public IReadOnlyCollection<MouseButton> buttonsPressed => sequence.buttonsPressed;
     /// <summary>
     /// Gets pointer buttons released this frame.
     /// </summary>
-    public IReadOnlyCollection<MouseButton> buttonsReleased { get; }
+    public IReadOnlyCollection<MouseButton> buttonsReleased => sequence.buttonsReleased;
     /// <summary>
     /// Gets ordered Unicode text commits.
     /// </summary>
-    public IReadOnlyList<string> textInput { get; }
+    public IReadOnlyList<string> textInput => sequence.textInput;
 }

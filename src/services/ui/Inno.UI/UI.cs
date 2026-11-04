@@ -39,6 +39,233 @@ public static class UiExecutionContext
 public static class UI
 {
     /// <summary>
+    /// Refreshes visual layout once and captures a batch of element geometry without input or time advancement.
+    /// </summary>
+    /// <param name="context">
+    /// The live context owned by the calling thread.
+    /// </param>
+    /// <param name="document">
+    /// The live document belonging to the context.
+    /// </param>
+    /// <param name="elementIds">
+    /// A non-empty list of non-empty authored IDs in result order; missing and hidden elements remain explicit results.
+    /// </param>
+    /// <returns>
+    /// An immutable snapshot in context pixels. It does not retain a document lease or native memory.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// A requested ID is empty or an owner handle is invalid.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The element list is null.
+    /// </exception>
+    public static UiLayoutSnapshot CaptureLayout(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        IReadOnlyList<string> elementIds
+    ) => UiExecutionContext.current.CaptureLayout(context, document, elementIds);
+
+    /// <summary>
+    /// Gets immutable optional capabilities of this service generation.
+    /// </summary>
+    public static UiBackendCapabilities capabilities => UiExecutionContext.current.capabilities;
+
+    /// <summary>
+    /// Reads the context clock without advancing it.
+    /// </summary>
+    /// <param name="context">
+    /// The live context on its owner thread.
+    /// </param>
+    /// <returns>
+    /// The current elapsed seconds and pause state.
+    /// </returns>
+    public static UiContextTime GetTime(UiContextHandle context) => UiExecutionContext.current.GetTime(context);
+
+    /// <summary>
+    /// Controls automatic time advancement; input remains independently routable.
+    /// </summary>
+    /// <param name="context">
+    /// The live context on its owner thread.
+    /// </param>
+    /// <param name="paused">
+    /// True to freeze automatic time; explicit steps remain available.
+    /// </param>
+    public static void SetTimePaused(
+        UiContextHandle context,
+        bool paused
+    ) => UiExecutionContext.current.SetTimePaused(context, paused);
+
+    /// <summary>
+    /// Advances only the context clock without processing input or refreshing layout.
+    /// </summary>
+    /// <param name="context">
+    /// The live context on its owner thread.
+    /// </param>
+    /// <param name="seconds">
+    /// Finite nonnegative time to advance, including while paused.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The step is negative, nonfinite or overflows the clock.
+    /// </exception>
+    public static void AdvanceTime(
+        UiContextHandle context,
+        double seconds
+    ) => UiExecutionContext.current.AdvanceTime(context, seconds);
+
+    /// <summary>
+    /// Requests an absolute time seek only when the backend can preserve document semantics.
+    /// </summary>
+    /// <param name="context">
+    /// The live context on its owner thread.
+    /// </param>
+    /// <param name="seconds">
+    /// The finite nonnegative requested time.
+    /// </param>
+    /// <returns>
+    /// True if applied; false if unsupported, with all state unchanged.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The requested time is negative or nonfinite.
+    /// </exception>
+    public static bool TrySeekTime(
+        UiContextHandle context,
+        double seconds
+    ) => UiExecutionContext.current.TrySeekTime(context, seconds);
+
+    /// <summary>
+    /// Refreshes document style and layout at the current context time without processing input.
+    /// </summary>
+    /// <param name="context">
+    /// The live context on its owner thread.
+    /// </param>
+    public static void RefreshLayout(UiContextHandle context) => UiExecutionContext.current.RefreshLayout(context);
+
+    /// <summary>
+    /// Processes the explicitly routed input without advancing time or updating the whole context.
+    /// </summary>
+    /// <param name="context">
+    /// The live context on its owner thread.
+    /// </param>
+    /// <param name="input">
+    /// The current immutable input sample.
+    /// </param>
+    public static void ProcessInput(
+        UiContextHandle context,
+        UiInputSnapshot input
+    ) => UiExecutionContext.current.ProcessInput(context, input);
+
+    /// <summary>
+    /// Reads a control value on the context owner thread without changing layout or input.
+    /// </summary>
+    /// <param name="context">
+    /// The live context owning the document.
+    /// </param>
+    /// <param name="document">
+    /// The live document containing the control.
+    /// </param>
+    /// <param name="elementId">
+    /// The nonempty authored element ID.
+    /// </param>
+    /// <returns>
+    /// The current value, or None for a missing element or unsupported control.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// A handle is stale or the caller violates ownership.
+    /// </exception>
+    public static UiControlValue GetValue(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId
+    ) => UiExecutionContext.current.GetValue(context, document, elementId);
+
+    /// <summary>
+    /// Writes a matching control value without generating value-change or submit events.
+    /// </summary>
+    /// <param name="context">
+    /// The live context owning the document.
+    /// </param>
+    /// <param name="document">
+    /// The live document containing the control.
+    /// </param>
+    /// <param name="elementId">
+    /// The nonempty authored element ID.
+    /// </param>
+    /// <param name="value">
+    /// The typed value; normal control clamping still applies.
+    /// </param>
+    /// <returns>
+    /// True when the control accepts the value; false when absent, unsupported or no matching option exists.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The value kind does not match the control.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A handle is stale or the caller violates ownership.
+    /// </exception>
+    public static bool SetValue(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        UiControlValue value
+    ) => UiExecutionContext.current.SetValue(context, document, elementId, value);
+
+    /// <summary>
+    /// Requests focus through the context's existing focus and modal policy on its owner thread.
+    /// </summary>
+    /// <param name="context">
+    /// The context owning the document.
+    /// </param>
+    /// <param name="document">
+    /// The live document containing the target.
+    /// </param>
+    /// <param name="elementId">
+    /// The nonempty authored element ID.
+    /// </param>
+    /// <returns>
+    /// The applied, unchanged, missing or ineligible request outcome.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The element ID is empty.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A handle is stale, belongs to another context or the caller violates ownership.
+    /// </exception>
+    public static UiFocusResult FocusElement(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId
+    ) => UiExecutionContext.current.FocusElement(context, document, elementId);
+
+    /// <summary>
+    /// Reads the current focused control without changing layout or focus.
+    /// </summary>
+    /// <param name="context">
+    /// The live context to query on its owner thread.
+    /// </param>
+    /// <returns>
+    /// A neutral focus snapshot, or null when no document control has focus.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The context is stale or the caller violates ownership.
+    /// </exception>
+    public static UiFocusTarget? GetFocusedElement(UiContextHandle context) =>
+        UiExecutionContext.current.GetFocusedElement(context);
+
+    /// <summary>
+    /// Returns focus to the owning document, preserving modal ownership and emitting normal blur events.
+    /// </summary>
+    /// <param name="context">
+    /// The live context to modify on its owner thread.
+    /// </param>
+    /// <returns>
+    /// True when no document control retains focus; false when focus policy refuses the change.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The context is stale or the caller violates ownership.
+    /// </exception>
+    public static bool ClearFocus(UiContextHandle context) => UiExecutionContext.current.ClearFocus(context);
+
+    /// <summary>
     /// Creates one independent UI context.
     /// </summary>
     /// <param name="options">

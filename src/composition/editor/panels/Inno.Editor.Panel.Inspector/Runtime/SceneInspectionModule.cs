@@ -6,6 +6,7 @@ using Inno.Extensibility.Types;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
+using Inno.Editor.Diagnostics;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
@@ -59,6 +60,9 @@ internal sealed class SceneInspectionModule : EditorModule
     /// <param name="logs">
     /// The host-owned log router used by inspection error isolation.
     /// </param>
+    /// <param name="console">
+    /// The session diagnostic presentation service, independent of the Console panel.
+    /// </param>
     /// <exception cref="System.ArgumentNullException">
     /// Thrown when <paramref name="interactions"/>, <paramref name="edits"/>,
     /// <paramref name="assetIcons"/>, <paramref name="classificationSettings"/>, or <paramref name="settings"/>
@@ -74,7 +78,8 @@ internal sealed class SceneInspectionModule : EditorModule
         TypeCatalog types,
         SerializationRegistry serialization,
         RuntimeSession runtimeSession,
-        LogRouter logs
+        LogRouter logs,
+        IEditorConsole console
     ) {
         System.ArgumentNullException.ThrowIfNull(interactions);
         System.ArgumentNullException.ThrowIfNull(edits);
@@ -86,6 +91,7 @@ internal sealed class SceneInspectionModule : EditorModule
         System.ArgumentNullException.ThrowIfNull(serialization);
         System.ArgumentNullException.ThrowIfNull(runtimeSession);
         System.ArgumentNullException.ThrowIfNull(logs);
+        ArgumentNullException.ThrowIfNull(console);
         m_assets = assets;
         var activator = new InspectionDrawerActivator(
             interactions,
@@ -94,7 +100,8 @@ internal sealed class SceneInspectionModule : EditorModule
             classificationSettings,
             settings,
             serialization,
-            logs);
+            logs,
+            console);
         m_inspectors = new InspectionDrawerRegistry(interactions, activator.Create, types, serialization);
         m_properties = new PropertyDrawerRegistry(
             interactions,

@@ -338,3 +338,157 @@ internal static unsafe class NativeEventReader
 
 - [Inno.Native.LibraryLoading](../Interop/Inno.Native.LibraryLoading.md)：实现依赖，PrivateAssets="compile"。
 - `BGCS.Runtime`：通过固定版本 NuGet 包提供互操作运行时，不引用生成器。
+
+### Context 值、焦点、布局与时间 ABI
+
+以下成员由正式 BGCS 生成，供具体 RmlUi adapter 使用，未导出到游戏脚本。所有 Runtime 指针与缓冲区仅在所属线程的当前调用期间借用。Raw 方法同时返回 BGCS 桥接状态、领域 Result 与调用私有错误对象；按上文释放错误，不保存跨帧指针。
+
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.AdvanceTime(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.Double,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 0b0fef97d944daba9d3d8148e211c59207e4b67e1e59d21a74b751a7c8cd6b20 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.ClearFocus(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.Byte*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 41caf650edb10e674b69ff1205a579b0ff9edf901129876d4944634cfd86464a -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.CopyEventValue(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,System.SByte*,System.UInt64,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 47bb41adfc7224f3b213b8dba5c1686434d4523506a9ed38a71db5526900ae14 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.FocusElement(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,System.SByte*,Inno.Native.UI.FocusOutcome*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 9e017c4db82b6ff0698c92f55ed8566af32c9b65d782612aefe9e5f4f50312c7 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.GetFocusedElement(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64*,System.SByte*,System.UInt64,System.UInt64*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 321bb85d04ca732e5710a874adeabd401f8533902d96f44f7c6a380d6bf29324 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.GetTime(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.Double*,System.Byte*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) c9a095807cf5aa75e6a17b752cca3aab35a88bf993a324d101a104ca2b65cdb3 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.GetValue(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,System.SByte*,Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfoNative*,System.SByte*,System.UInt64,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 5dbcb734c98d7ba8ea3994c88cbd030bf6fd8837033eb96033ed3e49072f180b -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.PrepareLayout(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) eae6e1e08f7886a5a8f9231fd4b3ec76d3e292a447f3a9a27f2984fc9303a8d8 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.ReadLayout(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,System.SByte*,System.UInt64,Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfoNative*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) b92fdb695d06188562e1f41359e56a0d97335a18c0b361b52911b2c82000c859 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.RefreshLayout(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 09b4f65fcb3a7f4746d1729bfa55aceeea00f441121d48eb7a7f4002cf7d560b -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.SetTimePaused(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.Byte,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) bf6a621e3bd4485b67f12198e13879dfd275f365cfc476daaf614fa0b39fd72c -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.SetValue(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,System.SByte*,Inno.Native.UI.ControlValueKind,System.SByte*,System.Double,System.Byte,System.Byte*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 8fb8ee7a195990da40a582baebef66ec08037e5ccb4c17a0628c83f8ba314cc0 -->
+<!-- api: T:Inno.Native.UI.ControlValueKind 66e4726b6775270956f5d2331e3ee35f994d9f163da79142db941ee86555332c -->
+<!-- api: F:Inno.Native.UI.ControlValueKind.None 72441750ae83aa3d4211f1013811bf4532a99e39e8748ad07636da1fedf1e94b -->
+<!-- api: F:Inno.Native.UI.ControlValueKind.Text fbd7384c55b1a64f07d6b3f645a37b9f4ba652028fda09a139b228adea088ce2 -->
+<!-- api: F:Inno.Native.UI.ControlValueKind.Boolean 24c387be2c9bdb2d46b38db7d9c7fc0c6960d6985b28c93a48bf5c97cc211b11 -->
+<!-- api: F:Inno.Native.UI.ControlValueKind.Number 6c90f3f3602b1b5e4909e7e4c79a772e69c28a55edb2a0ca16dad8f8ede51833 -->
+<!-- api: F:Inno.Native.UI.ControlValueKind.Selection b92a8d5c037f7d6117c042448d3c6e139921dddd80ced4ca4b17a48b1261b222 -->
+<!-- api: T:Inno.Native.UI.EditPhase f094da4ab4242354fd72570e873a5058dc6c2e513073baece5560a4078ba3527 -->
+<!-- api: F:Inno.Native.UI.EditPhase.None fc9f7b42ee0198279033cafa0420f9257e7a0a810b121a03dbed32551e038bdc -->
+<!-- api: F:Inno.Native.UI.EditPhase.Editing 8e70d8f3b728dcad05566add25e0ec925a72c856f29bed29291ed9297362aaea -->
+<!-- api: F:Inno.Native.UI.EditPhase.Committed 9a5116c3e5ce81e15530fdbda5ce6bf20f7685fc7fdcc427042699e633882a2a -->
+<!-- api: T:Inno.Native.UI.EventOrigin f7fd739b527e57b3b293a3a0c672ea6984a62662be7555f7a6e56975b6c585e5 -->
+<!-- api: F:Inno.Native.UI.EventOrigin.Backend f1712d7f57fc2fb23f9e5b3860a55c30582e4fce362f5c67076ab5d7464476ab -->
+<!-- api: F:Inno.Native.UI.EventOrigin.UserInput 9c603e4b6adf630ef8b590cf43300a9ac60e831ca21462708c20c7bc11bfa8f8 -->
+<!-- api: F:Inno.Native.UI.EventOrigin.Programmatic 3026a9768c0124f5bf4396897eca43059f8d13b6dad5e3575e5af78ba7c81be8 -->
+<!-- api: T:Inno.Native.UI.FocusOutcome 9c2f0e9335633733f1c878fd1f872a0ab968937889756aaac7878574524081d6 -->
+<!-- api: F:Inno.Native.UI.FocusOutcome.Focused 863f89fefa0219d18b2b480f3ccc3837aeb4907313ed8bbbc514b5285b6adfff -->
+<!-- api: F:Inno.Native.UI.FocusOutcome.Unchanged a15462d9e6367149461360ccc546fdf3c6c8fe5b9c6775a321f1c344c5b85f00 -->
+<!-- api: F:Inno.Native.UI.FocusOutcome.NotFound fa9bf54741cb6b3dd5bf91363970f9fc292edc35814cd30c0134c34ea68df00f -->
+<!-- api: F:Inno.Native.UI.FocusOutcome.NotFocusable 444042dffb0e8f33f2c7b925da6a0405b40fd787300ac3e1e70081abe0235484 -->
+<!-- api: T:Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo 63451a7827cbc27cc99ece581d04586462f75f92c3202b0063d6bcc57afc3c79 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.Kind 1054f8bc9d1b308d914a0589151ed35e1214fea7b0d382dea91ad481465efb7e -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.Number e61d7aadc6386a1484c3644909dd28b06ae08920c1abdfd605dd2c031c7856cd -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.Checked d1907d22bd8154652cede0f30f5361c15d6e0d6e61460176322b5acb6bc2b769 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.TextLength af25293afa63267b1815a0a08f321c2cc50f3e389c3614f938d3a759e020272e -->
+<!-- api: T:Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfoNative 6a41696f911b1103a5e5b5eb9772988b6e7625fffecb0efdfe52c80461f0783c -->
+<!-- api: T:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo 66939115617ecac05f867a79c66ba4ac838454f62f12fe505877e54ece49ef5a -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.Status 94f2cbe668d54b5477fc50170338feeb664b56708238dc8970b3c2f09a997acb -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.Revision dda60a1931b6ba451732667352c09c7620f143a5aa1e7106cbd6dab6d586ab62 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentX 2b3cc11ab8b6e6518a2e902b83d70bf1587c17e9668abfb2092fc013fa03f8d3 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentY 0dbffb2d6ca50d0f42e001c7abfbf0fe502b25a7fc0112515b30638c1106bb03 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentWidth fc2d4345e855eecb7e6bcdd26ef10239e181d1fb43aa5a1a074768f192ea9a7b -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentHeight 7cd8f73eaf8cbed50d7b0b96c295dcd3a7c785d3eda5ace6c8e6c698a6dc0ed4 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderX f1e20d58aa2ee9e529d8be1294aac8e3bb3d49333d9e493c78cca12e17444b5d -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderY 22a144426325b00e46d1f99b044c36c229ee6d624d44ebc528d5eb5dccc07793 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderWidth 88e8dd536bcb6ac485eb4229e2d92fa6373ec2910d8f0e0c4affd462e4f6999c -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderHeight 9ffe4a0ab16c9e0c4cdafc1e3cd1fc5bdca07930d74c86598f88535e96e4992b -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipX 612affc78e49cc56aef4bcb2b0e3568ba15d3e7640b1e7e25a32429255330e47 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipY c3ced3068e325159f15a94610efe3dc9e4a296d3d78ef02934e6b81c7e7f220d -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipWidth 62e37ad1fb4c9547f08bd56488976e23b67cb1783751a0adc034195628fec668 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipHeight 5e1c4f2341f738c85a25d361bd0cb5b9f13601c7ad5957c5631d57ec46ad5fd8 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M11 d686c0ff2582f4e082d02ee5568a0fc9a811538d0d85f291db569e9c9a335765 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M12 de465522c4a4bf12368684f06444a5c1918e2f2bd7679e29ccd3f565d49d5cc1 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M13 1fb9fd2b76793e8429ba32bd5e348aea34450d1cf4ec3f46e069047ea0ed25c4 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M14 67807868c8ec51422c33d039bb8f5c98dcb6bdf9f7d16d01742746050ba32b09 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M21 cbf3ab7e5199a52daf31b725c0515913bc6f29184605d4ff8dd6cb64e8934bed -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M22 5e8c410cf35f1b629c0ecfc4671dc4ba0f01458029a1ac4bce798f59348952f2 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M23 007843ae0c15aa8e396937b7fc867dfbf71267836214c38c9826812369f3e498 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M24 747c6de0932d504b0cf7c3112a8539230218265c5e5b501b18d12fb8839a81de -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M31 033d21e81be40604fc10d3c19fe0866f01e054fb0042a9374834933a51606210 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M32 25546912dbbeb46693bc7bb8dd5f54b054c4d5dc2961128a8aa11c46bd6920d0 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M33 dff2af094596dd034580a751bce5cc79b72ac08b4df6c4095acbbac4525d99c3 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M34 82e280b47e544393d92af43402dd0e419b2f456dd79ab9c2b6ebecae155dfcb8 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M41 e46e33417e1d325d7ebac1c5b64e946fcc82167d42afc640c3889e4e5b042e9c -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M42 e5bcddcbf36ab8f9b9fa875fd29d0eec7c6c25e575b78e526b5eabcc11543cfb -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M43 b58f4cd6648a5a239011f5388b8dcaa96cb6510eb8409ec9d924c019c8a5c847 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M44 6f351c363d9ee10b8bc7e2098b2f4a3f68e15af2659a801992dc283d64212aa8 -->
+<!-- api: T:Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfoNative f90bcbe549d7ee09718ac07eb9ab30d7151c36703f237c2bef7ca9e91952ae98 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Value 91758cff0698bdd9279fa3ff2d4ced8c9b1fff771fd045838e933ebb3e92451f -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Phase 1fdb37f5ef9b81189c5e595088dde76cfe0f33a01a3595e146ff7d821d254966 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Origin 1a044c6137bf536fea5350b3eff61b944f2cb5d74424f8e30d375a5dddfdd7f7 -->
+<!-- api: T:Inno.Native.UI.NativeArray_ddadfd40a13315f3 13982a444d79efe2bb467b95e6696e4dfe79934b0f334e79eed405cf3ba0641a -->
+
+| 声明 | 当前语义 |
+|---|---|
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.AdvanceTime(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, double seconds, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L365) | 在所属 Context 上推进非负秒数；只影响该 Context 的时钟。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.ClearFocus(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, byte* cleared, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L381) | 清除该 Context 当前焦点，输出是否发生改变。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.CopyEventValue(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong index, sbyte* text, ulong capacity, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L413) | 复制指定事件快照的 UTF-8 值；容量包含结尾零字节，长度从事件值信息取得。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.FocusElement(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong document, sbyte* element_id, Inno.Native.UI.FocusOutcome* outcome, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L485) | 请求文档元素焦点，通过 FocusOutcome 区分成功、未变化、未找到和不可聚焦。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.GetFocusedElement(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong* document, sbyte* element_id, ulong capacity, ulong* length, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L509) | 返回当前焦点文档与元素 ID；先查询所需 UTF-8 容量，再复制同一 owner-thread 状态。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.GetTime(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, double* seconds, byte* paused, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L533) | 读取 Context 累积秒数和暂停状态，不推进时间。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.GetValue(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong document, sbyte* element_id, Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfoNative* value, sbyte* text, ulong capacity, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L541) | 读取当前控件的类型化值和文本长度；传入缓冲区接收 UTF-8 文本。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.PrepareLayout(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong* revision, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L581) | 刷新当前布局并输出 revision，作为后续批量读取的同一布局身份。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.ReadLayout(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong document, sbyte* element_id, ulong revision, Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfoNative* layout, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L629) | 读取指定 revision 的元素最终几何、裁剪与变换；错误或过期 revision 明确失败。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.RefreshLayout(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L637) | 只刷新布局，不注入输入或推进上下文时间。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.SetTimePaused(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, byte paused, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L693) | 设置所属 Context 的时间暂停状态，其他 Context 不受影响。 |
+| [`public int Inno.Native.UI.UiNativeContext.RawApi.SetValue(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong document, sbyte* element_id, Inno.Native.UI.ControlValueKind kind, sbyte* text, double number, byte @checked, byte* accepted, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L701) | 设置匹配控件类型的值；accepted 表达控件是否接受，不伪装成用户提交。 |
+| [`public enum Inno.Native.UI.ControlValueKind : uint`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L774) | 原生控件值的窄 ABI 类型标签。 |
+| [`Inno.Native.UI.ControlValueKind.None = 0`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L776) | 没有控件值或没有编辑阶段。 |
+| [`Inno.Native.UI.ControlValueKind.Text = 1`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L777) | 文本内容。 |
+| [`Inno.Native.UI.ControlValueKind.Boolean = 2`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L778) | 布尔选中状态。 |
+| [`Inno.Native.UI.ControlValueKind.Number = 3`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L779) | 有限数值。 |
+| [`Inno.Native.UI.ControlValueKind.Selection = 4`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L780) | 选择项的稳定控件值。 |
+| [`public enum Inno.Native.UI.EditPhase : uint`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L789) | 当前事件对应的编辑或提交阶段。 |
+| [`Inno.Native.UI.EditPhase.None = 0`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L791) | 没有控件值或没有编辑阶段。 |
+| [`Inno.Native.UI.EditPhase.Editing = 1`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L792) | 尚在编辑的中间值。 |
+| [`Inno.Native.UI.EditPhase.Committed = 2`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L793) | 已完成的控件提交。 |
+| [`public enum Inno.Native.UI.EventOrigin : uint`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L802) | 当前事件由用户、程序还是后端流程产生。 |
+| [`Inno.Native.UI.EventOrigin.Backend = 0`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L804) | 后端生命周期或布局流程产生。 |
+| [`Inno.Native.UI.EventOrigin.UserInput = 1`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L805) | 当前输入操作产生。 |
+| [`Inno.Native.UI.EventOrigin.Programmatic = 2`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L806) | 显式程序操作产生。 |
+| [`public enum Inno.Native.UI.FocusOutcome : uint`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L832) | 显式请求焦点的领域结果，与 ABI 调用失败独立。 |
+| [`Inno.Native.UI.FocusOutcome.Focused = 0`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L834) | 焦点成功改变。 |
+| [`Inno.Native.UI.FocusOutcome.Unchanged = 1`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L835) | 目标已经持有焦点。 |
+| [`Inno.Native.UI.FocusOutcome.NotFound = 2`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L836) | 指定元素不存在。 |
+| [`Inno.Native.UI.FocusOutcome.NotFocusable = 3`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L837) | 目标不能取得焦点。 |
+| [`public struct Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L848) | 类型化控件值及可单独复制的 UTF-8 文本长度。 |
+| [`public Inno.Native.UI.ControlValueKind Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.Kind`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L851) | 控件值标签，决定读取哪个值字段。 |
+| [`public double Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.Number`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L853) | 有限数值。 |
+| [`public byte Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.Checked`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L855) | 布尔控件状态，零为 false。 |
+| [`public ulong Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo.TextLength`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L857) | UTF-8 文本字节长度，不包含结尾零字节。 |
+| [`public struct Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfoNative`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L867) | BGCS 生成的原生存储布局视图，与对应 managed DTO 配对；不作为领域数据保留。 |
+| [`public struct Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L916) | 同一布局 revision 下的元素几何、裁剪和局部到 Context 变换。 |
+| [`public uint Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.Status`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L919) | 元素查询状态：0 不存在，1 不可见，2 具有有效布局。 |
+| [`public ulong Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.Revision`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L921) | 该布局快照的 Context revision。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentX`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L923) | 内容盒在 Context 像素坐标中的横向位置。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentY`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L925) | 内容盒在 Context 像素坐标中的纵向位置。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentWidth`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L927) | 内容盒在 Context 像素坐标中的宽度。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ContentHeight`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L929) | 内容盒在 Context 像素坐标中的高度。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderX`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L931) | 边框盒在 Context 像素坐标中的横向位置。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderY`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L933) | 边框盒在 Context 像素坐标中的纵向位置。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderWidth`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L935) | 边框盒在 Context 像素坐标中的宽度。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.BorderHeight`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L937) | 边框盒在 Context 像素坐标中的高度。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipX`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L939) | 有效裁剪范围在 Context 像素坐标中的横向位置。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipY`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L941) | 有效裁剪范围在 Context 像素坐标中的纵向位置。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipWidth`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L943) | 有效裁剪范围在 Context 像素坐标中的宽度。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.ClipHeight`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L945) | 有效裁剪范围在 Context 像素坐标中的高度。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M11`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L947) | 元素局部坐标到 Context 齐次变换矩阵的第 1 行、第 1 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M12`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L949) | 元素局部坐标到 Context 齐次变换矩阵的第 1 行、第 2 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M13`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L951) | 元素局部坐标到 Context 齐次变换矩阵的第 1 行、第 3 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M14`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L953) | 元素局部坐标到 Context 齐次变换矩阵的第 1 行、第 4 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M21`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L955) | 元素局部坐标到 Context 齐次变换矩阵的第 2 行、第 1 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M22`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L957) | 元素局部坐标到 Context 齐次变换矩阵的第 2 行、第 2 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M23`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L959) | 元素局部坐标到 Context 齐次变换矩阵的第 2 行、第 3 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M24`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L961) | 元素局部坐标到 Context 齐次变换矩阵的第 2 行、第 4 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M31`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L963) | 元素局部坐标到 Context 齐次变换矩阵的第 3 行、第 1 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M32`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L965) | 元素局部坐标到 Context 齐次变换矩阵的第 3 行、第 2 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M33`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L967) | 元素局部坐标到 Context 齐次变换矩阵的第 3 行、第 3 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M34`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L969) | 元素局部坐标到 Context 齐次变换矩阵的第 3 行、第 4 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M41`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L971) | 元素局部坐标到 Context 齐次变换矩阵的第 4 行、第 1 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M42`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L973) | 元素局部坐标到 Context 齐次变换矩阵的第 4 行、第 2 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M43`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L975) | 元素局部坐标到 Context 齐次变换矩阵的第 4 行、第 3 列。 |
+| [`public float Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfo.M44`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L977) | 元素局部坐标到 Context 齐次变换矩阵的第 4 行、第 4 列。 |
+| [`public struct Inno.Native.UI.InnoUIRmlUiAdapterElementLayoutInfoNative`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L987) | BGCS 生成的原生存储布局视图，与对应 managed DTO 配对；不作为领域数据保留。 |
+| [`public Inno.Native.UI.InnoUIRmlUiAdapterControlValueInfo Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Value`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L1008) | 事件发生时捕获的类型化控件值信息。 |
+| [`public Inno.Native.UI.EditPhase Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Phase`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L1010) | 事件对应的编辑或提交阶段。 |
+| [`public Inno.Native.UI.EventOrigin Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Origin`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L1012) | 该事件的实际来源。 |
+| [`public struct Inno.Native.UI.NativeArray_ddadfd40a13315f3`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L1186) | BGCS 为当前原生存储布局生成的固定数组容器，仅用于 ABI 搬运。 |

@@ -1,86 +1,133 @@
+using System;
 using Inno.Core.Input;
 
 namespace Inno.Core.Events;
 
 /// <summary>
-/// Base class for mouse events.
+/// Carries a positioned mouse fact and its shared global consumption lifetime.
 /// </summary>
 public abstract class MouseEvent : Event
 {
     /// <summary>
-    /// Creates an independent mouse event belonging to one platform window.
+    /// Creates one positioned fact in logical platform-window coordinates.
     /// </summary>
     /// <param name="windowId">
-    /// The platform window that produced the event.
-    /// </param>
-    protected MouseEvent(uint windowId) => this.windowId = windowId;
-
-    /// <summary>
-    /// Creates a routed mouse event sharing its source's window and global consumption.
-    /// </summary>
-    /// <param name="source">
-    /// The mouse event whose input lifetime remains authoritative.
-    /// </param>
-    /// <exception cref="System.ArgumentNullException">
-    /// The source event is null.
-    /// </exception>
-    protected MouseEvent(MouseEvent source) : base(source) => windowId = source.windowId;
-
-    /// <summary>
-    /// Gets the source window id for this event.
-    /// </summary>
-    public uint windowId { get; }
-}
-
-
-/// <summary>
-/// Raised when the cursor moves.
-/// </summary>
-public class MouseMovedEvent : MouseEvent
-{
-    /// <summary>
-    /// Creates a pointer movement in platform-window coordinates.
-    /// </summary>
-    /// <param name="windowId">
-    /// The platform window that produced the movement.
+    /// Platform window that produced this event.
     /// </param>
     /// <param name="x">
-    /// The horizontal pointer coordinate in logical pixels.
+    /// Horizontal pointer coordinate in logical window pixels.
     /// </param>
     /// <param name="y">
-    /// The vertical pointer coordinate in logical pixels.
+    /// Vertical pointer coordinate in logical window pixels.
     /// </param>
-    public MouseMovedEvent(
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A pointer coordinate is not finite.
+    /// </exception>
+    protected MouseEvent(
         uint windowId,
         float x,
         float y
-    ) : base(windowId) {
+    ) {
+        ValidatePosition(x, y);
+        this.windowId = windowId;
         this.x = x;
         this.y = y;
     }
 
     /// <summary>
-    /// Gets cursor X coordinate.
+    /// Creates a coordinate projection sharing the source consumption lifetime.
+    /// </summary>
+    /// <param name="source">
+    /// Source whose global consumption lifetime remains authoritative.
+    /// </param>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A projected coordinate is not finite.
+    /// </exception>
+    protected MouseEvent(
+        MouseEvent source,
+        float x,
+        float y
+    ) : base(source) {
+        ValidatePosition(x, y);
+        windowId = source.windowId;
+        this.x = x;
+        this.y = y;
+    }
+
+    /// <summary>
+    /// Gets the platform window that owns this input fact.
+    /// </summary>
+    public uint windowId { get; }
+
+    /// <summary>
+    /// Gets the horizontal pointer coordinate in this event projection.
     /// </summary>
     public float x { get; }
 
     /// <summary>
-    /// Gets cursor Y coordinate.
+    /// Gets the vertical pointer coordinate in this event projection.
     /// </summary>
     public float y { get; }
 
+    private static void ValidatePosition(
+        float x,
+        float y
+    ) {
+        if (!float.IsFinite(x))
+            throw new ArgumentOutOfRangeException(nameof(x));
+        if (!float.IsFinite(y))
+            throw new ArgumentOutOfRangeException(nameof(y));
+    }
+}
+
+/// <summary>
+/// Reports pointer motion at its event-local position.
+/// </summary>
+public class MouseMovedEvent : MouseEvent
+{
     /// <summary>
-    /// Repositions this movement without starting a new global consumption lifetime.
+    /// Creates a positioned moved input fact.
     /// </summary>
+    /// <param name="windowId">
+    /// Platform window that produced this event.
+    /// </param>
     /// <param name="x">
-    /// The routed horizontal coordinate in logical pixels.
+    /// Horizontal pointer coordinate in logical window pixels.
     /// </param>
     /// <param name="y">
-    /// The routed vertical coordinate in logical pixels.
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A pointer coordinate is not finite.
+    /// </exception>
+    public MouseMovedEvent(
+        uint windowId,
+        float x,
+        float y
+    ) : base(windowId, x, y) {
+    }
+
+    /// <summary>
+    /// Projects this fact without creating another global consumption lifetime.
+    /// </summary>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
     /// </param>
     /// <returns>
-    /// A new coordinate representation sharing global consumption with this movement.
+    /// A positioned event sharing consumption with the original fact.
     /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A projected coordinate is not finite.
+    /// </exception>
     public MouseMovedEvent WithPosition(
         float x,
         float y
@@ -90,89 +137,262 @@ public class MouseMovedEvent : MouseEvent
         MouseMovedEvent source,
         float x,
         float y
-    ) : base(source) {
-        this.x = x;
-        this.y = y;
+    ) : base(source, x, y) {
     }
 }
 
 /// <summary>
-/// Raised when mouse wheel scrolls.
+/// Reports wheel movement at its event-local pointer position.
 /// </summary>
-/// <param name="windowId">
-/// The window id used to initialize this instance.
-/// </param>
-/// <param name="offsetX">
-/// The offset x used to initialize this instance.
-/// </param>
-/// <param name="offsetY">
-/// The offset y used to initialize this instance.
-/// </param>
-public class MouseScrolledEvent(
-    uint windowId,
-    float offsetX,
-    float offsetY
-) : MouseEvent(windowId)
+public class MouseScrolledEvent : MouseEvent
 {
     /// <summary>
-    /// Gets horizontal scroll offset.
+    /// Creates a positioned scrolled input fact.
     /// </summary>
-    public float offsetX { get; } = offsetX;
+    /// <param name="windowId">
+    /// Platform window that produced this event.
+    /// </param>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="offsetX">
+    /// Horizontal scroll delta, positive to the right.
+    /// </param>
+    /// <param name="offsetY">
+    /// Vertical scroll delta, positive upwards.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A pointer coordinate is not finite.
+    /// </exception>
+    public MouseScrolledEvent(
+        uint windowId,
+        float x,
+        float y,
+        float offsetX,
+        float offsetY
+    ) : base(windowId, x, y) {
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+    }
 
     /// <summary>
-    /// Gets vertical scroll offset.
+    /// Gets horizontal wheel delta, positive to the right.
     /// </summary>
-    public float offsetY { get; } = offsetY;
+    public float offsetX { get; }
+
+    /// <summary>
+    /// Gets vertical wheel delta, positive upwards.
+    /// </summary>
+    public float offsetY { get; }
+
+    /// <summary>
+    /// Projects this fact without creating another global consumption lifetime.
+    /// </summary>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <returns>
+    /// A positioned event sharing consumption with the original fact.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A projected coordinate is not finite.
+    /// </exception>
+    public MouseScrolledEvent WithPosition(
+        float x,
+        float y
+    ) => new(this, x, y);
+
+    private MouseScrolledEvent(
+        MouseScrolledEvent source,
+        float x,
+        float y
+    ) : base(source, x, y) {
+        offsetX = source.offsetX;
+        offsetY = source.offsetY;
+    }
 }
 
 /// <summary>
-/// Base class for mouse button events.
+/// Reports a button press at its event-local pointer position.
 /// </summary>
-/// <param name="windowId">
-/// The window id used to initialize this instance.
-/// </param>
-/// <param name="button">
-/// The button used to initialize this instance.
-/// </param>
-public abstract class MouseButtonEvent(
-    uint windowId,
-    MouseButton button
-) : MouseEvent(windowId)
+public class MouseButtonPressedEvent : MouseButtonEvent
 {
     /// <summary>
-    /// Gets the mouse button for this event.
+    /// Creates a positioned buttonpressed input fact.
     /// </summary>
-    public MouseButton button { get; } = button;
+    /// <param name="windowId">
+    /// Platform window that produced this event.
+    /// </param>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="button">
+    /// Physical button that changed.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A pointer coordinate is not finite.
+    /// </exception>
+    public MouseButtonPressedEvent(
+        uint windowId,
+        float x,
+        float y,
+        MouseButton button
+    ) : base(windowId, x, y, button) {
+    }
+
+    /// <summary>
+    /// Projects this fact without creating another global consumption lifetime.
+    /// </summary>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <returns>
+    /// A positioned event sharing consumption with the original fact.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A projected coordinate is not finite.
+    /// </exception>
+    public MouseButtonPressedEvent WithPosition(
+        float x,
+        float y
+    ) => new(this, x, y);
+
+    private MouseButtonPressedEvent(
+        MouseButtonPressedEvent source,
+        float x,
+        float y
+    ) : base(source, x, y) {
+    }
 }
 
 /// <summary>
-/// Raised when a mouse button is pressed.
+/// Reports a button release at its event-local pointer position.
 /// </summary>
-/// <param name="windowId">
-/// The window id used to initialize this instance.
-/// </param>
-/// <param name="button">
-/// The button used to initialize this instance.
-/// </param>
-public class MouseButtonPressedEvent(
-    uint windowId,
-    MouseButton button
-) : MouseButtonEvent(windowId, button)
+public class MouseButtonReleasedEvent : MouseButtonEvent
 {
+    /// <summary>
+    /// Creates a positioned buttonreleased input fact.
+    /// </summary>
+    /// <param name="windowId">
+    /// Platform window that produced this event.
+    /// </param>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="button">
+    /// Physical button that changed.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A pointer coordinate is not finite.
+    /// </exception>
+    public MouseButtonReleasedEvent(
+        uint windowId,
+        float x,
+        float y,
+        MouseButton button
+    ) : base(windowId, x, y, button) {
+    }
+
+    /// <summary>
+    /// Projects this fact without creating another global consumption lifetime.
+    /// </summary>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <returns>
+    /// A positioned event sharing consumption with the original fact.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A projected coordinate is not finite.
+    /// </exception>
+    public MouseButtonReleasedEvent WithPosition(
+        float x,
+        float y
+    ) => new(this, x, y);
+
+    private MouseButtonReleasedEvent(
+        MouseButtonReleasedEvent source,
+        float x,
+        float y
+    ) : base(source, x, y) {
+    }
 }
 
 /// <summary>
-/// Raised when a mouse button is released.
+/// Carries a positioned physical button transition.
 /// </summary>
-/// <param name="windowId">
-/// The window id used to initialize this instance.
-/// </param>
-/// <param name="button">
-/// The button used to initialize this instance.
-/// </param>
-public class MouseButtonReleasedEvent(
-    uint windowId,
-    MouseButton button
-) : MouseButtonEvent(windowId, button)
+public abstract class MouseButtonEvent : MouseEvent
 {
+    /// <summary>
+    /// Creates one physical button transition at its event-local position.
+    /// </summary>
+    /// <param name="windowId">
+    /// Platform window that produced this event.
+    /// </param>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="button">
+    /// Physical button that changed.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A pointer coordinate is not finite.
+    /// </exception>
+    protected MouseButtonEvent(
+        uint windowId,
+        float x,
+        float y,
+        MouseButton button
+    ) : base(windowId, x, y) {
+        this.button = button;
+    }
+
+    /// <summary>
+    /// Projects an existing button transition without replacing consumption ownership.
+    /// </summary>
+    /// <param name="source">
+    /// Source whose global consumption lifetime remains authoritative.
+    /// </param>
+    /// <param name="x">
+    /// Horizontal pointer coordinate in logical window pixels.
+    /// </param>
+    /// <param name="y">
+    /// Vertical pointer coordinate in logical window pixels.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A projected coordinate is not finite.
+    /// </exception>
+    protected MouseButtonEvent(
+        MouseButtonEvent source,
+        float x,
+        float y
+    ) : base(source, x, y) {
+        button = source.button;
+    }
+
+    /// <summary>
+    /// Gets the physical button that changed.
+    /// </summary>
+    public MouseButton button { get; }
 }

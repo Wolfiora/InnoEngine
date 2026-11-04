@@ -130,8 +130,8 @@ public sealed class PropertyDrawerRegistry : IDisposable
             {
                 IPropertyDrawer drawer = drawers.TryGetValue(drawerType, out IPropertyDrawer? existing)
                     ? existing
-                    : OwnCandidateExtension(CreateDrawer(
-                        drawerType,
+                    : CreateExtension(drawerType, implementation => CreateDrawer(
+                        implementation,
                         m_interactions,
                         types,
                         m_serialization,

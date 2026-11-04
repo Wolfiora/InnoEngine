@@ -198,11 +198,67 @@ public sealed partial class PlayerWithoutFileSystemTests
     }
     private sealed class MemoryUi(List<string> retired) : IUiBackend
     {
+        public UiLayoutSnapshot CaptureLayout(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            IReadOnlyList<string> elementIds
+        ) => throw new NotSupportedException();
+
         internal UiInputSnapshot? lastInput { get; private set; }
 
         public string implementationId => "tests.ui";
-        public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
+        public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], [UiBackendCapability.FontCollectionFaceSelection]);
 
+        /// <inheritdoc cref="IUiService.GetTime" />
+        public UiContextTime GetTime(UiContextHandle context) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.SetTimePaused" />
+        public void SetTimePaused(
+            UiContextHandle context,
+            bool paused
+        ) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.AdvanceTime" />
+        public void AdvanceTime(
+            UiContextHandle context,
+            double seconds
+        ) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.TrySeekTime" />
+        public bool TrySeekTime(
+            UiContextHandle context,
+            double seconds
+        ) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.RefreshLayout" />
+        public void RefreshLayout(UiContextHandle context) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.ProcessInput" />
+        public void ProcessInput(
+            UiContextHandle context,
+            UiInputSnapshot input
+        ) => throw new NotSupportedException();
+
+        public UiControlValue GetValue(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            string elementId
+        ) => throw new NotSupportedException();
+
+        public bool SetValue(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            string elementId,
+            UiControlValue value
+        ) => throw new NotSupportedException();
+
+        public UiFocusResult FocusElement(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            string elementId
+        ) => throw new NotSupportedException();
+        public UiFocusTarget? GetFocusedElement(UiContextHandle context) => throw new NotSupportedException();
+        public bool ClearFocus(UiContextHandle context) => throw new NotSupportedException();
         public UiContextHandle CreateContext(UiContextOptions options) => new(1);
         public void DestroyContext(UiContextHandle context) { }
         public void SetViewport(

@@ -13,6 +13,8 @@
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Events/Inno.Core.Events.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../services/ui/Inno.UI.Runtime/Inno.UI.Runtime.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../services/input/Inno.Input/Inno.Input.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/core/Inno.Core.Input/Inno.Core.Input.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj" PrivateAssets="compile" />

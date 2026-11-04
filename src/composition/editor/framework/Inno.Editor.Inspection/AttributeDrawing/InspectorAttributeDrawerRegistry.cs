@@ -149,7 +149,7 @@ public sealed class InspectorAttributeDrawerRegistry : IDisposable
             {
                 IInspectorAttributeDrawer drawer = drawers.TryGetValue(drawerType, out IInspectorAttributeDrawer? existing)
                     ? existing
-                    : OwnCandidateExtension(CreateDrawer(drawerType, types));
+                    : CreateExtension(drawerType, implementation => CreateDrawer(implementation, types));
                 drawers[drawerType] = drawer;
                 foreach (InspectorAttributeDrawerAttribute attribute in
                          drawerType.GetCustomAttributes<InspectorAttributeDrawerAttribute>(false))

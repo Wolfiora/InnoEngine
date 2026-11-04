@@ -545,6 +545,33 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     }
 
     [Fact]
+    public void RuntimeDeploymentRequiresTheSameGraphApiOwnerAsAuthoring()
+    {
+        m_fixture.Write("GraphConsumer.cs", """
+            using InnoEngine.Graphs;
+
+            public sealed class GraphConsumer
+            {
+                public GraphDocument document { get; } = new GraphDocument();
+            }
+            """);
+        ScriptCompilationResult authoring = m_fixture.Compile();
+        Assert.True(authoring.success, FormatDiagnostics(authoring));
+        string targetRuntime = m_fixture.CreateDeploymentRuntime();
+        ScriptCompilationResult deployed = m_fixture.CompileRuntimeDeployment(targetRuntime);
+        Assert.True(deployed.success, FormatDiagnostics(deployed));
+        string graphAssembly = Path.Combine(targetRuntime, "Inno.Core.Graphs.dll");
+        Assert.True(File.Exists(graphAssembly));
+        File.Delete(graphAssembly);
+        ScriptCompilationResult missing = m_fixture.CompileRuntimeDeployment(targetRuntime);
+        Assert.False(missing.success);
+        Assert.Contains(missing.diagnostics, static diagnostic => diagnostic.severity == DiagnosticSeverity.Error);
+        File.Copy(Path.Combine(AppContext.BaseDirectory, "Inno.Core.Graphs.dll"), graphAssembly);
+        ScriptCompilationResult restored = m_fixture.CompileRuntimeDeployment(targetRuntime);
+        Assert.True(restored.success, FormatDiagnostics(restored));
+    }
+
+    [Fact]
     public void CompilationWideUsingDirectiveIsRejected()
     {
         m_fixture.Write("ForbiddenUsing.cs", """
@@ -623,7 +650,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [Fact]
     public void CachedCompilationReplaysWarningsAndReusesTheGeneration()
     {
-        m_fixture.Write("CachedWarningProbe.cs", "public sealed class CachedWarningProbe { private int unused; }");
+        m_fixture.Write("CachedWarningProbe.cs", "using InnoEngine.Scene; public sealed class CachedWarningProbe : GameBehavior { private int unused; }");
         ScriptCompilationResult first = m_fixture.Compile();
         ScriptCompilationResult second = m_fixture.Compile();
         Assert.True(first.success, FormatDiagnostics(first));
@@ -632,6 +659,27 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.Contains(second.diagnostics, diagnostic => diagnostic == firstWarning);
         Assert.Equal(first.outputDirectory, second.outputDirectory);
         Assert.NotEmpty(second.reusedAssemblyNames);
+        ScriptTypeSource firstSource = Assert.Single(first.typeSources,
+            static source => source.typeName == "CachedWarningProbe");
+        ScriptTypeSource cachedSource = Assert.Single(second.typeSources,
+            static source => source.typeName == "CachedWarningProbe");
+        Assert.NotEqual(Guid.Empty, firstSource.typeId);
+        Assert.NotEqual(Guid.Empty, firstSource.sourceId);
+        Assert.EndsWith("CachedWarningProbe.cs", firstSource.sourcePath, StringComparison.Ordinal);
+        Assert.Equal(1, firstSource.line);
+        Assert.True(firstSource.column > 0);
+        Assert.Equal(firstSource.assemblyName, cachedSource.assemblyName);
+        Assert.Equal(firstSource.typeId, cachedSource.typeId);
+        Assert.Equal(firstSource.sourceId, cachedSource.sourceId);
+        Assert.Equal(firstSource.sourcePath, cachedSource.sourcePath);
+        Assert.Equal(firstSource.line, cachedSource.line);
+        Assert.Equal(firstSource.column, cachedSource.column);
+        m_fixture.Write("CachedWarningProbe.cs", "public sealed class CachedWarningProbe { syntax error }");
+        ScriptCompilationResult failed = m_fixture.Compile();
+        Assert.False(failed.success);
+        Assert.Empty(failed.typeSources);
+        Assert.Equal(firstSource.typeId, Assert.Single(first.typeSources,
+            static source => source.typeName == "CachedWarningProbe").typeId);
     }
 
     [Fact]

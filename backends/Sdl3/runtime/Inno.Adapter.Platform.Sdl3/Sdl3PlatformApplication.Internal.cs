@@ -468,14 +468,16 @@ public sealed unsafe partial class Sdl3PlatformApplication
                     wheelY = -wheelY;
                 }
 
-                evnt = new MouseScrolledEvent(sdlEvent.Wheel.WindowID, wheelX, wheelY);
+                evnt = new MouseScrolledEvent(sdlEvent.Wheel.WindowID,
+                    sdlEvent.Wheel.MouseX, sdlEvent.Wheel.MouseY, wheelX, wheelY);
                 return true;
             }
 
             case SDLEventType.MouseButtonDown:
                 if (TryTranslateMouseButton(sdlEvent.Button.Button, out var pressedButton))
                 {
-                    evnt = new MouseButtonPressedEvent(sdlEvent.Button.WindowID, pressedButton);
+                    evnt = new MouseButtonPressedEvent(sdlEvent.Button.WindowID,
+                        sdlEvent.Button.X, sdlEvent.Button.Y, pressedButton);
                     return true;
                 }
 
@@ -484,7 +486,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
             case SDLEventType.MouseButtonUp:
                 if (TryTranslateMouseButton(sdlEvent.Button.Button, out var releasedButton))
                 {
-                    evnt = new MouseButtonReleasedEvent(sdlEvent.Button.WindowID, releasedButton);
+                    evnt = new MouseButtonReleasedEvent(sdlEvent.Button.WindowID,
+                        sdlEvent.Button.X, sdlEvent.Button.Y, releasedButton);
                     return true;
                 }
 

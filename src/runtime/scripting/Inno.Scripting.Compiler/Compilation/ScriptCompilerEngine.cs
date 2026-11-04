@@ -136,7 +136,8 @@ internal static class ScriptCompilerEngine
                 cachedResult.moduleDeployments,
                 compiledAssemblies: [],
                 reusedAssemblies: sources.assemblies.Select(static assembly => assembly.name).ToArray(),
-                stageTimings: progress.Snapshot());
+                stageTimings: progress.Snapshot(),
+                typeSources: cachedResult.typeSources);
         }
 
         IReadOnlyList<MetadataReference> platformReferences = environment.frameworkReferences;
@@ -255,7 +256,8 @@ internal static class ScriptCompilerEngine
             requests,
             compiledAssemblies,
             reusedAssemblies,
-            progress.Snapshot());
+            progress.Snapshot(),
+            ReadTypeSources(outputDirectory, sources));
     }
 
     private static async ValueTask<CompilationResult> CompileAssemblyAsync(
@@ -778,9 +780,28 @@ internal static class ScriptCompilerEngine
             outputDirectory: outputDirectory,
             moduleDeployments: CreateModuleDeployments(
                 outputDirectory,
-                sources));
+                sources),
+            typeSources: ReadTypeSources(outputDirectory, sources));
         TryTouchCacheDirectory(outputDirectory);
         return true;
+    }
+
+    private static IReadOnlyList<ScriptTypeSource> ReadTypeSources(
+        string outputDirectory,
+        ScriptSourceSet sources
+    ) {
+        var declarations = new List<ScriptTypeSource>();
+        foreach (ScriptAssemblyInput assembly in sources.assemblies)
+        {
+            string assemblyPath = Path.Combine(outputDirectory, assembly.name + ".dll");
+            ScriptTypeManifest manifest = ScriptCompilerCacheSerialization.DecodeTypeManifest(
+                File.ReadAllBytes(GetTypeManifestPath(assemblyPath)));
+            if (!string.Equals(manifest.assemblyName, assembly.name, StringComparison.Ordinal))
+                throw new InvalidDataException($"Type manifest does not belong to assembly '{assembly.name}'.");
+            foreach (ScriptTypeManifestEntry declaration in manifest.types)
+                declarations.Add(new ScriptTypeSource(manifest.assemblyName, declaration));
+        }
+        return declarations;
     }
 
     private static void DeleteStagingDirectory(string path)

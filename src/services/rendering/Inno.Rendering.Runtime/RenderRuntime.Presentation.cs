@@ -53,6 +53,7 @@ sealed partial class RenderRuntime
             || m_primaryPresentationViewport is not RenderViewport viewport)
             return RenderOutputInput.suspended;
         Vector2 pointerPosition = input.mousePosition;
+        Vector2 coordinateScale = Vector2.ONE;
         if (m_primaryInputSurfaceSizeProvider is not null)
         {
             RenderPresentationSize? inputSize = m_primaryInputSurfaceSizeProvider();
@@ -60,15 +61,14 @@ sealed partial class RenderRuntime
                 return RenderOutputInput.suspended;
             if (!logicalSize.isValid)
                 throw new InvalidOperationException("The primary input surface has an invalid logical size.");
-            pointerPosition = new Vector2(
-                pointerPosition.x * physicalSize.width / logicalSize.width,
-                pointerPosition.y * physicalSize.height / logicalSize.height);
+            coordinateScale = new Vector2((float)physicalSize.width / logicalSize.width, (float)physicalSize.height / logicalSize.height);
+            pointerPosition = new Vector2(pointerPosition.x * coordinateScale.x, pointerPosition.y * coordinateScale.y);
         }
         Vector2 pointer = pointerPosition - new Vector2(viewport.x, viewport.y);
         return new RenderOutputInput(
             pointer, pointer.x >= 0f && pointer.y >= 0f && pointer.x < viewport.width && pointer.y < viewport.height,
-            input.scrollDelta, input.modifiers, input.keysPressed, input.keysReleased,
-            input.mouseButtonsPressed, input.mouseButtonsReleased, input.textInput);
+            input.modifiers, input.sequence.MapPointer(position => new Vector2(
+                position.x * coordinateScale.x - viewport.x, position.y * coordinateScale.y - viewport.y)));
     }
 
     private void AddPrimaryPresentationBackground(RenderGraphBuilder graph)

@@ -50,14 +50,20 @@
 #endif
 
 static_assert(std::is_standard_layout<::Inno::UI::RmlUiAdapter::EventInfo>::value && std::is_trivially_copyable<::Inno::UI::RmlUiAdapter::EventInfo>::value, "BGCS DTO storage requires standard layout and trivial copyability under final native arguments");
-static_assert(sizeof(::Inno::UI::RmlUiAdapter::EventInfo) == 24 && sizeof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_92074699a356bed9) == 24, "BGCS DTO byte size changed");
-static_assert(alignof(::Inno::UI::RmlUiAdapter::EventInfo) == 8 && alignof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_92074699a356bed9) == 8, "BGCS DTO alignment changed");
-static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, type) == 0 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_92074699a356bed9, type) == 0, "BGCS DTO field offset changed");
+static_assert(sizeof(::Inno::UI::RmlUiAdapter::EventInfo) == 64 && sizeof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae) == 64, "BGCS DTO byte size changed");
+static_assert(alignof(::Inno::UI::RmlUiAdapter::EventInfo) == 8 && alignof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae) == 8, "BGCS DTO alignment changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, type) == 0 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae, type) == 0, "BGCS DTO field offset changed");
 static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::EventInfo&>().type), ::EventType>::value, "BGCS DTO field type changed");
-static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, document) == 8 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_92074699a356bed9, document) == 8, "BGCS DTO field offset changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, document) == 8 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae, document) == 8, "BGCS DTO field offset changed");
 static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::EventInfo&>().document), unsigned long long>::value, "BGCS DTO field type changed");
-static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, target_id_length) == 16 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_92074699a356bed9, target_id_length) == 16, "BGCS DTO field offset changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, target_id_length) == 16 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae, target_id_length) == 16, "BGCS DTO field offset changed");
 static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::EventInfo&>().target_id_length), unsigned long long>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, value) == 24 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae, value) == 24, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::EventInfo&>().value), ::Inno::UI::RmlUiAdapter::ControlValueInfo>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, phase) == 56 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae, phase) == 56, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::EventInfo&>().phase), ::EditPhase>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::EventInfo, origin) == 60 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_dto_cd46285a043d3eae, origin) == 60, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::EventInfo&>().origin), ::EventOrigin>::value, "BGCS DTO field type changed");
 
 static_assert(std::is_standard_layout<::Inno::UI::RmlUiAdapter::TextureInfo>::value && std::is_trivially_copyable<::Inno::UI::RmlUiAdapter::TextureInfo>::value, "BGCS DTO storage requires standard layout and trivial copyability under final native arguments");
 static_assert(sizeof(::Inno::UI::RmlUiAdapter::TextureInfo) == 32 && sizeof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_TextureInfo_dto_05607f3aea5e42df) == 32, "BGCS DTO byte size changed");
@@ -72,6 +78,70 @@ static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::TextureInfo, height) 
 static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::TextureInfo&>().height), int>::value, "BGCS DTO field type changed");
 static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::TextureInfo, byte_length) == 24 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_TextureInfo_dto_05607f3aea5e42df, byte_length) == 24, "BGCS DTO field offset changed");
 static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::TextureInfo&>().byte_length), unsigned long long>::value, "BGCS DTO field type changed");
+
+static_assert(std::is_standard_layout<::Inno::UI::RmlUiAdapter::ElementLayoutInfo>::value && std::is_trivially_copyable<::Inno::UI::RmlUiAdapter::ElementLayoutInfo>::value, "BGCS DTO storage requires standard layout and trivial copyability under final native arguments");
+static_assert(sizeof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo) == 128 && sizeof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494) == 128, "BGCS DTO byte size changed");
+static_assert(alignof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo) == 8 && alignof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494) == 8, "BGCS DTO alignment changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, status) == 0 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, status) == 0, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().status), unsigned int>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, revision) == 8 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, revision) == 8, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().revision), unsigned long long>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, content_x) == 16 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, content_x) == 16, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().content_x), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, content_y) == 20 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, content_y) == 20, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().content_y), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, content_width) == 24 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, content_width) == 24, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().content_width), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, content_height) == 28 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, content_height) == 28, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().content_height), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, border_x) == 32 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, border_x) == 32, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().border_x), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, border_y) == 36 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, border_y) == 36, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().border_y), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, border_width) == 40 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, border_width) == 40, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().border_width), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, border_height) == 44 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, border_height) == 44, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().border_height), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, clip_x) == 48 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, clip_x) == 48, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().clip_x), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, clip_y) == 52 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, clip_y) == 52, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().clip_y), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, clip_width) == 56 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, clip_width) == 56, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().clip_width), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, clip_height) == 60 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, clip_height) == 60, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().clip_height), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m11) == 64 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m11) == 64, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m11), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m12) == 68 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m12) == 68, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m12), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m13) == 72 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m13) == 72, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m13), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m14) == 76 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m14) == 76, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m14), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m21) == 80 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m21) == 80, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m21), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m22) == 84 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m22) == 84, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m22), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m23) == 88 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m23) == 88, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m23), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m24) == 92 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m24) == 92, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m24), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m31) == 96 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m31) == 96, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m31), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m32) == 100 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m32) == 100, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m32), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m33) == 104 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m33) == 104, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m33), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m34) == 108 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m34) == 108, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m34), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m41) == 112 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m41) == 112, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m41), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m42) == 116 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m42) == 116, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m42), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m43) == 120 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m43) == 120, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m43), float>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ElementLayoutInfo, m44) == 124 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_dto_a6d219f27f178494, m44) == 124, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ElementLayoutInfo&>().m44), float>::value, "BGCS DTO field type changed");
 
 static_assert(std::is_standard_layout<::Inno::UI::RmlUiAdapter::Vertex>::value && std::is_trivially_copyable<::Inno::UI::RmlUiAdapter::Vertex>::value, "BGCS DTO storage requires standard layout and trivial copyability under final native arguments");
 static_assert(sizeof(::Inno::UI::RmlUiAdapter::Vertex) == 20 && sizeof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Vertex_dto_89ebad80dddd704a) == 20, "BGCS DTO byte size changed");
@@ -131,6 +201,18 @@ static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::DrawC
 static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::DrawCommand, scissor_height) == 32 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_DrawCommand_dto_98f97b585e0a8685, scissor_height) == 32, "BGCS DTO field offset changed");
 static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::DrawCommand&>().scissor_height), int>::value, "BGCS DTO field type changed");
 
+static_assert(std::is_standard_layout<::Inno::UI::RmlUiAdapter::ControlValueInfo>::value && std::is_trivially_copyable<::Inno::UI::RmlUiAdapter::ControlValueInfo>::value, "BGCS DTO storage requires standard layout and trivial copyability under final native arguments");
+static_assert(sizeof(::Inno::UI::RmlUiAdapter::ControlValueInfo) == 32 && sizeof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_dto_a41978c14b934f96) == 32, "BGCS DTO byte size changed");
+static_assert(alignof(::Inno::UI::RmlUiAdapter::ControlValueInfo) == 8 && alignof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_dto_a41978c14b934f96) == 8, "BGCS DTO alignment changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ControlValueInfo, kind) == 0 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_dto_a41978c14b934f96, kind) == 0, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ControlValueInfo&>().kind), ::ControlValueKind>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ControlValueInfo, number) == 8 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_dto_a41978c14b934f96, number) == 8, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ControlValueInfo&>().number), double>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ControlValueInfo, checked) == 16 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_dto_a41978c14b934f96, checked) == 16, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ControlValueInfo&>().checked), unsigned char>::value, "BGCS DTO field type changed");
+static_assert(__builtin_offsetof(::Inno::UI::RmlUiAdapter::ControlValueInfo, text_length) == 24 && __builtin_offsetof(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_dto_a41978c14b934f96, text_length) == 24, "BGCS DTO field offset changed");
+static_assert(std::is_same<decltype(std::declval<::Inno::UI::RmlUiAdapter::ControlValueInfo&>().text_length), unsigned long long>::value, "BGCS DTO field type changed");
+
 struct bgcs_inno_rmlui_error { char message[512]; };
 
 static int32_t bgcs_capture_error(bgcs_inno_rmlui_error** output, const char* message, int32_t status) noexcept
@@ -151,6 +233,22 @@ static int32_t bgcs_capture_error(bgcs_inno_rmlui_error** output, const char* me
     return status;
 }
 
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_AdvanceTime_161a880702065828(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, double arg1, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->AdvanceTime(static_cast<unsigned long long>(arg0), static_cast<double>(arg1)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
 BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearEvents_94ee3ab71b3b9162(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
 {
     if (bgcs_error != nullptr) *bgcs_error = nullptr;
@@ -161,6 +259,23 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->ClearEvents(static_cast<unsigned long long>(arg0)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ClearFocus_17e8f665328ad116(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint8_t * arg1, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg1 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->ClearFocus(static_cast<unsigned long long>(arg0), *reinterpret_cast<unsigned char*>(arg1)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
@@ -209,6 +324,22 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->CopyEventTargetId(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char *>(arg2), static_cast<unsigned long long>(arg3)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_CopyEventValue_51bc23e5f2e95948(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, int8_t * arg2, uint64_t arg3, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->CopyEventValue(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char *>(arg2), static_cast<unsigned long long>(arg3)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
@@ -344,6 +475,23 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
 }
 
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_FocusElement_89a088ebf3455eab(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, const int8_t * arg2, bgcs_inno_rmlui_FocusOutcome_b783e665f6764090 * arg3, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg3 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->FocusElement(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char const *>(arg2), *reinterpret_cast<::FocusOutcome*>(arg3)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
 BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventCount_8acc04f091e90f06(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t * arg1, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
 {
     if (bgcs_error != nullptr) *bgcs_error = nullptr;
@@ -361,7 +509,7 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
 }
 
-BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventInfo_b5e838df0f820470(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_object_3ad1de19e30e0756 * arg2, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetEventInfo_b5e838df0f820470(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_EventInfo_object_f19a45278fd6f17b * arg2, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
 {
     if (bgcs_error != nullptr) *bgcs_error = nullptr;
     if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
@@ -372,6 +520,24 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->GetEventInfo(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), *reinterpret_cast<::Inno::UI::RmlUiAdapter::EventInfo*>(arg2)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetFocusedElement_b7ec18189fc840f2(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t * arg1, int8_t * arg2, uint64_t arg3, uint64_t * arg4, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg1 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg4 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->GetFocusedElement(static_cast<unsigned long long>(arg0), *reinterpret_cast<unsigned long long*>(arg1), reinterpret_cast<char *>(arg2), static_cast<unsigned long long>(arg3), *reinterpret_cast<unsigned long long*>(arg4)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
@@ -406,6 +572,41 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->GetTextureInfo(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), *reinterpret_cast<::Inno::UI::RmlUiAdapter::TextureInfo*>(arg2)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTime_acf18105d341fd31(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, double * arg1, uint8_t * arg2, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg1 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg2 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->GetTime(static_cast<unsigned long long>(arg0), *reinterpret_cast<double*>(arg1), *reinterpret_cast<unsigned char*>(arg2)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetValue_e433bf0a571bbfe4(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, const int8_t * arg2, bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ControlValueInfo_object_41bd928a195fb261 * arg3, int8_t * arg4, uint64_t arg5, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg3 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->GetValue(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char const *>(arg2), *reinterpret_cast<::Inno::UI::RmlUiAdapter::ControlValueInfo*>(arg3), reinterpret_cast<char *>(arg4), static_cast<unsigned long long>(arg5)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
@@ -472,6 +673,23 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->LoadFont(reinterpret_cast<unsigned char const *>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char const *>(arg2), static_cast<int>(arg3), static_cast<int>(arg4), static_cast<unsigned char>(arg5)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_PrepareLayout_1b0d5e4a203bc9db(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t * arg1, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg1 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->PrepareLayout(static_cast<unsigned long long>(arg0), *reinterpret_cast<unsigned long long*>(arg1)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
@@ -552,6 +770,39 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->ProcessText(static_cast<unsigned long long>(arg0), reinterpret_cast<char const *>(arg1)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ReadLayout_246ab70e143753d8(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, const int8_t * arg2, uint64_t arg3, bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_ElementLayoutInfo_object_6415a7d66a35943c * arg4, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg4 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->ReadLayout(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char const *>(arg2), static_cast<unsigned long long>(arg3), *reinterpret_cast<::Inno::UI::RmlUiAdapter::ElementLayoutInfo*>(arg4)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_RefreshLayout_97801f2baa1f9b6a(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->RefreshLayout(static_cast<unsigned long long>(arg0)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
@@ -651,6 +902,39 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->SetInnerMarkup(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char const *>(arg2), reinterpret_cast<char const *>(arg3), *reinterpret_cast<unsigned char*>(arg4)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetTimePaused_3bfb94526a6bff91(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint8_t arg1, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->SetTimePaused(static_cast<unsigned long long>(arg0), static_cast<unsigned char>(arg1)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SetValue_6ab7819eebab9f31(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, const int8_t * arg2, bgcs_inno_rmlui_ControlValueKind_4a8cb716a37c5aa0 arg3, const int8_t * arg4, double arg5, uint8_t arg6, uint8_t * arg7, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg7 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->SetValue(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), reinterpret_cast<char const *>(arg2), static_cast<::ControlValueKind>(arg3), reinterpret_cast<char const *>(arg4), static_cast<double>(arg5), static_cast<unsigned char>(arg6), *reinterpret_cast<unsigned char*>(arg7)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }

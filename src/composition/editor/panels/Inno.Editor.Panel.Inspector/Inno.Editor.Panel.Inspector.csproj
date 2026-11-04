@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../framework/Inno.Editor.Diagnostics/Inno.Editor.Diagnostics.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../features/Inno.Editor.Assets/Inno.Editor.Assets.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../features/Inno.Editor.Rendering/Inno.Editor.Rendering.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../presentation/Inno.Editor.Shaders.ImGui/Inno.Editor.Shaders.ImGui.csproj" PrivateAssets="compile" />

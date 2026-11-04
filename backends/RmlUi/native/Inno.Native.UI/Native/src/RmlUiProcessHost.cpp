@@ -3,6 +3,7 @@
 #include "FontEngineInterfaceHarfBuzz.h"
 
 #include <RmlUi/Core.h>
+#include <RmlUi/Core/SystemInterface.h>
 
 #include <atomic>
 #include <limits>
@@ -18,6 +19,13 @@ namespace Inno::UI::RmlUiAdapter
 namespace
 {
 
+class ContextSystemInterface final : public Rml::SystemInterface
+{
+  public:
+    double time = 0;
+    double GetElapsedTime() override { return time; }
+};
+
 struct ProcessHost
 {
     std::mutex mutex;
@@ -26,6 +34,7 @@ struct ProcessHost
     std::uint32_t references = 0;
     std::thread::id owner_thread;
     std::unique_ptr<FontEngineInterfaceHarfBuzz> font_engine;
+    ContextSystemInterface system;
     std::vector<std::unique_ptr<std::vector<std::uint8_t>>> font_memory;
     std::unordered_map<std::string, std::uint64_t> font_registrations;
     std::vector<std::unique_ptr<Rml::RenderInterface>> retired_renderers;
@@ -50,6 +59,16 @@ std::uint64_t HashBytes(const std::uint8_t* data, std::uint64_t length) noexcept
 
 }
 
+RmlUiTimeScope::RmlUiTimeScope(double time) : m_previous(GetProcessHost().system.time)
+{
+    GetProcessHost().system.time = time;
+}
+
+RmlUiTimeScope::~RmlUiTimeScope() noexcept
+{
+    GetProcessHost().system.time = m_previous;
+}
+
 bool AcquireProcessHost()
 {
     ProcessHost& host = GetProcessHost();
@@ -65,9 +84,11 @@ bool AcquireProcessHost()
     host.owner_thread = std::this_thread::get_id();
     host.font_engine = std::make_unique<FontEngineInterfaceHarfBuzz>();
     Rml::SetFontEngineInterface(host.font_engine.get());
+    Rml::SetSystemInterface(&host.system);
     if (!Rml::Initialise())
     {
         Rml::SetFontEngineInterface(nullptr);
+        Rml::SetSystemInterface(nullptr);
         host.font_engine.reset();
         host.owner_thread = {};
         return false;
@@ -96,6 +117,8 @@ void ReleaseProcessHost() noexcept
     host.font_registrations.clear();
     Rml::SetFontEngineInterface(nullptr);
     host.font_engine.reset();
+    Rml::SetSystemInterface(nullptr);
+    host.system.time = 0;
     host.owner_thread = {};
 }
 

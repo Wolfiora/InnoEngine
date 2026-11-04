@@ -23,7 +23,9 @@ public sealed class EditorConsoleOccurrence
         int line,
         int column,
         string stackTrace,
-        LogSessionId sessionId
+        LogSessionId sessionId,
+        string? semanticId,
+        Guid? objectId
     ) {
         this.sequence = sequence;
         this.kind = kind;
@@ -39,6 +41,8 @@ public sealed class EditorConsoleOccurrence
         this.column = column;
         this.stackTrace = stackTrace;
         this.sessionId = sessionId;
+        this.semanticId = semanticId;
+        this.objectId = objectId;
     }
 
     /// <summary>
@@ -70,6 +74,16 @@ public sealed class EditorConsoleOccurrence
     /// Gets the diagnostic code, or an empty string for uncoded entries.
     /// </summary>
     public string code { get; }
+
+    /// <summary>
+    /// Gets the producer-defined stable protocol or extension identity, or null for an unrelated occurrence.
+    /// </summary>
+    public string? semanticId { get; }
+
+    /// <summary>
+    /// Gets the persistent object identity associated with the diagnostic, or null when no object is involved.
+    /// </summary>
+    public Guid? objectId { get; }
 
     /// <summary>
     /// Gets the producer-defined category.

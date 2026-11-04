@@ -24,7 +24,9 @@ public sealed class EditorPlayModeLoop
     /// active, or returns an inert scope while the editor is not presenting runtime copies.
     /// </summary>
     /// <returns>
-    /// A scope that must be disposed after the current editor presentation phase completes.
+    /// A scope binding runtime, audio, UI and input to the Play session. Dispose it on its owner thread
+    /// after nested presentation scopes have ended. A rejected out-of-order disposal retains ownership
+    /// and can be retried after the inner scopes are released.
     /// </returns>
     public IDisposable EnterPresentationScope() => m_owner?.EnterPresentationScope() ?? S_EMPTY_SCOPE;
 

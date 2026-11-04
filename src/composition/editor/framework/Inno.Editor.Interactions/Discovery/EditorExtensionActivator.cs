@@ -4,11 +4,16 @@ using System.Linq;
 using System.Reflection;
 
 using Inno.Editor.Core;
+using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Interactions;
 
 internal sealed class EditorExtensionActivator
 {
+    private readonly TypeCacheSnapshot m_types;
+    private readonly Action<object> m_ownCandidate;
+    private readonly Dictionary<Type, Diagnostic> m_rejections = [];
     private readonly EditorContext m_context;
     private readonly EditorInteractions m_interactions;
     private readonly Type[] m_moduleTypes;
@@ -21,18 +26,20 @@ internal sealed class EditorExtensionActivator
         EditorContext context,
         EditorInteractions interactions,
         IEnumerable<Type> moduleTypes,
-        IEnumerable<Type> activeTypes,
+        TypeCacheSnapshot types,
         IEnumerable<object> hostServices,
+        Action<object> ownCandidate,
         IEnumerable<object>? retainedInstances = null
     ) {
+        m_ownCandidate = ownCandidate ?? throw new ArgumentNullException(nameof(ownCandidate));
         m_context = context ?? throw new ArgumentNullException(nameof(context));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_moduleTypes = moduleTypes
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
         m_hostServices = (hostServices ?? throw new ArgumentNullException(nameof(hostServices))).ToArray();
-        var activeTypeSet = new HashSet<Type>(
-            activeTypes ?? throw new ArgumentNullException(nameof(activeTypes)));
+        m_types = types ?? throw new ArgumentNullException(nameof(types));
+        var activeTypeSet = new HashSet<Type>(types.types.Select(typeRef => typeRef.Resolve(types)));
         if (retainedInstances is null)
             return;
         foreach (object instance in retainedInstances)
@@ -44,6 +51,8 @@ internal sealed class EditorExtensionActivator
     }
 
     internal IReadOnlyCollection<object> instances => m_instances.Values;
+
+    internal Diagnostic[] rejections => m_rejections.OrderBy(static pair => pair.Key.FullName, StringComparer.Ordinal).Select(static pair => pair.Value).ToArray();
 
     internal bool CanCreate(Type type)
     {
@@ -101,6 +110,14 @@ internal sealed class EditorExtensionActivator
             if (matches.Length == 0
                 || matches.Length == 1 && !CanCreate(matches[0], visiting))
             {
+                string reason = matches.Length == 0
+                    ? $"No host service or module supplies constructor dependency '{parameterType.FullName}'."
+                    : $"Constructor dependency '{parameterType.FullName}' is unavailable: {m_rejections[matches[0]].message}";
+                m_rejections[type] = new Diagnostic(
+                    "EDITOR-EXTENSION-DEPENDENCY",
+                    $"Extension '{type.FullName}' from '{type.Assembly.FullName}' is unavailable in generation {m_types.version}. {reason}",
+                    DiagnosticSeverity.Error,
+                    semanticId: m_types.GetTypeRef(type).stableId.ToString("D"));
                 result = false;
                 break;
             }
@@ -145,8 +162,18 @@ internal sealed class EditorExtensionActivator
                     $"Editor extension '{type.FullName}' constructor failed.",
                     exception.InnerException ?? exception);
             }
+            m_ownCandidate(instance);
             m_instances.Add(type, instance);
             return instance;
+        }
+        catch (Exception exception)
+        {
+            throw new ExtensionActivationException(
+                m_types.GetTypeRef(type).stableId,
+                type.FullName ?? type.Name,
+                type.Assembly.GetName().Name!,
+                m_types.version,
+                exception);
         }
         finally
         {

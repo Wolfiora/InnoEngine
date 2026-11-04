@@ -59,6 +59,7 @@ if(NOT INNO_LIBRARY_KIND MATCHES "^(STATIC|SHARED)$")
 endif()
 
 add_library(inno-ui ${INNO_LIBRARY_KIND}
+    src/RmlUiControlValue.cpp
     src/RmlUiEventListener.cpp
     src/RmlUiProcessHost.cpp
     src/RmlUiRenderInterface.cpp

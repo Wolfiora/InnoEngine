@@ -21,12 +21,14 @@ public sealed class UiRuntimeTests
         using var runtime = new UiRuntime(backend, new RejectingArtifacts());
         InputSnapshot snapshot = new(
             7,
-            keysPressed: [KeyCode.Enter],
-            mouseButtonsReleased: [MouseButton.Left],
+            new InputSequence([
+                new KeyInputChange(KeyCode.Enter, true, false, KeyModifier.Control),
+                new PointerButtonInputChange(new Vector2(12f, 34f), MouseButton.Left, false, KeyModifier.Control),
+                new PointerScrollInputChange(new Vector2(12f, 34f), new Vector2(0f, 2f), KeyModifier.Control),
+                new TextInputChange("界", KeyModifier.Control)
+            ]),
             mousePosition: new Vector2(12f, 34f),
-            scrollDelta: new Vector2(0f, 2f),
-            modifiers: KeyModifier.Control,
-            textInput: ["界"]);
+            modifiers: KeyModifier.Control);
         using IDisposable input = InputExecutionContext.EnterScope(new FixedInput(snapshot));
         var frame = new RuntimeFrame(7, 1f, 1f, 0.016f, 0.016f, 1f, false);
         runtime.Attach();
@@ -62,11 +64,67 @@ public sealed class UiRuntimeTests
 
     private sealed class CapturingBackend : IUiBackend
     {
+        public UiLayoutSnapshot CaptureLayout(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            IReadOnlyList<string> elementIds
+        ) => throw new NotSupportedException();
+
         internal UiInputSnapshot? lastInput { get; private set; }
 
         public string implementationId => "tests.ui";
-        public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);
+        public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], [UiBackendCapability.FontCollectionFaceSelection]);
 
+        /// <inheritdoc cref="IUiService.GetTime" />
+        public UiContextTime GetTime(UiContextHandle context) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.SetTimePaused" />
+        public void SetTimePaused(
+            UiContextHandle context,
+            bool paused
+        ) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.AdvanceTime" />
+        public void AdvanceTime(
+            UiContextHandle context,
+            double seconds
+        ) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.TrySeekTime" />
+        public bool TrySeekTime(
+            UiContextHandle context,
+            double seconds
+        ) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.RefreshLayout" />
+        public void RefreshLayout(UiContextHandle context) => throw new NotSupportedException();
+
+        /// <inheritdoc cref="IUiService.ProcessInput" />
+        public void ProcessInput(
+            UiContextHandle context,
+            UiInputSnapshot input
+        ) => throw new NotSupportedException();
+
+        public UiControlValue GetValue(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            string elementId
+        ) => throw new NotSupportedException();
+
+        public bool SetValue(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            string elementId,
+            UiControlValue value
+        ) => throw new NotSupportedException();
+
+        public UiFocusResult FocusElement(
+            UiContextHandle context,
+            UiDocumentHandle document,
+            string elementId
+        ) => throw new NotSupportedException();
+        public UiFocusTarget? GetFocusedElement(UiContextHandle context) => throw new NotSupportedException();
+        public bool ClearFocus(UiContextHandle context) => throw new NotSupportedException();
         public UiContextHandle CreateContext(UiContextOptions options) => new(1);
         public void DestroyContext(UiContextHandle context) { }
         public void SetViewport(UiContextHandle context, int width, int height, float density) { }

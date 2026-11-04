@@ -11,6 +11,18 @@ class RenderInterface;
 namespace Inno::UI::RmlUiAdapter
 {
 
+/// Binds one context clock for the duration of a synchronous native operation.
+class RmlUiTimeScope final
+{
+  public:
+    explicit RmlUiTimeScope(double time);
+    ~RmlUiTimeScope() noexcept;
+    RmlUiTimeScope(const RmlUiTimeScope&) = delete;
+    RmlUiTimeScope& operator=(const RmlUiTimeScope&) = delete;
+  private:
+    double m_previous;
+};
+
 bool AcquireProcessHost();
 void ReleaseProcessHost() noexcept;
 void RetainRenderInterface(std::unique_ptr<Rml::RenderInterface> renderer);

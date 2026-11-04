@@ -2,7 +2,7 @@
 
 [Editor 索引](README.md) · [Core Logging](../core/Inno.Core.Logging.md) · [Core Diagnose](../core/Inno.Core.Diagnostics.md) · [Stats](Inno.Editor.Panel.Stats.md)
 
-该项目同时订阅彼此独立的 `Inno.Core.Logging` 与 `Inno.Core.Diagnostics`，并把两种数据组合成统一的 Editor Console。目录和项目名使用 `Logging`，避免 `Log` 被 ignore 规则或输出目录约定误判。
+该项目消费 `Inno.Editor.Diagnostics` 提供的 `IEditorConsole` 快照，只负责 Console 呈现和用户设置。Core Logging、Diagnostics 与 Play 状态的订阅及释放由 Diagnostics owner 管理，不依赖 Panel 是否安装或打开。目录和项目名使用 `Logging`，避免 `Log` 被 ignore 规则或输出目录约定误判。
 
 内部 `Styling/ConsoleStyle` 拥有等级颜色、日志卡片、展开按钮与自动滚动容差；通用 Palette 不再保存 Console 策略。这些内部值不属于脚本公开 API。可变高度测量和原生子窗口槽位由 Panel 维护，按内容、宽度、尺度和展开状态失效，退休记录不会按操作次数积累原生窗口。
 
@@ -53,10 +53,8 @@ Console card header 显示等级和来源，例如 `[Info] [Log]` 或 `[Error] [
 | `Inno.Editor.ImGui` | 实现依赖；不传递 compile surface |
 | `Inno.Editor.Diagnostics` | 实现依赖；不传递 compile surface |
 | `Inno.Editor.Interactions` | 实现依赖；不传递 compile surface |
-| `Inno.Editor.PlayMode` | 实现依赖；不传递 compile surface |
 | `Inno.Editor.Settings` | 实现依赖；不传递 compile surface |
 | `Inno.Editor.Core` | 实现依赖；不传递 compile surface |
 | `Inno.Core.Logging` | 实现依赖；不传递 compile surface |
-| `Inno.Core.Diagnostics` | 实现依赖；不传递 compile surface |
 | `Inno.Extensibility.Catalogs` | 公开签名依赖 |
 | `Inno.Core.Serialization` | 公开签名依赖 |

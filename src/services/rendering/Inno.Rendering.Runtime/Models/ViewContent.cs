@@ -254,8 +254,12 @@ public interface IViewPointerTarget
     );
 
     /// <summary>
-    /// Advances this target once for the frame with either routed input or an empty snapshot.
+    /// Accumulates one ordered input slice for the frame with its exact rendered view.
+    /// A frame may contain multiple slices; time and layout publication remain owned by the frame completion.
     /// </summary>
+    /// <param name="view">
+    /// The exact rendered view used to map every positioned input change.
+    /// </param>
     /// <param name="input">
     /// Routed viewport-local input, or an empty snapshot.
     /// </param>
@@ -266,6 +270,7 @@ public interface IViewPointerTarget
     /// Shared output frame index.
     /// </param>
     void Advance(
+        RenderView view,
         RenderOutputInput input,
         Vector2 localPosition,
         ulong frameIndex

@@ -2,7 +2,11 @@
 
 [上一页：Identity](Inno.Core.Identity.md) · [Core 索引](README.md) · [下一页：Diagnose](Inno.Core.Diagnostics.md)
 
-Input 项目只定义跨平台输入语义枚举，不维护按键状态。状态采集由 Platform 层完成，事件传递参见 [Inno.Core.Events](Inno.Core.Events.md)。
+Input 项目定义跨平台输入值、不可变的输入变化及其原始顺序，不维护窗口焦点或实时按键状态。采集由平台适配器完成，事件传递复用 [Inno.Core.Events](Inno.Core.Events.md)，每个运行 Session 的状态属于 [Inno.Input](../input/Inno.Input.md)。
+
+`InputSequence` 保存按采集顺序排列的 `KeyInputChange`、`TextInputChange` 和定位指针变化。每条变化保留当时的物理修饰键；指针变化保留当时的位置，不能用帧末位置替换。同一帧的按下、移动、释放，以及文本、光标移动、文本，均按原顺序交付。pressed/released、文本和 delta 摘要只从此序列派生。
+
+`MapPointer` 同步映射当前与前一指针位置，不缩放滚轮、不保存映射委托，也不改变键盘或文本顺序。输入为空时复用 `InputSequence.empty`。该值不是事件总线或输入所有权服务。
 
 ## KeyCode
 
@@ -62,7 +66,65 @@ macOS Command / Windows key 等平台主修饰键可映射到 `Super`。`KeyModi
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
+
+### `Inno.Core.Input.InputChange`
+
+<!-- api: T:Inno.Core.Input.InputChange 84b6ae3206dc4b33212169adc7bddeef120c54f4eaa439e2ee31d934f2fcc22c -->
+<!-- api: P:Inno.Core.Input.InputChange.EqualityContract 3911b310145ac9209f3ff77d51e7c2dc025954368c4fb386d8136f4deffd4d68 -->
+<!-- api: P:Inno.Core.Input.InputChange.modifiers 81d16f52a395e953e411fe3a7b08f757fbb221675b77cbb6ea12ef0353e7b136 -->
+<!-- api: M:Inno.Core.Input.InputChange.ToString 5a11fd4e5d30470b5b5f4d053b263c2cebb66ec229ae8c43bf66ba6773e3fbf8 -->
+<!-- api: M:Inno.Core.Input.InputChange.PrintMembers(System.Text.StringBuilder) a97d474a1b7365ea451b6ae00b9354ab6781fccaac52b89045ab9b8f6d4cf975 -->
+<!-- api: M:Inno.Core.Input.InputChange.op_Inequality(Inno.Core.Input.InputChange,Inno.Core.Input.InputChange) 11b667af5d85500e98128acb8c4a2dcaa2bf6af3679e4322043e20d5d632f8d3 -->
+<!-- api: M:Inno.Core.Input.InputChange.op_Equality(Inno.Core.Input.InputChange,Inno.Core.Input.InputChange) 2f4e65684d8b01e95cc99ea4fc667dbffbfd8d7529bae1789c8cb547db932e4a -->
+<!-- api: M:Inno.Core.Input.InputChange.GetHashCode eb018c0fe882755e3e3c8225686a0dfc50acc521f5b9384f386e49c05d0729e4 -->
+<!-- api: M:Inno.Core.Input.InputChange.Equals(System.Object) 67101bebdac8862c6ecd1be66db8365d762eae88caf8394305bc650ba8b81a1a -->
+<!-- api: M:Inno.Core.Input.InputChange.Equals(Inno.Core.Input.InputChange) 5032d8753db9fb92db52bdd31f2c5b804c600316b30f88f3afdefcabb9d32f67 -->
+<!-- api: M:Inno.Core.Input.InputChange.#ctor(Inno.Core.Input.InputChange) 9d1da2fab9cbac4f284774ff10b27f600c9bb048a74c9e23f6d2f13b87f17ba5 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-e1d06ff465225e18"></a>[`public abstract record Inno.Core.Input.InputChange : System.IEquatable<Inno.Core.Input.InputChange>`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | Describes one immutable input fact in acquisition order, without mutable event-dispatch state. | — |
+| <a id="api-8bceedbbab032771"></a>[`protected virtual System.Type Inno.Core.Input.InputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-b8d170c7a76e969a"></a>[`public Inno.Core.Input.KeyModifier Inno.Core.Input.InputChange.modifiers { get; }`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L19) | Gets the physical modifiers observed at this change, not at the end of the frame. | — |
+| <a id="api-a7c105f5a95fb2d6"></a>[`public override string Inno.Core.Input.InputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-65d03f680ea08287"></a>[`protected virtual bool Inno.Core.Input.InputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-49ae2544e80eeff5"></a>[`public static bool Inno.Core.Input.InputChange.operator !=(Inno.Core.Input.InputChange? left, Inno.Core.Input.InputChange? right)`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | 编译器生成的值不等比较。 | — |
+| <a id="api-24f423598e37ef05"></a>[`public static bool Inno.Core.Input.InputChange.operator ==(Inno.Core.Input.InputChange? left, Inno.Core.Input.InputChange? right)`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-e23952dedf0e27c1"></a>[`public override int Inno.Core.Input.InputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-bb15961708bcb263"></a>[`public override bool Inno.Core.Input.InputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-f4a61a9ba314ee7a"></a>[`public virtual bool Inno.Core.Input.InputChange.Equals(Inno.Core.Input.InputChange? other)`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-434c8584ad2df16d"></a>[`protected Inno.Core.Input.InputChange.InputChange(Inno.Core.Input.InputChange original)`](../../src/foundation/core/Inno.Core.Input/InputChange.cs#L6) | 编译器生成的记录构造入口，参数对应左列声明的成员。 | — |
+
+### `Inno.Core.Input.InputSequence`
+
+<!-- api: T:Inno.Core.Input.InputSequence 64cf2231891427a483e738a132ff235c17afede89a15fe681763bbf7d6c774c0 -->
+<!-- api: M:Inno.Core.Input.InputSequence.#ctor(System.Collections.Generic.IEnumerable{Inno.Core.Input.InputChange}) 9188e19d14eff597af3f7423326e59fcd93f66c2196459d542c1f62c183c78bc -->
+<!-- api: P:Inno.Core.Input.InputSequence.empty c7f8f35d4971125cf44bd1ce0feb85d5bc5ace4523ab7c75db2c6f0f6d29862d -->
+<!-- api: P:Inno.Core.Input.InputSequence.changes 7c512319dafeb930c9c23e03135566a1983e95445b7bfd866c38e680bf7ce83e -->
+<!-- api: P:Inno.Core.Input.InputSequence.keysPressed 72b1b7784f36a14c2d0102e4f0a2caee8d97227c543da7793c5579e04afaa90a -->
+<!-- api: P:Inno.Core.Input.InputSequence.keysReleased 3f195e2df82c86021e5d2c4269cbe4a23c863c7ee40800f6781fd87526ed024c -->
+<!-- api: P:Inno.Core.Input.InputSequence.buttonsPressed 3988ce0332ceb1074f419e1b46567bff7a05da4a7c28910fd5d4e830d399264e -->
+<!-- api: P:Inno.Core.Input.InputSequence.buttonsReleased 951dc5f14fba5dd3436cb5bbfbf8cea2bb0a73a38d3d7d93130893d7c28974dd -->
+<!-- api: P:Inno.Core.Input.InputSequence.textInput 950d4ea76439615b5e9321872fa41b3674e4fca6b326f40407b9bfe5cd170cae -->
+<!-- api: P:Inno.Core.Input.InputSequence.mouseDelta 299219821218db04dd80564f4c2ccc1289bba2fd18d28249a7b88636f85417d0 -->
+<!-- api: P:Inno.Core.Input.InputSequence.scrollDelta 560df4b0884531b201154ce7e48adb336b918fe860bb217dc535b90687bfdfdc -->
+<!-- api: M:Inno.Core.Input.InputSequence.MapPointer(System.Func{Inno.Core.Mathematics.Vector2,Inno.Core.Mathematics.Vector2}) 1245c521414041e5a9fba47369e0b3411085e3ab98ad28063a00cf451cc89e84 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-f30746df092436d8"></a>[`public sealed class Inno.Core.Input.InputSequence`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L16) | Owns immutable ordered input facts and derives convenient frame summaries from that same sequence. | — |
+| <a id="api-ed8d2c7b983e05b1"></a>[`public Inno.Core.Input.InputSequence.InputSequence(System.Collections.Generic.IEnumerable<Inno.Core.Input.InputChange> changes)`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L27) | Creates a frozen sequence in acquisition order.<br>`changes`：Non-null immutable input facts in their original order. | `System.ArgumentNullException`：The sequence or a contained change is null. |
+| <a id="api-05e1c5d71a95a459"></a>[`public static Inno.Core.Input.InputSequence Inno.Core.Input.InputSequence.empty { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L78) | Gets the reusable sequence containing no input changes. | — |
+| <a id="api-38e05a0120f6ea2d"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Core.Input.InputChange> Inno.Core.Input.InputSequence.changes { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L82) | Gets all changes in their original order, including repeated keys. | — |
+| <a id="api-f34486bd5bd6296b"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.KeyCode> Inno.Core.Input.InputSequence.keysPressed { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L86) | Gets non-repeated physical presses present in this sequence. | — |
+| <a id="api-c3677395d3ba65c7"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.KeyCode> Inno.Core.Input.InputSequence.keysReleased { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L90) | Gets physical key releases present in this sequence. | — |
+| <a id="api-60fd717127bee86a"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.MouseButton> Inno.Core.Input.InputSequence.buttonsPressed { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L94) | Gets physical pointer presses present in this sequence. | — |
+| <a id="api-17ff1f00ee33afa4"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.MouseButton> Inno.Core.Input.InputSequence.buttonsReleased { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L98) | Gets physical pointer releases present in this sequence. | — |
+| <a id="api-dd0551b27a90f5dc"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.Core.Input.InputSequence.textInput { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L102) | Gets committed text in acquisition order. | — |
+| <a id="api-6ed82ced64ee5494"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.InputSequence.mouseDelta { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L106) | Gets the sum of pointer movements in the sequence's coordinate space. | — |
+| <a id="api-121511993031b7bb"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.InputSequence.scrollDelta { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L110) | Gets accumulated wheel movement, independent of coordinate density. | — |
+| <a id="api-4410ba73e345c508"></a>[`public Inno.Core.Input.InputSequence Inno.Core.Input.InputSequence.MapPointer(System.Func<Inno.Core.Mathematics.Vector2, Inno.Core.Mathematics.Vector2> map)`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L127) | Maps pointer positions without reordering keys, text or pointer transitions.<br>`map`：A synchronous mapping in the caller's owned viewport; it is not retained.<br>返回：A new coordinate-mapped sequence, or this sequence when it contains no pointer facts. | `System.ArgumentNullException`：The mapping is null.<br>`System.ArgumentOutOfRangeException`：The mapping returns a non-finite position. |
 
 ### `Inno.Core.Input.KeyCode`
 
@@ -264,6 +326,40 @@ macOS Command / Windows key 等平台主修饰键可映射到 `Super`。`KeyModi
 | <a id="api-2c94164985c1afce"></a>[`Inno.Core.Input.KeyCode.Z = 90`](../../src/foundation/core/Inno.Core.Input/KeyCode.cs#L116) | The Z letter key. | — | — |
 | <a id="api-2ce06d9d7c30c576"></a>[`public enum Inno.Core.Input.KeyCode : int`](../../src/foundation/core/Inno.Core.Input/KeyCode.cs#L6) | Represents a backend-neutral physical key used by runtime input and editor shortcut contracts. | — | — |
 
+### `Inno.Core.Input.KeyInputChange`
+
+<!-- api: T:Inno.Core.Input.KeyInputChange 24cbb2e1cfba3801ba12147e742cf3ee4207e00c8804884e75854f391bfd4ad3 -->
+<!-- api: P:Inno.Core.Input.KeyInputChange.EqualityContract 6172e48eb1d0009bfa63f3c73cf18838905d96e15dd5b51f6f64f3f0ce41dfa6 -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.#ctor(Inno.Core.Input.KeyCode,System.Boolean,System.Boolean,Inno.Core.Input.KeyModifier) a5bb3c6740f6ae6b9f93a26bfe9b069c054d9864a14984a22e0a6861e66b6608 -->
+<!-- api: P:Inno.Core.Input.KeyInputChange.key 807f7d411f7af695917ae072fd66b6e79f8ddb1664642729fbc19eb3dff855ec -->
+<!-- api: P:Inno.Core.Input.KeyInputChange.isPressed c4bbc4ae05b16f3ab497e5084f542e83368cde49088038b98852cbf6a23d2a26 -->
+<!-- api: P:Inno.Core.Input.KeyInputChange.isRepeat fdad2d1eb70d06bd17644e0b12f50ced96a5a4b88120882bda2381199758fd92 -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.ToString 5cff33f5e911e95fde161270519d8fc47f983894e5586f470c87c560dc67a279 -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.PrintMembers(System.Text.StringBuilder) 121e7d5db0ad4cc2d1052f6f6d22622ac16cdbb7c1e832c0b9972f31d2473eab -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.op_Inequality(Inno.Core.Input.KeyInputChange,Inno.Core.Input.KeyInputChange) ab9623cba3ef498df27051a16c6ac921c8631c948012b101b56b6a168720545e -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.op_Equality(Inno.Core.Input.KeyInputChange,Inno.Core.Input.KeyInputChange) 0d9a030a51ed4a0028f15f6aafb2616f12831a72b2e56b7dda1d8a6e6a50199f -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.GetHashCode f68095462804e40f9020a2d20a280b3dc09b09895d6560e41d0cbc3bc4e1ea46 -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.Equals(System.Object) ca5c13dcc2f9a98c6f1df5808709b71a022ebedf2c0a4b03087a0188694e5569 -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.Equals(Inno.Core.Input.InputChange) 49a6fdfa599bab2f225ca2819e5c13fcb2643aa32ce8810274fadc5193329629 -->
+<!-- api: M:Inno.Core.Input.KeyInputChange.Equals(Inno.Core.Input.KeyInputChange) 66b302c13f273988a94b6e16738fe2047530d74b3e0c52ea885b4112c5031f4c -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-4c55af999fa1230d"></a>[`public sealed record Inno.Core.Input.KeyInputChange : Inno.Core.Input.InputChange, System.IEquatable<Inno.Core.Input.KeyInputChange>`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | Captures a physical key transition or repeat at its original input position. | — |
+| <a id="api-a4ad77408c59f99b"></a>[`protected override System.Type Inno.Core.Input.KeyInputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-2fd0463ad0798faa"></a>[`public Inno.Core.Input.KeyInputChange.KeyInputChange(Inno.Core.Input.KeyCode key, bool isPressed, bool isRepeat, Inno.Core.Input.KeyModifier modifiers)`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L26) | Creates a key change independent of any platform event object.<br>`key`：The physical key.<br>`isPressed`：True for a press or repeat; false for a release.<br>`isRepeat`：True only for an operating-system key repeat.<br>`modifiers`：Physical modifiers at this change. | `System.ArgumentException`：A release is marked as a repeated press. |
+| <a id="api-cc11f52667704800"></a>[`public Inno.Core.Input.KeyCode Inno.Core.Input.KeyInputChange.key { get; }`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L42) | Gets the physical key. | — |
+| <a id="api-216ba5afe5e66966"></a>[`public bool Inno.Core.Input.KeyInputChange.isPressed { get; }`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L46) | Gets whether this change presses or repeats the key. | — |
+| <a id="api-d5b4e29b1034917d"></a>[`public bool Inno.Core.Input.KeyInputChange.isRepeat { get; }`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L50) | Gets whether this is a repeated press rather than a new transition. | — |
+| <a id="api-0bae46ffa2bebec6"></a>[`public override string Inno.Core.Input.KeyInputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-b84f604cbba9ff16"></a>[`protected override bool Inno.Core.Input.KeyInputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-5620c31b55a654cf"></a>[`public static bool Inno.Core.Input.KeyInputChange.operator !=(Inno.Core.Input.KeyInputChange? left, Inno.Core.Input.KeyInputChange? right)`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | 编译器生成的值不等比较。 | — |
+| <a id="api-f5d02669c1f49b41"></a>[`public static bool Inno.Core.Input.KeyInputChange.operator ==(Inno.Core.Input.KeyInputChange? left, Inno.Core.Input.KeyInputChange? right)`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-1edda3cd6d03d492"></a>[`public override int Inno.Core.Input.KeyInputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-59ce7cafd8479a81"></a>[`public override bool Inno.Core.Input.KeyInputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-1f73f729104ac8b1"></a>[`public override sealed bool Inno.Core.Input.KeyInputChange.Equals(Inno.Core.Input.InputChange? other)`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-d8934d9c11ab2970"></a>[`public bool Inno.Core.Input.KeyInputChange.Equals(Inno.Core.Input.KeyInputChange? other)`](../../src/foundation/core/Inno.Core.Input/KeyInputChange.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
 ### `Inno.Core.Input.KeyModifier`
 
 <!-- api: T:Inno.Core.Input.KeyModifier f2f9bcd5b6a7ec816cc359a65134696ab78ec2a086ced5dfe18b46029c710bc6 -->
@@ -327,6 +423,158 @@ macOS Command / Windows key 等平台主修饰键可映射到 `Super`。`KeyModi
 | <a id="api-e1623b9d534c0657"></a>[`Inno.Core.Input.MouseCursor.ResizeNWSE = 6`](../../src/foundation/core/Inno.Core.Input/MouseCursor.cs#L40) | The resize nwse key. | — | — |
 | <a id="api-f1a56f564ae8caff"></a>[`Inno.Core.Input.MouseCursor.TextInput = 1`](../../src/foundation/core/Inno.Core.Input/MouseCursor.cs#L20) | The text input key. | — | — |
 | <a id="api-026f0b41f8bb1887"></a>[`public enum Inno.Core.Input.MouseCursor : int`](../../src/foundation/core/Inno.Core.Input/MouseCursor.cs#L6) | Identifies the supported mouse cursor values for this contract. | — | — |
+
+### `Inno.Core.Input.PointerButtonInputChange`
+
+<!-- api: T:Inno.Core.Input.PointerButtonInputChange 2b871b63f47ac23d433882a0c8e1c7f526c3026355653d0186404c5c3ff32efc -->
+<!-- api: P:Inno.Core.Input.PointerButtonInputChange.EqualityContract 431d1d3da85d782290da30881e71e441abf5446bd0bfe3af060456b3f52eb476 -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.#ctor(Inno.Core.Mathematics.Vector2,Inno.Core.Input.MouseButton,System.Boolean,Inno.Core.Input.KeyModifier) 4b24c59f8686f508c41a93c18291a0432e05b6b666a31d380b9fb574877a97ea -->
+<!-- api: P:Inno.Core.Input.PointerButtonInputChange.button 8ebd5c43215d6e498fbb28a377f8b5808240274520b25c2cc2855bebe3ce7776 -->
+<!-- api: P:Inno.Core.Input.PointerButtonInputChange.isPressed 3fa667e3a5efe0a3ece00c17d1e195782a35de7ebce44150692cf874b184c47d -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.ToString 2f06f891ce4a20c4c348773091333f3b8c8fd8f9ec1b4954cc6add5c90bee07a -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.PrintMembers(System.Text.StringBuilder) a97b9b6b295e41e7c6a2ee80a81f9110730891d4a77a28f854f5988f3834824b -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.op_Inequality(Inno.Core.Input.PointerButtonInputChange,Inno.Core.Input.PointerButtonInputChange) 348e7fbc43546eb310b964e0b3986c06a0a413c018819e198baf9044d71c4150 -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.op_Equality(Inno.Core.Input.PointerButtonInputChange,Inno.Core.Input.PointerButtonInputChange) f66d103eaea06152f02431f3871664b7bed260f9044b5ca6c6b7edc210a108b9 -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.GetHashCode 12672d30c32860049c6a0ad95a465bb1eee895c40c06f34f352bfdd0e49347b2 -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.Equals(System.Object) 005e0b3dccda513ec3b324404c91c9cd9765dc67bc47fa6325424d2517f9f37f -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.Equals(Inno.Core.Input.PointerInputChange) 3a001dc4e8e0911d1fb40401e14775aa92c71dc7e77e80e78de0f5133de79954 -->
+<!-- api: M:Inno.Core.Input.PointerButtonInputChange.Equals(Inno.Core.Input.PointerButtonInputChange) 010a104a146beba549178f6c78436d2253630f10f42dc1419dc2ba452771f5e5 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-3cd1b50eff003271"></a>[`public sealed record Inno.Core.Input.PointerButtonInputChange : Inno.Core.Input.PointerInputChange, System.IEquatable<Inno.Core.Input.PointerButtonInputChange>`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | Captures a pointer-button transition together with its hit-test position. | — |
+| <a id="api-784c83b999186775"></a>[`protected override System.Type Inno.Core.Input.PointerButtonInputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-82d46bb32a86de66"></a>[`public Inno.Core.Input.PointerButtonInputChange.PointerButtonInputChange(Inno.Core.Mathematics.Vector2 position, Inno.Core.Input.MouseButton button, bool isPressed, Inno.Core.Input.KeyModifier modifiers)`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L28) | Creates a positioned pointer-button transition.<br>`position`：Pointer coordinates at the transition.<br>`button`：The physical pointer button.<br>`isPressed`：True for a press; false for a release.<br>`modifiers`：Physical modifiers at the transition. | `System.ArgumentOutOfRangeException`：A position component is not finite. |
+| <a id="api-3404bdf4fe8fe7f7"></a>[`public Inno.Core.Input.MouseButton Inno.Core.Input.PointerButtonInputChange.button { get; }`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L41) | Gets the physical pointer button. | — |
+| <a id="api-496d301d4b7898b1"></a>[`public bool Inno.Core.Input.PointerButtonInputChange.isPressed { get; }`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L45) | Gets whether the button is pressed by this transition. | — |
+| <a id="api-bc6e9cf4a83223b1"></a>[`public override string Inno.Core.Input.PointerButtonInputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-ac552b77bd5a7f0c"></a>[`protected override bool Inno.Core.Input.PointerButtonInputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-0adb029b604cd1a1"></a>[`public static bool Inno.Core.Input.PointerButtonInputChange.operator !=(Inno.Core.Input.PointerButtonInputChange? left, Inno.Core.Input.PointerButtonInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | 编译器生成的值不等比较。 | — |
+| <a id="api-967b173474e1f086"></a>[`public static bool Inno.Core.Input.PointerButtonInputChange.operator ==(Inno.Core.Input.PointerButtonInputChange? left, Inno.Core.Input.PointerButtonInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-b6446b5c4af646a1"></a>[`public override int Inno.Core.Input.PointerButtonInputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-b71ac759fe96eed9"></a>[`public override bool Inno.Core.Input.PointerButtonInputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-e921e012f046650e"></a>[`public override sealed bool Inno.Core.Input.PointerButtonInputChange.Equals(Inno.Core.Input.PointerInputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-3410106123b314df"></a>[`public bool Inno.Core.Input.PointerButtonInputChange.Equals(Inno.Core.Input.PointerButtonInputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerButtonInputChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.PointerInputChange`
+
+<!-- api: T:Inno.Core.Input.PointerInputChange fb7bfd017caec454a39f5ee41126a87a3455516e9cabf7cd2c8c262e723a17b6 -->
+<!-- api: P:Inno.Core.Input.PointerInputChange.EqualityContract 1cdde54d30827f6ad34d0cb79c2aa22eab81b2505d60b79706934cee9bc7d058 -->
+<!-- api: P:Inno.Core.Input.PointerInputChange.position 63198c11ed07ea36d7f2ff69f19b6bb45d87fe9c70b19b25925eeb829fd54c6c -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.ToString f2736cc013b4a2a71c5278783dcb9ca702b95d0aa6687b7992d7301638c4b617 -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.PrintMembers(System.Text.StringBuilder) b9195442dd7682be1a404adc8bda0ec331479601da632166a8d774246c01c9a2 -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.op_Inequality(Inno.Core.Input.PointerInputChange,Inno.Core.Input.PointerInputChange) 56ff90cb8fe6a346b60e4aa27cdde3f9e5efc7674a4723e75161c34936db5050 -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.op_Equality(Inno.Core.Input.PointerInputChange,Inno.Core.Input.PointerInputChange) e3627f0d26c46d9b4cbd1956afe7512c6a6ef86dfb90a4d783c24239ab8c51ce -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.GetHashCode 7ffbd343c0a495264954c789e20fa02827ee3b87e2668d92c6dc3757e9c1b02f -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.Equals(System.Object) 8d055b041d1a486e23665725b68239264e1e6ec4896fd2ea3d00fb73c891678f -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.Equals(Inno.Core.Input.InputChange) 8bbeeec0c5994603cc31c41a66bc54a58452b408b21d1c09f44675a66838cf48 -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.Equals(Inno.Core.Input.PointerInputChange) 0c23cc71cd16faae57912aaf2118f6dfaa555e4ff1b01f6201654aec905fd2f4 -->
+<!-- api: M:Inno.Core.Input.PointerInputChange.#ctor(Inno.Core.Input.PointerInputChange) 61c6a42a1823cd033b2f150f2945275cb09657cf299f8ed8dfe96bbadb76b47e -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-ec10f05bf38504d2"></a>[`public abstract record Inno.Core.Input.PointerInputChange : Inno.Core.Input.InputChange, System.IEquatable<Inno.Core.Input.PointerInputChange>`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | Captures a pointer fact in the coordinate space declared by its containing snapshot. | — |
+| <a id="api-e6216c25b2774db0"></a>[`protected override System.Type Inno.Core.Input.PointerInputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-bc90626d2e28964b"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.PointerInputChange.position { get; }`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L35) | Gets the pointer position at this change, not the final frame position. | — |
+| <a id="api-a4c1a843e227905e"></a>[`public override string Inno.Core.Input.PointerInputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-dbf683da14af2260"></a>[`protected override bool Inno.Core.Input.PointerInputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-95140918d2addd8f"></a>[`public static bool Inno.Core.Input.PointerInputChange.operator !=(Inno.Core.Input.PointerInputChange? left, Inno.Core.Input.PointerInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | 编译器生成的值不等比较。 | — |
+| <a id="api-fe8c2517b9fda12d"></a>[`public static bool Inno.Core.Input.PointerInputChange.operator ==(Inno.Core.Input.PointerInputChange? left, Inno.Core.Input.PointerInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-c2e2857ddfbbe7af"></a>[`public override int Inno.Core.Input.PointerInputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-f0fadf03b83a258f"></a>[`public override bool Inno.Core.Input.PointerInputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-ac67d2e268ca7e77"></a>[`public override sealed bool Inno.Core.Input.PointerInputChange.Equals(Inno.Core.Input.InputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-1c8f7cd4582dc6c7"></a>[`public virtual bool Inno.Core.Input.PointerInputChange.Equals(Inno.Core.Input.PointerInputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-45eb41b0950aebf0"></a>[`protected Inno.Core.Input.PointerInputChange.PointerInputChange(Inno.Core.Input.PointerInputChange original)`](../../src/foundation/core/Inno.Core.Input/PointerInputChange.cs#L9) | 编译器生成的记录构造入口，参数对应左列声明的成员。 | — |
+
+### `Inno.Core.Input.PointerMoveInputChange`
+
+<!-- api: T:Inno.Core.Input.PointerMoveInputChange 32fd7dada8393b1e145a7719f42a7e365747791ad4ae721ead1e36d05bfef4b4 -->
+<!-- api: P:Inno.Core.Input.PointerMoveInputChange.EqualityContract 0c95bfb8839b57dc911dd3ef294b2f8e3c0bde7be73dc6a42f9552c1bcc44e32 -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.#ctor(Inno.Core.Mathematics.Vector2,Inno.Core.Mathematics.Vector2,Inno.Core.Input.KeyModifier) 0b66698152ff262cb3010f73705ed71fb724487ef844d4536fb0eeffd532277c -->
+<!-- api: P:Inno.Core.Input.PointerMoveInputChange.previousPosition a04857ed7e3a647748bee90e70749cded8f38a05d6ef4344a59efe99691c4aa7 -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.ToString 8fff3e1effe4175cbe6c3f14da7d6476ef617713afd53a7f10be09e842feae3a -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.PrintMembers(System.Text.StringBuilder) b522404b631ec08d01107cd97b21e5bd620599a8150819418769a1bb6a628d4d -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.op_Inequality(Inno.Core.Input.PointerMoveInputChange,Inno.Core.Input.PointerMoveInputChange) f150de09d202511ecf2acce40f9ec819c007cfef9a0f5f731fe77dc4c9a6b128 -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.op_Equality(Inno.Core.Input.PointerMoveInputChange,Inno.Core.Input.PointerMoveInputChange) 2e80213e5633ade37e9cacc5f8999e6954b8d68adfbed7b175dd0aa025e2d389 -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.GetHashCode 526d955bcf293559e49ba37976f13254704fcf93443015d0df34f2a0c5b58b5f -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.Equals(System.Object) 4ac9b1d3007956c05d9f2709577ff240a25b4485502b12d5b9c72e085d35707e -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.Equals(Inno.Core.Input.PointerInputChange) da32087d65a40b9e2ed7fbaaa4bf27b9cce72ca18efd796d5e393b24d47438df -->
+<!-- api: M:Inno.Core.Input.PointerMoveInputChange.Equals(Inno.Core.Input.PointerMoveInputChange) c130e29fdea2b9a4584d55a0d82c6468e27b294620ae078e012b1a51c37f39d1 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-4a21b5946d015a95"></a>[`public sealed record Inno.Core.Input.PointerMoveInputChange : Inno.Core.Input.PointerInputChange, System.IEquatable<Inno.Core.Input.PointerMoveInputChange>`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | Captures pointer movement and its prior position in one declared coordinate space. | — |
+| <a id="api-626c26f58cc5f078"></a>[`protected override System.Type Inno.Core.Input.PointerMoveInputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-b3bc3a274dae36f6"></a>[`public Inno.Core.Input.PointerMoveInputChange.PointerMoveInputChange(Inno.Core.Mathematics.Vector2 position, Inno.Core.Mathematics.Vector2 previousPosition, Inno.Core.Input.KeyModifier modifiers)`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L26) | Creates a pointer movement without accumulating away its ordering.<br>`position`：The new pointer position.<br>`previousPosition`：The preceding pointer position.<br>`modifiers`：Physical modifiers at the movement. | `System.ArgumentOutOfRangeException`：A position is not finite. |
+| <a id="api-66e8d99dfa091d8d"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.PointerMoveInputChange.previousPosition { get; }`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L39) | Gets the pointer position immediately preceding this movement. | — |
+| <a id="api-c20da8907c63e1a8"></a>[`public override string Inno.Core.Input.PointerMoveInputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-8c332744ea70786c"></a>[`protected override bool Inno.Core.Input.PointerMoveInputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-61d67e8f8e4347e5"></a>[`public static bool Inno.Core.Input.PointerMoveInputChange.operator !=(Inno.Core.Input.PointerMoveInputChange? left, Inno.Core.Input.PointerMoveInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | 编译器生成的值不等比较。 | — |
+| <a id="api-9e5500015d0bf2b1"></a>[`public static bool Inno.Core.Input.PointerMoveInputChange.operator ==(Inno.Core.Input.PointerMoveInputChange? left, Inno.Core.Input.PointerMoveInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-46f655af39c4cf26"></a>[`public override int Inno.Core.Input.PointerMoveInputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-79e6d3f227e1d056"></a>[`public override bool Inno.Core.Input.PointerMoveInputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-ea2f723c56857386"></a>[`public override sealed bool Inno.Core.Input.PointerMoveInputChange.Equals(Inno.Core.Input.PointerInputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-520740da53fa0fb3"></a>[`public bool Inno.Core.Input.PointerMoveInputChange.Equals(Inno.Core.Input.PointerMoveInputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerMoveInputChange.cs#L9) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.PointerScrollInputChange`
+
+<!-- api: T:Inno.Core.Input.PointerScrollInputChange 04fdb9503addf47a1fcc3e8ca296f7df3b3061aa568fdf4b842ab3ac53c0b818 -->
+<!-- api: P:Inno.Core.Input.PointerScrollInputChange.EqualityContract 7d38fe8dbf8d9eb9a27d0afc0bdf6ccb44653405ca4f2d6081e3d0fde68fff34 -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.#ctor(Inno.Core.Mathematics.Vector2,Inno.Core.Mathematics.Vector2,Inno.Core.Input.KeyModifier) 8de8574829022f6e77b6b7057c208d1a07674e39d5b3c086efc8ee17b9be7004 -->
+<!-- api: P:Inno.Core.Input.PointerScrollInputChange.delta 2097caad385342c8e5546c4c4c602cb34417ecff36f581a733f0717701e56adb -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.ToString b0b73a891fac4b2f853c7cc4271c0357fc017a31e1b9ae041c28fd32483bf7b7 -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.PrintMembers(System.Text.StringBuilder) 711971605838a7743cf7c61be9e762e1dd09d130841b16f17ad772b6caacf1c0 -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.op_Inequality(Inno.Core.Input.PointerScrollInputChange,Inno.Core.Input.PointerScrollInputChange) f6e14d5822bed7675f7d2f8f391b79d604864f6018ced6995b0d7212e8e7ea63 -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.op_Equality(Inno.Core.Input.PointerScrollInputChange,Inno.Core.Input.PointerScrollInputChange) a7885ca5bfe7f00827b7b08c313071b29a84f14d158419175f2cbf7f19cf04b1 -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.GetHashCode 9adc2e7e7726e61471e8be995b0bed9182f174e3ab531bc20d6ff18e403d5866 -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.Equals(System.Object) 704d0cb08e69dca706f69ee6b334eec60bcdede1fa7b550657d9e76c1e145072 -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.Equals(Inno.Core.Input.PointerInputChange) b0f3ac382b55271481bf520394b04ca41c199bb86885ef60e3aa72e71070edaf -->
+<!-- api: M:Inno.Core.Input.PointerScrollInputChange.Equals(Inno.Core.Input.PointerScrollInputChange) 92791a6231cd9418a4b773f4c3eb75871b092da1c5b8b0974e3dc724614e668a -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-941f0376aa2640c3"></a>[`public sealed record Inno.Core.Input.PointerScrollInputChange : Inno.Core.Input.PointerInputChange, System.IEquatable<Inno.Core.Input.PointerScrollInputChange>`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | Captures wheel movement at the pointer position that receives it. | — |
+| <a id="api-b12e58f7aa28b6d6"></a>[`protected override System.Type Inno.Core.Input.PointerScrollInputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-9dad4b05cff31279"></a>[`public Inno.Core.Input.PointerScrollInputChange.PointerScrollInputChange(Inno.Core.Mathematics.Vector2 position, Inno.Core.Mathematics.Vector2 delta, Inno.Core.Input.KeyModifier modifiers)`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L26) | Creates a positioned wheel change.<br>`position`：The pointer position at the wheel event.<br>`delta`：Wheel movement, positive right horizontally and up vertically.<br>`modifiers`：Physical modifiers at the wheel event. | `System.ArgumentOutOfRangeException`：A position or wheel component is not finite. |
+| <a id="api-a7bc1635f0bae958"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.PointerScrollInputChange.delta { get; }`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L39) | Gets wheel movement independently of pointer-coordinate scaling. | — |
+| <a id="api-2ee3fb36bbc1432f"></a>[`public override string Inno.Core.Input.PointerScrollInputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-e0ece3f2d356f6b9"></a>[`protected override bool Inno.Core.Input.PointerScrollInputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-e953be392e9b39e1"></a>[`public static bool Inno.Core.Input.PointerScrollInputChange.operator !=(Inno.Core.Input.PointerScrollInputChange? left, Inno.Core.Input.PointerScrollInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | 编译器生成的值不等比较。 | — |
+| <a id="api-1ae94fd33cff1913"></a>[`public static bool Inno.Core.Input.PointerScrollInputChange.operator ==(Inno.Core.Input.PointerScrollInputChange? left, Inno.Core.Input.PointerScrollInputChange? right)`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-69521f07b869be3f"></a>[`public override int Inno.Core.Input.PointerScrollInputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-be668b3d02daf615"></a>[`public override bool Inno.Core.Input.PointerScrollInputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-c0da6ca54f4fc90c"></a>[`public override sealed bool Inno.Core.Input.PointerScrollInputChange.Equals(Inno.Core.Input.PointerInputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-1af911f842b42e1c"></a>[`public bool Inno.Core.Input.PointerScrollInputChange.Equals(Inno.Core.Input.PointerScrollInputChange? other)`](../../src/foundation/core/Inno.Core.Input/PointerScrollInputChange.cs#L9) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.TextInputChange`
+
+<!-- api: T:Inno.Core.Input.TextInputChange df1e081b310ae4c27bd809fa2c799843ccbc59e09c26b59b222306fe974485cb -->
+<!-- api: P:Inno.Core.Input.TextInputChange.EqualityContract f2a498d9b139b612f95bf35d670fbe38de68ede423fcf6b0b5bdadbf6fcf9342 -->
+<!-- api: M:Inno.Core.Input.TextInputChange.#ctor(System.String,Inno.Core.Input.KeyModifier) 7119f332181b114685be7da575c612c1d458009607bbf5a4695dcccf57d282c7 -->
+<!-- api: P:Inno.Core.Input.TextInputChange.text d1a94520c95e6774e49c9edc1b0787e07495def3191f9e0c80cdf87353c430d9 -->
+<!-- api: M:Inno.Core.Input.TextInputChange.ToString 5c588398fb405a11aee71f52cf7e1515421a4da31deb3fc917e3baa47307b0c0 -->
+<!-- api: M:Inno.Core.Input.TextInputChange.PrintMembers(System.Text.StringBuilder) 37c784f9ba3900b66f0987d9396db2607b279b55b4c09bc272502d91ec6937ea -->
+<!-- api: M:Inno.Core.Input.TextInputChange.op_Inequality(Inno.Core.Input.TextInputChange,Inno.Core.Input.TextInputChange) f7055069a6f2c6ffcb819119d9c99a2570a7e99fd5a5852d357378d015e39ac1 -->
+<!-- api: M:Inno.Core.Input.TextInputChange.op_Equality(Inno.Core.Input.TextInputChange,Inno.Core.Input.TextInputChange) 36a416832eb25efda50ff98f159563ab85010dbf8133323d85d4812b601f292f -->
+<!-- api: M:Inno.Core.Input.TextInputChange.GetHashCode 9b1dde37b6c228054a868545a31ee8cc7e207d7194ed628d5ee953d670fbd140 -->
+<!-- api: M:Inno.Core.Input.TextInputChange.Equals(System.Object) 42041abde11fcf789bafd8d1f2a3d7acbc3dbfa0fdc43f70a6b6ba84f761d16c -->
+<!-- api: M:Inno.Core.Input.TextInputChange.Equals(Inno.Core.Input.InputChange) 49b998cc3ede0707c0ec866381f8ff9a8919d202a5b1bb13848b41f19da5f070 -->
+<!-- api: M:Inno.Core.Input.TextInputChange.Equals(Inno.Core.Input.TextInputChange) a0179682c7deb3fe1afec7d035a857d8af47b9c229baccd4e632ea8c64e7084c -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-6b0e5c9595dc951d"></a>[`public sealed record Inno.Core.Input.TextInputChange : Inno.Core.Input.InputChange, System.IEquatable<Inno.Core.Input.TextInputChange>`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | Captures committed Unicode text at its original position among other input changes. | — |
+| <a id="api-64f9eb8d22e3b7c5"></a>[`protected override System.Type Inno.Core.Input.TextInputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-5498bd9ee0e42f1a"></a>[`public Inno.Core.Input.TextInputChange.TextInputChange(string text, Inno.Core.Input.KeyModifier modifiers)`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L22) | Creates a completed text-input fact.<br>`text`：Nonempty committed Unicode text.<br>`modifiers`：Physical modifiers at the commit. | `System.ArgumentException`：The text is empty. |
+| <a id="api-27a99cf319473632"></a>[`public string Inno.Core.Input.TextInputChange.text { get; }`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L33) | Gets committed Unicode text without changing its normalization. | — |
+| <a id="api-7d178f4a65daba3b"></a>[`public override string Inno.Core.Input.TextInputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-40dd4538c1e4326d"></a>[`protected override bool Inno.Core.Input.TextInputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-91df6629a51656c4"></a>[`public static bool Inno.Core.Input.TextInputChange.operator !=(Inno.Core.Input.TextInputChange? left, Inno.Core.Input.TextInputChange? right)`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | 编译器生成的值不等比较。 | — |
+| <a id="api-de3f766011310ed0"></a>[`public static bool Inno.Core.Input.TextInputChange.operator ==(Inno.Core.Input.TextInputChange? left, Inno.Core.Input.TextInputChange? right)`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-308bb0aa38f08c1b"></a>[`public override int Inno.Core.Input.TextInputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-82880ebe1a83d0f7"></a>[`public override bool Inno.Core.Input.TextInputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-8d9c48d5a80742e2"></a>[`public override sealed bool Inno.Core.Input.TextInputChange.Equals(Inno.Core.Input.InputChange? other)`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-26fa70d3cd18d196"></a>[`public bool Inno.Core.Input.TextInputChange.Equals(Inno.Core.Input.TextInputChange? other)`](../../src/foundation/core/Inno.Core.Input/TextInputChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
 
 ## 项目依赖
 

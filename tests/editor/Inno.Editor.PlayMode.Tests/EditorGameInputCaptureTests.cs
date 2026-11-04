@@ -11,6 +11,35 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed class EditorGameInputCaptureTests
 {
+    [Fact]
+    public void ButtonAndWheelProjectionPreservePositionsAndSharedConsumption()
+    {
+        var capture = new EditorGameInputCapture(_ => 42u);
+        capture.Report(9, new Vector2(20, 30), new Vector2(100), focused: true, hovered: true);
+        var press = new MouseButtonPressedEvent(42, 25, 36, MouseButton.Left);
+        MouseButtonPressedEvent routedPress = Assert.IsType<MouseButtonPressedEvent>(capture.Route(press));
+        Assert.Equal(5, routedPress.x);
+        Assert.Equal(6, routedPress.y);
+        routedPress.HandleInGlobal();
+        Assert.True(press.isGlobalHandled);
+
+        var wheel = new MouseScrolledEvent(42, 30, 40, 2, -1);
+        MouseScrolledEvent routedWheel = Assert.IsType<MouseScrolledEvent>(capture.Route(wheel));
+        Assert.Equal(10, routedWheel.x);
+        Assert.Equal(10, routedWheel.y);
+        Assert.Equal(-1, routedWheel.offsetY);
+        wheel.HandleInGlobal();
+        Assert.True(routedWheel.isGlobalHandled);
+
+        var release = new MouseButtonReleasedEvent(42, 200, 210, MouseButton.Left);
+        MouseButtonReleasedEvent routedRelease = Assert.IsType<MouseButtonReleasedEvent>(capture.Route(release));
+        Assert.Equal(180, routedRelease.x);
+        Assert.Equal(180, routedRelease.y);
+        routedRelease.HandleInGlobal();
+        Assert.True(release.isGlobalHandled);
+        Assert.Null(capture.Route(new MouseButtonPressedEvent(42, 200, 210, MouseButton.Left)));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -23,8 +52,8 @@ public sealed class EditorGameInputCaptureTests
 
         Assert.Null(capture.Route(moved));
         Event pointer = pressed
-            ? new MouseButtonPressedEvent(42, MouseButton.Left)
-            : new MouseScrolledEvent(42, 0f, 1f);
+            ? new MouseButtonPressedEvent(42, 150f, 150f, MouseButton.Left)
+            : new MouseScrolledEvent(42, 150f, 150f, 0f, 1f);
         Assert.Null(capture.Route(pointer));
         Assert.NotNull(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
     }
@@ -37,12 +66,12 @@ public sealed class EditorGameInputCaptureTests
         var unrelated = new MouseMovedEvent(1, 150f, 150f);
         unrelated.HandleInGlobal();
         Assert.Null(capture.Route(unrelated));
-        Assert.NotNull(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
+        Assert.NotNull(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
 
         var moved = new MouseMovedEvent(42, 150f, 150f);
         moved.HandleInGlobal();
         Assert.Null(capture.Route(moved));
-        Assert.NotNull(capture.Route(new MouseButtonReleasedEvent(42, MouseButton.Left)));
+        Assert.NotNull(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
         Assert.Equal(0u, capture.CompleteFrame());
     }
 
@@ -64,7 +93,7 @@ public sealed class EditorGameInputCaptureTests
 
         Assert.Null(capture.Route(exit));
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
-        Assert.Null(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
+        Assert.Null(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
         Assert.Equal(0u, capture.CompleteFrame());
     }
 
@@ -133,7 +162,7 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        var pressed = new MouseButtonPressedEvent(42, MouseButton.Left);
+        var pressed = new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left);
         var moved = new MouseMovedEvent(42, 10f, 10f);
         pressed.HandleInGlobal();
         moved.HandleInGlobal();
@@ -141,7 +170,7 @@ public sealed class EditorGameInputCaptureTests
         Assert.Null(capture.Route(pressed));
         Assert.Null(capture.Route(moved));
         Assert.Null(capture.Route(new MouseMovedEvent(42, 150f, 150f)));
-        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, MouseButton.Left)));
+        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
     }
 
     [Theory]
@@ -155,11 +184,11 @@ public sealed class EditorGameInputCaptureTests
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
         Assert.NotNull(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
-        Assert.NotNull(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
+        Assert.NotNull(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
         Event release = releaseKind switch
         {
             "key" => new KeyReleasedEvent(42, KeyCode.A),
-            "button" => new MouseButtonReleasedEvent(42, MouseButton.Left),
+            "button" => new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left),
             "focus" => new WindowFocusChangedEvent(42, false),
             "close" => new WindowCloseEvent(42),
             _ => throw new System.ArgumentException("Unknown release kind.", nameof(releaseKind))
@@ -179,7 +208,7 @@ public sealed class EditorGameInputCaptureTests
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
         Assert.Null(capture.Route(new MouseMovedEvent(42, 150f, 150f)));
-        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, MouseButton.Left)));
+        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
         Assert.NotNull(capture.Route(new KeyPressedEvent(42, KeyCode.B)));
     }
 
@@ -189,14 +218,14 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        Assert.NotNull(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
-        var unrelated = new MouseButtonReleasedEvent(1, MouseButton.Left);
+        Assert.NotNull(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
+        var unrelated = new MouseButtonReleasedEvent(1, 25f, 35f, MouseButton.Left);
         unrelated.HandleInGlobal();
 
         Assert.Null(capture.Route(unrelated));
         Assert.Equal(0u, capture.CompleteFrame());
         Assert.NotNull(capture.Route(new MouseMovedEvent(42, 150f, 150f)));
-        Assert.NotNull(capture.Route(new MouseButtonReleasedEvent(42, MouseButton.Left)));
+        Assert.NotNull(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
     }
 
     [Fact]
@@ -231,8 +260,8 @@ public sealed class EditorGameInputCaptureTests
         MouseMovedEvent moved = Assert.IsType<MouseMovedEvent>(capture.Route(new MouseMovedEvent(42, 25f, 35f)));
         Assert.Equal(5f, moved.x);
         Assert.Equal(5f, moved.y);
-        Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
-        Assert.Null(capture.Route(new MouseButtonPressedEvent(1, MouseButton.Right)));
+        Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
+        Assert.Null(capture.Route(new MouseButtonPressedEvent(1, 25f, 35f, MouseButton.Right)));
     }
 
     [Fact]
@@ -244,7 +273,7 @@ public sealed class EditorGameInputCaptureTests
         capture.CompleteFrame();
 
         Assert.Null(capture.Route(new MouseMovedEvent(42, 30f, 30f)));
-        Assert.Null(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
+        Assert.Null(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
 
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: false, hovered: true);
@@ -260,11 +289,11 @@ public sealed class EditorGameInputCaptureTests
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
         capture.CompleteFrame();
         Assert.IsType<KeyPressedEvent>(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
-        Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
+        Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
 
         capture.BeginFrame();
         Assert.Equal(42u, capture.CompleteFrame());
-        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, MouseButton.Left)));
+        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
 
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
@@ -293,10 +322,10 @@ public sealed class EditorGameInputCaptureTests
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
         capture.CompleteFrame();
 
-        Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, MouseButton.Left)));
+        Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
         Assert.IsType<MouseMovedEvent>(capture.Route(new MouseMovedEvent(42, 150f, 150f)));
-        Assert.IsType<MouseButtonReleasedEvent>(capture.Route(new MouseButtonReleasedEvent(42, MouseButton.Left)));
-        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, MouseButton.Left)));
+        Assert.IsType<MouseButtonReleasedEvent>(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
+        Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
     }
 
     [Fact]

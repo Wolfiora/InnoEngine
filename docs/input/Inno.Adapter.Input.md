@@ -20,7 +20,7 @@ InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消�
 
 ## 当前源码公开 API 清单
 
-按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
 ### `Inno.Adapter.Input.EventInputBackend`
 

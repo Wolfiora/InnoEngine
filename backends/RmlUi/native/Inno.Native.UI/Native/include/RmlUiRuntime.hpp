@@ -28,6 +28,22 @@ enum class EventType : std::uint32_t
     MouseLeave = 6
 };
 
+/// Describes an explicit document focus request independently of transport failures.
+enum class FocusOutcome : std::uint32_t
+{
+    Focused = 0,
+    Unchanged = 1,
+    NotFound = 2,
+    NotFocusable = 3
+};
+
+/// Identifies the typed value of a form control.
+enum class ControlValueKind : std::uint32_t { None, Text, Boolean, Number, Selection };
+/// Distinguishes value editing from a completed interaction.
+enum class EditPhase : std::uint32_t { None, Editing, Committed };
+/// Identifies the operation that produced a document event.
+enum class EventOrigin : std::uint32_t { Backend, UserInput, Programmatic };
+
 namespace Inno::UI::RmlUiAdapter
 {
 
@@ -63,6 +79,41 @@ struct FrameInfo
     std::uint64_t released_texture_count;
 };
 
+/// Captures one element layout using context pixels and a column-vector transform.
+struct ElementLayoutInfo
+{
+    std::uint32_t status;
+    std::uint64_t revision;
+    float content_x;
+    float content_y;
+    float content_width;
+    float content_height;
+    float border_x;
+    float border_y;
+    float border_width;
+    float border_height;
+    float clip_x;
+    float clip_y;
+    float clip_width;
+    float clip_height;
+    float m11;
+    float m12;
+    float m13;
+    float m14;
+    float m21;
+    float m22;
+    float m23;
+    float m24;
+    float m31;
+    float m32;
+    float m33;
+    float m34;
+    float m41;
+    float m42;
+    float m43;
+    float m44;
+};
+
 /// Describes one retained mesh update.
 struct MeshInfo
 {
@@ -82,12 +133,24 @@ struct TextureInfo
     std::uint64_t byte_length;
 };
 
+/// Describes a typed control value without retaining a document or text pointer.
+struct ControlValueInfo
+{
+    ControlValueKind kind;
+    double number;
+    std::uint8_t checked;
+    std::uint64_t text_length;
+};
+
 /// Describes one queued UI event without exposing third-party event objects.
 struct EventInfo
 {
     EventType type;
     std::uint64_t document;
     std::uint64_t target_id_length;
+    ControlValueInfo value;
+    EditPhase phase;
+    EventOrigin origin;
 };
 
 /// Owns one isolated RmlUi adapter session and its retained contexts.
@@ -130,6 +193,58 @@ class Runtime final
     Result CloseDocument(
         std::uint64_t context,
         std::uint64_t document
+    );
+    Result FocusElement(
+        std::uint64_t context,
+        std::uint64_t document,
+        const char* element_id,
+        FocusOutcome& outcome
+    );
+    Result GetFocusedElement(
+        std::uint64_t context,
+        std::uint64_t& document,
+        char* element_id,
+        std::uint64_t capacity,
+        std::uint64_t& length
+    );
+    Result ClearFocus(
+        std::uint64_t context,
+        std::uint8_t& cleared
+    );
+    Result PrepareLayout(
+        std::uint64_t context,
+        std::uint64_t& revision
+    );
+    Result ReadLayout(
+        std::uint64_t context,
+        std::uint64_t document,
+        const char* element_id,
+        std::uint64_t revision,
+        ElementLayoutInfo& layout
+    );
+    Result GetValue(
+        std::uint64_t context,
+        std::uint64_t document,
+        const char* element_id,
+        ControlValueInfo& value,
+        char* text,
+        std::uint64_t capacity
+    );
+    Result SetValue(
+        std::uint64_t context,
+        std::uint64_t document,
+        const char* element_id,
+        ControlValueKind kind,
+        const char* text,
+        double number,
+        std::uint8_t checked,
+        std::uint8_t& accepted
+    );
+    Result CopyEventValue(
+        std::uint64_t context,
+        std::uint64_t index,
+        char* text,
+        std::uint64_t capacity
     );
     Result SetInnerMarkup(
         std::uint64_t context,
@@ -193,6 +308,20 @@ class Runtime final
         const char* text
     );
 
+    Result GetTime(
+        std::uint64_t context,
+        double& seconds,
+        std::uint8_t& paused
+    );
+    Result SetTimePaused(
+        std::uint64_t context,
+        std::uint8_t paused
+    );
+    Result AdvanceTime(
+        std::uint64_t context,
+        double seconds
+    );
+    Result RefreshLayout(std::uint64_t context);
     Result Update(std::uint64_t context);
     Result Render(
         std::uint64_t context,

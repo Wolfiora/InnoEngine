@@ -5,6 +5,7 @@ using System.Numerics;
 using Inno.Core.Serialization;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
+using Inno.Editor.Diagnostics;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
@@ -20,6 +21,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
 {
     private const nuint C_SEARCH_BUFFER_SIZE = 256;
     private readonly InspectorCardControls m_cardControls;
+    private readonly IEditorConsole m_console;
     private readonly SceneEdits m_edits;
     private readonly EditorSettings m_settings;
     private readonly SerializationRegistry m_serialization;
@@ -39,6 +41,9 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
     /// <param name="logs">
     /// The application log router used by component card controls.
     /// </param>
+    /// <param name="console">
+    /// The session Console that supplies current diagnostics associated with a missing type.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name = "edits"/> or <paramref name="settings"/> is <see langword="null"/>.
     /// </exception>
@@ -46,12 +51,14 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
         SceneEdits edits,
         EditorSettings settings,
         SerializationRegistry serialization,
-        LogRouter logs
+        LogRouter logs,
+        IEditorConsole console
     ) {
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         m_cardControls = new InspectorCardControls(logs);
+        m_console = console ?? throw new ArgumentNullException(nameof(console));
     }
 
     /// <summary>
@@ -164,9 +171,16 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
                 {
                     if (missing is not null)
                     {
-                        Ui.PushStyleColor((ImGuiCol.Text), EditorPalette.error);
-                        EditorUI.current.widgets.WrappedText($"Missing system script ({missing.missingType.stableId:D}). " + "Its serialized state is preserved and will recover automatically when the type returns.");
-                        Ui.PopStyleColor();
+                        Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.error);
+                        try
+                        {
+                            EditorUI.current.widgets.WrappedText($"Missing system script ({missing.missingType.stableId:D}). " + "Its serialized state is preserved and will recover automatically when the type returns.");
+                            MissingTypeDiagnostics.Draw(missing.missingType.stableId, m_console);
+                        }
+                        finally
+                        {
+                            Ui.PopStyleColor();
+                        }
                         return;
                     }
 

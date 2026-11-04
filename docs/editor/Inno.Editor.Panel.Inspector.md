@@ -1,5 +1,9 @@
 # Inno.Editor.Panel.Inspector
 
+## Missing 与激活诊断
+
+Missing Component/System 卡片保留稳定身份和序列化状态，并从当前 Session 的 `IEditorConsole` 展示与缺失 Stable Type ID 精确关联的活动诊断。未关联的编译错误、其他插件失败和普通历史日志不会作为该类型的失败原因。候选程序集被拒绝的消息明确说明失败扩展及候选范围，不声称 Missing 组件自身的构造函数失败。诊断来源清除或恢复后，下一次绘制立即采用当前快照；Panel 不维护错误数据库。
+
 ## Transform 坐标空间
 
 Transform 使用专用的 Editor InspectionDrawer，复用 fieldset `SectionHeader` 与属性 tooltip 样式。标题上嵌入的 checkbox 直接切换 `Local Space` / `World Space`；它是 Editor 视图开关，不是 Transform 的序列化字段。位置、欧拉角（度）与比例仍用 XYZ 控件。

@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Inno.Core.Diagnostics;
+using Inno.Core.Identity;
 
 namespace Inno.Editor.Interactions;
 
-internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
+internal sealed class EditorExtensionDiagnosticPublisher : IdentityObject, IDisposable
 {
+    private const string C_DEPENDENCY_GROUP = "Extension Dependencies";
     private const string C_PANEL_ACTIVATION_GROUP = "Panel Activation";
 
     private readonly Dictionary<string, string> m_panelFailures = new(StringComparer.Ordinal);
     private string m_publishedState = string.Empty;
+    private bool m_hasRejections;
 
     internal void ReportPanelFailure(
         string panelId,
@@ -19,7 +22,15 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
         ArgumentNullException.ThrowIfNull(exception);
-        m_panelFailures[panelId] = exception.Message;
+        m_panelFailures[panelId] = exception.ToString();
+    }
+
+    internal void PublishRejections(IReadOnlyList<Diagnostic> rejections)
+    {
+        if (rejections.Count == 0 && !m_hasRejections)
+            return;
+        Diagnostics.Set(identity.persistentId, C_DEPENDENCY_GROUP, rejections);
+        m_hasRejections = rejections.Count != 0;
     }
 
     internal void ResolvePanel(string panelId)
@@ -43,7 +54,7 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
         if (m_panelFailures.Count == 0)
         {
             if (!string.IsNullOrEmpty(m_publishedState))
-                Diagnostics.Clear(C_PANEL_ACTIVATION_GROUP);
+                Diagnostics.Clear(identity.persistentId, C_PANEL_ACTIVATION_GROUP);
             m_publishedState = string.Empty;
             return;
         }
@@ -55,10 +66,13 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
         if (string.Equals(m_publishedState, state, StringComparison.Ordinal))
             return;
         Diagnostics.Set(
+            identity.persistentId,
             C_PANEL_ACTIVATION_GROUP,
-            failures.Select(static pair => Diagnostic.Error(
+            failures.Select(static pair => new Diagnostic(
                 "EDITOR-PANEL",
-                $"Panel '{pair.Key}' failed to attach: {pair.Value}")));
+                $"Panel '{pair.Key}' failed to attach: {pair.Value}",
+                DiagnosticSeverity.Error,
+                semanticId: pair.Key)));
         m_publishedState = state;
     }
 
@@ -67,9 +81,10 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
     /// </summary>
     public void Dispose()
     {
+        PublishRejections([]);
         m_panelFailures.Clear();
         if (!string.IsNullOrEmpty(m_publishedState))
-            Diagnostics.Clear(C_PANEL_ACTIVATION_GROUP);
+            Diagnostics.Clear(identity.persistentId, C_PANEL_ACTIVATION_GROUP);
         m_publishedState = string.Empty;
     }
 }

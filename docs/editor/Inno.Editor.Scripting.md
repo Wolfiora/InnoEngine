@@ -254,6 +254,10 @@ Serialized state 使用逐成员兼容迁移：成员类型保持兼容时恢复
 
 80% 表示编译阶段完成，之后仍需激活、恢复和严格 unload verification。成功完成不能早于退休屏障。后台编译观察者在编译阶段退出后停止发布；新的排队请求不接受旧请求的消息。
 
+## 候选激活错误
+
+INNO-RELOAD 保留完整候选失败异常文本。若异常链包含 ExtensionActivationException，则另外发布 INNO-EXTENSION-ACTIVATION，并用 semanticId 关联该声明的稳定 Type ID；程序集与候选 generation 保留在错误文本中。聚合异常的各个分支分别处理，不把最近一次错误绑定到所有 Missing 对象。诊断只持有中立值，不能让异常对象或插件 Type 跨越候选退休。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。

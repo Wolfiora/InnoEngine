@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Numerics;
 using Inno.Core.Settings;
 using Inno.Core.Input;
+using Inno.Input;
+using RuntimeInput = Inno.Input.Input;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.PlayMode;
@@ -37,7 +39,6 @@ internal sealed class GameViewPanel : EditorPanel
     private Vector4 m_backgroundColor;
     private GamePresentationSettings m_presentation = new();
     private long m_presentationRevision = -1;
-    private bool m_leftPointerActive;
     internal GameViewPanel(
         EditorRenderingModule rendering,
         IEditorGameScenePresentation scenePresentation,
@@ -97,39 +98,17 @@ internal sealed class GameViewPanel : EditorPanel
         bool imageHovered = inside && Ui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
         bool focused = m_inputCapture.Report(viewport.id, outputOrigin - viewport.position, layout.size, gameViewFocused, imageHovered);
         bool acceptsPointer = focused && imageHovered;
-        if (!Ui.IsMouseButtonDown(ImGuiMouseButton.Left) && !Ui.IsMouseReleased(ImGuiMouseButton.Left))
-        {
-            m_leftPointerActive = false;
-        }
-
-        bool leftPressed = acceptsPointer && Ui.IsMouseClicked(ImGuiMouseButton.Left);
-        if (leftPressed)
-            m_leftPointerActive = true;
-        bool leftReleased = m_leftPointerActive && Ui.IsMouseReleased(ImGuiMouseButton.Left);
-        if (leftReleased || !focused)
-            m_leftPointerActive = false;
-        var io = Ui.GetInput();
-        KeyModifier modifiers = KeyModifier.None;
-        if (io.alt)
-            modifiers |= KeyModifier.Alt;
-        if (io.control)
-            modifiers |= KeyModifier.Control;
-        if (io.shift)
-            modifiers |= KeyModifier.Shift;
-        if (io.super)
-            modifiers |= KeyModifier.Super;
+        InputSnapshot routed = focused ? RuntimeInput.snapshot : InputSnapshot.empty;
+        float inputScaleX = layout.pixelWidth / layout.size.X;
+        float inputScaleY = layout.pixelHeight / layout.size.Y;
         m_rendering.SetOutputInput(
             C_VIEWPORT_ID,
             focused ? new RenderOutputInput(
-                new Inno.Core.Mathematics.Vector2(local.X * layout.pixelWidth / layout.size.X, local.Y * layout.pixelHeight / layout.size.Y),
+                new Inno.Core.Mathematics.Vector2(local.X * inputScaleX, local.Y * inputScaleY),
                 acceptsPointer,
-                acceptsPointer ? new Inno.Core.Mathematics.Vector2(0f, io.wheel) : default,
-                modifiers,
-                [],
-                [],
-                leftPressed ? [MouseButton.Left] : [],
-                leftReleased ? [MouseButton.Left] : [],
-                []
+                routed.modifiers,
+                routed.sequence.MapPointer(position => new Inno.Core.Mathematics.Vector2(
+                    position.x * inputScaleX, position.y * inputScaleY))
             ) : RenderOutputInput.suspended
         );
         if (!m_rendering.TrySubmit(S_KIND, C_VIEWPORT_ID, layout.pixelWidth, layout.pixelHeight, out EditorViewportOutput output))
@@ -182,7 +161,6 @@ internal sealed class GameViewPanel : EditorPanel
         m_settingsSubscription?.Dispose();
         m_rendering.Release(C_VIEWPORT_ID);
         m_presentationRevision = -1;
-        m_leftPointerActive = false;
     }
 
     private void ApplyEditorSettings(EditorSettings settings) => m_backgroundColor = GameViewBackgroundSetting.Read(settings);

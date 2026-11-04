@@ -14,6 +14,8 @@ internal static class ConsoleFingerprint
         Append(builder, occurrence.sourceId);
         Append(builder, occurrence.source);
         Append(builder, occurrence.code);
+        Append(builder, occurrence.semanticId ?? string.Empty);
+        Append(builder, occurrence.objectId?.ToString("D") ?? string.Empty);
         Append(builder, occurrence.category);
         Append(builder, occurrence.message);
         Append(builder, occurrence.file);

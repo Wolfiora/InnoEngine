@@ -15,19 +15,13 @@ namespace Inno.Adapter.Input;
 public sealed class EventInputBackend : IInputBackend
 {
     private readonly HashSet<KeyCode> m_keysDown = [];
-    private readonly HashSet<KeyCode> m_keysPressed = [];
-    private readonly HashSet<KeyCode> m_keysReleased = [];
     private readonly HashSet<MouseButton> m_mouseButtonsDown = [];
-    private readonly HashSet<MouseButton> m_mouseButtonsPressed = [];
-    private readonly HashSet<MouseButton> m_mouseButtonsReleased = [];
-    private readonly List<string> m_textInput = [];
+    private readonly List<InputChange> m_changes = [];
     private readonly Lock m_sync = new();
     private readonly uint m_windowId;
     private Action<EventInputBackend>? m_disposeCallback;
     private IDisposable? m_subscription;
     private Vector2 m_mousePosition;
-    private Vector2 m_mouseDelta;
-    private Vector2 m_scrollDelta;
     private KeyModifier m_modifiers;
     private bool m_disposed;
     private bool m_suspended;
@@ -78,47 +72,50 @@ public sealed class EventInputBackend : IInputBackend
                 return;
             switch (evnt)
             {
-                case KeyPressedEvent key when !key.repeat:
+                case KeyPressedEvent key:
                     m_modifiers = key.modifiers;
-                    if (m_keysDown.Add(key.key))
-                        m_keysPressed.Add(key.key);
+                    bool newlyPressed = m_keysDown.Add(key.key);
+                    if (key.repeat || newlyPressed)
+                        m_changes.Add(new KeyInputChange(key.key, true, key.repeat, key.modifiers));
                     break;
                 case KeyReleasedEvent key:
                     m_modifiers = key.modifiers;
                     if (m_keysDown.Remove(key.key))
-                        m_keysReleased.Add(key.key);
+                        m_changes.Add(new KeyInputChange(key.key, false, false, key.modifiers));
                     break;
                 case TextInputEvent text:
-                    m_textInput.Add(text.text);
+                    m_changes.Add(new TextInputChange(text.text, m_modifiers));
                     break;
                 case MouseButtonPressedEvent button:
+                    m_mousePosition = new Vector2(button.x, button.y);
                     if (m_mouseButtonsDown.Add(button.button))
-                        m_mouseButtonsPressed.Add(button.button);
+                        m_changes.Add(new PointerButtonInputChange(m_mousePosition, button.button, true, m_modifiers));
                     break;
                 case MouseButtonReleasedEvent button:
+                    m_mousePosition = new Vector2(button.x, button.y);
                     if (m_mouseButtonsDown.Remove(button.button))
-                        m_mouseButtonsReleased.Add(button.button);
+                        m_changes.Add(new PointerButtonInputChange(m_mousePosition, button.button, false, m_modifiers));
                     break;
                 case MouseMovedEvent movement:
                     var nextPosition = new Vector2(movement.x, movement.y);
-                    m_mouseDelta += nextPosition - m_mousePosition;
+                    m_changes.Add(new PointerMoveInputChange(nextPosition, m_mousePosition, m_modifiers));
                     m_mousePosition = nextPosition;
                     break;
                 case MouseScrolledEvent scroll:
-                    m_scrollDelta += new Vector2(scroll.offsetX, scroll.offsetY);
+                    m_mousePosition = new Vector2(scroll.x, scroll.y);
+                    m_changes.Add(new PointerScrollInputChange(m_mousePosition, new Vector2(scroll.offsetX, scroll.offsetY), m_modifiers));
                     break;
+                case WindowCloseEvent:
                 case WindowFocusChangedEvent { isFocused: false }:
                 case WindowVisibilityChangedEvent { isVisible: false }:
                 case ApplicationSuspensionChangedEvent { isSuspended: true }:
-                    m_keysReleased.UnionWith(m_keysDown);
-                    m_mouseButtonsReleased.UnionWith(m_mouseButtonsDown);
+                    m_changes.Clear();
+                    foreach (KeyCode key in m_keysDown)
+                        m_changes.Add(new KeyInputChange(key, false, false, KeyModifier.None));
+                    foreach (MouseButton button in m_mouseButtonsDown)
+                        m_changes.Add(new PointerButtonInputChange(m_mousePosition, button, false, KeyModifier.None));
                     m_keysDown.Clear();
                     m_mouseButtonsDown.Clear();
-                    m_keysPressed.Clear();
-                    m_mouseButtonsPressed.Clear();
-                    m_textInput.Clear();
-                    m_mouseDelta = Vector2.ZERO;
-                    m_scrollDelta = Vector2.ZERO;
                     m_modifiers = KeyModifier.None;
                     break;
             }
@@ -141,24 +138,12 @@ public sealed class EventInputBackend : IInputBackend
             ObjectDisposedException.ThrowIf(m_disposed, this);
             var snapshot = new InputSnapshot(
                 frameIndex,
+                m_changes.Count == 0 ? InputSequence.empty : new InputSequence(m_changes),
                 m_keysDown,
-                m_keysPressed,
-                m_keysReleased,
                 m_mouseButtonsDown,
-                m_mouseButtonsPressed,
-                m_mouseButtonsReleased,
                 m_mousePosition,
-                m_mouseDelta,
-                m_scrollDelta,
-                m_modifiers,
-                m_textInput);
-            m_keysPressed.Clear();
-            m_keysReleased.Clear();
-            m_mouseButtonsPressed.Clear();
-            m_mouseButtonsReleased.Clear();
-            m_mouseDelta = Vector2.ZERO;
-            m_scrollDelta = Vector2.ZERO;
-            m_textInput.Clear();
+                m_modifiers);
+            m_changes.Clear();
             return snapshot;
         }
     }
@@ -179,12 +164,8 @@ public sealed class EventInputBackend : IInputBackend
             m_disposeCallback = null;
             callback?.Invoke(this);
             m_keysDown.Clear();
-            m_keysPressed.Clear();
-            m_keysReleased.Clear();
             m_mouseButtonsDown.Clear();
-            m_mouseButtonsPressed.Clear();
-            m_mouseButtonsReleased.Clear();
-            m_textInput.Clear();
+            m_changes.Clear();
         }
     }
 

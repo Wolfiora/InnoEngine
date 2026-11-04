@@ -16,6 +16,8 @@ using Inno.Editor.Scripting;
 using Inno.Scripting.Compiler;
 using Inno.Runtime;
 using Inno.UI.Runtime;
+using Inno.Input;
+using Inno.Input.Runtime;
 
 namespace Inno.Editor.PlayMode;
 
@@ -465,15 +467,18 @@ public sealed class EditorPlayModeController :
         IDisposable? sessionScope = null;
         IDisposable? audioScope = null;
         IDisposable? uiScope = null;
+        IDisposable? inputScope = null;
         try
         {
             sessionScope = session.EnterExecutionScope();
             audioScope = m_audio?.EnterExecutionScope(session);
             uiScope = session.subsystems.GetRequiredSubsystem<UiRuntime>().EnterExecutionScope();
-            return new PresentationScope(sessionScope, audioScope, uiScope);
+            inputScope = InputExecutionContext.EnterScope(session.subsystems.GetRequiredSubsystem<InputRuntime>());
+            return new PresentationScope(sessionScope, audioScope, uiScope, inputScope);
         }
         catch
         {
+            inputScope?.Dispose();
             uiScope?.Dispose();
             audioScope?.Dispose();
             sessionScope?.Dispose();
@@ -555,39 +560,28 @@ public sealed class EditorPlayModeController :
     private sealed class PresentationScope(
         IDisposable sessionScope,
         IDisposable? audioScope,
-        IDisposable uiScope
+        IDisposable uiScope,
+        IDisposable inputScope
     ) : IDisposable
     {
         private IDisposable? m_sessionScope = sessionScope;
         private IDisposable? m_audioScope = audioScope;
         private IDisposable? m_uiScope = uiScope;
+        private IDisposable? m_inputScope = inputScope;
 
         /// <summary>
-        /// Releases the UI, audio, and session execution scopes in reverse acquisition order.
+        /// Releases input, UI, audio, and session execution scopes in reverse acquisition order.
         /// </summary>
         public void Dispose()
         {
-            IDisposable? session = m_sessionScope;
-            IDisposable? audio = m_audioScope;
-            IDisposable? ui = m_uiScope;
-            m_sessionScope = null;
-            m_audioScope = null;
+            m_inputScope?.Dispose();
+            m_inputScope = null;
+            m_uiScope?.Dispose();
             m_uiScope = null;
-            try
-            {
-                ui?.Dispose();
-            }
-            finally
-            {
-                try
-                {
-                    audio?.Dispose();
-                }
-                finally
-                {
-                    session?.Dispose();
-                }
-            }
+            m_audioScope?.Dispose();
+            m_audioScope = null;
+            m_sessionScope?.Dispose();
+            m_sessionScope = null;
         }
     }
 }

@@ -34,7 +34,7 @@ public sealed class ConditionalInspectionTests : IDisposable
     [Fact]
     public void ConditionalInspectorPeersResolveByPredicateAndRejectActualAmbiguity()
     {
-        using var properties = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        using var properties = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, [new RequiredDrawerService()]);
         using var attributes = new InspectorAttributeDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
         var renderer = new SerializedPropertyRenderer(properties, attributes, m_runtime.interactions, new ProbePropertyEdits(), m_logs);
         using var inspectors = new InspectionDrawerRegistry(m_runtime.interactions, CreateDrawer, m_types, m_serialization);
@@ -49,9 +49,38 @@ public sealed class ConditionalInspectionTests : IDisposable
     }
 
     [Fact]
+    public void DrawerFactoryFailureCarriesExactDeclarationAndAllowsRetry()
+    {
+        using var properties = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, [new RequiredDrawerService()]);
+        using var attributes = new InspectorAttributeDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        var renderer = new SerializedPropertyRenderer(properties, attributes, m_runtime.interactions, new ProbePropertyEdits(), m_logs);
+        bool reject = true;
+        var cause = new InvalidOperationException("Required consumer service is not installed.");
+        using var inspectors = new InspectionDrawerRegistry(m_runtime.interactions, CreateDrawer, m_types, m_serialization);
+        ExtensionActivationException error = Assert.Throws<ExtensionActivationException>(() =>
+            inspectors.TryResolve(m_runtime.context, new ConditionalTarget(1, false), renderer, out _, out _));
+        Assert.Same(cause, error.InnerException);
+        Assert.Equal(m_types.current.GetTypeRef(typeof(ConditionalFirst)).stableId, error.typeId);
+        Assert.Equal(typeof(ConditionalFirst).FullName, error.typeName);
+        Assert.Equal(typeof(ConditionalFirst).Assembly.GetName().Name, error.assemblyName);
+        Assert.Equal(m_types.current.version, error.generation);
+        Assert.DoesNotContain("requires a parameterless constructor", error.Message);
+        reject = false;
+        Assert.True(inspectors.TryResolve(m_runtime.context, new ConditionalTarget(1, false), renderer, out var drawer, out _));
+        Assert.IsType<ConditionalFirst>(drawer);
+
+        IInspectionDrawer CreateDrawer(Type type)
+        {
+            if (reject && type == typeof(ConditionalFirst))
+                throw cause;
+            return (IInspectionDrawer)Activator.CreateInstance(type, nonPublic: true)!;
+        }
+    }
+
+    [Fact]
     public void PropertyAvailabilityUsesCurrentOwnerConditionsWithoutRequiringNativeUi()
     {
-        using var properties = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
+        using var properties = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, [new RequiredDrawerService()]);
         using var attributes = new InspectorAttributeDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
         var renderer = new SerializedPropertyRenderer(properties, attributes, m_runtime.interactions, new ProbePropertyEdits(), m_logs);
         var target = new AvailabilityTarget();
@@ -61,6 +90,30 @@ public sealed class ConditionalInspectionTests : IDisposable
         target.visible = true;
         Assert.True(renderer.GetPropertyAvailability(target, conditional).isVisible);
         Assert.True(renderer.GetPropertyAvailability(target, values.Single(value => value.name == nameof(AvailabilityTarget.readOnlyValue))).isReadOnly);
+    }
+
+    [Fact]
+    public void MissingDrawerDependencyReportsItsIdentityAndRecoversWhenProvided()
+    {
+        using (var rejected = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []))
+        {
+            ExtensionActivationException failure = Assert.Throws<ExtensionActivationException>(() => rejected.Resolve(typeof(DependencyValue)));
+            Assert.Equal(m_types.current.GetTypeRef(typeof(DependencyDrawer)).stableId, failure.typeId);
+            Assert.Contains(typeof(RequiredDrawerService).FullName!, failure.ToString());
+            Assert.Contains("unavailable service", failure.ToString());
+        }
+        using var recovered = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, [new RequiredDrawerService()]);
+        Assert.IsType<DependencyDrawer>(recovered.Resolve(typeof(DependencyValue)));
+    }
+
+    public sealed class DependencyValue;
+    public sealed class RequiredDrawerService;
+
+    [PropertyDrawer(typeof(DependencyValue))]
+    public sealed class DependencyDrawer : IPropertyDrawer
+    {
+        public DependencyDrawer(RequiredDrawerService service) => ArgumentNullException.ThrowIfNull(service);
+        public void Draw(PropertyDrawContext context) => throw new InvalidOperationException("Resolution must not draw UI.");
     }
 
     [StableTypeId("eeeb7c59-2af3-4cc3-81d2-c853feef3874")]

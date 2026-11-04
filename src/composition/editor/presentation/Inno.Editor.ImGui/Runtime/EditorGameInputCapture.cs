@@ -126,7 +126,7 @@ public sealed class EditorGameInputCapture
     public Event? Route(Event evnt)
     {
         ArgumentNullException.ThrowIfNull(evnt);
-        if (evnt is MouseMovedEvent observed && observed.windowId == m_targetWindowId)
+        if (evnt is MouseEvent observed && observed.windowId == m_targetWindowId)
             UpdatePointerBounds(observed);
         if (evnt.isGlobalHandled)
         {
@@ -163,7 +163,8 @@ public sealed class EditorGameInputCapture
             MouseMovedEvent moved when moved.windowId == m_targetWindowId => RouteMove(moved),
             MouseButtonPressedEvent pressed when pressed.windowId == m_targetWindowId => RoutePress(pressed),
             MouseButtonReleasedEvent released when released.windowId == m_targetWindowId => RouteRelease(released),
-            MouseScrolledEvent scrolled when scrolled.windowId == m_targetWindowId && m_pointerInside => scrolled,
+            MouseScrolledEvent scrolled when scrolled.windowId == m_targetWindowId && m_pointerInside
+                => scrolled.WithPosition(scrolled.x - m_origin.X, scrolled.y - m_origin.Y),
             _ => null
         };
         if (routed is not null)
@@ -208,7 +209,7 @@ public sealed class EditorGameInputCapture
             : null;
     }
 
-    private void UpdatePointerBounds(MouseMovedEvent moved)
+    private void UpdatePointerBounds(MouseEvent moved)
     {
         Vector2 local = new(moved.x - m_origin.X, moved.y - m_origin.Y);
         m_pointerInside = m_hovered && local.X >= 0f && local.Y >= 0f
@@ -220,11 +221,13 @@ public sealed class EditorGameInputCapture
         if (!m_pointerInside)
             return null;
         m_pressedButtons.Add(pressed.button);
-        return pressed;
+        return pressed.WithPosition(pressed.x - m_origin.X, pressed.y - m_origin.Y);
     }
 
     private Event? RouteRelease(MouseButtonReleasedEvent released)
     {
-        return m_pressedButtons.Remove(released.button) ? released : null;
+        return m_pressedButtons.Remove(released.button)
+            ? released.WithPosition(released.x - m_origin.X, released.y - m_origin.Y)
+            : null;
     }
 }

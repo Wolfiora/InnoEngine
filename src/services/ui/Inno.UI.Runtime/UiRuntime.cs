@@ -42,6 +42,104 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         m_artifacts = artifacts ?? throw new ArgumentNullException(nameof(artifacts));
     }
 
+    /// <inheritdoc />
+    public UiBackendCapabilities capabilities => m_backend.capabilities;
+
+    /// <inheritdoc cref="IUiService.GetTime" />
+    public UiContextTime GetTime(UiContextHandle context)
+    {
+        EnsureActive();
+        return m_backend.GetTime(context);
+    }
+
+    /// <inheritdoc cref="IUiService.SetTimePaused" />
+    public void SetTimePaused(
+        UiContextHandle context,
+        bool paused
+    ) {
+        EnsureActive();
+        m_backend.SetTimePaused(context, paused);
+    }
+
+    /// <inheritdoc cref="IUiService.AdvanceTime" />
+    public void AdvanceTime(
+        UiContextHandle context,
+        double seconds
+    ) {
+        EnsureActive();
+        m_backend.AdvanceTime(context, seconds);
+    }
+
+    /// <inheritdoc cref="IUiService.TrySeekTime" />
+    public bool TrySeekTime(
+        UiContextHandle context,
+        double seconds
+    ) {
+        EnsureActive();
+        return m_backend.TrySeekTime(context, seconds);
+    }
+
+    /// <inheritdoc cref="IUiService.RefreshLayout" />
+    public void RefreshLayout(UiContextHandle context)
+    {
+        EnsureActive();
+        m_backend.RefreshLayout(context);
+    }
+
+    /// <inheritdoc cref="IUiService.ProcessInput" />
+    public void ProcessInput(
+        UiContextHandle context,
+        UiInputSnapshot input
+    ) {
+        EnsureActive();
+        m_backend.ProcessInput(context, input);
+    }
+
+    /// <inheritdoc />
+    public UiControlValue GetValue(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId
+    ) {
+        EnsureActive();
+        return m_backend.GetValue(context, document, elementId);
+    }
+
+    /// <inheritdoc />
+    public bool SetValue(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId,
+        UiControlValue value
+    ) {
+        EnsureActive();
+        return m_backend.SetValue(context, document, elementId, value);
+    }
+
+    /// <inheritdoc />
+    public UiFocusResult FocusElement(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        string elementId
+    ) {
+        EnsureActive();
+        return m_backend.FocusElement(context, document, elementId);
+    }
+
+    /// <inheritdoc />
+    public UiFocusTarget? GetFocusedElement(UiContextHandle context)
+    {
+        EnsureActive();
+        return m_backend.GetFocusedElement(context);
+    }
+
+    /// <inheritdoc />
+    public bool ClearFocus(UiContextHandle context)
+    {
+        EnsureActive();
+        return m_backend.ClearFocus(context);
+    }
+
     /// <summary>
     /// Captures the input service snapshot and binds script-facing UI for the complete runtime frame.
     /// </summary>
@@ -435,13 +533,8 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         EnsureActive();
         m_backend.Update(context, new UiInputSnapshot(
             m_input.mousePosition,
-            m_input.scrollDelta,
             m_input.modifiers,
-            m_input.keysPressed,
-            m_input.keysReleased,
-            m_input.mouseButtonsPressed,
-            m_input.mouseButtonsReleased,
-            m_input.textInput));
+            m_input.sequence));
     }
 
     /// <summary>
@@ -523,6 +616,16 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         if (failures.Count > 0)
             throw new AggregateException("UI runtime retirement failed.", failures);
         m_disposed = true;
+    }
+
+    /// <inheritdoc />
+    public UiLayoutSnapshot CaptureLayout(
+        UiContextHandle context,
+        UiDocumentHandle document,
+        IReadOnlyList<string> elementIds
+    ) {
+        EnsureActive();
+        return m_backend.CaptureLayout(context, document, elementIds);
     }
 
     private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -613,4 +716,6 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         TextFontStyle style,
         int weight
     );
+
+
 }

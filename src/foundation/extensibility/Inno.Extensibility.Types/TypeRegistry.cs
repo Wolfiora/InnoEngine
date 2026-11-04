@@ -347,23 +347,53 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
     /// A newly created extension, retained for rollback until the complete candidate snapshot takes ownership.
     /// </returns>
     protected TExtension CreateExtension<TExtension>(Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-        if (type.IsAbstract || !typeof(TExtension).IsAssignableFrom(type))
-        {
-            throw new InvalidOperationException(
-                $"Extension '{type.FullName}' must be a non-abstract {typeof(TExtension).FullName}.");
-        }
+        => CreateExtension(type, candidateType => (TExtension)(m_candidateTypes ?? m_types.current).CreateInstance(candidateType));
 
+    /// <summary>
+    /// Constructs an extension through its owner-specific factory and retains rollback ownership.
+    /// </summary>
+    /// <typeparam name="TExtension">
+    /// The required extension contract.
+    /// </typeparam>
+    /// <param name="type">
+    /// The implementation declaration in the current candidate.
+    /// </param>
+    /// <param name="factory">
+    /// A synchronous factory invoked once; it is never stored or used after this call.
+    /// </param>
+    /// <returns>
+    /// The validated instance owned by the candidate until its snapshot takes ownership.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The declaration or factory is null.
+    /// </exception>
+    /// <exception cref="ExtensionActivationException">
+    /// Construction fails or the factory returns an invalid instance. The original failure is retained.
+    /// </exception>
+    protected TExtension CreateExtension<TExtension>(
+        Type type,
+        Func<Type, TExtension> factory
+    ) {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(factory);
+        TypeCacheSnapshot snapshot = m_candidateTypes ?? m_types.current;
+        TypeRef declaration = snapshot.GetTypeRef(type);
         try
         {
-            TypeCacheSnapshot snapshot = m_candidateTypes ?? m_types.current;
-            return OwnCandidateExtension((TExtension)snapshot.CreateInstance(type));
+            if (type.IsAbstract || !typeof(TExtension).IsAssignableFrom(type))
+                throw new InvalidOperationException($"Extension '{type.FullName}' must be a non-abstract {typeof(TExtension).FullName}.");
+            TExtension extension = OwnCandidateExtension(factory(type));
+            if (!type.IsInstanceOfType(extension))
+                throw new InvalidOperationException($"Extension factory returned an incompatible instance for '{type.FullName}'.");
+            return extension;
         }
         catch (Exception exception)
         {
-            throw new InvalidOperationException(
-                $"Extension '{type.FullName}' requires a parameterless constructor.",
+            throw new ExtensionActivationException(
+                declaration.stableId,
+                type.FullName ?? type.Name,
+                type.Assembly.GetName().Name!,
+                snapshot.version,
                 exception);
         }
     }

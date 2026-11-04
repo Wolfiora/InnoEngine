@@ -722,8 +722,11 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         proxy.presentationSize = new RenderPresentationSize(2560, 1440);
         TestRequestProvider.enabled = true;
         var snapshot = new Inno.Input.InputSnapshot(1,
-            mousePosition: new Inno.Core.Mathematics.Vector2(400f, 274f),
-            mouseButtonsPressed: [Inno.Core.Input.MouseButton.Left]);
+            new Inno.Core.Input.InputSequence([
+                new Inno.Core.Input.PointerButtonInputChange(new Inno.Core.Mathematics.Vector2(400f, 274f),
+                    Inno.Core.Input.MouseButton.Left, true, Inno.Core.Input.KeyModifier.None)
+            ]),
+            mousePosition: new Inno.Core.Mathematics.Vector2(400f, 274f));
         using var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(),
             inputSnapshotProvider: () => snapshot,
             primaryInputSurfaceSizeProvider: static () => new RenderPresentationSize(1280, 720));
@@ -736,6 +739,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.Equal(new Inno.Core.Mathematics.Vector2(800f, 548f),
             TestRequestProvider.lastInput.pointerPosition);
         Assert.Single(TestRequestProvider.lastInput.buttonsPressed);
+        var change = Assert.IsType<Inno.Core.Input.PointerButtonInputChange>(Assert.Single(TestRequestProvider.lastInput.sequence.changes));
+        Assert.Equal(new Inno.Core.Mathematics.Vector2(800f, 548f), change.position);
     }
 
     [Fact]

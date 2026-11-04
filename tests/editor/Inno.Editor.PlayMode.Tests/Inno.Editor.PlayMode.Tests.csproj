@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <ProjectReference Include="../../../src/services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj" />
+    <ProjectReference Include="../../../src/services/ui/Inno.UI.Runtime/Inno.UI.Runtime.csproj" />
     <ProjectReference Include="../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj" PrivateAssets="compile" />

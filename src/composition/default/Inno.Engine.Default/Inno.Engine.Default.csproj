@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <ProjectReference
+      Include="../../../foundation/core/Inno.Core.Graphs/Inno.Core.Graphs.csproj"
+      PrivateAssets="compile" />
+    <ProjectReference
       Include="../../../runtime/generators/Inno.Runtime.Generators/Inno.Runtime.Generators.csproj"
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />

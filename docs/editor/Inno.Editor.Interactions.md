@@ -408,6 +408,12 @@ Action 的延迟 target、focus 和选择均使用 Core Identity；执行前重�
 
 `RegisterIdentityDomain` 借用 Core allocator 并返回 owner-thread 路由 lease。它让同一套 Selection、focus、queue 和 DragDrop 解析独立的 Play 世界；不复制对象表，也不取得 allocator 的销毁权。重复登记、错误线程或退休后登记明确失败。Scene workspace 在恢复 Edit 选择成功后释放路由；失败保留 owner 供重试。`IEditorSelectionCoordinator` 是 Host-only SPI，不再作为项目脚本导出；脚本继续使用 `EditorInteractions`。
 
+## 扩展依赖诊断的作用域
+
+宿主组合没有提供某个构造依赖时，当前 Editor 扩展仍按该组合的可用性过滤，同时发布 EDITOR-EXTENSION-DEPENDENCY。诊断包含精确声明 ID、程序集、候选 generation 和缺失依赖链。一个 runtime 的拒绝记录随成功激活的 snapshot 更新，不能在候选构建期间提前覆盖当前记录。
+
+诊断发布者复用 Core Identity 与 Core Diagnostics 的目标作用域；两个 runtime 可以共用同一个 DiagnosticHub，关闭其中一个只清理自己的记录。Panel attach 失败保留完整异常文本，并以 Panel 的稳定语义 ID 关联。每个新构造的扩展立即登记到 TypeRegistry 候选 owner，构造后续扩展失败也会释放先前实例。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。

@@ -1,5 +1,10 @@
 using System;
 using System.Linq;
+using System.IO;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Editor.Core;
+using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 
 using Inno.Extensibility.Modules;
 using Inno.Core.Diagnostics;
@@ -37,6 +42,43 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     }
 
     [Fact]
+    public void DiagnosticServiceActivatesWithoutLoggingPanelSettingsAndRetiresItsSubscription()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "InnoConsoleOwner", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            using var logs = new LogRouter();
+            var diagnostics = new DiagnosticHub();
+            var playMode = new FakePlayMode();
+            using var modules = new ModuleHost(new ModuleHostOptions
+            {
+                catalogSource = new DotNetAssemblyCatalogSource(typeof(PlayModeLogRetentionTests).Assembly)
+            });
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+            for (int cycle = 0; cycle < 100; cycle++)
+            {
+                using var runtime = new EditorInteractionRuntime(
+                    new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+                    types, logs, [diagnostics, playMode]);
+                runtime.Start();
+                Assert.True(runtime.interactions.TryGetModule<ConsoleConsumerModule>(out var consumer));
+                Assert.NotNull(consumer);
+                var source = new DiagnosticSource("tests.console-owner", "Owner test");
+                diagnostics.Set(source, [Diagnostic.Error("OWNER", "Before retirement")]);
+                Assert.Equal("Before retirement", Assert.Single(consumer.console.Capture().occurrences).message);
+                Assert.Equal(1, playMode.listenerCount);
+                runtime.Dispose();
+                Assert.Equal(0, playMode.listenerCount);
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public void ClearOnPlayRemovesOldLogsButRetainsCurrentDiagnostics()
     {
         Assert.True(m_console.clearOnPlay);
@@ -52,6 +94,35 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
         Assert.DoesNotContain(entries, static entry => entry.message == "before-play");
         Assert.Contains(entries, static entry => entry.message == "compiler-diagnostic");
+    }
+
+    [Fact]
+    public void DiagnosticCorrelationSurvivesProjectionAndDoesNotCollapseDifferentTargets()
+    {
+        Guid objectId = Guid.NewGuid();
+        var source = new DiagnosticSource("tests.activation", "Extension activation");
+        m_diagnosticHub.Set(source,
+        [
+            new Diagnostic("ACTIVATION", "Missing dependency", DiagnosticSeverity.Error, "extension.a", objectId),
+            new Diagnostic("ACTIVATION", "Missing dependency", DiagnosticSeverity.Error, "extension.b", objectId),
+            new Diagnostic("ACTIVATION", "Missing dependency", DiagnosticSeverity.Error, "extension.a", Guid.NewGuid())
+        ]);
+        EditorConsoleSnapshot captured = m_console.Capture();
+        Assert.Same(captured, m_console.Capture());
+        Assert.Equal(3, captured.groups.Count);
+        Assert.Equal("extension.a", captured.occurrences[0].semanticId);
+        Assert.Equal(objectId, captured.occurrences[0].objectId);
+        m_diagnosticHub.Clear(source);
+        EditorConsoleSnapshot cleared = m_console.Capture();
+        Assert.NotSame(captured, cleared);
+        Assert.Empty(cleared.occurrences);
+        Assert.Same(cleared, m_console.Capture());
+        Assert.Equal(3, captured.occurrences.Count);
+        Dispatch(LogLevel.Info, LogSessionId.none, "ordinary log");
+        m_logRouter.Flush();
+        EditorConsoleOccurrence log = Assert.Single(m_console.Capture().occurrences);
+        Assert.Null(log.semanticId);
+        Assert.Null(log.objectId);
     }
 
     [Fact]
@@ -200,8 +271,29 @@ public sealed class PlayModeLogRetentionTests : IDisposable
         private readonly Inno.Core.Events.EventHub m_stateEvents;
 
         internal FakePlayMode() => m_stateEvents = m_stateDispatcher.CreateHub();
+        internal int listenerCount { get; private set; }
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
-            => m_stateEvents.Listen<StateNotification>(notification => listener(notification.state));
+        {
+            IDisposable subscription = m_stateEvents.Listen<StateNotification>(notification => listener(notification.state));
+            listenerCount++;
+            return new StateSubscription(this, subscription);
+        }
+
+        private sealed class StateSubscription(
+            FakePlayMode owner,
+            IDisposable subscription
+        ) : IDisposable
+        {
+            private IDisposable? m_subscription = subscription;
+            public void Dispose()
+            {
+                if (m_subscription is null)
+                    return;
+                m_subscription.Dispose();
+                m_subscription = null;
+                owner.listenerCount--;
+            }
+        }
         private sealed class StateNotification(EditorPlayModeState state) : Inno.Core.Events.Event
         {
             internal EditorPlayModeState state { get; } = state;
@@ -230,4 +322,11 @@ public sealed class PlayModeLogRetentionTests : IDisposable
             m_stateDispatcher.Emit(new StateNotification(value));
         }
     }
+}
+
+[EditorModule("tests.console-consumer")]
+public sealed class ConsoleConsumerModule : EditorModule
+{
+    public ConsoleConsumerModule(IEditorConsole console) => this.console = console;
+    public IEditorConsole console { get; }
 }

@@ -311,6 +311,10 @@ void RmlUiRenderInterface::EndRender()
             }
         }
     }
+    // Layout queries may prepare multiple frames before managed publication. Retired resources
+    // must not remain in the pending update list; their release records still reach the consumer.
+    std::erase_if(m_state->mesh_updates, [this](std::uint64_t id) { return m_state->meshes.find(id) == m_state->meshes.end(); });
+    std::erase_if(m_state->texture_updates, [this](std::uint64_t id) { return m_state->textures.find(id) == m_state->textures.end(); });
 }
 
 void RmlUiRenderInterface::FinishFrame() noexcept

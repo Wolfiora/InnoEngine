@@ -17,14 +17,15 @@ namespace Inno.Adapter.UI.RmlUi;
 /// <summary>
 /// Implements retained-mode UI document processing through the pinned RmlUi native bridge.
 /// </summary>
-public sealed unsafe class RmlUiBackend : IUiBackend
+public sealed unsafe partial class RmlUiBackend : IUiBackend
 {
     private static readonly UiBackendCapabilities S_CAPABILITIES = new(
         [RmlUiIdentifiers.documentLanguage],
-        supportsFontCollectionFaces: false);
+        capabilities: []);
     private static readonly Regex S_FONT_FAMILY = new(
         @"(?im)(font-family\s*:\s*)([^;}]+)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private readonly int m_ownerThread = Environment.CurrentManagedThreadId;
     private InnoUIRmlUiAdapterRuntime* m_runtime;
     private readonly Dictionary<string, string> m_fontAliases = new(StringComparer.OrdinalIgnoreCase);
     private bool m_disposed;
@@ -294,7 +295,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             Require(document),
             elementId,
             name,
-            value,
+            name == "style" ? RewriteFontFamilies(value) : value,
             ref changed), "set UI attribute");
         return changed != 0;
     }
@@ -445,31 +446,51 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         UiContextHandle context,
         UiInputSnapshot input
     ) {
+        ProcessInput(context, input);
+        ThrowIfFailed(RmlUiNativeRuntime.Update(m_runtime, Require(context)), "update UI context");
+    }
+
+    /// <inheritdoc />
+    public void ProcessInput(
+        UiContextHandle context,
+        UiInputSnapshot input
+    ) {
         EnsureActive();
         ArgumentNullException.ThrowIfNull(input);
         ulong handle = Require(context);
-        int modifiers = (int)input.modifiers;
-        ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseMove(
-            m_runtime, handle, (int)input.mousePosition.x, (int)input.mousePosition.y, modifiers), "process UI pointer position");
-        if (input.scrollDelta.x != 0f || input.scrollDelta.y != 0f)
+        Inno.Core.Mathematics.Vector2? lastPointer = null;
+        foreach (InputChange change in input.sequence.changes)
         {
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseWheel(
-                m_runtime, handle, input.scrollDelta.x, input.scrollDelta.y, modifiers), "process UI pointer wheel");
+            int modifiers = (int)change.modifiers;
+            if (change is PointerInputChange pointer)
+            {
+                ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseMove(
+                    m_runtime, handle, (int)pointer.position.x, (int)pointer.position.y, modifiers), "process UI pointer position");
+                lastPointer = pointer.position;
+            }
+            switch (change)
+            {
+                case PointerScrollInputChange scroll:
+                    ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseWheel(
+                        m_runtime, handle, scroll.delta.x, -scroll.delta.y, modifiers), "process UI pointer wheel");
+                    break;
+                case PointerButtonInputChange button:
+                    ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(
+                        m_runtime, handle, (int)button.button, button.isPressed ? (byte)1 : (byte)0, modifiers), "process UI pointer button");
+                    break;
+                case KeyInputChange key:
+                    ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(
+                        m_runtime, handle, (int)key.key, key.isPressed ? (byte)1 : (byte)0, modifiers), "process UI key transition");
+                    break;
+                case TextInputChange text:
+                    using (var nativeText = new RmlUiUtf8String(text.text))
+                        ThrowIfFailed(RmlUiNativeRuntime.ProcessText(m_runtime, handle, nativeText.pointer), "process UI text input");
+                    break;
+            }
         }
-        foreach (MouseButton button in input.buttonsPressed)
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 1, modifiers), "process UI pointer press");
-        foreach (MouseButton button in input.buttonsReleased)
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 0, modifiers), "process UI pointer release");
-        foreach (KeyCode key in input.keysPressed)
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(m_runtime, handle, (int)key, 1, modifiers), "process UI key press");
-        foreach (KeyCode key in input.keysReleased)
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(m_runtime, handle, (int)key, 0, modifiers), "process UI key release");
-        foreach (string text in input.textInput)
-        {
-            using var nativeText = new RmlUiUtf8String(text);
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessText(m_runtime, handle, nativeText.pointer), "process UI text input");
-        }
-        ThrowIfFailed(RmlUiNativeRuntime.Update(m_runtime, handle), "update UI context");
+        if (lastPointer is not Vector2 position || position != input.mousePosition)
+            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseMove(
+                m_runtime, handle, (int)input.mousePosition.x, (int)input.mousePosition.y, (int)input.modifiers), "process UI final pointer position");
     }
 
     /// <summary>
@@ -577,7 +598,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 events[index] = new UiEvent(
                     (UiEventType)info.Type,
                     new UiDocumentHandle(info.Document),
-                    Encoding.UTF8.GetString(targetBytes, 0, checked((int)info.TargetIdLength)));
+                    Encoding.UTF8.GetString(targetBytes, 0, checked((int)info.TargetIdLength)),
+                    ReadEventValue(handle, checked((ulong)index), info.Value),
+                    (UiEventPhase)info.Phase,
+                    (UiEventOrigin)info.Origin);
             }
             return events;
         }
@@ -594,6 +618,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     {
         if (m_disposed)
             return;
+        EnsureActive();
         m_disposed = true;
         RmlUiNativeErrors.DestroySession(m_runtime);
         m_runtime = null;
@@ -709,5 +734,10 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         return new InvalidOperationException($"Failed to {operation}: {message}.");
     }
 
-    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
+    private void EnsureActive()
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (Environment.CurrentManagedThreadId != m_ownerThread)
+            throw new InvalidOperationException("UI operations must execute on their backend owner thread.");
+    }
 }

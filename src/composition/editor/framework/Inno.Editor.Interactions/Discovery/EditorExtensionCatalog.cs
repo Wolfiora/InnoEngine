@@ -254,8 +254,9 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             m_context,
             m_interactions,
             moduleTypes,
-            types.types.Select(typeRef => typeRef.Resolve(types)).ToArray(),
+            types,
             m_hostServices,
+            instance => OwnCandidateExtension(instance),
             m_active?.instances
         );
         ModuleRegistration[] modules = moduleTypes.Where(activator.CanCreate).Select(type => new ModuleRegistration(type.GetCustomAttribute<EditorModuleAttribute>(false)!, type, activator.CreateModule(type))).OrderBy(static value => value.attribute.order).ThenBy(
@@ -310,7 +311,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         ).ToArray();
         ValidateHistoryHandlers(historyHandlers);
         StateRegistration[] state = CreateStateRegistrations(modules, panels);
-        return new Snapshot(modules, actions, menuSources, drops, panels, modals, historyHandlers, state, activator.instances.ToArray());
+        return new Snapshot(modules, actions, menuSources, drops, panels, modals, historyHandlers, state, activator.instances.ToArray(), activator.rejections);
     }
 
     /// <summary>
@@ -465,6 +466,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             return;
         activation.handlers.Complete();
         m_interactions.CompleteGenerationTransition();
+        m_diagnostics.PublishRejections(currentSnapshot.rejections);
         NotifyExtensionsChanged();
         m_staging = null;
         m_activation = null;
@@ -504,7 +506,10 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
 
         if (ReferenceEquals(m_active, snapshot))
+        {
             m_active = null;
+            m_diagnostics.PublishRejections([]);
+        }
         m_diagnostics.RetainPanels(new HashSet<string>(StringComparer.Ordinal));
         m_diagnostics.Commit();
         ThrowCleanupFailures(failures);
@@ -960,7 +965,8 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         ModalRegistration[] modals,
         HistoryHandlerRegistration[] historyHandlers,
         StateRegistration[] state,
-        object[] instances
+        object[] instances,
+        Inno.Core.Diagnostics.Diagnostic[] rejections
     )
     {
         internal IReadOnlyList<EditorPanelAttribute> panelDeclarations { get; } = Array.AsReadOnly(panels.Select(static registration => registration.attribute).ToArray());

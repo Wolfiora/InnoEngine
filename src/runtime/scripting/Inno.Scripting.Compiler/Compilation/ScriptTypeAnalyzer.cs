@@ -38,14 +38,14 @@ internal static class ScriptTypeAnalyzer
                 if (semanticModel.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol symbol ||
                     symbol.TypeKind != TypeKind.Class ||
                     symbol.IsAbstract ||
-                    symbol.IsGenericType ||
-                    !TryGetAttachableKind(symbol, attachableTypes, out string kind))
+                    symbol.IsGenericType)
                 {
                     continue;
                 }
 
                 if (!discovered.TryGetValue(symbol, out MutableScriptType? type))
                 {
+                    _ = TryGetAttachableKind(symbol, attachableTypes, out string kind);
                     type = new MutableScriptType(symbol, kind);
                     discovered.Add(symbol, type);
                 }
@@ -57,7 +57,7 @@ internal static class ScriptTypeAnalyzer
         var manifestEntries = new List<ScriptTypeManifestEntry>();
         var mappings = new List<ScriptTypeMapping>();
         var implicitTypesBySource = discovered.Values
-            .Where(static type => GetExplicitStableTypeId(type.symbol) is null)
+            .Where(static type => type.kind.Length != 0 && GetExplicitStableTypeId(type.symbol) is null)
             .SelectMany(static type => type.declarations
                 .Select(declaration => (declaration.source.persistentId, type)))
             .GroupBy(static value => value.persistentId)
@@ -72,6 +72,16 @@ internal static class ScriptTypeAnalyzer
         {
             string typeName = GetMetadataTypeName(type.symbol);
             string? explicitIdValue = GetExplicitStableTypeId(type.symbol);
+            if (type.kind.Length == 0)
+            {
+                Guid declaredId = Guid.TryParse(explicitIdValue, out Guid explicitIdentity)
+                    ? explicitIdentity
+                    : Guid.Empty;
+                manifestEntries.Add(CreateManifestEntry(
+                    type, SelectManifestDeclaration(type), declaredId,
+                    explicitIdentity: declaredId != Guid.Empty, canonicalSource: true));
+                continue;
+            }
             if (explicitIdValue is not null)
             {
                 ScriptDeclaration declaration = SelectManifestDeclaration(type);

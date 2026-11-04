@@ -26,7 +26,7 @@ using Inno.Scripting.Compiler;
 using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
-public sealed class EditorPlayModeTests : IDisposable
+public sealed partial class EditorPlayModeTests : IDisposable
 {
     private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoEditorPlayModeTests", Guid.NewGuid().ToString("N"));
     private readonly EngineHost m_engineHost;

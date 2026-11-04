@@ -273,9 +273,11 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         if (!m_reloads.CanActivateReload(out _))
             return;
         ScriptCompilationTicket? ticket = m_compilationTicket;
+        ScriptCompilationResult? candidate = null;
         try
         {
             ScriptCompilationResult result = compilation.GetAwaiter().GetResult();
+            candidate = result;
             ScriptDiagnosticPublisher.PublishCompilation(result);
             if (result.success)
             {
@@ -320,8 +322,8 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
             if (!m_manager.isFaulted)
                 m_plugins.RollbackPending();
             m_activationFailure = $"Script generation activation failed: {exception.Message}";
-            ticket?.MarkFailed(ticket.result, $"Script generation activation failed: {exception.Message}");
-            ScriptDiagnosticPublisher.PublishReloadFailure(exception);
+            ticket?.MarkFailed(candidate, $"Script generation activation failed: {exception.Message}");
+            ScriptDiagnosticPublisher.PublishReloadFailure(exception, candidate);
             m_log.Write(LogLevel.Error, "Script assembly reload failed: {0}", [exception]);
         }
         finally

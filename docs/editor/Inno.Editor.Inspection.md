@@ -140,6 +140,12 @@ Inspector 的浮点标量以及 `Vector2/3/4`、`Rect`、Quaternion Euler 和 Tr
 
 EditorScripts 通过显式 `using InnoEditor.Inspection;` 使用裁剪后的 `InspectionDrawer`、`PropertyDrawer`、`InspectorAttributeDrawer`、`IInspectionIconProvider<TTarget>` 与 property-edit 契约。`AssetFileEntry` 条件 Drawer 因而能从 File Browser 注入统一图标解析，而不复制 Appearance 设置。Registry、snapshot、Activator 和各 feature 的具体 mutation adapter 不导出。
 
+## 构造注入与失败诊断
+
+脚本能够引用一个类型，并不表示该类型可以注入 Drawer。PropertyDrawer 和 InspectorAttributeDrawer 只接收当前 EditorInteractions、TypeCacheSnapshot、SerializationRegistry，以及组合方显式传入的 drawerServices；一个参数必须恰好匹配一个服务。InspectionDrawer 使用所属 Host 的明确 factory。缺少、歧义、构造失败都拒绝当前候选，不临时创建另一个服务实例。
+
+构造失败通过 ExtensionActivationException 关联精确的声明 ID、程序集和候选 generation，并保留原始异常。修正服务组合后可以重试；旧 snapshot 与候选资源继续由 TypeRegistry 的既有事务和退休协议管理。不同类型的 Missing 不应仅凭最近一条错误推断原因。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
