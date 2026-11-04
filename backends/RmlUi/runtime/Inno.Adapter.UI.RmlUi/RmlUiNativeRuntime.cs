@@ -263,6 +263,35 @@ internal static unsafe class RmlUiNativeRuntime
         return result;
     }
 
+    internal static Result ProcessComposition(
+        InnoUIRmlUiAdapterRuntime* runtime,
+        ulong context,
+        ulong operation,
+        uint phase,
+        byte* text,
+        int selectionStart,
+        int selectionLength
+    ) {
+        Result result = default;
+        BgcsInnoRmluiError* error = null;
+        RmlUiNativeErrors.CheckBridge(
+            UiNative.Raw.ProcessComposition(runtime, context, operation, phase, (sbyte*)text,
+                selectionStart, selectionLength, &result, &error), error);
+        return result;
+    }
+
+    internal static Result SynchronizeComposition(
+        InnoUIRmlUiAdapterRuntime* runtime,
+        ulong context,
+        ulong operation
+    ) {
+        Result result = default;
+        BgcsInnoRmluiError* error = null;
+        RmlUiNativeErrors.CheckBridge(
+            UiNative.Raw.SynchronizeComposition(runtime, context, operation, &result, &error), error);
+        return result;
+    }
+
     internal static Result RegisterTexture(
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,

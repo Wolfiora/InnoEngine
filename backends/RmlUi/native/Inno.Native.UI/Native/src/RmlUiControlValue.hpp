@@ -13,6 +13,7 @@ struct RmlUiControlValue
     ControlValueInfo info{};
     std::string text;
 
+    static void RequireEditableFont(Rml::Element* element);
     static RmlUiControlValue Read(Rml::Element* element);
     static Result Write(
         Rml::Element* element,

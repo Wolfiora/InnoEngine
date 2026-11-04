@@ -26,6 +26,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         @"(?im)(font-family\s*:\s*)([^;}]+)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private readonly int m_ownerThread = Environment.CurrentManagedThreadId;
+    private readonly Dictionary<UiContextHandle, ContextInputState> m_inputContexts = [];
     private InnoUIRmlUiAdapterRuntime* m_runtime;
     private readonly Dictionary<string, string> m_fontAliases = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<(UiContextHandle context, UiDocumentHandle document), IReadOnlyDictionary<string, string>> m_documentBindings = [];
@@ -67,7 +68,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         ThrowIfFailed(RmlUiNativeRuntime.CreateContext(
             m_runtime, options.name, options.width, options.height, options.density, ref value), "create UI context");
         var context = new UiContextHandle(value);
-        m_gamepadNavigation.Add(context, new GamepadNavigation());
+        m_inputContexts.Add(context, new ContextInputState());
         return context;
     }
 
@@ -81,7 +82,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.DestroyContext(m_runtime, Require(context)), "destroy UI context");
-        m_gamepadNavigation.Remove(context);
+        m_inputContexts.Remove(context);
         RetireContextImages(context);
         List<(UiContextHandle context, UiDocumentHandle document)> retired = [];
         foreach (var key in m_documentBindings.Keys)
@@ -484,12 +485,22 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         EnsureActive();
         ArgumentNullException.ThrowIfNull(input);
         ulong handle = Require(context);
+        ContextInputState inputState = m_inputContexts[context];
         Inno.Core.Mathematics.Vector2? lastPointer = null;
+        bool composing = input.hasTextCompositionInput;
+        if (composing)
+            ResetGamepadNavigation(context);
+        else if (inputState.compositionPending)
+        {
+            ThrowIfFailed(RmlUiNativeRuntime.SynchronizeComposition(m_runtime, handle, 0), "retire UI composition ownership");
+            inputState.compositionPending = false;
+        }
         foreach (InputChange change in input.sequence.changes)
         {
             if (change is GamepadInputChange gamepad)
             {
-                ProcessGamepad(context, gamepad);
+                if (!composing)
+                    ProcessGamepad(context, gamepad);
                 continue;
             }
             if (change is KeyInputChange or TextInputChange or PointerButtonInputChange or PointerScrollInputChange)
@@ -511,7 +522,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
                     ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(
                         m_runtime, handle, (int)button.button, button.isPressed ? (byte)1 : (byte)0, modifiers), "process UI pointer button");
                     break;
-                case KeyInputChange key:
+                case KeyInputChange key when !composing:
                     ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(
                         m_runtime, handle, (int)key.key, key.isPressed ? (byte)1 : (byte)0, modifiers), "process UI key transition");
                     break;
@@ -519,12 +530,27 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
                     using (var nativeText = new RmlUiUtf8String(text.text))
                         ThrowIfFailed(RmlUiNativeRuntime.ProcessText(m_runtime, handle, nativeText.pointer), "process UI text input");
                     break;
+                case TextCompositionChange composition:
+                    if (composition.phase == TextCompositionPhase.Started)
+                        inputState.compositionPending = true;
+                    using (var nativeText = new RmlUiUtf8String(composition.state.text))
+                        ThrowIfFailed(RmlUiNativeRuntime.ProcessComposition(m_runtime, handle,
+                            composition.state.compositionId, (uint)composition.phase, nativeText.pointer,
+                            composition.state.selectionStart, composition.state.selectionLength), "process UI composition");
+                    break;
             }
         }
         if (lastPointer is not Vector2 position || position != input.mousePosition)
             ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseMove(
                 m_runtime, handle, (int)input.mousePosition.x, (int)input.mousePosition.y, (int)input.modifiers), "process UI final pointer position");
-        RepeatGamepadNavigation(context, input);
+        if (inputState.compositionPending)
+        {
+            ThrowIfFailed(RmlUiNativeRuntime.SynchronizeComposition(
+                m_runtime, handle, input.textComposition?.compositionId ?? 0), "synchronize UI composition ownership");
+            inputState.compositionPending = input.textComposition is not null;
+        }
+        if (!composing)
+            RepeatGamepadNavigation(context, input);
     }
 
     /// <summary>
@@ -668,7 +694,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
             registration.retired = true;
         m_images.Clear();
         m_documentBindings.Clear();
-        m_gamepadNavigation.Clear();
+        m_inputContexts.Clear();
     }
 
     private void CopyMeshVertices(
@@ -795,5 +821,12 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (Environment.CurrentManagedThreadId != m_ownerThread)
             throw new InvalidOperationException("UI operations must execute on their backend owner thread.");
+    }
+
+    private sealed class ContextInputState
+    {
+        internal readonly GamepadNavigation navigation = new();
+        // Retain pending work until native synchronization succeeds, including after failure.
+        internal bool compositionPending;
     }
 }

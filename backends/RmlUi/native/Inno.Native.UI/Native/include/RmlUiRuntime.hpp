@@ -322,6 +322,20 @@ class Runtime final
         std::uint64_t context,
         const char* text
     );
+    /// Applies one ordered composition transition to the currently focused text control.
+    Result ProcessComposition(
+        std::uint64_t context,
+        std::uint64_t operation,
+        std::uint32_t phase,
+        const char* text,
+        std::int32_t selection_start,
+        std::int32_t selection_length
+    );
+    /// Retires provisional text when the input route no longer owns its composition.
+    Result SynchronizeComposition(
+        std::uint64_t context,
+        std::uint64_t operation
+    );
 
     Result GetTime(
         std::uint64_t context,

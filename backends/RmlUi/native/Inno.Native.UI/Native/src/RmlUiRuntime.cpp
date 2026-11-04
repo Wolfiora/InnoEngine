@@ -4,6 +4,7 @@
 #include "RmlUiControlValue.hpp"
 #include "RmlUiProcessHost.hpp"
 #include "RmlUiRenderInterface.hpp"
+#include "RmlUiTextInputHandler.hpp"
 
 #include <RmlUi/Core.h>
 #include <RmlUi/Core/Element.h>
@@ -44,27 +45,6 @@ struct QueuedEvent
     EditPhase phase;
     EventOrigin origin;
 };
-
-void RequireEditableFont(Rml::Element* element)
-{
-    while (element)
-    {
-        bool editable = dynamic_cast<Rml::ElementFormControlTextArea*>(element) != nullptr;
-        if (dynamic_cast<Rml::ElementFormControlInput*>(element))
-        {
-            const auto type = element->GetAttribute<Rml::String>("type", "text");
-            editable = type == "text" || type == "password";
-        }
-        if (editable)
-        {
-            if (element->GetFontFaceHandle() == 0)
-                throw std::runtime_error("The RmlUi text control '" + element->GetId() +
-                    "' has no resolved font face. Register its declared font and refresh layout before editing.");
-            return;
-        }
-        element = element->GetParentNode();
-    }
-}
 
 EventType MapEvent(const Rml::String& type) noexcept
 {
@@ -200,6 +180,7 @@ struct RmlUiRuntimeState
         Rml::Context* context = nullptr;
         std::unique_ptr<Inno::UI::RmlUiAdapter::RmlUiRenderInterface> renderer;
         std::unique_ptr<Inno::UI::RmlUiAdapter::RmlUiEventListener> listener;
+        RmlUiTextInputHandler text_input;
         std::unordered_map<std::uint64_t, Rml::ElementDocument*> documents;
         std::unordered_map<Rml::ElementDocument*, std::uint64_t> document_ids;
         std::vector<QueuedEvent> events;
@@ -221,6 +202,8 @@ struct RmlUiRuntimeState
             if (iterator == document_ids.end())
                 return;
             const auto type = MapEvent(event.GetType());
+            if (type == EventType::Blur)
+                text_input.CancelFor(target);
             if (suppress_value_events && (type == EventType::Change || type == EventType::Submit))
                 return;
             auto value = RmlUiControlValue::Read(target);
@@ -326,9 +309,10 @@ Result Runtime::CreateContext(
         return Result::BackendError;
     state->name =
         std::string("inno-ui-") + std::to_string(reinterpret_cast<std::uintptr_t>(this)) + "-" + std::to_string(state->id) + "-" + name;
-    state->context = Rml::CreateContext(state->name, {width, height}, state->renderer.get());
+    state->context = Rml::CreateContext(state->name, {width, height}, state->renderer.get(), &state->text_input);
     if (!state->context)
         return Result::BackendError;
+    state->text_input.Attach(state->context);
     state->context->SetDensityIndependentPixelRatio(density);
     // Initialize the context root before documents use independent layout refreshes.
     // No document, input owner or event listener exists at this construction boundary.
@@ -686,7 +670,10 @@ Result Runtime::SetValue(
         return Result::InvalidArgument;
     RmlUiRuntimeState::EventScope events(*state, EventOrigin::Programmatic, true);
     bool result = false;
-    const auto status = RmlUiControlValue::Write(owner->GetElementById(element_id), kind, text, number, checked != 0, result);
+    auto* element = owner->GetElementById(element_id);
+    if (kind == ControlValueKind::Text && text && RmlUiControlValue::Read(element).info.kind == kind)
+        state->text_input.CancelFor(element);
+    const auto status = RmlUiControlValue::Write(element, kind, text, number, checked != 0, result);
     accepted = result ? 1 : 0;
     return status;
 }
@@ -737,6 +724,8 @@ Result Runtime::SetAttribute(std::uint64_t context, std::uint64_t document, cons
         state->frame_prepared = false;
         RmlUiTimeScope time_scope(state->elapsed);
         RmlUiRuntimeState::EventScope events(*state, EventOrigin::Programmatic);
+        if (std::strcmp(name, "value") == 0 || std::strcmp(name, "type") == 0 || std::strcmp(name, "maxlength") == 0)
+            state->text_input.CancelFor(element);
         element->SetAttribute(name, Rml::String(value));
         changed = 1;
     }
@@ -868,7 +857,7 @@ Result Runtime::ProcessMouseButton(
         return Result::InvalidArgument;
     if (down != 0)
     {
-        RequireEditableFont(state->context->GetHoverElement());
+        RmlUiControlValue::RequireEditableFont(state->context->GetHoverElement());
         state->context->ProcessMouseButtonDown(button, MapModifiers(modifiers));
     }
     else
@@ -908,7 +897,7 @@ Result Runtime::ProcessKey(
     if (down != 0)
     {
         if (identifier != Rml::Input::KI_TAB)
-            RequireEditableFont(state->context->GetFocusElement());
+            RmlUiControlValue::RequireEditableFont(state->context->GetFocusElement());
         state->context->ProcessKeyDown(identifier, MapModifiers(modifiers));
     }
     else
@@ -928,8 +917,39 @@ Result Runtime::ProcessText(
     RmlUiRuntimeState::EventScope events(*state, EventOrigin::UserInput);
     if (!text)
         return Result::InvalidArgument;
-    RequireEditableFont(state->context->GetFocusElement());
+    RmlUiControlValue::RequireEditableFont(state->context->GetFocusElement());
     state->context->ProcessTextInput(text);
+    return Result::Success;
+}
+
+Result Runtime::ProcessComposition(
+    std::uint64_t context,
+    std::uint64_t operation,
+    std::uint32_t phase,
+    const char* text,
+    std::int32_t selection_start,
+    std::int32_t selection_length
+) {
+    auto* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
+    if (!state)
+        return Result::InvalidHandle;
+    state->frame_prepared = false;
+    RmlUiTimeScope time_scope(state->elapsed);
+    RmlUiRuntimeState::EventScope events(*state, EventOrigin::UserInput, phase != 2);
+    return state->text_input.Process(operation, phase, text, selection_start, selection_length);
+}
+
+Result Runtime::SynchronizeComposition(
+    std::uint64_t context,
+    std::uint64_t operation
+) {
+    auto* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
+    if (!state)
+        return Result::InvalidHandle;
+    state->frame_prepared = false;
+    RmlUiTimeScope time_scope(state->elapsed);
+    RmlUiRuntimeState::EventScope events(*state, EventOrigin::UserInput, true);
+    state->text_input.Synchronize(operation);
     return Result::Success;
 }
 

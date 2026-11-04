@@ -8,9 +8,31 @@
 #include <charconv>
 #include <cmath>
 #include <cstring>
+#include <stdexcept>
 
 namespace Inno::UI::RmlUiAdapter
 {
+void RmlUiControlValue::RequireEditableFont(Rml::Element* element)
+{
+    while (element)
+    {
+        bool editable = dynamic_cast<Rml::ElementFormControlTextArea*>(element) != nullptr;
+        if (dynamic_cast<Rml::ElementFormControlInput*>(element))
+        {
+            const auto type = element->GetAttribute<Rml::String>("type", "text");
+            editable = type == "text" || type == "password";
+        }
+        if (editable)
+        {
+            if (element->GetFontFaceHandle() == 0)
+                throw std::runtime_error("The RmlUi text control '" + element->GetId() +
+                    "' has no resolved font face. Register its declared font and refresh layout before editing.");
+            return;
+        }
+        element = element->GetParentNode();
+    }
+}
+
 RmlUiControlValue RmlUiControlValue::Read(Rml::Element* element)
 {
     RmlUiControlValue value;

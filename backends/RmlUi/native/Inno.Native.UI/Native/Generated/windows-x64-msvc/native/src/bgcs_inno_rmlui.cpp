@@ -698,6 +698,22 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
 }
 
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessComposition_a1095c8d8cfe8c96(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, uint32_t arg2, const int8_t * arg3, int32_t arg4, int32_t arg5, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->ProcessComposition(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1), static_cast<unsigned int>(arg2), reinterpret_cast<char const *>(arg3), static_cast<int>(arg4), static_cast<int>(arg5)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
 BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_ProcessKey_2b03c3d21e2a2573(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, int32_t arg1, uint8_t arg2, int32_t arg3, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
 {
     if (bgcs_error != nullptr) *bgcs_error = nullptr;
@@ -985,6 +1001,22 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     {
         auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
         *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->ShowDocument(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_SynchronizeComposition_16343b53f1fc3293(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->SynchronizeComposition(static_cast<unsigned long long>(arg0), static_cast<unsigned long long>(arg1)));
         return 0;
     }
     catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }

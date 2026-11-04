@@ -14,6 +14,8 @@ RmlUi 字体引擎是进程级资源，内部 `RmlUiProcessHost` 显式管理引
 
 ## 调用顺序与资源增量
 
+`ProcessComposition` 仅接收操作编号、阶段、UTF-8 文本和 Unicode scalar 选区；`SynchronizeComposition` 对齐输入 route 的当前操作，零表示退休已有预编辑。具体文本借用、原选区及临时文本由 context 内的 `RmlUiTextInputHandler` 拥有，公开 facade 不返回第三方控件或文本指针。适配器只为仍有待同步操作的 context 发起额外同步；空闲帧不新增逐帧 native call。调用所需的 BGCS module lease 保持不变，不通过直接符号调用绕过它。
+
 1. 在 UI 进程宿主线程创建 Runtime，再创建 Context。所有后续调用由该线程串行协调；`Create` 检查宿主线程，不代表每个后续函数都会再次阻止错误线程访问。
 2. 注册所需字体和命名纹理，加载并显示文档。Context/document ID 仅属于本 Runtime；它们不是跨 reload 的对象身份。
 3. 输入传给当前 Context，调用 `Update`，再调用 `Render` 取得本帧计数。`Render` 收集数据，不直接执行 GPU 绘制。
@@ -506,3 +508,13 @@ internal static unsafe class NativeEventReader
 | `public int Inno.Native.UI.UiNativeContext.RawApi.RegisterImage(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, sbyte* source, ulong image, int width, int height, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)` | 在指定 context 注册逻辑图片来源及布局尺寸；返回桥接状态，并通过独立 out 参数返回领域结果与错误对象。 |
 | `public int Inno.Native.UI.UiNativeContext.RawApi.UnregisterImage(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, sbyte* source, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)` | 使当前 context 的来源失效并退休相关纹理引用；失败保持可诊断的原生状态。 |
 | `public ulong Inno.Native.UI.InnoUIRmlUiAdapterTextureInfo.ImageId` | 导入图片的不透明资源身份；零表示后端像素纹理。此值不是 GPU handle。 |
+
+## 文本组合 ABI
+
+以下入口只属于后端原生桥，不导出为游戏脚本 API。操作身份来自已有输入快照，Context 和文本借用不得越过调用作用域。
+
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.ProcessComposition(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,System.UInt32,System.SByte*,System.Int32,System.Int32,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 7362b81395ff001e1bb7c20e160aa648ced536f830da549c886fc32040076bb7 -->
+- [`public int Inno.Native.UI.UiNativeContext.RawApi.ProcessComposition(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong operation, uint phase, sbyte* text, int selection_start, int selection_length, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L599)：按操作身份处理开始、更新、提交或取消；过期操作不覆盖当前控件。
+
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.SynchronizeComposition(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) a34937b20faa9b74c17db821632aca4419ee3852cb85a9792ad323334f3dac18 -->
+- [`public int Inno.Native.UI.UiNativeContext.RawApi.SynchronizeComposition(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong operation, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L751)：使仍待退休的组合与当前输入 owner 同步，路由丢失时恢复原选择内容。

@@ -64,6 +64,7 @@ add_library(inno-ui ${INNO_LIBRARY_KIND}
     src/RmlUiProcessHost.cpp
     src/RmlUiRenderInterface.cpp
     src/RmlUiRuntime.cpp
+    src/RmlUiTextInputHandler.cpp
     ${RMLUI_HARFBUZZ_SOURCES})
 target_compile_features(inno-ui PRIVATE cxx_std_20)
 target_include_directories(inno-ui PRIVATE

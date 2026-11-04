@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 using Inno.Core.Input;
 using Inno.UI;
@@ -15,14 +14,14 @@ public sealed unsafe partial class RmlUiBackend
     private const double C_NAVIGATION_INTERVAL = 0.08;
     private const float C_STICK_ACTIVATION = 0.55f;
     private const float C_STICK_RELEASE = 0.35f;
-    private readonly Dictionary<UiContextHandle, GamepadNavigation> m_gamepadNavigation = [];
 
     private void ProcessGamepad(
         UiContextHandle context,
         GamepadInputChange change
     ) {
-        if (!m_gamepadNavigation.TryGetValue(context, out GamepadNavigation? navigation))
+        if (!m_inputContexts.TryGetValue(context, out ContextInputState? input))
             throw new InvalidOperationException("The UI context is not owned by this active backend.");
+        GamepadNavigation navigation = input.navigation;
         if (change is GamepadConnectionChange connection)
         {
             if (!connection.connected && navigation.deviceId == connection.deviceId)
@@ -85,7 +84,7 @@ public sealed unsafe partial class RmlUiBackend
         UiContextHandle context,
         UiInputSnapshot input
     ) {
-        GamepadNavigation navigation = m_gamepadNavigation[context];
+        GamepadNavigation navigation = m_inputContexts[context].navigation;
         if (navigation.deviceId == 0)
             return;
         if (!input.gamepads.TryGetValue(navigation.deviceId, out GamepadState? state)
@@ -103,7 +102,7 @@ public sealed unsafe partial class RmlUiBackend
     }
 
     private void ResetGamepadNavigation(UiContextHandle context)
-        => m_gamepadNavigation[context].Reset();
+        => m_inputContexts[context].navigation.Reset();
 
     private void SendNavigation(
         UiContextHandle context,
