@@ -155,6 +155,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
 
     private bool TryDequeuePendingEvent(out Event? evnt)
     {
+        while (m_pendingEventReadIndex < m_pendingEvents.Count
+            && m_retiredTextEvents.Remove(m_pendingEvents[m_pendingEventReadIndex]))
+            m_pendingEventReadIndex++;
         if (m_pendingEventReadIndex >= m_pendingEvents.Count)
         {
             evnt = null;
@@ -174,6 +177,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
     private void PollAndCoalescePendingEvents()
     {
         m_pendingEvents.Clear();
+        m_retiredTextEvents.Clear();
         m_pendingEventReadIndex = 0;
 
         Dictionary<PendingEventCoalesceKey, int> latestEventIndicesByKey = new();
@@ -202,6 +206,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
                 latestEventIndicesByKey[key] = nextIndex;
             }
         }
+        FinishCompositionBatch();
     }
 
     /// <summary>
@@ -242,6 +247,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
         }
 
         m_windows.Clear();
+        m_retiredTextEvents.Clear();
         ReleaseGamepads();
         SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events | SDLInitFlags.Gamepad);
         m_disposed = true;
@@ -384,10 +390,18 @@ public sealed unsafe partial class Sdl3PlatformApplication
                 return true;
 
             case SDLEventType.WillEnterBackground:
+                m_textInputSuspended = true;
+                foreach (Sdl3PlatformWindow window in m_windows.Values)
+                    window.SuspendTextInput(true);
+                m_compositions.Clear();
+                m_pendingCompositionEnds.Clear();
                 evnt = new ApplicationSuspensionChangedEvent(isSuspended: true);
                 return true;
 
             case SDLEventType.DidEnterForeground:
+                m_textInputSuspended = false;
+                foreach (Sdl3PlatformWindow window in m_windows.Values)
+                    window.SuspendTextInput(false);
                 evnt = new ApplicationSuspensionChangedEvent(isSuspended: false);
                 return true;
 
@@ -398,6 +412,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
                 if (m_windows.TryGetValue(sdlEvent.Window.WindowID, out Sdl3PlatformWindow? visibleWindow))
                 {
                     visibleWindow.UpdateVisibility(eventType);
+                    if (!visibleWindow.isVisible)
+                        RetireComposition(visibleWindow.windowId);
                     evnt = new WindowVisibilityChangedEvent(visibleWindow.windowId, visibleWindow.isVisible);
                     return true;
                 }
@@ -428,6 +444,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
                 return false;
 
             case SDLEventType.WindowCloseRequested:
+                RetireComposition(sdlEvent.Window.WindowID);
                 if (m_windows.TryGetValue(sdlEvent.Window.WindowID, out var closingWindow))
                 {
                     closingWindow.MarkClosed();
@@ -440,6 +457,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
             case SDLEventType.WindowFocusLost:
             {
                 bool isFocused = eventType == SDLEventType.WindowFocusGained;
+                if (!isFocused)
+                    RetireComposition(sdlEvent.Window.WindowID);
                 if (m_windows.TryGetValue(sdlEvent.Window.WindowID, out Sdl3PlatformWindow? focusedWindow))
                     focusedWindow.UpdateFocus(isFocused);
                 evnt = new WindowFocusChangedEvent(sdlEvent.Window.WindowID, isFocused);
@@ -462,18 +481,10 @@ public sealed unsafe partial class Sdl3PlatformApplication
                 return true;
             }
 
+            case SDLEventType.TextEditing:
+                return TryTranslateComposition(ref sdlEvent.Edit, out evnt);
             case SDLEventType.TextInput:
-            {
-                string? text = sdlEvent.Text.Text == null
-                    ? null
-                    : Marshal.PtrToStringUTF8((IntPtr)sdlEvent.Text.Text);
-                if (!string.IsNullOrEmpty(text))
-                {
-                    evnt = new TextInputEvent(sdlEvent.Text.WindowID, text);
-                    return true;
-                }
-                break;
-            }
+                return TryTranslateText(ref sdlEvent.Text, out evnt);
 
             case SDLEventType.MouseMotion:
                 evnt = new MouseMovedEvent(sdlEvent.Motion.WindowID, sdlEvent.Motion.X, sdlEvent.Motion.Y);

@@ -11,6 +11,34 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed class EditorGameInputCaptureTests
 {
+    [Theory]
+    [InlineData(TextCompositionPhase.Committed)]
+    [InlineData(TextCompositionPhase.Cancelled)]
+    public void ConsumedCompositionTerminalCancelsOnlyTheCapturedWindow(TextCompositionPhase phase)
+    {
+        var capture = new EditorGameInputCapture(_ => 42u);
+        using var backend = new EventInputBackend(0);
+        capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: false);
+        capture.CompleteFrame(out uint gained);
+        backend.ProcessEvent(new WindowFocusChangedEvent(gained, true));
+        var start = new TextCompositionEvent(42, new(TextCompositionPhase.Started, new(1, "组合")));
+        backend.ProcessEvent(Assert.IsType<TextCompositionEvent>(capture.Route(start)));
+        Assert.NotNull(backend.Capture(1).textComposition);
+        var foreign = new TextCompositionEvent(43, new(phase, new(1, "other")));
+        foreign.HandleInGlobal();
+        Assert.Null(capture.Route(foreign));
+        Assert.NotNull(backend.Capture(2).textComposition);
+        var terminal = new TextCompositionEvent(42, new(phase, new(1, "组合")));
+        terminal.HandleInGlobal();
+        backend.ProcessEvent(Assert.IsType<WindowFocusChangedEvent>(capture.Route(terminal)));
+        InputSnapshot released = backend.Capture(3);
+        Assert.Null(released.textComposition);
+        Assert.Empty(released.textInput);
+        Assert.Equal(TextCompositionPhase.Cancelled,
+            Assert.IsType<TextCompositionChange>(Assert.Single(released.sequence.changes)).phase);
+        Assert.Null(capture.Route(start));
+    }
+
     [Fact]
     public void SuspensionReachesGameInputWithoutReplayingControlsBeforeFocusRecovery()
     {

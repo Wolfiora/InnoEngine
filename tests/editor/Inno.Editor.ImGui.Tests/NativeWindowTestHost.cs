@@ -8,6 +8,7 @@ internal static class NativeWindowTestHost
 {
     private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
     {
+        ["TextInputOwnershipTests.PublicImeCallbackSharesTheWindowLeaseAndUsesMeasuredPlacement"] = () => new TextInputOwnershipTests().PublicImeCallbackSharesTheWindowLeaseAndUsesMeasuredPlacement(),
         ["ViewportMetricsTests.FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations"] = () => new ViewportMetricsTests().FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations(),
         ["ViewportMetricsTests.FailedPreparationDoesNotBeginOrPublishANativeFrame"] = () => new ViewportMetricsTests().FailedPreparationDoesNotBeginOrPublishANativeFrame(),
         ["ViewportMetricsTests.AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest"] = () => new ViewportMetricsTests().AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest(),

@@ -54,6 +54,11 @@ public sealed class InputSequence
                 case TextInputChange commit:
                     (text ??= []).Add(commit.text);
                     break;
+                case TextCompositionChange composition:
+                    hasTextCompositionActivity = true;
+                    if (composition.phase == TextCompositionPhase.Committed && composition.state.text.Length != 0)
+                        (text ??= []).Add(composition.state.text);
+                    break;
                 case PointerMoveInputChange move:
                     movement += move.position - move.previousPosition;
                     break;
@@ -100,6 +105,13 @@ public sealed class InputSequence
     /// Gets committed text in acquisition order.
     /// </summary>
     public IReadOnlyList<string> textInput { get; }
+    /// <summary>
+    /// Gets whether this sample contains composition activity, including a final commit or cancellation.
+    /// </summary>
+    /// <remarks>
+    /// Gameplay activation must not reuse candidate-confirmation input merely because composition ended in this sample.
+    /// </remarks>
+    public bool hasTextCompositionActivity { get; }
     /// <summary>
     /// Gets the sum of pointer movements in the sequence's coordinate space.
     /// </summary>

@@ -69,7 +69,7 @@ sealed partial class RenderRuntime
             pointer, pointer.x >= 0f && pointer.y >= 0f && pointer.x < viewport.width && pointer.y < viewport.height,
             input.modifiers, input.sequence.MapPointer(position => new Vector2(
                 position.x * coordinateScale.x - viewport.x, position.y * coordinateScale.y - viewport.y)),
-            gamepads: input.gamepads);
+            gamepads: input.gamepads, textComposition: input.textComposition);
     }
 
     private void AddPrimaryPresentationBackground(RenderGraphBuilder graph)

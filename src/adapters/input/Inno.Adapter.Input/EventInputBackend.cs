@@ -18,6 +18,7 @@ public sealed class EventInputBackend : IInputBackend
     private readonly HashSet<MouseButton> m_mouseButtonsDown = [];
     private readonly List<InputChange> m_changes = [];
     private readonly GamepadInputState m_gamepads = new();
+    private readonly WindowInputOwnership m_ownership = new();
     private readonly Lock m_sync = new();
     private readonly uint m_windowId;
     private Action<EventInputBackend>? m_disposeCallback;
@@ -25,7 +26,8 @@ public sealed class EventInputBackend : IInputBackend
     private Vector2 m_mousePosition;
     private KeyModifier m_modifiers;
     private bool m_disposed;
-    private bool m_suspended;
+    private TextCompositionState? m_textComposition;
+    private ulong m_lastCompositionId;
 
     /// <summary>
     /// Creates an event-backed input adapter for one platform window.
@@ -67,9 +69,8 @@ public sealed class EventInputBackend : IInputBackend
         lock (m_sync)
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
-            if (evnt is ApplicationSuspensionChangedEvent suspension)
-                m_suspended = suspension.isSuspended;
-            if (m_suspended && evnt is KeyEvent or MouseEvent or TextInputEvent)
+            m_ownership.Process(evnt, m_windowId);
+            if (!m_ownership.acceptsInput && evnt is KeyEvent or MouseEvent or TextInputEvent or TextCompositionEvent)
                 return;
             switch (evnt)
             {
@@ -86,6 +87,9 @@ public sealed class EventInputBackend : IInputBackend
                     break;
                 case TextInputEvent text:
                     m_changes.Add(new TextInputChange(text.text, m_modifiers));
+                    break;
+                case TextCompositionEvent composition:
+                    ProcessComposition(composition.change);
                     break;
                 case MouseButtonPressedEvent button:
                     m_mousePosition = new Vector2(button.x, button.y);
@@ -111,6 +115,7 @@ public sealed class EventInputBackend : IInputBackend
                 case WindowVisibilityChangedEvent { isVisible: false }:
                 case ApplicationSuspensionChangedEvent { isSuspended: true }:
                     m_changes.RemoveAll(static change => change is not GamepadConnectionChange);
+                    CancelComposition();
                     foreach (KeyCode key in m_keysDown)
                         m_changes.Add(new KeyInputChange(key, false, false, KeyModifier.None));
                     foreach (MouseButton button in m_mouseButtonsDown)
@@ -120,7 +125,7 @@ public sealed class EventInputBackend : IInputBackend
                     m_modifiers = KeyModifier.None;
                     break;
             }
-            m_gamepads.Process(evnt, m_windowId, m_changes);
+            m_gamepads.Process(evnt, m_windowId, m_changes, m_ownership.acceptsInput);
         }
     }
 
@@ -145,7 +150,8 @@ public sealed class EventInputBackend : IInputBackend
                 m_mouseButtonsDown,
                 m_mousePosition,
                 m_modifiers,
-                m_gamepads.Capture());
+                m_gamepads.Capture(),
+                m_textComposition);
             m_changes.Clear();
             return snapshot;
         }
@@ -170,15 +176,23 @@ public sealed class EventInputBackend : IInputBackend
             m_mouseButtonsDown.Clear();
             m_changes.Clear();
             m_gamepads.Clear();
+            m_textComposition = null;
         }
     }
 
-    internal void InitializeGamepads(GamepadInputState source) => m_gamepads.Initialize(source);
+    internal void InitializeInput(
+        WindowInputOwnership ownership,
+        GamepadInputState gamepads
+    ) {
+        m_ownership.Initialize(ownership);
+        m_gamepads.Initialize(gamepads);
+    }
 
     internal void ConnectSource(IDisposable subscription) => m_subscription = subscription;
 
     internal void DisconnectSource()
     {
+        ProcessEvent(new WindowCloseEvent(m_windowId));
         m_subscription?.Dispose();
         m_subscription = null;
         m_disposeCallback = null;
@@ -190,9 +204,35 @@ public sealed class EventInputBackend : IInputBackend
             GamepadEvent gamepad => gamepad.windowId == 0 || gamepad.windowId == m_windowId,
             KeyEvent key => key.windowId == m_windowId,
             TextInputEvent text => text.windowId == m_windowId,
+            TextCompositionEvent composition => composition.windowId == m_windowId,
             MouseEvent mouse => mouse.windowId == m_windowId,
             WindowEvent window => window.windowId == m_windowId,
             ApplicationSuspensionChangedEvent => true,
             _ => false
         };
+
+    private void ProcessComposition(TextCompositionChange change)
+    {
+        if (change.phase == TextCompositionPhase.Started)
+        {
+            if (change.state.compositionId <= m_lastCompositionId)
+                return;
+            CancelComposition();
+            m_lastCompositionId = change.state.compositionId;
+        }
+        else if (m_textComposition?.compositionId != change.state.compositionId)
+            return;
+        m_changes.Add(change);
+        m_textComposition = change.phase is TextCompositionPhase.Started or TextCompositionPhase.Updated
+            ? change.state
+            : null;
+    }
+
+    private void CancelComposition()
+    {
+        if (m_textComposition is null)
+            return;
+        m_changes.Add(new TextCompositionChange(TextCompositionPhase.Cancelled, m_textComposition, m_modifiers));
+        m_textComposition = null;
+    }
 }

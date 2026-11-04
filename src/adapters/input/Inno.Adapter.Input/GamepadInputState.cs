@@ -10,20 +10,12 @@ internal sealed class GamepadInputState
 {
     private readonly Dictionary<ulong, Controls> m_devices = [];
     private FrozenDictionary<ulong, GamepadState>? m_snapshot;
-    private bool m_focused = true;
-    private bool m_visible = true;
-    private bool m_suspended;
-    private bool m_closed;
 
     internal IReadOnlyDictionary<ulong, GamepadState> Capture()
         => m_snapshot ??= m_devices.ToFrozenDictionary(pair => pair.Key, pair => pair.Value.Capture(pair.Key));
 
     internal void Initialize(GamepadInputState source)
     {
-        m_focused = source.m_focused;
-        m_visible = source.m_visible;
-        m_suspended = source.m_suspended;
-        m_closed = source.m_closed;
         foreach ((ulong id, GamepadState state) in source.Capture())
             m_devices.Add(id, new Controls(state));
         m_snapshot = null;
@@ -32,7 +24,8 @@ internal sealed class GamepadInputState
     internal void Process(
         Event evnt,
         uint windowId,
-        List<InputChange>? changes
+        List<InputChange>? changes,
+        bool acceptsInput
     ) {
         if (evnt is GamepadEvent { change: GamepadConnectionChange connection })
         {
@@ -50,23 +43,7 @@ internal sealed class GamepadInputState
         }
         if (evnt is WindowEvent window && windowId != 0 && window.windowId != windowId)
             return;
-        switch (evnt)
-        {
-            case WindowFocusChangedEvent focus:
-                m_focused = focus.isFocused;
-                if (windowId == 0 && focus.isFocused)
-                    m_visible = true;
-                break;
-            case WindowVisibilityChangedEvent visibility: m_visible = visibility.isVisible; break;
-            case ApplicationSuspensionChangedEvent suspension: m_suspended = suspension.isSuspended; break;
-            case WindowCloseEvent:
-                if (windowId == 0)
-                    m_focused = false;
-                else
-                    m_closed = true;
-                break;
-        }
-        if (!m_focused || !m_visible || m_suspended || m_closed)
+        if (!acceptsInput)
         {
             foreach ((ulong id, Controls controls) in m_devices)
             {

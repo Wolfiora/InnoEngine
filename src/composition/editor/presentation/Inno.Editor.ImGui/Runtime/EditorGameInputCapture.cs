@@ -125,7 +125,7 @@ public sealed class EditorGameInputCapture
     /// A routed event or a synthetic focus reset, or null when the Game View must not receive input.
     /// </returns>
     /// <remarks>
-    /// A globally consumed key, button, focus or close release is not replayed to the game.
+    /// A globally consumed key, button, composition terminal, focus or close release is not replayed to the game.
     /// It returns a new focus-reset event so previously held input is released before simulation.
     /// Consumed pointer movement still updates hit-test bounds without reaching the game backend.
     /// </remarks>
@@ -178,6 +178,7 @@ public sealed class EditorGameInputCapture
             GamepadEvent gamepad when gamepad.windowId == m_targetWindowId => gamepad,
             KeyEvent key when key.windowId == m_targetWindowId => key,
             TextInputEvent text when text.windowId == m_targetWindowId => text,
+            TextCompositionEvent composition when composition.windowId == m_targetWindowId => composition,
             MouseMovedEvent moved when moved.windowId == m_targetWindowId => RouteMove(moved),
             MouseButtonPressedEvent pressed when pressed.windowId == m_targetWindowId => RoutePress(pressed),
             MouseButtonReleasedEvent released when released.windowId == m_targetWindowId => RouteRelease(released),
@@ -208,6 +209,8 @@ public sealed class EditorGameInputCapture
         GamepadEvent { change: GamepadButtonChange { pressed: false } } gamepad => gamepad.windowId == windowId,
         GamepadEvent { change: GamepadAxisChange { value: 0f } } axis => axis.windowId == windowId,
         KeyReleasedEvent key => key.windowId == windowId,
+        TextCompositionEvent { change.phase: TextCompositionPhase.Cancelled or TextCompositionPhase.Committed } composition
+            => composition.windowId == windowId,
         MouseButtonReleasedEvent button => button.windowId == windowId,
         _ => IsWindowExit(evnt, windowId)
     };

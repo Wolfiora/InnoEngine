@@ -495,7 +495,7 @@ public abstract class Shell : IDisposable
             if (evnt is null)
                 continue;
             ApplySuspension(evnt);
-            if (state == ShellState.Suspended && evnt is KeyEvent or MouseEvent or TextInputEvent
+            if (state == ShellState.Suspended && evnt is KeyEvent or MouseEvent or TextInputEvent or TextCompositionEvent
                 or GamepadEvent { change: not GamepadConnectionChange })
                 continue;
             if (evnt is not ApplicationSuspensionChangedEvent)

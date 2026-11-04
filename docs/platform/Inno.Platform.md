@@ -4,7 +4,7 @@
 
 ## 职责与依赖
 
-定义应用、窗口和帧呈现策略。只依赖 `Inno.Core.Events`；不包含 SDL3、原生指针、图形后端或 Editor 类型。平台实现属于 Adapter，产品生命周期由 Shell 组合。
+定义应用、窗口、文本输入所有权和帧呈现策略。依赖 Foundation 的事件、数学和 catalog 契约；不包含 SDL3、原生指针、图形后端或 Editor 类型。平台实现属于 Adapter，产品生命周期由 Shell 组合。
 
 ## 全部公开 API
 
@@ -22,7 +22,15 @@
 | `FramePacingOptions.verticalSync` | 在完整帧的安全点应用显示同步策略。 |
 | `FramePacingOptions.maximumFrameRate` | 非负帧率上限；0 无软件限速，负值抛出 `ArgumentOutOfRangeException`。 |
 
-这两个接口通过实现提供扩展点，没有 protected 成员。原生事件扩展通过具体 Adapter 的 SPI 注册，不属于本项目。
+这些接口通过实现提供扩展点，没有 protected 成员。原生事件扩展通过具体 Adapter 的 SPI 注册，不属于本项目。
+
+## 系统文本输入所有权
+
+支持系统输入法的窗口实现可选 `IPlatformTextInputWindow`。`TryBeginTextInput()` 返回调用方拥有的 `IPlatformTextInputSession`；窗口不可输入或已有其他 owner 时返回 null，不抢占当前 owner。所有操作在窗口 owner thread 执行。
+
+`SetArea(Rect, float)` 使用窗口客户区逻辑坐标，第二个参数是从区域左侧开始的横向光标偏移。调用方提供实际测量结果；平台只做系统坐标转换。区域必须有限且宽高为正，偏移在区域宽度内。放置失败明确抛出异常，不使用假定的默认矩形。
+
+失焦、隐藏、应用挂起或窗口关闭使会话失效。旧会话的 `Dispose()` 不会停止之后取得的新会话；需要输入时由新的 owner 重新获取。后台迟到的文本和旧会话已排队的文本不得写入新会话。这个接口仅协调系统输入，不拥有控件文本、选择范围、History 或文档。
 
 ## 创建与退出
 
@@ -63,6 +71,28 @@ static void PumpOnce(IPlatformApplication application)
 ## 当前源码公开 API 清单
 
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。
+
+### `Inno.Platform.IPlatformTextInputSession`
+
+<!-- api: T:Inno.Platform.IPlatformTextInputSession a33a64dad8b8d499f09b453f7bcf25f3ae8f0a8830d2993657258f630c260ea0 -->
+<!-- api: P:Inno.Platform.IPlatformTextInputSession.isActive bcf6cba370d6d7359eb31856738615d0199dcffb9ffc952a01a5c79681668625 -->
+<!-- api: M:Inno.Platform.IPlatformTextInputSession.SetArea(Inno.Core.Mathematics.Rect,System.Single) 620fa4252c28bce563b05ea8eef2af8a96b198c22957338d66e1f039ae7a415e -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-0ea362a7e62659de"></a>[`public interface Inno.Platform.IPlatformTextInputSession : System.IDisposable`](../../src/services/platform/Inno.Platform/IPlatformTextInputSession.cs#L14) | Exclusively owns system text input for one focused platform window. | — |
+| <a id="api-c438f5e06fa07329"></a>[`bool Inno.Platform.IPlatformTextInputSession.isActive { get; }`](../../src/services/platform/Inno.Platform/IPlatformTextInputSession.cs#L19) | Gets whether this session still owns system text input. | — |
+| <a id="api-6c4a6505d1496890"></a>[`void Inno.Platform.IPlatformTextInputSession.SetArea(Inno.Core.Mathematics.Rect area, float cursorOffset)`](../../src/services/platform/Inno.Platform/IPlatformTextInputSession.cs#L36) | Updates input-method placement without restarting the composition.<br>`area`：Finite positive editable bounds in window client logical coordinates.<br>`cursorOffset`：Horizontal caret offset from the area's left edge, in the same coordinate units. | `System.ArgumentOutOfRangeException`：The area or cursor offset is invalid.<br>`System.InvalidOperationException`：The session is inactive, the thread is wrong or the platform rejects the placement. |
+
+### `Inno.Platform.IPlatformTextInputWindow`
+
+<!-- api: T:Inno.Platform.IPlatformTextInputWindow 8e877a410ebac97c02c95266f30174ca380c47ce26a86ef468739caa7ed35568 -->
+<!-- api: M:Inno.Platform.IPlatformTextInputWindow.TryBeginTextInput 20ad1c03bf594247166373ce65306fc7e2c87565e84227c7a34cfbdaa752fbd0 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-333c264e44c5f583"></a>[`public interface Inno.Platform.IPlatformTextInputWindow : Inno.Platform.IPlatformWindow`](../../src/services/platform/Inno.Platform/IPlatformTextInputWindow.cs#L8) | Describes an optional window capability for exclusive input-method and virtual-keyboard ownership. | — |
+| <a id="api-2e0bcdb8a53c215f"></a>[`Inno.Platform.IPlatformTextInputSession? Inno.Platform.IPlatformTextInputWindow.TryBeginTextInput()`](../../src/services/platform/Inno.Platform/IPlatformTextInputWindow.cs#L22) | Attempts to acquire system text input without replacing another live owner.<br>返回：A caller-owned session, or null when the window is unavailable for input or another session already owns text input. | `System.ObjectDisposedException`：The window has been disposed.<br>`System.InvalidOperationException`：The request runs outside the window thread or system text input cannot be started. |
 
 ### `Inno.Platform.FramePacingOptions`
 

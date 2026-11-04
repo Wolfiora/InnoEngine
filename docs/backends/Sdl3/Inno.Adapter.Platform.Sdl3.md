@@ -15,12 +15,20 @@ SDL 的进入后台/恢复前台通知转换为 Core Events 的 `ApplicationSusp
 ## 公开 API
 
 - `Sdl3PlatformApplication : IPlatformApplication`：SDL init、event pump、window ownership 和 extension composition。
-- `Sdl3PlatformWindow : IPlatformWindow`：中立 window contract 的 SDL 实现。
+- `Sdl3PlatformWindow : IPlatformTextInputWindow`：中立 window 和可选系统文本输入契约的 SDL 实现。
 - `ISdl3ApplicationExtension`：只供真实 SDL adapter extension 使用的生命周期接口。
 
 Application/Window 的 SDL handle、event union 和 pointer 都停留在本程序集。`Sdl3PlatformWindow` 实现 Adapter SPI `INativeWindowSurface`，具体图形 Adapter 通过 `PlatformNativeHandles` 的开放 ABI ID 和借用句柄进行 surface interop；公共平台服务与产品宿主不依赖这些值或 SDL enum。
 
 在浏览器宿主中，SDL 窗口标记为 `BrowserCanvas`，不尝试读取 Win32/Cocoa 指针。`windowHandle` 指向 SDL 窗口属性持有的 UTF-8 Canvas 选择器，图形后端只在窗口存活期间使用它。
+
+## 系统文本输入
+
+窗口统一拥有 SDL 文本输入会话，Editor 与其他 UI 请求同一独占 lease，不分别调用 SDL 启停。输入法区域从实际测量的客户区逻辑坐标向外像素对齐；不维护第二份控件文本或文档模型。
+
+`SDL_TEXTEDITING` 转换为中立组合开始／更新；`SDL_TEXTINPUT` 结束当前组合或产生普通提交文本。SDL 同一事件泵中先清空组合、随后提交的顺序保留；空组合未伴随提交时在本次批次结束发布取消。输入缓冲只在原生事件有效期内复制一次，公共选区使用 Unicode scalar 索引。
+
+会话获取时固定原生时间边界，拒绝之前排队的文本；释放时退休尚未派发的文本。失焦、隐藏、挂起和窗口关闭使 lease 失效，旧 lease 释放不会停止新 owner。自动测试使用隐藏原生窗口与公开 SDL 事件，不等同于物理输入法或移动端键盘验收。
 
 ## Composition provider
 
@@ -144,7 +152,7 @@ Sdl3WindowOperations.CreateWindow 使用统一 SDL properties 并总是释放临
 
 ### `Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow`
 
-<!-- api: T:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow 6417c146af3a4b704d077eeb56185a487c4bd85480abfb2318c66ec57d263f29 -->
+<!-- api: T:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow e7f8c059205d41f95e14dd22d4a53cdaba5af861725dfa30597f575a21af55cd -->
 <!-- api: P:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.windowId 2ec598c5b09b4d540725c61f4a96f2ceda6c8039531fa197b9c3fc2b31a1ab3d -->
 <!-- api: P:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.title 30df8e230485d985db885063ddc68bcd415e8a361878230ee5b5339d8b4be21b -->
 <!-- api: P:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.width 8d4045a0d7b36a4d42af48c218ed15f13853ccb59378335cad97c72673cdb559 -->
@@ -157,22 +165,24 @@ Sdl3WindowOperations.CreateWindow 使用统一 SDL properties 并总是释放临
 <!-- api: P:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.sdlWindowHandle 578136b9f39d4252bf340f74ebb6115a6464a1c25ba8787666aad0b51e37efba -->
 <!-- api: M:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.RequestClose 2f28c5652f533d4cf9f2e0d0d2f51ae6e7dbd594eb133813dfd35ddad47bf539 -->
 <!-- api: M:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.Dispose ce218c69025a4deeed2e04d6acc2d4c0aa4a5d7e39f9f29cef700d8da21b93f1 -->
+<!-- api: M:Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.TryBeginTextInput 2c5bf180b76bd53b6694b99401649214ca2839194fb39f59d9622a638db51f7c -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-3f4ca3f6a4c240a1"></a>[`public void Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.Dispose()`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L83) | Releases the resources owned by this instance. | — | — |
-| <a id="api-b5762052a71294fb"></a>[`public void Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.RequestClose()`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L78) | Queues a close request for processing at the next platform safety point. | — | — |
-| <a id="api-f8027526ef46fdca"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.height { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L30) | Gets the current window height in platform-independent logical units. | — | — |
-| <a id="api-a29cf215d555242c"></a>[`public bool Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.isClosed { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L45) | Gets whether this window has been marked as closed. | — | — |
-| <a id="api-529601dbf11fe502"></a>[`public bool Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.isFocused { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L50) | Gets whether this window currently owns platform input focus. | — | — |
-| <a id="api-7cdaccd3c7fdcc64"></a>[`public Inno.Adapter.Platform.PlatformNativeHandles Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.nativeHandles { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L58) | Gets native window handles for graphics backends and platform integration. | — | `System.ObjectDisposedException`：The window owner has released its native surface. |
-| <a id="api-567bc0b8b7335fdb"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.pixelHeight { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L40) | Gets the current drawable height in physical pixels. | — | — |
-| <a id="api-fd095466aed82a5c"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.pixelWidth { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L35) | Gets the current drawable width in physical pixels. | — | — |
-| <a id="api-dc86ce109d208bf2"></a>[`public nint Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.sdlWindowHandle { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L73) | Gets the opaque SDL3 window identity used only by cooperating SDL3 adapter assemblies. | Runtime, Editor feature, and rendering contracts must use Inno.Platform.IPlatformWindow instead. | — |
-| <a id="api-f3aac10c2590cfe3"></a>[`public string Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.title { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L20) | Gets the window title. | — | — |
-| <a id="api-a51df2b7531f9a0c"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.width { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L25) | Gets the current window width in platform-independent logical units. | — | — |
-| <a id="api-33549594baecdd42"></a>[`public uint Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.windowId { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L15) | Gets the platform window identifier. | — | — |
-| <a id="api-b8cc87840be7bd8d"></a>[`public sealed class Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow : Inno.Platform.IPlatformWindow, Inno.Adapter.Platform.INativeWindowSurface`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L10) | Represents a native platform window. | — | — |
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-b8cc87840be7bd8d"></a>[`public sealed class Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow : Inno.Platform.IPlatformTextInputWindow, Inno.Adapter.Platform.INativeWindowSurface`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L10) | Represents a native platform window. | — |
+| <a id="api-33549594baecdd42"></a>[`public uint Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.windowId { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L15) | Gets the platform window identifier. | — |
+| <a id="api-f3aac10c2590cfe3"></a>[`public string Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.title { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L20) | Gets the window title. | — |
+| <a id="api-a51df2b7531f9a0c"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.width { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L25) | Gets the current window width in platform-independent logical units. | — |
+| <a id="api-f8027526ef46fdca"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.height { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L30) | Gets the current window height in platform-independent logical units. | — |
+| <a id="api-fd095466aed82a5c"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.pixelWidth { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L35) | Gets the current drawable width in physical pixels. | — |
+| <a id="api-567bc0b8b7335fdb"></a>[`public int Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.pixelHeight { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L40) | Gets the current drawable height in physical pixels. | — |
+| <a id="api-a29cf215d555242c"></a>[`public bool Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.isClosed { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L45) | Gets whether this window has been marked as closed. | — |
+| <a id="api-529601dbf11fe502"></a>[`public bool Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.isFocused { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L50) | Gets whether this window currently owns platform input focus. | — |
+| <a id="api-7cdaccd3c7fdcc64"></a>[`public Inno.Adapter.Platform.PlatformNativeHandles Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.nativeHandles { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L58) | Gets native window handles for graphics backends and platform integration. | `System.ObjectDisposedException`：The window owner has released its native surface. |
+| <a id="api-dc86ce109d208bf2"></a>[`public nint Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.sdlWindowHandle { get; }`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L73) | Gets the opaque SDL3 window identity used only by cooperating SDL3 adapter assemblies. | — |
+| <a id="api-b5762052a71294fb"></a>[`public void Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.RequestClose()`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L81) | Queues a close request for processing at the next platform safety point. | `System.InvalidOperationException`：The request runs outside the owner thread or active system text input cannot be retired. |
+| <a id="api-3f4ca3f6a4c240a1"></a>[`public void Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.Dispose()`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Api/Sdl3PlatformWindow.cs#L86) | Releases the resources owned by this instance. | — |
+| <a id="api-c2e0f3d06b32e2c9"></a>[`public Inno.Platform.IPlatformTextInputSession? Inno.Adapter.Platform.Sdl3.Sdl3PlatformWindow.TryBeginTextInput()`](../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Sdl3PlatformWindow.TextInput.cs#L19) | Attempts to acquire system text input without replacing another live owner.<br>返回：A caller-owned session, or null when the window is unavailable for input or another session already owns text input. | `System.ObjectDisposedException`：The window has been disposed.<br>`System.InvalidOperationException`：The request runs outside the window thread or system text input cannot be started. |
 
 ### `Inno.Adapter.Platform.Sdl3.Sdl3WindowOperations`
 

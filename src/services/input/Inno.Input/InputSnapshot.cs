@@ -39,6 +39,9 @@ public sealed class InputSnapshot
     /// <param name="gamepads">
     /// Connected controllers and their held controls, keyed by connection identity. Null means no devices.
     /// </param>
+    /// <param name="textComposition">
+    /// Active composition after the captured changes, or null after commit, cancellation or ownership loss.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// The sequence is null.
     /// </exception>
@@ -55,7 +58,8 @@ public sealed class InputSnapshot
         IEnumerable<MouseButton>? mouseButtonsDown = null,
         Vector2 mousePosition = default,
         KeyModifier modifiers = KeyModifier.None,
-        IReadOnlyDictionary<ulong, GamepadState>? gamepads = null
+        IReadOnlyDictionary<ulong, GamepadState>? gamepads = null,
+        TextCompositionState? textComposition = null
     ) {
         ArgumentNullException.ThrowIfNull(sequence);
         if (frameIndex < 0)
@@ -66,6 +70,7 @@ public sealed class InputSnapshot
         m_mouseButtonsDown = Copy(mouseButtonsDown);
         this.mousePosition = mousePosition;
         this.modifiers = modifiers;
+        this.textComposition = textComposition;
         var capturedGamepads = gamepads?.ToFrozenDictionary() ?? FrozenDictionary<ulong, GamepadState>.Empty;
         this.gamepads = capturedGamepads;
         foreach ((ulong id, GamepadState state) in capturedGamepads)
@@ -77,6 +82,19 @@ public sealed class InputSnapshot
     /// Gets the immutable input changes in acquisition order.
     /// </summary>
     public InputSequence sequence { get; }
+
+    /// <summary>
+    /// Gets active provisional text, or null when no composition remains active.
+    /// </summary>
+    public TextCompositionState? textComposition { get; }
+
+    /// <summary>
+    /// Gets whether composition owns text interaction in this sample, including its terminal transition.
+    /// </summary>
+    /// <remarks>
+    /// Gameplay shortcuts and activation must not reuse candidate-confirmation input while this is true.
+    /// </remarks>
+    public bool hasTextCompositionInput => textComposition is not null || sequence.hasTextCompositionActivity;
 
     /// <summary>
     /// Gets immutable connected controller states; disconnection removes a device from subsequent snapshots.

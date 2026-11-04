@@ -100,12 +100,18 @@ public sealed unsafe partial class Sdl3PlatformApplication
         uint id = SDL.Raw.GetWindowId(nativeWindow);
         if (id == 0 || m_windows.ContainsKey(id))
             throw new ArgumentException("The SDL window is invalid or already registered.", nameof(nativeWindow));
-        var window = new Sdl3PlatformWindow(nativeWindow, title, ownsNativeWindow, m_hostIntegration, RemoveWindow, m_ownerThreadId);
+        var window = new Sdl3PlatformWindow(nativeWindow, title, ownsNativeWindow, m_hostIntegration,
+            RemoveWindow, StopWindowTextInput, m_ownerThreadId);
+        window.SuspendTextInput(m_textInputSuspended);
         m_windows.Add(id, window);
         return window;
     }
 
-    private void RemoveWindow(Sdl3PlatformWindow window) => m_windows.Remove(window.windowId);
+    private void RemoveWindow(Sdl3PlatformWindow window)
+    {
+        RetireComposition(window.windowId);
+        m_windows.Remove(window.windowId);
+    }
 
     private void ValidateWindowRegistration()
     {

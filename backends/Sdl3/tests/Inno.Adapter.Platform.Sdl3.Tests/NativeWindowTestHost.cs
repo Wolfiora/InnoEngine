@@ -8,6 +8,9 @@ internal static class NativeWindowTestHost
 {
     private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
     {
+        ["TextInputSessionTests.ExclusiveOwnershipRetiresOnFocusVisibilityAndSuspension"] = () => new TextInputSessionTests().ExclusiveOwnershipRetiresOnFocusVisibilityAndSuspension(),
+        ["TextInputSessionTests.ReplacementRejectsPreviouslyQueuedNativeAndTranslatedText"] = () => new TextInputSessionTests().ReplacementRejectsPreviouslyQueuedNativeAndTranslatedText(),
+        ["TextCompositionTests.NativeEditingCommitAndCancellationRemainOrderedAndWindowOwned"] = () => new TextCompositionTests().NativeEditingCommitAndCancellationRemainOrderedAndWindowOwned(),
         ["GamepadTests.VirtualDeviceUsesOwnedNativeConnectionAndFocusedWindowRouting"] = () => new GamepadTests().VirtualDeviceUsesOwnedNativeConnectionAndFocusedWindowRouting(),
         ["HostIntegrationTests.WrappingFailureDestroysOnlyTheNewlyOwnedWindow"] = () => new HostIntegrationTests().WrappingFailureDestroysOnlyTheNewlyOwnedWindow(),
         ["HostIntegrationTests.SingleWindowCapabilityRejectsCreationBeforeCallingHostAgain"] = () => new HostIntegrationTests().SingleWindowCapabilityRejectsCreationBeforeCallingHostAgain(),

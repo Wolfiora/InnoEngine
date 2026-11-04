@@ -30,6 +30,12 @@ context 的路由，Dispose 只注销精确 owner。该 router 保存 Host-owned
 Adapter 同一进程只允许一个活动设备。Editor Application 是唯一图形 composition root；若未来要
 同时运行多个图形 Host，应选择多进程隔离或实现真正支持多 device 的另一个 Rendering backend。
 
+## 系统输入法
+
+原生 `Platform_SetImeDataFn` 的测量区域映射到所属窗口的 `IPlatformTextInputSession`，复用已有平台 callback owner 注册。请求只保存窗口身份及中立矩形，不保存跨帧原生指针。窗口焦点由平台窗口权威提供；没有另一次独立焦点推断。
+
+已有其他文本 owner 时不抢占。焦点或窗口切换释放原 lease，再尝试取得目标窗口；迟到文本按窗口和获取时间拒绝。原生 callback 的异常固定在 managed 帧边界重新报告，不跨 unmanaged 栈抛出，也不静默忽略。
+
 ## 源码归属
 
 当前唯一源码 owner：`backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj`。共同领域与平台产品通过明确契约组合，本项目不提供旧目录兼容入口。

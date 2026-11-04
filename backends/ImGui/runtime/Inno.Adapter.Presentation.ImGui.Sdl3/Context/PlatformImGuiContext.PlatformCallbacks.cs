@@ -9,12 +9,12 @@ using ImGuiNative = Inno.Native.ImGui.ImGui;
 namespace Inno.Adapter.Presentation.ImGui;
 
 /// <summary>
-/// Routes clipboard operations through the SDL owner of this ImGui context.
+/// Owns the native-to-managed platform callback registration for this ImGui context.
 /// </summary>
 public sealed unsafe partial class PlatformImGuiContext
 {
-    private static readonly object S_CLIPBOARD_CONTEXT_SYNC = new();
-    private static readonly Dictionary<nuint, PlatformImGuiContext> S_CLIPBOARD_CONTEXTS = [];
+    private static readonly object S_PLATFORM_CONTEXT_SYNC = new();
+    private static readonly Dictionary<nuint, PlatformImGuiContext> S_PLATFORM_CONTEXTS = [];
 
     private nint m_clipboardText;
 
@@ -23,7 +23,7 @@ public sealed unsafe partial class PlatformImGuiContext
     {
         try
         {
-            PlatformImGuiContext? owner = FindClipboardContext(context);
+            PlatformImGuiContext? owner = FindPlatformContext(context);
             return owner is null ? null : owner.GetClipboardText();
         }
         catch
@@ -39,7 +39,7 @@ public sealed unsafe partial class PlatformImGuiContext
     ) {
         try
         {
-            if (text != null && FindClipboardContext(context) is not null)
+            if (text != null && FindPlatformContext(context) is not null)
                 _ = SDL.Raw.SetClipboardText(text);
         }
         catch
@@ -48,12 +48,12 @@ public sealed unsafe partial class PlatformImGuiContext
         }
     }
 
-    private static PlatformImGuiContext? FindClipboardContext(ImGuiNativeContext* context)
+    private static PlatformImGuiContext? FindPlatformContext(ImGuiNativeContext* context)
     {
         if (context == null)
             return null;
-        lock (S_CLIPBOARD_CONTEXT_SYNC)
-            return S_CLIPBOARD_CONTEXTS.GetValueOrDefault((nuint)context);
+        lock (S_PLATFORM_CONTEXT_SYNC)
+            return S_PLATFORM_CONTEXTS.GetValueOrDefault((nuint)context);
     }
 
     private sbyte* GetClipboardText()
@@ -66,25 +66,27 @@ public sealed unsafe partial class PlatformImGuiContext
         return (sbyte*)m_clipboardText;
     }
 
-    private void RegisterClipboardCallbacks()
+    private void RegisterPlatformCallbacks()
     {
-        lock (S_CLIPBOARD_CONTEXT_SYNC)
-            S_CLIPBOARD_CONTEXTS.Add((nuint)m_context, this);
+        lock (S_PLATFORM_CONTEXT_SYNC)
+            S_PLATFORM_CONTEXTS.Add((nuint)m_context, this);
         ImGuiPlatformIO* platformIo = ImGuiNative.Raw.GetPlatformIO();
         platformIo->PlatformGetClipboardTextFn = &PlatformGetClipboardTextCallback;
         platformIo->PlatformSetClipboardTextFn = &PlatformSetClipboardTextCallback;
+        platformIo->PlatformSetImeDataFn = &PlatformSetImeDataCallback;
     }
 
-    private void UnregisterClipboardCallbacks()
+    private void UnregisterPlatformCallbacks()
     {
         ImGuiPlatformIO* platformIo = ImGuiNative.Raw.GetPlatformIO();
         platformIo->PlatformGetClipboardTextFn = null;
         platformIo->PlatformSetClipboardTextFn = null;
-        lock (S_CLIPBOARD_CONTEXT_SYNC)
+        platformIo->PlatformSetImeDataFn = null;
+        lock (S_PLATFORM_CONTEXT_SYNC)
         {
             nuint contextKey = (nuint)m_context;
-            if (S_CLIPBOARD_CONTEXTS.GetValueOrDefault(contextKey) == this)
-                S_CLIPBOARD_CONTEXTS.Remove(contextKey);
+            if (S_PLATFORM_CONTEXTS.GetValueOrDefault(contextKey) == this)
+                S_PLATFORM_CONTEXTS.Remove(contextKey);
         }
         ReleaseClipboardText();
     }

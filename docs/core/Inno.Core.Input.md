@@ -8,6 +8,10 @@ Input 项目定义跨平台输入值、不可变的输入变化及其原始顺�
 
 `MapPointer` 同步映射当前与前一指针位置，不缩放滚轮、不保存映射委托，也不改变键盘或文本顺序。输入为空时复用 `InputSequence.empty`。该值不是事件总线或输入所有权服务。
 
+`TextCompositionChange` 区分 Started、Updated、Committed 和 Cancelled。不可变的 `TextCompositionState` 保存所属路由递增操作 ID、完整文本及 Unicode scalar 选区；它不保存输入法或控件对象。文本必须是合法 Unicode，选区越界明确拒绝。取消文本不进入提交摘要；只有 Committed 将文本加入 `InputSequence.textInput`，不会重复提交。
+
+`hasTextCompositionActivity` 保留本帧开始、更新及终止事实。帧末已经没有活动组合，不代表本帧的 Enter 可以再次触发游戏动作。按键原始顺序和事实仍保留，由输入消费边界区分候选确认与业务动作。
+
 ## KeyCode
 
 | 分组 | 值 |
@@ -73,6 +77,84 @@ macOS Command / Windows key 等平台主修饰键可映射到 `Super`。`KeyModi
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
+
+### `Inno.Core.Input.TextCompositionChange`
+
+<!-- api: T:Inno.Core.Input.TextCompositionChange 6e601ec2752097083e12e856e7c393c7e9e9f88fa87c7fc3eef9e4d13d127b2f -->
+<!-- api: P:Inno.Core.Input.TextCompositionChange.EqualityContract aaa4359082492d53e7ca626ec0165bf03394d88f70da4ac00fe2e5c2dee799f0 -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.#ctor(Inno.Core.Input.TextCompositionPhase,Inno.Core.Input.TextCompositionState,Inno.Core.Input.KeyModifier) 08ecea2d94e5ee8772c7cc11dd435a7c4b55e4006419d095298c02bc9e08750d -->
+<!-- api: P:Inno.Core.Input.TextCompositionChange.phase e945900f797873467910c2f1556cb0bb97b5ea5319157f315c091b9c343b14ea -->
+<!-- api: P:Inno.Core.Input.TextCompositionChange.state 21e1398253785c080380310ba382db503e512add434fcdbecb4ca89d4069f643 -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.ToString 97754d368832c2d429cc8dfd429531321e05b3e82b1e3e06d01091703eba1a64 -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.PrintMembers(System.Text.StringBuilder) 72bdf03c45371f94a609bcd84afb6a602a568695250271a18c7a132e8a63e68d -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.op_Inequality(Inno.Core.Input.TextCompositionChange,Inno.Core.Input.TextCompositionChange) e6be0f47b1e7a6d2217fadafede9765ce43378c19b68b764d6db010172f5d11a -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.op_Equality(Inno.Core.Input.TextCompositionChange,Inno.Core.Input.TextCompositionChange) 063c0b77ff0eafeb7d7ffd8a317385d564f4f4a15f9e688dfa90ab3eb9b039c6 -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.GetHashCode 80347a607177a290f7bef404ae296f66af8520524212e80003e383b74334934e -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.Equals(System.Object) 3f64f577d8c41fffdcf01cbfd9ddc6df176475a7c1adb65b27384ef344332e41 -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.Equals(Inno.Core.Input.InputChange) 5a7e7414e07ec4ec577f357b18efe19bb4892b195709a09984401b8ee5313715 -->
+<!-- api: M:Inno.Core.Input.TextCompositionChange.Equals(Inno.Core.Input.TextCompositionChange) 035cdc019731e8246394772278fbe73ef821eae4f79e18019ac67ed46b8a2591 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-f58dc10f534b2ba8"></a>[`public sealed record Inno.Core.Input.TextCompositionChange : Inno.Core.Input.InputChange, System.IEquatable<Inno.Core.Input.TextCompositionChange>`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | Places an input-method composition transition among the ordered physical input facts. | — |
+| <a id="api-0ada3c8d20bf8c42"></a>[`protected override System.Type Inno.Core.Input.TextCompositionChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-312db6fe95b60319"></a>[`public Inno.Core.Input.TextCompositionChange.TextCompositionChange(Inno.Core.Input.TextCompositionPhase phase, Inno.Core.Input.TextCompositionState state, Inno.Core.Input.KeyModifier modifiers = Inno.Core.Input.KeyModifier.None)`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L28) | Creates an immutable composition transition.<br>`phase`：Whether composition starts, changes, commits or cancels.<br>`state`：Operation identity and complete text at this transition; cancellation text is never committed.<br>`modifiers`：Physical modifiers observed at the transition. | `System.ArgumentNullException`：The state is null.<br>`System.ArgumentOutOfRangeException`：The phase is not defined. |
+| <a id="api-a9001dfe4abe419d"></a>[`public Inno.Core.Input.TextCompositionPhase Inno.Core.Input.TextCompositionChange.phase { get; }`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L43) | Gets the transition, including the distinction between commit and cancellation. | — |
+| <a id="api-f31713a4192fb4e3"></a>[`public Inno.Core.Input.TextCompositionState Inno.Core.Input.TextCompositionChange.state { get; }`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L47) | Gets the immutable identity, text and scalar selection. | — |
+| <a id="api-6cc843046c0b43d8"></a>[`public override string Inno.Core.Input.TextCompositionChange.ToString()`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-2dc63a13d7cfc35b"></a>[`protected override bool Inno.Core.Input.TextCompositionChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-7d3a9e7258fb3bb0"></a>[`public static bool Inno.Core.Input.TextCompositionChange.operator !=(Inno.Core.Input.TextCompositionChange? left, Inno.Core.Input.TextCompositionChange? right)`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | 编译器生成的值不等比较。 | — |
+| <a id="api-5dfab6a4429785b5"></a>[`public static bool Inno.Core.Input.TextCompositionChange.operator ==(Inno.Core.Input.TextCompositionChange? left, Inno.Core.Input.TextCompositionChange? right)`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-aab93e29b7e26597"></a>[`public override int Inno.Core.Input.TextCompositionChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-693f2eb28add701e"></a>[`public override bool Inno.Core.Input.TextCompositionChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-4b1525e2b9c953c1"></a>[`public override sealed bool Inno.Core.Input.TextCompositionChange.Equals(Inno.Core.Input.InputChange? other)`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-0245104fec322bbf"></a>[`public bool Inno.Core.Input.TextCompositionChange.Equals(Inno.Core.Input.TextCompositionChange? other)`](../../src/foundation/core/Inno.Core.Input/TextCompositionChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.TextCompositionState`
+
+<!-- api: T:Inno.Core.Input.TextCompositionState 1f561582ec0c52c36e186970c832abbd0cf4221c35dcb501a45685dcbdc99ac8 -->
+<!-- api: M:Inno.Core.Input.TextCompositionState.#ctor(System.UInt64,System.String,System.Int32,System.Int32) c4cb3b6cf3fdbc279b59db1625101917e9745cde6036e340934f4113899c858e -->
+<!-- api: P:Inno.Core.Input.TextCompositionState.compositionId c50c8438c59dfafda77c431a8ace9a135d2b79e0f4b2efdb6bbb7923b7ffb558 -->
+<!-- api: P:Inno.Core.Input.TextCompositionState.text 43104feb288e4ebe314bd615c7cbddaef6be75b04baaafedcaadf8cb78ecdfa4 -->
+<!-- api: P:Inno.Core.Input.TextCompositionState.selectionStart 9eb9daeb07a7a9fe4d150d69ddae8a35994a032357eb429536a0c584335de554 -->
+<!-- api: P:Inno.Core.Input.TextCompositionState.selectionLength 694fad8fbccf132a218c72ae7f4b7af00dbbeeaf19bfb6fad96193fbdb51d802 -->
+<!-- api: M:Inno.Core.Input.TextCompositionState.ToString 1d0d34e61cb6b5a1ca1c8ef0cad61a811635f352e5ed60476bf1a45c11ae28b4 -->
+<!-- api: M:Inno.Core.Input.TextCompositionState.op_Inequality(Inno.Core.Input.TextCompositionState,Inno.Core.Input.TextCompositionState) 553980ee44263f4158dab41e6c5cb132fb9b60f4e4ca24ea6f7421c5169e930c -->
+<!-- api: M:Inno.Core.Input.TextCompositionState.op_Equality(Inno.Core.Input.TextCompositionState,Inno.Core.Input.TextCompositionState) f7fccabfcc792957e1f0ba077c4e9fa1616fca167e4c1e6e66721e0cb407e5d9 -->
+<!-- api: M:Inno.Core.Input.TextCompositionState.GetHashCode f92a51f3bdad8782eb2ec8464047333c0e6f336e7b75bea34e07dae97354a733 -->
+<!-- api: M:Inno.Core.Input.TextCompositionState.Equals(System.Object) e570979dbbea57f80a0da36045859d0064d8a3c2c6cb10909d3fcda8917fe650 -->
+<!-- api: M:Inno.Core.Input.TextCompositionState.Equals(Inno.Core.Input.TextCompositionState) 56274796d477e096899d6f3ea6ec45cf74fdf0379877c0402163d5d2abb81cd8 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-cbc9bf49217e9649"></a>[`public sealed record Inno.Core.Input.TextCompositionState : System.IEquatable<Inno.Core.Input.TextCompositionState>`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L10) | Freezes provisional or committed text without retaining an operating-system input context. | — |
+| <a id="api-7400cf2905a7b42b"></a>[`public Inno.Core.Input.TextCompositionState.TextCompositionState(ulong compositionId, string text, int selectionStart = -1, int selectionLength = 0)`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L36) | Captures one composition using Unicode scalar positions, independently of UTF-8 or UTF-16 storage.<br>`compositionId`：Nonzero operation identity, increasing for each composition in its owning input route.<br>`text`：Well-formed Unicode text; empty provisional text is allowed.<br>`selectionStart`：Selection start in Unicode scalar values, or -1 when the input method supplies no selection.<br>`selectionLength`：Selection length in Unicode scalar values; must be zero when the start is unspecified. | `System.ArgumentNullException`：The text is null.<br>`System.ArgumentException`：The text contains an unpaired UTF-16 surrogate.<br>`System.ArgumentOutOfRangeException`：The identity is zero or the selection is outside the text. |
+| <a id="api-a56f29cf2604510c"></a>[`public ulong Inno.Core.Input.TextCompositionState.compositionId { get; }`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L66) | Gets the input-route operation identity, never an object or persistent asset identity. | — |
+| <a id="api-52ab42645c4ffaa8"></a>[`public string Inno.Core.Input.TextCompositionState.text { get; }`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L70) | Gets the complete text without normalization or native storage ownership. | — |
+| <a id="api-c813cfdd9f1ac4db"></a>[`public int Inno.Core.Input.TextCompositionState.selectionStart { get; }`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L74) | Gets the scalar selection start, or -1 when unspecified. | — |
+| <a id="api-c0aad5038a84b6d5"></a>[`public int Inno.Core.Input.TextCompositionState.selectionLength { get; }`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L78) | Gets the scalar selection length. | — |
+| <a id="api-af4981f83a89062d"></a>[`public override string Inno.Core.Input.TextCompositionState.ToString()`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L10) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-bfd128c75bd35fdd"></a>[`public static bool Inno.Core.Input.TextCompositionState.operator !=(Inno.Core.Input.TextCompositionState? left, Inno.Core.Input.TextCompositionState? right)`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L10) | 编译器生成的值不等比较。 | — |
+| <a id="api-f02c7e55a60a3b15"></a>[`public static bool Inno.Core.Input.TextCompositionState.operator ==(Inno.Core.Input.TextCompositionState? left, Inno.Core.Input.TextCompositionState? right)`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L10) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-1445e3ad03937ba3"></a>[`public override int Inno.Core.Input.TextCompositionState.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L10) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-6927fa4f4493a17a"></a>[`public override bool Inno.Core.Input.TextCompositionState.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L10) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-3299b3742231234b"></a>[`public bool Inno.Core.Input.TextCompositionState.Equals(Inno.Core.Input.TextCompositionState? other)`](../../src/foundation/core/Inno.Core.Input/TextCompositionState.cs#L10) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.TextCompositionPhase`
+
+<!-- api: T:Inno.Core.Input.TextCompositionPhase 65c83ef791457c07a0aec6c6012e5bc207879fdc10f3bc8207f890d56f0d45b5 -->
+<!-- api: F:Inno.Core.Input.TextCompositionPhase.Started 75fb7be1563f2df41de1615b0f5c33866105f03f8eac655b654025fe584b8194 -->
+<!-- api: F:Inno.Core.Input.TextCompositionPhase.Updated b40d0e4a8af4aeed60e85d9fe8da638ef9206892c5352b86ba20a32449b683d9 -->
+<!-- api: F:Inno.Core.Input.TextCompositionPhase.Committed f0bd9db400ce36b144ffeb13ee9c313ea1baaa28569780ce4e176050d91b1fd4 -->
+<!-- api: F:Inno.Core.Input.TextCompositionPhase.Cancelled c8a0f77878882418b7637ecb9fa61e46ebf56c552f71a012c5f1c0cca70bb6cc -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-4c1886268ab41966"></a>[`public enum Inno.Core.Input.TextCompositionPhase : int`](../../src/foundation/core/Inno.Core.Input/TextCompositionPhase.cs#L6) | Distinguishes the lifetime transitions of one input-method composition. | — |
+| <a id="api-c0cc6c2bba914e62"></a>[`Inno.Core.Input.TextCompositionPhase.Started = 0`](../../src/foundation/core/Inno.Core.Input/TextCompositionPhase.cs#L11) | A new composition owns provisional text and a new operation identity. | — |
+| <a id="api-ec4eeb1533f3ef39"></a>[`Inno.Core.Input.TextCompositionPhase.Updated = 1`](../../src/foundation/core/Inno.Core.Input/TextCompositionPhase.cs#L15) | Provisional text or its selection changed without committing content. | — |
+| <a id="api-6e7ea05bbdf6b0c1"></a>[`Inno.Core.Input.TextCompositionPhase.Committed = 2`](../../src/foundation/core/Inno.Core.Input/TextCompositionPhase.cs#L19) | The composition ended with the supplied committed text. | — |
+| <a id="api-58ef31a1520733cb"></a>[`Inno.Core.Input.TextCompositionPhase.Cancelled = 3`](../../src/foundation/core/Inno.Core.Input/TextCompositionPhase.cs#L23) | The composition ended without committing its provisional text. | — |
 
 ### `Inno.Core.Input.GamepadAxis`
 
@@ -313,6 +395,7 @@ macOS Command / Windows key 等平台主修饰键可映射到 `Super`。`KeyModi
 <!-- api: P:Inno.Core.Input.InputSequence.buttonsPressed 3988ce0332ceb1074f419e1b46567bff7a05da4a7c28910fd5d4e830d399264e -->
 <!-- api: P:Inno.Core.Input.InputSequence.buttonsReleased 951dc5f14fba5dd3436cb5bbfbf8cea2bb0a73a38d3d7d93130893d7c28974dd -->
 <!-- api: P:Inno.Core.Input.InputSequence.textInput 950d4ea76439615b5e9321872fa41b3674e4fca6b326f40407b9bfe5cd170cae -->
+<!-- api: P:Inno.Core.Input.InputSequence.hasTextCompositionActivity 7122f4f192eac643f5e87d6dabf4eb2c257570c02af96c0250243bcb56efd806 -->
 <!-- api: P:Inno.Core.Input.InputSequence.mouseDelta 299219821218db04dd80564f4c2ccc1289bba2fd18d28249a7b88636f85417d0 -->
 <!-- api: P:Inno.Core.Input.InputSequence.scrollDelta 560df4b0884531b201154ce7e48adb336b918fe860bb217dc535b90687bfdfdc -->
 <!-- api: M:Inno.Core.Input.InputSequence.MapPointer(System.Func{Inno.Core.Mathematics.Vector2,Inno.Core.Mathematics.Vector2}) 1245c521414041e5a9fba47369e0b3411085e3ab98ad28063a00cf451cc89e84 -->
@@ -321,16 +404,17 @@ macOS Command / Windows key 等平台主修饰键可映射到 `Super`。`KeyModi
 |---|---|---|
 | <a id="api-f30746df092436d8"></a>[`public sealed class Inno.Core.Input.InputSequence`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L16) | Owns immutable ordered input facts and derives convenient frame summaries from that same sequence. | — |
 | <a id="api-ed8d2c7b983e05b1"></a>[`public Inno.Core.Input.InputSequence.InputSequence(System.Collections.Generic.IEnumerable<Inno.Core.Input.InputChange> changes)`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L27) | Creates a frozen sequence in acquisition order.<br>`changes`：Non-null immutable input facts in their original order. | `System.ArgumentNullException`：The sequence or a contained change is null. |
-| <a id="api-05e1c5d71a95a459"></a>[`public static Inno.Core.Input.InputSequence Inno.Core.Input.InputSequence.empty { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L78) | Gets the reusable sequence containing no input changes. | — |
-| <a id="api-38e05a0120f6ea2d"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Core.Input.InputChange> Inno.Core.Input.InputSequence.changes { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L82) | Gets all changes in their original order, including repeated keys. | — |
-| <a id="api-f34486bd5bd6296b"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.KeyCode> Inno.Core.Input.InputSequence.keysPressed { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L86) | Gets non-repeated physical presses present in this sequence. | — |
-| <a id="api-c3677395d3ba65c7"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.KeyCode> Inno.Core.Input.InputSequence.keysReleased { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L90) | Gets physical key releases present in this sequence. | — |
-| <a id="api-60fd717127bee86a"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.MouseButton> Inno.Core.Input.InputSequence.buttonsPressed { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L94) | Gets physical pointer presses present in this sequence. | — |
-| <a id="api-17ff1f00ee33afa4"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.MouseButton> Inno.Core.Input.InputSequence.buttonsReleased { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L98) | Gets physical pointer releases present in this sequence. | — |
-| <a id="api-dd0551b27a90f5dc"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.Core.Input.InputSequence.textInput { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L102) | Gets committed text in acquisition order. | — |
-| <a id="api-6ed82ced64ee5494"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.InputSequence.mouseDelta { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L106) | Gets the sum of pointer movements in the sequence's coordinate space. | — |
-| <a id="api-121511993031b7bb"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.InputSequence.scrollDelta { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L110) | Gets accumulated wheel movement, independent of coordinate density. | — |
-| <a id="api-4410ba73e345c508"></a>[`public Inno.Core.Input.InputSequence Inno.Core.Input.InputSequence.MapPointer(System.Func<Inno.Core.Mathematics.Vector2, Inno.Core.Mathematics.Vector2> map)`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L127) | Maps pointer positions without reordering keys, text or pointer transitions.<br>`map`：A synchronous mapping in the caller's owned viewport; it is not retained.<br>返回：A new coordinate-mapped sequence, or this sequence when it contains no pointer facts. | `System.ArgumentNullException`：The mapping is null.<br>`System.ArgumentOutOfRangeException`：The mapping returns a non-finite position. |
+| <a id="api-05e1c5d71a95a459"></a>[`public static Inno.Core.Input.InputSequence Inno.Core.Input.InputSequence.empty { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L83) | Gets the reusable sequence containing no input changes. | — |
+| <a id="api-38e05a0120f6ea2d"></a>[`public System.Collections.Generic.IReadOnlyList<Inno.Core.Input.InputChange> Inno.Core.Input.InputSequence.changes { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L87) | Gets all changes in their original order, including repeated keys. | — |
+| <a id="api-f34486bd5bd6296b"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.KeyCode> Inno.Core.Input.InputSequence.keysPressed { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L91) | Gets non-repeated physical presses present in this sequence. | — |
+| <a id="api-c3677395d3ba65c7"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.KeyCode> Inno.Core.Input.InputSequence.keysReleased { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L95) | Gets physical key releases present in this sequence. | — |
+| <a id="api-60fd717127bee86a"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.MouseButton> Inno.Core.Input.InputSequence.buttonsPressed { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L99) | Gets physical pointer presses present in this sequence. | — |
+| <a id="api-17ff1f00ee33afa4"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.MouseButton> Inno.Core.Input.InputSequence.buttonsReleased { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L103) | Gets physical pointer releases present in this sequence. | — |
+| <a id="api-dd0551b27a90f5dc"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.Core.Input.InputSequence.textInput { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L107) | Gets committed text in acquisition order. | — |
+| <a id="api-ac8aac8b6b9671a6"></a>[`public bool Inno.Core.Input.InputSequence.hasTextCompositionActivity { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L114) | Gets whether this sample contains composition activity, including a final commit or cancellation. | — |
+| <a id="api-6ed82ced64ee5494"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.InputSequence.mouseDelta { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L118) | Gets the sum of pointer movements in the sequence's coordinate space. | — |
+| <a id="api-121511993031b7bb"></a>[`public Inno.Core.Mathematics.Vector2 Inno.Core.Input.InputSequence.scrollDelta { get; }`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L122) | Gets accumulated wheel movement, independent of coordinate density. | — |
+| <a id="api-4410ba73e345c508"></a>[`public Inno.Core.Input.InputSequence Inno.Core.Input.InputSequence.MapPointer(System.Func<Inno.Core.Mathematics.Vector2, Inno.Core.Mathematics.Vector2> map)`](../../src/foundation/core/Inno.Core.Input/InputSequence.cs#L139) | Maps pointer positions without reordering keys, text or pointer transitions.<br>`map`：A synchronous mapping in the caller's owned viewport; it is not retained.<br>返回：A new coordinate-mapped sequence, or this sequence when it contains no pointer facts. | `System.ArgumentNullException`：The mapping is null.<br>`System.ArgumentOutOfRangeException`：The mapping returns a non-finite position. |
 
 ### `Inno.Core.Input.KeyCode`
 

@@ -9,6 +9,7 @@ using System.Text;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Native.Sdl3;
 using Inno.Native.ImGui;
+using Inno.Platform;
 using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -38,7 +39,8 @@ public sealed unsafe partial class PlatformImGuiContext
     private readonly Stopwatch m_frameTimer = Stopwatch.StartNew();
 
     private ImGuiMouseCursor m_currentCursor = ImGuiMouseCursor.None;
-    private SDLWindow* m_textInputWindow = null;
+    private Sdl3PlatformWindow? m_textInputWindow;
+    private IPlatformTextInputSession? m_textInputSession;
     private TimeSpan m_lastFrameTime;
     private TimeSpan m_lastLiveResizeLockTime;
     private Action<PlatformImGuiContext>? m_releaseRegistration;
@@ -53,7 +55,6 @@ public sealed unsafe partial class PlatformImGuiContext
     private bool m_hasStartedFrame;
     private bool m_isFrameActive;
     private bool m_isFrameOperationActive;
-    private bool m_textInputActive;
     private bool m_disposed;
 
     internal PlatformImGuiContext(
@@ -111,7 +112,7 @@ public sealed unsafe partial class PlatformImGuiContext
             if (m_renderer.supportsVertexOffsets)
                 io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasVtxOffset;
             m_viewports = enableViewports ? new PlatformImGuiViewportBackend(application, window, m_renderer) : null;
-            RegisterClipboardCallbacks();
+            RegisterPlatformCallbacks();
         }
         catch
         {
@@ -557,7 +558,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
             case SDLEventType.TextInput:
             {
-                if (sdlEvent.Text.Text != null)
+                if (sdlEvent.Text.Text != null && m_textInputSession is { isActive: true }
+                    && m_textInputWindow?.windowId == eventWindowId && sdlEvent.Text.Timestamp >= m_textInputStartedAt)
                     ImGuiNative.Raw.AddInputCharactersUTF8(io, sdlEvent.Text.Text);
                 break;
             }
@@ -756,7 +758,7 @@ public sealed unsafe partial class PlatformImGuiContext
         ReleaseCompletedLiveResizeHoverLock();
         FlushPendingMouseLeave(io);
         UpdateMouseData(io, m_window.GetSdlWindow());
-        UpdateTextInputState(io);
+        UpdateTextInputState();
 
         m_viewports?.SynchronizeMetrics();
         prepareFrame?.Invoke();
@@ -874,14 +876,12 @@ public sealed unsafe partial class PlatformImGuiContext
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         var io = ImGuiNative.Raw.GetIO();
-        UnregisterClipboardCallbacks();
-        if (m_textInputActive)
-        {
-            var textInputWindow = m_textInputWindow == null ? m_window.GetSdlWindow() : m_textInputWindow;
-            _ = SDL.Raw.StopTextInput(textInputWindow);
-            m_textInputWindow = null;
-            m_textInputActive = false;
-        }
+        m_textInputSession?.Dispose();
+        m_textInputSession = null;
+        m_textInputWindow = null;
+        m_imeWindowId = 0;
+        m_imeArea = null;
+        m_appliedImeArea = null;
 
         _ = SDL.CaptureMouse(false);
         m_mouseButtonsDown = 0;
@@ -907,6 +907,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
         m_cursors.Clear();
         m_renderer.Dispose();
+        UnregisterPlatformCallbacks();
         ImGuiFont.UnregisterContext(m_context);
         ImGuiNative.Raw.DestroyContext(m_context);
         GC.KeepAlive(m_supplementalFontData);
@@ -949,32 +950,6 @@ public sealed unsafe partial class PlatformImGuiContext
         }
     }
 
-    private void UpdateTextInputState(ImGuiIO* io)
-    {
-        var targetWindow = ResolveTextInputWindow();
-        if (io->WantTextInput != 0)
-        {
-            if (!m_textInputActive || m_textInputWindow != targetWindow)
-            {
-                if (m_textInputActive && m_textInputWindow != null)
-                {
-                    _ = SDL.Raw.StopTextInput(m_textInputWindow);
-                }
-
-                _ = SDL.Raw.StartTextInputWithProperties(targetWindow, 0);
-                m_textInputWindow = targetWindow;
-                m_textInputActive = true;
-            }
-        }
-        else if (m_textInputActive)
-        {
-            var textInputWindow = m_textInputWindow == null ? targetWindow : m_textInputWindow;
-            _ = SDL.Raw.StopTextInput(textInputWindow);
-            m_textInputWindow = null;
-            m_textInputActive = false;
-        }
-    }
-
     private static unsafe void SetIniFilename(
         ImGuiIO* io,
         IntPtr fileName
@@ -999,23 +974,6 @@ public sealed unsafe partial class PlatformImGuiContext
     private static unsafe ImFont* LoadDefaultFont(ImFontAtlas* fonts) => ImGuiNative.Raw.AddFontDefault(fonts, null);
 
     private static unsafe IntPtr GetDrawDataAddress(ImDrawData* drawData) => (nint)drawData;
-
-    private SDLWindow* ResolveTextInputWindow()
-    {
-        var keyboardFocus = SDL.Raw.GetKeyboardFocus();
-        if (keyboardFocus == null)
-        {
-            return m_window.GetSdlWindow();
-        }
-
-        var focusedWindowId = SDL.Raw.GetWindowId(keyboardFocus);
-        if (focusedWindowId == m_window.windowId || (m_viewports != null && m_viewports.OwnsWindow(focusedWindowId)))
-        {
-            return keyboardFocus;
-        }
-
-        return m_window.GetSdlWindow();
-    }
 
     private static void UpdateMouseData(
         ImGuiIO* io,

@@ -583,7 +583,8 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
             m_input.mousePosition,
             m_input.modifiers,
             m_input.sequence,
-            m_input.gamepads));
+            m_input.gamepads,
+            m_input.textComposition));
     }
 
     /// <summary>

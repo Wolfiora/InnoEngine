@@ -143,6 +143,20 @@ subscription token、Hub listener delegate 都会强引用处理对象。插件�
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
 
+### `Inno.Core.Events.TextCompositionEvent`
+
+<!-- api: T:Inno.Core.Events.TextCompositionEvent 1ff3375175f5ca50a29a32753793678a4ab688b393de19426a945f9c69ef3bfe -->
+<!-- api: M:Inno.Core.Events.TextCompositionEvent.#ctor(System.UInt32,Inno.Core.Input.TextCompositionChange) 3538b426d7669fca25453a133fabdb981ba393d2bc8b4984fa366aa4f5f330b4 -->
+<!-- api: P:Inno.Core.Events.TextCompositionEvent.windowId 45adc3af4d760dbde08094be75c8bca5c92eca5ab73c36973b62698ccc158037 -->
+<!-- api: P:Inno.Core.Events.TextCompositionEvent.change fec36cd09ac6e2367ea64076de99de5f44f424f4a98325b71721617a4ed53caf -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-b75e933454003812"></a>[`public sealed class Inno.Core.Events.TextCompositionEvent : Inno.Core.Events.Event`](../../src/foundation/core/Inno.Core.Events/Events/TextCompositionEvent.cs#L10) | Routes an input-method transition through the existing window event dispatch protocol. | — |
+| <a id="api-caa37ccd72e20d42"></a>[`public Inno.Core.Events.TextCompositionEvent.TextCompositionEvent(uint windowId, Inno.Core.Input.TextCompositionChange change)`](../../src/foundation/core/Inno.Core.Events/Events/TextCompositionEvent.cs#L27) | Associates an immutable composition fact with its source window.<br>`windowId`：Nonzero source window identity.<br>`change`：Transition owned by this window's current text-input operation. | `System.ArgumentNullException`：The change is null.<br>`System.ArgumentOutOfRangeException`：The window identity is zero. |
+| <a id="api-33d8f55c41f804e0"></a>[`public uint Inno.Core.Events.TextCompositionEvent.windowId { get; }`](../../src/foundation/core/Inno.Core.Events/Events/TextCompositionEvent.cs#L40) | Gets the source window, never a process-global text destination. | — |
+| <a id="api-6ad302959491e77c"></a>[`public Inno.Core.Input.TextCompositionChange Inno.Core.Events.TextCompositionEvent.change { get; }`](../../src/foundation/core/Inno.Core.Events/Events/TextCompositionEvent.cs#L44) | Gets the immutable composition transition. | — |
+
 ### `Inno.Core.Events.GamepadEvent`
 
 <!-- api: T:Inno.Core.Events.GamepadEvent db0eb7eb5d46c5298c2a357f0718cfb8dd626d57056ab2136808fd635cc6db4e -->

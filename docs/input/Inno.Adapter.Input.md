@@ -24,6 +24,14 @@ InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消�
 
 连接事实可以广播，按钮与轴必须具有明确窗口。失焦、隐藏、挂起和关闭释放持有状态；未获得焦点时的控制更新不会进入快照。恢复焦点必须由现有窗口／viewport owner 发布，不从手柄输入反推焦点。输入源的创建和事件派发遵守宿主 owner-thread 调度，backend 的 Capture 使用现有同步边界。
 
+## 组合输入与扩展边界
+
+输入法通过同一 Core Events 入口发布 `TextCompositionEvent`，backend 固定本帧有序变化及当前组合文本。操作 ID 在所属输入路由内递增；旧操作的更新、提交和取消不能覆盖新操作。失焦、隐藏、挂起和 source 退休取消组合输入，之后的迟到文本不会复活它。新 Session 不继承另一个 Session 已开始的组合输入。
+
+`InputSnapshot.hasTextCompositionInput` 同时覆盖尚未结束的组合和本帧已提交／取消的组合。消费者据此避免把候选确认键再次解释成游戏激活；原始按键事实仍保留。输入法选区使用 Unicode scalar 索引，UTF-8 与系统单位转换留在具体 adapter。
+
+扩展边界须区分两件事：provider catalog 允许替换采集后端；当前 `InputChange` 类型族及标准键／轴语义由 Core 定义，并不是任意设备语义的开放载荷容器。新增眼动、姿态等语义需要设计对应中立契约，不能通过后端对象或无类型字典越过边界。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。

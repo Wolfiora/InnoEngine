@@ -34,6 +34,9 @@ public sealed class RenderOutputInput
     /// <param name="gamepads">
     /// Immutable controller states admitted by the owning input route; null means no admitted devices.
     /// </param>
+    /// <param name="textComposition">
+    /// Active composition owned by this viewport, or null when none remains active.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// The sequence is null.
     /// </exception>
@@ -46,13 +49,15 @@ public sealed class RenderOutputInput
         KeyModifier modifiers,
         InputSequence sequence,
         bool interactionEnabled = true,
-        IReadOnlyDictionary<ulong, GamepadState>? gamepads = null
+        IReadOnlyDictionary<ulong, GamepadState>? gamepads = null,
+        TextCompositionState? textComposition = null
     ) {
         ArgumentNullException.ThrowIfNull(sequence);
         this.pointerPosition = pointerPosition;
         this.pointerInside = pointerInside;
         this.modifiers = modifiers;
         this.sequence = sequence;
+        this.textComposition = textComposition;
         var capturedGamepads = gamepads?.ToFrozenDictionary() ?? FrozenDictionary<ulong, GamepadState>.Empty;
         this.gamepads = capturedGamepads;
         foreach ((ulong id, GamepadState state) in capturedGamepads)
@@ -65,6 +70,16 @@ public sealed class RenderOutputInput
     /// Gets the immutable input changes in acquisition order.
     /// </summary>
     public InputSequence sequence { get; }
+
+    /// <summary>
+    /// Gets the active viewport-owned composition without retaining an operating-system context.
+    /// </summary>
+    public TextCompositionState? textComposition { get; }
+
+    /// <summary>
+    /// Gets whether composition owns this sample; suppress gameplay activation even on the commit frame.
+    /// </summary>
+    public bool hasTextCompositionInput => textComposition is not null || sequence.hasTextCompositionActivity;
 
     /// <summary>
     /// Gets controller held state for this input owner without retaining backend or native objects.

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.Mathematics/Inno.Core.Mathematics.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj" />
     <ProjectReference Include="../../native/Inno.Native.ImGui/Inno.Native.ImGui.csproj" />
     <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />

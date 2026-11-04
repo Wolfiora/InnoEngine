@@ -11,6 +11,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 public sealed unsafe partial class Sdl3PlatformWindow
 {
     private readonly Action<Sdl3PlatformWindow> m_onDisposed;
+    private readonly Action<Sdl3PlatformWindow> m_onTextInputStopped;
     private readonly int m_ownerThreadId;
     private SDLWindow* m_window;
     private readonly uint m_windowId;
@@ -37,9 +38,11 @@ public sealed unsafe partial class Sdl3PlatformWindow
         bool ownsNativeWindow,
         ISdl3HostIntegration hostIntegration,
         Action<Sdl3PlatformWindow> onDisposed,
+        Action<Sdl3PlatformWindow> onTextInputStopped,
         int ownerThreadId
     ) {
         m_onDisposed = onDisposed;
+        m_onTextInputStopped = onTextInputStopped;
         m_ownerThreadId = ownerThreadId;
         m_window = window;
         m_sdlWindowHandle = (nint)window;
@@ -82,11 +85,14 @@ public sealed unsafe partial class Sdl3PlatformWindow
 
     internal void MarkClosed()
     {
+        EndTextInput();
         m_isClosed = true;
     }
 
     internal void UpdateFocus(bool isFocused)
     {
+        if (!isFocused)
+            EndTextInput();
         m_isFocused = isFocused;
     }
 
@@ -95,12 +101,14 @@ public sealed unsafe partial class Sdl3PlatformWindow
         switch (eventType)
         {
             case SDLEventType.WindowHidden:
+                EndTextInput();
                 m_hidden = true;
                 break;
             case SDLEventType.WindowShown:
                 m_hidden = false;
                 break;
             case SDLEventType.WindowMinimized:
+                EndTextInput();
                 m_minimized = true;
                 break;
             case SDLEventType.WindowRestored:
@@ -121,9 +129,13 @@ public sealed unsafe partial class Sdl3PlatformWindow
     /// <summary>
     /// Queues a close request for processing at the next platform safety point.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The request runs outside the owner thread or active system text input cannot be retired.
+    /// </exception>
     public partial void RequestClose()
     {
-        m_isClosed = true;
+        ValidateTextInputThread();
+        MarkClosed();
     }
 
     /// <summary>
@@ -138,6 +150,7 @@ public sealed unsafe partial class Sdl3PlatformWindow
             return;
         }
 
+        EndTextInput();
         if (m_window != null && m_ownsNativeWindow)
         {
             SDL.Raw.DestroyWindow(m_window);

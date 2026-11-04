@@ -13,6 +13,7 @@ public sealed class EventInputSource : IInputEventSource
 {
     private readonly List<EventInputBackend> m_backends = [];
     private readonly GamepadInputState m_gamepads = new();
+    private readonly WindowInputOwnership m_ownership = new();
     private readonly EventDispatcher m_events = new();
     private readonly EventHub m_inputHub;
     private readonly uint m_windowId;
@@ -43,7 +44,7 @@ public sealed class EventInputSource : IInputEventSource
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         var backend = new EventInputBackend(m_windowId, RemoveBackend);
-        backend.InitializeGamepads(m_gamepads);
+        backend.InitializeInput(m_ownership, m_gamepads);
         backend.ConnectSource(m_inputHub.Listen<Event>(backend.ProcessEvent));
         m_backends.Add(backend);
         return backend;
@@ -65,7 +66,8 @@ public sealed class EventInputSource : IInputEventSource
     {
         ArgumentNullException.ThrowIfNull(evnt);
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        m_gamepads.Process(evnt, m_windowId, null);
+        m_ownership.Process(evnt, m_windowId);
+        m_gamepads.Process(evnt, m_windowId, null, m_ownership.acceptsInput);
         m_events.Emit(evnt);
     }
 

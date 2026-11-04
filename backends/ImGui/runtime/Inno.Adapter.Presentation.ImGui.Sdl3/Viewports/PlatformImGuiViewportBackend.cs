@@ -128,6 +128,12 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         return m_windowToViewport.ContainsKey(windowId);
     }
 
+    internal Sdl3PlatformWindow? FindOwnedWindow(uint windowId)
+        => m_windowToViewport.TryGetValue(windowId, out uint viewportId)
+            && m_viewportsById.TryGetValue(viewportId, out ViewportWindowData? viewport)
+            ? viewport.registeredWindow
+            : null;
+
     internal bool TryGetWindowId(
         uint viewportId,
         out uint windowId

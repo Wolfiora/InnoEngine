@@ -7,7 +7,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 /// <summary>
 /// Represents a native platform window.
 /// </summary>
-public sealed unsafe partial class Sdl3PlatformWindow : IPlatformWindow, INativeWindowSurface
+public sealed unsafe partial class Sdl3PlatformWindow : IPlatformTextInputWindow, INativeWindowSurface
 {
     /// <summary>
     /// Gets the platform window identifier.
@@ -75,6 +75,9 @@ public sealed unsafe partial class Sdl3PlatformWindow : IPlatformWindow, INative
     /// <summary>
     /// Marks this window as requesting close.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The request runs outside the owner thread or active system text input cannot be retired.
+    /// </exception>
     public partial void RequestClose();
 
     /// <summary>

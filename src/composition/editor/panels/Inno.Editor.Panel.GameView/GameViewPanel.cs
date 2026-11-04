@@ -109,7 +109,8 @@ internal sealed class GameViewPanel : EditorPanel
                 routed.modifiers,
                 routed.sequence.MapPointer(position => new Inno.Core.Mathematics.Vector2(
                     position.x * inputScaleX, position.y * inputScaleY)),
-                gamepads: routed.gamepads
+                gamepads: routed.gamepads,
+                textComposition: routed.textComposition
             ) : RenderOutputInput.suspended
         );
         if (!m_rendering.TrySubmit(S_KIND, C_VIEWPORT_ID, layout.pixelWidth, layout.pixelHeight, out EditorViewportOutput output))
