@@ -776,6 +776,35 @@ Result Runtime::LoadFont(
                                             family, style, weight, fallback != 0);
 }
 
+Result Runtime::RegisterImage(
+    std::uint64_t context,
+    const char* source,
+    std::uint64_t image,
+    int width,
+    int height
+) {
+    auto* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
+    if (!state)
+        return Result::InvalidHandle;
+    Result result = state->renderer->RegisterImage(source, image, width, height);
+    if (result == Result::Success)
+        state->frame_prepared = false;
+    return result;
+}
+
+Result Runtime::UnregisterImage(
+    std::uint64_t context,
+    const char* source
+) {
+    auto* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
+    if (!state)
+        return Result::InvalidHandle;
+    Result result = state->renderer->UnregisterImage(source);
+    if (result == Result::Success)
+        state->frame_prepared = false;
+    return result;
+}
+
 Result Runtime::RegisterTexture(
     std::uint64_t context,
     const char* source,

@@ -15,7 +15,7 @@ namespace Inno.Adapter.UI.RmlUi.Authoring;
 /// <summary>
 /// Validates RML source for the bundled RmlUi runtime adapter.
 /// </summary>
-public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
+public sealed partial class RmlUiDocumentFrontend : IUiDocumentFrontend
 {
     private static readonly Regex S_FONT_FACE = new(@"@font-face\s*\{(?<body>[^{}]*)\}",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
@@ -129,7 +129,16 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
             }
             return match.Groups[1].Value + string.Join(", ", requested);
         });
-        return diagnostics.Count == 0 ? new(canonical, diagnostics, fonts) : new(null, diagnostics);
+        var images = new Dictionary<string, UiDocumentImageDeclaration>(StringComparer.Ordinal);
+        try
+        {
+            canonical = RewriteImageDeclarations(canonical, documentPath, images);
+        }
+        catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
+        {
+            diagnostics.Add(new("RML_IMAGE_ASSET_INVALID", exception.Message, 1, 1));
+        }
+        return diagnostics.Count == 0 ? new(canonical, diagnostics, fonts, images.Values) : new(null, diagnostics);
     }
 
     private static string PrivateFamily(
@@ -168,6 +177,7 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
             string text = readSource(path);
             text = S_IMPORT.Replace(text, match =>
                 ExpandSheet(readSource, ResolvePath(path, match.Groups["path"].Value), active));
+            text = RewriteSpriteSheetSources(text, value => FormatExplicitPath(ResolvePath(path, value)));
             return S_FONT_FACE.Replace(text, match => S_FONT_SOURCE.Replace(match.Value, font =>
                 font.Groups["prefix"].Value
                 + FormatExplicitPath(ResolvePath(path, font.Groups["path"].Value.Trim()))

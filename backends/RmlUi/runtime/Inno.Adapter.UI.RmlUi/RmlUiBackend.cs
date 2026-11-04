@@ -28,6 +28,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     private readonly int m_ownerThread = Environment.CurrentManagedThreadId;
     private InnoUIRmlUiAdapterRuntime* m_runtime;
     private readonly Dictionary<string, string> m_fontAliases = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<(UiContextHandle context, UiDocumentHandle document), IReadOnlyDictionary<string, string>> m_documentBindings = [];
     private bool m_disposed;
 
     /// <summary>
@@ -78,6 +79,13 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.DestroyContext(m_runtime, Require(context)), "destroy UI context");
+        RetireContextImages(context);
+        List<(UiContextHandle context, UiDocumentHandle document)> retired = [];
+        foreach (var key in m_documentBindings.Keys)
+            if (key.context == context)
+                retired.Add(key);
+        foreach (var key in retired)
+            m_documentBindings.Remove(key);
     }
 
     /// <summary>
@@ -130,8 +138,12 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         EnsureRml(source.language);
         ulong document = 0;
         ThrowIfFailed(RmlUiNativeRuntime.LoadDocument(
-            m_runtime, Require(context), RewriteFontFamilies(source.text), source.sourceUri, ref document), "load UI document");
-        return new UiDocumentHandle(document);
+            m_runtime, Require(context), RewriteFontFamilies(RewriteImageBindings(source.text, source.resourceBindings),
+                source.resourceBindings), source.sourceUri, ref document), "load UI document");
+        var handle = new UiDocumentHandle(document);
+        if (source.resourceBindings.Count != 0)
+            m_documentBindings.Add((context, handle), source.resourceBindings);
+        return handle;
     }
 
     /// <summary>
@@ -183,6 +195,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.CloseDocument(m_runtime, Require(context), Require(document)), "close UI document");
+        m_documentBindings.Remove((context, document));
     }
 
     /// <summary>
@@ -251,7 +264,8 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
             Require(context),
             Require(document),
             elementId,
-            RewriteFontFamilies(content.text),
+            RewriteFontFamilies(RewriteImageBindings(content.text, DocumentBindings(context, document)),
+                DocumentBindings(context, document)),
             ref changed), "set UI content");
         return changed != 0;
     }
@@ -295,7 +309,11 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
             Require(document),
             elementId,
             name,
-            name == "style" ? RewriteFontFamilies(value) : value,
+            name.Equals("style", StringComparison.OrdinalIgnoreCase)
+                ? RewriteFontFamilies(value, DocumentBindings(context, document))
+                : name.Equals("src", StringComparison.OrdinalIgnoreCase)
+                    && DocumentBindings(context, document) is { } bindings && bindings.TryGetValue(value, out string? mapped)
+                    ? mapped : value,
             ref changed), "set UI attribute");
         return changed != 0;
     }
@@ -544,6 +562,14 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
             {
                 InnoUIRmlUiAdapterTextureInfo texture = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetTextureInfo(m_runtime, handle, checked((ulong)index), ref texture), "query UI texture");
+                if (texture.ImageId != 0)
+                {
+                    if (!m_images.TryGetValue(texture.ImageId, out ImageRegistration? registration)
+                        || registration.context != context || registration.retired)
+                        throw new InvalidOperationException("The native UI frame references an unavailable image registration.");
+                    builder.AddImageUpdate(new(texture.Id), texture.Revision, registration.image);
+                    continue;
+                }
                 byte[] pixels = new byte[checked((int)texture.ByteLength)];
                 if (pixels.Length > 0)
                     ThrowIfFailed(RmlUiNativeFrames.CopyTexturePixels(
@@ -619,9 +645,13 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         if (m_disposed)
             return;
         EnsureActive();
-        m_disposed = true;
         RmlUiNativeErrors.DestroySession(m_runtime);
         m_runtime = null;
+        m_disposed = true;
+        foreach (ImageRegistration registration in m_images.Values)
+            registration.retired = true;
+        m_images.Clear();
+        m_documentBindings.Clear();
     }
 
     private void CopyMeshVertices(
@@ -689,14 +719,23 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
             throw new NotSupportedException($"RmlUi adapter cannot decode UI language '{language}'.");
     }
 
-    private string RewriteFontFamilies(string source)
-        => S_FONT_FAMILY.Replace(source, match =>
+    private IReadOnlyDictionary<string, string>? DocumentBindings(
+        UiContextHandle context,
+        UiDocumentHandle document
+    ) => m_documentBindings.GetValueOrDefault((context, document));
+
+    private string RewriteFontFamilies(
+        string source,
+        IReadOnlyDictionary<string, string>? bindings
+    ) => S_FONT_FAMILY.Replace(source, match =>
         {
             string[] requested = match.Groups[2].Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             var resolved = new List<string>(requested.Length);
             foreach (string item in requested)
             {
                 string logical = item.Trim('\'', '"');
+                if (bindings is not null && bindings.TryGetValue(logical, out string? registered))
+                    logical = registered;
                 resolved.Add(m_fontAliases.TryGetValue(logical, out string? alias) ? alias : item);
             }
             return match.Groups[1].Value + string.Join(", ", resolved);

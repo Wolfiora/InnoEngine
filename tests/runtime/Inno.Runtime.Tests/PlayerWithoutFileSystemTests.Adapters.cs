@@ -310,6 +310,10 @@ public sealed partial class PlayerWithoutFileSystemTests
             bool active
         ) => true;
         public void RegisterFont(UiFontRegistration registration) { }
+        public IUiImageRegistration RegisterImage(
+            UiContextHandle context,
+            UiImageSource image
+        ) => throw new NotSupportedException();
         public void RegisterTexture(
             UiContextHandle context,
             string source,

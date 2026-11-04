@@ -86,15 +86,20 @@ public sealed class UiDocumentAnalysis
     /// <param name="fonts">
     /// Font assets declared by the document.
     /// </param>
+    /// <param name="images">
+    /// Image assets declared by the document.
+    /// </param>
     public UiDocumentAnalysis(
         string? text,
         IEnumerable<UiDocumentDiagnostic> diagnostics,
-        IEnumerable<UiDocumentFontDeclaration>? fonts = null
+        IEnumerable<UiDocumentFontDeclaration>? fonts = null,
+        IEnumerable<UiDocumentImageDeclaration>? images = null
     ) {
         this.text = text;
         this.diagnostics = new ReadOnlyCollection<UiDocumentDiagnostic>(diagnostics?.ToArray()
             ?? throw new ArgumentNullException(nameof(diagnostics)));
         this.fonts = new ReadOnlyCollection<UiDocumentFontDeclaration>(fonts?.ToArray() ?? []);
+        this.images = new ReadOnlyCollection<UiDocumentImageDeclaration>(images?.ToArray() ?? []);
     }
     /// <summary>
     /// Gets canonical source text, or null after failure.
@@ -108,6 +113,10 @@ public sealed class UiDocumentAnalysis
     /// Gets font assets declared by the canonical document.
     /// </summary>
     public IReadOnlyList<UiDocumentFontDeclaration> fonts { get; }
+    /// <summary>
+    /// Gets frozen image dependencies emitted by the frontend.
+    /// </summary>
+    public IReadOnlyList<UiDocumentImageDeclaration> images { get; }
     /// <summary>
     /// Gets whether the frontend accepted the source.
     /// </summary>

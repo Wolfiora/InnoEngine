@@ -91,7 +91,7 @@ public sealed class UiMeshUpdate
 }
 
 /// <summary>
-/// Publishes one immutable premultiplied RGBA8 texture generation.
+/// Publishes one immutable pixel texture or imported image reference.
 /// </summary>
 public sealed class UiTextureUpdate
 {
@@ -111,6 +111,24 @@ public sealed class UiTextureUpdate
         m_pixels = pixels;
     }
 
+    internal UiTextureUpdate(
+        UiTextureHandle texture,
+        ulong revision,
+        UiImageSource image
+    ) {
+        this.texture = texture;
+        this.revision = revision;
+        this.image = image;
+        width = image.width;
+        height = image.height;
+        m_pixels = [];
+    }
+
+    /// <summary>
+    /// Gets the imported image reference, or null for backend-generated premultiplied pixels.
+    /// </summary>
+    public UiImageSource? image { get; }
+
     /// <summary>
     /// Gets the generation-scoped texture handle.
     /// </summary>
@@ -128,7 +146,7 @@ public sealed class UiTextureUpdate
     /// </summary>
     public int height { get; }
     /// <summary>
-    /// Gets immutable tightly packed premultiplied RGBA8 pixels.
+    /// Gets tightly packed premultiplied RGBA8 pixels, or empty memory when image is assigned.
     /// </summary>
     public ReadOnlyMemory<byte> pixels => m_pixels;
 }
@@ -378,6 +396,41 @@ public sealed class UiRenderFrameBuilder
             m_textureUpdates.ToArray(),
             m_releasedTextures.ToArray(),
             m_commands.ToArray());
+    }
+
+    /// <summary>
+    /// Adds an imported image reference without copying pixels or creating GPU resources.
+    /// </summary>
+    /// <param name="texture">
+    /// Assigned UI texture handle.
+    /// </param>
+    /// <param name="revision">
+    /// Positive UI publication revision.
+    /// </param>
+    /// <param name="image">
+    /// Frozen imported artifact and dimensions.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// The texture handle is unassigned.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The revision is zero.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// The image is null.
+    /// </exception>
+    public void AddImageUpdate(
+        UiTextureHandle texture,
+        ulong revision,
+        UiImageSource image
+    ) {
+        EnsureMutable();
+        if (!texture.isValid)
+            throw new ArgumentException("An image update requires an assigned handle.", nameof(texture));
+        if (revision == 0)
+            throw new ArgumentOutOfRangeException(nameof(revision));
+        ArgumentNullException.ThrowIfNull(image);
+        m_textureUpdates.Add(new(texture, revision, image));
     }
 
     private void EnsureMutable()

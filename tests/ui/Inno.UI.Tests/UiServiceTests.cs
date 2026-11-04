@@ -22,6 +22,7 @@ using Inno.Text;
 using Inno.UI.Assets;
 using Inno.UI.Runtime;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Inno.UI.Tests;
 
@@ -37,9 +38,11 @@ public sealed partial class UiServiceTests : IDisposable
     private readonly ModuleHost m_modules;
     private readonly SerializationRegistry m_serialization;
     private readonly TypeCatalog m_types;
+    private readonly ITestOutputHelper m_output;
 
-    public UiServiceTests()
+    public UiServiceTests(ITestOutputHelper output)
     {
+        m_output = output;
         m_root = Path.Combine(Path.GetTempPath(), "InnoUiTests", Guid.NewGuid().ToString("N"));
         m_assets = Path.Combine(m_root, "Assets");
         m_library = Path.Combine(m_root, "Library");
@@ -48,6 +51,7 @@ public sealed partial class UiServiceTests : IDisposable
         m_modules = new ModuleHost(new ModuleHostOptions
         { catalogSource = new DotNetAssemblyCatalogSource(typeof(UiServiceTests).Assembly)        });
         _ = Assembly.Load("Inno.UI.Assets");
+        _ = Assembly.Load("Inno.Rendering.Assets.Authoring");
         _ = Assembly.Load("Inno.Text.Assets");
         _ = Assembly.Load("Inno.Adapter.UI.RmlUi.Authoring");
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());

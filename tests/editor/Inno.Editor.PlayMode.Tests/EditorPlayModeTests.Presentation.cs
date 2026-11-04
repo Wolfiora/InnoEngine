@@ -198,6 +198,10 @@ public sealed partial class EditorPlayModeTests
         public bool SetAttribute(UiContextHandle context, UiDocumentHandle document, string elementId, string name, string value) => true;
         public bool SetClass(UiContextHandle context, UiDocumentHandle document, string elementId, string className, bool active) => true;
         public void RegisterFont(UiFontRegistration registration) { }
+        public IUiImageRegistration RegisterImage(
+            UiContextHandle context,
+            UiImageSource image
+        ) => throw new NotSupportedException();
         public void RegisterTexture(UiContextHandle context, string source, UiTextureData texture) { }
         public bool HasElementAtPoint(UiContextHandle context, Inno.Core.Mathematics.Vector2 position) => false;
         public void Update(UiContextHandle context, UiInputSnapshot input) => lastInput = input;

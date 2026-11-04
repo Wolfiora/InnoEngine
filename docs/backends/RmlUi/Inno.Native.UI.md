@@ -492,3 +492,17 @@ internal static unsafe class NativeEventReader
 | [`public Inno.Native.UI.EditPhase Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Phase`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L1010) | 事件对应的编辑或提交阶段。 |
 | [`public Inno.Native.UI.EventOrigin Inno.Native.UI.InnoUIRmlUiAdapterEventInfo.Origin`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L1012) | 该事件的实际来源。 |
 | [`public struct Inno.Native.UI.NativeArray_ddadfd40a13315f3`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L1186) | BGCS 为当前原生存储布局生成的固定数组容器，仅用于 ABI 搬运。 |
+
+## 导入图片 ABI
+
+这些成员仅供后端适配层消费，不属于脚本 API。由 BGCS 从手写 facade 正式生成。
+
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.RegisterImage(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.SByte*,System.UInt64,System.Int32,System.Int32,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 67d452d572e19722e4b53b06e4b79667f981764c01cdc05f7407692de1dcb683 -->
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.UnregisterImage(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.SByte*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) ea065c12215e4bdd2aebbfc21d3a27dc718d051a4002c0e6ef4e0aa7f7d60943 -->
+<!-- api: F:Inno.Native.UI.InnoUIRmlUiAdapterTextureInfo.ImageId 83b1b9f86ddf4ac6385b50022f2ce8ea3d59cadb1e0d7bbac164695a9e29e442 -->
+
+| 声明 | 语义 |
+|---|---|
+| `public int Inno.Native.UI.UiNativeContext.RawApi.RegisterImage(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, sbyte* source, ulong image, int width, int height, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)` | 在指定 context 注册逻辑图片来源及布局尺寸；返回桥接状态，并通过独立 out 参数返回领域结果与错误对象。 |
+| `public int Inno.Native.UI.UiNativeContext.RawApi.UnregisterImage(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, sbyte* source, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)` | 使当前 context 的来源失效并退休相关纹理引用；失败保持可诊断的原生状态。 |
+| `public ulong Inno.Native.UI.InnoUIRmlUiAdapterTextureInfo.ImageId` | 导入图片的不透明资源身份；零表示后端像素纹理。此值不是 GPU handle。 |

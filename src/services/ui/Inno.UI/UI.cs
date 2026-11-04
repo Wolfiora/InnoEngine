@@ -546,4 +546,20 @@ public static class UI
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public static IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context) => UiExecutionContext.current.DrainEvents(context);
+    /// <summary>
+    /// Registers an imported image in the current UI execution scope.
+    /// </summary>
+    /// <param name="context">
+    /// Owning UI context.
+    /// </param>
+    /// <param name="image">
+    /// Frozen imported texture source.
+    /// </param>
+    /// <returns>
+    /// A disposable context-local source; Rendering retains GPU ownership.
+    /// </returns>
+    public static IUiImageRegistration RegisterImage(
+        UiContextHandle context,
+        UiImageSource image
+    ) => UiExecutionContext.current.RegisterImage(context, image);
 }

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Inno.UI.Tests;
 
-public sealed class UiRuntimeTests
+public sealed partial class UiRuntimeTests
 {
     [Fact]
     public void FrameScopeCapturesInputAndBindsTheScriptFacade()
@@ -64,6 +64,9 @@ public sealed class UiRuntimeTests
 
     private sealed class CapturingBackend : IUiBackend
     {
+        internal Action? stopping;
+        internal Func<UiContextHandle, UiImageSource, IUiImageRegistration>? registerImage;
+        internal int destroyedContexts;
         public UiLayoutSnapshot CaptureLayout(
             UiContextHandle context,
             UiDocumentHandle document,
@@ -126,7 +129,7 @@ public sealed class UiRuntimeTests
         public UiFocusTarget? GetFocusedElement(UiContextHandle context) => throw new NotSupportedException();
         public bool ClearFocus(UiContextHandle context) => throw new NotSupportedException();
         public UiContextHandle CreateContext(UiContextOptions options) => new(1);
-        public void DestroyContext(UiContextHandle context) { }
+        public void DestroyContext(UiContextHandle context) => destroyedContexts++;
         public void SetViewport(UiContextHandle context, int width, int height, float density) { }
         public UiDocumentHandle LoadDocument(UiContextHandle context, UiDocumentSource source) => new(1);
         public void ShowDocument(UiContextHandle context, UiDocumentHandle document) { }
@@ -137,11 +140,15 @@ public sealed class UiRuntimeTests
         public bool SetAttribute(UiContextHandle context, UiDocumentHandle document, string elementId, string name, string value) => true;
         public bool SetClass(UiContextHandle context, UiDocumentHandle document, string elementId, string className, bool active) => true;
         public void RegisterFont(UiFontRegistration registration) { }
+        public IUiImageRegistration RegisterImage(
+            UiContextHandle context,
+            UiImageSource image
+        ) => registerImage?.Invoke(context, image) ?? throw new NotSupportedException();
         public void RegisterTexture(UiContextHandle context, string source, UiTextureData texture) { }
         public bool HasElementAtPoint(UiContextHandle context, Inno.Core.Mathematics.Vector2 position) => false;
         public void Update(UiContextHandle context, UiInputSnapshot input) => lastInput = input;
         public UiRenderFrame Render(UiContextHandle context) => UiRenderFrame.empty;
         public IReadOnlyList<UiEvent> DrainEvents(UiContextHandle context) => [];
-        public void Dispose() { }
+        public void Dispose() => stopping?.Invoke();
     }
 }

@@ -1,5 +1,7 @@
 #include "RmlUiRenderInterface.hpp"
 
+#include <RmlUi/Core/Core.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -59,6 +61,7 @@ struct RmlUiRenderInterface::State
         int width = 0;
         int height = 0;
         std::vector<std::uint8_t> pixels;
+        std::uint64_t image_id = 0;
     };
 
     std::vector<DrawCommand> commands;
@@ -261,6 +264,32 @@ void RmlUiRenderInterface::SetTransform(const Rml::Matrix4f* transform)
         m_state->transform = *transform;
 }
 
+Result RmlUiRenderInterface::RegisterImage(const char* source, std::uint64_t image, int width, int height)
+{
+    if (!source || source[0] == '\0' || image == 0 || width <= 0 || height <= 0)
+        return Result::InvalidArgument;
+    State::Texture texture;
+    texture.width = width;
+    texture.height = height;
+    texture.image_id = image;
+    return m_state->source_textures.emplace(source, std::move(texture)).second
+        ? Result::Success : Result::InvalidArgument;
+}
+
+Result RmlUiRenderInterface::UnregisterImage(const char* source)
+{
+    if (!source)
+        return Result::InvalidArgument;
+    auto found = m_state->source_textures.find(source);
+    if (found == m_state->source_textures.end() || found->second.image_id == 0)
+        return Result::NotFound;
+    // The third-party cache is scoped to this render interface. Other contexts keep their own sources.
+    Rml::ReleaseTexture(source, this);
+    m_state->source_textures.erase(found);
+    std::erase_if(m_state->texture_updates, [this](std::uint64_t id) { return !m_state->textures.contains(id); });
+    return Result::Success;
+}
+
 Result RmlUiRenderInterface::RegisterTexture(const char* source, int width, int height, const std::uint8_t* pixels, std::uint64_t length)
 {
     if (!source || source[0] == '\0' || width <= 0 || height <= 0 || !pixels)
@@ -403,7 +432,7 @@ Result RmlUiRenderInterface::GetTextureInfo(std::uint64_t index, TextureInfo& te
     if (iterator == m_state->textures.end())
         return Result::NotFound;
     const State::Texture& value = iterator->second;
-    texture = {value.id, value.revision, value.width, value.height, static_cast<std::uint64_t>(value.pixels.size())};
+    texture = {value.id, value.revision, value.width, value.height, static_cast<std::uint64_t>(value.pixels.size()), value.image_id};
     return Result::Success;
 }
 

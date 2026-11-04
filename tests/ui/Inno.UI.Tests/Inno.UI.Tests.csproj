@@ -9,7 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj" />
     <ProjectReference Include="../../../src/services/ui/Inno.UI/Inno.UI.csproj" />
+    <ProjectReference Include="../../../src/services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj" />
     <ProjectReference Include="../../../src/services/ui/Inno.UI.Assets/Inno.UI.Assets.csproj" />
     <ProjectReference Include="../../../src/services/ui/Inno.UI.Runtime/Inno.UI.Runtime.csproj" />
     <ProjectReference Include="../../../src/services/text/Inno.Text.Assets/Inno.Text.Assets.csproj" />

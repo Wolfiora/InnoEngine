@@ -11,6 +11,14 @@
 
 ## Execution and acceptance ledger
 
+### Current scope authority (2026-11-04)
+
+The user's latest instruction limits further implementation and acceptance to the engine repository. Do not modify, build, export, install, or test any external plugin repository. Preserve existing companion changes without staging, reverting, or extending them. Historical companion results below are evidence of earlier work, not remaining delivery requirements.
+
+Exercise extensibility and scripting contracts with generic engine-owned fixtures and the existing public boundaries. External plugin integration is outside the current scope; do not claim its acceptance. Engine UI, input, isolated preview, product closure, lifecycle, performance and architecture requirements remain in scope. Imported image acceptance must not depend on completing a companion renderer or regenerating its authored assets.
+
+GitHub #64–#74 were checked and remain open. Implementation and focused regressions are available for several items, but #65 isolated preview and #66 IME/gamepad remain incomplete, and final applicable acceptance has not finished. No overall completion or issue closure is claimed.
+
 | Order | Issue | Owner | State |
 |---|---|---|---|
 | 1 | #72 dependent creation History | Editor Scene / Interactions | Reproduced; 49 focused tests passed, including Prefab creation/replay; committed as `3e6a7cb7` |
@@ -18,7 +26,7 @@
 | 3 | #73 activation diagnosis; Refs #18 | Scripting / Diagnostics / presentation | Exact activation identity, candidate construction ownership and runtime-scoped rejection diagnostics implemented; 70 runtime and four inspection tests passed; formal plugin/reload/source presentation acceptance pending |
 | 4 | #64 typed values, #66 input, #71 focus | Core Input / Input / UI / SDL / RmlUi | Values/focus implemented; real backend tests passed; IME/gamepad pending |
 | 5 | #70 time, #67 layout | UI / RmlUi | Per-context clock and independent layout/input implemented; native build and 23 UI tests passed, including interleaved CSS animation and 28 density combinations; layout query implemented; corrected real-backend suite passes 29 tests, including 28 density combinations; formal consumer and final acceptance pending |
-| 6 | #68 images, #69 font metadata | UI / Rendering Assets / Assets | Font rename path overwrite reproduced and fixed; 19 UI tests pass including source metadata; images pending |
+| 6 | #68 images, #69 font metadata | UI / Rendering Assets / Assets | Font metadata fixed; imported image contracts, source-aware import and resource retirement implemented; 47 engine-owned UI tests passed; complete product/rendering acceptance pending |
 | 7 | #65 isolated preview | PlayMode / Scene / Hosting / Rendering | Not started |
 | 8 | Product, lifecycle, performance, API and architecture acceptance | Respective owners | Not started |
 
@@ -121,3 +129,27 @@ The source architecture gate passes (`architecture-generic-ui.log`). The officia
 An engine-owned generic source project passes the formal script compilation/IDE generation command and an actual SDK build of both generated IDE projects (zero warnings/errors, `engine-ui-sdk.log`, `engine-ui-ide-build.log`). It consumes values, focus, clocks, layouts and ordered input through logical namespaces. Deployment regression and a fresh evaluated Wiki gate are running. These do not replace the remaining IME, gamepad, texture sharing, preview or final product requirements.
 
 `script-ui-contracts-final.trx` passes both authoring and deployment regressions after a normal SDK restore/build refreshed the test runtime dependency graph. `wiki-generic-ui.log` passes the complete selected-target Wiki/API/architecture check, with 241/241 MSBuild project owners evaluated. macOS and Browser products are outside that Windows gate and are not claimed as accepted.
+
+## Imported image bridge (in progress)
+
+Official BGCS HostSource generation succeeded with 4.1.2; its existing friendly error-message projection warning is retained, and the raw bridge remains validated. The Windows native product build succeeded in 8m28 (ui-images-native.log). Three real-backend image tests pass, including 100 replacement/context-retirement cycles, rejected cross-thread disposal, no pixel publication for imported artifacts, and two-context isolation. A subsequent prepared-layout retirement regression reproduces a stale draw command (ui-images-prepared-before.trx, one failure). The adapter now invalidates its prepared frame after image registration/retirement; rerun is pending. Imported document dependencies, complete rendering acceptance and API documentation are not yet complete.
+
+The generic image source/import contracts compile with zero warnings/errors. Three focused import/builder tests pass (ui-images-import-contracts.trx): relative image and external sprite-sheet paths share a declared dependency, path escape fails, and runtime registration URIs cannot enter persisted payloads. UI remains language-neutral; resource syntax is interpreted only by its language backend/frontend. Native frame invalidation and the complete updated UI suite still require the next official target build.
+
+The corrected native product build passes and ui-images-complete.trx passes all 40 UI tests. Imported image source artifacts are now pinned through the existing asset lookup lease and released with document/context/runtime ownership; ui-images-pinned.trx again passes all 40 tests, including the retained-key assertion. Canvas sampling and bundled graph regeneration, read-only mounts, full publication/closure and final API inventory remain in progress. This is not issue #68 closure.
+
+## Engine-only image acceptance follow-up
+
+The scope authority above supersedes the earlier companion renderer work: no further external plugin changes or acceptance are included.
+
+`ui-retirement-before.trx` reproduces two lifecycle defects: backend retirement released dependent images too early, and a context with pending resource retirement still admitted new work. The runtime now uses Core `RetirementPendingException`, preserves dependencies until native retirement succeeds, and retries context resources without repeating native destruction. New work is rejected during retirement. No parallel lifecycle protocol or new public runtime API was introduced.
+
+`ui-images-content.trx` passes all 47 UI tests, zero skipped. New cases cover read-only source mounts, immutable references across replacement/Missing/recovery, two-context artifact residency, and actual exported content loaded by `AssetDatabase` after the authoring loader and source files are gone. This validates content publication, not a complete executable Player/GPU acceptance.
+
+Runtime no longer rewrites document text to substitute font families. It supplies immutable resource bindings; the language backend interprets them in document styles, fragments and subsequent attribute updates. A real backend test verifies text values remain intact. Bindings are retired with their native context/document and contain no collectible callbacks or asset objects.
+
+`ui-images-performance-final.trx` passes 46 tests including five alternating samples of 1,000 warm draws per path. Both imported and pixel images allocate 832,000 bytes per sample, submit 1,000 draws, and publish zero mesh/texture updates. CPU medians were approximately 11.55 ms and 11.56 ms respectively; one imported sample was 16.83 ms during other acceptance work, so this is not controlled whole-product performance evidence. The first performance run accidentally placed native sessions in separate parallel test collections and correctly rejected cross-thread process ownership; the fixture now shares the existing native UI test owner, with no production check weakened.
+
+`ui-images-normal-build.log` and `ui-images-build-host.log` finish with zero warnings/errors. `engine-ui-images-sdk.log` uses the formal script compiler/IDE generator; `engine-ui-images-ide.log` builds the generated projects with the imported image contract. `wiki-images-final.log` passes the SDK-evaluated architecture, XML, scripting/Wiki gate for all 241 project owners in the Windows selection. Other platform products are not accepted by that gate.
+
+Deep review: UI keeps neutral image references and dimensions; Rendering owns GPU residency; Assets owns artifact leases; the language backend owns source interpretation. Native bindings were generated officially, without BGCS/package/vendor modifications. Remaining work includes actual rendering/product acceptance, IME/gamepad, isolated previews and the final quantitative matrix. This checkpoint is not overall plan completion, and issues remain open.

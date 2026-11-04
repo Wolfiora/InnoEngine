@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -12,6 +13,36 @@ namespace Inno.UI.Tests;
 
 public sealed partial class UiServiceTests
 {
+    [Fact]
+    public void DocumentResourceBindingsApplyToStylesAndFragmentsWithoutChangingTextValues()
+    {
+        using var backend = new RmlUiBackend();
+        backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "Registered", TextFontStyle.Normal, 400));
+        UiContextHandle context = backend.CreateContext(new("bound-font", 640, 360));
+        UiDocumentHandle document = backend.LoadDocument(context, new UiDocumentSource(
+            RmlUiIdentifiers.documentLanguage,
+            "<rml><head><style>body { font-family: Logical; }</style></head><body><div id='container'><input id='edit' value='Logical'/></div></body></rml>",
+            resourceBindings: new Dictionary<string, string> { ["Logical"] = "Registered" }));
+        backend.ShowDocument(context, document);
+        backend.RefreshLayout(context);
+        Assert.Equal(UiControlValue.Text("Logical"), backend.GetValue(context, document, "edit"));
+        Assert.Equal(UiFocusResult.Focused, backend.FocusElement(context, document, "edit"));
+        backend.ProcessInput(context, new(default, KeyModifier.None,
+            new InputSequence([new TextInputChange("A", KeyModifier.None)])));
+        Assert.Contains("A", backend.GetValue(context, document, "edit").text);
+        Assert.True(backend.SetContent(context, document, "container", new(RmlUiIdentifiers.documentLanguage,
+            "<input id='next' style='font-family: Logical;' value='Logical'/>")));
+        Assert.True(backend.SetAttribute(context, document, "next", "style", "font-family: Logical;"));
+        backend.RefreshLayout(context);
+        Assert.Equal(UiControlValue.Text("Logical"), backend.GetValue(context, document, "next"));
+        Assert.Equal(UiFocusResult.Focused, backend.FocusElement(context, document, "next"));
+        backend.ProcessInput(context, new(default, KeyModifier.None,
+            new InputSequence([new TextInputChange("B", KeyModifier.None)])));
+        Assert.Contains("B", backend.GetValue(context, document, "next").text);
+        backend.CloseDocument(context, document);
+        backend.DestroyContext(context);
+    }
+
     [Theory]
     [InlineData("input")]
     [InlineData("textarea")]

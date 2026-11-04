@@ -131,6 +131,7 @@ struct TextureInfo
     std::int32_t width;
     std::int32_t height;
     std::uint64_t byte_length;
+    std::uint64_t image_id;
 };
 
 /// Describes a typed control value without retaining a document or text pointer.
@@ -265,6 +266,20 @@ class Runtime final
         std::int32_t weight,
         std::uint8_t fallback
     );
+    /// Registers a context-local image identity and dimensions without pixel data.
+    Result RegisterImage(
+        std::uint64_t context,
+        const char* source,
+        std::uint64_t image,
+        int width,
+        int height
+    );
+    /// Retires only the named context-local image and invalidates its cached native texture.
+    Result UnregisterImage(
+        std::uint64_t context,
+        const char* source
+    );
+
     Result RegisterTexture(
         std::uint64_t context,
         const char* source,

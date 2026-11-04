@@ -9,6 +9,7 @@ using Inno.Assets.Pipeline;
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Text;
+using Inno.Rendering.Assets;
 
 namespace Inno.UI.Assets;
 
@@ -115,12 +116,21 @@ public static class UiDocumentImportPipeline
             fonts.Add(new UiDocumentFontFace(font.identity.persistentId,
                 declaration.family, declaration.style, declaration.weight));
         }
+        var images = new List<UiDocumentImage>(analysis.images.Count);
+        foreach (UiDocumentImageDeclaration declaration in analysis.images)
+        {
+            TextureAsset texture = context.ResolveDependency<TextureAsset>(AssetPath.Parse(declaration.assetPath));
+            if (texture.isMissing || texture.width <= 0 || texture.height <= 0)
+                throw new InvalidDataException($"UI image asset '{declaration.assetPath}' has no usable texture.");
+            context.DependsOnArtifact(texture.identity.persistentId);
+            images.Add(new(declaration.source, UiImageSource.FromTexture(texture)));
+        }
         string sourceUri = $"innoasset://{context.assetPath.source.value}/{context.assetPath.localPath}";
         var source = new UiDocumentSource(language, analysis.text!, sourceUri);
         output.SetAsset(new UiDocumentAsset());
         await output.WriteArtifactAsync(
             "runtime",
-            UiDocumentAsset.CreateRuntimePayload(implementationId, source, fonts),
+            UiDocumentAsset.CreateRuntimePayload(implementationId, source, fonts, images),
             cancellationToken).ConfigureAwait(false);
     }
 }

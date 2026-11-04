@@ -452,16 +452,39 @@ public interface IUiService
         bool active
     );
     /// <summary>
-    /// Registers one named RGBA8 texture source.
+    /// Registers an imported image without decoding pixels or acquiring a second GPU resource.
     /// </summary>
     /// <param name="context">
-    /// The context that owns the requested document or state.
+    /// Owning context on the current UI thread.
+    /// </param>
+    /// <param name="image">
+    /// Frozen artifact identity and imported dimensions.
+    /// </param>
+    /// <returns>
+    /// A context-local source registration requiring deterministic disposal.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The image is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The context is unavailable or the caller is not its owner.
+    /// </exception>
+    IUiImageRegistration RegisterImage(
+        UiContextHandle context,
+        UiImageSource image
+    );
+
+    /// <summary>
+    /// Registers an owned pixel source for a UI context.
+    /// </summary>
+    /// <param name="context">
+    /// Owning UI context.
     /// </param>
     /// <param name="source">
-    /// Tagged source or named texture source for this operation.
+    /// Document image source.
     /// </param>
     /// <param name="texture">
-    /// Immutable RGBA texture data.
+    /// Pixel data copied by the backend.
     /// </param>
     void RegisterTexture(
         UiContextHandle context,

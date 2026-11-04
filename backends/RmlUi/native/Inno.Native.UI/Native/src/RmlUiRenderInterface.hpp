@@ -26,6 +26,8 @@ class RmlUiRenderInterface final : public Rml::RenderInterface
     void SetScissorRegion(Rml::Rectanglei region) override;
     void SetTransform(const Rml::Matrix4f* transform) override;
 
+    Result RegisterImage(const char* source, std::uint64_t image, int width, int height);
+    Result UnregisterImage(const char* source);
     Result RegisterTexture(const char* source, int width, int height, const std::uint8_t* pixels, std::uint64_t length);
     void BeginRender();
     void EndRender();

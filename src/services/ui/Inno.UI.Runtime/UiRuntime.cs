@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 
 using Inno.Assets;
+using Inno.Core.Execution;
 using Inno.Core.Mathematics;
 using Inno.Input;
 using Inno.Runtime;
@@ -14,15 +15,21 @@ using Inno.Text;
 namespace Inno.UI.Runtime;
 
 /// <summary>
-/// Owns retained UI contexts, imported font leases, and current-frame input for one runtime session.
+/// Owns retained UI contexts, imported resource leases, and current-frame input for one runtime session.
 /// </summary>
 public sealed class UiRuntime : RuntimeSubsystem, IUiService
 {
+    private readonly int m_ownerThread = Environment.CurrentManagedThreadId;
     private readonly IUiBackend m_backend;
+    private readonly HashSet<ImageResidency> m_images = [];
     private readonly IAssetArtifactLookup m_artifacts;
     private readonly Dictionary<FontRegistration, FontResidency> m_fonts = [];
-    private readonly Dictionary<DocumentKey, FontRegistration[]> m_documentFonts = [];
+    private readonly Dictionary<DocumentKey, DocumentResources> m_documentResources = [];
+    private readonly List<DocumentResources> m_pendingResources = [];
+    private readonly HashSet<UiContextHandle> m_retiringContexts = [];
     private InputSnapshot m_input = InputSnapshot.empty;
+    private bool m_stopping;
+    private bool m_backendRetired;
     private bool m_disposed;
 
     /// <summary>
@@ -187,14 +194,32 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     /// </param>
     public void DestroyContext(UiContextHandle context)
     {
-        EnsureActive();
-        m_backend.DestroyContext(context);
-        foreach (DocumentKey key in m_documentFonts.Keys.Where(key => key.context == context).ToArray())
+        EnsureActive(allowContextRetirement: true);
+        if (!m_retiringContexts.Contains(context))
         {
-            FontRegistration[] registrations = m_documentFonts[key];
-            m_documentFonts.Remove(key);
-            ReleaseFonts(registrations);
+            try
+            {
+                m_backend.DestroyContext(context);
+            }
+            catch
+            {
+                m_stopping = true;
+                throw;
+            }
+            m_retiringContexts.Add(context);
         }
+        DocumentKey[] keys = m_documentResources.Keys.Where(key => key.context == context).ToArray();
+        foreach (DocumentKey key in keys)
+            m_documentResources[key].documentClosed = true;
+        foreach (ImageResidency image in m_images.Where(image => image.context == context).ToArray())
+            image.Dispose();
+        foreach (DocumentKey key in keys)
+        {
+            DocumentResources resources = m_documentResources[key];
+            ReleaseResources(resources);
+            m_documentResources.Remove(key);
+        }
+        m_retiringContexts.Remove(context);
     }
 
     /// <summary>
@@ -270,9 +295,9 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
             throw new InvalidOperationException(
                 $"UI document implementation '{document.implementationId}' cannot be loaded by selected backend '{m_backend.implementationId}'.");
         EnsureLanguageSupported(source.language);
-        string text = source.text;
         var families = new Dictionary<string, string>(StringComparer.Ordinal);
-        var registrations = new List<FontRegistration>(document.fonts.Count);
+        var resources = new DocumentResources();
+        var bindings = new Dictionary<string, string>(StringComparer.Ordinal);
         try
         {
             foreach (UiDocumentFontFace face in document.fonts)
@@ -282,16 +307,22 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
                     versionedFamily = face.family + "__v"
                         + document.contentVersion.ToString("x", CultureInfo.InvariantCulture);
                     families.Add(face.family, versionedFamily);
-                    text = text.Replace(face.family, versionedFamily, StringComparison.Ordinal);
+                    bindings.Add(face.family, versionedFamily);
                 }
-                registrations.Add(RegisterDocumentFont(face, document.contentVersion, versionedFamily));
+                resources.fonts.Add(RegisterDocumentFont(face, document.contentVersion, versionedFamily));
+            }
+            foreach (UiDocumentImage declaration in document.images)
+            {
+                IUiImageRegistration image = RegisterImage(context, declaration.image);
+                resources.images.Add(image);
+                bindings.Add(declaration.source, image.source);
             }
             UiDocumentHandle handle = m_backend.LoadDocument(context,
-                new UiDocumentSource(source.language, text, source.sourceUri));
-            if (registrations.Count > 0)
+                new UiDocumentSource(source.language, source.text, source.sourceUri, bindings));
+            if (resources.fonts.Count > 0 || resources.images.Count > 0)
             {
                 var key = new DocumentKey(context, handle);
-                if (!m_documentFonts.TryAdd(key, registrations.ToArray()))
+                if (!m_documentResources.TryAdd(key, resources))
                 {
                     m_backend.CloseDocument(context, handle);
                     throw new InvalidOperationException("The UI backend returned a document handle that is already in use.");
@@ -299,9 +330,17 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
             }
             return handle;
         }
-        catch
+        catch (Exception failure)
         {
-            ReleaseFonts(registrations);
+            try
+            {
+                ReleaseResources(resources);
+            }
+            catch (Exception cleanupFailure)
+            {
+                m_pendingResources.Add(resources);
+                throw new AggregateException("UI document preparation and resource retirement failed.", failure, cleanupFailure);
+            }
             throw;
         }
     }
@@ -354,10 +393,19 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         UiDocumentHandle document
     ) {
         EnsureActive();
-        m_backend.CloseDocument(context, document);
         var key = new DocumentKey(context, document);
-        if (m_documentFonts.Remove(key, out FontRegistration[]? registrations))
-            ReleaseFonts(registrations);
+        if (!m_documentResources.TryGetValue(key, out DocumentResources? resources))
+        {
+            m_backend.CloseDocument(context, document);
+            return;
+        }
+        if (!resources.documentClosed)
+        {
+            m_backend.CloseDocument(context, document);
+            resources.documentClosed = true;
+        }
+        ReleaseResources(resources);
+        m_documentResources.Remove(key);
     }
 
     /// <summary>
@@ -585,20 +633,40 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     }
 
     /// <summary>
-    /// Releases native UI state before releasing retained font artifacts.
+    /// Retires native UI before releasing image registrations and retained artifacts.
     /// </summary>
+    /// <exception cref="RetirementPendingException">
+    /// The backend or a retained resource has not retired; the owner must retain this runtime and retry.
+    /// </exception>
     protected override void OnStop()
     {
         if (m_disposed)
             return;
-        List<Exception> failures = [];
-        try
+        EnsureOwnerThread();
+        m_stopping = true;
+        if (!m_backendRetired)
         {
-            m_backend.Dispose();
+            try
+            {
+                m_backend.Dispose();
+                m_backendRetired = true;
+            }
+            catch (Exception exception)
+            {
+                throw new RetirementPendingException("UI backend retirement is incomplete; its assets remain retained.", exception);
+            }
         }
-        catch (Exception exception)
+        List<Exception> failures = [];
+        foreach (ImageResidency image in m_images.ToArray())
         {
-            failures.Add(exception);
+            try
+            {
+                image.Dispose();
+            }
+            catch (Exception exception)
+            {
+                failures.Add(exception);
+            }
         }
         foreach ((FontRegistration registration, FontResidency residency) in m_fonts.ToArray())
         {
@@ -612,9 +680,12 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
                 failures.Add(exception);
             }
         }
-        m_documentFonts.Clear();
         if (failures.Count > 0)
-            throw new AggregateException("UI runtime retirement failed.", failures);
+            throw new RetirementPendingException("UI resources have not retired.",
+                new AggregateException("UI runtime resource retirement failed.", failures));
+        m_documentResources.Clear();
+        m_pendingResources.Clear();
+        m_retiringContexts.Clear();
         m_disposed = true;
     }
 
@@ -628,7 +699,51 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         return m_backend.CaptureLayout(context, document, elementIds);
     }
 
-    private void EnsureActive() => ObjectDisposedException.ThrowIf(m_disposed, this);
+    /// <inheritdoc />
+    public IUiImageRegistration RegisterImage(
+        UiContextHandle context,
+        UiImageSource image
+    ) {
+        EnsureActive();
+        ArgumentNullException.ThrowIfNull(image);
+        ArtifactLease artifact = m_artifacts.AcquireArtifact(image.artifact.assetId, image.artifact.slot.sourceOutputName);
+        var residency = new ImageResidency(this, context, artifact);
+        m_images.Add(residency);
+        try
+        {
+            residency.registration = m_backend.RegisterImage(context, image);
+            return residency;
+        }
+        catch (Exception failure)
+        {
+            try
+            {
+                residency.Dispose();
+            }
+            catch (Exception cleanupFailure)
+            {
+                m_stopping = true;
+                throw new AggregateException("UI image registration and artifact retirement failed.", failure, cleanupFailure);
+            }
+            throw;
+        }
+    }
+
+    private void EnsureActive(bool allowContextRetirement = false)
+    {
+        EnsureOwnerThread();
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (m_stopping || (!allowContextRetirement && m_retiringContexts.Count != 0))
+            throw new InvalidOperationException("UI resource retirement is incomplete; retry retirement before further operations.");
+        if (m_pendingResources.Count != 0)
+            throw new InvalidOperationException("UI document preparation left pending resource retirement; retire the owning runtime before further operations.");
+    }
+
+    private void EnsureOwnerThread()
+    {
+        if (Environment.CurrentManagedThreadId != m_ownerThread)
+            throw new InvalidOperationException("UI runtime operations require the owner thread.");
+    }
 
     private void RegisterBackendFont(
         ArtifactLease artifact,
@@ -668,18 +783,35 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         }
     }
 
-    private void ReleaseFonts(IEnumerable<FontRegistration> registrations)
+    private void ReleaseResources(DocumentResources resources)
     {
         List<Exception>? failures = null;
-        foreach (FontRegistration registration in registrations)
+        for (int index = resources.images.Count - 1; index >= 0; index--)
         {
-            FontResidency residency = m_fonts[registration];
-            if (--residency.references > 0)
-                continue;
             try
             {
-                residency.lease.Dispose();
-                m_fonts.Remove(registration);
+                resources.images[index].Dispose();
+                resources.images.RemoveAt(index);
+            }
+            catch (Exception exception)
+            {
+                (failures ??= []).Add(exception);
+            }
+        }
+        for (int index = resources.fonts.Count - 1; index >= 0; index--)
+        {
+            FontRegistration registration = resources.fonts[index];
+            FontResidency residency = m_fonts[registration];
+            try
+            {
+                if (residency.references == 1)
+                {
+                    residency.lease.Dispose();
+                    m_fonts.Remove(registration);
+                }
+                else
+                    residency.references--;
+                resources.fonts.RemoveAt(index);
             }
             catch (Exception exception)
             {
@@ -687,7 +819,49 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
             }
         }
         if (failures is not null)
-            throw new AggregateException("UI font artifact retirement is incomplete.", failures);
+            throw new AggregateException("UI document resource retirement is incomplete.", failures);
+    }
+
+    private sealed class ImageResidency : IUiImageRegistration
+    {
+        private readonly UiRuntime m_owner;
+        private ArtifactLease? m_artifact;
+
+        internal ImageResidency(
+            UiRuntime owner,
+            UiContextHandle context,
+            ArtifactLease artifact
+        ) {
+            m_owner = owner;
+            this.context = context;
+            m_artifact = artifact;
+        }
+
+        /// <inheritdoc />
+        public string source => registration?.source
+            ?? throw new ObjectDisposedException(nameof(IUiImageRegistration));
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (Environment.CurrentManagedThreadId != m_owner.m_ownerThread)
+                throw new InvalidOperationException("A UI image must be retired on its owner thread.");
+            registration?.Dispose();
+            registration = null;
+            m_artifact?.Dispose();
+            m_artifact = null;
+            m_owner.m_images.Remove(this);
+        }
+
+        internal UiContextHandle context { get; }
+        internal IUiImageRegistration? registration { get; set; }
+    }
+
+    private sealed class DocumentResources
+    {
+        internal readonly List<FontRegistration> fonts = [];
+        internal readonly List<IUiImageRegistration> images = [];
+        internal bool documentClosed;
     }
 
     private sealed class FontResidency(ArtifactLease lease)

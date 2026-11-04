@@ -79,10 +79,14 @@ public sealed class UiDocumentSource
     /// <param name="sourceUri">
     /// Virtual source address used only for diagnostics and relative dependency identity.
     /// </param>
+    /// <param name="resourceBindings">
+    /// Optional frontend resource names mapped to registered runtime resource names; captured defensively.
+    /// </param>
     public UiDocumentSource(
         UiDocumentLanguageId language,
         string text,
-        string sourceUri = "memory://ui-document"
+        string sourceUri = "memory://ui-document",
+        IReadOnlyDictionary<string, string>? resourceBindings = null
     ) {
         if (!language.isValid)
             throw new ArgumentException("A document source requires an assigned language.", nameof(language));
@@ -91,6 +95,15 @@ public sealed class UiDocumentSource
         this.language = language;
         this.text = text;
         this.sourceUri = sourceUri;
+        var bindings = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (resourceBindings is not null)
+            foreach ((string name, string source) in resourceBindings)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(name);
+                ArgumentException.ThrowIfNullOrWhiteSpace(source);
+                bindings.Add(name, source);
+            }
+        this.resourceBindings = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(bindings);
     }
 
     /// <summary>
@@ -105,6 +118,11 @@ public sealed class UiDocumentSource
     /// Gets the virtual source address.
     /// </summary>
     public string sourceUri { get; }
+
+    /// <summary>
+    /// Gets immutable runtime-only source bindings interpreted by the selected language backend.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> resourceBindings { get; }
 }
 
 /// <summary>
