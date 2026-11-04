@@ -3,9 +3,13 @@
 
 #include <RmlUi/Core/Context.h>
 #include <RmlUi/Core/TextInputContext.h>
+#include <RmlUi/Core/Element.h>
+#include <RmlUi/Core/ElementDocument.h>
+#include <RmlUi/Core/Rectangle.h>
 #include <RmlUi/Core/StringUtilities.h>
 #include <algorithm>
 #include <cstring>
+#include <cmath>
 
 namespace Inno::UI::RmlUiAdapter
 {
@@ -68,6 +72,27 @@ void RmlUiTextInputHandler::Synchronize(std::uint64_t operation)
 {
     if (m_operation != operation)
         Cancel();
+}
+
+bool RmlUiTextInputHandler::GetArea(
+    float& x,
+    float& y,
+    float& width,
+    float& height
+) const {
+    auto* element = m_context ? m_context->GetFocusElement() : nullptr;
+    auto* document = element ? element->GetOwnerDocument() : nullptr;
+    if (!m_input || !document || !document->IsVisible() || !element->IsVisible())
+        return false;
+    Rml::Rectanglef bounds;
+    if (!m_input->GetBoundingBox(bounds) || !bounds.Valid())
+        return false;
+    x = bounds.Left();
+    y = bounds.Top();
+    width = bounds.Width();
+    height = bounds.Height();
+    return std::isfinite(x) && std::isfinite(y) && std::isfinite(width) &&
+        std::isfinite(height) && width > 0 && height > 0;
 }
 
 Result RmlUiTextInputHandler::Process(

@@ -140,3 +140,9 @@ static void WithDocument(
 ## 图片产物借用
 
 RegisterImage 在既有 IAssetArtifactLookup 上取得来源产物 lease，再向 UI backend 注册不可变引用。注册失败会退休本次借用；完整成功后由返回的 registration 持有，关闭 context 或停止 runtime 也会释放。UI 不读取该产物的像素，不创建 GPU 资源。图片注册和字体租约仍归同一个 runtime/document 生命周期。失败的资源退休保留 owner 供后续退休，不通过清空登记宣称完成。
+
+
+## 文本输入公开边界
+
+<!-- api: M:Inno.UI.Runtime.UiRuntime.GetTextInputArea(Inno.UI.UiContextHandle) c37bb4370316dc05759f2e1a6b04bb61aa01e777b318bac12f60d1fa2229eee6 -->
+- `public Inno.Core.Mathematics.Rect? Inno.UI.Runtime.UiRuntime.GetTextInputArea(Inno.UI.UiContextHandle context)`。所有权与失败语义见本页工作流及对应 XML 契约。

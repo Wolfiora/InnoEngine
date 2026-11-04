@@ -11,6 +11,27 @@ namespace Inno.Editor.PlayMode.Tests;
 
 public sealed class EditorGameInputCaptureTests
 {
+    [Fact]
+    public void TextInputTargetRequiresTheCurrentFocusedPresentationPass()
+    {
+        var capture = new EditorGameInputCapture(_ => 42u);
+        Assert.False(capture.TryGetTextInputTarget(out _, out _));
+        capture.BeginFrame();
+        capture.Report(9, new(30, 50), new(100, 80), focused: true, hovered: false);
+        capture.CompleteFrame(out _);
+        Assert.True(capture.TryGetTextInputTarget(out uint window, out Vector2 origin));
+        Assert.Equal(42u, window);
+        Assert.Equal(new Vector2(30, 50), origin);
+        capture.BeginFrame();
+        Assert.False(capture.TryGetTextInputTarget(out window, out origin));
+        Assert.Equal(0u, window);
+        Assert.Equal(Vector2.Zero, origin);
+        capture.Report(9, new(70, 80), new(100, 80), focused: false, hovered: true);
+        Assert.False(capture.TryGetTextInputTarget(out _, out _));
+        capture.CompleteFrame(out _);
+        Assert.False(capture.TryGetTextInputTarget(out _, out _));
+    }
+
     [Theory]
     [InlineData(TextCompositionPhase.Committed)]
     [InlineData(TextCompositionPhase.Cancelled)]

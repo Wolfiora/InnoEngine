@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 namespace Inno.Storage;
 
 /// <summary>
-/// Provides asynchronous atomic access to one application-specific persistent sandbox.
+/// Provides asynchronous atomic access to one isolated storage sandbox.
 /// </summary>
+/// <remarks>
+/// The composition owner selects persistent or temporary lifetime. The key and atomic-access protocol
+/// is identical; obtaining this service does not transfer the owner's lifetime or disposal rights.
+/// </remarks>
 public interface IApplicationStorage
 {
     /// <summary>

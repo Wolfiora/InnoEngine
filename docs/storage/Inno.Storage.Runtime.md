@@ -8,6 +8,8 @@
 
 `Inno.Storage.Runtime` 把一个 `IApplicationStorage` 绑定到完整 Session 生命周期。RuntimeSubsystem 在 BeginFrame 打开 scope，EndFrame 恢复父 scope；Stop 等全部异步工作退休后释放实现了 `IDisposable` 的 adapter。
 
+同一退休协议也接管临时 sandbox：后端释放成功才完成临时 payload 退休，失败保留 owner 并向上报告。Runtime 不判断物理路径、不另建目录清理器，也不将临时写入转发到持久存档。
+
 `StorageRuntimeFactory` 接受 Composition Root 的 factory callback，并为每个 Edit、Play 或 Player Session 创建独立存储实例。创建 null、重复 Subsystem ID 或依赖环会在 Session 启动时失败，不会进入半初始化状态。
 
 [下一页：Inno.Adapter.Storage.FileSystem](../backends/FileSystem/Inno.Adapter.Storage.FileSystem.md)

@@ -32,4 +32,31 @@ public interface IStorageBackendFactory
         StorageBackendId backend,
         StorageScope scope
     );
+
+    /// <summary>
+    /// Creates a fresh temporary sandbox through the explicitly selected provider.
+    /// </summary>
+    /// <param name="backend">
+    /// The implementation selected by the host; unsupported temporary storage never falls back to persistent data.
+    /// </param>
+    /// <param name="scope">
+    /// The producer namespace, distinct from the identity of each independently created sandbox.
+    /// </param>
+    /// <returns>
+    /// A caller-owned service implementing <see cref="System.IDisposable"/>. Drain accepted operations before
+    /// disposing it; successful disposal retires its temporary payload without affecting other sandboxes.
+    /// </returns>
+    /// <exception cref="System.ArgumentException">
+    /// The scope is unassigned.
+    /// </exception>
+    /// <exception cref="System.NotSupportedException">
+    /// The backend is unregistered or does not support temporary storage.
+    /// </exception>
+    /// <exception cref="System.InvalidOperationException">
+    /// The provider violates the disposable ownership contract.
+    /// </exception>
+    IApplicationStorage CreateTemporaryStorage(
+        StorageBackendId backend,
+        StorageScope scope
+    );
 }

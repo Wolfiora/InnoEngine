@@ -19,6 +19,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
     private readonly string m_record;
     private readonly ProcessOwnerStamp m_owner;
     private CoordinatedFileLease? m_lease;
+    private bool m_retired;
 
     private ProcessOwnedDirectory(
         string root,
@@ -221,15 +222,14 @@ public sealed class ProcessOwnedDirectory : IDisposable
     /// Releases only this directory after its other recorded process lifetimes have exited.
     /// </summary>
     /// <exception cref="IOException">
-    /// Removal failed; its explicit claim remains available for later retirement.
+    /// Removal failed; its explicit claim remains available and disposal can be retried after readers release it.
     /// </exception>
     public void Dispose()
     {
-        CoordinatedFileLease? lease = m_lease;
-        if (lease is null)
+        if (m_retired)
             return;
+        m_lease?.Dispose();
         m_lease = null;
-        lease.Dispose();
         try
         {
             using CoordinatedFileLease retirement = CoordinatedFileLease.AcquireAsync(Path.Combine(m_root, "owner.lock"), directory + ".work.lock", TimeSpan.FromSeconds(5))
@@ -238,6 +238,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
                 throw new IOException("A temporary directory still has an active or unverifiable subprocess owner.");
             if (Directory.Exists(directory))
                 Directory.Delete(PathBoundary.RequireUnlinkedPath(m_root, directory), recursive: true);
+            m_retired = true;
             // The claim authorizes later leaf retirement under the owner's exclusive gate.
 
         }

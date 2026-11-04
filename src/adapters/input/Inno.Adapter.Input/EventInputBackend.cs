@@ -12,7 +12,7 @@ namespace Inno.Adapter.Input;
 /// <summary>
 /// Accumulates backend-neutral platform events into complete runtime input snapshots.
 /// </summary>
-public sealed class EventInputBackend : IInputBackend
+public sealed class EventInputBackend : IInputBackend, IInputTextBackend
 {
     private readonly HashSet<KeyCode> m_keysDown = [];
     private readonly HashSet<MouseButton> m_mouseButtonsDown = [];
@@ -28,6 +28,8 @@ public sealed class EventInputBackend : IInputBackend
     private bool m_disposed;
     private TextCompositionState? m_textComposition;
     private ulong m_lastCompositionId;
+    private Func<IInputTextSession?>? m_beginTextInput;
+    private IInputTextSession? m_textSession;
 
     /// <summary>
     /// Creates an event-backed input adapter for one platform window.
@@ -36,16 +38,29 @@ public sealed class EventInputBackend : IInputBackend
     /// The translated event window identifier, or zero to accept input from every window.
     /// </param>
     public EventInputBackend(uint windowId)
-        : this(windowId, null)
+        : this(windowId, null, null)
     {
     }
 
     internal EventInputBackend(
         uint windowId,
-        Action<EventInputBackend>? disposeCallback
+        Action<EventInputBackend>? disposeCallback,
+        Func<IInputTextSession?>? beginTextInput
     ) {
         m_windowId = windowId;
         m_disposeCallback = disposeCallback;
+        m_beginTextInput = beginTextInput;
+    }
+
+    /// <inheritdoc />
+    public IInputTextSession? TryBeginTextInput()
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        if (m_textSession is { isActive: true })
+            return null;
+        m_textSession?.Dispose();
+        m_textSession = null;
+        return m_textSession = m_beginTextInput?.Invoke();
     }
 
     /// <summary>
@@ -69,6 +84,12 @@ public sealed class EventInputBackend : IInputBackend
         lock (m_sync)
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
+            if (evnt is WindowCloseEvent or WindowFocusChangedEvent { isFocused: false } or
+                WindowVisibilityChangedEvent { isVisible: false } or ApplicationSuspensionChangedEvent { isSuspended: true })
+            {
+                m_textSession?.Dispose();
+                m_textSession = null;
+            }
             m_ownership.Process(evnt, m_windowId);
             if (!m_ownership.acceptsInput && evnt is KeyEvent or MouseEvent or TextInputEvent or TextCompositionEvent)
                 return;
@@ -166,11 +187,14 @@ public sealed class EventInputBackend : IInputBackend
             return;
         lock (m_sync)
         {
+            m_textSession?.Dispose();
+            m_textSession = null;
             m_disposed = true;
             m_subscription?.Dispose();
             m_subscription = null;
             Action<EventInputBackend>? callback = m_disposeCallback;
             m_disposeCallback = null;
+            m_beginTextInput = null;
             callback?.Invoke(this);
             m_keysDown.Clear();
             m_mouseButtonsDown.Clear();
@@ -192,6 +216,9 @@ public sealed class EventInputBackend : IInputBackend
 
     internal void DisconnectSource()
     {
+        m_textSession?.Dispose();
+        m_textSession = null;
+        m_beginTextInput = null;
         ProcessEvent(new WindowCloseEvent(m_windowId));
         m_subscription?.Dispose();
         m_subscription = null;

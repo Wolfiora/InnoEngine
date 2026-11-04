@@ -48,6 +48,7 @@ public sealed partial class UiRuntimeTests
     private sealed class FixedInput(InputSnapshot snapshot) : IInputService
     {
         public InputSnapshot snapshot { get; } = snapshot;
+        public IInputTextSession? TryBeginTextInput() => null;
     }
 
     private sealed class RejectingArtifacts : IAssetArtifactLookup
@@ -127,6 +128,8 @@ public sealed partial class UiRuntimeTests
             string elementId
         ) => throw new NotSupportedException();
         public UiFocusTarget? GetFocusedElement(UiContextHandle context) => throw new NotSupportedException();
+
+        public Inno.Core.Mathematics.Rect? GetTextInputArea(UiContextHandle context) => null;
         public bool ClearFocus(UiContextHandle context) => throw new NotSupportedException();
         public UiContextHandle CreateContext(UiContextOptions options) => new(1);
         public void DestroyContext(UiContextHandle context) => destroyedContexts++;

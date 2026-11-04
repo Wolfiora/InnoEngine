@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using Inno.Core.Execution;
+using Inno.Core.Mathematics;
 
 namespace Inno.UI;
 
@@ -250,6 +251,22 @@ public static class UI
     /// </exception>
     public static UiFocusTarget? GetFocusedElement(UiContextHandle context) =>
         UiExecutionContext.current.GetFocusedElement(context);
+
+    /// <summary>
+    /// Reads the focused text control's area from the current UI service without refreshing layout.
+    /// </summary>
+    /// <param name="context">
+    /// The live context to query on its owner thread after layout has been updated.
+    /// </param>
+    /// <returns>
+    /// The control area in context pixels, or null when no visible editable text control has usable geometry.
+    /// Map this value to input coordinates before updating a text-input session; it is not an exact caret rectangle.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// No UI service is bound, the context is stale or the caller violates ownership.
+    /// </exception>
+    public static Rect? GetTextInputArea(UiContextHandle context) =>
+        UiExecutionContext.current.GetTextInputArea(context);
 
     /// <summary>
     /// Returns focus to the owning document, preserving modal ownership and emitting normal blur events.

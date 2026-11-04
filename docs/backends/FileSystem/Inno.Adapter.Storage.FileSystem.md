@@ -71,9 +71,18 @@
 | <a id="api-75a2bda41b99082d"></a>[`public override Inno.Storage.IApplicationStorage Inno.Adapter.Storage.FileSystem.FileSystemStorageBackendProvider.CreateStorage(Inno.Storage.StorageScope scope)`](../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/FileSystemStorageBackendProvider.cs#L32) | Creates a caller-owned storage service using this implementation.<br>返回：A new service owned by the caller; providers must not return null.<br>`scope`：The application namespace to isolate within this provider's host configuration. | — | — |
 | <a id="api-e934561af6fd34af"></a>[`public sealed class Inno.Adapter.Storage.FileSystem.FileSystemStorageBackendProvider : Inno.Adapter.Storage.StorageBackendProvider`](../../../backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/FileSystemStorageBackendProvider.cs#L10) | Supplies the FileSystem implementation through the neutral storage creation boundary. | — | — |
 
+## 临时操作存储
+
+`FileSystemStorageBackendProvider.CreateTemporaryStorage` 复用相同的原子读写后端，以 Core IO `ProcessOwnedDirectory` 创建独立目录。物理根由 provider 的宿主配置决定；相同 scope 每次获得新的操作身份，不读取持久 `Storage`。
+
+返回的 `FileSystemApplicationStorage` 由现有 `StorageRuntime` 或显式 owner 释放。它先停止新访问、等待活动操作退出，再退休临时 payload。读取者阻塞或 IO 错误保留重试责任；活动 sibling 推迟元数据回收，最后一个 sandbox 退出时在 producer 独占权内退休已完成的 claim 和叶锁。固定 `owner.lock` 保留。普通 `FileSystemApplicationStorage(rootDirectory)` 仍保留持久数据，未知目录不参与清理。
+
 ## 项目依赖
 
 - [Inno.Core.IO](../../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Storage](../../storage/Inno.Adapter.Storage.md)：公开引用边界由实际签名核对。
 - [Inno.Storage](../../storage/Inno.Storage.md)：公开引用边界由实际签名核对。
 - [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+
+<!-- api: M:Inno.Adapter.Storage.FileSystem.FileSystemStorageBackendProvider.CreateTemporaryStorage(Inno.Storage.StorageScope) e9824c053eb170479af7da6fb94d069c7daeb5a305364c49af547edc2e3eb795 -->
+- `public override Inno.Storage.IApplicationStorage Inno.Adapter.Storage.FileSystem.FileSystemStorageBackendProvider.CreateTemporaryStorage(Inno.Storage.StorageScope scope)`：创建独立临时存储；所有权和失败语义见本页临时操作存储说明。

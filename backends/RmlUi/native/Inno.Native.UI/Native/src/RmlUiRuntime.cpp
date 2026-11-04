@@ -542,6 +542,23 @@ Result Runtime::ClearFocus(
     return Result::Success;
 }
 
+Result Runtime::GetTextInputArea(
+    std::uint64_t context,
+    std::uint8_t& available,
+    float& x,
+    float& y,
+    float& width,
+    float& height
+) {
+    available = 0;
+    x = y = width = height = 0;
+    auto* state = GetRuntimeState(m_state) ? GetRuntimeState(m_state)->Find(context) : nullptr;
+    if (!state)
+        return Result::InvalidHandle;
+    available = state->text_input.GetArea(x, y, width, height) ? 1 : 0;
+    return Result::Success;
+}
+
 Result Runtime::PrepareLayout(
     std::uint64_t context,
     std::uint64_t& revision

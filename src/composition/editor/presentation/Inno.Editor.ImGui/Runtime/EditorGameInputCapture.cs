@@ -44,6 +44,28 @@ public sealed class EditorGameInputCapture
     public void BeginFrame() => m_reported = false;
 
     /// <summary>
+    /// Reads the current focused input route for host-owned system text input.
+    /// </summary>
+    /// <param name="windowId">
+    /// The platform window receiving this route, or zero when no view owns input.
+    /// </param>
+    /// <param name="origin">
+    /// The runtime input origin in window-client logical coordinates, or zero when unavailable.
+    /// </param>
+    /// <returns>
+    /// True when the current presentation pass reported a focused Game View.
+    /// </returns>
+    public bool TryGetTextInputTarget(
+        out uint windowId,
+        out Vector2 origin
+    ) {
+        bool active = m_reported && m_focused && m_targetWindowId != 0;
+        windowId = active ? m_targetWindowId : 0;
+        origin = active ? m_origin : default;
+        return active;
+    }
+
+    /// <summary>
     /// Reports the Game View image in coordinates local to its platform window.
     /// </summary>
     /// <param name="viewportId">

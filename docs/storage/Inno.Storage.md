@@ -4,6 +4,8 @@
 
 `Inno.Storage` 公开 `IApplicationStorage`，只接受规范化 `StorageKey`，不向脚本暴露绝对路径。全部操作支持 cancellation；写入语义是完整值原子替换。
 
+Sandbox 的持久或临时生命周期由组合 owner 选择，不改变游戏访问协议。临时 sandbox 不借用正式存档；持有 `IApplicationStorage` 不授予结束 session 或释放后端的权利。
+
 ## 公开 API
 
 | API | 语义 |

@@ -63,6 +63,7 @@ internal sealed class EditorHost : ShellHost
     private EditorLayer? m_editorLayer;
     private IInputEventSource? m_gameInputSource;
     private EditorGameInputCapture? m_gameInputCapture;
+    private IPlatformWindow? m_gameTextWindow;
     private bool m_shutdownStateSaved;
     private DiagnosticHub? m_diagnostics;
 
@@ -189,6 +190,7 @@ internal sealed class EditorHost : ShellHost
                         m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(resetWindowId, false));
                     if (acquiredWindowId != 0)
                         m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(acquiredWindowId, true));
+                    UpdateGameTextInputTarget();
                 }
             }
         }
@@ -253,6 +255,7 @@ internal sealed class EditorHost : ShellHost
         m_editSession = null;
         m_authoring = null;
         m_gameInputCapture = null;
+        m_gameTextWindow = null;
         m_gameInputSource = null;
         BootLog("Editor product resources released.");
     }
@@ -558,6 +561,22 @@ internal sealed class EditorHost : ShellHost
         Event? gameEvent = m_gameInputCapture?.Route(evnt);
         if (gameEvent is not null)
             m_gameInputSource?.ProcessEvent(gameEvent);
+    }
+
+    private void UpdateGameTextInputTarget()
+    {
+        if (m_gameInputSource is null)
+            return;
+        if (m_gameInputCapture is null ||
+            !m_gameInputCapture.TryGetTextInputTarget(out uint windowId, out System.Numerics.Vector2 origin))
+        {
+            m_gameInputSource.SetTextInputTarget(null, default);
+            m_gameTextWindow = null;
+            return;
+        }
+        if (m_gameTextWindow is null || m_gameTextWindow.isClosed || m_gameTextWindow.windowId != windowId)
+            m_gameTextWindow = platformApplication.GetWindows().FirstOrDefault(window => window.windowId == windowId);
+        m_gameInputSource.SetTextInputTarget(m_gameTextWindow, new(origin.X, origin.Y));
     }
 
     private bool HasEditorFocus() => m_focusedWindowIds.Count > 0;

@@ -53,5 +53,20 @@ public sealed class StorageBackendCatalog : IStorageBackendFactory
         return provider.CreateStorage(scope)
             ?? throw new InvalidOperationException("Storage provider '" + backend + "' returned no service.");
     }
+
+    /// <inheritdoc />
+    public IApplicationStorage CreateTemporaryStorage(
+        StorageBackendId backend,
+        StorageScope scope
+    ) {
+        if (!scope.isValid)
+            throw new ArgumentException("Temporary storage requires an assigned producer namespace.", nameof(scope));
+        if (!m_providers.TryGetValue(backend, out StorageBackendProvider? provider))
+            throw new NotSupportedException("Storage backend '" + backend + "' is not registered.");
+        IApplicationStorage storage = provider.CreateTemporaryStorage(scope);
+        if (storage is not IDisposable)
+            throw new InvalidOperationException("Temporary storage provider '" + backend + "' must return a disposable owner.");
+        return storage;
+    }
 }
 

@@ -1,6 +1,8 @@
 using System;
 using System.Text;
 
+using Inno.Core.Mathematics;
+
 using Inno.Native.UI;
 using Inno.UI;
 
@@ -11,6 +13,20 @@ namespace Inno.Adapter.UI.RmlUi;
 /// </summary>
 public sealed unsafe partial class RmlUiBackend
 {
+    /// <inheritdoc />
+    public Rect? GetTextInputArea(UiContextHandle context)
+    {
+        EnsureActive();
+        byte available = 0;
+        float x = 0, y = 0, width = 0, height = 0;
+        Result result = default;
+        BgcsInnoRmluiError* error = null;
+        RmlUiNativeErrors.CheckBridge(UiNative.Raw.GetTextInputArea(
+            m_runtime, Require(context), &available, &x, &y, &width, &height, &result, &error), error);
+        ThrowIfFailed(result, "query text input area");
+        return available != 0 ? new Rect(x, y, width, height) : null;
+    }
+
     /// <inheritdoc />
     public UiFocusResult FocusElement(
         UiContextHandle context,

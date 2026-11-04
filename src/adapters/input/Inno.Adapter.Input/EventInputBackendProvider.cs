@@ -20,6 +20,8 @@ public sealed class EventInputBackendProvider : InputBackendProvider
     ) {
         ArgumentNullException.ThrowIfNull(window);
         var source = new EventInputSource(acceptAllWindows ? 0 : window.windowId);
+        if (!acceptAllWindows)
+            source.SetTextInputTarget(window, default);
         source.ProcessEvent(new Inno.Core.Events.WindowFocusChangedEvent(window.windowId, window.isFocused));
         return source;
     }

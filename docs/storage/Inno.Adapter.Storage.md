@@ -11,6 +11,12 @@
 
 Factory 负责 implementation 选择；`IApplicationStorage` 继续负责 key sandbox、异步读取与原子提交。游戏脚本永远不接触绝对路径或 `FileSystemApplicationStorage`。
 
+## 临时操作存储
+
+`CreateTemporaryStorage` 为宿主短期操作创建空的独立 sandbox。同一 producer namespace 的两次调用不共享内容，也不能读取或覆盖持久存档。返回服务必须实现 `IDisposable`；现有 `StorageRuntime` 接管后，先取消并等待已接受的工作，再释放后端。该工厂属于组合 SPI，不新增游戏脚本导出。
+
+Catalog 不判断操作系统或 backend 名称。Provider 自己实现临时能力，默认明确抛出 `NotSupportedException`，不退回 `CreateStorage`。空 scope 和违反 disposable 所有权契约的 provider 在组合边界失败。成功释放退休临时 payload；失败必须保留诊断与可重试 owner。
+
 ```csharp
 using Inno.Adapter.Storage;
 using Inno.Storage;
@@ -130,3 +136,12 @@ provider/catalog 接收 StorageScope。逻辑 namespace 与物理布局分开；
 
 - [Inno.Storage](Inno.Storage.md)：公开引用边界由实际签名核对。
 - [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+
+<!-- api: M:Inno.Adapter.Storage.IStorageBackendFactory.CreateTemporaryStorage(Inno.Adapter.Storage.StorageBackendId,Inno.Storage.StorageScope) d76e478983cb3d5f045125eb38de0f7de9664667348c1db5c29581517b35e2fb -->
+- `Inno.Storage.IApplicationStorage Inno.Adapter.Storage.IStorageBackendFactory.CreateTemporaryStorage(Inno.Adapter.Storage.StorageBackendId backend, Inno.Storage.StorageScope scope)`：创建独立临时存储；所有权和失败语义见本页临时操作存储说明。
+
+<!-- api: M:Inno.Adapter.Storage.StorageBackendCatalog.CreateTemporaryStorage(Inno.Adapter.Storage.StorageBackendId,Inno.Storage.StorageScope) b912f3196e962fe5b4905174c2dde01e9816c922e9c411aef195dc88cb038fff -->
+- `public Inno.Storage.IApplicationStorage Inno.Adapter.Storage.StorageBackendCatalog.CreateTemporaryStorage(Inno.Adapter.Storage.StorageBackendId backend, Inno.Storage.StorageScope scope)`：创建独立临时存储；所有权和失败语义见本页临时操作存储说明。
+
+<!-- api: M:Inno.Adapter.Storage.StorageBackendProvider.CreateTemporaryStorage(Inno.Storage.StorageScope) 7e467e69ed14bebe98c982aeee82741d04ce487bb3ccbb9f38f1962948ff00ab -->
+- `public virtual Inno.Storage.IApplicationStorage Inno.Adapter.Storage.StorageBackendProvider.CreateTemporaryStorage(Inno.Storage.StorageScope scope)`：创建独立临时存储；所有权和失败语义见本页临时操作存储说明。

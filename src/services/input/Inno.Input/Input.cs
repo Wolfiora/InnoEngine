@@ -56,6 +56,20 @@ public static class InputExecutionContext
 public static class Input
 {
     /// <summary>
+    /// Tries to acquire exclusive system text input on the current runtime's focused route.
+    /// </summary>
+    /// <returns>
+    /// A caller-owned session, or null when unsupported, unfocused or busy.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// No input scope is bound or the call does not use the input owner thread.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The bound runtime has begun retirement.
+    /// </exception>
+    public static IInputTextSession? TryBeginTextInput() => InputExecutionContext.current.TryBeginTextInput();
+
+    /// <summary>
     /// Gets the complete immutable current-frame snapshot.
     /// </summary>
     public static InputSnapshot snapshot => InputExecutionContext.current.snapshot;

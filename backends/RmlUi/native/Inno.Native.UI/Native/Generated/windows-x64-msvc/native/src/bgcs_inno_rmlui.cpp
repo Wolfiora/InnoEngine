@@ -563,6 +563,27 @@ BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAd
     catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
 }
 
+BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTextInputArea_9315477abc25a3d9(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint8_t * arg1, float * arg2, float * arg3, float * arg4, float * arg5, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
+{
+    if (bgcs_error != nullptr) *bgcs_error = nullptr;
+    if (bgcs_result == nullptr) return bgcs_capture_error(bgcs_error, "Missing result storage", 2);
+    *bgcs_result = {};
+    if (bgcs_self == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg1 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg2 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg3 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg4 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    if (arg5 == nullptr) return bgcs_capture_error(bgcs_error, "Missing native object or reference", 2);
+    try
+    {
+        auto* bgcs_instance = reinterpret_cast<::Inno::UI::RmlUiAdapter::Runtime*>(bgcs_self);
+        *bgcs_result = static_cast<bgcs_inno_rmlui_Result_27eacae197510b4d>(bgcs_instance->GetTextInputArea(static_cast<unsigned long long>(arg0), *reinterpret_cast<unsigned char*>(arg1), *reinterpret_cast<float*>(arg2), *reinterpret_cast<float*>(arg3), *reinterpret_cast<float*>(arg4), *reinterpret_cast<float*>(arg5)));
+        return 0;
+    }
+    catch (const std::exception& exception) { return bgcs_capture_error(bgcs_error, exception.what(), 1); }
+    catch (...) { return bgcs_capture_error(bgcs_error, "Native exception", 1); }
+}
+
 BGCS_INNO_RMLUI_API int32_t BGCS_INNO_RMLUI_CALL bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_GetTextureInfo_bd3f8d4de21960a4(bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_Runtime_object_4d0a956ea379df70 * bgcs_self, uint64_t arg0, uint64_t arg1, bgcs_inno_rmlui_Inno_UI_RmlUiAdapter_TextureInfo_object_1e7c968e0f5b0e73 * arg2, bgcs_inno_rmlui_Result_27eacae197510b4d *bgcs_result, bgcs_inno_rmlui_error **bgcs_error)
 {
     if (bgcs_error != nullptr) *bgcs_error = nullptr;

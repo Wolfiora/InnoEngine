@@ -182,3 +182,9 @@ static void RenderMarkup(
 适配器将 context 内图片 source URI 映射为不透明资源编号与尺寸。原生 RenderInterface 只处理布局和纹理引用，不读取资产数据库或取得图形后端句柄。注册退休通过 RmlUi 公开的 ReleaseTexture(source, renderInterface) 作用于当前 render interface，并失效已经准备的布局绘制帧；不能让已释放纹理留在下一次命令中。
 
 当前前端解析 img 的 src 和 spritesheet 的 src，使用原有 AssetPath 解析 source-relative 路径并交给统一导入流程。外部样式中的图片相对该样式来源解析；未生成独立资源数据库。图片声明的私有名称仅在加载时由适配器解释，普通文档文字不参与 URI 替换。
+
+
+## 文本输入公开边界
+
+<!-- api: M:Inno.Adapter.UI.RmlUi.RmlUiBackend.GetTextInputArea(Inno.UI.UiContextHandle) 671d2d12b5045175aeda87ff7df2859be5ae48ecbc0b689d8d2f294a4da76642 -->
+- `public Inno.Core.Mathematics.Rect? Inno.Adapter.UI.RmlUi.RmlUiBackend.GetTextInputArea(Inno.UI.UiContextHandle context)`：通过官方 `TextInputContext.GetBoundingBox` 读取当前文本控件的投影区域。查询保持只读，不调用私有布局入口，不保存跨帧原生借用；没有活动文本控件或有效可见区域时返回 null。

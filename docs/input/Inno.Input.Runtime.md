@@ -11,7 +11,7 @@
 | `InputRuntime` | 当前快照、frame scope 与 backend 所有者。 |
 | `InputRuntimeFactory` | 为每个 Session 创建独立 backend/feature；可被重复用于 Edit、Play 与 Player。 |
 
-Composition Root 只需把 factory 加入 `RuntimeSessionOptions.subsystemFactories`。测试可以注入 synthetic backend；Runtime 不依赖 SDL 或真实输入设备。创建失败会中止 Session 构造，释放已创建 Feature。
+Composition Root 只需把 factory 加入 `RuntimeSessionOptions.createSubsystems`。测试可以注入 synthetic backend；Runtime 不依赖 SDL 或真实输入设备。创建失败会中止 Session 构造，释放已创建 Feature。
 
 [下一页：Inno.Adapter.Input](Inno.Adapter.Input.md)
 
@@ -54,3 +54,16 @@ Composition Root 只需把 factory 加入 `RuntimeSessionOptions.subsystemFactor
 - [Inno.Input](Inno.Input.md)：公开引用边界由实际签名核对。
 - [Inno.Runtime.Contracts](../runtime/Inno.Runtime.Contracts.md)：公开引用边界由实际签名核对。
 - [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+
+## 文本会话退休
+
+Runtime 在 `Attach` 时绑定控制线程，通过 backend 的可选 `IInputTextBackend` 取得系统文字输入会话。未 Attach 时不能获取会话；Stop 开始后拒绝新的会话，backend 必须先完成所有未释放会话的退休。退休失败沿用 `RuntimeSubsystem` 的失败与重试协议，不通过丢失 lease 解除占用。
+
+
+## 文本输入公开边界
+
+<!-- api: M:Inno.Input.Runtime.InputRuntime.OnStart 39986c7a9704331569218bc7c916d7e8196ad3968a14abd2ef186fbe458b1d1d -->
+- `protected override void Inno.Input.Runtime.InputRuntime.OnStart()`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.Input.Runtime.InputRuntime.TryBeginTextInput 5e09c934016b5fff82dd2c6b466172460907736b73f29ce45cab1abffaf86969 -->
+- `public Inno.Input.IInputTextSession? Inno.Input.Runtime.InputRuntime.TryBeginTextInput()`：取得当前路由的独占文本会话；不可用时返回 null，退出与失败处理遵循本页的 owner 协议。

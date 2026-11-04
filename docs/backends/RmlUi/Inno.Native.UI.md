@@ -513,6 +513,9 @@ internal static unsafe class NativeEventReader
 
 以下入口只属于后端原生桥，不导出为游戏脚本 API。操作身份来自已有输入快照，Context 和文本借用不得越过调用作用域。
 
+<!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.GetTextInputArea(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.Byte*,System.Single*,System.Single*,System.Single*,System.Single*,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 7d87a7f5387cce0ede08d8944b6b712a3cb02fe1adea52db87da17feb4c94d17 -->
+- `public int Inno.Native.UI.UiNativeContext.RawApi.GetTextInputArea(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, byte* available, float* x, float* y, float* width, float* height, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`：只读当前可见文本控件的投影区域，单位为 context 像素。`available = 0` 表示没有可用区域；该查询不刷新布局、不推进时间、不获取系统输入权，也不承诺精确的插入光标矩形。桥接状态、领域结果与错误对象分别返回，调用方须遵循既有错误释放协议。
+
 <!-- api: M:Inno.Native.UI.UiNativeContext.RawApi.ProcessComposition(Inno.Native.UI.InnoUIRmlUiAdapterRuntime*,System.UInt64,System.UInt64,System.UInt32,System.SByte*,System.Int32,System.Int32,Inno.Native.UI.Result*,Inno.Native.UI.BgcsInnoRmluiError**) 7362b81395ff001e1bb7c20e160aa648ced536f830da549c886fc32040076bb7 -->
 - [`public int Inno.Native.UI.UiNativeContext.RawApi.ProcessComposition(Inno.Native.UI.InnoUIRmlUiAdapterRuntime* bgcs_self, ulong context, ulong operation, uint phase, sbyte* text, int selection_start, int selection_length, Inno.Native.UI.Result* bgcs_result, Inno.Native.UI.BgcsInnoRmluiError** bgcs_error)`](../../../backends/RmlUi/native/Inno.Native.UI/Generated/Bindings.cs#L599)：按操作身份处理开始、更新、提交或取消；过期操作不覆盖当前控件。
 

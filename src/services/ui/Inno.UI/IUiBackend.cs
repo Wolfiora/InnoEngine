@@ -224,6 +224,25 @@ public interface IUiBackend : IDisposable
     UiFocusTarget? GetFocusedElement(UiContextHandle context);
 
     /// <summary>
+    /// Reads the focused text control's projected area without advancing time or refreshing layout.
+    /// </summary>
+    /// <param name="context">
+    /// The live context to query on its owner thread after the owner's layout update.
+    /// </param>
+    /// <returns>
+    /// The positive text area in context pixels, or null when no visible editable text control
+    /// has usable geometry. This is a control area, not an exact caret rectangle or a window lease.
+    /// </returns>
+    /// <remarks>
+    /// The view owner maps this area into input coordinates before updating its text-input session.
+    /// Requery after focus, document or layout changes; the returned value grants no input ownership.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The context is stale or the caller violates ownership.
+    /// </exception>
+    Rect? GetTextInputArea(UiContextHandle context);
+
+    /// <summary>
     /// Returns focus to the owning document, preserving modal ownership and emitting normal blur events.
     /// </summary>
     /// <param name="context">

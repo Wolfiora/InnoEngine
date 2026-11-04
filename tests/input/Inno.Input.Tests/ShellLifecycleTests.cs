@@ -214,6 +214,10 @@ public sealed class ShellLifecycleTests
             StorageBackendId backend,
             StorageScope scope
         ) => throw new NotSupportedException();
+        public IApplicationStorage CreateTemporaryStorage(
+            StorageBackendId backend,
+            StorageScope scope
+        ) => throw new NotSupportedException();
         public IAudioDevice CreateDevice(
             AudioBackendId backend,
             AudioBackendOptions options = default
@@ -260,6 +264,10 @@ public sealed class ShellLifecycleTests
         private readonly EventInputSource m_source = new(1);
         public IInputBackend CreateBackend() => m_source.CreateBackend();
         public void ProcessEvent(Event evnt) => m_source.ProcessEvent(evnt);
+        public void SetTextInputTarget(
+            IPlatformWindow? window,
+            Inno.Core.Mathematics.Vector2 origin
+        ) => m_source.SetTextInputTarget(window, origin);
         public void Dispose()
         {
             m_source.Dispose();

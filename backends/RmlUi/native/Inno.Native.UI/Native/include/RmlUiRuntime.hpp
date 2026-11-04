@@ -212,6 +212,15 @@ class Runtime final
         std::uint64_t context,
         std::uint8_t& cleared
     );
+    /// Reads the active text control bounds in context pixels without refreshing layout.
+    Result GetTextInputArea(
+        std::uint64_t context,
+        std::uint8_t& available,
+        float& x,
+        float& y,
+        float& width,
+        float& height
+    );
     Result PrepareLayout(
         std::uint64_t context,
         std::uint64_t& revision

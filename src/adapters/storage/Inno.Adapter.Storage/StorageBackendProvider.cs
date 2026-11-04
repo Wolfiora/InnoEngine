@@ -43,5 +43,21 @@ public abstract class StorageBackendProvider
     /// A new service owned by the caller; providers must not return null.
     /// </returns>
     public abstract IApplicationStorage CreateStorage(StorageScope scope);
+
+    /// <summary>
+    /// Creates an empty operation-owned sandbox that never reads or replaces persistent application data.
+    /// </summary>
+    /// <param name="scope">
+    /// The producer namespace; each call must create an independent sandbox even for the same namespace.
+    /// </param>
+    /// <returns>
+    /// A storage service implementing <see cref="IDisposable"/>. Its owner must drain accepted work before
+    /// disposal, which retires the temporary payload. Failed retirement must remain diagnosable and retryable.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// This provider does not support temporary storage; no persistent fallback is allowed.
+    /// </exception>
+    public virtual IApplicationStorage CreateTemporaryStorage(StorageScope scope)
+        => throw new NotSupportedException("The selected storage provider does not support temporary sandboxes.");
 }
 

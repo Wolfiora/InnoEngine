@@ -5,6 +5,7 @@ using System.Linq;
 
 using Inno.Adapter.UI.RmlUi;
 using Inno.Core.Input;
+using Inno.Core.Mathematics;
 using Inno.Text;
 using Xunit;
 
@@ -12,6 +13,62 @@ namespace Inno.UI.Tests;
 
 public sealed partial class UiServiceTests
 {
+    [Fact]
+    public void TextInputAreaUsesCurrentControlGeometryWithoutChangingTimeOrFocus()
+    {
+        using var backend = new RmlUiBackend();
+        backend.RegisterFont(new(File.ReadAllBytes(FontPath()), 0, "Composition", TextFontStyle.Normal, 400));
+        UiContextHandle context = backend.CreateContext(new("text-area", 640, 360));
+        Assert.Null(backend.GetTextInputArea(context));
+        UiDocumentHandle document = OpenCompositionDocument(backend, context);
+        backend.SetTimePaused(context, true);
+        foreach (float zoom in new[] { .75f, .85f, .9f, 1f, 1.1f, 1.25f, 1.5f })
+        foreach (float dpi in new[] { 1f, 1.25f, 1.5f, 2f })
+        {
+            backend.SetViewport(context, 640, 360, zoom * dpi);
+            backend.SetAttribute(context, document, "edit", "style", "width: 120dp;");
+            backend.RefreshLayout(context);
+            Rect area = Assert.IsType<Rect>(backend.GetTextInputArea(context));
+            Assert.True(area.width >= 120f * zoom * dpi - 1);
+            Assert.True(area.height > 0);
+            UiContextTime time = backend.GetTime(context);
+            Assert.Equal(area, backend.GetTextInputArea(context));
+            Assert.Equal(time, backend.GetTime(context));
+            Assert.Equal(new UiFocusTarget(document, "edit"), backend.GetFocusedElement(context));
+            var mapping = new UiViewportMapping(new(640, 360), new(30, 50, 320, 180));
+            Assert.Equal(new Vector2(30 + area.x / 2, 50 + area.y / 2), mapping.ToViewport(new(area.x, area.y)));
+        }
+        backend.DrainEvents(context);
+        for (int sample = 0; sample < 5; sample++)
+        {
+            long baseline = GC.GetAllocatedBytesForCurrentThread();
+            for (int query = 0; query < 1_000; query++)
+                backend.GetTime(context);
+            long interopBytes = GC.GetAllocatedBytesForCurrentThread() - baseline;
+            long start = GC.GetAllocatedBytesForCurrentThread();
+            for (int query = 0; query < 1_000; query++)
+                backend.GetTextInputArea(context);
+            long areaBytes = GC.GetAllocatedBytesForCurrentThread() - start;
+            m_output.WriteLine($"text-area sample={sample} queries=1000 bytes={areaBytes} singleCallBytes={interopBytes}");
+            Assert.True(areaBytes <= interopBytes);
+        }
+        Assert.Empty(backend.DrainEvents(context));
+        backend.ClearFocus(context);
+        Assert.Null(backend.GetTextInputArea(context));
+        backend.FocusElement(context, document, "edit");
+        backend.SetAttribute(context, document, "edit", "id", "");
+        Assert.Equal(new UiFocusTarget(document, ""), backend.GetFocusedElement(context));
+        Assert.NotNull(backend.GetTextInputArea(context));
+        backend.FocusElement(context, document, "other");
+        backend.SetAttribute(context, document, "other", "style", "display: none;");
+        backend.RefreshLayout(context);
+        Assert.Null(backend.GetTextInputArea(context));
+        backend.CloseDocument(context, document);
+        Assert.Null(backend.GetTextInputArea(context));
+        backend.DestroyContext(context);
+        Assert.Throws<InvalidOperationException>(() => backend.GetTextInputArea(context));
+    }
+
     [Fact]
     public void CompositionReplacesPreeditAndCommitsOnceWithoutSubmitting()
     {
@@ -196,7 +253,9 @@ public sealed partial class UiServiceTests
             Assert.Equal(UiControlValue.Text("AB"), backend.GetValue(context, document, "edit"));
             Assert.Equal(UiControlValue.Text(""), backend.GetValue(independent, other, "edit"));
             Composition(backend, context, operation * 2 + 1, TextCompositionPhase.Started, "待");
+            Assert.NotNull(backend.GetTextInputArea(context));
             backend.CloseDocument(context, document);
+            Assert.Null(backend.GetTextInputArea(context));
         }
         backend.DestroyContext(context);
         backend.DestroyContext(independent);

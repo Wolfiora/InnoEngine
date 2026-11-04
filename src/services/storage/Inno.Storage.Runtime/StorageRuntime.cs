@@ -22,7 +22,7 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// Creates a feature whose optional disposable storage ownership transfers to this instance.
     /// </summary>
     /// <param name="storage">
-    /// The application-specific persistent storage sandbox.
+    /// The isolated storage sandbox; a disposable backend transfers its retirement responsibility to this runtime.
     /// </param>
     /// <param name="maxPendingOperations">
     /// Positive simultaneous asynchronous operation capacity.

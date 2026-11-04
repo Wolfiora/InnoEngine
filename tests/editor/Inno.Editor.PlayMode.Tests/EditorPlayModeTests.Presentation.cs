@@ -93,6 +93,7 @@ public sealed partial class EditorPlayModeTests
     private sealed class PresentationInput : IInputService
     {
         public InputSnapshot snapshot => InputSnapshot.empty;
+        public IInputTextSession? TryBeginTextInput() => null;
     }
 
     private sealed class PresentationAudio : IEditorAudioHost
@@ -185,6 +186,8 @@ public sealed partial class EditorPlayModeTests
             string elementId
         ) => throw new NotSupportedException();
         public UiFocusTarget? GetFocusedElement(UiContextHandle context) => throw new NotSupportedException();
+
+        public Inno.Core.Mathematics.Rect? GetTextInputArea(UiContextHandle context) => null;
         public bool ClearFocus(UiContextHandle context) => throw new NotSupportedException();
         public UiContextHandle CreateContext(UiContextOptions options) => new(1);
         public void DestroyContext(UiContextHandle context) { }

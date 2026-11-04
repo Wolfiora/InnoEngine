@@ -141,6 +141,13 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     }
 
     /// <inheritdoc />
+    public Rect? GetTextInputArea(UiContextHandle context)
+    {
+        EnsureActive();
+        return m_backend.GetTextInputArea(context);
+    }
+
+    /// <inheritdoc />
     public bool ClearFocus(UiContextHandle context)
     {
         EnsureActive();

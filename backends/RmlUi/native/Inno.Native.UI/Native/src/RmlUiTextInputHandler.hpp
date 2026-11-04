@@ -27,6 +27,12 @@ class RmlUiTextInputHandler final : public Rml::TextInputHandler
     void Cancel();
     void CancelFor(Rml::Element* element);
     void Synchronize(std::uint64_t operation);
+    bool GetArea(
+        float& x,
+        float& y,
+        float& width,
+        float& height
+    ) const;
 
   private:
     Rml::Context* m_context = nullptr;

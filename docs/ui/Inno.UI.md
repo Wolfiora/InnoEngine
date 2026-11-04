@@ -8,6 +8,13 @@
 
 ## 公开类型与工作流
 
+### 文本输入区域与系统会话
+
+`GetTextInputArea(context)` 返回当前可见文本控件的区域（context pixels），没有可编辑文本焦点或有效几何时返回 null。查询不推进时间、不刷新布局、不改变焦点，必须在本轮布局更新后使用；它表示控件区域，不承诺逐字符 caret 坐标。没有元素 ID 的文本控件也由后端焦点权威处理。
+
+显示该 context 的 view owner 使用 `UiViewportMapping` 将区域映射至 Input 的逻辑坐标，再通过 `Input.TryBeginTextInput()` 返回的 `IInputTextSession.SetArea` 提交。会话由调用方确定性释放，不能跨 Runtime 或扩展 generation 保留。UI 不决定哪个窗口接收输入，也不通过查询隐式夺取其他控件或 Editor 的输入法会话。清除焦点、关闭文档或 view 不再接受输入时，owner 释放会话；系统失焦或 Host 路由变化也会使 lease 失效。
+
+
 | 类型 | 语义 |
 | --- | --- |
 | `UiContextOptions`、`UiContextHandle`、`UiDocumentHandle` | 独立 surface 的尺寸/density 与不透明代际句柄；调用方负责关闭。 |
@@ -1223,3 +1230,15 @@ UI 不解码已导入图片，也不拥有第二份 GPU 纹理。UiImageSource �
 UiTextureUpdate.image 非空时表示导入纹理引用，pixels 为空；image 为空时保留后端生成的预乘 RGBA8 像素协议。渲染消费者通过既有纹理产物解析服务采样导入图片，不能将空 pixels 当作缺失图片上传。正常导入纹理保留原颜色空间，采样时由 Rendering 解码。UI 像素与导入图片的 alpha 处理必须由消费者明确区分。
 
 UiDocumentAsset.images 记录导入时确定的依赖。文档加载自动注册这些资源，关闭后解除对应借用。UiDocumentSource.resourceBindings 仅是运行时、不可变的语言资源名映射；其 URI 不能写回资产产物。当前 UiImageSource 表达静态导入纹理，不提供媒体解码、音视频同步或实时视频流能力。
+
+
+## 文本输入公开边界
+
+<!-- api: M:Inno.UI.IUiBackend.GetTextInputArea(Inno.UI.UiContextHandle) ca094c836c9822666aecd4ec50f6ba77638a62a636af79067b1397856ad6f86a -->
+- `Inno.Core.Mathematics.Rect? Inno.UI.IUiBackend.GetTextInputArea(Inno.UI.UiContextHandle context)`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.UI.IUiService.GetTextInputArea(Inno.UI.UiContextHandle) d52349f7649606bf0271e7fbc11d48787d5c75b98b584d8c18728f01b5a4e7df -->
+- `Inno.Core.Mathematics.Rect? Inno.UI.IUiService.GetTextInputArea(Inno.UI.UiContextHandle context)`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.UI.UI.GetTextInputArea(Inno.UI.UiContextHandle) 1dab9c11ffaa49ac10c56c651ec3ffc678da772d0f169aaff0fd24fa41e66948 -->
+- `public static Inno.Core.Mathematics.Rect? Inno.UI.UI.GetTextInputArea(Inno.UI.UiContextHandle context)`。所有权与失败语义见本页工作流及对应 XML 契约。

@@ -65,6 +65,10 @@ public sealed partial class PlayerWithoutFileSystemTests
             StorageBackendId backend,
             StorageScope scope
         ) => new MemoryStorage();
+        public IApplicationStorage CreateTemporaryStorage(
+            StorageBackendId backend,
+            StorageScope scope
+        ) => throw new NotSupportedException("This fixture has no temporary storage provider.");
         public IAudioDevice CreateDevice(
             AudioBackendId backend,
             AudioBackendOptions options = default
@@ -111,6 +115,10 @@ public sealed partial class PlayerWithoutFileSystemTests
         private readonly EventInputSource m_source = new(1);
         public IInputBackend CreateBackend() => m_source.CreateBackend();
         public void ProcessEvent(Event evnt) => m_source.ProcessEvent(evnt);
+        public void SetTextInputTarget(
+            IPlatformWindow? window,
+            Inno.Core.Mathematics.Vector2 origin
+        ) => m_source.SetTextInputTarget(window, origin);
         public void Dispose()
         {
             m_source.Dispose();
@@ -258,6 +266,8 @@ public sealed partial class PlayerWithoutFileSystemTests
             string elementId
         ) => throw new NotSupportedException();
         public UiFocusTarget? GetFocusedElement(UiContextHandle context) => throw new NotSupportedException();
+
+        public Inno.Core.Mathematics.Rect? GetTextInputArea(UiContextHandle context) => null;
         public bool ClearFocus(UiContextHandle context) => throw new NotSupportedException();
         public UiContextHandle CreateContext(UiContextOptions options) => new(1);
         public void DestroyContext(UiContextHandle context) { }

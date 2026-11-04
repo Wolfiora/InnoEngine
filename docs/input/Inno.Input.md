@@ -25,7 +25,7 @@ if (Input.WasKeyPressed(KeyCode.Space))
 
 窗口失焦、隐藏、关闭或应用暂停会释放已持有输入，并丢弃尚未交付的普通输入变化；只向所属窗口交付释放，不污染其他窗口。暂停期间拒绝普通输入。
 
-无活动 scope 时 façade 明确抛出异常。Snapshot 不受查询顺序影响；状态 owner 是 Runtime Subsystem，而不是静态类。SDL3 的 UTF-8 文本提交通过 `TextInputEvent` 进入 `textInput`，供 UI Context 消费；IME 预编辑/候选区、Gamepad 与 touch 尚未进入当前稳定契约。
+无活动 scope 时 façade 明确抛出异常。Snapshot 不受查询顺序影响；状态 owner 是 Runtime Subsystem，而不是静态类。平台文本提交和组合生命周期通过 Core Events 进入有序输入快照；控制器连接、按钮和轴同样由该输入 owner 路由。文本编辑状态与系统文本输入会话是不同职责：前者是不可变事实，后者是必须确定性释放的运行会话资源。Touch 尚未属于当前契约。
 
 [下一页：Inno.Input.Runtime](Inno.Input.Runtime.md)
 
@@ -160,3 +160,35 @@ if (Input.WasKeyPressed(KeyCode.Space))
 - [Inno.Core.Mathematics](../core/Inno.Core.Mathematics.md)：公开引用边界由实际签名核对。
 - [Inno.Core.Execution](../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+
+## 系统文本输入会话
+
+`Input.TryBeginTextInput()` / `IInputService.TryBeginTextInput()` 在当前路由取得独占 `IInputTextSession`。不支持、未聚焦或已有其他 owner 时返回 null，不抢占原 owner。编辑器控件和游戏视口最终共用平台文本会话仲裁。
+
+`SetArea(area, cursorOffset)` 使用当前输入快照的逻辑坐标空间，由实际 view owner 映射 UI 或渲染像素，不能重复应用 DPI。输入模块不推断 UI 元素、渲染模型或窗口布局。跨窗口替换、失焦、隐藏、暂停和 Runtime 退休使旧会话失效；同窗口内移动视口原点只更新变换，不重启组合。释放失败保留原 owner，调用方必须重试，不能开始第二个会话。
+
+会话只在 input owner thread 使用，不进入快照、序列化或 History，不跨 generation 保存。`IInputTextBackend` 是未导出脚本的可选 acquisition SPI；脚本只消费中立会话，不获得平台窗口或原生对象。控件编辑本身仍由 UI 或自定义文字编辑器负责。
+
+
+## 文本输入公开边界
+
+<!-- api: M:Inno.Input.IInputService.TryBeginTextInput 6d49ce7c0356c39e50a5ab7010314a319f0e6a7e37f9be7553513d99d6beccec -->
+- `Inno.Input.IInputTextSession? Inno.Input.IInputService.TryBeginTextInput()`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: T:Inno.Input.IInputTextBackend 6cd13d108df80278e7bfe72c9582c8f05ed82e94704ccc59c496bd5311224d4d -->
+- `public interface Inno.Input.IInputTextBackend`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.Input.IInputTextBackend.TryBeginTextInput d2d81b95b746ebc4f8b32516195758b122c2d3673b3a0f76e69ae8c25afab7e8 -->
+- `Inno.Input.IInputTextSession? Inno.Input.IInputTextBackend.TryBeginTextInput()`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: T:Inno.Input.IInputTextSession c7954ba17d46ec2cae2462bf145821d0068c61343bf160ce1eddc82df1804391 -->
+- `public interface Inno.Input.IInputTextSession : System.IDisposable`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: P:Inno.Input.IInputTextSession.isActive c652585c1c71c2dd758efc3582e1cd68f8308c4fea18343dc76cb6e3ecd54359 -->
+- `bool Inno.Input.IInputTextSession.isActive { get; }`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.Input.IInputTextSession.SetArea(Inno.Core.Mathematics.Rect,System.Single) d4795954458429e2dd3f86c1dff5131f0e123a43332536e59cd2f5e4aa3db313 -->
+- `void Inno.Input.IInputTextSession.SetArea(Inno.Core.Mathematics.Rect area, float cursorOffset)`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.Input.Input.TryBeginTextInput 02365a855ed2fa4db0e2fc14482fe6088783a7d77efcce85ed5c4a38bb38b987 -->
+- `public static Inno.Input.IInputTextSession? Inno.Input.Input.TryBeginTextInput()`。所有权与失败语义见本页工作流及对应 XML 契约。

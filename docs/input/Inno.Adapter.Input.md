@@ -14,7 +14,15 @@ Press、Release、Pointer、Wheel 和 Text 使用同一入口。窗口身份、�
 
 第三方 provider 使用开放稳定 ID 注册。catalog 捕获不可变集合，重复/null provider 在构造失败，未注册 ID 明确报错。provider 由 composition owner 管理，创建出的 source/backend 由调用方释放。
 
-## 验证
+## 文本输入路由
+
+`IInputEventSource.SetTextInputTarget` 由 Host 设置借用窗口与输入原点。单窗口 provider 使用主窗口；多窗口 source 必须由实际 viewport owner 明确选择，不猜测主窗口。移动同一窗口内的 viewport 只更新原点，不重启输入法组合。
+
+运行时通过 `IInputService.TryBeginTextInput` 获取独占 `IInputTextSession`；未支持、未聚焦或被其他 owner 占用时返回 null。平台会话仍是最终权威，Input 不保存原生句柄，不直接调用具体平台。窗口切换、失焦、隐藏、挂起和 runtime 退休均释放当前 lease。释放失败保留原 owner，后续可以重试；旧 lease 的再次 Dispose 不会停止新会话。调用与释放使用 source owner thread。
+
+输入区域使用当前 input snapshot 的逻辑坐标，source 仅加上 Host 指定的 client 原点。UI context 的像素坐标、缩放与 letterboxing 必须先由实际 view owner 映射，避免在不同层重复应用 DPI。
+
+## 验证入口
 
 InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消费、焦点、浮动 GameView、窗口和 Session 隔离。
 
@@ -38,7 +46,7 @@ InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消�
 
 ### `Inno.Adapter.Input.EventInputBackend`
 
-<!-- api: T:Inno.Adapter.Input.EventInputBackend 3de6603b43fb741660968ab84f83d2e343dac37f49276817d13fd67537b9fbb7 -->
+<!-- api: T:Inno.Adapter.Input.EventInputBackend 35366aa8a512e7ffffd56623742fe3e704d2b7340335e73bd54a971af19b1dcc -->
 <!-- api: M:Inno.Adapter.Input.EventInputBackend.#ctor(System.UInt32) 3f338962d1bf2b9896aa66f18639372755c287ba6b2763378ec2b11599d9e6c1 -->
 <!-- api: M:Inno.Adapter.Input.EventInputBackend.ProcessEvent(Inno.Core.Events.Event) c970b9313abfd3ec6bfac0f093123035267d980335e750515d95843fb5b1e264 -->
 <!-- api: M:Inno.Adapter.Input.EventInputBackend.Capture(System.Int64) 81313ec77f5493c99dfda0c4a76eb432c0cacdec5020abf444592b47f3974e20 -->
@@ -50,7 +58,7 @@ InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消�
 | <a id="api-3cebe24955bbc544"></a>[`public Inno.Input.InputSnapshot Inno.Adapter.Input.EventInputBackend.Capture(long frameIndex)`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L137) | Captures an immutable snapshot of the current observable state.<br>返回：The validated input snapshot that represents the completed operation.<br>`frameIndex`：The monotonic frame identity associated with this operation. | — | — |
 | <a id="api-eda9bae81ff7fce6"></a>[`public void Inno.Adapter.Input.EventInputBackend.Dispose()`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L169) | Releases the resources owned by this implementation. | — | — |
 | <a id="api-c592985070d15f8e"></a>[`public void Inno.Adapter.Input.EventInputBackend.ProcessEvent(Inno.Core.Events.Event evnt)`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L66) | Applies one backend-neutral event translated by the owning platform application.<br>`evnt`：The event observed before runtime dispatch. | — | `System.ArgumentNullException`：Thrown when evnt is null.<br>`System.ObjectDisposedException`：Thrown after this backend is disposed. |
-| <a id="api-0c90a7186f7c398e"></a>[`public sealed class Inno.Adapter.Input.EventInputBackend : Inno.Input.IInputBackend`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L15) | Accumulates backend-neutral platform events into complete runtime input snapshots. | — | — |
+| <a id="api-0c90a7186f7c398e"></a>[`public sealed class Inno.Adapter.Input.EventInputBackend : Inno.Input.IInputBackend, Inno.Input.IInputTextBackend`](../../src/adapters/input/Inno.Adapter.Input/EventInputBackend.cs#L15) | Accumulates backend-neutral platform events into complete runtime input snapshots and admits text sessions through its source-owned route. | — | — |
 
 ### `Inno.Adapter.Input.EventInputBackendProvider`
 
@@ -168,3 +176,15 @@ InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消�
 - [Inno.Core.Mathematics](../core/Inno.Core.Mathematics.md)：公开引用边界由实际签名核对。
 - [Inno.Platform](../platform/Inno.Platform.md)：公开引用边界由实际签名核对。
 - [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+
+
+## 文本输入公开边界
+
+<!-- api: M:Inno.Adapter.Input.EventInputSource.SetTextInputTarget(Inno.Platform.IPlatformWindow,Inno.Core.Mathematics.Vector2) 5ada88ccbb487e80b546b68279099e30f87c2019f13ef51fea4a6bafc6c673b7 -->
+- `public void Inno.Adapter.Input.EventInputSource.SetTextInputTarget(Inno.Platform.IPlatformWindow? window, Inno.Core.Mathematics.Vector2 origin)`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.Adapter.Input.IInputEventSource.SetTextInputTarget(Inno.Platform.IPlatformWindow,Inno.Core.Mathematics.Vector2) ca911ed0ab26a1027ac70c4e0c8952c1609ff3d8979c6f7cb3a634bfc7de501f -->
+- `void Inno.Adapter.Input.IInputEventSource.SetTextInputTarget(Inno.Platform.IPlatformWindow? window, Inno.Core.Mathematics.Vector2 origin)`。所有权与失败语义见本页工作流及对应 XML 契约。
+
+<!-- api: M:Inno.Adapter.Input.EventInputBackend.TryBeginTextInput bb0b0bb1e949e8441384ba3091ce64a97079a7376f15153ce581ee9df8d35a34 -->
+- `public Inno.Input.IInputTextSession? Inno.Adapter.Input.EventInputBackend.TryBeginTextInput()`：取得当前路由的独占文本会话；不可用时返回 null，退出与失败处理遵循本页的 owner 协议。

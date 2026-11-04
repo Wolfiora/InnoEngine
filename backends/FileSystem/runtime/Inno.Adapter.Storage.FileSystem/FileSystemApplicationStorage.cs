@@ -17,6 +17,9 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
 {
     private readonly SemaphoreSlim m_gate = new(1, 1);
     private readonly string m_root;
+    private readonly string? m_temporaryRoot;
+    private ProcessOwnedDirectory? m_temporaryDirectory;
+    private bool m_temporaryMetadataRetired;
     private bool m_disposed;
 
     /// <summary>
@@ -37,6 +40,15 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         m_root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootDirectory));
         Directory.CreateDirectory(m_root);
         RejectLink(new DirectoryInfo(m_root));
+    }
+
+    internal FileSystemApplicationStorage(
+        ProcessOwnedDirectory directory,
+        string producerRoot
+    ) : this(directory.directory)
+    {
+        m_temporaryDirectory = directory;
+        m_temporaryRoot = producerRoot;
     }
 
     /// <summary>
@@ -243,14 +255,28 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     }
 
     /// <summary>
-    /// Releases synchronization resources retained by this adapter.
+    /// Stops access and retires a temporary sandbox after active operations leave its gate.
     /// </summary>
+    /// <remarks>
+    /// Persistent data is preserved. Temporary retirement failures retain ownership for another disposal attempt.
+    /// Known metadata is collected under the producer gate; an active sibling defers metadata collection.
+    /// </remarks>
+    /// <exception cref="IOException">
+    /// Temporary retirement failed; retry after releasing the conflicting reader or filesystem resource.
+    /// </exception>
     public void Dispose()
     {
         m_gate.Wait();
         try
         {
             m_disposed = true;
+            if (m_temporaryDirectory is not null)
+            {
+                m_temporaryDirectory.Dispose();
+                m_temporaryDirectory = null;
+            }
+            if (m_temporaryRoot is not null && !m_temporaryMetadataRetired)
+                m_temporaryMetadataRetired = RetireTemporaryMetadata(m_temporaryRoot);
         }
         finally
         {
@@ -258,6 +284,23 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         }
         // Waiters still own this managed semaphore and must be allowed to observe disposal.
         // No OS wait handle is requested; the semaphore is reclaimed with its final waiter.
+    }
+
+    private static bool RetireTemporaryMetadata(string root)
+    {
+        FileLease maintenance;
+        try
+        {
+            maintenance = FileLease.AcquireAsync(Path.Combine(root, "owner.lock"), TimeSpan.Zero).AsTask().GetAwaiter().GetResult();
+        }
+        catch (TimeoutException)
+        {
+            // The last live sandbox retries collection when it releases the shared producer gate.
+            return false;
+        }
+        using (maintenance)
+            ProcessOwnedDirectory.RetireMetadataUnderOwnership(root);
+        return true;
     }
 
     private void EnumerateDirectory(

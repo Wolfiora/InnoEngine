@@ -9,7 +9,7 @@ namespace Inno.Adapter.Input;
 /// <summary>
 /// Routes backend-neutral platform events through Core Events to isolated runtime-session input backends.
 /// </summary>
-public sealed class EventInputSource : IInputEventSource
+public sealed partial class EventInputSource : IInputEventSource
 {
     private readonly List<EventInputBackend> m_backends = [];
     private readonly GamepadInputState m_gamepads = new();
@@ -43,7 +43,7 @@ public sealed class EventInputSource : IInputEventSource
     public IInputBackend CreateBackend()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        var backend = new EventInputBackend(m_windowId, RemoveBackend);
+        var backend = new EventInputBackend(m_windowId, RemoveBackend, BeginTextInput);
         backend.InitializeInput(m_ownership, m_gamepads);
         backend.ConnectSource(m_inputHub.Listen<Event>(backend.ProcessEvent));
         m_backends.Add(backend);
@@ -66,6 +66,7 @@ public sealed class EventInputSource : IInputEventSource
     {
         ArgumentNullException.ThrowIfNull(evnt);
         ObjectDisposedException.ThrowIf(m_disposed, this);
+        RetireTextInputFor(evnt);
         m_ownership.Process(evnt, m_windowId);
         m_gamepads.Process(evnt, m_windowId, null, m_ownership.acceptsInput);
         m_events.Emit(evnt);
@@ -78,6 +79,7 @@ public sealed class EventInputSource : IInputEventSource
     {
         if (m_disposed)
             return;
+        RetireTextInput();
         m_disposed = true;
         m_inputHub.Dispose();
         EventInputBackend[] snapshot = m_backends.ToArray();
