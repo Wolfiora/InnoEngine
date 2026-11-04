@@ -66,7 +66,9 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         ulong value = 0;
         ThrowIfFailed(RmlUiNativeRuntime.CreateContext(
             m_runtime, options.name, options.width, options.height, options.density, ref value), "create UI context");
-        return new UiContextHandle(value);
+        var context = new UiContextHandle(value);
+        m_gamepadNavigation.Add(context, new GamepadNavigation());
+        return context;
     }
 
     /// <summary>
@@ -79,6 +81,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.DestroyContext(m_runtime, Require(context)), "destroy UI context");
+        m_gamepadNavigation.Remove(context);
         RetireContextImages(context);
         List<(UiContextHandle context, UiDocumentHandle document)> retired = [];
         foreach (var key in m_documentBindings.Keys)
@@ -161,6 +164,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.ShowDocument(m_runtime, Require(context), Require(document)), "show UI document");
+        ResetGamepadNavigation(context);
     }
 
     /// <summary>
@@ -178,6 +182,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.HideDocument(m_runtime, Require(context), Require(document)), "hide UI document");
+        ResetGamepadNavigation(context);
     }
 
     /// <summary>
@@ -195,6 +200,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
     ) {
         EnsureActive();
         ThrowIfFailed(RmlUiNativeRuntime.CloseDocument(m_runtime, Require(context), Require(document)), "close UI document");
+        ResetGamepadNavigation(context);
         m_documentBindings.Remove((context, document));
     }
 
@@ -267,6 +273,8 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
             RewriteFontFamilies(RewriteImageBindings(content.text, DocumentBindings(context, document)),
                 DocumentBindings(context, document)),
             ref changed), "set UI content");
+        if (changed != 0)
+            ResetGamepadNavigation(context);
         return changed != 0;
     }
 
@@ -479,6 +487,13 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         Inno.Core.Mathematics.Vector2? lastPointer = null;
         foreach (InputChange change in input.sequence.changes)
         {
+            if (change is GamepadInputChange gamepad)
+            {
+                ProcessGamepad(context, gamepad);
+                continue;
+            }
+            if (change is KeyInputChange or TextInputChange or PointerButtonInputChange or PointerScrollInputChange)
+                ResetGamepadNavigation(context);
             int modifiers = (int)change.modifiers;
             if (change is PointerInputChange pointer)
             {
@@ -509,6 +524,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
         if (lastPointer is not Vector2 position || position != input.mousePosition)
             ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseMove(
                 m_runtime, handle, (int)input.mousePosition.x, (int)input.mousePosition.y, (int)input.modifiers), "process UI final pointer position");
+        RepeatGamepadNavigation(context, input);
     }
 
     /// <summary>
@@ -652,6 +668,7 @@ public sealed unsafe partial class RmlUiBackend : IUiBackend
             registration.retired = true;
         m_images.Clear();
         m_documentBindings.Clear();
+        m_gamepadNavigation.Clear();
     }
 
     private void CopyMeshVertices(

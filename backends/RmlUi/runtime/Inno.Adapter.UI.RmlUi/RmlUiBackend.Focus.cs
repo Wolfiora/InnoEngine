@@ -26,6 +26,8 @@ public sealed unsafe partial class RmlUiBackend
         RmlUiNativeErrors.CheckBridge(UiNative.Raw.FocusElement(
             m_runtime, Require(context), Require(document), (sbyte*)id.pointer, &outcome, &result, &error), error);
         ThrowIfFailed(result, "focus UI element");
+        if (outcome is FocusOutcome.Focused or FocusOutcome.Unchanged)
+            ResetGamepadNavigation(context);
         return outcome switch
         {
             FocusOutcome.Focused => UiFocusResult.Focused,
@@ -71,6 +73,7 @@ public sealed unsafe partial class RmlUiBackend
         RmlUiNativeErrors.CheckBridge(UiNative.Raw.ClearFocus(
             m_runtime, Require(context), &cleared, &result, &error), error);
         ThrowIfFailed(result, "clear UI focus");
+        ResetGamepadNavigation(context);
         return cleared != 0;
     }
 }
