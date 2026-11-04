@@ -6,6 +6,7 @@
 
 | 页面 | 适用问题 |
 | --- | --- |
+| [Agent 规则索引](rules/README.md) | 从任务 owner 加载完整规则，并核对迁移来源与责任。 |
 | [架构总览](ENGINE_ARCHITECTURE_OVERVIEW.md) | 每层负责什么，项目应该放在哪里？ |
 | [开发入口](DEVELOPMENT_ENTRY_ARCHITECTURE.md) | 两个入口如何选择宿主、准备和启动？ |
 | [构建缓存](BUILD_CACHE_ARCHITECTURE.md) | 源码、工作目录、产物和读取保护分别由谁拥有？ |
