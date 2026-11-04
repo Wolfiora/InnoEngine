@@ -13,6 +13,7 @@ using Inno.Adapter.Text;
 using Inno.Adapter.UI;
 using Inno.Audio;
 using Inno.Core.Events;
+using Inno.Core.Input;
 using Inno.Input;
 using Inno.Platform;
 using Inno.Rendering;
@@ -26,6 +27,25 @@ namespace Inno.Input.Tests;
 
 public sealed class ShellLifecycleTests
 {
+    [Fact]
+    public async Task SuspendedShellDeliversDeviceLifecycleButNeverQueuesControllerActions()
+    {
+        var catalog = new TestCatalog();
+        using var shell = new TestShell(catalog, suspendWhenHidden: true);
+        var connected = new GamepadEvent(0, new GamepadConnectionChange(11, true));
+        var blocked = new GamepadEvent(1, new GamepadButtonChange(11, GamepadButton.South, true));
+        var resumed = new GamepadEvent(1, new GamepadButtonChange(11, GamepadButton.East, true));
+        catalog.application.events.Enqueue(new ApplicationSuspensionChangedEvent(true));
+        catalog.application.events.Enqueue(connected);
+        catalog.application.events.Enqueue(blocked);
+        catalog.application.events.Enqueue(new ApplicationSuspensionChangedEvent(false));
+        catalog.application.events.Enqueue(resumed);
+        Assert.Equal(0, await shell.RunAsync(new PollingShellFrameDriver(), smokeFrameLimit: 1));
+        Assert.Contains(connected, shell.events);
+        Assert.DoesNotContain(blocked, shell.events);
+        Assert.Contains(resumed, shell.events);
+    }
+
     [Fact]
     public async Task SuspensionReasonsComposeWithoutFramesOrBackgroundClockCatchUp()
     {
@@ -137,6 +157,7 @@ public sealed class ShellLifecycleTests
         }
 
         public List<ShellFrame> frames { get; } = [];
+        public List<Event> events { get; } = [];
         public List<bool> suspensions { get; } = [];
         public Exception? frameFailure { get; init; }
         public Exception? stoppingFailure { get; init; }
@@ -150,6 +171,7 @@ public sealed class ShellLifecycleTests
         }
 
         protected override void OnSuspensionChanged(bool isSuspended) => suspensions.Add(isSuspended);
+        protected override void OnEvent(Event evnt) => events.Add(evnt);
         protected override void OnSmokeCompleted(int frameCount) => smokeFrames = frameCount;
         protected override void OnStopping()
         {

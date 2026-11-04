@@ -68,7 +68,8 @@ sealed partial class RenderRuntime
         return new RenderOutputInput(
             pointer, pointer.x >= 0f && pointer.y >= 0f && pointer.x < viewport.width && pointer.y < viewport.height,
             input.modifiers, input.sequence.MapPointer(position => new Vector2(
-                position.x * coordinateScale.x - viewport.x, position.y * coordinateScale.y - viewport.y)));
+                position.x * coordinateScale.x - viewport.x, position.y * coordinateScale.y - viewport.y)),
+            gamepads: input.gamepads);
     }
 
     private void AddPrimaryPresentationBackground(RenderGraphBuilder graph)

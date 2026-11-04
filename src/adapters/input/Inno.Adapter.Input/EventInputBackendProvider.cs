@@ -19,7 +19,9 @@ public sealed class EventInputBackendProvider : InputBackendProvider
         bool acceptAllWindows
     ) {
         ArgumentNullException.ThrowIfNull(window);
-        return new EventInputSource(acceptAllWindows ? 0 : window.windowId);
+        var source = new EventInputSource(acceptAllWindows ? 0 : window.windowId);
+        source.ProcessEvent(new Inno.Core.Events.WindowFocusChangedEvent(window.windowId, window.isFocused));
+        return source;
     }
 }
 

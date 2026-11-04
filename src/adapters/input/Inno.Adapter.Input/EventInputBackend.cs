@@ -17,6 +17,7 @@ public sealed class EventInputBackend : IInputBackend
     private readonly HashSet<KeyCode> m_keysDown = [];
     private readonly HashSet<MouseButton> m_mouseButtonsDown = [];
     private readonly List<InputChange> m_changes = [];
+    private readonly GamepadInputState m_gamepads = new();
     private readonly Lock m_sync = new();
     private readonly uint m_windowId;
     private Action<EventInputBackend>? m_disposeCallback;
@@ -61,7 +62,7 @@ public sealed class EventInputBackend : IInputBackend
     {
         ArgumentNullException.ThrowIfNull(evnt);
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (evnt.isGlobalHandled || !Accepts(evnt))
+        if ((evnt.isGlobalHandled && evnt is not GamepadEvent and not WindowEvent and not ApplicationSuspensionChangedEvent) || !Accepts(evnt))
             return;
         lock (m_sync)
         {
@@ -109,7 +110,7 @@ public sealed class EventInputBackend : IInputBackend
                 case WindowFocusChangedEvent { isFocused: false }:
                 case WindowVisibilityChangedEvent { isVisible: false }:
                 case ApplicationSuspensionChangedEvent { isSuspended: true }:
-                    m_changes.Clear();
+                    m_changes.RemoveAll(static change => change is not GamepadConnectionChange);
                     foreach (KeyCode key in m_keysDown)
                         m_changes.Add(new KeyInputChange(key, false, false, KeyModifier.None));
                     foreach (MouseButton button in m_mouseButtonsDown)
@@ -119,6 +120,7 @@ public sealed class EventInputBackend : IInputBackend
                     m_modifiers = KeyModifier.None;
                     break;
             }
+            m_gamepads.Process(evnt, m_windowId, m_changes);
         }
     }
 
@@ -142,7 +144,8 @@ public sealed class EventInputBackend : IInputBackend
                 m_keysDown,
                 m_mouseButtonsDown,
                 m_mousePosition,
-                m_modifiers);
+                m_modifiers,
+                m_gamepads.Capture());
             m_changes.Clear();
             return snapshot;
         }
@@ -166,8 +169,11 @@ public sealed class EventInputBackend : IInputBackend
             m_keysDown.Clear();
             m_mouseButtonsDown.Clear();
             m_changes.Clear();
+            m_gamepads.Clear();
         }
     }
+
+    internal void InitializeGamepads(GamepadInputState source) => m_gamepads.Initialize(source);
 
     internal void ConnectSource(IDisposable subscription) => m_subscription = subscription;
 
@@ -181,6 +187,7 @@ public sealed class EventInputBackend : IInputBackend
     private bool Accepts(Event evnt)
         => m_windowId == 0 || evnt switch
         {
+            GamepadEvent gamepad => gamepad.windowId == 0 || gamepad.windowId == m_windowId,
             KeyEvent key => key.windowId == m_windowId,
             TextInputEvent text => text.windowId == m_windowId,
             MouseEvent mouse => mouse.windowId == m_windowId,

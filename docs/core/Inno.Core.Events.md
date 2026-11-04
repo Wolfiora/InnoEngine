@@ -135,9 +135,27 @@ Keyboard/Mouse 枚举详见 [Inno.Core.Input](Inno.Core.Input.md)。
 subscription token、Hub listener delegate 都会强引用处理对象。插件或脚本实例卸载前必须 dispose 订阅；`Layer` 帮助自动处理其通过 protected API 建立的订阅。外部直接注册的 listener 则由调用者负责清理。
 `dispatched` 的 event delegate 同样受 owner 生命周期约束；退订后 Dispatcher 不再保留该 observer。通知在当前派发线程执行，不自动切换线程。
 
+## 控制器事件
+
+`GamepadEvent` 把一个不可变 `GamepadInputChange` 送入既有事件派发器。连接变化可使用窗口 0 广播；按钮／轴必须指定目标窗口，避免未取得输入所有权的控件被所有 Session 同时接收。消费规则继续由现有 Event/Hub 负责，不引入手柄专用事件总线。原生设备句柄不进入事件。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
+
+### `Inno.Core.Events.GamepadEvent`
+
+<!-- api: T:Inno.Core.Events.GamepadEvent db0eb7eb5d46c5298c2a357f0718cfb8dd626d57056ab2136808fd635cc6db4e -->
+<!-- api: M:Inno.Core.Events.GamepadEvent.#ctor(System.UInt32,Inno.Core.Input.GamepadInputChange) b516f1282fea43954a0727f73450d2a175f4a799d9f8b93fe5c6bad660baa209 -->
+<!-- api: P:Inno.Core.Events.GamepadEvent.windowId 35f4439d627cc9af0e1a4dd5959db6c0a20daa75c4c66672a6ff0e2a7044547a -->
+<!-- api: P:Inno.Core.Events.GamepadEvent.change 0b6245b75e4d2191a5505132be5246b987ebe962ad0da199977dee9363d156ed -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-6442a7714e3a69fc"></a>[`public sealed class Inno.Core.Events.GamepadEvent : Inno.Core.Events.Event`](../../src/foundation/core/Inno.Core.Events/Events/GamepadEvent.cs#L9) | Delivers one controller fact through the existing platform event stream. | — |
+| <a id="api-ce3f210faa04f022"></a>[`public Inno.Core.Events.GamepadEvent.GamepadEvent(uint windowId, Inno.Core.Input.GamepadInputChange change)`](../../src/foundation/core/Inno.Core.Events/Events/GamepadEvent.cs#L26) | Routes a controller fact to a focused window, or broadcasts a connection transition.<br>`windowId`：Destination window, or zero only for a connection transition.<br>`change`：Immutable controller fact in acquisition order. | `System.ArgumentNullException`：The change is null.<br>`System.ArgumentException`：A button or axis is broadcast without an input owner. |
+| <a id="api-8e8bfc32c84c7f6f"></a>[`public uint Inno.Core.Events.GamepadEvent.windowId { get; }`](../../src/foundation/core/Inno.Core.Events/Events/GamepadEvent.cs#L40) | Gets the destination window or zero for connection broadcasts. | — |
+| <a id="api-c24e4061b31e291d"></a>[`public Inno.Core.Input.GamepadInputChange Inno.Core.Events.GamepadEvent.change { get; }`](../../src/foundation/core/Inno.Core.Events/Events/GamepadEvent.cs#L44) | Gets the immutable device fact. | — |
 
 ### `Inno.Core.Events.EventDispatcher`
 

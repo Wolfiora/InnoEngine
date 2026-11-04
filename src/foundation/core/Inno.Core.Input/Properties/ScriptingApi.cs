@@ -18,3 +18,11 @@ using Inno.Scripting.Api;
 [assembly: ScriptingApiExport(typeof(PointerMoveInputChange), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(PointerScrollInputChange), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(InputSequence), ScriptingApiScope.Runtime)]
+
+[assembly: ScriptingApiExport(typeof(GamepadButton), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GamepadAxis), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GamepadInputChange), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GamepadConnectionChange), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GamepadButtonChange), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GamepadAxisChange), ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiExport(typeof(GamepadState), ScriptingApiScope.Runtime)]

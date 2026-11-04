@@ -18,6 +18,12 @@ Press、Release、Pointer、Wheel 和 Text 使用同一入口。窗口身份、�
 
 InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消费、焦点、浮动 GameView、窗口和 Session 隔离。
 
+## 控制器输入所有权
+
+`EventInputSource` 复用 Core Events 派发。它保存当前连接／控件状态，使之后创建的 Session 可以取得当前不可变快照，不重放旧连接或制造按钮边沿。每个 `EventInputBackend` 独立累积自己的有序变化；一个 backend 的退出不释放其他 Session。
+
+连接事实可以广播，按钮与轴必须具有明确窗口。失焦、隐藏、挂起和关闭释放持有状态；未获得焦点时的控制更新不会进入快照。恢复焦点必须由现有窗口／viewport owner 发布，不从手柄输入反推焦点。输入源的创建和事件派发遵守宿主 owner-thread 调度，backend 的 Capture 使用现有同步边界。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
@@ -58,13 +64,13 @@ InputRuntime、ShellLifecycle 和 EditorGameInputCapture 测试共同覆盖消�
 <!-- api: M:Inno.Adapter.Input.EventInputSource.ProcessEvent(Inno.Core.Events.Event) b2b260e4197c1f24550886f52b09a93d6759de4564cdf6d0c9cf95080b15de11 -->
 <!-- api: M:Inno.Adapter.Input.EventInputSource.Dispose 0eee4584fe8e2e72537a73920b69c77299ca270a391a445b6767c1cab1e22a3b -->
 
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| <a id="api-3794fd70fc6b3202"></a>[`public Inno.Adapter.Input.EventInputSource.EventInputSource(uint windowId)`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L26) | Creates an input source restricted to one window, or to all windows when the identifier is zero.<br>`windowId`：The platform window identifier accepted by this source; zero accepts events from every window. | — | — |
-| <a id="api-a3641553405f8c16"></a>[`public Inno.Input.IInputBackend Inno.Adapter.Input.EventInputSource.CreateBackend()`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L41) | Creates one isolated backend that receives subsequent events from this source.<br>返回：A caller-owned backend whose disposal unregisters it from this source. | — | `System.ObjectDisposedException`：Thrown after this source has been disposed. |
-| <a id="api-20275aefae97bc1b"></a>[`public void Inno.Adapter.Input.EventInputSource.Dispose()`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L72) | Disconnects all session backends and rejects subsequent event delivery. | — | — |
-| <a id="api-20d8895c5612a448"></a>[`public void Inno.Adapter.Input.EventInputSource.ProcessEvent(Inno.Core.Events.Event evnt)`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L62) | Dispatches one translated platform event to active session backends, honoring event consumption.<br>`evnt`：The backend-neutral event produced by a platform adapter. | — | `System.ArgumentNullException`：Thrown when evnt is null.<br>`System.ObjectDisposedException`：Thrown after this source has been disposed. |
-| <a id="api-07d8bc8b1e347d4c"></a>[`public sealed class Inno.Adapter.Input.EventInputSource : Inno.Adapter.Input.IInputEventSource`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L12) | Routes backend-neutral platform events through Core Events to isolated runtime-session input backends. | — | — |
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-07d8bc8b1e347d4c"></a>[`public sealed class Inno.Adapter.Input.EventInputSource : Inno.Adapter.Input.IInputEventSource`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L12) | Routes backend-neutral platform events through Core Events to isolated runtime-session input backends. | — |
+| <a id="api-3794fd70fc6b3202"></a>[`public Inno.Adapter.Input.EventInputSource.EventInputSource(uint windowId)`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L27) | Creates an input source restricted to one window, or to all windows when the identifier is zero.<br>`windowId`：The platform window identifier accepted by this source; zero accepts events from every window. | — |
+| <a id="api-a3641553405f8c16"></a>[`public Inno.Input.IInputBackend Inno.Adapter.Input.EventInputSource.CreateBackend()`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L42) | Creates one isolated backend initialized with current controller state and receiving subsequent events.<br>返回：A caller-owned backend whose disposal unregisters it from this source. | `System.ObjectDisposedException`：Thrown after this source has been disposed. |
+| <a id="api-20d8895c5612a448"></a>[`public void Inno.Adapter.Input.EventInputSource.ProcessEvent(Inno.Core.Events.Event evnt)`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L64) | Dispatches one translated platform event to active session backends, honoring event consumption.<br>`evnt`：The backend-neutral event produced by a platform adapter. | `System.ArgumentNullException`：Thrown when `evnt` is null.<br>`System.ObjectDisposedException`：Thrown after this source has been disposed. |
+| <a id="api-20275aefae97bc1b"></a>[`public void Inno.Adapter.Input.EventInputSource.Dispose()`](../../src/adapters/input/Inno.Adapter.Input/EventInputSource.cs#L75) | Disconnects all session backends and rejects subsequent event delivery. | — |
 
 ### `Inno.Adapter.Input.IInputBackendFactory`
 

@@ -18,6 +18,7 @@ public sealed class EditorGameInputCapture
     private Vector2 m_size;
     private uint m_targetWindowId;
     private uint m_deliveredWindowId;
+    private uint m_announcedFocusWindowId;
     private bool m_reported;
     private bool m_focused;
     private bool m_hovered;
@@ -86,7 +87,11 @@ public sealed class EditorGameInputCapture
     /// <returns>
     /// The former platform window ID to reset, or zero if no reset is needed.
     /// </returns>
-    public uint CompleteFrame()
+    /// <param name="acquiredWindowId">
+    /// A newly focused Game View window, or zero when no focus acquisition occurred.
+    /// Deliver its focus-gained event after any returned focus reset.
+    /// </param>
+    public uint CompleteFrame(out uint acquiredWindowId)
     {
         if (!m_reported)
         {
@@ -95,6 +100,10 @@ public sealed class EditorGameInputCapture
             m_hovered = false;
             m_pointerInside = false;
         }
+
+        uint focusedWindowId = m_focused ? m_targetWindowId : 0;
+        acquiredWindowId = focusedWindowId != m_announcedFocusWindowId ? focusedWindowId : 0;
+        m_announcedFocusWindowId = focusedWindowId;
 
         if (m_deliveredWindowId == 0
             || m_focused && m_deliveredWindowId == m_targetWindowId)
@@ -126,6 +135,14 @@ public sealed class EditorGameInputCapture
     public Event? Route(Event evnt)
     {
         ArgumentNullException.ThrowIfNull(evnt);
+        if (evnt is ApplicationSuspensionChangedEvent suspension)
+        {
+            if (suspension.isSuspended)
+                ReleaseCapture();
+            return evnt.isGlobalHandled ? null : suspension;
+        }
+        if (evnt is GamepadEvent { change: GamepadConnectionChange })
+            return evnt.isGlobalHandled ? null : evnt;
         if (evnt is MouseEvent observed && observed.windowId == m_targetWindowId)
             UpdatePointerBounds(observed);
         if (evnt.isGlobalHandled)
@@ -158,6 +175,7 @@ public sealed class EditorGameInputCapture
 
         Event? routed = evnt switch
         {
+            GamepadEvent gamepad when gamepad.windowId == m_targetWindowId => gamepad,
             KeyEvent key when key.windowId == m_targetWindowId => key,
             TextInputEvent text when text.windowId == m_targetWindowId => text,
             MouseMovedEvent moved when moved.windowId == m_targetWindowId => RouteMove(moved),
@@ -174,6 +192,7 @@ public sealed class EditorGameInputCapture
 
     private void ReleaseCapture()
     {
+        m_announcedFocusWindowId = 0;
         m_deliveredWindowId = 0;
         m_pressedButtons.Clear();
         m_focused = false;
@@ -186,6 +205,8 @@ public sealed class EditorGameInputCapture
         uint windowId
     ) => evnt switch
     {
+        GamepadEvent { change: GamepadButtonChange { pressed: false } } gamepad => gamepad.windowId == windowId,
+        GamepadEvent { change: GamepadAxisChange { value: 0f } } axis => axis.windowId == windowId,
         KeyReleasedEvent key => key.windowId == windowId,
         MouseButtonReleasedEvent button => button.windowId == windowId,
         _ => IsWindowExit(evnt, windowId)

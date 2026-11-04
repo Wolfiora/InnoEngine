@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -332,24 +333,41 @@ public sealed class UiInputSnapshot
     /// <param name="sequence">
     /// Input changes already mapped into context pixels, in acquisition order.
     /// </param>
+    /// <param name="gamepads">
+    /// Immutable controller states admitted by the owning input route; null means no admitted devices.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// The sequence is null.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// A controller state is null or does not match its dictionary key.
     /// </exception>
     public UiInputSnapshot(
         Vector2 mousePosition,
         KeyModifier modifiers,
-        InputSequence sequence
+        InputSequence sequence,
+        IReadOnlyDictionary<ulong, GamepadState>? gamepads = null
     ) {
         ArgumentNullException.ThrowIfNull(sequence);
         this.mousePosition = mousePosition;
         this.modifiers = modifiers;
         this.sequence = sequence;
+        var capturedGamepads = gamepads?.ToFrozenDictionary() ?? FrozenDictionary<ulong, GamepadState>.Empty;
+        this.gamepads = capturedGamepads;
+        foreach ((ulong id, GamepadState state) in capturedGamepads)
+            if (state is null || id != state.deviceId)
+                throw new ArgumentException("Controller state must match its connection identity.", nameof(gamepads));
     }
 
     /// <summary>
     /// Gets the ordered immutable changes without retaining a platform event or callback.
     /// </summary>
     public InputSequence sequence { get; }
+
+    /// <summary>
+    /// Gets controller held state for this input owner without retaining backend or native objects.
+    /// </summary>
+    public IReadOnlyDictionary<ulong, GamepadState> gamepads { get; }
 
     /// <summary>
     /// Gets the pointer position.

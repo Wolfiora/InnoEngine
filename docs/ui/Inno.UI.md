@@ -58,6 +58,10 @@ static UiDocumentHandle Show(UiContextHandle context, UiDocumentAsset source)
 
 `UiBackendCapability` 是开放的稳定能力 ID；后端贡献不可变集合，公共层不维护实现白名单。`TrySeekTime` 必须明确返回是否能够保持文档语义：不支持时返回 false 并保留原状态，不能通过重新加载文档伪装成功。具体动画离散步进规则见所选后端页面。
 
+## 控制器输入快照
+
+`UiInputSnapshot.gamepads` 是由输入 owner 授权的不可变控制器状态，和 `sequence` 一起交付。UI context 不自行枚举平台设备，也不能把其他 viewport 的状态并入当前输入。构造时验证连接身份与状态一致，输入传递不会修改原始设备样本或生成 Core 键盘事件。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
@@ -1151,8 +1155,9 @@ static UiDocumentHandle Show(UiContextHandle context, UiDocumentAsset source)
 ### `Inno.UI.UiInputSnapshot`
 
 <!-- api: T:Inno.UI.UiInputSnapshot 7195c9ec42ec185b068c14efa4f7b50b6893a2671658c0bd75c4f27b5c413156 -->
-<!-- api: M:Inno.UI.UiInputSnapshot.#ctor(Inno.Core.Mathematics.Vector2,Inno.Core.Input.KeyModifier,Inno.Core.Input.InputSequence) 24ed602967dc7580f0c3c506b5dae2a48860c4bc9a596b7be77c1f08bc9eac52 -->
+<!-- api: M:Inno.UI.UiInputSnapshot.#ctor(Inno.Core.Mathematics.Vector2,Inno.Core.Input.KeyModifier,Inno.Core.Input.InputSequence,System.Collections.Generic.IReadOnlyDictionary{System.UInt64,Inno.Core.Input.GamepadState}) 832b155a20ca1a67d714386a1310e0cba5984f8ecb858cf873bc1d175bb83f25 -->
 <!-- api: P:Inno.UI.UiInputSnapshot.sequence 13d376d87c6f50bfbe23fa337acaacb8bc57e161dc09f11d8f64a38b8e3a34bc -->
+<!-- api: P:Inno.UI.UiInputSnapshot.gamepads 64986416dd90b3965e7b675aa5765bdf3e16cf6863829fb2256d9eeda0de6259 -->
 <!-- api: P:Inno.UI.UiInputSnapshot.mousePosition 2e65ad038347687c8b667d7227d5635858329919eef87e5f417badac3e9c166d -->
 <!-- api: P:Inno.UI.UiInputSnapshot.scrollDelta 3e96b3409ae56c4b734f87beb70f0ba32802ff7d952208fa59f254fd89a6ac32 -->
 <!-- api: P:Inno.UI.UiInputSnapshot.modifiers bfd54e4ff816cf43dee28c5b072f3ed4ed0de3999f87694da4c4b5bbc79f6328 -->
@@ -1164,17 +1169,18 @@ static UiDocumentHandle Show(UiContextHandle context, UiDocumentAsset source)
 
 | 声明 | 行为与参数 | 异常 |
 |---|---|---|
-| <a id="api-1b3c4f22855e3a64"></a>[`public sealed class Inno.UI.UiInputSnapshot`](../../src/services/ui/Inno.UI/UiTypes.cs#L321) | Carries one immutable input snapshot across the UI backend boundary. | — |
-| <a id="api-5fa0641b6728ee64"></a>[`public Inno.UI.UiInputSnapshot.UiInputSnapshot(Inno.Core.Mathematics.Vector2 mousePosition, Inno.Core.Input.KeyModifier modifiers, Inno.Core.Input.InputSequence sequence)`](../../src/services/ui/Inno.UI/UiTypes.cs#L338) | Creates a context-local view of one immutable ordered input sequence.<br>`mousePosition`：Final pointer position in context pixels.<br>`modifiers`：Physical modifiers at the frame boundary.<br>`sequence`：Input changes already mapped into context pixels, in acquisition order. | `System.ArgumentNullException`：The sequence is null. |
-| <a id="api-1e94a4243f4c835c"></a>[`public Inno.Core.Input.InputSequence Inno.UI.UiInputSnapshot.sequence { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L352) | Gets the ordered immutable changes without retaining a platform event or callback. | — |
-| <a id="api-0e3855a029a741e9"></a>[`public Inno.Core.Mathematics.Vector2 Inno.UI.UiInputSnapshot.mousePosition { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L357) | Gets the pointer position. | — |
-| <a id="api-34e72cbae4aa1cf6"></a>[`public Inno.Core.Mathematics.Vector2 Inno.UI.UiInputSnapshot.scrollDelta { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L361) | Gets pointer wheel movement. | — |
-| <a id="api-27c961a6932e83b1"></a>[`public Inno.Core.Input.KeyModifier Inno.UI.UiInputSnapshot.modifiers { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L365) | Gets active keyboard modifiers. | — |
-| <a id="api-e9c1aed81ed4c5fb"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.UI.UiInputSnapshot.keysPressed { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L369) | Gets physical keys pressed this frame. | — |
-| <a id="api-e981be0be5c52876"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.UI.UiInputSnapshot.keysReleased { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L373) | Gets physical keys released this frame. | — |
-| <a id="api-8d9f7181d4817d03"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.UI.UiInputSnapshot.buttonsPressed { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L377) | Gets pointer buttons pressed this frame. | — |
-| <a id="api-38cafe4c79ded47a"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.UI.UiInputSnapshot.buttonsReleased { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L381) | Gets pointer buttons released this frame. | — |
-| <a id="api-2e5f8bd4432260ac"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.UI.UiInputSnapshot.textInput { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L385) | Gets ordered Unicode text commits. | — |
+| <a id="api-1b3c4f22855e3a64"></a>[`public sealed class Inno.UI.UiInputSnapshot`](../../src/services/ui/Inno.UI/UiTypes.cs#L322) | Carries one immutable input snapshot across the UI backend boundary. | — |
+| <a id="api-e8adc74bf3bf5080"></a>[`public Inno.UI.UiInputSnapshot.UiInputSnapshot(Inno.Core.Mathematics.Vector2 mousePosition, Inno.Core.Input.KeyModifier modifiers, Inno.Core.Input.InputSequence sequence, System.Collections.Generic.IReadOnlyDictionary<ulong, Inno.Core.Input.GamepadState>? gamepads = null)`](../../src/services/ui/Inno.UI/UiTypes.cs#L345) | Creates a context-local view of one immutable ordered input sequence.<br>`mousePosition`：Final pointer position in context pixels.<br>`modifiers`：Physical modifiers at the frame boundary.<br>`sequence`：Input changes already mapped into context pixels, in acquisition order.<br>`gamepads`：Immutable controller states admitted by the owning input route; null means no admitted devices. | `System.ArgumentNullException`：The sequence is null.<br>`System.ArgumentException`：A controller state is null or does not match its dictionary key. |
+| <a id="api-1e94a4243f4c835c"></a>[`public Inno.Core.Input.InputSequence Inno.UI.UiInputSnapshot.sequence { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L365) | Gets the ordered immutable changes without retaining a platform event or callback. | — |
+| <a id="api-1e8d24bd0d397576"></a>[`public System.Collections.Generic.IReadOnlyDictionary<ulong, Inno.Core.Input.GamepadState> Inno.UI.UiInputSnapshot.gamepads { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L370) | Gets controller held state for this input owner without retaining backend or native objects. | — |
+| <a id="api-0e3855a029a741e9"></a>[`public Inno.Core.Mathematics.Vector2 Inno.UI.UiInputSnapshot.mousePosition { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L375) | Gets the pointer position. | — |
+| <a id="api-34e72cbae4aa1cf6"></a>[`public Inno.Core.Mathematics.Vector2 Inno.UI.UiInputSnapshot.scrollDelta { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L379) | Gets pointer wheel movement. | — |
+| <a id="api-27c961a6932e83b1"></a>[`public Inno.Core.Input.KeyModifier Inno.UI.UiInputSnapshot.modifiers { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L383) | Gets active keyboard modifiers. | — |
+| <a id="api-e9c1aed81ed4c5fb"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.UI.UiInputSnapshot.keysPressed { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L387) | Gets physical keys pressed this frame. | — |
+| <a id="api-e981be0be5c52876"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.KeyCode> Inno.UI.UiInputSnapshot.keysReleased { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L391) | Gets physical keys released this frame. | — |
+| <a id="api-8d9f7181d4817d03"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.UI.UiInputSnapshot.buttonsPressed { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L395) | Gets pointer buttons pressed this frame. | — |
+| <a id="api-38cafe4c79ded47a"></a>[`public System.Collections.Generic.IReadOnlyCollection<Inno.Core.Input.MouseButton> Inno.UI.UiInputSnapshot.buttonsReleased { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L399) | Gets pointer buttons released this frame. | — |
+| <a id="api-2e5f8bd4432260ac"></a>[`public System.Collections.Generic.IReadOnlyList<string> Inno.UI.UiInputSnapshot.textInput { get; }`](../../src/services/ui/Inno.UI/UiTypes.cs#L403) | Gets ordered Unicode text commits. | — |
 
 ### `Inno.UI.UiViewportMapping`
 

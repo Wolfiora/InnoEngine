@@ -64,9 +64,215 @@ macOS Command / Windows key 等平台主修饰键可映射到 `Super`。`KeyModi
 
 本项目定义输入值，不拥有事件派发器。订阅、派发和订阅释放见 [Core Events 输入事件示例](Inno.Core.Events.md#输入事件组合)。
 
+## 手柄输入事实
+
+`GamepadInputChange` 的连接、按钮、轴变化属于同一 `InputSequence`，不生成键盘事件。`deviceId` 只标识当前物理连接，不能作为对象 persistent ID 或保存到项目数据。标准按钮按物理位置命名；摇杆范围为 [-1, 1]，右／下为正，扳机为 [0, 1]。
+
+`GamepadState` 复制并冻结按钮与轴。`GetAxis(axis, deadZone)` 使用明确的轴向死区，并把死区以外的行程重新映射到完整范围；无样本返回零，非有限值及越界输入明确失败。该值不拥有设备或窗口，也不决定菜单导航、重复或事件消费。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
+
+### `Inno.Core.Input.GamepadAxis`
+
+<!-- api: T:Inno.Core.Input.GamepadAxis e293373e95c86e73302a7b18a58028d1f00301b4dd67db39ee7d46867f583c97 -->
+<!-- api: F:Inno.Core.Input.GamepadAxis.LeftX 58a362062573aeca03812192e866124feb7c76fec342d9b26477942e0c7245e4 -->
+<!-- api: F:Inno.Core.Input.GamepadAxis.LeftY b4ad53ad7c6efa3e02d3647bb7f286b95abce565a775a616c91a233fda75f3b1 -->
+<!-- api: F:Inno.Core.Input.GamepadAxis.RightX 42269031f553db7ab4a16683885e1dddab6c80cafeee9a320f48eeecc2fe0311 -->
+<!-- api: F:Inno.Core.Input.GamepadAxis.RightY 2ec160a608b772d18dc8d44af7068463707a7b47b556b574ad27e3d9ab6c6cb4 -->
+<!-- api: F:Inno.Core.Input.GamepadAxis.LeftTrigger 7c19cd785b77e42e674b57c998f98602de0d2af1557fdc375cba3f40cd483ea1 -->
+<!-- api: F:Inno.Core.Input.GamepadAxis.RightTrigger 05b5aefc2fba5fe32f7cdf9ac1cd57b20be15ebea334e6b8b2fac07e60684325 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-a39ac24aeb669aa2"></a>[`public enum Inno.Core.Input.GamepadAxis : int`](../../src/foundation/core/Inno.Core.Input/GamepadAxis.cs#L6) | Names normalized controller axes; stick down/right is positive and triggers range from zero to one. | — |
+| <a id="api-d2c43b5f7563f033"></a>[`Inno.Core.Input.GamepadAxis.LeftX = 0`](../../src/foundation/core/Inno.Core.Input/GamepadAxis.cs#L11) | Left stick horizontal displacement. | — |
+| <a id="api-a44d3500740e8e3c"></a>[`Inno.Core.Input.GamepadAxis.LeftY = 1`](../../src/foundation/core/Inno.Core.Input/GamepadAxis.cs#L15) | Left stick vertical displacement. | — |
+| <a id="api-bc3ec9ee542fdf20"></a>[`Inno.Core.Input.GamepadAxis.RightX = 2`](../../src/foundation/core/Inno.Core.Input/GamepadAxis.cs#L19) | Right stick horizontal displacement. | — |
+| <a id="api-2d2feb2f1a41a355"></a>[`Inno.Core.Input.GamepadAxis.RightY = 3`](../../src/foundation/core/Inno.Core.Input/GamepadAxis.cs#L23) | Right stick vertical displacement. | — |
+| <a id="api-89f3995b47393ca0"></a>[`Inno.Core.Input.GamepadAxis.LeftTrigger = 4`](../../src/foundation/core/Inno.Core.Input/GamepadAxis.cs#L27) | Left trigger travel. | — |
+| <a id="api-f9d1cdd196371907"></a>[`Inno.Core.Input.GamepadAxis.RightTrigger = 5`](../../src/foundation/core/Inno.Core.Input/GamepadAxis.cs#L31) | Right trigger travel. | — |
+
+### `Inno.Core.Input.GamepadAxisChange`
+
+<!-- api: T:Inno.Core.Input.GamepadAxisChange d1f6b7ff1f4bed4f861e4e100a3fcaa11eaa54c7a21ac6dae7f2ceacb1b50065 -->
+<!-- api: P:Inno.Core.Input.GamepadAxisChange.EqualityContract 9acbdcf6e0c79a6ac1589e615e32863e813124c9dce4c10d713073a25ad07a43 -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.#ctor(System.UInt64,Inno.Core.Input.GamepadAxis,System.Single) 6d2b1d51812b963a247ff21c70980cb78c7a0a32e8ec066acd1bc5b64831ea57 -->
+<!-- api: P:Inno.Core.Input.GamepadAxisChange.axis 79bfb0fda13f95b123cb6da1f79111126c71e66426531d90bbacf05e57678563 -->
+<!-- api: P:Inno.Core.Input.GamepadAxisChange.value 20fc252c816dad81883d90554a9f5348dcfc1c865a4e4348b126cc5dfd5a1e62 -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.ToString 51de84de2042065fe968bca0207661e11f07b21d5cf036196ea787ee1c414a40 -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.PrintMembers(System.Text.StringBuilder) 65def3a24fcffc097a78e795b777b1e3243bc2912ad0cbc7311a4abc17adf6cd -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.op_Inequality(Inno.Core.Input.GamepadAxisChange,Inno.Core.Input.GamepadAxisChange) fab6501d85b58b5e524d24533a175f95f54714b9c3428753ec0dc2a94d1770e0 -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.op_Equality(Inno.Core.Input.GamepadAxisChange,Inno.Core.Input.GamepadAxisChange) 3d87e5a5de99bb85e22f7e4162d0d641b20401cff2f86e27185c92c4601e0955 -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.GetHashCode b94ae4d7b6a5971bd47f0d77cfda291c047f405d96228865dd595e1ad87244ac -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.Equals(System.Object) 41f23a737b3badf1a849491874fdf4ed021c81359600eaab99e763ce6a482b68 -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.Equals(Inno.Core.Input.GamepadInputChange) c2894ed3b849af79183551020164e49736e1d71f61958ee3aaa4637058e45ad3 -->
+<!-- api: M:Inno.Core.Input.GamepadAxisChange.Equals(Inno.Core.Input.GamepadAxisChange) 98474343a63629fd0316c469b5243c56f9fb3891225bbf6c3f356ce650b2518b -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-90095d2baf29042d"></a>[`public sealed record Inno.Core.Input.GamepadAxisChange : Inno.Core.Input.GamepadInputChange, System.IEquatable<Inno.Core.Input.GamepadAxisChange>`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | Captures a normalized axis sample without applying a consumer-specific dead zone. | — |
+| <a id="api-5870a1bfb1d0f7f9"></a>[`protected override System.Type Inno.Core.Input.GamepadAxisChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-31d65645a7b9d81c"></a>[`public Inno.Core.Input.GamepadAxisChange.GamepadAxisChange(ulong deviceId, Inno.Core.Input.GamepadAxis axis, float value)`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L23) | Captures one finite controller axis value.<br>`deviceId`：Nonzero connection identity.<br>`axis`：Standard axis whose range determines validation.<br>`value`：Stick value in [-1, 1], or trigger value in [0, 1]. | `System.ArgumentOutOfRangeException`：The axis is undefined, non-finite, or outside its normalized range. |
+| <a id="api-1d4ad36ae456a1dd"></a>[`public Inno.Core.Input.GamepadAxis Inno.Core.Input.GamepadAxisChange.axis { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L36) | Gets the sampled axis. | — |
+| <a id="api-64306ea5083a70f7"></a>[`public float Inno.Core.Input.GamepadAxisChange.value { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L40) | Gets its finite normalized value before dead-zone processing. | — |
+| <a id="api-5bf7313b28208ced"></a>[`public override string Inno.Core.Input.GamepadAxisChange.ToString()`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-d6fbb8402c1c95e0"></a>[`protected override bool Inno.Core.Input.GamepadAxisChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-1659bfbafe4f2ae7"></a>[`public static bool Inno.Core.Input.GamepadAxisChange.operator !=(Inno.Core.Input.GamepadAxisChange? left, Inno.Core.Input.GamepadAxisChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | 编译器生成的值不等比较。 | — |
+| <a id="api-010a4b4e8fa72a51"></a>[`public static bool Inno.Core.Input.GamepadAxisChange.operator ==(Inno.Core.Input.GamepadAxisChange? left, Inno.Core.Input.GamepadAxisChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-5f33492addc50a10"></a>[`public override int Inno.Core.Input.GamepadAxisChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-4e5ef263ab458701"></a>[`public override bool Inno.Core.Input.GamepadAxisChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-7cc30e82e792cd31"></a>[`public override sealed bool Inno.Core.Input.GamepadAxisChange.Equals(Inno.Core.Input.GamepadInputChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-b664f4cd78e3c348"></a>[`public bool Inno.Core.Input.GamepadAxisChange.Equals(Inno.Core.Input.GamepadAxisChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadAxisChange.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.GamepadButton`
+
+<!-- api: T:Inno.Core.Input.GamepadButton ee961f0c135d8063262929d8f3c3361273bacdc6e9b26faea41597c3e2c1e455 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.South 1a3cd62580c28637f0d1556cec8947b584fdac05ad443ee18ed932ccd8ab8ebe -->
+<!-- api: F:Inno.Core.Input.GamepadButton.East e6435e855d6d1e538888eec16cc41e120a3e12734cee96224660596122df1a24 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.West 218c89d4482be8f19afd674449443b1606f38e563e25f31f284212c9a1f99619 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.North ac36a32553d16ba8a3896dd918ef60ecab76ed4a8d9865205d88d8d35cf97d2e -->
+<!-- api: F:Inno.Core.Input.GamepadButton.Back e40b398b00e6d33c997c9dd8699dcbfdfa6a0117438e7484db81d194c3d7fca5 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.Guide 590436057b34d11d1445e2b809b77eb09b0111b9866365551ceb016a98e73375 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.Start 753e4a3761238d2494cdecdcaa3aebf5c7c4eb8e6f25dbe6c048f938e5b9efbd -->
+<!-- api: F:Inno.Core.Input.GamepadButton.LeftStick 9fcd7ec6327527b31a56454249c46b7de2356096031dd87680d04b09ef1b2167 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.RightStick 94b6a8d78e47f345dbc496591c6da10117007c13b68042490fd296851df2ef26 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.LeftShoulder 1bc31f21e390b7d8ae92dc8412f04021e566a1053843c847182962b7050f70fe -->
+<!-- api: F:Inno.Core.Input.GamepadButton.RightShoulder 864ca7abbe7816e47b06223207968077e7291fd556c56f3d62618ad772f6bf3c -->
+<!-- api: F:Inno.Core.Input.GamepadButton.DpadUp edabd5b53748f4c26dd7db2281a3574c29b1b2820916ec7b2d214bfd48645d2d -->
+<!-- api: F:Inno.Core.Input.GamepadButton.DpadDown 018adde8823418e7c0f3050c972f413d62ca8a5159e26ae21b82563e0ba2b79c -->
+<!-- api: F:Inno.Core.Input.GamepadButton.DpadLeft 506e77417badbbd9a498e5b40c8a2661e417b9ca8783d70fca690aa170b09db9 -->
+<!-- api: F:Inno.Core.Input.GamepadButton.DpadRight 660d8caabf1348e70a72462f621873525a6aef75f8ee33e8fad27475972f479f -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-be32c0b736fcce92"></a>[`public enum Inno.Core.Input.GamepadButton : int`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L6) | Names standard controller positions independently of printed labels or platform button codes. | — |
+| <a id="api-49c91c4fd96c9c8a"></a>[`Inno.Core.Input.GamepadButton.South = 0`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L11) | Bottom face button. | — |
+| <a id="api-51fc389d98cc4597"></a>[`Inno.Core.Input.GamepadButton.East = 1`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L15) | Right face button. | — |
+| <a id="api-98170f36e8c83683"></a>[`Inno.Core.Input.GamepadButton.West = 2`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L19) | Left face button. | — |
+| <a id="api-a3212776af9f5c06"></a>[`Inno.Core.Input.GamepadButton.North = 3`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L23) | Top face button. | — |
+| <a id="api-2f3327fe62d6aa1a"></a>[`Inno.Core.Input.GamepadButton.Back = 4`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L27) | Secondary menu button. | — |
+| <a id="api-70acb3cad369e335"></a>[`Inno.Core.Input.GamepadButton.Guide = 5`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L31) | System guide button when delivered by the host. | — |
+| <a id="api-de2682e9e4ec3ff4"></a>[`Inno.Core.Input.GamepadButton.Start = 6`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L35) | Primary menu button. | — |
+| <a id="api-0ff6420e1179a06c"></a>[`Inno.Core.Input.GamepadButton.LeftStick = 7`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L39) | Left stick press. | — |
+| <a id="api-ed0c8b931ad3cd8e"></a>[`Inno.Core.Input.GamepadButton.RightStick = 8`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L43) | Right stick press. | — |
+| <a id="api-7a80ff1cbdf7dd2e"></a>[`Inno.Core.Input.GamepadButton.LeftShoulder = 9`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L47) | Left shoulder button. | — |
+| <a id="api-e27f9f217ef6e62e"></a>[`Inno.Core.Input.GamepadButton.RightShoulder = 10`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L51) | Right shoulder button. | — |
+| <a id="api-447c64b593c87f2f"></a>[`Inno.Core.Input.GamepadButton.DpadUp = 11`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L55) | Upward directional button. | — |
+| <a id="api-4954f47e2f83609b"></a>[`Inno.Core.Input.GamepadButton.DpadDown = 12`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L59) | Downward directional button. | — |
+| <a id="api-e5d6fb8c349a7f70"></a>[`Inno.Core.Input.GamepadButton.DpadLeft = 13`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L63) | Leftward directional button. | — |
+| <a id="api-1d3b250311543545"></a>[`Inno.Core.Input.GamepadButton.DpadRight = 14`](../../src/foundation/core/Inno.Core.Input/GamepadButton.cs#L67) | Rightward directional button. | — |
+
+### `Inno.Core.Input.GamepadButtonChange`
+
+<!-- api: T:Inno.Core.Input.GamepadButtonChange 699e8396dd8a400ad25f1f82a56824be65623d443cb55e929367280112e4bd22 -->
+<!-- api: P:Inno.Core.Input.GamepadButtonChange.EqualityContract f160d409d22302be28cbd1280b91b0ce61629ee4252e33073666940a34cc8bdb -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.#ctor(System.UInt64,Inno.Core.Input.GamepadButton,System.Boolean) f3a479bd300ac1830d83c4c8ad5691a3ec2827d626edd8385cc392146398a6b6 -->
+<!-- api: P:Inno.Core.Input.GamepadButtonChange.button 626bae3ac1ec6a573ab2f08ce3a1afefd808917d67a296f5410a76a0cf1d9eef -->
+<!-- api: P:Inno.Core.Input.GamepadButtonChange.pressed a80257642ada1097fe2c42cebbf1fe06fae526e4e7d5784fa0fae5f548e93e4c -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.ToString 88f643ed77d0af8c0cb76c8d963ea2a00f08507a412bb1225eac3b9c1954d35e -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.PrintMembers(System.Text.StringBuilder) 885efa05b35622e3bbd0e9d9c042430377312a18857c13902a982f1e3505b1e4 -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.op_Inequality(Inno.Core.Input.GamepadButtonChange,Inno.Core.Input.GamepadButtonChange) d5e4a33c7f7e4ee84cb4c3f1e5b5426310f665cf16f94165452c6c8920a8691f -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.op_Equality(Inno.Core.Input.GamepadButtonChange,Inno.Core.Input.GamepadButtonChange) 570dbe9d2155f8134436e6c48a3925d95ee9238204062db44dce3939868e9791 -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.GetHashCode e128acb78612242a65c7e0b9355b827f8ed4fd46b68375150e53098a0d075b68 -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.Equals(System.Object) 1abbbf55cffc94528d9f20b5dd25feceab8fc3adadd4cc93faec59786cdbd15d -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.Equals(Inno.Core.Input.GamepadInputChange) 87c324b5eaca9b613794c4c92a24319ae7c6cdf2158d9dd99d7f8e08be57a404 -->
+<!-- api: M:Inno.Core.Input.GamepadButtonChange.Equals(Inno.Core.Input.GamepadButtonChange) 379b60aa80c6a41b165ad78f5603d1e07bd5775a95b44ab1d44eee8741fe43f9 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-30f1cfd91d747936"></a>[`public sealed record Inno.Core.Input.GamepadButtonChange : Inno.Core.Input.GamepadInputChange, System.IEquatable<Inno.Core.Input.GamepadButtonChange>`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | Captures a physical controller button transition without manufacturing keyboard events or repeats. | — |
+| <a id="api-d40aed87125f3e1d"></a>[`protected override System.Type Inno.Core.Input.GamepadButtonChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-92e71a623db6a6cb"></a>[`public Inno.Core.Input.GamepadButtonChange.GamepadButtonChange(ulong deviceId, Inno.Core.Input.GamepadButton button, bool pressed)`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L25) | Captures one standard controller button edge.<br>`deviceId`：Nonzero connection identity.<br>`button`：Standard physical button position.<br>`pressed`：True for press, false for release. | `System.ArgumentOutOfRangeException`：The button is undefined. |
+| <a id="api-d0746d4b889cf929"></a>[`public Inno.Core.Input.GamepadButton Inno.Core.Input.GamepadButtonChange.button { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L39) | Gets the physical button position. | — |
+| <a id="api-ea21aa83dc67a0b5"></a>[`public bool Inno.Core.Input.GamepadButtonChange.pressed { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L43) | Gets whether the button became held. | — |
+| <a id="api-54274a5db36b16c8"></a>[`public override string Inno.Core.Input.GamepadButtonChange.ToString()`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-c2cdb502638da30b"></a>[`protected override bool Inno.Core.Input.GamepadButtonChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-0112e664e965607f"></a>[`public static bool Inno.Core.Input.GamepadButtonChange.operator !=(Inno.Core.Input.GamepadButtonChange? left, Inno.Core.Input.GamepadButtonChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | 编译器生成的值不等比较。 | — |
+| <a id="api-992d8e711215010d"></a>[`public static bool Inno.Core.Input.GamepadButtonChange.operator ==(Inno.Core.Input.GamepadButtonChange? left, Inno.Core.Input.GamepadButtonChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-2db32180eb5781bd"></a>[`public override int Inno.Core.Input.GamepadButtonChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-348f020d830e5699"></a>[`public override bool Inno.Core.Input.GamepadButtonChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-f055ed5fc9835c66"></a>[`public override sealed bool Inno.Core.Input.GamepadButtonChange.Equals(Inno.Core.Input.GamepadInputChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-342dbd3dd6f7d904"></a>[`public bool Inno.Core.Input.GamepadButtonChange.Equals(Inno.Core.Input.GamepadButtonChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadButtonChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.GamepadConnectionChange`
+
+<!-- api: T:Inno.Core.Input.GamepadConnectionChange 32b645235662d3c4b43dd89b298b82068a879da60c9189317fddbfac221b38ab -->
+<!-- api: P:Inno.Core.Input.GamepadConnectionChange.EqualityContract 41f78f97d0c7422a5bc1a957cf184db9db2eb032fa22b5efcfbe581f96366e32 -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.#ctor(System.UInt64,System.Boolean) f4de4a744455c8f700e2624baa9eb7d120db5a9d745d426736b30929fcae6cc5 -->
+<!-- api: P:Inno.Core.Input.GamepadConnectionChange.connected 1c007fed84e4f0ac0fff850fc9e8bbcf4726c0184f9e49e231ba98b7d56ed112 -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.ToString 368d815a5235446ccf76c88c3ae92651fcb84188bb29562789aaab83f4424cb5 -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.PrintMembers(System.Text.StringBuilder) b09462a9326333e9d209eda956fdc481449e729233241cf5d9eda44da841930d -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.op_Inequality(Inno.Core.Input.GamepadConnectionChange,Inno.Core.Input.GamepadConnectionChange) 3b593019b78764a310c28d024994262960e78d4bb3eb3c6ade6eff2801ee03ff -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.op_Equality(Inno.Core.Input.GamepadConnectionChange,Inno.Core.Input.GamepadConnectionChange) e8bf2d8dd7a92d2fef85dc33ff766db7be414afda4e364a7c01b1b2f3ad1c85b -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.GetHashCode 5570e16e9dc9bf6f26342c6b2334b92b2d1a433a0dc989d3cd000b54d78a8779 -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.Equals(System.Object) 58b4fb01f19ccb4374e92fce158b69eafc30ca44aab948fdbe685d7e4aa06ccf -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.Equals(Inno.Core.Input.GamepadInputChange) ed0c80c1b29b6e46a56abc38fc5f69ec13ab01ec2d4afa3b70146c5acf8dce6d -->
+<!-- api: M:Inno.Core.Input.GamepadConnectionChange.Equals(Inno.Core.Input.GamepadConnectionChange) 2f833c4208123188ddb45f31708327d3188956b9cf4bcbce81a02c65165440b8 -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-bfb7e809f1c06ecb"></a>[`public sealed record Inno.Core.Input.GamepadConnectionChange : Inno.Core.Input.GamepadInputChange, System.IEquatable<Inno.Core.Input.GamepadConnectionChange>`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | Announces a controller connection or retires all held state for that connection. | — |
+| <a id="api-4089363dd048b139"></a>[`protected override System.Type Inno.Core.Input.GamepadConnectionChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-db2e2a3bd25b6f7a"></a>[`public Inno.Core.Input.GamepadConnectionChange.GamepadConnectionChange(ulong deviceId, bool connected)`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L17) | Captures an ordered device lifetime transition.<br>`deviceId`：Nonzero connection identity.<br>`connected`：True for attachment; false when the connection and all held controls retire. | — |
+| <a id="api-16bd4b5d50415ade"></a>[`public bool Inno.Core.Input.GamepadConnectionChange.connected { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L25) | Gets whether this transition establishes a live connection. | — |
+| <a id="api-1c9fe81efbe2a6f2"></a>[`public override string Inno.Core.Input.GamepadConnectionChange.ToString()`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-5f4175ad9bb88a5b"></a>[`protected override bool Inno.Core.Input.GamepadConnectionChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-36b8daaace26634d"></a>[`public static bool Inno.Core.Input.GamepadConnectionChange.operator !=(Inno.Core.Input.GamepadConnectionChange? left, Inno.Core.Input.GamepadConnectionChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | 编译器生成的值不等比较。 | — |
+| <a id="api-031465787ebcaa2f"></a>[`public static bool Inno.Core.Input.GamepadConnectionChange.operator ==(Inno.Core.Input.GamepadConnectionChange? left, Inno.Core.Input.GamepadConnectionChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-2e7b6975ccb8b47c"></a>[`public override int Inno.Core.Input.GamepadConnectionChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-26317126e00ab7b6"></a>[`public override bool Inno.Core.Input.GamepadConnectionChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-aaca47ae09d6ec93"></a>[`public override sealed bool Inno.Core.Input.GamepadConnectionChange.Equals(Inno.Core.Input.GamepadInputChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-4878aee9d9e04c7c"></a>[`public bool Inno.Core.Input.GamepadConnectionChange.Equals(Inno.Core.Input.GamepadConnectionChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadConnectionChange.cs#L6) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+
+### `Inno.Core.Input.GamepadInputChange`
+
+<!-- api: T:Inno.Core.Input.GamepadInputChange 9074ac5c874a564b0b409e9d75929b5eec06256f844068faeef1cc1531641491 -->
+<!-- api: P:Inno.Core.Input.GamepadInputChange.EqualityContract 96a1a33397212866441090d853fbb46a47760a270be717c9dfbc9e23678e0bea -->
+<!-- api: P:Inno.Core.Input.GamepadInputChange.deviceId fd847112184c8aff72107773ce6a1c63d24bb92334c441b5ab05cf24e15399af -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.ToString 135ae22ecf64bc98c7d1244298a8c4d74000884431e4a0fe03c11d8b5b34c20d -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.PrintMembers(System.Text.StringBuilder) 37325ade9bd6f0d36f3e08cd46e5c3d2dcc78974b121ebb7a751b8c4a82d0089 -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.op_Inequality(Inno.Core.Input.GamepadInputChange,Inno.Core.Input.GamepadInputChange) c9804592bda1409726895286c682ad30d660a0d0a494966c3d88b4bece5b636e -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.op_Equality(Inno.Core.Input.GamepadInputChange,Inno.Core.Input.GamepadInputChange) dbda83b609b04debf9d8f058cc30f6dc4e4984f2582b318a356106b823b8b602 -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.GetHashCode 73d215494057d63ab496b0c29ca9a82cc6b32c82be81c35c9ac2d07d23828608 -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.Equals(System.Object) 8e018390509652950b215344210d2227a19e2efc1845ac03d4f28a3e6562e610 -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.Equals(Inno.Core.Input.InputChange) 5c6b8fa7fc1a69cc8272192f259a3c5a96256420dfc62a897f573420c274be95 -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.Equals(Inno.Core.Input.GamepadInputChange) 6c5f8f0c3226dcd06f12aa0ecd835d040611c54aae8daf8fadd3e5e715213707 -->
+<!-- api: M:Inno.Core.Input.GamepadInputChange.#ctor(Inno.Core.Input.GamepadInputChange) 01c160d4adf62bf595438a7563f3812a14db10f8ae65bae8429dd6e50e489d1f -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-69f7fdbaa23feb20"></a>[`public abstract record Inno.Core.Input.GamepadInputChange : Inno.Core.Input.InputChange, System.IEquatable<Inno.Core.Input.GamepadInputChange>`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | Identifies an ordered controller fact by its connection-lifetime identity, never a native pointer. | — |
+| <a id="api-620165f49430a5bd"></a>[`protected override System.Type Inno.Core.Input.GamepadInputChange.EqualityContract { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | 编译器生成的记录运行时类型相等契约。 | — |
+| <a id="api-0fa19d4f806640d1"></a>[`public ulong Inno.Core.Input.GamepadInputChange.deviceId { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L25) | Gets the connection identity; it must not be persisted as a user device preference. | — |
+| <a id="api-28f02323480a60bd"></a>[`public override string Inno.Core.Input.GamepadInputChange.ToString()`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | Returns a string that represents the current object.<br>返回：A string that represents the current object. | — |
+| <a id="api-f0c1e82de77e19b8"></a>[`protected override bool Inno.Core.Input.GamepadInputChange.PrintMembers(System.Text.StringBuilder builder)`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | 编译器生成的记录成员文本格式化。 | — |
+| <a id="api-bf76631ab57764bf"></a>[`public static bool Inno.Core.Input.GamepadInputChange.operator !=(Inno.Core.Input.GamepadInputChange? left, Inno.Core.Input.GamepadInputChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | 编译器生成的值不等比较。 | — |
+| <a id="api-ccafd847e921e760"></a>[`public static bool Inno.Core.Input.GamepadInputChange.operator ==(Inno.Core.Input.GamepadInputChange? left, Inno.Core.Input.GamepadInputChange? right)`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | 编译器生成的记录值相等比较。 | — |
+| <a id="api-40d6612cca3944f1"></a>[`public override int Inno.Core.Input.GamepadInputChange.GetHashCode()`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | Serves as the default hash function.<br>返回：A hash code for the current object. | — |
+| <a id="api-c4760b34345ac078"></a>[`public override bool Inno.Core.Input.GamepadInputChange.Equals(object? obj)`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | Determines whether the specified object is equal to the current object.<br>`obj`：The object to compare with the current object.<br>返回：`true` if the specified object is equal to the current object; otherwise, `false`. | — |
+| <a id="api-88f6b21df2a47e59"></a>[`public override sealed bool Inno.Core.Input.GamepadInputChange.Equals(Inno.Core.Input.InputChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-5a5329956b27fdb2"></a>[`public virtual bool Inno.Core.Input.GamepadInputChange.Equals(Inno.Core.Input.GamepadInputChange? other)`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | Indicates whether the current object is equal to another object of the same type.<br>`other`：An object to compare with this object.<br>返回：`true` if the current object is equal to the `other` parameter; otherwise, `false`. | — |
+| <a id="api-aae358b5f5416277"></a>[`protected Inno.Core.Input.GamepadInputChange.GamepadInputChange(Inno.Core.Input.GamepadInputChange original)`](../../src/foundation/core/Inno.Core.Input/GamepadInputChange.cs#L8) | 编译器生成的记录构造入口，参数对应左列声明的成员。 | — |
+
+### `Inno.Core.Input.GamepadState`
+
+<!-- api: T:Inno.Core.Input.GamepadState 458bb2299a5eff1b7a674daed19b5ea9cbc3d911b36eb50e360cf7da13fe07f9 -->
+<!-- api: M:Inno.Core.Input.GamepadState.#ctor(System.UInt64,System.Collections.Generic.IEnumerable{Inno.Core.Input.GamepadButton},System.Collections.Generic.IReadOnlyDictionary{Inno.Core.Input.GamepadAxis,System.Single}) 7de71e14897590be840e6d68868610dd522e884c709a098768faa79ce86e3446 -->
+<!-- api: P:Inno.Core.Input.GamepadState.deviceId 4c4276dbc00a3f8828028fc84e5dda60cf1da4cd05ae45019edebe31a2b4711e -->
+<!-- api: P:Inno.Core.Input.GamepadState.buttonsDown 1594e19b6a9a6b1e67f29522ddb148ab1203734842d82344fbe4beeeb9533d32 -->
+<!-- api: P:Inno.Core.Input.GamepadState.axes bd76625896a72ec300f58d95f41cc084e15de9442775a8db285d392eb9678dd9 -->
+<!-- api: M:Inno.Core.Input.GamepadState.GetAxis(Inno.Core.Input.GamepadAxis,System.Single) 654c8b34bee44dfdaa8213ef96080dcebd1f1f55ceb1a20c47ec1bbface4785d -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-0ed48d6cc1f1196f"></a>[`public sealed class Inno.Core.Input.GamepadState`](../../src/foundation/core/Inno.Core.Input/GamepadState.cs#L10) | Freezes the held controls of one live controller connection at an input boundary. | — |
+| <a id="api-097f9fb51e9d94a5"></a>[`public Inno.Core.Input.GamepadState.GamepadState(ulong deviceId, System.Collections.Generic.IEnumerable<Inno.Core.Input.GamepadButton>? buttonsDown = null, System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Input.GamepadAxis, float>? axes = null)`](../../src/foundation/core/Inno.Core.Input/GamepadState.cs#L27) | Copies held controls without retaining mutable collections supplied by a backend.<br>`deviceId`：Nonzero connection-lifetime identity.<br>`buttonsDown`：Held standard buttons, or null for none.<br>`axes`：Finite normalized samples, or null for centered axes. | `System.ArgumentOutOfRangeException`：The identity is zero or a control/value is invalid. |
+| <a id="api-a9e63bbcbb96e2e9"></a>[`public ulong Inno.Core.Input.GamepadState.deviceId { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadState.cs#L46) | Gets the transient connection identity. | — |
+| <a id="api-0acab34929099fb9"></a>[`public System.Collections.Generic.IReadOnlySet<Inno.Core.Input.GamepadButton> Inno.Core.Input.GamepadState.buttonsDown { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadState.cs#L50) | Gets immutable held buttons; edges remain in the ordered input sequence. | — |
+| <a id="api-7ce0f7b9ea6b5ccd"></a>[`public System.Collections.Generic.IReadOnlyDictionary<Inno.Core.Input.GamepadAxis, float> Inno.Core.Input.GamepadState.axes { get; }`](../../src/foundation/core/Inno.Core.Input/GamepadState.cs#L54) | Gets immutable raw normalized samples; missing axes read as zero. | — |
+| <a id="api-3a59058afae8007a"></a>[`public float Inno.Core.Input.GamepadState.GetAxis(Inno.Core.Input.GamepadAxis axis, float deadZone = 0)`](../../src/foundation/core/Inno.Core.Input/GamepadState.cs#L71) | Applies an axial dead zone and rescales the remaining travel continuously to full range.<br>`axis`：Standard axis to query.<br>`deadZone`：Finite dead-zone radius in [0, 1); zero returns the raw normalized sample.<br>返回：Zero within the dead zone or for an unsampled axis; otherwise normalized remaining travel. | `System.ArgumentOutOfRangeException`：The axis or dead zone is invalid. |
 
 ### `Inno.Core.Input.InputChange`
 

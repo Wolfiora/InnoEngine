@@ -38,6 +38,12 @@ Application/Window 的 SDL handle、event union 和 pointer 都停留在本程�
 
 Sdl3WindowOperations.CreateWindow 使用统一 SDL properties 并总是释放临时 properties；成功 handle 的销毁权交给应用。ReadFocus 只读取。Windows/macOS 不要求 OpenGL，Browser 要求 OpenGL 且初始焦点继续等待真实事件；surface 解析/SDK 配置属于各 integration。应用唯一管理登记、owner thread、包装失败清理和外部窗口借用。
 
+## 手柄采集
+
+应用显式取得 SDL Gamepad 子系统引用，并拥有自己打开的设备句柄。创建时枚举现有连接，后续处理新增、移除和标准按钮／轴事件；初始化失败及退出均在释放子系统前关闭已拥有句柄。设备 ID 是连接身份，不向上层传递原生地址。
+
+按键和轴按照事件队列中的焦点变化路由至当前所属窗口，不读取轮询结束后的焦点来重写先前事件。转换明确使用标准物理按钮和轴，不依赖两个枚举的数值恰好相同。共享采集实现不增加 Windows、macOS 或 Browser 分支。
+
 ## 当前源码公开 API 清单
 
 按类型列出当前 public 与可供外部派生实现使用的 protected 声明。签名包含 nullable、默认参数和泛型约束；源码链接可定位实现。表中的“—”表示该声明没有额外 XML 约束，不能据此推断线程安全或不会失败。生命周期与组合顺序见本页前文。

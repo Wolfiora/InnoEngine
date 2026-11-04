@@ -20,6 +20,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
     private readonly int m_ownerThreadId = Environment.CurrentManagedThreadId;
     private readonly List<Event> m_pendingEvents = [];
     private readonly Dictionary<uint, Sdl3PlatformWindow> m_windows = [];
+    private readonly Dictionary<uint, nint> m_gamepads = [];
     private readonly List<ISdl3ApplicationExtension> m_extensions = [];
     private SDLEventFilter? m_liveResizeEventWatch;
     private SDLMainThreadCallback? m_liveResizeMainThreadCallback;
@@ -42,9 +43,20 @@ public sealed unsafe partial class Sdl3PlatformApplication
 
         m_hostIntegration.ConfigureInitialization();
 
-        if (!SDL.Init(SDLInitFlags.Video | SDLInitFlags.Events))
+        if (!SDL.Init(SDLInitFlags.Video | SDLInitFlags.Events | SDLInitFlags.Gamepad))
         {
             throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_Init failed.");
+        }
+
+        try
+        {
+            InitializeGamepads();
+        }
+        catch
+        {
+            ReleaseGamepads();
+            SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events | SDLInitFlags.Gamepad);
+            throw;
         }
 
         // Browser frames are already driven by requestAnimationFrame; SDL's native
@@ -68,7 +80,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
             m_liveResizeMainThreadCallback = null;
             m_liveResizeEventWatchPointer = null;
             m_liveResizeMainThreadCallbackPointer = null;
-            SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events);
+            ReleaseGamepads();
+            SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events | SDLInitFlags.Gamepad);
             throw failure;
         }
     }
@@ -229,7 +242,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
         }
 
         m_windows.Clear();
-        SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events);
+        ReleaseGamepads();
+        SDL.QuitSubSystem(SDLInitFlags.Video | SDLInitFlags.Events | SDLInitFlags.Gamepad);
         m_disposed = true;
     }
 
@@ -358,6 +372,13 @@ public sealed unsafe partial class Sdl3PlatformApplication
         var eventType = (SDLEventType)sdlEvent.Type;
         switch (eventType)
         {
+            case SDLEventType.GamepadAdded:
+            case SDLEventType.GamepadRemoved:
+            case SDLEventType.GamepadButtonDown:
+            case SDLEventType.GamepadButtonUp:
+            case SDLEventType.GamepadAxisMotion:
+                return TryTranslateGamepad(ref sdlEvent, out evnt);
+
             case SDLEventType.Quit:
                 evnt = new ApplicationQuitEvent();
                 return true;

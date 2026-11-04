@@ -268,6 +268,10 @@ public sealed class MessageModal : EditorModal
 }
 ```
 
+## Game View 手柄焦点
+
+`EditorGameInputCapture` 在未聚焦时仍允许设备连接事实通过，但仅向取得焦点的 Game View 路由按钮和轴。`CompleteFrame(out acquiredWindowId)` 返回需要释放的旧窗口，同时提供本次新获得焦点的窗口；Host 必须先发送旧焦点释放，再发送新焦点获取。没有变化时均为零，不每帧制造焦点事件。消费掉释放事件时仍通过既有焦点重置释放游戏持有状态，不把已消费操作重放给游戏。
+
 ## 当前源码公开 API 清单
 
 此清单对应当前 SDK 求值与源码符号；内部类型不构成公开 API。
@@ -2775,4 +2779,20 @@ public sealed class MessageModal : EditorModal
 | `Inno.Extensibility.Catalogs` | 公开签名依赖 |
 | `Inno.Extensibility.Types` | 公开签名依赖 |
 | `Inno.Editor.Core` | 公开签名依赖 |
-| `Inno.Editor.Interactions` | 公开签名依赖 |
+| `Inno.Editor.Interactions` | 公开签名依赖 |### `Inno.Editor.ImGui.EditorGameInputCapture`
+
+<!-- api: T:Inno.Editor.ImGui.EditorGameInputCapture 8f80e4ab3f4204714e9450e120384dc14d4d19744080ef2cca9b9ebf8d157291 -->
+<!-- api: M:Inno.Editor.ImGui.EditorGameInputCapture.#ctor(System.Func{System.UInt32,System.Nullable{System.UInt32}}) 82e386fdd28933030530c90f2dee165779049b522415524e3b601dbc611721dd -->
+<!-- api: M:Inno.Editor.ImGui.EditorGameInputCapture.BeginFrame 85a907ad9085dfed3edec79d10acf89fd378c106db65e77f61ee09da68d30180 -->
+<!-- api: M:Inno.Editor.ImGui.EditorGameInputCapture.Report(System.UInt32,System.Numerics.Vector2,System.Numerics.Vector2,System.Boolean,System.Boolean) a9d0538be5d79bcbb2beadf0b8c2c7d67f355a3f2438318a807a77a897ef3b92 -->
+<!-- api: M:Inno.Editor.ImGui.EditorGameInputCapture.CompleteFrame(System.UInt32@) f1a92119fe75d1ea0ec91d970844adee23dac2d4e790b5b80107480ff6f7cd12 -->
+<!-- api: M:Inno.Editor.ImGui.EditorGameInputCapture.Route(Inno.Core.Events.Event) 14a70e9e7eeab8945e2a05e806ed6157ce1ed5acaebc7d76f3b29a82b8230e1d -->
+
+| 声明 | 行为与参数 | 异常 |
+|---|---|---|
+| <a id="api-c8a06618f33a1b4a"></a>[`public sealed class Inno.Editor.ImGui.EditorGameInputCapture`](../../src/composition/editor/presentation/Inno.Editor.ImGui/Runtime/EditorGameInputCapture.cs#L13) | Routes platform input to the Play session only while the visible Game View owns focus. | — |
+| <a id="api-f3335459f0eff76d"></a>[`public Inno.Editor.ImGui.EditorGameInputCapture.EditorGameInputCapture(System.Func<uint, uint?> resolveWindow)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/Runtime/EditorGameInputCapture.cs#L36) | Creates a capture policy using a presentation viewport to platform window resolver.<br>`resolveWindow`：Returns a live window ID for a viewport, or null when absent. | `System.ArgumentNullException`：Thrown when the resolver is null. |
+| <a id="api-0aea14b968f8ff59"></a>[`public void Inno.Editor.ImGui.EditorGameInputCapture.BeginFrame()`](../../src/composition/editor/presentation/Inno.Editor.ImGui/Runtime/EditorGameInputCapture.cs#L44) | Starts a presentation pass in which the visible Game View must report its current bounds. | — |
+| <a id="api-29629a41b8ad9e11"></a>[`public bool Inno.Editor.ImGui.EditorGameInputCapture.Report(uint viewportId, System.Numerics.Vector2 origin, System.Numerics.Vector2 size, bool focused, bool hovered)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/Runtime/EditorGameInputCapture.cs#L67) | Reports the Game View image in coordinates local to its platform window.<br>`viewportId`：The presentation viewport containing the Game View.<br>`origin`：The image's upper-left corner relative to that window.<br>`size`：The visible image size in logical pixels.<br>`focused`：Whether the Game View is selected and its platform window has focus.<br>`hovered`：Whether the image is inside the frontmost hovered ImGui window.<br>返回：`true` when the Game View and its platform window both own focus. | — |
+| <a id="api-933f56ba3a8f2dec"></a>[`public uint Inno.Editor.ImGui.EditorGameInputCapture.CompleteFrame(out uint acquiredWindowId)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/Runtime/EditorGameInputCapture.cs#L94) | Ends a presentation pass and identifies input that must be released after focus loss.<br>`acquiredWindowId`：A newly focused Game View window, or zero when no focus acquisition occurred. Deliver its focus-gained event after any returned focus reset.<br>返回：The former platform window ID to reset, or zero if no reset is needed. | — |
+| <a id="api-e4090f732f902c17"></a>[`public Inno.Core.Events.Event? Inno.Editor.ImGui.EditorGameInputCapture.Route(Inno.Core.Events.Event evnt)`](../../src/composition/editor/presentation/Inno.Editor.ImGui/Runtime/EditorGameInputCapture.cs#L135) | Filters an engine event through the current Game View focus and pointer bounds.<br>`evnt`：The original backend-neutral platform event.<br>返回：A routed event or a synthetic focus reset, or null when the Game View must not receive input. | `System.ArgumentNullException`：Thrown when the event is null. |

@@ -12,6 +12,72 @@ namespace Inno.Editor.PlayMode.Tests;
 public sealed class EditorGameInputCaptureTests
 {
     [Fact]
+    public void SuspensionReachesGameInputWithoutReplayingControlsBeforeFocusRecovery()
+    {
+        var capture = new EditorGameInputCapture(_ => 42u);
+        using var backend = new EventInputBackend(0);
+        backend.ProcessEvent(Assert.IsType<GamepadEvent>(capture.Route(new GamepadEvent(0, new GamepadConnectionChange(11, true)))));
+        capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: false);
+        capture.CompleteFrame(out uint gained);
+        backend.ProcessEvent(new WindowFocusChangedEvent(gained, true));
+        var press = new GamepadEvent(42, new GamepadButtonChange(11, GamepadButton.South, true));
+        backend.ProcessEvent(Assert.IsType<GamepadEvent>(capture.Route(press)));
+        backend.Capture(1);
+        backend.ProcessEvent(Assert.IsType<ApplicationSuspensionChangedEvent>(capture.Route(new ApplicationSuspensionChangedEvent(true))));
+        Assert.Empty(backend.Capture(2).gamepads[11].buttonsDown);
+        Assert.Null(capture.Route(press));
+        backend.ProcessEvent(Assert.IsType<ApplicationSuspensionChangedEvent>(capture.Route(new ApplicationSuspensionChangedEvent(false))));
+        Assert.Null(capture.Route(press));
+        capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: false);
+        capture.CompleteFrame(out gained);
+        Assert.Equal(42u, gained);
+        backend.ProcessEvent(new WindowFocusChangedEvent(gained, true));
+        backend.ProcessEvent(Assert.IsType<GamepadEvent>(capture.Route(press)));
+        Assert.Contains(GamepadButton.South, backend.Capture(3).gamepads[11].buttonsDown);
+    }
+
+    [Fact]
+    public void ControllersFollowGameViewFocusWithoutLosingConnectionFacts()
+    {
+        var capture = new EditorGameInputCapture(_ => 42u);
+        using var backend = new EventInputBackend(0);
+        var connected = new GamepadEvent(0, new GamepadConnectionChange(11, true));
+        backend.ProcessEvent(Assert.IsType<GamepadEvent>(capture.Route(connected)));
+        capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: false);
+        Assert.Equal(0u, capture.CompleteFrame(out uint gained));
+        Assert.Equal(42u, gained);
+        backend.ProcessEvent(new WindowFocusChangedEvent(gained, true));
+        var press = new GamepadEvent(42, new GamepadButtonChange(11, GamepadButton.South, true));
+        backend.ProcessEvent(Assert.IsType<GamepadEvent>(capture.Route(press)));
+        Assert.Contains(GamepadButton.South, backend.Capture(1).gamepads[11].buttonsDown);
+
+        capture.BeginFrame();
+        uint lost = capture.CompleteFrame(out gained);
+        Assert.Equal(42u, lost);
+        Assert.Equal(0u, gained);
+        backend.ProcessEvent(new WindowFocusChangedEvent(lost, false));
+        Assert.Empty(backend.Capture(2).gamepads[11].buttonsDown);
+        Assert.Null(capture.Route(press));
+
+        capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: false);
+        capture.CompleteFrame(out gained);
+        Assert.Equal(42u, gained);
+        backend.ProcessEvent(new WindowFocusChangedEvent(gained, true));
+        backend.ProcessEvent(Assert.IsType<GamepadEvent>(capture.Route(press)));
+        Assert.Contains(GamepadButton.South, backend.Capture(3).gamepads[11].buttonsDown);
+        capture.CompleteFrame(out gained);
+        Assert.Equal(0u, gained);
+
+        var release = new GamepadEvent(42, new GamepadButtonChange(11, GamepadButton.South, false));
+        release.HandleInGlobal();
+        backend.ProcessEvent(Assert.IsType<WindowFocusChangedEvent>(capture.Route(release)));
+        Assert.Empty(backend.Capture(4).gamepads[11].buttonsDown);
+        var removed = new GamepadEvent(0, new GamepadConnectionChange(11, false));
+        backend.ProcessEvent(Assert.IsType<GamepadEvent>(capture.Route(removed)));
+        Assert.Empty(backend.Capture(5).gamepads);
+    }
+
+    [Fact]
     public void ButtonAndWheelProjectionPreservePositionsAndSharedConsumption()
     {
         var capture = new EditorGameInputCapture(_ => 42u);
@@ -72,7 +138,7 @@ public sealed class EditorGameInputCaptureTests
         moved.HandleInGlobal();
         Assert.Null(capture.Route(moved));
         Assert.NotNull(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
     }
 
     [Theory]
@@ -94,7 +160,7 @@ public sealed class EditorGameInputCaptureTests
         Assert.Null(capture.Route(exit));
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
         Assert.Null(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
     }
 
     [Theory]
@@ -153,7 +219,7 @@ public sealed class EditorGameInputCaptureTests
         dispatcher.Flush();
 
         Assert.False(backend.Capture(2).IsKeyDown(KeyCode.A));
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
     }
 
     [Fact]
@@ -202,8 +268,8 @@ public sealed class EditorGameInputCaptureTests
         Assert.Null(capture.Route(release));
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.B)));
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        Assert.Equal(0u, capture.CompleteFrame());
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
+        Assert.Equal(0u, capture.CompleteFrame(out _));
 
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
@@ -223,7 +289,7 @@ public sealed class EditorGameInputCaptureTests
         unrelated.HandleInGlobal();
 
         Assert.Null(capture.Route(unrelated));
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
         Assert.NotNull(capture.Route(new MouseMovedEvent(42, 150f, 150f)));
         Assert.NotNull(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
     }
@@ -253,7 +319,7 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(id => id == 9 ? 42u : null);
         capture.BeginFrame();
         capture.Report(9, new Vector2(20f, 30f), new Vector2(100f, 80f), focused: true, hovered: true);
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
 
         Assert.Null(capture.Route(new KeyPressedEvent(1, KeyCode.A)));
         Assert.IsType<KeyPressedEvent>(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
@@ -270,14 +336,14 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: false);
-        capture.CompleteFrame();
+        capture.CompleteFrame(out _);
 
         Assert.Null(capture.Route(new MouseMovedEvent(42, 30f, 30f)));
         Assert.Null(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
 
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: false, hovered: true);
-        capture.CompleteFrame();
+        capture.CompleteFrame(out _);
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
     }
 
@@ -287,21 +353,21 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        capture.CompleteFrame();
+        capture.CompleteFrame(out _);
         Assert.IsType<KeyPressedEvent>(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
         Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
 
         capture.BeginFrame();
-        Assert.Equal(42u, capture.CompleteFrame());
+        Assert.Equal(42u, capture.CompleteFrame(out _));
         Assert.Null(capture.Route(new MouseButtonReleasedEvent(42, 25f, 35f, MouseButton.Left)));
 
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        capture.CompleteFrame();
+        capture.CompleteFrame(out _);
         Assert.IsType<KeyPressedEvent>(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
         Assert.IsType<WindowFocusChangedEvent>(capture.Route(new WindowFocusChangedEvent(42, false)));
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
     }
 
     [Fact]
@@ -310,7 +376,7 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => null);
         capture.BeginFrame();
         Assert.False(capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true));
-        Assert.Equal(0u, capture.CompleteFrame());
+        Assert.Equal(0u, capture.CompleteFrame(out _));
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
     }
 
@@ -320,7 +386,7 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        capture.CompleteFrame();
+        capture.CompleteFrame(out _);
 
         Assert.IsType<MouseButtonPressedEvent>(capture.Route(new MouseButtonPressedEvent(42, 25f, 35f, MouseButton.Left)));
         Assert.IsType<MouseMovedEvent>(capture.Route(new MouseMovedEvent(42, 150f, 150f)));
@@ -335,13 +401,13 @@ public sealed class EditorGameInputCaptureTests
         var capture = new EditorGameInputCapture(_ => currentWindowId);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        capture.CompleteFrame();
+        capture.CompleteFrame(out _);
         Assert.IsType<KeyPressedEvent>(capture.Route(new KeyPressedEvent(1, KeyCode.A)));
 
         currentWindowId = 42;
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
-        Assert.Equal(1u, capture.CompleteFrame());
+        Assert.Equal(1u, capture.CompleteFrame(out _));
         Assert.Null(capture.Route(new KeyPressedEvent(1, KeyCode.A)));
         Assert.IsType<KeyPressedEvent>(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
     }

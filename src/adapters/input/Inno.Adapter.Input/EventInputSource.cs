@@ -12,6 +12,7 @@ namespace Inno.Adapter.Input;
 public sealed class EventInputSource : IInputEventSource
 {
     private readonly List<EventInputBackend> m_backends = [];
+    private readonly GamepadInputState m_gamepads = new();
     private readonly EventDispatcher m_events = new();
     private readonly EventHub m_inputHub;
     private readonly uint m_windowId;
@@ -30,7 +31,7 @@ public sealed class EventInputSource : IInputEventSource
     }
 
     /// <summary>
-    /// Creates one isolated backend that receives subsequent events from this source.
+    /// Creates one isolated backend initialized with current controller state and receiving subsequent events.
     /// </summary>
     /// <returns>
     /// A caller-owned backend whose disposal unregisters it from this source.
@@ -42,6 +43,7 @@ public sealed class EventInputSource : IInputEventSource
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         var backend = new EventInputBackend(m_windowId, RemoveBackend);
+        backend.InitializeGamepads(m_gamepads);
         backend.ConnectSource(m_inputHub.Listen<Event>(backend.ProcessEvent));
         m_backends.Add(backend);
         return backend;
@@ -63,6 +65,7 @@ public sealed class EventInputSource : IInputEventSource
     {
         ArgumentNullException.ThrowIfNull(evnt);
         ObjectDisposedException.ThrowIf(m_disposed, this);
+        m_gamepads.Process(evnt, m_windowId, null);
         m_events.Emit(evnt);
     }
 
@@ -77,6 +80,7 @@ public sealed class EventInputSource : IInputEventSource
         m_inputHub.Dispose();
         EventInputBackend[] snapshot = m_backends.ToArray();
         m_backends.Clear();
+        m_gamepads.Clear();
         foreach (EventInputBackend backend in snapshot)
             backend.DisconnectSource();
     }

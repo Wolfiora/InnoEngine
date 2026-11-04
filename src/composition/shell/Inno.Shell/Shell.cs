@@ -9,6 +9,7 @@ using Inno.Adapter.Input;
 using Inno.Adapter.Rendering;
 using Inno.Core.Events;
 using Inno.Core.Execution;
+using Inno.Core.Input;
 using Inno.Platform;
 using Inno.Rendering;
 using Inno.Runtime;
@@ -494,7 +495,8 @@ public abstract class Shell : IDisposable
             if (evnt is null)
                 continue;
             ApplySuspension(evnt);
-            if (state == ShellState.Suspended && evnt is KeyEvent or MouseEvent or TextInputEvent)
+            if (state == ShellState.Suspended && evnt is KeyEvent or MouseEvent or TextInputEvent
+                or GamepadEvent { change: not GamepadConnectionChange })
                 continue;
             if (evnt is not ApplicationSuspensionChangedEvent)
                 inputSource.ProcessEvent(evnt);

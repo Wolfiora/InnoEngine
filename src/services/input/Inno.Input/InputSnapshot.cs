@@ -8,7 +8,7 @@ using Inno.Core.Mathematics;
 namespace Inno.Input;
 
 /// <summary>
-/// Captures immutable keyboard and pointer state at one runtime frame boundary.
+/// Captures immutable keyboard, pointer and controller state at one runtime frame boundary.
 /// </summary>
 public sealed class InputSnapshot
 {
@@ -36,11 +36,17 @@ public sealed class InputSnapshot
     /// <param name="modifiers">
     /// Physical modifiers at the frame boundary.
     /// </param>
+    /// <param name="gamepads">
+    /// Connected controllers and their held controls, keyed by connection identity. Null means no devices.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// The sequence is null.
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// The frame index is negative.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// A controller state is null or does not match its dictionary key.
     /// </exception>
     public InputSnapshot(
         long frameIndex,
@@ -48,7 +54,8 @@ public sealed class InputSnapshot
         IEnumerable<KeyCode>? keysDown = null,
         IEnumerable<MouseButton>? mouseButtonsDown = null,
         Vector2 mousePosition = default,
-        KeyModifier modifiers = KeyModifier.None
+        KeyModifier modifiers = KeyModifier.None,
+        IReadOnlyDictionary<ulong, GamepadState>? gamepads = null
     ) {
         ArgumentNullException.ThrowIfNull(sequence);
         if (frameIndex < 0)
@@ -59,12 +66,22 @@ public sealed class InputSnapshot
         m_mouseButtonsDown = Copy(mouseButtonsDown);
         this.mousePosition = mousePosition;
         this.modifiers = modifiers;
+        var capturedGamepads = gamepads?.ToFrozenDictionary() ?? FrozenDictionary<ulong, GamepadState>.Empty;
+        this.gamepads = capturedGamepads;
+        foreach ((ulong id, GamepadState state) in capturedGamepads)
+            if (state is null || id != state.deviceId)
+                throw new ArgumentException("Controller state must match its connection identity.", nameof(gamepads));
     }
 
     /// <summary>
     /// Gets the immutable input changes in acquisition order.
     /// </summary>
     public InputSequence sequence { get; }
+
+    /// <summary>
+    /// Gets immutable connected controller states; disconnection removes a device from subsequent snapshots.
+    /// </summary>
+    public IReadOnlyDictionary<ulong, GamepadState> gamepads { get; }
 
     /// <summary>
     /// Gets an empty initial snapshot.

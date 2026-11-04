@@ -8,6 +8,7 @@ internal static class NativeWindowTestHost
 {
     private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
     {
+        ["GamepadTests.VirtualDeviceUsesOwnedNativeConnectionAndFocusedWindowRouting"] = () => new GamepadTests().VirtualDeviceUsesOwnedNativeConnectionAndFocusedWindowRouting(),
         ["HostIntegrationTests.WrappingFailureDestroysOnlyTheNewlyOwnedWindow"] = () => new HostIntegrationTests().WrappingFailureDestroysOnlyTheNewlyOwnedWindow(),
         ["HostIntegrationTests.SingleWindowCapabilityRejectsCreationBeforeCallingHostAgain"] = () => new HostIntegrationTests().SingleWindowCapabilityRejectsCreationBeforeCallingHostAgain(),
         ["WindowOwnershipTests.ApplicationDirectoryContainsOnlyCreatedOrAdoptedWindows"] = () => new WindowOwnershipTests().ApplicationDirectoryContainsOnlyCreatedOrAdoptedWindows(),

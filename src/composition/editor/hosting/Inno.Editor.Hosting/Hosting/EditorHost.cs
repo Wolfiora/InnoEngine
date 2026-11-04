@@ -183,9 +183,12 @@ internal sealed class EditorHost : ShellHost
                 }
                 finally
                 {
-                    uint resetWindowId = m_gameInputCapture?.CompleteFrame() ?? 0;
+                    uint acquiredWindowId = 0;
+                    uint resetWindowId = m_gameInputCapture?.CompleteFrame(out acquiredWindowId) ?? 0;
                     if (resetWindowId != 0)
                         m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(resetWindowId, false));
+                    if (acquiredWindowId != 0)
+                        m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(acquiredWindowId, true));
                 }
             }
         }
