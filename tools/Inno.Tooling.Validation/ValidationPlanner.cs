@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -21,6 +22,9 @@ internal static class ValidationPlanner
         CancellationToken cancellation,
         bool extended = false
     ) {
+        var elapsed = Stopwatch.StartNew();
+        var timings = new Dictionary<string, double>(StringComparer.Ordinal);
+        double previousStage = 0;
         Dictionary<string, string> inputs = await ValidationInputs.CaptureAsync(root, cancellation).ConfigureAwait(false);
         string commit = (await GitAsync("rev-parse", "HEAD").ConfigureAwait(false)).Trim();
         string mergeBase = (await GitAsync("merge-base", baseline, commit).ConfigureAwait(false)).Trim();
@@ -31,6 +35,7 @@ internal static class ValidationPlanner
         string[] paths = inputs.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal)
             && path.Split('/')[0] is "src" or "entry" or "build" or "backends" or "platforms" or "tools" or "tests")
             .Where(path => inputs[path] != "missing").Order(StringComparer.Ordinal).ToArray();
+        RecordStage("source-inputs");
         var properties = new Dictionary<string, string>
         {
             ["Configuration"] = configuration,
@@ -44,6 +49,7 @@ internal static class ValidationPlanner
         using JsonDocument graph = JsonDocument.Parse(captured);
         ValidationProject[] projects = graph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot)).ToArray();
         var byPath = projects.ToDictionary(static project => project.path, StringComparer.Ordinal);
+        RecordStage("managed-graph");
         var affected = new HashSet<string>(StringComparer.Ordinal);
         var documentationOwners = new HashSet<string>(StringComparer.Ordinal);
         string[] wikiPages = inputs.Keys.Where(static path => path.StartsWith("docs/", StringComparison.Ordinal)
@@ -81,7 +87,7 @@ internal static class ValidationPlanner
                     expanded |= affected.Add(project.path);
         } while (expanded);
         foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full || affected.Any(owner =>
-            Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page)))))
+            !byPath[owner].test && Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page)))))
             selectedWikiPages.Add(page);
         bool scriptWiki = selectedWikiPages.Any(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)));
         if (scriptWiki)
@@ -129,6 +135,7 @@ internal static class ValidationPlanner
                 throw new InvalidDataException("This SDK host has no supported native validation product. Required checks are blocked.");
             var nativeProperties = new Dictionary<string, string>(contexts["managed"].properties)
             {
+                ["ArtifactsPath"] = Path.Combine(artifacts, "native", target),
                 ["InnoNativeTarget"] = target,
                 ["InnoToolTarget"] = target,
                 ["InnoProductBuildProperties"] = productProperties,
@@ -143,6 +150,7 @@ internal static class ValidationPlanner
             contexts.Add("native", new(nativeProperties, nativeGraph.RootElement.Clone()));
             nativeProjects = nativeGraph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot))
                 .ToDictionary(static project => project.path, StringComparer.Ordinal);
+            RecordStage("native-graph");
         }
 
         string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith("docs/architecture/rules/", StringComparison.Ordinal)
@@ -209,8 +217,14 @@ internal static class ValidationPlanner
             throw new InvalidDataException("Affected production inputs have no selected behavior tests. Declare their real public contract consumers.");
         ValidationCheck[] builds = checks.Where(static check => check.kind == "build" && check.exclusion is null).ToArray();
         foreach (IGrouping<string?, ValidationCheck> group in builds.GroupBy(static check => check.context))
+        {
+            string[] apiOwners = group.Select(static check => check.owner).Where(owner => !byPath[owner].test
+                && !owner.StartsWith("tests/", StringComparison.Ordinal)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
             checks.Add(new("compiled-api:" + group.Key, "api", "tools/Inno.Tooling.Architecture", "Public/protected signatures in affected owners and their evaluated dependencies.",
-                "any", group.Select(static check => check.id).ToArray(), group.SelectMany(static check => check.inputs).Distinct().Order(StringComparer.Ordinal).ToArray(), true, null, group.Key, "contract"));
+                "any", group.Select(static check => check.id).ToArray(), group.SelectMany(static check => check.inputs).Distinct().Order(StringComparer.Ordinal).ToArray(), true,
+                apiOwners.Length == 0 ? "Only test implementations changed; their unchanged production dependencies have no affected API owner." : null,
+                group.Key, "contract", apiOwners));
+        }
         foreach (IGrouping<string, string> pages in selectedWikiPages.GroupBy(page => nativeOwners.Any(owner =>
             Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page))
                 || ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)) ? "native" : "managed"))
@@ -244,7 +258,11 @@ internal static class ValidationPlanner
             Dictionary<string, ValidationProject> releaseProjects = nativeProjects;
             if (releaseContext != "native")
             {
-                var releaseProperties = new Dictionary<string, string>(contexts["native"].properties) { ["Configuration"] = "Release" };
+                var releaseProperties = new Dictionary<string, string>(contexts["native"].properties)
+                {
+                    ["Configuration"] = "Release",
+                    ["ArtifactsPath"] = Path.Combine(artifacts, "native-release", target)
+                };
                 var evaluationProperties = new Dictionary<string, string>(properties);
                 foreach (var pair in releaseProperties)
                     evaluationProperties[pair.Key] = pair.Value;
@@ -271,7 +289,8 @@ internal static class ValidationPlanner
             if (releaseContext != "native")
             {
                 checks.Add(new("compiled-api:release", "api", "tools/Inno.Tooling.Architecture", "Release symbols retain the same public boundary requirements.",
-                    "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), true, null, releaseContext, "contract"));
+                    "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), true, null, releaseContext, "contract",
+                    releaseInputs.Where(static input => input.StartsWith('@') && input != "@tooling").Select(static input => input[1..]).Order(StringComparer.Ordinal).ToArray()));
                 checks.Add(new("editor-release-products", "products", editorBuild.owner, "Execute the actual Release Editor renderer, workflow and lifecycle before packaging.",
                     "native-host", releaseBuilds.ToArray(), editorBuild.inputs.Concat(releaseInputs).Distinct(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product"));
             }
@@ -301,12 +320,22 @@ internal static class ValidationPlanner
                     VisitRelease(reference);
             }
         }
+        RecordStage("selection-and-release-graph");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnet, root, cancellation).ConfigureAwait(false);
-        string environmentIdentity = await ValidationEnvironment.CaptureAsync(root, sdk.hostPath, cancellation).ConfigureAwait(false);
+        string environmentIdentity = await ValidationEnvironment.CaptureAsync(root, sdk.hostPath, cancellation, contexts.Values).ConfigureAwait(false);
+        RecordStage("execution-environment");
         return new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
-            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), checks.ToArray(), diagnostics.ToArray(), inputs, inputSets, contexts, extended);
+            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), checks.ToArray(), diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings);
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
+
+        void RecordStage(string name)
+        {
+            double now = elapsed.Elapsed.TotalSeconds;
+            timings.Add(name, now - previousStage);
+            Console.WriteLine($"Planning {name}: {now - previousStage:F2}s");
+            previousStage = now;
+        }
     }
 
     private static string DirectoryOf(string project) => project[..(project.LastIndexOf('/') + 1)];

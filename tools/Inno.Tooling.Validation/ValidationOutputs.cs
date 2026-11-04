@@ -19,9 +19,6 @@ internal static class ValidationOutputs
         var outputs = new Dictionary<string, string>(StringComparer.Ordinal);
         if (check.kind is not ("build" or "test" or "api" or "wiki" or "products" or "support-pack" or "release-bundle") || check.kind == "wiki" && !check.inputs.Any(static input => input.StartsWith('@') && input != "@tooling"))
             return outputs;
-        var projects = check.inputs.Where(static input => input.StartsWith('@') && input != "@tooling")
-            .Select(static input => input[1..]).ToHashSet(StringComparer.Ordinal);
-        JsonElement graph = plan.contexts[check.context ?? "managed"].sdkGraph;
         var directories = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         if (check.kind is "support-pack" or "release-bundle")
         {
@@ -35,14 +32,11 @@ internal static class ValidationOutputs
                 outputs["deliverables/" + name] = Convert.ToHexStringLower(SHA256.HashData(stream));
             }
         }
-        foreach (JsonElement snapshot in graph.EnumerateArray())
+        foreach (string target in ValidationCompiledGraph.Select(plan, check)
+            .Select(static instance => instance.GetProperty("TargetPath").GetString()!).Distinct(StringComparer.Ordinal))
         {
-            string project = Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/');
-            if (!projects.Contains(project))
-                continue;
-            string target = snapshot.GetProperty("Properties").GetProperty("TargetPath").GetString()!;
             if (string.IsNullOrEmpty(target) || !File.Exists(target))
-                throw new InvalidDataException($"Required compiled output is absent for {project}: {target}");
+                throw new InvalidDataException($"Required compiled output is absent for {check.id}: {target}");
             directories.Add(Path.GetDirectoryName(Path.GetFullPath(target))!);
         }
         if (directories.Count == 0)

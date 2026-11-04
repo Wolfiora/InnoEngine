@@ -26,6 +26,8 @@ Editor 源码还检查同类型重复别名、重复 XML summary，以及循环�
 
 ## 检查范围
 
+`--documentation-only` 复用 Wiki owner 覆盖、正文与链接规则，验证导航和文档结构而不准备无关 native 产品。包含 API 符号或示例的变更仍由计划选择相应编译与 Wiki 证据。
+
 `--source-only` 只执行全仓廉价源码/所有权规则，不声称编译元数据已经验证。`--metadata-only` 与重复的 `--api-project <repo-relative.csproj>` 核对所选已构建公开边界；默认 `verify` 仍保留完整行为。统一计划将两类证据分别登记，并要求元数据阶段的编译前提通过。
 
 XML 存在性、格式和参数说明在源码阶段检查；`inheritdoc` 的真实继承契约、内容层调用和平台字段的类型语义在所选 owner 的编译阶段使用 SDK 引用验证。干净 checkout 的源码门禁不借用旧 bin；语义规则仍是必须通过的独立证据。

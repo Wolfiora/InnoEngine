@@ -36,6 +36,7 @@ internal static class ValidationRunner
         var buildFailures = new Dictionary<string, string>(StringComparer.Ordinal);
         var testFailures = new Dictionary<string, string>(StringComparer.Ordinal);
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
+        var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
         foreach (ValidationCheck check in plan.checks.OrderBy(static check => check.kind switch
         {
             "cold-inputs" => -1,
@@ -52,6 +53,7 @@ internal static class ValidationRunner
             string status = "Failed";
             string detail = string.Empty;
             Dictionary<string, string>? outputs = null;
+            string dependencyIdentity = string.Empty;
             var elapsed = Stopwatch.StartNew();
             ValidationResult? old = previous?.results.SingleOrDefault(result => result.id == check.id);
             if (check.exclusion is not null)
@@ -72,11 +74,13 @@ internal static class ValidationRunner
             }
             else if (check.reusable && previous?.environment == plan.environment && old is { status: "Passed" or "Reused" }
                 && old.inputIdentity == identity && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
+                && dependencyInputs.Matches(check, old.dependencyIdentity)
                 && ValidationOutputs.Matches(plan, check, old, cancellation, outputDigests))
             {
                 status = "Reused";
                 detail = "Exact local deterministic input identity matches retained successful evidence.";
                 outputs = old.outputs;
+                dependencyIdentity = old.dependencyIdentity;
             }
             else
             {
@@ -136,10 +140,11 @@ internal static class ValidationRunner
                                 detail = "Compiled API verification requires the successful union build.";
                                 break;
                             }
-                            string[] projects = check.inputs.Where(static input => input.StartsWith('@') && input != "@tooling")
-                                .SelectMany(static input => new[] { "--api-project", input[1..] }).ToArray();
+                            if (check.projects is not { Length: > 0 })
+                                throw new InvalidDataException("Required compiled API owner selection is empty.");
+                            string[] projects = check.projects.SelectMany(static project => new[] { "--api-project", project }).ToArray();
                             if (ArchitectureValidator.Execute([plan.root, "--metadata-only", "--configuration", plan.contexts[contextId].properties["Configuration"],
-                                "--dotnet", plan.dotnet, "--artifacts-path", plan.artifacts, "--sdk-snapshot", graphPath, ..projects], cancellation) != 0)
+                                "--dotnet", plan.dotnet, "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"], "--sdk-snapshot", graphPath, ..projects], cancellation) != 0)
                                 throw new InvalidDataException("Affected compiled API boundaries failed.");
                             break;
                         case "documentation":
@@ -177,7 +182,7 @@ internal static class ValidationRunner
                             }
                             string[] targetArguments = contextId == "native" ? ["--wiki-target", plan.contexts[contextId].properties["InnoNativeTarget"]] : [];
                             if (ArchitectureValidator.Execute([plan.root, "--wiki", "--wiki-only", "--configuration", plan.configuration,
-                                "--dotnet", plan.dotnet, "--artifacts-path", plan.artifacts, "--wiki-api", Path.Combine(directory, contextId + "-wiki-api.json"),
+                                "--dotnet", plan.dotnet, "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"], "--wiki-api", Path.Combine(directory, contextId + "-wiki-api.json"),
                                 "--wiki-examples", Path.Combine(directory, contextId + "-wiki-examples.json"), "--sdk-snapshot", graphPath, ..targetArguments, ..scriptArguments, ..pages], cancellation) != 0)
                                 throw new InvalidDataException("Scoped Wiki signatures or compiled examples failed.");
                             break;
@@ -234,12 +239,16 @@ internal static class ValidationRunner
                                 string filter = WriteFilter(contextId + "-Build.slnf", builds);
                                 try
                                 {
+                                    var compilationInputs = new ValidationBuildInputs(plan, contextId, outputDigests, cancellation);
+                                    string[] compilation = compilationInputs.RequiresCompilation(dependencyInputs) ? ["--no-incremental"] : [];
                                     await ValidationProcess.RunAsync(plan.dotnet,
-                                        ["build", filter, ..plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
+                                        ["build", filter, ..compilation, ..plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
                                             "--disable-build-servers", "-m:" + (contextId == "managed" ? Math.Min(Environment.ProcessorCount, 4) : 1),
                                             "-nr:false"], plan.root, Path.Combine(directory, contextId + "-build.log"), cancellation).ConfigureAwait(false);
                                     built.Add(contextId);
                                     outputDigests.Clear();
+                                    dependencyInputs.Reset();
+                                    compilationInputs.Record(dependencyInputs);
                                 }
                                 catch (Exception failure) when (failure is not OperationCanceledException)
                                 {
@@ -270,12 +279,13 @@ internal static class ValidationRunner
                                 try
                                 {
                                     await ShellAsync("tests/Invoke-IsolatedTests.ps1",
-                                        ["-Solution", filter, "-Configuration", plan.configuration, "-ArtifactsPath", plan.artifacts,
+                                        ["-Solution", filter, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
                                             "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments], contextId + "-tests.log").ConfigureAwait(false);
                                     VerifyDiscovery(tests, resultsDirectory);
                                     executedTests.UnionWith(tests);
                                     tested.Add(contextId);
                                     outputDigests.Clear();
+                                    dependencyInputs.Reset();
                                 }
                                 catch (Exception failure) when (failure is not OperationCanceledException)
                                 {
@@ -292,6 +302,7 @@ internal static class ValidationRunner
                     if (status != "Blocked")
                     {
                         outputs = ValidationOutputs.Capture(plan, check, cancellation, outputDigests);
+                        dependencyIdentity = dependencyInputs.Capture(check);
                         status = "Passed";
                     }
                 }
@@ -305,7 +316,7 @@ internal static class ValidationRunner
                     detail = failure.Message;
                 }
             }
-            results.Add(new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs));
+            results.Add(new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs, dependencyIdentity));
             Console.WriteLine($"{status}: {check.id} ({elapsed.Elapsed.TotalSeconds:F2}s) {detail}");
             await SaveAsync().ConfigureAwait(false);
         }
@@ -317,18 +328,25 @@ internal static class ValidationRunner
         }
         Dictionary<string, string> after = await ValidationInputs.CaptureAsync(plan.root, cancellation).ConfigureAwait(false);
         outputDigests.Clear();
+        dependencyInputs.Reset();
         foreach (ValidationCheck check in plan.checks.Where(static check => check.exclusion is null))
         {
             ValidationResult result = results.Single(record => record.id == check.id);
-            if (result.status is "Passed" or "Reused" && !ValidationOutputs.Matches(plan, check, result, cancellation, outputDigests))
+            if (result.status is "Passed" or "Reused" && (!ValidationOutputs.Matches(plan, check, result, cancellation, outputDigests)
+                || !dependencyInputs.Matches(check, result.dependencyIdentity)))
             {
-                results.Add(new("output-stability:" + check.id, "Failed", result.inputIdentity, 0, "Required compiled outputs changed after their check completed."));
+                results.Add(new("output-stability:" + check.id, "Failed", result.inputIdentity, 0, "Required compiled outputs or restored dependencies changed after their check completed."));
                 await SaveAsync().ConfigureAwait(false);
             }
         }
         if (ValidationInputs.Identity(after) != plan.tree)
         {
             results.Add(new("input-stability", "Failed", plan.tree, 0, "Inputs changed during validation; results cannot certify this workspace."));
+            await SaveAsync().ConfigureAwait(false);
+        }
+        if (plan.environment != await ValidationEnvironment.CaptureAsync(plan.root, plan.dotnet, cancellation, plan.contexts.Values).ConfigureAwait(false))
+        {
+            results.Add(new("environment-stability", "Failed", plan.environment, 0, "SDK, runtime, shell or external import contents changed during validation."));
             await SaveAsync().ConfigureAwait(false);
         }
         if (workspace is not null)
@@ -363,6 +381,7 @@ internal static class ValidationRunner
             return candidate.reusable && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
                 && previous?.environment == plan.environment && retained is { status: "Passed" or "Reused" }
                 && retained.inputIdentity == ValidationInputs.CheckIdentity(plan, candidate, current)
+                && dependencyInputs.Matches(candidate, retained.dependencyIdentity)
                 && ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests);
         }
     }
@@ -377,9 +396,14 @@ internal static class ValidationRunner
         {
             XDocument document = XDocument.Load(report);
             XElement counters = document.Descendants().Single(element => element.Name.LocalName == "Counters");
-            if ((int?)counters.Attribute("executed") is not >= 0 || (int?)counters.Attribute("failed") is not 0)
+            int? executed = (int?)counters.Attribute("executed");
+            XElement[] records = document.Descendants().Where(static element => element.Name.LocalName == "UnitTestResult").ToArray();
+            if (executed is not >= 0 || (int?)counters.Attribute("failed") is not 0
+                || (int?)counters.Attribute("total") != executed || (int?)counters.Attribute("passed") != executed
+                || (int?)counters.Attribute("error") is not 0 || records.Length != executed
+                || records.Any(static result => (string?)result.Attribute("outcome") != "Passed"))
                 throw new InvalidDataException($"Invalid or failed test execution: {report}");
-            if ((int?)counters.Attribute("executed") == 0)
+            if (executed == 0)
                 continue;
             foreach (XElement definition in document.Descendants().Where(static element => element.Name.LocalName == "UnitTest"))
                 assemblies.Add(Path.GetFileNameWithoutExtension((string?)definition.Attribute("storage") ?? string.Empty));

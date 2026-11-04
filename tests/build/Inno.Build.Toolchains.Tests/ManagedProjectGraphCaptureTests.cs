@@ -13,6 +13,60 @@ namespace Inno.Build.Toolchains.Tests;
 public sealed class ManagedProjectGraphCaptureTests
 {
     [Fact]
+    public async Task EquivalentVariantInputsSharePayloadWhileConditionalInputsAndPropertyOriginsRemainVisible()
+    {
+        string parent = Path.Combine(Path.GetTempPath(), "InnoGraphTests");
+        string root = Path.Combine(parent, Guid.NewGuid().ToString("N"));
+        string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
+            ?? Path.Combine(Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? throw new InvalidOperationException("An explicit test SDK is required."),
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        try
+        {
+            foreach (string name in new[] { "A", "B", "C" })
+                Directory.CreateDirectory(Path.Combine(root, name));
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00\n");
+            File.WriteAllText(Path.Combine(root, "Extra.cs"), "namespace Example; public class Extra { }");
+            string first = Path.Combine(root, "A", "A.csproj");
+            File.WriteAllText(first, """
+                <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+                <ItemGroup Condition="'$(Flavor)' == 'two'"><Compile Include="../Extra.cs" /></ItemGroup></Project>
+                """);
+            foreach ((string name, string flavor) in new[] { ("B", "one"), ("C", "two") })
+                File.WriteAllText(Path.Combine(root, name, name + ".csproj"),
+                    "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>"
+                    + "<ItemGroup><ProjectReference Include=\"../A/A.csproj\" AdditionalProperties=\"Flavor=" + flavor + "\" /></ItemGroup></Project>");
+            string captured = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
+                [first, Path.Combine(root, "B", "B.csproj"), Path.Combine(root, "C", "C.csproj")],
+                new Dictionary<string, string> { ["Configuration"] = "Debug", ["DesignTimeBuild"] = "true", ["BuildProjectReferences"] = "false" });
+            using JsonDocument graph = JsonDocument.Parse(captured);
+            JsonElement owner = graph.RootElement.EnumerateArray().Single(node => node.GetProperty("Path").GetString() == first);
+            Assert.Contains(owner.GetProperty("EquivalentGlobalProperties").EnumerateArray(),
+                properties => properties.TryGetProperty("Flavor", out JsonElement flavor) && flavor.GetString() == "one");
+            JsonElement variant = Assert.Single(owner.GetProperty("Variants").EnumerateArray());
+            Assert.Contains(variant.GetProperty("EquivalentGlobalProperties").EnumerateArray(),
+                properties => properties.TryGetProperty("Flavor", out JsonElement flavor) && flavor.GetString() == "two");
+            Assert.Contains(variant.GetProperty("Items").GetProperty("Compile").EnumerateArray(),
+                item => item.GetProperty("FullPath").GetString() == Path.Combine(root, "Extra.cs"));
+            Assert.DoesNotContain(owner.GetProperty("Items").GetProperty("Compile").EnumerateArray(),
+                item => item.GetProperty("FullPath").GetString() == Path.Combine(root, "Extra.cs"));
+            foreach ((string name, string flavor) in new[] { ("B", "one"), ("C", "two") })
+            {
+                JsonElement consumer = graph.RootElement.EnumerateArray().Single(node => node.GetProperty("Path").GetString() == Path.Combine(root, name, name + ".csproj"));
+                JsonElement instance = Assert.Single(consumer.GetProperty("Instances").EnumerateArray());
+                string reference = Assert.Single(instance.GetProperty("References").EnumerateArray()).GetString()!;
+                JsonElement selected = owner.GetProperty("Instances").EnumerateArray().Single(node => node.GetProperty("Identity").GetString() == reference);
+                Assert.Equal(flavor, selected.GetProperty("GlobalProperties").GetProperty("Flavor").GetString());
+            }
+        }
+        finally
+        {
+            if (!Path.GetFullPath(root).StartsWith(Path.GetFullPath(parent) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("The test output escaped its declared owner.");
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task BatchResolutionPreservesActualReferencesCompilerSymbolsAndImportedSources()
     {
         string parent = Path.Combine(Path.GetTempPath(), "InnoGraphTests");

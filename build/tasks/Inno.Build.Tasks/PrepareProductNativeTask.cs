@@ -132,7 +132,7 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             }
             NativeBuildStatistics statistics = context.statistics;
             Log.LogMessage(MessageImportance.High,
-                $"INNO-NATIVE-PREPARE elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} "
+                $"INNO-NATIVE-PREPARE request={requestIdentity} elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} "
                 + $"hashedFiles={statistics.hashedFiles} hashedBytes={statistics.hashedBytes} "
                 + $"processes={statistics.nativeProcesses} products={products.Count} "
                 + $"reusedPreparation={(reused ? 1 : 0)} "

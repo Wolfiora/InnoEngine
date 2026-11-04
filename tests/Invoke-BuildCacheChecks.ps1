@@ -50,6 +50,13 @@ for ($iteration = 1; $iteration -le $Iterations; $iteration++) {
             throw "Build $iteration unexpectedly compiled Native inputs or regenerated bindings: $($preparation.Value)"
         }
     }
+    $requests = [regex]::Matches($content, 'INNO-NATIVE-PREPARE request=([a-f0-9]{64})[^\r\n]*reusedPreparation=(\d+)')
+    if ($requests.Count -ne $preparations.Count) { throw "Build $iteration lacks complete frozen request identities." }
+    foreach ($request in $requests | Group-Object { $_.Groups[1].Value }) {
+        if (@($request.Group | Where-Object { $_.Groups[2].Value -eq '0' }).Count -gt 1) {
+            throw "Build $iteration prepared the same frozen native request more than once: $($request.Name)"
+        }
+    }
     $after = Read-Selections
     if ($before.Count -ne $after.Count) { throw "Build $iteration changed the stable selection count." }
     foreach ($path in $before.Keys) {

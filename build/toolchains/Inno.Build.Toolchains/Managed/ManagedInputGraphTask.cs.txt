@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -265,12 +266,15 @@ public sealed class ManagedInputGraphTask : Task
             "AdditionalFiles", "EditorConfigFiles", "AdditionalCompileInputs", "InnoBuildInputProject", "InnoValidationInput"];
         var snapshots = new List<object>();
         using var collection = new ProjectCollection(globals);
+        var elapsed = Stopwatch.StartNew();
         var graph = new ProjectGraph(RepositoryProjects.Select(item => new ProjectGraphEntryPoint(item.ItemSpec, globals)), collection,
-            (path, selected, owner) =>
-            {
-                lock (owner)
-                    return owner.LoadProject(path, selected, null).CreateProjectInstance();
-            }, Math.Min(Environment.ProcessorCount, 4), System.Threading.CancellationToken.None);
+            null, Math.Min(Environment.ProcessorCount, 4), System.Threading.CancellationToken.None);
+        Log.LogMessage(MessageImportance.High, $"INNO-SDK-GRAPH evaluationSeconds={elapsed.Elapsed.TotalSeconds:F3} nodes={graph.ProjectNodes.Count}");
+        elapsed.Restart();
+        var nodes = graph.ProjectNodes.GroupBy(node => node.ProjectInstance.FullPath,
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(),
+                OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         var variants = graph.ProjectNodes.GroupBy(node => node.ProjectInstance.FullPath,
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Select(node => node.ProjectInstance).ToArray(),
@@ -283,7 +287,8 @@ public sealed class ManagedInputGraphTask : Task
             foreach (string name in itemNames)
                 items[name] = project.GetItems(name).Select(item =>
                 {
-                    var metadata = item.Metadata.ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
+                    var metadata = item.Metadata.OrderBy(value => value.Name, StringComparer.Ordinal)
+                        .ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
                     metadata["Identity"] = item.EvaluatedInclude;
                     metadata["FullPath"] = item.GetMetadataValue("FullPath");
                     return metadata;
@@ -310,14 +315,9 @@ public sealed class ManagedInputGraphTask : Task
                 foreach (ITaskItem item in captured.Where(item => item.GetMetadata("CaptureKind") == "Property"))
                     properties[item.ItemSpec] = item.GetMetadata("Value");
             }
-            snapshots.Add(new
-            {
-                Path = project.FullPath,
-                GlobalProperties = globals,
-                Properties = properties,
-                Items = items,
-                Imports = project.Imports.Select(import => import.ImportedProject.FullPath).Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray(),
-                Variants = variants[project.FullPath].OrderBy(instance => string.Join(";", instance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            string[] imports = project.Imports.Select(import => import.ImportedProject.FullPath).Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray();
+            string canonical = SnapshotIdentity(properties, items, imports);
+            var effective = variants[project.FullPath].OrderBy(instance => string.Join(";", instance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
                     .Select(pair => pair.Key + "=" + pair.Value)), StringComparer.Ordinal).Select(instance => new
                 {
                     Path = instance.FullPath,
@@ -325,17 +325,58 @@ public sealed class ManagedInputGraphTask : Task
                     Properties = propertyNames.ToDictionary(name => name, instance.GetPropertyValue, StringComparer.Ordinal),
                     Items = itemNames.ToDictionary(name => name, name => instance.GetItems(name).Select(item =>
                     {
-                        var metadata = item.Metadata.ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
+                        var metadata = item.Metadata.OrderBy(value => value.Name, StringComparer.Ordinal)
+                            .ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
                         metadata["Identity"] = item.EvaluatedInclude;
                         metadata["FullPath"] = item.GetMetadataValue("FullPath");
                         return metadata;
                     }).ToArray(), StringComparer.Ordinal),
                     Imports = instance.ImportPaths.Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray()
+                }).GroupBy(value => SnapshotIdentity(value.Properties, value.Items, value.Imports), StringComparer.Ordinal).ToArray();
+            snapshots.Add(new
+            {
+                Path = project.FullPath,
+                GlobalProperties = globals,
+                Instances = nodes[project.FullPath].Select(node => new
+                {
+                    Identity = InstanceIdentity(node),
+                    node.ProjectInstance.GlobalProperties,
+                    TargetPath = node.ProjectInstance.GetPropertyValue("TargetPath"),
+                    ProjectAssetsFile = node.ProjectInstance.GetPropertyValue("ProjectAssetsFile"),
+                    References = node.ProjectReferences.Select(InstanceIdentity).OrderBy(value => value, StringComparer.Ordinal).ToArray()
+                }).OrderBy(instance => instance.Identity, StringComparer.Ordinal).ToArray(),
+                EquivalentGlobalProperties = effective.Where(group => group.Key == canonical).SelectMany(group => group.Select(value => value.GlobalProperties)).ToArray(),
+                Properties = properties,
+                Items = items,
+                Imports = imports,
+                // Keep every effective input and every originating property set, without repeating identical item arrays.
+                Variants = effective.Where(group => group.Key != canonical).Select(group => new
+                {
+                    group.First().Path,
+                    group.First().GlobalProperties,
+                    EquivalentGlobalProperties = group.Select(value => value.GlobalProperties).ToArray(),
+                    group.First().Properties,
+                    group.First().Items,
+                    group.First().Imports
                 }).ToArray()
             });
         }
         File.WriteAllText(OutputPath, JsonSerializer.Serialize(snapshots));
+        Log.LogMessage(MessageImportance.High, $"INNO-SDK-GRAPH captureSeconds={elapsed.Elapsed.TotalSeconds:F3} bytes={new FileInfo(OutputPath).Length}");
         return true;
+
+        static string InstanceIdentity(ProjectGraphNode node)
+            => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                node.ProjectInstance.FullPath,
+                Properties = node.ProjectInstance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToArray()
+            })));
+
+        static string SnapshotIdentity(
+            object properties,
+            object items,
+            string[] imports
+        ) => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { Properties = properties, Items = items, Imports = imports })));
     }
 
 }

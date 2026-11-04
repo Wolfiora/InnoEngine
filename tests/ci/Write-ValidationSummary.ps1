@@ -23,7 +23,11 @@ foreach ($platform in @('windows-2022', 'macos-15')) {
         $failed = @($results.results | Where-Object { $_.status -cin @('Failed', 'Blocked') })
         $lines.Add("- ${platform}: $($failed.Count) failed or blocked checks; retained evidence: $($artifact.name).")
         foreach ($result in @($failed | Select-Object -First 10)) {
-            $lines.Add("  - $($result.id): $(([string]$result.detail).Replace("`n", ' ').Replace("`r", ' '))")
+            $detail = ([string]$result.detail).Replace("`n", ' ').Replace("`r", ' ')
+            if ($detail.Length -gt 4000) {
+                $detail = $detail.Substring(0, 500) + ' [Complete first-failure detail is retained in results.json and the check log.] ' + $detail.Substring($detail.Length - 3000)
+            }
+            $lines.Add("  - $($result.id): $detail")
         }
     } catch {
         $lines.Add("- ${platform}: complete results unavailable; inspect the retained bootstrap/planning log and required job conclusion.")

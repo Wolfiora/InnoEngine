@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -13,6 +15,35 @@ internal sealed class BuildCacheInventoryProgress(
     bool readOnly
 )
 {
+    internal static void PruneRetired(
+        string workspace,
+        IReadOnlyList<BuildCacheOwnerDescriptor> owners,
+        CancellationToken cancellation
+    ) {
+        string root = PathBoundary.RequireUnlinkedPath(workspace, Path.Combine(workspace, "artifacts", "cache-owners", "inventory"));
+        if (!Directory.Exists(root))
+            return;
+        // The retirement caller retains every selected publisher gate. Progress never authorizes payload removal.
+        using FileLease writing = FileLease.AcquireAsync(Path.Combine(root, "progress.lock"), TimeSpan.Zero, cancellation)
+            .AsTask().GetAwaiter().GetResult();
+        foreach (string checkpoint in Directory.EnumerateFiles(root, "*.inventory").Order(StringComparer.Ordinal))
+        {
+            cancellation.ThrowIfCancellationRequested();
+            using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(root, checkpoint)));
+            JsonElement saved = document.RootElement;
+            string relative = saved.GetProperty("directory").GetString() ?? throw new InvalidDataException("Inventory owner is absent.");
+            var role = (BuildCacheArtifactRole)saved.GetProperty("role").GetInt32();
+            string key = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(relative + "\0" + role)));
+            if (Path.GetFileName(checkpoint) != key + ".inventory")
+                throw new InvalidDataException("Inventory checkpoint does not match its registered path identity.");
+            string directory = PathBoundary.Resolve(workspace, relative);
+            if (!owners.Any(owner => owner.directory != directory && BuildCacheCleanupPlan.IsContained(owner.directory, directory))
+                || Directory.Exists(directory))
+                continue;
+            File.Delete(checkpoint);
+        }
+    }
+
     internal long Measure(
         string directory,
         string metadata,

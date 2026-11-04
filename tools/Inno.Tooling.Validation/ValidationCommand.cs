@@ -71,7 +71,9 @@ public static class ValidationCommand
             throw new InvalidDataException("Full validation cannot execute a bounded supplied plan.");
         if (extended && !plan.extended)
             throw new InvalidDataException("Extended acceptance cannot execute a supplied plan without its required depth.");
-        if (plan.environment != await ValidationEnvironment.CaptureAsync(root, plan.dotnet, cancellationToken).ConfigureAwait(false))
+        if (arguments[0] == "evidence" && options.TryGetValue("--cache-output", out string? retentionArchive) && plan.contexts.ContainsKey("native"))
+            Console.WriteLine($"Retained {await NativeArtifactTransfer.ExportAsync(root, retentionArchive, cancellationToken).ConfigureAwait(false)} complete immutable generations; reconciliation must still succeed independently.");
+        if (planPath is not null && plan.environment != await ValidationEnvironment.CaptureAsync(root, plan.dotnet, cancellationToken, plan.contexts.Values).ConfigureAwait(false))
             throw new InvalidDataException("The supplied plan belongs to another SDK or execution environment.");
         await File.WriteAllTextAsync(Path.Combine(output, "plan.json"), JsonSerializer.Serialize(plan,
             new JsonSerializerOptions { WriteIndented = true }), cancellationToken).ConfigureAwait(false);
@@ -92,8 +94,10 @@ public static class ValidationCommand
                 throw new InvalidDataException("Evidence does not certify the current tree and environment.");
             ValidateResults(plan, previous);
             var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
+            var dependencies = new ValidationDependencyInputs(plan, cancellationToken);
             foreach (ValidationCheck check in plan.checks.Where(static check => check.exclusion is null))
-                if (!ValidationOutputs.Matches(plan, check, previous.results.Single(result => result.id == check.id), cancellationToken, outputDigests))
+                if (!ValidationOutputs.Matches(plan, check, previous.results.Single(result => result.id == check.id), cancellationToken, outputDigests)
+                    || !dependencies.Matches(check, previous.results.Single(result => result.id == check.id).dependencyIdentity))
                     throw new InvalidDataException($"Required output evidence is missing or changed: {check.id}");
             return 0;
         }

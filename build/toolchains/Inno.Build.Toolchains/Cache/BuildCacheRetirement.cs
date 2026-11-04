@@ -130,6 +130,11 @@ internal static class BuildCacheRetirement
                     failures[owner.directory] = failure.Message;
                 }
             }
+            try { BuildCacheInventoryProgress.PruneRetired(workspace, owners, bounded.Token); }
+            catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException)
+            {
+                failures[Path.Combine(workspace, "artifacts", "cache-owners", "inventory")] = failure.Message;
+            }
             skipped.UnionWith(proposed.Keys.Except(retired, BuildCacheInventory.pathComparer));
             return new(retired, skipped, failures, reclaimed, limited);
         }

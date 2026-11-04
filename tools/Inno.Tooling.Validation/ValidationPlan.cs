@@ -21,7 +21,8 @@ internal sealed record ValidationPlan(
     Dictionary<string, string> inputs,
     Dictionary<string, string[]> inputSets,
     Dictionary<string, ValidationContext> contexts,
-    bool extended = false
+    bool extended = false,
+    Dictionary<string, double>? planningSeconds = null
 );
 
 internal sealed record ValidationContext(
@@ -40,7 +41,8 @@ internal sealed record ValidationCheck(
     bool reusable,
     string? exclusion,
     string? context = null,
-    string layer = "static"
+    string layer = "static",
+    string[]? projects = null
 );
 
 internal sealed record ValidationResult(
@@ -49,7 +51,8 @@ internal sealed record ValidationResult(
     string inputIdentity,
     double seconds,
     string detail,
-    Dictionary<string, string>? outputs = null
+    Dictionary<string, string>? outputs = null,
+    string dependencyIdentity = ""
 );
 
 internal sealed record ValidationEvidence(

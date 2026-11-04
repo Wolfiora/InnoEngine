@@ -15,6 +15,48 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task ExternalSourceContentInvalidatesEvidenceEvenWhenLengthAndTimestampMatch()
+    {
+        using var repository = new ValidationRepository();
+        using var external = new ValidationRepository();
+        string path = external.PathOf("Linked.cs");
+        const string original = "namespace Example; public class Linked { public const int Value = 1; }";
+        external.Write("Linked.cs", original);
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project(
+            "<ItemGroup><Compile Include=\"" + System.Security.SecurityElement.Escape(path) + "\" /></ItemGroup>"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare external source input");
+        using JsonDocument plan = await repository.PlanAsync();
+        DateTime timestamp = File.GetLastWriteTimeUtc(path);
+        external.Write("Linked.cs", original.Replace("= 1", "= 2", StringComparison.Ordinal));
+        File.SetLastWriteTimeUtc(path, timestamp);
+        Assert.Equal(original.Length, new FileInfo(path).Length);
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf("artifacts/unread-evidence.json")));
+        Assert.Contains("another SDK or execution environment", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ExternalImportContentInvalidatesEvidenceEvenWhenLengthAndTimestampMatch()
+    {
+        using var repository = new ValidationRepository();
+        using var external = new ValidationRepository();
+        string path = external.PathOf("Shared.props");
+        const string original = "<Project><PropertyGroup><WarningLevel>4</WarningLevel></PropertyGroup></Project>";
+        external.Write("Shared.props", original);
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project(
+            "<Import Project=\"" + System.Security.SecurityElement.Escape(path) + "\" />"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare external SDK import");
+        using JsonDocument plan = await repository.PlanAsync();
+        DateTime timestamp = File.GetLastWriteTimeUtc(path);
+        external.Write("Shared.props", original.Replace(">4<", ">3<", StringComparison.Ordinal));
+        File.SetLastWriteTimeUtc(path, timestamp);
+        Assert.Equal(original.Length, new FileInfo(path).Length);
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf("artifacts/unread-evidence.json")));
+        Assert.Contains("another SDK or execution environment", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AddedMovedAndDeletedInputsSelectTheirRealConsumers()
     {
         using var repository = new ValidationRepository();
@@ -54,6 +96,24 @@ public sealed class ValidationPlanningTests
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Empty(Owners(plan));
         Assert.DoesNotContain(plan.RootElement.GetProperty("checks").EnumerateArray(), check => check.GetProperty("kind").GetString() == "build");
+    }
+
+    [Fact]
+    public async Task TestImplementationChangesKeepBehaviorWithoutRecheckingUnchangedProductionApi()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("tests/Example.Tests/Changed.cs", "namespace Example.Tests; public sealed class Changed { }");
+        using JsonDocument tests = await repository.PlanAsync();
+        JsonElement api = Assert.Single(tests.RootElement.GetProperty("checks").EnumerateArray().Where(check => check.GetProperty("kind").GetString() == "api"));
+        Assert.False(string.IsNullOrWhiteSpace(api.GetProperty("exclusion").GetString()));
+        Assert.Contains(tests.RootElement.GetProperty("checks").EnumerateArray(), check => check.GetProperty("kind").GetString() == "test"
+            && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
+        repository.Write("src/Example/Changed.cs", "namespace Example; public sealed class Changed { }");
+        using JsonDocument production = await repository.PlanAsync();
+        api = Assert.Single(production.RootElement.GetProperty("checks").EnumerateArray().Where(check => check.GetProperty("kind").GetString() == "api"));
+        Assert.Equal(JsonValueKind.Null, api.GetProperty("exclusion").ValueKind);
+        Assert.Contains(api.GetProperty("projects").EnumerateArray(), project => project.GetString() == "src/Example/Example.csproj");
+        Assert.DoesNotContain(api.GetProperty("projects").EnumerateArray(), project => project.GetString() == "tests/Example.Tests/Example.Tests.csproj");
     }
 
     [Fact]
@@ -179,6 +239,12 @@ public sealed class ValidationPlanningTests
         Assert.Equal("managed", domain.GetProperty("context").GetString());
         JsonElement native = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "test:backends/Example/tests/Native.Tests/Native.Tests.csproj");
         Assert.Equal("native", native.GetProperty("context").GetString());
+        JsonElement contexts = plan.RootElement.GetProperty("contexts");
+        string Output(string context) => contexts.GetProperty(context).GetProperty("sdkGraph").EnumerateArray()
+            .Single(node => node.GetProperty("Path").GetString() == repository.PathOf("src/Example/Example.csproj"))
+            .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
+        Assert.NotEqual(Output("managed"), Output("native"));
+        Assert.StartsWith(contexts.GetProperty("native").GetProperty("properties").GetProperty("ArtifactsPath").GetString()!, Output("native"), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -296,6 +362,8 @@ public sealed class ValidationPlanningTests
         foreach (string required in new[] { "cold-inputs", "native-hot-builds", "editor-products", "editor-release-products", "support-pack", "native-aot-restore" })
             Assert.Contains(checks, check => check.GetProperty("id").GetString() == required && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
         Assert.Equal("Release", plan.RootElement.GetProperty("contexts").GetProperty("native-release").GetProperty("properties").GetProperty("Configuration").GetString());
+        Assert.NotEqual(plan.RootElement.GetProperty("contexts").GetProperty("native").GetProperty("properties").GetProperty("ArtifactsPath").GetString(),
+            plan.RootElement.GetProperty("contexts").GetProperty("native-release").GetProperty("properties").GetProperty("ArtifactsPath").GetString());
         Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "test"),
             check => Assert.Equal("domain", check.GetProperty("layer").GetString()));
     }

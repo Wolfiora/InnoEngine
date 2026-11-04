@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 
 namespace Inno.Tooling.Validation;
 
@@ -75,6 +76,6 @@ internal static class ValidationInputs
         if (!path.StartsWith(Path.GetFullPath(root) + Path.DirectorySeparatorChar,
                 OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
             throw new InvalidDataException($"Validation input escapes the repository: {relative}");
-        return path;
+        return PathBoundary.RequireUnlinkedPath(Path.GetFullPath(root), path);
     }
 }

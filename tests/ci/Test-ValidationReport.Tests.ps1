@@ -47,6 +47,23 @@ Invoke-Case 'wrong-candidate' { param($s) $s.expectedCommit = 'c' * 40 } $false
 Invoke-Case 'duplicate-result' { param($s) $s.evidence.results += $s.evidence.results[0] } $false
 Invoke-Case 'empty-plan' { param($s) $s.plan.checks = @(); $s.evidence.results = @() } $false
 Invoke-Case 'missing-output' { param($s) $s.plan.checks[0].kind = 'test' } $false
+Invoke-Case 'compiled-with-dependency-inputs' {
+    param($s)
+    $s.plan.checks[0].kind = 'test'
+    $s.evidence.results[0].outputs = @{ 'bin/example' = $hash }
+    $s.evidence.results[0].dependencyIdentity = $hash
+} $true
+Invoke-Case 'compiled-missing-dependency-inputs' {
+    param($s)
+    $s.plan.checks[0].kind = 'test'
+    $s.evidence.results[0].outputs = @{ 'bin/example' = $hash }
+} $false
+Invoke-Case 'compiled-malformed-dependency-inputs' {
+    param($s)
+    $s.plan.checks[0].kind = 'test'
+    $s.evidence.results[0].outputs = @{ 'bin/example' = $hash }
+    $s.evidence.results[0].dependencyIdentity = 'version-only'
+} $false
 Invoke-Case 'failed-prerequisite' { param($s) $s.plan.checks[0].prerequisites = @('missing-build') } $false
 Invoke-Case 'explicit-inapplicable' {
     param($s)

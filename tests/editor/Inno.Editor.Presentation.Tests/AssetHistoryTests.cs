@@ -13,6 +13,7 @@ using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Editor.Core;
+using Inno.Editor.Interactions;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
 using Inno.Plugins.Authoring;

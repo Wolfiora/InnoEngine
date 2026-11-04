@@ -67,6 +67,25 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         await MaintainAsync(retireAll: true);
         Assert.False(Directory.Exists(Path.Combine(m_root, "cache", "first")));
         Assert.False(Directory.Exists(Path.Combine(m_root, "cache", "second")));
+        Assert.Empty(Directory.GetFiles(Path.Combine(m_root, "artifacts", "cache-owners", "inventory"), "*.inventory"));
+    }
+
+    [Fact]
+    public async Task ActiveReadersKeepTheirInventoryUntilRetirementActuallyCompletes()
+    {
+        await PrepareAsync("first", "first payload");
+        await MaintainAsync();
+        string directory = Path.Combine(m_root, "cache", "first");
+        string checkpoint = Assert.Single(Directory.GetFiles(Path.Combine(m_root, "artifacts", "cache-owners", "inventory"), "*.inventory"));
+        using (FileLease reader = await FileLease.AcquireSharedAsync(directory + ".lock", TimeSpan.FromSeconds(5)))
+        {
+            await MaintainAsync(retireAll: true);
+            Assert.True(Directory.Exists(directory));
+            Assert.True(File.Exists(checkpoint));
+        }
+        await MaintainAsync(retireAll: true);
+        Assert.False(Directory.Exists(directory));
+        Assert.False(File.Exists(checkpoint));
     }
 
     private async Task PrepareAsync(string name, string content)
