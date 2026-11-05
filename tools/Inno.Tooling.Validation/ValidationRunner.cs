@@ -39,6 +39,7 @@ internal static class ValidationRunner
         var tested = new HashSet<string>(StringComparer.Ordinal);
         var executedTests = new HashSet<string>(StringComparer.Ordinal);
         var buildFailures = new Dictionary<string, string>(StringComparer.Ordinal);
+        var pendingCompilations = new Dictionary<string, ValidationBuildInputs>(StringComparer.Ordinal);
         var testFailures = new Dictionary<string, string>(StringComparer.Ordinal);
         var testDetails = new Dictionary<string, (bool passed, string detail)>(StringComparer.Ordinal);
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -241,6 +242,8 @@ internal static class ValidationRunner
                                     if (compilationInputs.RequiresCompilation(dependencyInputs))
                                         await ValidationProcess.RunAsync(plan.dotnet, ["clean", solution, ..properties,
                                             "-p:InnoPrepareProductNative=false", "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N"),
+                                            ..contextId == "managed" && !compilationInputs.RequiresDependencyCompilation(dependencyInputs)
+                                                ? new[] { "-p:BuildProjectReferences=false" } : Array.Empty<string>(),
                                             "--disable-build-servers", "-m:1", "-nr:false"],
                                             plan.root, Path.Combine(directory, contextId + "-clean.log"), cancellation).ConfigureAwait(false);
                                     await ValidationProcess.RunAsync(plan.dotnet,
@@ -250,7 +253,7 @@ internal static class ValidationRunner
                                     built.Add(contextId);
                                     outputDigests.Clear();
                                     dependencyInputs.Reset();
-                                    compilationInputs.Record(dependencyInputs);
+                                    pendingCompilations.Add(contextId, compilationInputs);
                                 }
                                 catch (Exception failure) when (failure is not OperationCanceledException)
                                 {
@@ -353,26 +356,34 @@ internal static class ValidationRunner
         Dictionary<string, string> after = await sourceCapture.ConfigureAwait(false);
         outputDigests.Clear();
         dependencyInputs.Reset();
+        var unstableCompilations = new HashSet<string>(StringComparer.Ordinal);
         foreach (ValidationCheck check in plan.checks.Where(static check => check.exclusion is null))
         {
             ValidationResult result = results.Single(record => record.id == check.id);
             if (result.status is "Passed" or "Reused" && (!ValidationOutputs.Matches(plan, check, result, cancellation, outputDigests)
                 || !dependencyInputs.Matches(check, result.dependencyIdentity)))
             {
+                if (check.kind == "build")
+                    unstableCompilations.Add(check.context!);
                 results.Add(new("output-stability:" + check.id, "Failed", result.inputIdentity, 0, "Required compiled outputs or restored dependencies changed after their check completed."));
                 await SaveAsync().ConfigureAwait(false);
             }
         }
-        if (ValidationInputs.Identity(after) != plan.tree)
+        bool sourceStable = ValidationInputs.Identity(after) == plan.tree;
+        bool environmentStable = plan.environment == await environmentCapture.ConfigureAwait(false);
+        if (!sourceStable)
         {
             results.Add(new("input-stability", "Failed", plan.tree, 0, "Inputs changed during validation; results cannot certify this workspace."));
             await SaveAsync().ConfigureAwait(false);
         }
-        if (plan.environment != await environmentCapture.ConfigureAwait(false))
+        if (!environmentStable)
         {
             results.Add(new("environment-stability", "Failed", plan.environment, 0, "SDK, runtime, shell or external import contents changed during validation."));
             await SaveAsync().ConfigureAwait(false);
         }
+        if (sourceStable && environmentStable)
+            foreach (var compilation in pendingCompilations.Where(pair => !unstableCompilations.Contains(pair.Key)))
+                compilation.Value.Record(dependencyInputs);
         if (workspace is not null)
             ValidationWorkspace.RecordCompleted(plan, cancellation);
         await SaveAsync(completed: true).ConfigureAwait(false);
