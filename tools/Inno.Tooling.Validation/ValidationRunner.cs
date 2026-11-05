@@ -38,7 +38,7 @@ internal static class ValidationRunner
         var executedTests = new HashSet<string>(StringComparer.Ordinal);
         var buildFailures = new Dictionary<string, string>(StringComparer.Ordinal);
         var testFailures = new Dictionary<string, string>(StringComparer.Ordinal);
-        var testDetails = new Dictionary<string, string>(StringComparer.Ordinal);
+        var testDetails = new Dictionary<string, (bool passed, string detail)>(StringComparer.Ordinal);
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
         foreach (ValidationCheck check in plan.checks)
@@ -63,7 +63,8 @@ internal static class ValidationRunner
                 detail = "Validation was canceled before this required check completed.";
             }
             else if (check.prerequisites.Any(prerequisite => !results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused"))
-                || (check.context is not null && results.Any(static result => result.status is "Failed" or "Blocked")))
+                || (check.context is not null && !(check.kind == "test" && tested.Contains(contextId))
+                    && results.Any(static result => result.status is "Failed" or "Blocked")))
             {
                 status = "Blocked";
                 detail = "A required preceding check did not pass; dependent work was not executed.";
@@ -277,10 +278,20 @@ internal static class ValidationRunner
                                     "-ProductProperties", properties["InnoProductBuildProperties"]] : [];
                                 try
                                 {
-                                    await ShellAsync("tests/Invoke-IsolatedTests.ps1",
-                                        ["-Solution", solution, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
-                                            "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments], contextId + "-tests.log").ConfigureAwait(false);
-                                    foreach (var evidence in VerifyDiscovery(tests.ToDictionary(static project => project, project =>
+                                    try
+                                    {
+                                        await ShellAsync("tests/Invoke-IsolatedTests.ps1",
+                                            ["-Solution", solution, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
+                                                "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments], contextId + "-tests.log").ConfigureAwait(false);
+                                    }
+                                    catch (Exception failure) when (failure is not OperationCanceledException)
+                                    {
+                                        // Preserve the process failure even when individual owners have complete successful evidence.
+                                        results.Add(new("test-execution:" + contextId, "Failed", plan.tree, elapsed.Elapsed.TotalSeconds,
+                                            "The test union did not complete successfully. See " + contextId + "-tests.log for the first failure."));
+                                        await SaveAsync().ConfigureAwait(false);
+                                    }
+                                    foreach (var evidence in ValidationTestEvidence.Read(plan.root, tests.ToDictionary(static project => project, project =>
                                         plan.contexts[contextId].sdkGraph.EnumerateArray().Single(snapshot =>
                                             Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == project)
                                             .GetProperty("Properties").GetProperty("TargetPath").GetString()!, StringComparer.Ordinal), resultsDirectory))
@@ -298,7 +309,9 @@ internal static class ValidationRunner
                             }
                             if (!executedTests.Contains(check.owner))
                                 throw new InvalidDataException($"Previously reusable output changed before {check.id}; this test did not execute and cannot be certified.");
-                            detail = testDetails[check.owner];
+                            if (!testDetails[check.owner].passed)
+                                throw new InvalidDataException(testDetails[check.owner].detail);
+                            detail = testDetails[check.owner].detail;
                             break;
                         default:
                             throw new InvalidDataException($"Unknown required validation kind: {check.kind}");
@@ -393,56 +406,6 @@ internal static class ValidationRunner
                 && dependencyInputs.Matches(candidate, retained.dependencyIdentity)
                 && ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests);
         }
-    }
-
-    private static Dictionary<string, string> VerifyDiscovery(
-        Dictionary<string, string> projects,
-        string directory
-    ) {
-        string[] reports = Directory.GetFiles(directory, "*.trx", SearchOption.AllDirectories);
-        var assemblies = projects.ToDictionary(static pair => Path.GetFileNameWithoutExtension(pair.Value), static pair => pair.Key,
-            StringComparer.OrdinalIgnoreCase);
-        var hosts = projects.ToDictionary(static pair => pair.Key, static pair => ValidationTestHosts.Read(pair.Value), StringComparer.Ordinal);
-        var executed = projects.Keys.ToDictionary(static project => project, static _ => 0, StringComparer.Ordinal);
-        var excluded = projects.Keys.ToDictionary(static project => project, static _ => new List<string>(), StringComparer.Ordinal);
-        foreach (string report in reports)
-        {
-            XDocument document = XDocument.Load(report);
-            XElement counters = document.Descendants().Single(element => element.Name.LocalName == "Counters");
-            int? count = (int?)counters.Attribute("executed");
-            XElement[] records = document.Descendants().Where(static element => element.Name.LocalName == "UnitTestResult").ToArray();
-            if (count is not >= 0 || (int?)counters.Attribute("failed") is not 0
-                || (int?)counters.Attribute("total") != records.Length || (int?)counters.Attribute("passed") != count
-                || (int?)counters.Attribute("error") is not 0 || records.Count(static result => (string?)result.Attribute("outcome") == "Passed") != count
-                || records.Any(static result => (string?)result.Attribute("outcome") is not ("Passed" or "NotExecuted")))
-                throw new InvalidDataException($"Invalid or failed test execution: {report}");
-            var definitions = document.Descendants().Where(static element => element.Name.LocalName == "UnitTest")
-                .ToDictionary(static definition => (string)definition.Attribute("id")!, StringComparer.Ordinal);
-            foreach (XElement record in records)
-            {
-                XElement definition = definitions[(string)record.Attribute("testId")!];
-                string assembly = Path.GetFileNameWithoutExtension((string?)definition.Attribute("storage") ?? string.Empty);
-                if (!assemblies.TryGetValue(assembly, out string? project))
-                    throw new InvalidDataException($"Test evidence has an unplanned assembly: {assembly}");
-                XElement method = definition.Elements().Single(static element => element.Name.LocalName == "TestMethod");
-                string name = (string?)method.Attribute("className") + "." + (string?)method.Attribute("name");
-                if (hosts[project].TryGetValue(name, out string[]? required) && !ValidationTestHosts.Applies(required))
-                {
-                    excluded[project].Add((string?)record.Attribute("testName") + " requires " + string.Join('/', required));
-                    continue;
-                }
-                if ((string?)record.Attribute("outcome") != "Passed")
-                    throw new InvalidDataException($"Required test was skipped without an inapplicable compiled OS contract: {name}");
-                executed[project]++;
-            }
-        }
-        File.WriteAllText(Path.Combine(directory, "host-contracts.json"), JsonSerializer.Serialize(excluded,
-            new JsonSerializerOptions { WriteIndented = true }));
-        foreach (string project in projects.Keys)
-            if (executed[project] == 0)
-                throw new InvalidDataException($"No executed test evidence for required owner: {project}");
-        return projects.Keys.ToDictionary(static project => project, project =>
-            $"{executed[project]} required cases passed; {excluded[project].Count} OS contracts NotApplicable. See host-contracts.json.", StringComparer.Ordinal);
     }
 
 }

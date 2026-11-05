@@ -11,7 +11,7 @@
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
-    <InnoValidationInput Include="../../input/Inno.Input.Tests/*.csproj;../../Invoke-IsolatedTests.ps1" />
+    <InnoValidationInput Include="../../input/Inno.Input.Tests/*.csproj;../../ui/Inno.UI.Tests/*.csproj;../../Invoke-IsolatedTests.ps1" />
   </ItemGroup>
 
   <ItemGroup>

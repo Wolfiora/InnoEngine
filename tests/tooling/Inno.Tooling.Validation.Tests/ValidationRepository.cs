@@ -24,6 +24,14 @@ internal sealed class ValidationRepository : IDisposable
             Git("clone", "--shared", source, ".");
             Git("config", "user.name", "Aaron Liao");
             Git("config", "user.email", "hsuankailiao@gmail.com");
+            const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
+            string executor = File.ReadAllText(Path.Combine(source, C_EXECUTOR));
+            if (executor != File.ReadAllText(PathOf(C_EXECUTOR)))
+            {
+                Write(C_EXECUTOR, executor);
+                Git("add", C_EXECUTOR);
+                Git("commit", "-m", "Use the executor input paired with the validation assembly");
+            }
             return;
         }
         Write(".gitignore", "artifacts/\n**/obj/\n**/bin/\n");
@@ -94,10 +102,12 @@ internal sealed class ValidationRepository : IDisposable
 
     internal Task<int> RunAsync(
         CancellationToken cancellation = default,
-        string output = "artifacts/run"
+        string output = "artifacts/run",
+        string? evidence = null
     )
         => ValidationCommand.ExecuteAsync(["run", "--engine-root", m_root, "--dotnet", m_dotnet,
-            "--plan", PathOf("artifacts/plan/plan.json"), "--output", PathOf(output)], cancellation);
+            "--plan", PathOf("artifacts/plan/plan.json"), "--output", PathOf(output),
+            ..evidence is null ? Array.Empty<string>() : new[] { "--evidence", PathOf(evidence) }], cancellation);
 
     internal async Task BuildAsync(params string[] arguments)
     {

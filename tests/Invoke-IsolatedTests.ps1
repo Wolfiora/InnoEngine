@@ -44,7 +44,9 @@ function Add-CheckResult(
     [string]$Identity,
     [string]$Status,
     [int]$ExitCode,
-    [string]$Diagnostic
+    [string]$Diagnostic,
+    [string]$Owner = '',
+    [string[]]$Contracts = @()
 ) {
     $checks.Add([pscustomobject]@{
         stage = $Stage
@@ -52,6 +54,8 @@ function Add-CheckResult(
         status = $Status
         exitCode = $ExitCode
         diagnostic = $Diagnostic
+        owner = $Owner
+        contracts = @($Contracts)
     })
     ConvertTo-Json -InputObject @($checks.ToArray()) -Depth 4 |
         Set-Content -LiteralPath (Join-Path $resultsRoot 'execution-summary.json') -Encoding utf8
@@ -114,7 +118,7 @@ foreach ($project in $projects) {
         $matches = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $project.FullName })
         $targetPath = @($matches[0].Properties.TargetPath)
         if ($targetPath.Count -ne 1 -or -not (Test-Path -LiteralPath $targetPath[0])) {
-            Add-CheckResult 'Discovery' $project.FullName 'Blocked' -1 'The compiled test assembly is unavailable.'
+            Add-CheckResult 'Discovery' $project.FullName 'Blocked' -1 'The compiled test assembly is unavailable.' -Owner $project.FullName
             continue
         }
         $assembly = $targetPath[0]
@@ -123,15 +127,15 @@ foreach ($project in $projects) {
         $listed | Set-Content -LiteralPath (Join-Path $resultsRoot ($project.BaseName + '.discovery.log')) -Encoding utf8
         $discoveryErrors = @($listed | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
         if ($discoveryExit -ne 0 -or $discoveryErrors.Count -ne 0) {
-            Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine)
+            Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine) -Owner $project.FullName
             continue
         }
         $names = @($listed | ForEach-Object {
             if ($_ -match '^\s+(Inno\.[^\s]+)\s*$') { $Matches[1] }
         } | Sort-Object -Unique)
-        Add-CheckResult 'Discovery' $project.FullName 'Passed' 0 "$($names.Count) isolated contracts selected."
+        Add-CheckResult 'Discovery' $project.FullName 'Passed' 0 "$($names.Count) isolated contracts selected." -Owner $project.FullName -Contracts $names
     } catch {
-        Add-CheckResult 'Discovery' $project.FullName 'Failed' -1 $_.Exception.Message
+        Add-CheckResult 'Discovery' $project.FullName 'Failed' -1 $_.Exception.Message -Owner $project.FullName
         continue
     }
     foreach ($name in $names) {
@@ -145,9 +149,9 @@ foreach ($project in $projects) {
             if ($caseExit -eq 0) {
                 & (Join-Path $PSScriptRoot 'ci/Test-IsolatedExecution.ps1') -Report (Join-Path $resultsRoot $reportName) -Contract $name
             }
-            Add-CheckResult 'Isolated' $name $(if ($caseExit -eq 0) { 'Passed' } else { 'Failed' }) $caseExit ''
+            Add-CheckResult 'Isolated' $name $(if ($caseExit -eq 0) { 'Passed' } else { 'Failed' }) $caseExit '' -Owner $project.FullName
         } catch {
-            Add-CheckResult 'Isolated' $name 'Failed' -1 $_.Exception.Message
+            Add-CheckResult 'Isolated' $name 'Failed' -1 $_.Exception.Message -Owner $project.FullName
         }
     }
 }

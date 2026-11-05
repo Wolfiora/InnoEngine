@@ -16,6 +16,8 @@ Wiki 计划回归要求文档结构检查先于签名与示例，并将真实项
 
 `ValidationHostContractsTests` 在独立的真实仓库副本中，通过统一入口编译并运行 Input 消费者，核对真实 TRX：类级 OS 声明、方法级覆盖及历史平台 guard 的不适用记录；对应宿主上的跳过和没有声明的跳过必须失败。fixture 的 SDK 项目与执行协议声明为动态输入；普通 Input 源码或断言变化不重复运行验证器自身的完整协议回归。
 
+`ValidationTestOwnershipTests` 通过真实 Input/UI 编译及共享、隔离测试，检查一个 owner 的失败不会把另一个已完成 owner 误记为阻塞。失败进程的独立记录始终阻止整批认证；修复失败 owner 后，输入、依赖和输出仍匹配的本地成功 owner 可以复用。隔离发现声明的每个用例必须有唯一完成记录，漏报不能由同程序集其他成功用例掩盖。fixture 使用与当前验证程序集配套的执行脚本，并在自己的基线中记录该输入。
+
 `ValidationPlanningTests` 覆盖新增/移动/删除、imports、动态发现输入、纯文档范围、未知 owner、领域测试传递 native 依赖、空行为测试、缺失与旧输入证据、基础分支推进后的实际 merge base，以及从 development product 声明选择原生上下文而保留独立领域 owner。
 
 另外覆盖未初始化 submodule 的明确身份、script-only Wiki 的真实产品准备、输出竞争和取消、拒绝接管未知目录，以及深层计划中的冷输入、十轮热构建和 Release 产品前提。CI PowerShell 契约分别检查结果汇总、日程、发布来源、压缩包边界和产物字节；这些负例不能替代 Windows/macOS 上的真实产品执行。

@@ -426,7 +426,11 @@ public sealed class ValidationPlanningTests
         Assert.True(Array.IndexOf(sequence, domain.GetProperty("id").GetString()!) < Array.IndexOf(sequence, C_NATIVE_BUILD));
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
         using JsonDocument results = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json")));
-        Assert.Equal(sequence, results.RootElement.GetProperty("results").EnumerateArray().Select(result => result.GetProperty("id").GetString()!).ToArray());
+        JsonElement[] recorded = results.RootElement.GetProperty("results").EnumerateArray().ToArray();
+        Assert.Equal(sequence, recorded.Select(result => result.GetProperty("id").GetString()!)
+            .Where(id => !id.StartsWith("test-execution:", StringComparison.Ordinal)).ToArray());
+        Assert.All(recorded.Where(result => result.GetProperty("id").GetString()!.StartsWith("test-execution:", StringComparison.Ordinal)),
+            result => Assert.Equal("Failed", result.GetProperty("status").GetString()));
         Assert.Equal("Blocked", results.RootElement.GetProperty("results").EnumerateArray().Single(result => result.GetProperty("id").GetString() == C_NATIVE_BUILD)
             .GetProperty("status").GetString());
     }
