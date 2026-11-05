@@ -1,5 +1,7 @@
 # Inno.Tooling.Validation.Tests
 
+测试指南选择回归通过真实 SDK 图区分托管／Native runner 的纯说明、Native C# 示例及 `tests/` 下的公开支持库。说明变化没有编译前置；示例分片仍选择正确 Native 上下文，支持库仍进入编译 API 契约，不能按所在目录整体豁免。
+
 [测试与 fixture 索引](README.md)
 
 Wiki 计划回归要求文档结构检查先于签名与示例，并将真实项目及源码链接目标纳入证据。仅源码修改触发的项目页检查也必须具备这一前置责任。

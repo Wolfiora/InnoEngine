@@ -6,6 +6,8 @@
 
 工具层库由既有 Build 入口的 `validate` 命令调用，不进入 Runtime、Player 或脚本表面，也不增加日常 executable。依赖架构验证库与中立 Build Toolchains。
 
+测试项目的运行说明、导航和 PowerShell 命令变化只要求文档检查，不因测试 owner 消费 Native 就编译整个套件。实际 C# 示例仍准备对应 owner 的编译前提，并覆盖其 inclusion 分片。只有 SDK 明确声明 `IsTestProject` 的 runner 使用这一边界；`tests/` 下的公开支持库仍执行 API、XML 和示例契约检查。
+
 托管与原生构建属性分别记录，原生目标从现有 development product 声明取得。每个属性上下文构建所需项目的并集，测试消费该上下文的 SDK 输出快照；不同目标不共享可写输出。领域测试的实际传递依赖由计划器与架构检查共同禁止进入 native 准备。
 
 执行目录中的临时 `.slnx` 直接表达计划选中的项目和配置，不继承 IDE `.sln` 的 `Build.0` 排除或配置重映射。原有解决方案仍负责开发环境导航；验收不得因其中某个 Player 或测试项目未勾选构建而静默跳过。构建并集在执行政策检查前写入诊断目录，政策失败仍禁止启动构建。

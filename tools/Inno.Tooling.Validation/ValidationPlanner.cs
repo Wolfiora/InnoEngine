@@ -122,6 +122,9 @@ internal static class ValidationPlanner
         foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full
             || documentOwners.TryGetValue(page, out string? owner) && affected.Contains(owner) && !byPath[owner].test)))
             selectedWikiPages.Add(page);
+        documentationOwners.RemoveWhere(owner => byPath[owner].test
+            && !selectedWikiPages.Any(page => documentOwners.GetValueOrDefault(page) == owner
+                && ValidationDocumentation.RequiresCompilation(Path.Combine(root, page))));
         var scriptPages = selectedWikiPages.Where(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)))
             .ToHashSet(StringComparer.Ordinal);
         var scriptDocumentOwners = scriptPages.Where(documentOwners.ContainsKey).Select(page => documentOwners[page]).ToHashSet(StringComparer.Ordinal);
@@ -272,15 +275,16 @@ internal static class ValidationPlanner
         ValidationCheck[] builds = checks.Where(static check => check.kind == "build" && check.exclusion is null).ToArray();
         foreach (IGrouping<string?, ValidationCheck> group in builds.GroupBy(static check => check.context))
         {
-            string[] apiOwners = group.Select(static check => check.owner).Where(owner => !byPath[owner].test
-                && !owner.StartsWith("tests/", StringComparison.Ordinal)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+            string[] apiOwners = group.Select(static check => check.owner).Where(owner => !byPath[owner].test)
+                .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
             checks.Add(new("compiled-api:" + group.Key, "api", "tools/Inno.Tooling.Architecture", "Public/protected signatures in affected owners and their evaluated dependencies.",
                 "any", group.Select(static check => check.id).ToArray(), group.SelectMany(static check => check.inputs).Distinct().Order(StringComparer.Ordinal).ToArray(), true,
                 apiOwners.Length == 0 ? "Only test implementations changed; their unchanged production dependencies have no affected API owner." : null,
                 group.Key, "contract", apiOwners));
         }
         foreach (IGrouping<string, string> pages in selectedWikiPages.GroupBy(page =>
-            documentOwners.TryGetValue(page, out string? owner) && (nativeOwners.Contains(owner) || scriptDocumentOwners.Contains(owner))
+            documentOwners.TryGetValue(page, out string? owner) && (nativeOwners.Contains(owner)
+                && (affected.Contains(owner) || documentationOwners.Contains(owner)) || scriptDocumentOwners.Contains(owner))
                 || scriptPages.Contains(page) ? "native" : "managed"))
         {
             ValidationCheck[] requiredBuilds = builds.Where(check => check.context == pages.Key
