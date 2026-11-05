@@ -245,6 +245,36 @@ public sealed class ValidationPlanningTests
     }
 
     [Fact]
+    public async Task ClosingFreshnessRejectsBothSourceAndExternalChangesDuringChecks()
+    {
+        using var repository = new ValidationRepository();
+        using var external = new ValidationRepository();
+        const string original = "<Project><PropertyGroup><WarningLevel>4</WarningLevel></PropertyGroup></Project>";
+        external.Write("Shared.props", original);
+        repository.Write("Shared.props", original);
+        string dependency = external.PathOf("Shared.props");
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project(
+            "<Import Project=\"" + System.Security.SecurityElement.Escape(dependency) + "\" />"));
+        string script = string.Join('\n', new[] { repository.PathOf("Shared.props"), dependency }.Select(path =>
+            "$path = '" + path.Replace("'", "''", StringComparison.Ordinal) + "'; "
+            + "$stamp = [IO.File]::GetLastWriteTimeUtc($path); "
+            + "[IO.File]::WriteAllText($path, [IO.File]::ReadAllText($path).Replace('>4<', '>3<')); "
+            + "[IO.File]::SetLastWriteTimeUtc($path, $stamp)"));
+        repository.Write("tests/ci/Test-AgentRules.ps1", script);
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare check-time source and environment mutations");
+        using JsonDocument plan = await repository.PlanAsync();
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
+        using JsonDocument evidence = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json")));
+        JsonElement[] results = evidence.RootElement.GetProperty("results").EnumerateArray().ToArray();
+        Assert.Contains(results, result => result.GetProperty("id").GetString() == "instructions"
+            && result.GetProperty("status").GetString() == "Passed");
+        foreach (string id in new[] { "input-stability", "environment-stability" })
+            Assert.Contains(results, result => result.GetProperty("id").GetString() == id
+                && result.GetProperty("status").GetString() == "Failed");
+    }
+
+    [Fact]
     public async Task AddedMovedAndDeletedInputsSelectTheirRealConsumers()
     {
         using var repository = new ValidationRepository();

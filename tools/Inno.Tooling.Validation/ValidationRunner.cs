@@ -345,7 +345,12 @@ internal static class ValidationRunner
             await SaveAsync().ConfigureAwait(false);
             return new(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity);
         }
-        Dictionary<string, string> after = await ValidationInputs.CaptureAsync(plan.root, cancellation).ConfigureAwait(false);
+        // Both closing snapshots read independent owners after all checks; neither may reuse planning-time bytes.
+        Task<Dictionary<string, string>> sourceCapture = ValidationInputs.CaptureAsync(plan.root, cancellation);
+        Task<string> environmentCapture = Task.Run(() => ValidationEnvironment.CaptureAsync(
+            plan.root, plan.dotnet, cancellation, plan.contexts.Values), cancellation);
+        await Task.WhenAll(sourceCapture, environmentCapture).ConfigureAwait(false);
+        Dictionary<string, string> after = await sourceCapture.ConfigureAwait(false);
         outputDigests.Clear();
         dependencyInputs.Reset();
         foreach (ValidationCheck check in plan.checks.Where(static check => check.exclusion is null))
@@ -363,7 +368,7 @@ internal static class ValidationRunner
             results.Add(new("input-stability", "Failed", plan.tree, 0, "Inputs changed during validation; results cannot certify this workspace."));
             await SaveAsync().ConfigureAwait(false);
         }
-        if (plan.environment != await ValidationEnvironment.CaptureAsync(plan.root, plan.dotnet, cancellation, plan.contexts.Values).ConfigureAwait(false))
+        if (plan.environment != await environmentCapture.ConfigureAwait(false))
         {
             results.Add(new("environment-stability", "Failed", plan.environment, 0, "SDK, runtime, shell or external import contents changed during validation."));
             await SaveAsync().ConfigureAwait(false);
