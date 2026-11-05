@@ -1,4 +1,17 @@
 <Project>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'SourceDebug'">
+    <!-- Apply after the SDK's default configuration. Development symbols retain exact source bytes without commit churn;
+         Release keeps commit-based informational versions and Source Link provenance. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
+    <EnableSourceLink>false</EnableSourceLink>
+    <EmbedAllSources>true</EmbedAllSources>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'SourceDebug'">
+    <SourceRoot Include="$(MSBuildThisFileDirectory)" />
+  </ItemGroup>
+
   <Target
     Name="MaintainInnoRootBuildCaches"
     AfterTargets="Build;Publish"

@@ -12,6 +12,8 @@
 
 ## 公开测试入口
 
+`DevelopmentBuildProvenanceTests` 在独立 Git fixture 中使用仓库实际 props/targets 和 SDK。默认配置、显式 Debug、SourceDebug 以及 CI 模式的报告提交须保持 DLL/PDB 字节与 DLL 写入时间；直接解码 portable PDB 核对嵌入源码。Release 在报告提交后仍更新精确提交 SHA 和真实 PDB Source Link。此回归从仓库内执行，输出目录可以独立指定。
+
 | 方法 | 场景 |
 | --- | --- |
 | RemappedInputsPreserveRootRelationshipsAndVerifyExactContent | 保留重叠根、有序宏和翻译单元标记；同长度内容变化仍失败 |

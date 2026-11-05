@@ -42,6 +42,8 @@ Windows、MacOS、Browser 的 target/source/validator/template 属于各平台 B
 
 构建输出使用稳定的 `validate --artifacts-path <owned-directory>`；运行日志使用独立的 `--output`，不因更换日志目录制造冷构建。构建、普通测试、隔离发现和隔离执行消费同一 SDK 图和输出 owner，并通过现有登记与 lease 协议保护。
 
+Debug 与 SourceDebug 的 PDB 嵌入实际编译源码，使用稳定的源码路径映射；开发程序集不把当前提交 SHA 写入版本属性或 Source Link。只提交验证报告不会因此重编译全部程序集，离线调试仍能读取对应源码。Release 保留 SDK 的提交 SHA 和 Source Link，验证计划与交付清单也继续记录确切提交、源码和产物身份。该配置在 SDK 确定默认 Configuration 后生效，普通 `dotnet build` 与显式 Debug 使用相同规则。
+
 共同 props 在 SDK 默认输出路径建立前，为具有产品输入的工程选择独立 `ArtifactsProjectName`：身份覆盖 Native target、工具 target、产品 props 和 Native build fingerprint。中立工程与 Roslyn 工具保持中立，SDK 自身的 configuration、TFM 和 RID pivots 不变；还原和编译消费同一 owner。调用者显式设置的 SDK 输出属性仍由调用者负责，构建工具必须读取求值后的实际路径，不能拼接 `ArtifactsPath/bin/<project>`。这避免两个正式开发入口在同一个 SDK 构建图中争写共享工程的 DLL；不靠串行构建或清空真实 RID 规避。
 
 Editor 开发入口只声明需要还原其宿主路由选中的产品工程。共享 `RestoreProductTargetGraph` 使用已有 `RestoreOwnedProjectTask`、Core IO lease 和 Restore/compilation 隔离，先完成该闭包，再开始入口的直接及传递引用构建。平台产品独立构建仍按同一协议准备自身；入口不保存平台名单或另建依赖解析器。
@@ -66,9 +68,9 @@ dotnet run --project entry/InnoEngine.Build -- validate run --base origin/master
 
 构建与依赖 CI 共用 `.github/actions/setup-dotnet`。它从提交的 `global.json` 读取 SDK 基线，交给固定官方 action 显式安装到 runner 的独立临时目录。安装不把 `latestPatch` 展开为下载通道；CLI 仍按原声明执行已安装 SDK 的补丁选择，运行日志记录实际 SDK 和编译器。
 
-完整测试、Support Pack、Wiki 与 renderer 门禁按各自成功的构建前置条件执行，独立验证失败后仍收集其他适用门禁的结果。任一门禁失败都会使 job 失败；取消或构建前置条件失败时不执行依赖检查。
+完整测试、Support Pack、Wiki 与 renderer 门禁按计划中已排序的前置条件执行。独立政策诊断继续收集；必需检查失败或取消后，后续昂贵上下文明确阻塞。任一必需门禁失败都会使 job 失败。
 
-Renderer smoke 紧随 Debug 产品构建，通过 `Invoke-EditorSmoke.ps1` 验证进程退出、完整 Shell 释放、帧数、后端及 sRGB。默认进程期限为 180 秒，输出分别写入所属 Project 的 Logs；超时采集可用的 macOS 原生栈并终止自有进程树，输出管道也有独立收尾期限。日志中的产品资源释放不能替代完整适配器释放或进程退出。
+Renderer smoke 在 Debug 产品阶段的所需契约与测试通过后，通过 `Invoke-EditorSmoke.ps1` 验证进程退出、完整 Shell 释放、帧数、后端及 sRGB。默认进程期限为 180 秒，输出分别写入所属 Project 的 Logs；超时采集可用的 macOS 原生栈并终止自有进程树，输出管道也有独立收尾期限。日志中的产品资源释放不能替代完整适配器释放或进程退出。
 
 独立绑定 Task 按组件 ID 和源码 owner 共同解析参与绑定的产品声明；共用源码的离线工具不参与运行库绑定参数选择。不同有效绑定声明仍明确拒绝，不按宿主或平台名称选择第一份配置。
 
