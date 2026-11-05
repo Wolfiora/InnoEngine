@@ -15,6 +15,17 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task NativeTestOwnersCannotOmitTheirProductDeployment()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("tests/Native.Tests/Native.Tests.csproj", ValidationRepository.Project(
+            "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>native</InnoValidationLayer></PropertyGroup>"));
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+        Assert.Contains("Native test owner must declare its product deployment", failure.Message);
+        Assert.Contains("tests/Native.Tests/Native.Tests.csproj", failure.Message);
+    }
+
+    [Fact]
     public async Task SharedTestExecutionChangesSelectAllTestOwnersAndInvalidateOnlyTheirExecutionInputs()
     {
         using var repository = new ValidationRepository();
@@ -491,7 +502,7 @@ public sealed class ValidationPlanningTests
             + properties + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
         repository.Write("backends/Example/native/Native/Native.csproj", ValidationRepository.Project("<PropertyGroup><BindGenGeneratedBindings>true</BindGenGeneratedBindings></PropertyGroup>"));
         repository.Write("backends/Example/tests/Native.Tests/Native.Tests.csproj", ValidationRepository.Project(
-            "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>native</InnoValidationLayer></PropertyGroup>"
+            "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>native</InnoValidationLayer><InnoTestNativeProduct>editor</InnoTestNativeProduct></PropertyGroup>"
             + "<ItemGroup><ProjectReference Include=\"../../native/Native/Native.csproj\" /></ItemGroup>"));
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Equal("fixture-target", plan.RootElement.GetProperty("contexts").GetProperty("native").GetProperty("properties").GetProperty("InnoNativeTarget").GetString());

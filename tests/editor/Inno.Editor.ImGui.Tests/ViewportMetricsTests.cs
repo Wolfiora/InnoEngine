@@ -31,6 +31,7 @@ public sealed unsafe class ViewportMetricsTests
         });
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        context.SetIniFile(null);
         using var ui = new EditorUiSession();
         context.SetIniFile(null);
         int phase = 0;
@@ -273,6 +274,7 @@ public sealed unsafe class ViewportMetricsTests
         using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport ownership", width = 320, height = 240, visible = false });
         var renderer = new FixtureRenderer();
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
+        context.SetIniFile(null);
         var viewport = new ImGuiViewport
         {
             ID = 4217,

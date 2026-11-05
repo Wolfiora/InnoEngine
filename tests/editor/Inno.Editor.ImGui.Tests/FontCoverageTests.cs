@@ -33,6 +33,7 @@ public sealed unsafe class FontCoverageTests
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions { title = "Glyph coverage", width = 640, height = 480, visible = false });
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        context.SetIniFile(null);
         nint sharedData = 0;
         context.RenderFrame(() =>
         {
@@ -84,9 +85,11 @@ public sealed unsafe class FontCoverageTests
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions { title = "Replacement context", width = 320, height = 240, visible = false });
         var original = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        original.SetIniFile(null);
         _ = CaptureSource(original);
         original.Dispose();
         using var replacement = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        replacement.SetIniFile(null);
         _ = CaptureSource(replacement);
         Assert.Throws<ObjectDisposedException>(() => original.RenderFrame(static () => { }));
     }
@@ -101,7 +104,9 @@ public sealed unsafe class FontCoverageTests
         using var firstWindow = application.CreateWindow(new PlatformWindowOptions { title = "First context", width = 320, height = 240, visible = false });
         using var secondWindow = application.CreateWindow(new PlatformWindowOptions { title = "Second context", width = 320, height = 240, visible = false });
         var first = application.CreateImGuiContext(firstWindow, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        first.SetIniFile(null);
         var second = application.CreateImGuiContext(secondWindow, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        second.SetIniFile(null);
         _ = CaptureSource(first);
         _ = CaptureSource(second);
         application.Dispose();
@@ -118,6 +123,7 @@ public sealed unsafe class FontCoverageTests
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions { title = "Retained font context", width = 320, height = 240, visible = false });
         using var retained = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        retained.SetIniFile(null);
         nint source = CaptureSource(retained);
         long baseline = GC.GetTotalMemory(forceFullCollection: true);
         var retired = new List<WeakReference<PlatformImGuiContext>>();
@@ -187,6 +193,7 @@ public sealed unsafe class FontCoverageTests
     ) {
         using var window = application.CreateWindow(new PlatformWindowOptions { title = "Retired font context", width = 320, height = 240, visible = false });
         var context = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        context.SetIniFile(null);
         Assert.NotEqual(retainedSource, CaptureSource(context));
         context.Dispose();
         return new(context);

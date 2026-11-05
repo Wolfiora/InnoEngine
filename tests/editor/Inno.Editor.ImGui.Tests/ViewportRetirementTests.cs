@@ -102,6 +102,7 @@ public sealed unsafe class ViewportRetirementTests
         var renderer = new PendingRenderer();
         var context = application.CreateImGuiContext(
             window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
+        context.SetIniFile(null);
         var viewport = new ImGuiViewport { ID = 4219, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)), Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30)) };
         NativeImGui.Raw.GetPlatformIO()->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;

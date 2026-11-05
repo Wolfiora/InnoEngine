@@ -2,6 +2,7 @@ using Inno.Integration.MacOSArm64.Bgfx;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Modules.DotNet;
 using System;
+using System.Runtime.Versioning;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -36,6 +37,7 @@ public sealed partial class ShaderGraphLoweringTests : IDisposable
     }
 
     [MetalShaderFact]
+    [SupportedOSPlatform("macos")]
     public async Task RealGraphMixesAnIndependentNodeExtensionAndSourceFunctionInOneNativeCompilation()
     {
         GraphDocument graph = Graph(out GraphNodeRecord constant, out GraphNodeRecord extension, out GraphNodeRecord source, out GraphNodeRecord color);

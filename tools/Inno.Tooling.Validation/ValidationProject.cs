@@ -25,6 +25,9 @@ internal sealed record ValidationProject(
         string Value(string name) => properties.GetProperty(name).GetString() ?? string.Empty;
         string Relative(string path) => Path.GetRelativePath(root, path).Replace('\\', '/');
         string path = Relative(snapshot.GetProperty("Path").GetString()!);
+        if (Value("IsTestProject").Equals("true", StringComparison.OrdinalIgnoreCase)
+            && Value("InnoValidationLayer") == "native" && string.IsNullOrWhiteSpace(Value("InnoTestNativeProduct")))
+            throw new InvalidDataException($"Native test owner must declare its product deployment: {path}");
         var inputs = new HashSet<string>(StringComparer.Ordinal) { path };
         var references = new HashSet<string>(StringComparer.Ordinal);
         bool native = false;

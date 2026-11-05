@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoTestNativeProduct>editor</InnoTestNativeProduct>
+    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <InnoValidationLayer>contract</InnoValidationLayer>
     <OutputType>Exe</OutputType>
     <GenerateProgramFile>false</GenerateProgramFile>

@@ -1,5 +1,7 @@
 # Inno.Text.Tests
 
+本套件显式声明 `player` Native 产品，在同一目标／配置的正式构建中准备并部署。测试仅消费该输出中的部署索引，不从相邻 Editor 输出或仓库缓存寻找 DLL；缺少部署是验收失败。
+
 [测试与 fixture 索引](README.md)
 
 [Text 索引](../../modules/text/README.md)

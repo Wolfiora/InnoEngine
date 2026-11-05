@@ -1,5 +1,6 @@
 using Inno.Integration.MacOSArm64.Bgfx;
 using System;
+using System.Runtime.Versioning;
 using System.Linq;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains.Bgfx.Tools;
@@ -25,6 +26,7 @@ public sealed partial class ShaderGraphProgramTests
     }
 
     [MetalShaderFact]
+    [SupportedOSPlatform("macos")]
     public async Task StorageGraphCompilesThroughTheSameMetalToolchainAsSourceNodes()
     {
         ShaderGraphProgramResult lowered = Lower(StorageGraph());

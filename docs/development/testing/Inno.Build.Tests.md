@@ -1,5 +1,7 @@
 # Inno.Build.Tests
 
+原生 UI fixture 显式关闭默认 `imgui.ini` 自动持久化；布局与状态断言仍使用原来的内存／独立临时输入。测试不得向编译输出目录写入运行状态；需要文件持久化的场景由各自临时 owner 持有。
+
 [测试与 fixture 索引](README.md)
 
 Windows 编译器、目录共享与工具路径用例，以及 Unix 文件链接用例，声明实际 OS 契约。统一入口读取编译后的 `SupportedOSPlatform`，保留每个不适用用例的名称和原因；对应平台上的断言及失败场景保持不变。

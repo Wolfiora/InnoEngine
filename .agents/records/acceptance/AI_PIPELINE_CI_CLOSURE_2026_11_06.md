@@ -47,3 +47,14 @@
 
 - 组合回归揭示 Wiki 引用查询继承 `BuildProjectReferences=true` 后会重新编译已准备的依赖，关闭时输出新鲜度检查因此正确失败。首次组合与诊断日志保留；SDK 引用捕获现在独立关闭引用编译，并在执行边界覆盖 local property 的重新启用。两个真实 SDK 复现先失败，修复后全部 7 项图求值回归通过；原联合编译／变体用例正在复验，没有删除输出新鲜度检查。
 - 更新后的完整选择清单包含 248 项目、64 测试 owner（17 domain、33 contract、4 integration、8 native、2 performance），328 项必要检查；17 个 domain 均为 managed。`owner-coverage-final.json` 仅证明选择完整性。文档查询 24 项回归通过，当前源码架构检查通过。
+
+## 独立托管环境暴露的测试准备缺口
+
+- `7217408f1cde43f45cdae9b06aad355f6bb61c17` 已提交联合 owner、只读 SDK 查询和 performance 隔离整改。最后两项实际联合编译／property variant 回归均通过，合计 15 分 11 秒；7 项图捕获、39 项 Wiki 和 24 项文档查询回归通过。对应 `readonly-compilation-final*`、`reference-query-fixed*`、`readonly-wiki-regression*`、`fixture-query-regression*`。源码、文档链接、Toolchains 的 462 项公开符号及 CLI 编译通过。
+- [Engine CI 42104761730](https://github.com/Wolfiora/InnoEngine/actions/runs/42104761730) 的 Windows/macOS 和 `Engine validation` 最终均失败；它们属于 `0f0df3e`，不覆盖后续本地修订。两平台诊断 ZIP 均按 GitHub 提供的 SHA-256 校验，再由现有安全提取器展开。首次日志、TRX 和结果保留在 `ci-421047-windows*`、`ci-421047-macos*`。
+- 两平台共通的主要故障是 9 个实际消费 Native／离线工具的测试 owner 未声明产品部署，加载器因此正确拒绝缺少部署索引的输出。修订按实际需要声明 player、editor 或 shader-tools；部署 target 直接遵循显式产品声明，移除依赖 `Inno.Native.*` 文件名才部署的猜测。Native 层缺少声明现在在计划阶段明确失败；42 项计划回归中 41 项初次通过，一项旧 fixture 也缺少声明，补齐后该用例通过。没有弱化原断言或加入隐式 DLL 搜索。
+- Windows 另外发现 7 项现有 Metal 编译用例缺少 `SupportedOSPlatform("macos")`，严格汇总拒绝了这些无契约的 skip。补齐方法级平台声明；macOS 仍执行真实 Metal 编译，缺工具或编译失败仍然失败。
+- 两平台的 4 个 UI／Build 测试 owner 在执行后改变了自己的 bin 目录；本地实际文件确认默认 `imgui.ini` 写入构建输出。非持久化测试上下文现在显式关闭默认 ini 写入，保留真正持久化场景的独立临时目录及断言；未放宽输出新鲜度检查。
+- `EditorShaderProfileTests` 的 SDK 查询未使用 CI 实际 ArtifactsPath、ToolTarget 和配置。本地指定未准备的输出 owner 复现 NETSDK1004，改用已准备的实际 owner 后查询通过；远程首次日志只有 exit 1，不能将本地诊断冒充远程原始错误。增加实际 SDK 失败回归，捕获输出现在保留原诊断和内层失败，该回归通过。
+- Console v3 首次准备在发现上述 UI 输出污染后主动取消，取消与原日志保留在 `console-v3-cancellation.json` 及 `console-v3-0*`。驱动 finally 已恢复源码字节和时间戳；该样本不作为通过或 warm 基准。后续重测须使用修复后输入，冷／首次准备与至少五次 warm 分开。
+- 当前正在执行 13 个相关 Native 测试 owner 的联合准备与局部真实回归，使用现有 workspace producer lease，未复制 DLL 或创建另一套产品准备器。C 盘最近观测约 78 GiB 可用；保留活动输出和首次失败。

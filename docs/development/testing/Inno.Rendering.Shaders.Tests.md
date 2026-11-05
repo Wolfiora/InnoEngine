@@ -1,5 +1,7 @@
 # Inno.Rendering.Shaders.Tests
 
+本套件显式声明 `shader-tools` Native 产品，在同一目标／配置的正式构建中准备并部署。测试仅消费该输出中的部署索引，不从相邻 Editor 输出或仓库缓存寻找 DLL；缺少部署是验收失败。
+
 [测试与 fixture 索引](README.md)
 
 真实 Metal 编译用例声明 `SupportedOSPlatform("macos")`；Windows 不被计为 Metal 验收通过。macOS 上编译工具缺失或实际编译失败仍必须失败。

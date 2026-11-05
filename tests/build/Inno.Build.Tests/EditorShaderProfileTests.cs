@@ -2,6 +2,7 @@ using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,10 +23,14 @@ public sealed class EditorShaderProfileTests
         string backend = Path.Combine(root, "backends", "Sdl3", "runtime",
             "Inno.Adapter.Platform.Sdl3", "Inno.Adapter.Platform.Sdl3.csproj");
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        string? artifacts = TestRepository.GetArtifactsPath(typeof(EditorShaderProfileTests).Assembly);
+        string configuration = typeof(EditorShaderProfileTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
         string output = await ToolchainEnvironment.CaptureOutputAsync(host,
             ["msbuild", backend, "-nologo", "-nodeReuse:false", "-t:IncludeTransitiveProjectReferences",
                 "-getItem:ProjectReference", "-p:InnoProductBuildProperties=" + profile,
-                "-p:InnoNativeTarget=" + target], root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
+                "-p:InnoNativeTarget=" + target, "-p:InnoToolTarget=" + target, "-p:Configuration=" + configuration,
+                ..artifacts is null ? Array.Empty<string>() : new[] { "-p:ArtifactsPath=" + artifacts }],
+            root, CancellationToken.None, DotNetSdkEnvironment.Create(host));
         using JsonDocument document = JsonDocument.Parse(output);
         JsonElement references = document.RootElement.GetProperty("Items").GetProperty("ProjectReference");
         Assert.Contains(references.EnumerateArray(), reference => reference.GetProperty("Filename").GetString() == "Inno.Native.Sdl3");

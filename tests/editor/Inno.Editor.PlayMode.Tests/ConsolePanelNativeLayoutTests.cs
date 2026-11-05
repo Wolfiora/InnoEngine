@@ -33,6 +33,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         ImGuiNativeContext* nativeContext = ImGuiApi.Raw.CreateContext(null);
         try
         {
+            ImGuiApi.Raw.GetIO()->IniFilename = null;
             ImGuiIO* io = ImGuiApi.Raw.GetIO();
             io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1200f, 800f));
             io->DeltaTime = 1f / 60f;
@@ -94,6 +95,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         ImGuiNativeContext* context = ImGuiApi.Raw.CreateContext(null);
         try
         {
+            ImGuiApi.Raw.GetIO()->IniFilename = null;
             ImGuiApi.Raw.GetIO()->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1200, 800));
             ImGuiApi.Raw.GetIO()->DeltaTime = 1f / 60;
             ImGuiApi.Raw.GetIO()->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;

@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoTestNativeProduct>player</InnoTestNativeProduct>
+    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <InnoValidationLayer>native</InnoValidationLayer>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>

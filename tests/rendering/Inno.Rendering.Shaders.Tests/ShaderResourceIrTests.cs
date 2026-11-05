@@ -1,5 +1,6 @@
 using Inno.Integration.MacOSArm64.Bgfx;
 using System;
+using System.Runtime.Versioning;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -99,6 +100,7 @@ public sealed class ShaderResourceIrTests
     }
 
     [MetalShaderFact]
+    [SupportedOSPlatform("macos")]
     public async Task TypedStorageBuffersCompileRealLoadsStoresAndAtomics()
     {
         var builder = new ShaderIrBuilder();
@@ -117,6 +119,7 @@ public sealed class ShaderResourceIrTests
     }
 
     [MetalShaderFact]
+    [SupportedOSPlatform("macos")]
     public async Task TypedStorageImagesCompileForTwoDimensionalArraysAndVolumes()
     {
         foreach ((RenderTextureDimension dimension, bool array) in new[]
@@ -138,6 +141,7 @@ public sealed class ShaderResourceIrTests
     }
 
     [MetalShaderFact]
+    [SupportedOSPlatform("macos")]
     public async Task SamplingAndFragmentDiscardCompileWithoutAHandwrittenModule()
     {
         foreach (string kind in new[] { "sampled-texture2d", "sampled-texture2d-array", "sampled-texture3d", "sampled-texture-cube" })

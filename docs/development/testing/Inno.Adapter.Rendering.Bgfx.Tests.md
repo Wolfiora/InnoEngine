@@ -1,5 +1,7 @@
 # Inno.Adapter.Rendering.Bgfx.Tests
 
+本套件显式声明 `editor` Native 产品，在同一目标／配置的正式构建中准备并部署。测试仅消费该输出中的部署索引，不从相邻 Editor 输出或仓库缓存寻找 DLL；缺少部署是验收失败。
+
 [测试与 fixture 索引](README.md)
 
 Direct3D、Windows browser profile 与桌面 GLSL/嵌入程序用例在方法上声明实际支持的 OS，防止其他宿主上的提前返回被记录为目标平台通过。该声明不取代真实编译、反射与设备契约。

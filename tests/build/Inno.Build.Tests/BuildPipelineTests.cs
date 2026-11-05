@@ -711,6 +711,7 @@ public sealed partial class BuildPipelineTests : IDisposable
         ImGuiNativeContext* imgui = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();

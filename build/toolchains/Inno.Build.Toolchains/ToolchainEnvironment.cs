@@ -295,7 +295,7 @@ public static class ToolchainEnvironment
     /// empty values remain explicitly empty.
     /// </param>
     /// <returns>
-    /// The complete standard output after successful exit; failures and cancellation propagate.
+    /// The complete standard output after successful exit. Unsuccessful exits retain captured output in the exception.
     /// </returns>
     /// <exception cref="InvalidOperationException">
     /// The tool fails to start or exits unsuccessfully.
@@ -314,7 +314,14 @@ public static class ToolchainEnvironment
         IReadOnlyDictionary<string, string?>? environment = null
     ) {
         using var output = new StringWriter();
-        await RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, output).ConfigureAwait(false);
+        try
+        {
+            await RunCoreAsync(fileName, arguments, workingDirectory, cancellationToken, environment, output).ConfigureAwait(false);
+        }
+        catch (InvalidOperationException failure)
+        {
+            throw new InvalidOperationException(failure.Message + Environment.NewLine + output, failure);
+        }
         return output.ToString();
     }
 

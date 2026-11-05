@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoTestNativeProduct>shader-tools</InnoTestNativeProduct>
+    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
     <InnoValidationLayer>contract</InnoValidationLayer>
   </PropertyGroup>
 

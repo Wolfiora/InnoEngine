@@ -2,6 +2,8 @@
 
 [开发指南](../README.md)
 
+Native 层测试必须声明 `InnoTestNativeProduct`，由正式产品准备和部署协议提供所选目标的运行输入。只使用离线编译工具的测试可以选择 `shader-tools`；显式产品声明不依赖托管引用文件名来猜测是否需要部署。普通托管测试不会因此取得 Native 准备依赖。
+
 - [Inno.Adapter.Audio.MiniAudio.Tests](Inno.Adapter.Audio.MiniAudio.Tests.md)
 - [Inno.Adapter.Content.FileSystem.Tests](Inno.Adapter.Content.FileSystem.Tests.md)
 - [Inno.Adapter.Platform.Sdl3.Tests](Inno.Adapter.Platform.Sdl3.Tests.md)

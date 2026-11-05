@@ -1,5 +1,6 @@
 using Inno.Integration.MacOSArm64.Bgfx;
 using System;
+using System.Runtime.Versioning;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -93,6 +94,7 @@ public sealed class ShaderControlFlowIrTests
     }
 
     [MetalShaderFact]
+    [SupportedOSPlatform("macos")]
     public async Task NestedBranchLoopAndStorageEffectsCompileThroughTheSameMetalChain()
     {
         var builder = new ShaderIrBuilder();
@@ -123,6 +125,7 @@ public sealed class ShaderControlFlowIrTests
     }
 
     [MetalShaderFact]
+    [SupportedOSPlatform("macos")]
     public async Task AggregateCarriedStateAndZeroIterationLoopsCompileWithoutFlatteningTheirTypes()
     {
         var builder = new ShaderIrBuilder();

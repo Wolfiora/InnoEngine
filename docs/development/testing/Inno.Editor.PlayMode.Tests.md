@@ -1,5 +1,7 @@
 # Inno.Editor.PlayMode.Tests
 
+原生 UI fixture 显式关闭默认 `imgui.ini` 自动持久化；布局与状态断言仍使用原来的内存／独立临时输入。测试不得向编译输出目录写入运行状态；需要文件持久化的场景由各自临时 owner 持有。
+
 [测试与 fixture 索引](README.md)
 
 [测试索引](README.md) · [Wiki 首页](../../README.md) · [当前验收](../../../.agents/records/acceptance/current.md)

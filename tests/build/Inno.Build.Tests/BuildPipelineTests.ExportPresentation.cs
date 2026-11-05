@@ -41,6 +41,7 @@ public sealed partial class BuildPipelineTests
         ImGuiNativeContext* native = NativeGui.Raw.CreateContext(null);
         try
         {
+            NativeGui.Raw.GetIO()->IniFilename = null;
             m_engine.logs.RegisterSink(logs);
             using var session = new EditorUiSession();
             using IDisposable scope = session.Enter();
@@ -91,10 +92,10 @@ public sealed partial class BuildPipelineTests
         var native = NativeGui.Raw.CreateContext(null);
         try
         {
+            NativeGui.Raw.GetIO()->IniFilename = null;
             var io = NativeGui.Raw.GetIO();
             io->DisplaySize = new ImVec2C { X = width, Y = height };
             io->DeltaTime = 0.2f;
-            io->IniFilename = null;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
             using var runtime = new ImGuiEditorRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
