@@ -93,13 +93,24 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
             IBuildEngine4 engine = BuildEngine as IBuildEngine4
                 ?? throw new InvalidOperationException("Native preparation requires MSBuild build-lifetime ownership.");
-            string requestIdentity = ProductNativePreparation.FreezeAsync(context, plan, cancellation.Token).GetAwaiter().GetResult();
-            string cacheKey = "Inno.Build.NativePreparation/" + requestIdentity;
+            string scope = NativeBuildFingerprint.Create([context.engineRoot, context.configuration, TargetId, plan.productId], []);
+            string cacheKey = "Inno.Build.NativePreparation/" + scope;
             using FileLease preparation = AcquirePreparation(engine,
-                Path.Combine(context.engineRoot, "artifacts", "build-tools", "tasks", "native", requestIdentity + ".lock"), cancellation.Token);
-            string[][]? captured = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[][];
-            ProductNativeBuildResult? prepared = captured is null ? null
-                : ProductNativePreparation.TryAcquireAsync(context, plan, captured, requestIdentity, cancellation.Token).GetAwaiter().GetResult();
+                Path.Combine(context.engineRoot, "artifacts", "build-tools", "tasks", "native", scope + ".lock"), cancellation.Token);
+            string[][][] candidates = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[][][] ?? [];
+            ProductNativeBuildResult? prepared = null;
+            string requestIdentity = string.Empty;
+            foreach (string[][] candidate in candidates)
+            {
+                string identity = candidate[0][1];
+                prepared = ProductNativePreparation.TryAcquireAsync(context, plan, candidate, identity, cancellation.Token).GetAwaiter().GetResult();
+                if (prepared is null)
+                    continue;
+                requestIdentity = identity;
+                break;
+            }
+            if (prepared is null)
+                requestIdentity = ProductNativePreparation.FreezeAsync(context, plan, cancellation.Token).GetAwaiter().GetResult();
             bool reused = prepared is not null;
             using var products = prepared ?? contribution.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
@@ -128,7 +139,8 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             if (completed is not null)
             {
                 engine.UnregisterTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build);
-                engine.RegisterTaskObject(cacheKey, completed, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
+                string[][][] retained = candidates.Where(candidate => candidate[0][1] != requestIdentity).Append(completed).ToArray();
+                engine.RegisterTaskObject(cacheKey, retained, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
             }
             NativeBuildStatistics statistics = context.statistics;
             Log.LogMessage(MessageImportance.High,

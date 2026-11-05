@@ -66,6 +66,8 @@ Task 的取消、编译、产物校验和部署失败都使 MSBuild 失败；内
 
 唯一 MSBuild 引导位于 `build/msbuild/Inno.Build.Tasks.targets`。[TaskHosting](Inno.Build.TaskHosting.md) 用精确文件集合和 SHA-256 发布一份内容寻址运行闭包；各 evaluation 使用私有加载目录，优先硬链接复用完整依赖。普通 Build 与 Publish 准备对应产品 Native 闭包；Design-time 不执行 Native。`PrepareProductNativeTask` 输出输入扫描、进程与耗时指标。
 
+同一根构建按工作区、配置、产品与目标取得准备锁；锁的作用是串行化候选选择，并不证明输入相同。Build 生命周期登记只保存成功准备的中立数据数组，保留每个不同的完整请求身份。消费者独立取得读取保护后重新核对源码、SDK、工具与 recipe；只有完整身份及产物都匹配才复用，否则正常准备。这样避免每个消费者在等待锁之前再读取一遍完整输入，同时不合并不同请求，也不跨私有 Task 加载边界保存插件对象或活动 lease。
+
 内部加载目录清理只在全部 owner 进程已确认退出时删除旧缓存。系统拒绝查询进程状态时保留目录，
 不能因此使有效构建失败；编译、完整性校验和部署失败仍按正常 Task 错误处理。
 

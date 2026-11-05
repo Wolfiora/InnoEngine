@@ -22,7 +22,7 @@
 
 `ManagedProjectGraphCapture.CaptureAsync(engineRoot, dotnetHost, projects, properties, cancellationToken, resolveReferences)` 在明确选定的 SDK 中一次求值多个绝对项目路径，返回属性、ProjectReference、源码/资源/附加输入与 imports 的内部 JSON snapshot。`resolveReferences` 默认为 false；显式启用后，在同一 SDK 进程解析已还原的编译引用与隐式编译符号，供 Wiki 使用。它复用既有受 owner/lease 保护的求值器，不执行工程 Build、Restore 或 native target；求值器本身缺失时会先准备不可变工具产物。
 
-`ProductNativePreparation` 负责将已完成准备转成中立数据供同一 MSBuild 根构建复用：`FreezeAsync` 冻结 recipe、生成器、源码及 SDK 的内容身份；`Capture` 仅从成功且仍持有读取保护的完整产品闭包收集 BCL 数据；`TryAcquireAsync` 为下一消费者独立取得读取 lease，并在等待后重新检查目录成员与内容哈希。未命中返回 null，调用方必须正常准备；它不表示验收通过。聚合静态产物或无 owner 的绑定产物不支持此复用。失败、取消、部署或释放失败均不得登记成功状态。
+`ProductNativePreparation` 负责将已完成准备转成中立数据供同一 MSBuild 根构建复用：`FreezeAsync` 冻结 recipe、生成器、源码及 SDK 的内容身份；`Capture` 仅从成功且仍持有读取保护的完整产品闭包收集 BCL 数据；`TryAcquireAsync` 为下一消费者独立取得读取 lease，并在等待后重新冻结当前完整请求，再检查已记录的目录成员与内容哈希。这些等待后的检查共用一个全新读取阶段，不要求消费者在等待前重复冻结一遍；旧阶段的内容缓存不进入这个阶段。未命中返回 null，调用方必须正常准备；它不表示验收通过。聚合静态产物或无 owner 的绑定产物不支持此复用。失败、取消、部署或释放失败均不得登记成功状态。
 
 这是验证工具组合所需的最小公开入口，不进入脚本导出，没有 protected 扩展点。输入为空、路径非绝对、项目缺失、SDK 失败或取消均明确失败，不能返回部分图冒充完整覆盖。相同全局属性共享 ProjectCollection；不同配置或目标必须分别捕获。
 

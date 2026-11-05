@@ -126,7 +126,7 @@ public static class ProductNativePreparation
     /// Neutral data captured by a successful preparation in the same root build.
     /// </param>
     /// <param name="requestIdentity">
-    /// The consumer's freshly frozen source, generator, SDK and recipe identity.
+    /// The captured request identity, recomputed from current source, generator, SDK and recipe inputs after acquiring protection.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels acquisition or hashing; partial reading protection is always released.
@@ -199,14 +199,28 @@ public static class ProductNativePreparation
                 products.Add(new NativeBuildProduct(row[1], row[2], row[3], row[4], byComponent.GetValueOrDefault(row[1]),
                     row[5].Length == 0 ? null : row[5], lease));
             }
-            var reads = new NativeInputReadCache(context.inputState, "prepared-consumer");
+            NativeBuildContext verification = context.BeginInputVerification("prepared-consumer");
+            if (await FreezeAsync(verification, plan, cancellationToken).ConfigureAwait(false) != requestIdentity)
+                return null;
             foreach (string[] row in rows.Where(static row => row[0] == "root"))
-                if (row.Length < 2 || !reads.Enumerate(row[1], cancellationToken).Select(static entry => entry.relative)
-                        .Order(StringComparer.Ordinal).SequenceEqual(row.Skip(2), StringComparer.Ordinal))
+            {
+                if (row.Length < 2)
                     return null;
+                NativeBuildInput root = NativeBuildInput.FromPath(context.engineRoot, row[1]);
+                NativeInputSnapshot membership = verification.CaptureInputs([root], cancellationToken);
+                if (!membership.entries.Select(entry => entry.logicalPath == root.logicalPath
+                        ? string.Empty : entry.logicalPath[(root.logicalPath.Length + 1)..])
+                    .Order(StringComparer.Ordinal).SequenceEqual(row.Skip(2), StringComparer.Ordinal))
+                    return null;
+            }
             foreach (string[] row in rows.Where(static row => row[0] == "input"))
-                if (row.Length != 3 || Convert.ToHexStringLower(reads.Hash(row[1], cancellationToken)) != row[2])
+            {
+                if (row.Length != 3)
                     return null;
+                NativeInputSnapshot input = verification.CaptureInputs([NativeBuildInput.FromPath(context.engineRoot, row[1])], cancellationToken);
+                if (input.entries.Count != 1 || Convert.ToHexStringLower(input.entries[0].hash) != row[2])
+                    return null;
+            }
             if (!rows.Any(static row => row[0] == "input"))
                 return null;
             cancellationToken.ThrowIfCancellationRequested();

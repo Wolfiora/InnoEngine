@@ -35,8 +35,12 @@ public sealed class ProductNativePreparationTests : IDisposable
         using ProductNativeBuildResult built = await new ComponentNativeProductExecutor().BuildAsync(producer, plan, CancellationToken.None);
         string[][] rows = Assert.IsType<string[][]>(ProductNativePreparation.Capture(producer, plan, built, identity));
         NativeBuildContext consumer = Context();
-        Assert.Equal(identity, await ProductNativePreparation.FreezeAsync(consumer, plan));
         using ProductNativeBuildResult reading = Assert.IsType<ProductNativeBuildResult>(await ProductNativePreparation.TryAcquireAsync(consumer, plan, rows, identity));
+        NativeBuildPhaseStatistics phase = Assert.Single(consumer.statistics.phases);
+        Assert.Equal("prepared-consumer", phase.phase);
+        Assert.Equal(2, phase.files);
+        Assert.Equal(11, phase.bytes);
+        Assert.True(phase.reusedReads > 0);
         built.Dispose();
         Assert.Equal("result", File.ReadAllText(reading[0].files.Single()));
         Assert.Equal(1, m_productions);
@@ -71,6 +75,59 @@ public sealed class ProductNativePreparationTests : IDisposable
             File.WriteAllText(Path.Combine(m_root, "sdk-tool"), "tool-b");
         NativeBuildContext after = Context(changed == "configuration" ? "release" : "debug", changed == "target" ? "other-target" : "fixture-target");
         Assert.NotEqual(original, await ProductNativePreparation.FreezeAsync(after, Plan()));
+    }
+
+    [Theory]
+    [InlineData("source")]
+    [InlineData("membership")]
+    [InlineData("sdk")]
+    [InlineData("configuration")]
+    [InlineData("target")]
+    [InlineData("recipe")]
+    [InlineData("product")]
+    public async Task ConsumerRejectsChangedInputsWithoutASeparatePreliminaryFreeze(string changed)
+    {
+        NativeBuildContext producer = Context();
+        ProductNativeBuildPlan plan = Plan();
+        string identity = await ProductNativePreparation.FreezeAsync(producer, plan);
+        using ProductNativeBuildResult built = await new ComponentNativeProductExecutor().BuildAsync(producer, plan, CancellationToken.None);
+        string[][] rows = ProductNativePreparation.Capture(producer, plan, built, identity)!;
+        built.Dispose();
+        if (changed is "source" or "sdk")
+        {
+            string path = Path.Combine(m_root, changed == "source" ? "Source/source.h" : "sdk-tool");
+            DateTime timestamp = File.GetLastWriteTimeUtc(path);
+            File.WriteAllText(path, changed == "source" ? "other" : "tool-b");
+            File.SetLastWriteTimeUtc(path, timestamp);
+        }
+        else if (changed == "membership")
+            File.WriteAllText(Path.Combine(m_root, "Source", "added.h"), "new");
+        NativeBuildContext consumer = Context(changed == "configuration" ? "release" : "debug", changed == "target" ? "other-target" : "fixture-target");
+        ProductNativeBuildPlan current = changed == "product" ? new("different-product", plan.steps)
+            : changed == "recipe" ? Plan(NativeLibraryKind.Static) : plan;
+        Assert.Null(await ProductNativePreparation.TryAcquireAsync(consumer, current, rows, identity));
+        Assert.Equal(1, m_productions);
+    }
+
+    [Fact]
+    public async Task CancellationWhileWaitingReleasesPartialConsumerProtection()
+    {
+        NativeBuildContext producer = Context();
+        ProductNativeBuildPlan plan = Plan();
+        string identity = await ProductNativePreparation.FreezeAsync(producer, plan);
+        using ProductNativeBuildResult built = await new ComponentNativeProductExecutor().BuildAsync(producer, plan, CancellationToken.None);
+        string[][] rows = ProductNativePreparation.Capture(producer, plan, built, identity)!;
+        string directory = built[0].directory;
+        built.Dispose();
+        using BuildArtifactWriteLease writer = await BuildArtifactWriteLease.AcquireAsync(directory, Path.Combine(m_root, "artifacts", "native"));
+        using var cancellation = new CancellationTokenSource();
+        Task<ProductNativeBuildResult?> pending = ProductNativePreparation.TryAcquireAsync(Context(), plan, rows, identity, cancellation.Token);
+        Assert.False(pending.IsCompleted);
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+        writer.Dispose();
+        using ProductNativeBuildResult reading = Assert.IsType<ProductNativeBuildResult>(await ProductNativePreparation.TryAcquireAsync(Context(), plan, rows, identity));
+        Assert.Equal("result", File.ReadAllText(reading[0].files.Single()));
     }
 
     [Fact]
@@ -123,10 +180,10 @@ public sealed class ProductNativePreparationTests : IDisposable
         string target = "fixture-target"
     ) => new NativeBuildContext(m_root, configuration).WithToolchain(new NativeToolchainSelection(target,
         new BuildHostDescriptor("Fixture", "fixture-cpu"), new Dictionary<string, string> { ["compiler"] = Path.Combine(m_root, "sdk-tool") },
-        new Dictionary<string, string>(), [], [], new NativeLinkPlan(".fixture"), false));
+        new Dictionary<string, string>(), [], [], new NativeLinkPlan(".fixture", staticLibraryExtension: ".fixture-static"), false));
 
-    private ProductNativeBuildPlan Plan()
-        => new("fixture-product", [new ProductNativeBuildStep("fixture", m_owner, new NativeComponentBuildOptions(NativeLibraryKind.Shared), [],
+    private ProductNativeBuildPlan Plan(NativeLibraryKind kind = NativeLibraryKind.Shared)
+        => new("fixture-product", [new ProductNativeBuildStep("fixture", m_owner, new NativeComponentBuildOptions(kind), [],
             (
                 context,
                 dependencies,
