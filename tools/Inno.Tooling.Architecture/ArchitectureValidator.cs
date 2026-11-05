@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Inno.Tooling.Architecture;
@@ -188,6 +189,7 @@ public static partial class ArchitectureValidator
                     : selectedPages is null ? null : selectedProjectPages.Select(static page => Path.GetFullPath(page.project)).ToHashSet(StringComparer.OrdinalIgnoreCase), sdkSnapshot);
         var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration,
             evaluatedReferences, cancellationToken, failures);
+        var sourceTrees = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
         if (wiki)
         {
             WikiContentBoundaryValidator.Validate(repositoryRoot, failures);
@@ -206,12 +208,12 @@ public static partial class ArchitectureValidator
             if (!Directory.Exists(root))
                 continue;
             ValidateDirectories(repositoryRoot, root, failures);
-            ValidateSources(repositoryRoot, root, failures, documentationModels, sourceOnly);
+            ValidateSources(repositoryRoot, root, failures, documentationModels, sourceTrees, sourceOnly);
         }
 
         if (!metadataOnly && !wikiOnly)
         {
-            UsingPolicyValidator.Validate(repositoryRoot, failures);
+            UsingPolicyValidator.Validate(repositoryRoot, failures, sourceTrees);
             ValidateProjectReferences(repositoryRoot, failures);
             ValidateProductionSolutionFolders(repositoryRoot, failures);
             ValidateTestSolutionFolders(repositoryRoot, failures);
@@ -229,7 +231,7 @@ public static partial class ArchitectureValidator
                 ? S_PRODUCTION_ROOTS.SelectMany(root => RepositorySourceInventory.Files(Path.Combine(repositoryRoot, root), "*.csproj"))
                 : apiProjects.Select(project => Path.GetFullPath(project, repositoryRoot));
             foreach (string project in projects.Where(project => !Relative(repositoryRoot, project).StartsWith("tests/", StringComparison.Ordinal)))
-                ValidateSources(repositoryRoot, Path.GetDirectoryName(project)!, failures, documentationModels, semanticOnly: true);
+                ValidateSources(repositoryRoot, Path.GetDirectoryName(project)!, failures, documentationModels, sourceTrees, semanticOnly: true);
         }
         if (failures.Count == 0)
         {
@@ -280,6 +282,7 @@ public static partial class ArchitectureValidator
         string root,
         ICollection<string> failures,
         DocumentationSourceModels documentationModels,
+        IDictionary<string, SyntaxTree> sourceTrees,
         bool sourceOnly = false,
         bool semanticOnly = false
     ) {
@@ -289,12 +292,17 @@ public static partial class ArchitectureValidator
             if (IsGenerated(source))
                 continue;
             string relative = Relative(repositoryRoot, path);
+            if (!sourceTrees.TryGetValue(path, out SyntaxTree? syntax))
+            {
+                syntax = CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.CSharp14), path: relative);
+                sourceTrees.Add(path, syntax);
+            }
             if (!semanticOnly)
-                CSharpStyleValidator.Validate(relative, source, failures);
+                CSharpStyleValidator.Validate(relative, syntax, failures);
             if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal)
                 || relative.Contains("/tests/", StringComparison.Ordinal))
                 continue;
-            PublicApiDocumentationValidator.Validate(relative, source, failures,
+            PublicApiDocumentationValidator.Validate(relative, syntax, failures,
                 !sourceOnly && source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
                 documentationModels, validateInheritedContract: !sourceOnly);
             if (!sourceOnly && RuntimeContentBoundaryValidator.ShouldAudit(relative))
@@ -317,7 +325,7 @@ public static partial class ArchitectureValidator
             }
             if (semanticOnly)
                 continue;
-            GenerationCleanupValidator.Validate(relative, source, failures);
+            GenerationCleanupValidator.Validate(relative, syntax, failures);
             AddSourceFailure(source.Contains("InternalsVisibleTo", StringComparison.Ordinal), relative,
                 "friend assemblies are forbidden", failures);
             AddSourceFailure(source.Contains("[Obsolete", StringComparison.Ordinal), relative,

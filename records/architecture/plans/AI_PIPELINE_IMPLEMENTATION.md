@@ -15,7 +15,8 @@ Status: in progress; this record does not certify completion. [Issue #75](https:
 
 - `fdaaf5b4`: preserved rule mappings, canonical domain rules and four bounded repository skills.
 - `5b14a2df`: unified validation, actual SDK graph variants, test separation, native preparation reuse, cache transport/inventory, hosted CI and draft delivery. Both commits are on the remote branch.
-- Current uncommitted follow-up: SDK/runtime/shell/external-import content identity; restored package and output identity; forced compilation when content changes despite timestamps; stricter TRX reconciliation; test-only API exclusions; equivalent graph payload deduplication and stage timings; retirement checkpoint cleanup; cancellation artifact retention. Individual evidence below does not certify all of this follow-up.
+- `b8ce42dc`: SDK/runtime/shell/external-import content identity; restored package and output identity; forced compilation when content changes despite timestamps; stricter TRX reconciliation; test-only API exclusions; equivalent graph payload deduplication and stage timings; retirement checkpoint cleanup; cancellation artifact retention. Pushed; corrected hosted run [41936778114](https://github.com/Wolfiora/InnoEngine/actions/runs/41936778114) is in progress on both platforms.
+- Current follow-up shares syntax trees within one architecture invocation. No persistent source cache or rule exclusion is introduced.
 - Real hosted run [41923463340](https://github.com/Wolfiora/InnoEngine/actions/runs/41923463340) validated merge candidate `d7477209` for `5b14a2df`. Both platforms failed at the migrated Presentation test's missing `Inno.Editor.Interactions` import and detected managed/native output overlap. The aggregate correctly failed; its oversized summary exposed a separate reporting defect. Follow-up fixes add the import, isolate context output roots and bound the summary while retaining original reports. These fixes still need the next real matrix.
 - Default-branch ruleset `13788396` now actively requires `Engine validation` from the verified GitHub Actions integration `15368`, with strict base freshness. The original PR/review/discussion-resolution/non-fast-forward rules and empty bypass list were preserved and read back. No merge queue was enabled. Workflow adoption still requires the user's merge decision.
 
@@ -34,6 +35,7 @@ Removed the duplicate repository NuGet submission workflow after comparing real 
 Raw logs, TRX, plans and timings remain under `artifacts/validation/`. Results are tied to their recorded inputs, not automatically valid for subsequent edits.
 
 - Architecture regression: 167 passed with `BuildGraph!=Complete`; later two documentation-structure cases passed. This does not certify the full repository/product graph.
+- Shared syntax-tree follow-up: all 168 current architecture regressions passed with `BuildGraph!=Complete`; CLI compilation passed with zero warnings/errors (`shared-syntax*`). Five fixed-source runs before and after passed the same whole-repository source checks.
 - Input domain 17, UI domain 1 and Editor domain 58 passed with zero native preparations. SDL/RmlUi migration later passed all 22 real native tests (`native-migration-*-2`); the first cold build failed only at a missing `using Inno.UI` after native preparation and is retained separately.
 - Validation public-entry regressions: 19 passed together (`validation-content.log`). New external source and import identity cases passed after a clean tool compilation (`external-instance-rebuilt.log`). The first external-source failure used a stale tool binary during overlapping editing/compilation; its log remains. Two actual SDK context-isolation cases subsequently passed (`context-isolation.log`).
 - Toolchains selected regressions passed 24 cases for preparation/transfer/inventory/SDK capture; four retirement inventory cases subsequently passed, including an active reader retaining both payload and checkpoint. Two graph compaction cases passed (`graph-compaction.log`), retaining conditional inputs and every originating property set.
@@ -59,16 +61,18 @@ Same machine/SDK samples; cold and warm are separate. These historical workloads
 | SDL/RmlUi warm build and tests | 297.6490421 | One sample; build 288.38; second consumer reused preparation, zero native compiler/binding batches |
 | Content identity positive / negative / restored | 149.8709854 / 125.9299483 / 124.4569868 | Functional experiments, not warm medians; negative intentionally fails |
 | Current Input plan, build and 18 executed tests | 59.7370494, 61.6675461, 61.0067472, 61.4504776, 60.9168456 | 61.0067472; no evidence reuse and zero native preparation; `instances-warm-samples.json` |
+| Source guard before shared parsing | 15.2999308, 12.8455759, 12.5374201, 13.5397644, 12.9118925 | 12.9118925; tool `b8ce42dc`, fixed source snapshot `8674f042` |
+| Same source guard after shared parsing | 11.7006008, 11.1743260, 11.5339936, 11.0259891, 12.0639953 | 11.5339936; same source/SDK/machine/command, 10.67% lower median; `source-shared-syntax-samples.json` |
 
 Native freshness hashing still contributes substantial cost. Repeated equivalent graph payloads reached 37.6 MB for a managed plan and 66.2 MB for full planning. Equivalent payload compaction reduced the managed plan to 30.8 MB; preserving actual instance edges adds about 3.1 MB. Removing an unnecessary outer evaluation lock reduced one graph phase from 45.88 to 21.48 seconds (including a cold evaluator); the first warm phase was 17.60 seconds. The current five-sample bounded managed workload meets two minutes; the 30-second ordinary feedback target and matched before baselines remain outstanding. Performance targets cannot be claimed by omitting checks.
 
 ## Remaining acceptance and external dependencies
 
-1. Finish current identity/graph/retention integration, verify complete owner metadata and public XML/Wiki, then commit the independently validated follow-up.
+1. Finish syntax-sharing source/document closure, commit the independently validated follow-up and verify complete owner metadata against the final matrix.
 2. Measure current plan stages and five matched warm samples; finish before comparison and optimize measured bottlenecks until targets are met or an explicit measured blocker remains.
 3. Complete actual Windows/macOS CI, full product/Release/reload/Support Pack/AOT and cancellation retention evidence; preserve first failed runs.
 4. Finish read-only downstream consumption and cache interruption/large inventory acceptance. Do not modify other sessions' neighboring worktrees.
 5. Required branch enforcement is active and verified; obtain a successful actual `Engine validation` run before considering the matrix complete.
 6. A valid default-branch release rehearsal needs adopted workflow plus a qualified default-branch run. Source/negative contracts are not that rehearsal. Do not merge this PR or publish to manufacture proof.
 
-Next: finish source/document closure for the follow-up, commit and run the corrected real hosted matrix; measure retained-evidence/docs feedback and matched before baselines while it executes. Keep #75 open until all applicable migration and evidence requirements are satisfied.
+Next: finish syntax-sharing source/document closure while the corrected real hosted matrix executes; measure retained-evidence/docs feedback and remaining matched before baselines. Keep #75 open until all applicable migration and evidence requirements are satisfied.

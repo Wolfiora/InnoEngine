@@ -13,14 +13,14 @@ internal static class PublicApiDocumentationValidator
 {
     internal static void Validate(
         string relativePath,
-        string source,
+        SyntaxTree syntax,
         ICollection<string> failures,
         SemanticModel? model,
         DocumentationSourceModels models,
         bool validateInheritedContract = true
     ) {
         SyntaxNode root = model?.SyntaxTree.GetRoot()
-            ?? CSharpSyntaxTree.ParseText(source, path: relativePath).GetRoot();
+            ?? syntax.GetRoot();
         foreach (MemberDeclarationSyntax member in root.DescendantNodes().OfType<MemberDeclarationSyntax>())
         {
             if (!RequiresDocumentation(member))
