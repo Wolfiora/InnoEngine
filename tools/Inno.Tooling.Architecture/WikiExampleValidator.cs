@@ -32,7 +32,7 @@ internal static class WikiExampleValidator
         {
             WikiProjectPage? owner = projects.FirstOrDefault(project => Path.GetFileNameWithoutExtension(project.project) == pair.Value);
             if (owner is not null)
-                owners[Path.Combine(root, pair.Key)] = owner;
+                owners[Path.GetFullPath(Path.Combine(root, pair.Key))] = owner;
         }
         foreach (string pagePath in RepositorySourceInventory.Files(Path.Combine(root, "docs"), "*.md"))
         {

@@ -497,6 +497,30 @@ public sealed class ValidationPlanningTests
     }
 
     [Fact]
+    public async Task NativeDocumentationFragmentsUseTheirOwnerExecutionContext()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("Product.props", "<Project />");
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
+        const string C_OWNER = "backends/Example/native/Native/Native.csproj";
+        repository.Write(C_OWNER, ValidationRepository.Project("<PropertyGroup><BindGenGeneratedBindings>true</BindGenGeneratedBindings></PropertyGroup>"));
+        repository.Write("docs/Native.md", "<!-- api-include: Native/arbitrary-contract.md -->\n");
+        repository.Write("docs/Native/arbitrary-contract.md", "# Native contract\n");
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare a native project with split documentation");
+        repository.Write("docs/Native/arbitrary-contract.md", "# Native contract\nUpdated usage constraints.\n");
+        using JsonDocument plan = await repository.PlanAsync();
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement wiki = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "wiki"));
+        Assert.Equal("native", wiki.GetProperty("context").GetString());
+        Assert.Contains("docs/Native/arbitrary-contract.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("docs/Native.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("build:" + C_OWNER, wiki.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
+    }
+
+    [Fact]
     public async Task ExecutionFailureRetainsAnExactPlanReceiptAndCannotCertifySuccess()
     {
         using var repository = new ValidationRepository();

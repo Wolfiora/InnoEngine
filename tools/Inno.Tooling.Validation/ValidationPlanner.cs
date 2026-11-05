@@ -272,8 +272,8 @@ internal static class ValidationPlanner
                 apiOwners.Length == 0 ? "Only test implementations changed; their unchanged production dependencies have no affected API owner." : null,
                 group.Key, "contract", apiOwners));
         }
-        foreach (IGrouping<string, string> pages in selectedWikiPages.GroupBy(page => nativeOwners.Any(owner =>
-            Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page))
+        foreach (IGrouping<string, string> pages in selectedWikiPages.GroupBy(page =>
+            documentOwners.TryGetValue(page, out string? owner) && nativeOwners.Contains(owner)
                 || ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)) ? "native" : "managed"))
         {
             ValidationCheck[] requiredBuilds = builds.Where(check => check.context == pages.Key

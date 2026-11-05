@@ -209,7 +209,7 @@ public static partial class ArchitectureValidator
             var selectedOwners = selectedPages.Select(page => Path.GetRelativePath(repositoryRoot, page).Replace('\\', '/'))
                 .Where(ownership.ContainsKey).Select(page => ownership[page]).ToHashSet(StringComparer.Ordinal);
             foreach (var pair in ownership.Where(pair => selectedOwners.Contains(pair.Value)))
-                selectedPages.Add(Path.Combine(repositoryRoot, pair.Key));
+                selectedPages.Add(Path.GetFullPath(Path.Combine(repositoryRoot, pair.Key)));
         }
         IReadOnlyList<WikiProjectPage> selectedProjectPages = selectedPages is null ? pages
             : pages.Where(page => selectedPages.Contains(Path.GetFullPath(page.page))).ToArray();

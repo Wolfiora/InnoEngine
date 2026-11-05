@@ -218,6 +218,59 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.Contains("within the current Wiki", Assert.Throws<InvalidDataException>(() => Run()).Message, StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("Inno.Core.Probe/api.md")]
+    [InlineData("fragments/contract.md")]
+    public async Task SelectedFragmentsRetainTheirProjectSignaturesAndExampleCompilation(string fragment)
+    {
+        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        var start = new ProcessStartInfo(host)
+        {
+            UseShellExecute = false, CreateNoWindow = true,
+            RedirectStandardOutput = true, RedirectStandardError = true
+        };
+        foreach (string argument in new[] { "build", Path.Combine(m_root, "src/foundation/core/Inno.Core.Probe/Inno.Core.Probe.csproj"),
+            "--disable-build-servers", "--nologo", "-m:1", "-nr:false" })
+            start.ArgumentList.Add(argument);
+        using Process process = Process.Start(start)!;
+        Task<string> standardOutput = process.StandardOutput.ReadToEndAsync();
+        Task<string> standardError = process.StandardError.ReadToEndAsync();
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        try
+        {
+            await process.WaitForExitAsync(cancellation.Token);
+            Assert.True(process.ExitCode == 0, await standardOutput + await standardError);
+        }
+        finally
+        {
+            if (!process.HasExited)
+                process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync();
+            await Task.WhenAll(standardOutput, standardError);
+        }
+        string inventory = Path.Combine(m_root, "api.json");
+        _ = Run(inventory, "--dotnet", host);
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(inventory));
+        string markers = string.Join('\n', document.RootElement.EnumerateArray().Select(entry =>
+            $"<!-- api: {entry.GetProperty("id").GetString()} {entry.GetProperty("signatureHash").GetString()} -->"));
+        string page = "docs/core/" + fragment;
+        Write("docs/core/Inno.Core.Probe.md", "<!-- api-include: " + fragment + " -->\n");
+        Write(page, markers + "\n```csharp\nusing Inno.Core.Probe;\nstring? value = Probe.Read();\n```\n");
+        string examples = Path.Combine(m_root, "examples.json");
+        string output = Run(inventory, "--dotnet", host, "--wiki-page", page, "--wiki-examples", examples);
+        Assert.DoesNotContain("example 1 at line", output, StringComparison.Ordinal);
+        using JsonDocument signatures = JsonDocument.Parse(File.ReadAllText(inventory));
+        Assert.Equal(document.RootElement.GetArrayLength(), signatures.RootElement.GetArrayLength());
+        using JsonDocument results = JsonDocument.Parse(File.ReadAllText(examples));
+        JsonElement example = Assert.Single(results.RootElement.EnumerateArray());
+        Assert.Equal(page, example.GetProperty("page").GetString());
+        Assert.Equal("host-sdk", example.GetProperty("referenceMode").GetString());
+        Assert.Empty(example.GetProperty("errors").EnumerateArray());
+        Write(page, markers + "\n```csharp\nusing Inno.Core.Probe;\nProbe.Absent();\n```\n");
+        Assert.Contains("example 1 at line", Run(null, "--dotnet", host, "--wiki-page", page), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void TypeModifiersAndRefReturnsParticipateInSignatureIdentity()
     {
