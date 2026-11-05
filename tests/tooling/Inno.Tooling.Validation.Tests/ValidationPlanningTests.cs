@@ -15,6 +15,79 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task TrackedContentSelectsConsumersDespitePreservedTimestampAndCachedIndex()
+    {
+        using var repository = new ValidationRepository();
+        const string C_PATH = "src/Example/Unicode 名称.cs";
+        const string C_ORIGINAL = "namespace Example; public class Changed { public const int Value = 1; }\n";
+        repository.Write(C_PATH, C_ORIGINAL);
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Track content probe");
+        repository.Git("update-index", "--assume-unchanged", C_PATH);
+        string path = repository.PathOf(C_PATH);
+        DateTime timestamp = File.GetLastWriteTimeUtc(path);
+        long length = new FileInfo(path).Length;
+        repository.Write(C_PATH, C_ORIGINAL.Replace("= 1", "= 2", StringComparison.Ordinal));
+        File.SetLastWriteTimeUtc(path, timestamp);
+        Assert.Equal(length, new FileInfo(path).Length);
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.Contains(C_PATH, Changes(plan));
+        Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(plan));
+    }
+
+    [Fact]
+    public async Task StagedChangesRemainSelectedWhenWorktreeMatchesHead()
+    {
+        using var repository = new ValidationRepository();
+        const string C_PATH = "src/Example/Staged.cs";
+        const string C_ORIGINAL = "namespace Example; public class Staged { public const int Value = 1; }\n";
+        repository.Write(C_PATH, C_ORIGINAL);
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Track staged probe");
+        repository.Write(C_PATH, C_ORIGINAL.Replace("= 1", "= 2", StringComparison.Ordinal));
+        repository.Git("add", C_PATH);
+        repository.Write(C_PATH, C_ORIGINAL);
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.Contains(C_PATH, Changes(plan));
+        Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(plan));
+    }
+
+    [Fact]
+    public async Task GitLineEndingConversionDoesNotSelectUnchangedOwners()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write(".gitattributes", "*.cs text eol=crlf\n");
+        repository.Write("src/Example/Unchanged.cs", "namespace Example;\r\npublic class Unchanged { }\r\n");
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare checkout line endings");
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.Empty(Changes(plan));
+        Assert.Empty(Owners(plan));
+    }
+
+    [Fact]
+    public async Task SdkSelectedReferencePackContentInvalidatesEvidenceDespitePreservedTimestamp()
+    {
+        using var repository = new ValidationRepository();
+        using var external = new ValidationRepository();
+        string packs = external.PathOf("packs");
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project(
+            "<PropertyGroup><NetCoreTargetingPackRoot>" + System.Security.SecurityElement.Escape(packs)
+            + "</NetCoreTargetingPackRoot></PropertyGroup>"));
+        using JsonDocument initial = await repository.PlanAsync();
+        JsonElement owner = initial.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
+            .Single(project => project.GetProperty("Path").GetString() == repository.PathOf("src/Example/Example.csproj"));
+        string path = Path.Combine(Assert.Single(owner.GetProperty("FrameworkPacks").EnumerateArray()).GetString()!, "reference.dll");
+        external.Write(path, "first");
+        using JsonDocument plan = await repository.PlanAsync();
+        DateTime timestamp = File.GetLastWriteTimeUtc(path);
+        external.Write(path, "other");
+        File.SetLastWriteTimeUtc(path, timestamp);
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf("artifacts/unread-evidence.json")));
+        Assert.Contains("another SDK or execution environment", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task EmptyCiContractDiscoveryCannotCertifySuccess()
     {
         using var repository = new ValidationRepository();

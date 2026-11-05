@@ -12,6 +12,47 @@ namespace Inno.Build.Toolchains.Tests;
 
 public sealed class ManagedProjectGraphCaptureTests
 {
+    [Theory]
+    [InlineData("net10.0", false)]
+    [InlineData("net10.0-browser", false)]
+    [InlineData("net10.0-browser", true)]
+    public async Task ReferencePacksFollowSdkFrameworkDeclarationsAndExplicitVersionOverrides(
+        string framework,
+        bool explicitVersion
+    ) {
+        string parent = Path.Combine(Path.GetTempPath(), "InnoGraphTests");
+        string root = Path.Combine(parent, Guid.NewGuid().ToString("N"));
+        string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
+            ?? Path.Combine(Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? throw new InvalidOperationException("An explicit test SDK is required."),
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        try
+        {
+            Directory.CreateDirectory(root);
+            File.WriteAllText(Path.Combine(root, "InnoEngine.sln"), "Microsoft Visual Studio Solution File, Format Version 12.00\n");
+            string project = Path.Combine(root, "Example.csproj");
+            File.WriteAllText(project, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>" + framework + "</TargetFramework></PropertyGroup>"
+                + (explicitVersion ? "<ItemGroup><FrameworkReference Update=\"Microsoft.NETCore.App\" TargetingPackVersion=\"99.0.1\" /></ItemGroup>" : string.Empty)
+                + "</Project>");
+            string captured = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet, [project],
+                new Dictionary<string, string> { ["Configuration"] = "Debug", ["DesignTimeBuild"] = "true", ["BuildProjectReferences"] = "false" });
+            using JsonDocument graph = JsonDocument.Parse(captured);
+            JsonElement owner = Assert.Single(graph.RootElement.EnumerateArray());
+            string pack = Assert.Single(owner.GetProperty("FrameworkPacks").EnumerateArray()).GetString()!;
+            Assert.Equal("Microsoft.NETCore.App.Ref", Path.GetFileName(Path.GetDirectoryName(pack)));
+            if (explicitVersion)
+                Assert.Equal("99.0.1", Path.GetFileName(pack));
+            else
+                Assert.True(Directory.Exists(pack));
+        }
+        finally
+        {
+            if (!Path.GetFullPath(root).StartsWith(Path.GetFullPath(parent) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("The test output escaped its declared owner.");
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task EquivalentVariantInputsSharePayloadWhileConditionalInputsAndPropertyOriginsRemainVisible()
     {

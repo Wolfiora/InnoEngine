@@ -232,9 +232,14 @@ internal static class ValidationRunner
                                 try
                                 {
                                     var compilationInputs = new ValidationBuildInputs(plan, contextId, outputDigests, cancellation);
-                                    string[] compilation = compilationInputs.RequiresCompilation(dependencyInputs) ? ["--no-incremental"] : [];
+                                    string[] properties = [..plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
+                                        "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N")];
+                                    // Rebuild interleaves Clean and Build across root instances. Drain the one owned clean phase before any compiler starts.
+                                    if (compilationInputs.RequiresCompilation(dependencyInputs))
+                                        await ValidationProcess.RunAsync(plan.dotnet, ["clean", solution, ..properties, "--disable-build-servers", "-m:1", "-nr:false"],
+                                            plan.root, Path.Combine(directory, contextId + "-clean.log"), cancellation).ConfigureAwait(false);
                                     await ValidationProcess.RunAsync(plan.dotnet,
-                                        ["build", solution, ..compilation, ..plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
+                                        ["build", solution, ..properties,
                                             "--disable-build-servers", "-m:" + (contextId == "managed" ? Math.Min(Environment.ProcessorCount, 4) : 1),
                                             "-nr:false"], plan.root, Path.Combine(directory, contextId + "-build.log"), cancellation).ConfigureAwait(false);
                                     built.Add(contextId);

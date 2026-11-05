@@ -101,7 +101,7 @@ public static class ManagedProjectGraphCapture
         await File.WriteAllTextAsync(compilerTargets, compiler.ToString(), cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(entry, document.ToString(), cancellationToken).ConfigureAwait(false);
         await ToolchainEnvironment.RunAsync(sdk.hostPath,
-            [sdk.cliPath, "msbuild", entry, "-t:Capture", "-nologo", "-v:quiet", "-m:1", "-nodeReuse:false"],
+            [sdk.cliPath, "msbuild", entry, "-t:Capture", "-nologo", "-v:minimal", "-m:1", "-nodeReuse:false"],
             context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
         return await File.ReadAllTextAsync(output, cancellationToken).ConfigureAwait(false);
     }

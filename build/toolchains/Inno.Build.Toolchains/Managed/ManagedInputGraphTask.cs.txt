@@ -259,7 +259,7 @@ public sealed class ManagedInputGraphTask : Task
             "ImplicitUsings", "TargetPath", "IsTestProject", "IsRoslynComponent", "TargetFramework", "RuntimeIdentifier",
             "InnoTestNativeProduct", "InnoTestNativeTarget", "InnoValidationLayer", "InnoValidationEnvironment",
             "InnoValidationIsolation", "InnoValidationReusable", "NETCoreSdkVersion", "NETCoreSdkRuntimeIdentifier", "ProjectAssetsFile",
-            "InnoValidationBackendPattern",
+            "InnoValidationBackendPattern", "NetCoreTargetingPackRoot",
             "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks", "BindGenGeneratedBindings",
             "InnoDevelopmentTarget", "InnoDevelopmentEditorBuildProperties", "InnoDevelopmentEditorProject"];
         string[] itemNames = ["ProjectReference", "Compile", "Using", "EmbeddedResource", "Content", "None", "Analyzer",
@@ -316,12 +316,20 @@ public sealed class ManagedInputGraphTask : Task
                     properties[item.ItemSpec] = item.GetMetadata("Value");
             }
             string[] imports = project.Imports.Select(import => import.ImportedProject.FullPath).Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray();
-            string canonical = SnapshotIdentity(properties, items, imports);
+            string[] packs = FrameworkPacks(project.GetPropertyValue("TargetFramework"), project.GetPropertyValue("NetCoreTargetingPackRoot"),
+                project.GetItems("FrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetingPackVersion"))),
+                project.GetItems("KnownFrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetFramework"),
+                    item.GetMetadataValue("TargetingPackName"), item.GetMetadataValue("TargetingPackVersion"))));
+            string canonical = SnapshotIdentity(properties, items, imports, packs);
             var effective = variants[project.FullPath].OrderBy(instance => string.Join(";", instance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
                     .Select(pair => pair.Key + "=" + pair.Value)), StringComparer.Ordinal).Select(instance => new
                 {
                     Path = instance.FullPath,
                     GlobalProperties = instance.GlobalProperties,
+                    FrameworkPacks = FrameworkPacks(instance.GetPropertyValue("TargetFramework"), instance.GetPropertyValue("NetCoreTargetingPackRoot"),
+                        instance.GetItems("FrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetingPackVersion"))),
+                        instance.GetItems("KnownFrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetFramework"),
+                            item.GetMetadataValue("TargetingPackName"), item.GetMetadataValue("TargetingPackVersion")))),
                     Properties = propertyNames.ToDictionary(name => name, instance.GetPropertyValue, StringComparer.Ordinal),
                     Items = itemNames.ToDictionary(name => name, name => instance.GetItems(name).Select(item =>
                     {
@@ -332,7 +340,7 @@ public sealed class ManagedInputGraphTask : Task
                         return metadata;
                     }).ToArray(), StringComparer.Ordinal),
                     Imports = instance.ImportPaths.Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray()
-                }).GroupBy(value => SnapshotIdentity(value.Properties, value.Items, value.Imports), StringComparer.Ordinal).ToArray();
+                }).GroupBy(value => SnapshotIdentity(value.Properties, value.Items, value.Imports, value.FrameworkPacks), StringComparer.Ordinal).ToArray();
             snapshots.Add(new
             {
                 Path = project.FullPath,
@@ -347,6 +355,7 @@ public sealed class ManagedInputGraphTask : Task
                 }).OrderBy(instance => instance.Identity, StringComparer.Ordinal).ToArray(),
                 EquivalentGlobalProperties = effective.Where(group => group.Key == canonical).SelectMany(group => group.Select(value => value.GlobalProperties)).ToArray(),
                 Properties = properties,
+                FrameworkPacks = packs,
                 Items = items,
                 Imports = imports,
                 // Keep every effective input and every originating property set, without repeating identical item arrays.
@@ -356,6 +365,7 @@ public sealed class ManagedInputGraphTask : Task
                     group.First().GlobalProperties,
                     EquivalentGlobalProperties = group.Select(value => value.GlobalProperties).ToArray(),
                     group.First().Properties,
+                    group.First().FrameworkPacks,
                     group.First().Items,
                     group.First().Imports
                 }).ToArray()
@@ -375,8 +385,33 @@ public sealed class ManagedInputGraphTask : Task
         static string SnapshotIdentity(
             object properties,
             object items,
-            string[] imports
-        ) => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { Properties = properties, Items = items, Imports = imports })));
+            string[] imports,
+            string[] packs
+        ) => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { Properties = properties, Items = items, Imports = imports, FrameworkPacks = packs })));
+
+        static string[] FrameworkPacks(
+            string framework,
+            string root,
+            IEnumerable<(string name, string version)> references,
+            IEnumerable<(string name, string framework, string pack, string version)> declarations
+        ) {
+            NuGetFramework target = NuGetFramework.ParseFolder(framework);
+            var known = declarations.ToArray();
+            var paths = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var reference in references)
+            {
+                var candidates = known.Where(candidate => candidate.name == reference.name).Where(candidate =>
+                {
+                    NuGetFramework parsed = NuGetFramework.ParseFolder(candidate.framework);
+                    return parsed.Framework == target.Framework && parsed.Version == target.Version;
+                }).ToArray();
+                if (candidates.Length != 1)
+                    throw new InvalidOperationException("The SDK did not uniquely declare a framework reference pack: " + reference.name + " for " + framework);
+                var selected = candidates[0];
+                paths.Add(Path.GetFullPath(Path.Combine(root, selected.pack, string.IsNullOrWhiteSpace(reference.version) ? selected.version : reference.version)));
+            }
+            return paths.OrderBy(path => path, StringComparer.Ordinal).ToArray();
+        }
     }
 
 }

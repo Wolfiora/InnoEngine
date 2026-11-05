@@ -2,6 +2,10 @@
 
 `ValidationSolutionTests` 使用真实 SDK 重现 IDE 配置未勾选构建时 `.slnf` 成功但不产出程序集的情况，再编译统一入口保留的 `.slnx`，验证所有选中 owner 参与构建且 SourceDebug 不被 IDE 重映射为 Debug。测试同时确认政策失败不会提前执行该构建。
 
+环境回归使用 SDK 实际选择的外部引用 pack、imports 和链接源码，修改相同长度内容并恢复时间戳，验证旧计划仍会失效。引用 pack 的名称和版本来自 SDK 声明，不维护另一份版本表。
+
+范围选择回归覆盖已跟踪源码等长修改并恢复时间戳、Git 索引缓存未刷新、暂存区修改但工作区恢复 HEAD，以及 CRLF checkout 转换与 Unicode 文件名。内容比较必须使用 Git 的实际 clean filters，不能依靠 `git diff` 的时间戳缓存，也不能把正常换行转换误认为源码变化。
+
 [Tooling 索引](README.md) · [验证入口](Inno.Tooling.Validation.md) · [Wiki 首页](../README.md)
 
 通过公开 `ValidationCommand.ExecuteAsync` 驱动真实临时 Git 仓库和选定 SDK，不使用 IVT、私有反射或生产后门。fixture 拥有临时源码、输出和 Git 元数据，排空子进程后清理明确的临时目录；测试程序集不进入产品。

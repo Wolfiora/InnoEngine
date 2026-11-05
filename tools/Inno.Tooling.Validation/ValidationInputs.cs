@@ -50,6 +50,52 @@ internal static class ValidationInputs
         return inputs;
     }
 
+    internal static async Task<string[]> FindContentChangesAsync(
+        string root,
+        string commit,
+        IReadOnlyDictionary<string, string> inputs,
+        CancellationToken cancellation
+    ) {
+        string tree = await ValidationProcess.RunAsync("git", ["ls-tree", "-r", "-z", commit], root, null, cancellation).ConfigureAwait(false);
+        var changes = new HashSet<string>(StringComparer.Ordinal);
+        var blobs = new List<KeyValuePair<string, string>>();
+        foreach (string entry in tree.Split('\0', StringSplitOptions.RemoveEmptyEntries))
+        {
+            int separator = entry.IndexOf('\t');
+            if (separator < 0)
+                throw new InvalidDataException("The committed input tree contains an invalid entry.");
+            string[] metadata = entry[..separator].Split(' ');
+            if (metadata.Length != 3)
+                throw new InvalidDataException("The committed input tree contains invalid object metadata.");
+            string path = entry[(separator + 1)..];
+            if (metadata[1] == "commit")
+            {
+                string current = inputs.GetValueOrDefault(path, "missing");
+                if (current != metadata[2] && current != "unavailable:" + metadata[2])
+                    changes.Add(path);
+            }
+            else if (metadata[1] != "blob")
+                throw new InvalidDataException($"Unsupported committed input type: {metadata[1]}");
+            else if (!File.Exists(Resolve(root, path)))
+                changes.Add(path);
+            else
+                blobs.Add(new(path, metadata[2]));
+        }
+        if (blobs.Count != 0)
+        {
+            // Read actual bytes through Git's clean filters; diff alone can reuse stale size/time index metadata.
+            string content = await ValidationProcess.RunAsync("git", ["hash-object", "--stdin-paths"], root, null, cancellation,
+                string.Join('\n', blobs.Select(static pair => QuoteGitPath(pair.Key))) + "\n").ConfigureAwait(false);
+            string[] identities = content.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+            if (identities.Length != blobs.Count)
+                throw new InvalidDataException("Git did not return one content identity for every committed input.");
+            for (int index = 0; index < blobs.Count; index++)
+                if (identities[index] != blobs[index].Value)
+                    changes.Add(blobs[index].Key);
+        }
+        return changes.Order(StringComparer.Ordinal).ToArray();
+    }
+
     internal static string Identity(IEnumerable<KeyValuePair<string, string>> inputs)
         => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join('\n',
             inputs.OrderBy(static pair => pair.Key, StringComparer.Ordinal).Select(static pair => pair.Key + "\0" + pair.Value)))));
@@ -77,5 +123,18 @@ internal static class ValidationInputs
                 OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
             throw new InvalidDataException($"Validation input escapes the repository: {relative}");
         return PathBoundary.RequireUnlinkedPath(Path.GetFullPath(root), path);
+    }
+
+    private static string QuoteGitPath(string path)
+    {
+        var quoted = new StringBuilder("\"");
+        foreach (char character in path)
+            if (character is '\\' or '"')
+                quoted.Append('\\').Append(character);
+            else if (character < ' ' || character == '\u007f')
+                quoted.Append('\\').Append(Convert.ToString(character, 8).PadLeft(3, '0'));
+            else
+                quoted.Append(character);
+        return quoted.Append('"').ToString();
     }
 }

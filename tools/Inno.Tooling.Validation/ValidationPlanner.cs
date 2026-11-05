@@ -31,6 +31,8 @@ internal static class ValidationPlanner
         var changes = new HashSet<string>((await GitAsync("diff", "--name-only", "-z", "--no-renames", mergeBase, "HEAD").ConfigureAwait(false))
             .Split('\0', StringSplitOptions.RemoveEmptyEntries), StringComparer.Ordinal);
         changes.UnionWith((await GitAsync("diff", "--name-only", "-z", "--no-renames", "HEAD").ConfigureAwait(false)).Split('\0', StringSplitOptions.RemoveEmptyEntries));
+        changes.UnionWith((await GitAsync("diff", "--cached", "--name-only", "-z", "--no-renames", "HEAD").ConfigureAwait(false)).Split('\0', StringSplitOptions.RemoveEmptyEntries));
+        changes.UnionWith(await ValidationInputs.FindContentChangesAsync(root, commit, inputs, cancellation).ConfigureAwait(false));
         changes.UnionWith((await GitAsync("ls-files", "--others", "--exclude-standard", "-z").ConfigureAwait(false)).Split('\0', StringSplitOptions.RemoveEmptyEntries));
         string[] paths = inputs.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal)
             && path.Split('/')[0] is "src" or "entry" or "build" or "backends" or "platforms" or "tools" or "tests")
@@ -44,8 +46,12 @@ internal static class ValidationPlanner
             ["InnoProductRestore"] = "false",
             ["ArtifactsPath"] = artifacts
         };
-        string captured = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
-            paths.Select(path => Path.Combine(root, path)).ToArray(), properties, cancellation).ConfigureAwait(false);
+        Task<ValidationEnvironment.ToolSnapshot> toolCapture = ValidationEnvironment.CaptureToolsAsync(root, dotnet, cancellation);
+        Task<string> graphCapture = ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
+            paths.Select(path => Path.Combine(root, path)).ToArray(), properties, cancellation);
+        // Both read-only owners finish before a plan is emitted, including when either fails or is canceled.
+        await Task.WhenAll(toolCapture, graphCapture).ConfigureAwait(false);
+        string captured = await graphCapture.ConfigureAwait(false);
         using JsonDocument graph = JsonDocument.Parse(captured);
         ValidationProject[] projects = graph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot)).ToArray();
         var byPath = projects.ToDictionary(static project => project.path, StringComparer.Ordinal);
@@ -322,8 +328,9 @@ internal static class ValidationPlanner
             }
         }
         RecordStage("selection-and-release-graph");
-        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnet, root, cancellation).ConfigureAwait(false);
-        string environmentIdentity = await ValidationEnvironment.CaptureAsync(root, sdk.hostPath, cancellation, contexts.Values).ConfigureAwait(false);
+        ValidationEnvironment.ToolSnapshot toolSnapshot = await toolCapture.ConfigureAwait(false);
+        DotNetSdkDescriptor sdk = toolSnapshot.sdk;
+        string environmentIdentity = await ValidationEnvironment.CaptureAsync(root, sdk.hostPath, cancellation, contexts.Values, toolSnapshot).ConfigureAwait(false);
         RecordStage("execution-environment");
         var phases = contexts.Keys.Select(static (
             string context,

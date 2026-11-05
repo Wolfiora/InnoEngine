@@ -1,5 +1,7 @@
 # Inno.Build.Toolchains.Tests
 
+SDK 图回归覆盖普通和 browser 限定框架的实际引用 pack 选择，以及显式 `TargetingPackVersion` 覆盖；不根据宿主平台猜测框架版本。
+
 [测试索引](README.md) · [Wiki 首页](../README.md) · [中立工具链](../build/Inno.Build.Toolchains.md)
 
 ## 职责与边界

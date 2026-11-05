@@ -16,7 +16,8 @@ internal static class ValidationProcess
         IEnumerable<string> arguments,
         string directory,
         string? log,
-        CancellationToken cancellation
+        CancellationToken cancellation,
+        string? input = null
     ) {
         var start = new ProcessStartInfo(executable)
         {
@@ -24,8 +25,13 @@ internal static class ValidationProcess
             UseShellExecute = false,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            RedirectStandardInput = input is not null,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8
         };
+        if (input is not null)
+            start.StandardInputEncoding = new UTF8Encoding(false);
         foreach (string argument in arguments)
             start.ArgumentList.Add(argument);
         if (Path.GetFileNameWithoutExtension(executable).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
@@ -41,9 +47,14 @@ internal static class ValidationProcess
         Task<string> errors = DrainAsync(process.StandardError);
         try
         {
+            if (input is not null)
+            {
+                await process.StandardInput.WriteAsync(input.AsMemory(), cancellation).ConfigureAwait(false);
+                process.StandardInput.Close();
+            }
             await process.WaitForExitAsync(cancellation).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch
         {
             if (!process.HasExited)
                 process.Kill(entireProcessTree: true);
