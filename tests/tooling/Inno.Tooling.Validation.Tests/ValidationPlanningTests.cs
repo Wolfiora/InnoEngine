@@ -534,6 +534,32 @@ public sealed class ValidationPlanningTests
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf("artifacts/run/results.json")));
     }
 
+    [Theory]
+    [InlineData("```")]
+    [InlineData("~~~")]
+    public async Task ScriptFragmentsKeepTheirWholeProjectDocumentationInTheProjectionContext(string fence)
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("Product.props", "<Project />");
+        repository.Write("entry/InnoEngine.Build/InnoEngine.Build.csproj", ValidationRepository.Project());
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoProductId>editor</InnoProductId><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare the script projection prerequisites");
+        repository.Write("docs/Example.md", "# Example\n<!-- api-include: Example/api.md -->\n");
+        repository.Write("docs/Example/api.md", "# API\n" + fence + "csharp\nusing InnoEngine;\n" + fence + "\n");
+        using JsonDocument plan = await repository.PlanAsync();
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement wiki = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "wiki"));
+        Assert.Equal("native", wiki.GetProperty("context").GetString());
+        Assert.Contains("docs/Example.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("docs/Example/api.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
+        Assert.Equal("native", checks.Single(check => check.GetProperty("id").GetString() == "build:src/Example/Example.csproj")
+            .GetProperty("context").GetString());
+        Assert.Contains("build:entry/InnoEngine.Build/InnoEngine.Build.csproj", wiki.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
+    }
+
     [Fact]
     public async Task ScriptWikiPreparesItsDeclaredProductEvenWithoutAProductionSourceChange()
     {

@@ -122,7 +122,10 @@ internal static class ValidationPlanner
         foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full
             || documentOwners.TryGetValue(page, out string? owner) && affected.Contains(owner) && !byPath[owner].test)))
             selectedWikiPages.Add(page);
-        bool scriptWiki = selectedWikiPages.Any(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)));
+        var scriptPages = selectedWikiPages.Where(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)))
+            .ToHashSet(StringComparer.Ordinal);
+        var scriptDocumentOwners = scriptPages.Where(documentOwners.ContainsKey).Select(page => documentOwners[page]).ToHashSet(StringComparer.Ordinal);
+        bool scriptWiki = scriptPages.Count != 0;
         if (scriptWiki)
         {
             const string C_BUILD_ENTRY = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
@@ -223,8 +226,8 @@ internal static class ValidationPlanner
         foreach (ValidationProject project in projects.OrderBy(static project => project.path, StringComparer.Ordinal))
         {
             bool native = nativeOwners.Contains(project.path);
-            string context = native ? "native" : "managed";
-            Dictionary<string, ValidationProject> selectedGraph = native ? nativeProjects : byPath;
+            string context = native || scriptDocumentOwners.Contains(project.path) ? "native" : "managed";
+            Dictionary<string, ValidationProject> selectedGraph = context == "native" ? nativeProjects : byPath;
             var closure = new HashSet<string>(StringComparer.Ordinal);
             Visit(selectedGraph[project.path]);
             if (project.test && project.layer is not ("domain" or "contract" or "integration" or "native" or "product" or "performance"))
@@ -232,7 +235,7 @@ internal static class ValidationPlanner
             if (project.layer == "domain" && native)
                 throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
             string[] selectedInputs = closure.Select(static path => "@" + path).Append("@tooling")
-                .Concat(native ? ["@native-sources"] : []).Order(StringComparer.Ordinal).ToArray();
+                .Concat(context == "native" ? ["@native-sources"] : []).Order(StringComparer.Ordinal).ToArray();
             bool selected = affected.Contains(project.path);
             bool compile = selected || documentationOwners.Contains(project.path);
             string environment = project.environment.Length != 0 ? project.environment : native ? "native-host" : "any";
@@ -273,8 +276,8 @@ internal static class ValidationPlanner
                 group.Key, "contract", apiOwners));
         }
         foreach (IGrouping<string, string> pages in selectedWikiPages.GroupBy(page =>
-            documentOwners.TryGetValue(page, out string? owner) && nativeOwners.Contains(owner)
-                || ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)) ? "native" : "managed"))
+            documentOwners.TryGetValue(page, out string? owner) && (nativeOwners.Contains(owner) || scriptDocumentOwners.Contains(owner))
+                || scriptPages.Contains(page) ? "native" : "managed"))
         {
             ValidationCheck[] requiredBuilds = builds.Where(check => check.context == pages.Key
                 || scriptWiki && pages.Key == "native" && check.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj").ToArray();

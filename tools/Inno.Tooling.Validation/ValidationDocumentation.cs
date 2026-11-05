@@ -2,12 +2,15 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Markdig;
+using Markdig.Syntax;
 
 namespace Inno.Tooling.Validation;
 
 internal static class ValidationDocumentation
 {
     internal static bool RequiresScriptReferences(string file)
-        => Regex.Matches(File.ReadAllText(file), @"(?ms)^```(?:csharp|cs)\s*\r?\n(.*?)^```\s*$")
-            .Any(static block => Regex.IsMatch(block.Groups[1].Value, @"\b(?:InnoEngine|InnoEditor)(?:\.|\s*;)"));
+        => Markdown.Parse(File.ReadAllText(file)).Descendants<FencedCodeBlock>()
+            .Where(static block => block.Info is "csharp" or "cs")
+            .Any(static block => Regex.IsMatch(block.Lines.ToString(), @"\b(?:InnoEngine|InnoEditor)(?:\.|\s*;)"));
 }

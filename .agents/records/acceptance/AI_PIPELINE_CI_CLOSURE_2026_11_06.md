@@ -18,6 +18,7 @@
 
 - [Engine CI 42090517681](https://github.com/Wolfiora/InnoEngine/actions/runs/42090517681)：两个平台的托管编译和 selected compiled API 通过，`wiki:managed` 失败。Native API 分片错误地按文件名划入 managed 上下文；Windows 的混合分隔符还使分片丢失项目归属。
 - 修复使用现有文档 owner 映射选择上下文，项目入口及分片路径统一为完整规范路径；没有删除示例或放宽检查。36 项现有 Wiki 回归通过；新增两个真实 SDK 分片编译回归和一个 native 分片计划回归通过。新增测试最初遗漏 SDK 编译准备而失败，原日志保留，随后补齐真实 SDK 准备。
+- [Engine CI 42094568938](https://github.com/Wolfiora/InnoEngine/actions/runs/42094568938)：两平台均在 managed Wiki 的 18 个脚本示例失败。项目入口与脚本分片被分到不同上下文，而执行器会展开完整项目文档。改为同一项目文档及编译前提共用投影上下文，并通过 Markdig 语法树识别 C# 围栏；40 项计划回归通过，包括反引号和波浪号围栏。首次失败日志保留为 `script-wiki-failure-*.log`。
 - Console 探索样本在 1035.43 秒时主动取消：先修复已知 Wiki 验证缺陷，避免对失效验收链继续重复计时。原源码已恢复；这不是通过或有效 warm 性能样本。选中 Hosting/PlayMode/Presentation，未选中 Build integration。Native 记录显示零编译和绑定生成，但消费者仍有显著输入重读成本，继续追踪。
 - 自动审批拒绝删除本轮 `artifacts/validation/overnight-2026-11-06/tracked-source` 及其 ZIP，仅返回 `blocked by policy`；未绕过，保留为本轮临时产物。最后观测 C 盘约 74 GiB 可用。
 
