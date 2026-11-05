@@ -58,3 +58,11 @@
 - `EditorShaderProfileTests` 的 SDK 查询未使用 CI 实际 ArtifactsPath、ToolTarget 和配置。本地指定未准备的输出 owner 复现 NETSDK1004，改用已准备的实际 owner 后查询通过；远程首次日志只有 exit 1，不能将本地诊断冒充远程原始错误。增加实际 SDK 失败回归，捕获输出现在保留原诊断和内层失败，该回归通过。
 - Console v3 首次准备在发现上述 UI 输出污染后主动取消，取消与原日志保留在 `console-v3-cancellation.json` 及 `console-v3-0*`。驱动 finally 已恢复源码字节和时间戳；该样本不作为通过或 warm 基准。后续重测须使用修复后输入，冷／首次准备与至少五次 warm 分开。
 - 当前正在执行 13 个相关 Native 测试 owner 的联合准备与局部真实回归，使用现有 workspace producer lease，未复制 DLL 或创建另一套产品准备器。C 盘最近观测约 78 GiB 可用；保留活动输出和首次失败。
+
+## 测试文档反馈边界复验
+
+- 更新 Native 测试页的执行说明时，实际计划错误选择了 14 个 Native owner 编译；首次计划 `native-guide-plan/` 保留。原因是项目页归属直接变成编译前置，没有区分 runner 的普通说明与实际 C# 示例。
+- `7466973461e8575b2fa99a26d7211121b6269a54` 修正该边界：只有明确的测试 runner 可在没有 C# 示例时省去文档编译；公开支持库继续参与 API 检查，inclusion 示例继续选择实际 owner 的 Native 上下文。4 项新回归和 4 项相关原回归均通过；CLI、源码架构和文档链接检查通过。
+- 同一批 15 个实际文档文件修改经修复后统一计划与执行通过：instructions、architecture、documentation、wiki:managed 四项，零构建、零测试执行、零 Native 上下文。分别耗时 4.04、11.40、3.32、1.45 秒；这些是有其他构建并发的正确性记录，不是五轮空闲 warm 基准。原始证据 `native-guide-fixed/`，已完成状态为 true。
+- Native 套件文档改为链接同一个实际计划入口，删除省略目标属性的直接 `dotnet test` 示例和重复的 BGFX 隔离名单；平台、进程与资源约束保留。运行说明明确 `--base HEAD` 只包含未提交变化，不能把空范围误当成已运行某个套件。
+- `5f6c4dd824769371ad6aed3316580489e0320a17` 已推送；新 [Engine CI 42127319050](https://github.com/Wolfiora/InnoEngine/actions/runs/42127319050) 正在两个托管平台执行，后续范围选择修订仍为本地证据，不冒充该运行已覆盖。

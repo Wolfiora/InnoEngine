@@ -50,15 +50,11 @@
 
 ## 运行
 
-从仓库根目录运行：
-
-```powershell
-dotnet test tests/scripting/Inno.Editor.Scripting.Tests/Inno.Editor.Scripting.Tests.csproj --configuration Debug --disable-build-servers -m:1 -nodeReuse:false
-```
+通过[统一 Native 验证入口](README.md#native-validation)生成并执行实际修改的计划；该入口准备目标产品、部署索引及隔离测试进程，不依赖已有 bin 中的偶然文件。
 
 包含 Native 或窗口相关消费；执行前准备匹配目标与配置的原生产物。缺库、缺 SDK 或无法建立真实窗口属于未通过/未执行，不能记为通过。
 
-可以用 `--filter FullyQualifiedName~方法名` 选择下表的场景；完整项目验证仍使用上面的命令。
+定位失败时可使用计划中已求值的程序集与 SDK 参数执行局部诊断；局部过滤结果不能代替计划要求的完整 owner 证据。
 
 ## 源码场景
 

@@ -34,13 +34,7 @@ BGFX authoring toolchain、渲染 authoring contract 和 `ModuleHost`。不使�
 矩阵原生编译覆盖 2×2 到 4×4 的全部 9 种形状；一个测试内的多次编译不重复计入 case 数。
 `MetalShaderFactAttribute` 在非 macOS 主机明确标为 skipped，不用静默 return 冒充原生验证通过。
 
-```sh
-/Users/aaronliao/.dotnet/dotnet test \
-  tests/rendering/Inno.Rendering.Shaders.Tests/Inno.Rendering.Shaders.Tests.csproj \
-  --no-restore -m:1 -p:UseSharedCompilation=false -v quiet
-```
-
-先从主仓库完成 restore；在限制 IPC 的沙箱中运行 MSBuild/VSTest 可能需要相应执行授权。
+通过[统一 Native 验证入口](README.md#native-validation)选择实际宿主并准备本套件的 `shader-tools` 产品。macOS 执行 Metal 编译；其他宿主不将这些不适用用例记为已验证。
 Fixture 依次释放 Registry、TypeCatalog、ModuleHost；临时目录只属于测试本身。
 
 这些测试不创建 GPU 设备：原生编译通过不是实际 GPU 数值/像素/性能验收；仍不覆盖完整资源布局/屏障、Shader Editor、GPU 反射或真实 collectible 插件的端到端卸载。

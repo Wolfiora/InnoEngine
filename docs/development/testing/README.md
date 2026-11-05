@@ -4,6 +4,25 @@
 
 Native 层测试必须声明 `InnoTestNativeProduct`，由正式产品准备和部署协议提供所选目标的运行输入。只使用离线编译工具的测试可以选择 `shader-tools`；显式产品声明不依赖托管引用文件名来猜测是否需要部署。普通托管测试不会因此取得 Native 准备依赖。
 
+<a id="native-validation"></a>
+## Native 套件的执行入口
+
+在仓库根目录对待提交的源码或测试修改生成计划，再执行同一份计划。每次使用独立日志目录；编译目录仍由验证器稳定复用：
+
+```powershell
+$run = 'artifacts/validation/runs/' + [Guid]::NewGuid().ToString('N')
+dotnet run --project entry/InnoEngine.Build -- validate plan --engine-root . --dotnet dotnet --base HEAD --output $run
+if ($LASTEXITCODE -ne 0) { throw 'Validation planning failed.' }
+dotnet run --no-build --project entry/InnoEngine.Build -- validate run --engine-root . --dotnet dotnet --plan "$run/plan.json" --output $run
+if ($LASTEXITCODE -ne 0) { throw 'Required validation failed.' }
+```
+
+`HEAD` 覆盖工作区未提交变化；检查已经提交的功能时，改为实际开发基线。执行前确认计划选中了本次 owner、目标、环境及所需检查；没有相关变化的计划不会凭空重跑某个套件。显式完整验收使用 `validate full`，不把它作为每次局部修改的默认命令。
+
+不要省略目标／产品属性直接运行 Native 项目的 `dotnet test`，也不要手填 SDK 输出路径。失败诊断使用计划的 `contexts`、实际 SDK `TargetPath` 和日志中的执行参数；需要独立进程的场景继续走统一隔离执行器。缺少部署、工具、窗口或环境不是通过，非当前 OS 的用例必须有已编译的平台契约。
+
+## 项目索引
+
 - [Inno.Adapter.Audio.MiniAudio.Tests](Inno.Adapter.Audio.MiniAudio.Tests.md)
 - [Inno.Adapter.Content.FileSystem.Tests](Inno.Adapter.Content.FileSystem.Tests.md)
 - [Inno.Adapter.Platform.Sdl3.Tests](Inno.Adapter.Platform.Sdl3.Tests.md)
