@@ -166,7 +166,8 @@ internal static class ValidationPlanner
             new("instructions", "instructions", "AGENTS.md", "Rule preservation, discoverability, budgets and links.", "any", [], policyInputs, true, null),
             new("architecture", "architecture", "tools/Inno.Tooling.Architecture", "Cheap repository-wide source, ownership and architecture invariants.", "any", [],
                 inputs.Keys.Where(static path => path.Split('/')[0] is "src" or "entry" or "backends" or "platforms" or "build" or "tools"
-                    || path.StartsWith("tests/", StringComparison.Ordinal) && path.EndsWith(".csproj", StringComparison.Ordinal)
+                    || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".cs.txt", StringComparison.OrdinalIgnoreCase)
+                    || Path.GetExtension(path) is ".csproj" or ".props" or ".targets"
                     || path is "InnoEngine.sln" or "Directory.Build.props" or "Directory.Build.targets")
                     .Order(StringComparer.Ordinal).ToArray(), true, null)
         };

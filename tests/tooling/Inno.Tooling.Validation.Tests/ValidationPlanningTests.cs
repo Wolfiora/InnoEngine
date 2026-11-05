@@ -15,6 +15,36 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task EmptyCiContractDiscoveryCannotCertifySuccess()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write(".github/workflows/change.yml", "name: Changed workflow\n");
+        Directory.CreateDirectory(repository.PathOf("tests/ci"));
+        using JsonDocument plan = await repository.PlanAsync();
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
+        using JsonDocument results = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json")));
+        JsonElement contracts = results.RootElement.GetProperty("results").EnumerateArray().Single(result => result.GetProperty("id").GetString() == "ci-contracts");
+        Assert.Equal("Failed", contracts.GetProperty("status").GetString());
+        Assert.Contains("Required CI contract discovery is empty", contracts.GetProperty("detail").GetString(), StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("tests/Example.Tests/Changed.cs", "global using System;")]
+    [InlineData("docs/Example.cs.txt", "global using System;")]
+    [InlineData("Policy.props", "<Project><PropertyGroup><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>")]
+    public async Task RepositoryWideSourcePolicyInputsParticipateInEvidenceIdentity(
+        string path,
+        string content
+    ) {
+        using var repository = new ValidationRepository();
+        repository.Write(path, content);
+        using JsonDocument plan = await repository.PlanAsync();
+        JsonElement source = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "architecture");
+        Assert.Contains(source.GetProperty("inputs").EnumerateArray(), input => input.GetString() == path);
+        Assert.True(plan.RootElement.GetProperty("inputs").TryGetProperty(path, out _));
+    }
+
+    [Fact]
     public async Task ExternalSourceContentInvalidatesEvidenceEvenWhenLengthAndTimestampMatch()
     {
         using var repository = new ValidationRepository();

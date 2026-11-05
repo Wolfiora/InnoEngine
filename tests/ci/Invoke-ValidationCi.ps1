@@ -52,7 +52,17 @@ if ($Stage -eq 'Retain') {
         if ($ValidationConclusion -ceq 'success' -and $retentionExit -ne 0) { throw 'Successful validation failed artifact retention or evidence reconciliation.' }
         if ($retentionExit -ne 0) { Write-Host 'Original validation remains unsuccessful; only completely exported immutable artifacts can be retained.' }
     }
-    if (Test-Path -LiteralPath $cache) { "native=$cache" >> $env:GITHUB_OUTPUT }
+    if (Test-Path -LiteralPath $cache) {
+        # Normalize only the newly exported immutable archive for the cache action's stable transport path.
+        $transport = Join-Path $repository 'artifacts/validation/native-cache.zip'
+        if ($cache -cne $transport) {
+            Copy-Item -LiteralPath $cache -Destination $transport -Force
+            if ((Get-FileHash -LiteralPath $transport).Hash -cne (Get-FileHash -LiteralPath $cache).Hash) {
+                throw 'The immutable cache transport copy differs from its completed export.'
+            }
+        }
+        "native=$cache" >> $env:GITHUB_OUTPUT
+    }
     return
 }
 & $Dotnet $assembly[0] validate run --engine-root $repository --dotnet $Dotnet --plan (Join-Path $output 'plan.json') --output $output `

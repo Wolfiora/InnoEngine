@@ -108,12 +108,11 @@ internal static class ValidationRunner
                             await ShellAsync("tests/ci/Test-AgentRules.ps1", [], "instructions.log").ConfigureAwait(false);
                             break;
                         case "ci-contracts":
-                            await ShellAsync("tests/ci/Test-ValidationReport.Tests.ps1", [], "ci-contracts.log").ConfigureAwait(false);
-                            await ShellAsync("tests/ci/Test-ReleaseSource.Tests.ps1", [], "release-source-contracts.log").ConfigureAwait(false);
-                            await ShellAsync("tests/ci/Select-ValidationCadence.Tests.ps1", [], "cadence-contracts.log").ConfigureAwait(false);
-                            await ShellAsync("tests/ci/Test-ReleaseBundle.Tests.ps1", [], "release-bundle-contracts.log").ConfigureAwait(false);
-                            await ShellAsync("tests/ci/Test-IsolatedExecution.Tests.ps1", [], "isolated-execution-contracts.log").ConfigureAwait(false);
-                            await ShellAsync("tests/ci/Test-SupportPackClosure.Tests.ps1", [], "support-pack-contracts.log").ConfigureAwait(false);
+                            string[] contracts = Directory.GetFiles(Path.Combine(plan.root, "tests", "ci"), "*.Tests.ps1").Order(StringComparer.Ordinal).ToArray();
+                            if (contracts.Length == 0)
+                                throw new InvalidDataException("Required CI contract discovery is empty.");
+                            foreach (string contract in contracts)
+                                await ShellAsync(Path.GetRelativePath(plan.root, contract), [], Path.GetFileNameWithoutExtension(contract) + ".log").ConfigureAwait(false);
                             break;
                         case "restore-aot":
                             {

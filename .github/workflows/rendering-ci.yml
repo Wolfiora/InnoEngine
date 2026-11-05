@@ -127,8 +127,9 @@ jobs:
           path: ${{ steps.retain.outputs.native }}
           if-no-files-found: error
           retention-days: 90
-      - name: Save only complete immutable generations from trusted default-branch validation
-        if: github.ref_name == github.event.repository.default_branch && steps.plan.outputs.native == 'true'
+      - name: Save complete immutable generations within the current PR or trusted default branch
+        # GitHub isolates pull_request caches under refs/pull/<number>/merge; default-branch jobs cannot restore them.
+        if: always() && steps.retain.outputs.native != '' && (github.event_name == 'pull_request' || (github.ref_name == github.event.repository.default_branch && steps.execute.outcome == 'success'))
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           key: inno-immutable-v2-${{ runner.os }}-${{ runner.arch }}-${{ steps.sdk.outputs.dotnet-version }}-${{ hashFiles('artifacts/validation/native-cache.zip') }}
