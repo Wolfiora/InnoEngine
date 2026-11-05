@@ -10,10 +10,11 @@ using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
 using Inno.Scene;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Performance.Tests;
 
 public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
 {
@@ -21,7 +22,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void DueDirtyInspectionsMeasureTheCompleteSavedSceneTraversal()
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         Inno.Scene.GameScene scene = LoadSavedHierarchy(host);
         Measure(host, null, "10000-hierarchy-dirty-inspections",
             () => Assert.False(host.workspace.IsDirty(scene)), static () => Thread.Sleep(110));
@@ -31,7 +32,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void ChangedDirtyInspectionsMeasureTheCompleteSavedSceneTraversal()
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         GameScene scene = LoadSavedHierarchy(host);
         GameObject value = scene.GetObjects()[0];
         int revision = 0;
@@ -46,7 +47,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void NeutralCaptureSeparatesSerializationFromSourceFreshness()
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         Inno.Scene.GameScene scene = LoadSavedHierarchy(host);
         SerializationContext context = AssetSerializationContext.Create(host.assets, new AssetDependencyCollection(includeLastKnownPaths: false));
         SerializationSnapshot? previous = null;
@@ -60,7 +61,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void SourceFreshnessMeasuresTheActualSavedSceneLoadBoundary()
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         Inno.Scene.GameScene scene = LoadSavedHierarchy(host);
         Assert.True(host.workspace.TryGetSourcePath(scene, out string path));
         SceneAsset asset = host.assets.Load<SceneAsset>(AssetPath.Project(path));
@@ -73,7 +74,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void SceneMetadataReadsMeasureTheOwnedAttachmentBoundary()
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         GameScene scene = LoadSavedHierarchy(host);
         IReadOnlyList<GameObject> objects = scene.GetObjects();
         long checksum = 0;
@@ -94,7 +95,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void TenThousandHierarchyRowsProduceRepeatableFrameMeasurements()
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         string? input = InputDirectory("hierarchy");
         if (input is not null && Directory.Exists(input))
         {
@@ -121,7 +122,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void TenThousandAssetRowsProduceRepeatableFrameMeasurements()
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         string? input = InputDirectory("assets");
         if (input is not null && Directory.Exists(input))
             CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));

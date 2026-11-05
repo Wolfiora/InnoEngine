@@ -117,9 +117,9 @@ internal sealed class WikiProjectReferences
             return compilation;
         if (m_snapshots.Count == 0)
         {
-            string[] projects = (m_selectedProjects is not null ? m_selectedProjects : new[] { "src", "entry", "build", "backends", "platforms", "tools" }
+            string[] projects = (m_selectedProjects is not null ? m_selectedProjects : new[] { "src", "entry", "build", "backends", "platforms", "tools", "tests" }
                 .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(m_root, folder), "*.csproj"))
-                .Where(path => !IsExcludedProduct(path))).Append(project).Where(path => !IsExcludedProduct(path))
+                .Where(path => !IsExcludedProduct(path) && !WikiProjectCoverageValidator.IsDeclaredTestProject(path))).Append(project).Where(path => !IsExcludedProduct(path))
                 .Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.Ordinal).ToArray();
             var batchProperties = new Dictionary<string, string>
             {

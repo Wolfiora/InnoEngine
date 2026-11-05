@@ -88,4 +88,5 @@
   <ItemGroup>
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
+  <ItemGroup><ProjectReference Include="../fixtures/Inno.Testing.Editor.Native/Inno.Testing.Editor.Native.csproj" /></ItemGroup>
 </Project>

@@ -8,10 +8,11 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Panel.Hierarchy;
 using Inno.Native.ImGui;
 using Inno.Scene;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeGui = Inno.Native.ImGui.ImGui;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Performance.Tests;
 
 public sealed partial class LargePanelPerformanceTests
 {
@@ -23,7 +24,7 @@ public sealed partial class LargePanelPerformanceTests
     [Trait("Acceptance", "Workflows")]
     public unsafe void TenThousandEntriesKeepRangeRenameAndDragAcrossClippedRows(string view)
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         bool hierarchy = view == "hierarchy";
         GameScene? scene = hierarchy ? LoadInteractionHierarchy(host) : null;
         if (!hierarchy)

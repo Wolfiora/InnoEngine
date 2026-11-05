@@ -6,6 +6,8 @@
 
 ## 职责与边界
 
+日常行为、原生呈现和生命周期契约归属本程序集；万条场景／资产的规模与性能采样归属 [Inno.Editor.Performance.Tests](Inno.Editor.Performance.Tests.md)。两者通过 [Inno.Testing.Editor.Native](Inno.Testing.Editor.Native.md) 共享唯一 fixture 实现，实际测试断言及必要原生前提保持。
+
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
 - [Inno.Adapter.Input](../../modules/input/Inno.Adapter.Input.md)

@@ -31,3 +31,7 @@ dotnet test tests/extensibility/Inno.Extensibility.Modules.Tests/Inno.Extensibil
 - [项目文件](../../../tests/extensibility/fixtures/Inno.Extensibility.Modules.TestModule.V2/Inno.Extensibility.Modules.TestModule.V2.csproj)：真实引用及构建配置。
 - [消费测试](Inno.Extensibility.Modules.Tests.md)：断言、执行环境与场景入口。
 - [当前验收](../../../.agents/records/acceptance/current.md)：本轮实际运行结果；本页不声明测试已经通过。
+
+<!-- api: T:Inno.Extensibility.Modules.TestModule.ReloadableExtension 567f562eaf27448a72af67464f2194642a5325ca6ff813f98b51c2fe491f5ece -->
+<!-- api: P:Inno.Extensibility.Modules.TestModule.ReloadableExtension.version a1c91ee35e7b7bebbacf739b8d5bea92ee5001e0ad265bac2d9240c58857e7a8 -->
+<!-- api: M:Inno.Extensibility.Modules.TestModule.ReloadableExtension.#ctor 34c4aaa316c8d1fa32d93b2d17c4b9968204dd7afed4bd6e6f03616989154d8c -->

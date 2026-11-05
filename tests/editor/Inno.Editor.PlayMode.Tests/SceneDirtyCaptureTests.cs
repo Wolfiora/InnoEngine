@@ -7,6 +7,7 @@ using Inno.Core.Serialization.Converters;
 using Inno.Core.Mathematics;
 using Inno.Extensibility.Types;
 using Inno.Scene;
+using Inno.Testing.Editor.Native;
 using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
@@ -16,7 +17,7 @@ public sealed class SceneDirtyCaptureTests
     [Fact]
     public void OwnedRevisionCaptureKeepsDirtyStateExactAcrossHistoryRestoreAndDirectWrites()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(SceneDirtyCaptureTests).Assembly);
         GameScene scene = host.CreateScene();
         GameObject value = scene.CreateObject("Original");
         host.workspace.Save(scene, string.Empty);
@@ -51,7 +52,7 @@ public sealed class SceneDirtyCaptureTests
     [Fact]
     public void CompleteSceneCapturesReuseOnlyUnchangedNeutralState()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(SceneDirtyCaptureTests).Assembly);
         GameScene scene = host.CreateScene();
         GameObject owner = scene.CreateObject("Owner");
         GameObject target = scene.CreateObject("Target");
@@ -75,7 +76,7 @@ public sealed class SceneDirtyCaptureTests
     [Fact]
     public void DirtyInspectionIncludesReorderedComponentSnapshots()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(SceneDirtyCaptureTests).Assembly);
         GameScene scene = host.CreateScene();
         GameObject owner = scene.CreateObject("Owner");
         DirtyCaptureComponent first = owner.AddComponent<DirtyCaptureComponent>();
@@ -98,7 +99,7 @@ public sealed class SceneDirtyCaptureTests
     [Fact]
     public void ExactDirtyInspectionFindsDirectFieldsConverterStateReferencesAndTopology()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(SceneDirtyCaptureTests).Assembly);
         GameScene scene = host.CreateScene();
         GameObject owner = scene.CreateObject("Owner");
         DirtyCaptureComponent component = owner.AddComponent<DirtyCaptureComponent>();
@@ -139,7 +140,7 @@ public sealed class SceneDirtyCaptureTests
     [Fact]
     public void FailedCapturePreservesTheSavedBaselineAndRecoversWithoutPublishingCleanState()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(SceneDirtyCaptureTests).Assembly);
         GameScene scene = host.CreateScene();
         DirtyCaptureComponent component = scene.CreateObject("Owner").AddComponent<DirtyCaptureComponent>();
         host.workspace.Save(scene, string.Empty);

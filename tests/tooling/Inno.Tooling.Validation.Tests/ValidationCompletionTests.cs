@@ -12,7 +12,12 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationCompletionTests
 {
     [Fact]
-    public async Task ChangedUnionRootsRecompileWithoutCleaningUnchangedDependencies()
+    public Task ChangedUnionRootsRecompileWithoutCleaningUnchangedDependencies() => ChangedUnionRootsAsync(variant: false);
+
+    [Fact]
+    public Task ChangedPropertyVariantsCannotReuseAnUncleanedOutput() => ChangedUnionRootsAsync(variant: true);
+
+    private static async Task ChangedUnionRootsAsync(bool variant)
     {
         using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
@@ -32,7 +37,9 @@ public sealed class ValidationCompletionTests
             }
             """);
         repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT)).Replace("</Project>",
-            "<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\" /></ItemGroup></Project>", StringComparison.Ordinal));
+            "<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\""
+            + " /></ItemGroup><PropertyGroup><BuildProjectReferences>true</BuildProjectReferences></PropertyGroup></Project>", StringComparison.Ordinal)
+            .Replace("<Project Sdk=", "<Project TreatAsLocalProperty=\"BuildProjectReferences\" Sdk=", StringComparison.Ordinal));
         repository.Write(C_TEST, """
             using Xunit;
             using Inno.Input.CompilationFixture;
@@ -43,7 +50,14 @@ public sealed class ValidationCompletionTests
                 public void ReadsTheChangedDependency() { Assert.Equal(1, Probe.Read()); }
             }
             """);
-        repository.Write("docs/development/testing/Inno.Input.CompilationFixture.md", "# Inno.Input.CompilationFixture\n实际编译依赖验收 fixture。\n");
+        repository.Write("docs/development/testing/Inno.Input.CompilationFixture.md", """
+            # Inno.Input.CompilationFixture
+
+            实际编译依赖验收 fixture。`Probe.Read()` 返回本次源码编译的整数值，无资源所有权转移。
+
+            <!-- api: T:Inno.Input.CompilationFixture.Probe 9c468c0c8fa3aea2a078ea624ebe2929e3fed537d09564bcbb2c7745d1c0912d -->
+            <!-- api: M:Inno.Input.CompilationFixture.Probe.Read 7edd9c40bdee248e7e49e6c1af581edc0817c59232964962098e5202bf55a1ff -->
+            """);
         const string C_INDEX = "docs/development/testing/README.md";
         repository.Write(C_INDEX, File.ReadAllText(repository.PathOf(C_INDEX)) + "\n[Compilation fixture](Inno.Input.CompilationFixture.md)\n");
         await repository.SdkAsync("sln", "InnoEngine.sln", "add", C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
@@ -53,11 +67,26 @@ public sealed class ValidationCompletionTests
 
         string dependencyOutput = string.Empty;
         string restoredEnvironment = string.Empty;
+        string variantArtifacts = string.Empty;
+        string workspace = string.Empty;
         DateTime outputTimestamp = default;
         byte[] dependencyBytes = [];
         // The first build restores previously absent SDK imports. Establish that real environment before comparing warm compilations.
         for (int value = 2; value <= 4; value++)
         {
+            if (value == 3 && variant)
+            {
+                repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT)).Replace(
+                    "Inno.Input.CompilationFixture.csproj\"", "Inno.Input.CompilationFixture.csproj\" AdditionalProperties=\"ArtifactsPath=$(ArtifactsPath)/variant\"",
+                    StringComparison.Ordinal));
+                repository.Git("add", C_PROJECT);
+                repository.Git("commit", "-m", "Consume a second effective property instance");
+                // The first real run has established workspace ownership. Restore the extra NuGet output instance before measuring it.
+                using (await Inno.Core.IO.CoordinatedFileLease.AcquireAsync(Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"),
+                    workspace + ".lock", Timeout.InfiniteTimeSpan, cancellationToken: cancellation.Token))
+                    await repository.SdkAsync("restore", C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
+                        "-p:ArtifactsPath=" + variantArtifacts, "-p:Configuration=Debug", "--disable-parallel", "-nr:false");
+            }
             foreach (string relative in new[] { C_FIXTURE + "/Probe.cs", C_TEST })
             {
                 string path = repository.PathOf(relative);
@@ -71,6 +100,17 @@ public sealed class ValidationCompletionTests
             {
                 Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
                 Assert.Equal(2, plan.RootElement.GetProperty("owners").GetArrayLength());
+                JsonElement fixture = plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
+                    .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal));
+                if (variant && value >= 3)
+                    Assert.Contains(fixture.GetProperty("Variants").EnumerateArray(), instance =>
+                        instance.GetProperty("Properties").GetProperty("TargetPath").GetString()
+                        != fixture.GetProperty("Properties").GetProperty("TargetPath").GetString());
+                else
+                    Assert.Empty(fixture.GetProperty("Variants").EnumerateArray());
+                variantArtifacts = Path.Combine(plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("properties")
+                    .GetProperty("ArtifactsPath").GetString()!, "variant");
+                workspace = plan.RootElement.GetProperty("artifacts").GetString()!;
                 string environment = plan.RootElement.GetProperty("environment").GetString()!;
                 if (value == 3)
                     restoredEnvironment = environment;
@@ -81,7 +121,22 @@ public sealed class ValidationCompletionTests
                     .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
             }
             string output = "artifacts/union-" + value;
-            Assert.Equal(0, await repository.RunAsync(cancellation.Token, output));
+            try
+            {
+                Assert.Equal(0, await repository.RunAsync(cancellation.Token, output));
+            }
+            catch (Exception failure)
+            {
+                string runDirectory = repository.PathOf(output);
+                string diagnostics = string.Join("\n", Directory.Exists(runDirectory)
+                    ? Directory.EnumerateFiles(runDirectory, "*.log").Select(path => Path.GetFileName(path) + ":\n" + File.ReadAllText(path))
+                    : new[] { "The run did not start." });
+                string results = Path.Combine(runDirectory, "results.json");
+                if (File.Exists(results))
+                    diagnostics += "\nResults:\n" + File.ReadAllText(results);
+                throw new InvalidOperationException("Union compilation failed for value " + value + ":\n"
+                    + diagnostics, failure);
+            }
             if (value == 3)
             {
                 outputTimestamp = File.GetLastWriteTimeUtc(dependencyOutput);
@@ -90,8 +145,9 @@ public sealed class ValidationCompletionTests
             else if (value == 4)
             {
                 Assert.Equal(dependencyBytes, File.ReadAllBytes(dependencyOutput));
-                Assert.True(outputTimestamp == File.GetLastWriteTimeUtc(dependencyOutput),
-                    "An unchanged dependency was rebuilt. Clean log:\n" + File.ReadAllText(repository.PathOf(output + "/managed-clean.log")));
+                if (!variant)
+                    Assert.True(outputTimestamp == File.GetLastWriteTimeUtc(dependencyOutput),
+                        "An unchanged dependency was rebuilt. Clean log:\n" + File.ReadAllText(repository.PathOf(output + "/managed-clean.log")));
                 Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf(output + "/results.json")));
             }
         }

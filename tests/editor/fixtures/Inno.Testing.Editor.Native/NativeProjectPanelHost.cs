@@ -22,9 +22,15 @@ using Inno.Runtime;
 using Inno.Scene;
 using Xunit;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Testing.Editor.Native;
 
-internal sealed class NativeProjectPanelHost : IDisposable
+/// <summary>
+/// Owns a temporary project, authoring services and real native panels for contract and performance acceptance.
+/// </summary>
+/// <remarks>
+/// Use and dispose the complete fixture on one thread. Returned services remain owned by this fixture.
+/// </remarks>
+public sealed class NativeProjectPanelHost : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeProjectPanels", Guid.NewGuid().ToString("N"));
     private readonly EngineHost m_engine;
@@ -34,7 +40,15 @@ internal sealed class NativeProjectPanelHost : IDisposable
     private readonly ProjectSettingsStore m_settings;
     private readonly PluginEnvironment m_plugins;
 
-    internal NativeProjectPanelHost(
+    /// <summary>
+    /// Creates the explicit test composition and its isolated project resources.
+    /// </summary>
+    /// <param name="composition">The calling test assembly declaring all discovered modules and serialized test types.</param>
+    /// <param name="supportsVertexOffsets">Whether to advertise and validate native vertex offsets.</param>
+    /// <param name="includeSettings">Whether to compose real project and build settings services.</param>
+    /// <param name="settingsDocument">An optional public document-store boundary for settings persistence.</param>
+    public NativeProjectPanelHost(
+        Assembly composition,
         bool supportsVertexOffsets = false,
         bool includeSettings = false,
         IByteDocumentStore? settingsDocument = null
@@ -48,7 +62,7 @@ internal sealed class NativeProjectPanelHost : IDisposable
         string pluginRoot = Path.Combine(m_root, "Plugins");
         Directory.CreateDirectory(source);
         m_engine = new EngineHostBuilder().UseMetadataSources(
-            new DotNetAssemblyCatalogSource(typeof(NativeProjectPanelHost).Assembly),
+            new DotNetAssemblyCatalogSource(composition),
             new ReflectionTypeCatalogSource(),
             new ReflectionSerializationMetadataSource()).Build();
         m_session = m_engine.CreateSession(new RuntimeSessionOptions
@@ -93,20 +107,60 @@ internal sealed class NativeProjectPanelHost : IDisposable
         native = new NativePanelHost(runtime, ui, m_console, m_engine.logs, m_engine.diagnostics, supportsVertexOffsets);
     }
 
-    internal EditorReloadCoordinator reloads { get; }
-    internal ProjectSettingsStore projectSettings => m_settings;
-    internal AssetPipeline assets { get; }
-    internal SerializationRegistry serialization => m_engine.serialization;
-    internal string projectRoot => m_root;
-    internal EditorInteractionRuntime runtime { get; }
-    internal IEditorSceneWorkspace workspace { get; }
-    internal GraphEditorModule graphs { get; }
-    internal SceneEdits edits { get; }
-    internal NativePanelHost native { get; }
+    /// <summary>
+    /// Gets the borrowed reload coordinator.
+    /// </summary>
+    public EditorReloadCoordinator reloads { get; }
+    /// <summary>
+    /// Gets the borrowed project settings store.
+    /// </summary>
+    public ProjectSettingsStore projectSettings => m_settings;
+    /// <summary>
+    /// Gets the borrowed authoring asset pipeline.
+    /// </summary>
+    public AssetPipeline assets { get; }
+    /// <summary>
+    /// Gets the borrowed engine serialization registry.
+    /// </summary>
+    public SerializationRegistry serialization => m_engine.serialization;
+    /// <summary>
+    /// Gets the absolute temporary project directory removed during disposal.
+    /// </summary>
+    public string projectRoot => m_root;
+    /// <summary>
+    /// Gets the borrowed interaction runtime.
+    /// </summary>
+    public EditorInteractionRuntime runtime { get; }
+    /// <summary>
+    /// Gets the borrowed scene workspace resolved through normal module composition.
+    /// </summary>
+    public IEditorSceneWorkspace workspace { get; }
+    /// <summary>
+    /// Gets the borrowed graph editor module.
+    /// </summary>
+    public GraphEditorModule graphs { get; }
+    /// <summary>
+    /// Gets the borrowed scene editing service.
+    /// </summary>
+    public SceneEdits edits { get; }
+    /// <summary>
+    /// Gets the borrowed native panel host.
+    /// </summary>
+    public NativePanelHost native { get; }
 
-    internal GameScene CreateScene() => m_session.scenes.LoadNewSceneAdditive();
-    internal void RefreshTypes() => m_engine.types.Rebuild();
+    /// <summary>
+    /// Creates and loads an additive scene in the owned Edit session.
+    /// </summary>
+    /// <returns>The scene owned by this fixture's session.</returns>
+    public GameScene CreateScene() => m_session.scenes.LoadNewSceneAdditive();
+    /// <summary>
+    /// Rebuilds the actual type catalog after a declared discovery change.
+    /// </summary>
+    public void RefreshTypes() => m_engine.types.Rebuild();
 
+    /// <summary>
+    /// Releases authoring, native and session resources before removing the owned temporary project.
+    /// </summary>
     public void Dispose()
     {
         runtime.Dispose();
@@ -120,15 +174,4 @@ internal sealed class NativeProjectPanelHost : IDisposable
         m_engine.Dispose();
         Directory.Delete(m_root, recursive: true);
     }
-}
-
-[EditorModule("tests.native-project-panels", order: 2000)]
-public sealed class NativeProjectPanelProbe(
-    IEditorSceneWorkspace workspace,
-    GraphEditorModule graphs,
-    SceneEdits edits
-) : EditorModule {
-    public IEditorSceneWorkspace workspace { get; } = workspace;
-    public GraphEditorModule graphs { get; } = graphs;
-    public SceneEdits edits { get; } = edits;
 }

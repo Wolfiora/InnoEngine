@@ -43,7 +43,8 @@ internal static class ValidationPlanner
         {
             ["Configuration"] = configuration,
             ["DesignTimeBuild"] = "true",
-            ["BuildProjectReferences"] = "false",
+            ["BuildProjectReferences"] = "true",
+            ["BuildingInsideVisualStudio"] = "false",
             ["InnoProductRestore"] = "false",
             ["ArtifactsPath"] = artifacts
         };
@@ -108,15 +109,14 @@ internal static class ValidationPlanner
         bool deepNative = extended || changes.Any(static path => !IsDocumentation(path) && (path.StartsWith("build/", StringComparison.Ordinal)
             || path.StartsWith("extern/", StringComparison.Ordinal) || path.Contains("/native/", StringComparison.Ordinal)
             || path.Contains("/build/", StringComparison.Ordinal) || path.Contains("reload", StringComparison.OrdinalIgnoreCase)
-            || path is "Directory.Build.props" or "Directory.Build.targets" or "global.json"));
+            || path is "Directory.Build.props" or "Directory.Build.targets" or "Directory.Solution.targets" or "global.json"));
         var executionExclusions = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ValidationProject project in projects)
         {
             if (project.environment.Length != 0 && project.environment is not ("any" or "native-host")
                 && !ValidationTestHosts.Applies(project.environment.Split(';')))
                 executionExclusions.Add(project.path, $"This owner requires OS environment '{project.environment}'; it is not validated on this host.");
-            else if (project.layer == "performance" && !deepNative && !changedTestExecutor && !changes.Any(path => path.StartsWith("tests/", StringComparison.Ordinal)
-                && (path.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal) || project.inputs.Contains(path, StringComparer.Ordinal))))
+            else if (project.layer == "performance" && !deepNative && !changedTestExecutor && !ChangedTestClosure(project))
                 executionExclusions.Add(project.path, "Performance sampling requires extended acceptance or an affected build/native/reload or performance-test input.");
         }
         foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full
@@ -151,7 +151,11 @@ internal static class ValidationPlanner
                 throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
         var contexts = new Dictionary<string, ValidationContext>(StringComparer.Ordinal)
         {
-            ["managed"] = new(new Dictionary<string, string> { ["Configuration"] = configuration, ["ArtifactsPath"] = artifacts }, graph.RootElement.Clone())
+            ["managed"] = new(new Dictionary<string, string>
+            {
+                ["Configuration"] = configuration, ["ArtifactsPath"] = artifacts,
+                ["BuildProjectReferences"] = "true", ["BuildingInsideVisualStudio"] = "false"
+            }, graph.RootElement.Clone())
         };
         Dictionary<string, ValidationProject> nativeProjects = byPath;
         string target = string.Empty;
@@ -195,7 +199,7 @@ internal static class ValidationPlanner
             || path == "tests/ci/Test-AgentRules.ps1").Order(StringComparer.Ordinal).ToArray();
         string[] toolingInputs = inputs.Keys.Where(static path => path.StartsWith("tools/", StringComparison.Ordinal)
             || path.StartsWith("build/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
-            || path is "global.json" or "Directory.Build.props" or "Directory.Build.targets" or "InnoEngine.sln").ToArray();
+            || path is "global.json" or "Directory.Build.props" or "Directory.Build.targets" or "Directory.Solution.targets" or "InnoEngine.sln").ToArray();
         var inputSets = projects.ToDictionary(static project => project.path,
             project => CapturedInputs(project.inputs.Concat(nativeProjects[project.path].inputs)), StringComparer.Ordinal);
         inputSets.Add("tooling", toolingInputs);
@@ -208,7 +212,7 @@ internal static class ValidationPlanner
                     || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith(".cs.txt", StringComparison.OrdinalIgnoreCase) && !path.StartsWith(".agents/records/", StringComparison.Ordinal)
                     || Path.GetExtension(path) is ".csproj" or ".props" or ".targets"
-                    || path is "InnoEngine.sln" or "Directory.Build.props" or "Directory.Build.targets")
+                    || path is "InnoEngine.sln" or "Directory.Build.props" or "Directory.Build.targets" or "Directory.Solution.targets")
                     .Order(StringComparer.Ordinal).ToArray(), true, null)
         };
         if (changes.Any(static path => path.StartsWith(".agents/", StringComparison.Ordinal) || path is "AGENTS.md" or "CONTRIBUTING.md") || full)
@@ -393,6 +397,21 @@ internal static class ValidationPlanner
             full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings);
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
+
+        bool ChangedTestClosure(ValidationProject project)
+        {
+            var visited = new HashSet<string>(StringComparer.Ordinal);
+            return Visit(project);
+
+            bool Visit(ValidationProject owner)
+            {
+                if (!visited.Add(owner.path))
+                    return false;
+                return changes.Any(path => path.StartsWith("tests/", StringComparison.Ordinal)
+                        && (path.StartsWith(DirectoryOf(owner.path), StringComparison.Ordinal) || owner.inputs.Contains(path, StringComparer.Ordinal)))
+                    || owner.references.Any(reference => byPath.TryGetValue(reference, out ValidationProject? dependency) && Visit(dependency));
+            }
+        }
 
         string[] CapturedInputs(IEnumerable<string> declared)
         {

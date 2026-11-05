@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace Inno.Tooling.Architecture;
 
@@ -20,8 +21,7 @@ internal static class WikiProjectCoverageValidator
             string name = Path.GetFileNameWithoutExtension(project);
             string[] matches = pages.Where(page => Path.GetFileNameWithoutExtension(page) == name).ToArray();
             string relative = Path.GetRelativePath(root, project).Replace('\\', '/');
-            bool test = relative.StartsWith("tests/", StringComparison.Ordinal)
-                || relative.Contains("/tests/", StringComparison.Ordinal);
+            bool test = IsDeclaredTestProject(project);
             if (matches.Length != 1)
             {
                 if (requireCompleteCoverage || matches.Length != 0)
@@ -35,6 +35,15 @@ internal static class WikiProjectCoverageValidator
             result.Add(new WikiProjectPage(project, page, test));
         }
         return result;
+    }
+
+    internal static bool IsDeclaredTestProject(string project)
+    {
+        XElement? declaration = XDocument.Load(project).Descendants("IsTestProject").LastOrDefault();
+        // Only an explicit unconditional test-runner declaration exempts an assembly's public test methods.
+        // Conditional or inherited ambiguity must not silently remove fixture contracts from documentation.
+        return declaration?.Attribute("Condition") is null && declaration?.Parent?.Attribute("Condition") is null
+            && declaration?.Value.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
     }
 }
 

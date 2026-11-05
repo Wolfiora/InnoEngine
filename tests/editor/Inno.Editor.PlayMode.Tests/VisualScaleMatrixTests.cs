@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using Inno.Editor.ImGui;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeVector = Inno.Native.ImGui.ImVec2C;
@@ -29,7 +30,7 @@ public sealed unsafe class VisualScaleMatrixTests
         float width,
         float height
     ) {
-        using var host = new NativePanelHost();
+        using var host = new NativePanelHost(typeof(VisualScaleMatrixTests).Assembly);
         ImGuiIO* io = NativeGui.Raw.GetIO();
         io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector>(new(width, height));
         io->DisplayFramebufferScale = Unsafe.BitCast<Vector2, NativeVector>(new(density));

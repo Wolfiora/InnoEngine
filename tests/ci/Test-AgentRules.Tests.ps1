@@ -7,6 +7,12 @@ try { $nested = @(& $entry -Paths 'src/services/input/Example.cs' -Rules complet
 finally { Pop-Location }
 if ($root -cne $nested) { throw 'Root and nested invocation selected different instruction units.' }
 if ($root -notmatch 'Preserved mapping: 241 rules') { throw 'Original rule coverage is incomplete.' }
+foreach ($path in @('Directory.Build.targets', 'Directory.Solution.targets')) {
+    $selection = @(& $entry -Paths $path) -join "`n"
+    foreach ($required in @('build-host', 'platform-products', 'backend-build', 'solution')) {
+        if (-not $selection.Contains($required)) { throw "Shared build input $path did not route to $required." }
+    }
+}
 foreach ($scenario in @(@{ Rules = 'unknown-unit' }, @{ Behaviors = 'unknown-behavior' }, @{ Stage = 999 })) {
     $rejected = $false
     try { & $entry @scenario | Out-Null } catch { $rejected = $true }

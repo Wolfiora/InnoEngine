@@ -3333,7 +3333,7 @@
       ]
     },
     {
-      "pattern": "(\\.csproj$|\\.sln$|\\.props$|\\.targets$)",
+      "pattern": "(\\.csproj$|\\.slnx?$|\\.props$|\\.targets$)",
       "units": [
         "solution",
         "directories"
@@ -3401,7 +3401,7 @@
       ]
     },
     {
-      "pattern": "^(build/|backends/|platforms/|\\.github/)",
+      "pattern": "^(build/|backends/|platforms/|\\.github/|Directory\\.(Build|Solution)\\.(props|targets)$)",
       "units": [
         "build-host",
         "platform-products",

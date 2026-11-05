@@ -40,6 +40,8 @@
 - [Inno.Editor.Inspection.Tests](Inno.Editor.Inspection.Tests.md)
 - [Inno.Editor.Interactions.Tests](Inno.Editor.Interactions.Tests.md)
 - [Inno.Editor.PlayMode.Tests](Inno.Editor.PlayMode.Tests.md)
+- [Inno.Editor.Performance.Tests](Inno.Editor.Performance.Tests.md)
+- [Inno.Testing.Editor.Native](Inno.Testing.Editor.Native.md)
 - [Inno.Editor.Presentation.Tests](Inno.Editor.Presentation.Tests.md)
 - [Inno.Editor.Scripting.Tests](Inno.Editor.Scripting.Tests.md)
 - [Inno.Extensibility.Modules.TestDependency](Inno.Extensibility.Modules.TestDependency.md)

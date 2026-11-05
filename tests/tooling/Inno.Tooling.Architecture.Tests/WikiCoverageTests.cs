@@ -63,6 +63,23 @@ public sealed class WikiCoverageTests : IDisposable
     }
 
     [Fact]
+    public void FixtureLibrariesKeepPublicApiCoverageInsideTheTestTree()
+    {
+        const string C_PROJECT = "tests/fixtures/SharedFixture/SharedFixture.csproj";
+        Write(C_PROJECT, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        Write("tests/fixtures/SharedFixture/Fixture.cs", "namespace SharedFixture; public sealed class Fixture { public int Read() => 1; }");
+        Write("docs/development/testing/README.md", "[Fixture](SharedFixture.md)");
+        Write("docs/development/testing/SharedFixture.md", "# Shared fixture\n");
+        string inventory = Path.Combine(m_root, "fixture-api.json");
+        string failure = Run(inventory);
+        Assert.Contains("M:SharedFixture.Fixture.Read", failure, StringComparison.Ordinal);
+        using (JsonDocument document = JsonDocument.Parse(File.ReadAllText(inventory)))
+            Assert.Contains(document.RootElement.EnumerateArray(), entry => entry.GetProperty("project").GetString() == "SharedFixture");
+        Write(C_PROJECT, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework><IsTestProject>true</IsTestProject></PropertyGroup></Project>");
+        Assert.DoesNotContain("M:SharedFixture.Fixture.Read", Run(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ProjectPagesMustBeUniqueAndIndexed()
     {
         File.Delete(Path.Combine(m_root, "docs/core/Inno.Core.Probe.md"));

@@ -13,12 +13,13 @@ using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Scene;
 using Inno.Scene.Components;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeVector = Inno.Native.ImGui.ImVec2C;
 using SceneVector = Inno.Core.Mathematics.Vector3;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Editor.Performance.Tests;
 
 public sealed partial class LargePanelPerformanceTests
 {
@@ -30,7 +31,7 @@ public sealed partial class LargePanelPerformanceTests
     [Trait("Acceptance", "Performance")]
     public unsafe void LargeViewsMeasureActualInputAndContinuousEditWork(string scenario)
     {
-        using var host = new NativeProjectPanelHost(supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
         bool hierarchy = scenario.StartsWith("hierarchy", StringComparison.Ordinal);
         GameScene? scene = hierarchy ? LoadInteractionHierarchy(host) : null;
         if (!hierarchy)

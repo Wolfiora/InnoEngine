@@ -345,4 +345,12 @@
       BindingSelectionInputPath="$(InnoNativeBindingSelection)"
       OutputDirectory="$(PublishDir)" />
   </Target>
+  <Target
+    Name="ApplyInnoCleanReferencePolicy"
+    BeforeTargets="CleanReferencedProjects"
+    Condition="'$(InnoCleanProjectReferences)' == 'false'">
+    <PropertyGroup>
+      <BuildProjectReferences>false</BuildProjectReferences>
+    </PropertyGroup>
+  </Target>
 </Project>

@@ -34,3 +34,6 @@ internal static class ContractRunner
 ```
 
 这是同步测试边界，不保存插件类型、代际对象或委托。GPU 和窗口线程仍由子进程中的实际契约负责。
+
+<!-- api: T:Inno.Testing.Processes.NativeProcessTestHost 20dc68aad1aeb703cfa826414fdefa497e7bd7957a303031b3f015bd2c81bd88 -->
+<!-- api: M:Inno.Testing.Processes.NativeProcessTestHost.Run(System.String,System.String,System.Int32) c3354bf7386ddb86f56667af8968b4d72382e2d9f8164c70414dfca2464e3822 -->

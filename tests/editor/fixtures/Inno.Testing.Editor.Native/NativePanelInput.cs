@@ -4,11 +4,21 @@ using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Testing.Editor.Native;
 
-internal static unsafe class NativePanelInput
+/// <summary>
+/// Delivers real native focus and keyboard events through a panel fixture's frame boundary.
+/// </summary>
+public static unsafe class NativePanelInput
 {
-    internal static void Focus(
+    /// <summary>
+    /// Focuses the actual active native window matching the requested fragment.
+    /// </summary>
+    /// <param name="host">The current thread's live native host.</param>
+    /// <param name="panel">The panel drawn to discover its window.</param>
+    /// <param name="windowFragment">The required fragment of the actual native window name.</param>
+    /// <exception cref="InvalidOperationException">No active native window matches the fragment.</exception>
+    public static void Focus(
         NativePanelHost host,
         EditorPanelExtension panel,
         string windowFragment
@@ -30,7 +40,15 @@ internal static unsafe class NativePanelInput
         });
     }
 
-    internal static void Key(
+    /// <summary>
+    /// Delivers a complete key press and release through actual native frames.
+    /// </summary>
+    /// <param name="host">The current thread's live native host.</param>
+    /// <param name="panel">The panel receiving input.</param>
+    /// <param name="key">The native key to press.</param>
+    /// <param name="shift">Whether to hold Shift during the key press.</param>
+    /// <param name="primary">Whether to hold the fixture's Control convention during the key press.</param>
+    public static void Key(
         NativePanelHost host,
         EditorPanelExtension panel,
         ImGuiKey key,

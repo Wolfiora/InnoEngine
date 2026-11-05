@@ -10,6 +10,7 @@ using Inno.Core.Settings;
 using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeGui = Inno.Native.ImGui.ImGui;
 
@@ -21,7 +22,7 @@ public sealed unsafe class SettingsApplyNativeTests
     [Trait("Acceptance", "Workflows")]
     public void FaultedDrawerReleasesReloadAdmissionUntilItsExtensionsRecover()
     {
-        using var host = new NativeProjectPanelHost(includeSettings: true);
+        using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true);
         var driver = new SettingsInput(host);
         Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
         driver.Draw();
@@ -57,7 +58,7 @@ public sealed unsafe class SettingsApplyNativeTests
         AtomicEditorSetting.observe = true;
         try
         {
-            using var host = new NativeProjectPanelHost(includeSettings: true);
+            using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true);
             for (int cycle = 0; cycle < 100; cycle++)
                 OpenAndClose(host);
             Assert.True(AtomicEditorSetting.snapshots.Count >= 100);
@@ -98,7 +99,7 @@ public sealed unsafe class SettingsApplyNativeTests
         try
         {
             var document = new FailingSettingsDocument(new FileByteDocumentStore(Path.Combine(directory, "Project.inno")));
-            using var host = new NativeProjectPanelHost(includeSettings: true, settingsDocument: document);
+            using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true, settingsDocument: document);
             Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out var editor));
             var driver = new SettingsInput(host);
             Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
@@ -165,7 +166,7 @@ public sealed unsafe class SettingsApplyNativeTests
         try
         {
             var document = new FailingSettingsDocument(new FileByteDocumentStore(Path.Combine(directory, "Project.inno")));
-            using var host = new NativeProjectPanelHost(includeSettings: true, settingsDocument: document);
+            using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true, settingsDocument: document);
             Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out var editor));
             var driver = new SettingsInput(host);
             Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));

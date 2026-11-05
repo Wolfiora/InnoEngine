@@ -144,8 +144,10 @@ public sealed class ManagedProjectGraphCaptureTests
         }
     }
 
-    [Fact]
-    public async Task BatchResolutionPreservesActualReferencesCompilerSymbolsAndImportedSources()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BatchResolutionPreservesActualReferencesCompilerSymbolsAndImportedSources(bool buildReferences)
     {
         string parent = Path.Combine(Path.GetTempPath(), "InnoGraphTests");
         string root = Path.Combine(parent, Guid.NewGuid().ToString("N"));
@@ -163,7 +165,7 @@ public sealed class ManagedProjectGraphCaptureTests
             File.WriteAllText(Path.Combine(root, "A", "Contract.cs"), "namespace Contracts; public class Contract { }");
             File.WriteAllText(Path.Combine(root, "Imported.cs"), "namespace Consumers; public class Consumer : Contracts.Contract { }");
             File.WriteAllText(Path.Combine(root, "Imported.props"), "<Project><PropertyGroup><DefineConstants>$(DefineConstants);IMPORTED</DefineConstants></PropertyGroup><ItemGroup><Compile Include=\"../Imported.cs\" /></ItemGroup></Project>");
-            File.WriteAllText(second, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup><Import Project=\"../Imported.props\" /><ItemGroup><ProjectReference Include=\"../A/A.csproj\" /></ItemGroup></Project>");
+            File.WriteAllText(second, "<Project Sdk=\"Microsoft.NET.Sdk\" TreatAsLocalProperty=\"BuildProjectReferences\"><PropertyGroup><TargetFramework>net10.0</TargetFramework><BuildProjectReferences>true</BuildProjectReferences></PropertyGroup><Import Project=\"../Imported.props\" /><ItemGroup><ProjectReference Include=\"../A/A.csproj\" /></ItemGroup></Project>");
             var start = new ProcessStartInfo(dotnet) { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
             foreach (string argument in new[] { "build", second, "-m:1", "-nr:false", "--disable-build-servers" })
                 start.ArgumentList.Add(argument);
@@ -172,10 +174,17 @@ public sealed class ManagedProjectGraphCaptureTests
             Task<string> errors = process.StandardError.ReadToEndAsync();
             await process.WaitForExitAsync();
             Assert.True(process.ExitCode == 0, await output + await errors);
+            File.WriteAllText(Path.Combine(root, "Directory.Build.targets"), """
+                <Project>
+                  <Target Name="RejectCompilationDuringReferenceCapture" BeforeTargets="CoreCompile">
+                    <Error Text="Reference capture must not compile an already prepared dependency." />
+                  </Target>
+                </Project>
+                """);
             string captured = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet, [first, second],
                 new Dictionary<string, string>
                 {
-                    ["Configuration"] = "Debug", ["DesignTimeBuild"] = "true", ["BuildProjectReferences"] = "false", ["InnoProductRestore"] = "false"
+                    ["Configuration"] = "Debug", ["DesignTimeBuild"] = "true", ["BuildProjectReferences"] = buildReferences.ToString(), ["InnoProductRestore"] = "false"
                 }, resolveReferences: true);
             using JsonDocument graph = JsonDocument.Parse(captured);
             Assert.Equal(2, graph.RootElement.GetArrayLength());

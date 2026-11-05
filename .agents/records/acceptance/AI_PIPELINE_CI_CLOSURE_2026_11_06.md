@@ -31,3 +31,19 @@
 - 实查 ruleset `13788396` 为 active，默认分支必须满足 `Engine validation`、strict base freshness 和原有讨论解决要求；没有启用合并队列。
 - 默认分支仍是 `master`，尚未采用本分支的新工作流。定时触发及正向草稿发布需要默认分支采用和成功完整认证；不得用 PR 产物冒充默认分支产物。
 - 本轮未完成全部验收，不关闭 #75。
+
+## Console 反馈与测试边界整改
+
+- `console-v2-0` 完整依赖选择样本耗时 2510.63 秒，退出码 1；属于工具改动后的首次运行，不能称为 warm 通过样本。559 项测试全部通过，产品输入重复 HTTPS 拉取因连接重置失败。首次失败、源码身份及阶段耗时保留在 `artifacts/validation/overnight-2026-11-06/console-v2-samples.json` 和对应运行目录。
+- Hosting 12 项、PlayMode 448 项、Presentation 99 项；未选择 Build integration。PlayMode 中 15 项大规模测试合计 886.61 秒，其余 433 项合计 131.92 秒。将原三份 `LargePanelPerformanceTests` 源文件归入独立 performance owner，共享真实 native fixture 归入 `Inno.Testing.Editor.Native`；保留所有操作与断言，显式传递测试组合 Assembly，避免发现范围随 fixture 所在程序集变化。源码架构检查 248 项目通过；两测试根编译通过，零警告／错误。迁移后 15 项 performance 和 433 项 PlayMode 契约全部通过、零跳过，分别耗时 16 分 33 秒和 2 分 21 秒；这些有并发工作负载的正确性验收不冒充最终 warm 基准。TRX 位于 `editor-performance-migration-trx/`。
+- 新的 performance 选择沿实际引用图覆盖共享测试 fixture 的变化；普通产品源码变化不自动选择规模测试。扩展矩阵及构建／native／reload 变化仍选择相应深层证据。针对该选择行为的回归通过。
+- 发现 Editor 的 `TreatAsLocalProperty` 会覆盖命令行 `BuildProjectReferences=false`，使局部 Clean 仍递归清理。增加仅在明确根清理请求时生效的 Clean target，并统一根构建与入口引用的有效属性。真实回归模拟相同覆盖，验证保留时间戳的源码变化必须重编译、未变依赖应保留；42 项计划／编译回归通过，其中根清理用例耗时 6 分 11 秒。
+- 另外保护实际 SDK 图中的 property variants：另一个输出实例的源码仍属于依赖保护范围，不能用默认实例的根 Clean 冒充全部实例已清理。配合新 Clean 策略的实际变体用例通过（9 分 55 秒）；后续补强 fixture API 覆盖后，组合回归再次执行中。
+- 产品消费者输入改为验证工作区所有的固定提交 Git 对象缓存；原提交对象可从身份一致的相邻仓库只读导入，绝不读取未提交工作文件。每次检查对象完整性、精确提交和提取边界；损坏隔离后重新导入，错误 origin 拒绝，初始化完成后才发布缓存目录。真实 Git 回归通过：首次导入、后续无 fetch 复用、损坏隔离重建、错误 origin 拒绝及原消费者 dirty 内容／对象库保持不变。首次发现 Windows Git 长路径限制，修复仅配置本次 bare owner；随后损坏注入遇到 Git 只读文件属性，调整测试的显式注入步骤后通过。首次失败日志均保留。真实产品旅程仍待验收。
+- 实际五根 fixture 联合构建在四节点下复现相同 Catalogs 输出竞争：直接 solution 构建各根自行生成 bootstrap owner。统一验证原已显式传递同一 owner，现通过标准 `Directory.Solution.targets` 扩展使普通 `.sln`／`.slnx` 调用也统一 owner。四节点、连续两次 Rebuild 的真实回归通过，同次三个项目只用一个 owner，下一次 owner 更新；原失败的五根构建通过，Catalogs 仅执行一次。对应 `solution-owner-regression-trx/` 与 `fixture-api-build-owned.log`。共享 solution 输入纳入证据身份与规则路由，241 条规则完整保留，路由／预算回归通过。
+- Wiki 验证原先按 `tests/` 路径排除整个程序集，漏掉公开测试支持库。改为只有明确声明测试 runner 的项目才免除测试方法 API 映射；14 个 fixture／支持项目补齐 94 个真实符号映射，全部签名及两份 C# 示例通过。39 项 Wiki 回归通过，包括新增 fixture 库不因目录而豁免的用例。原生 fixture 首次使用缺少产品属性的手动检查产生缺引用失败；改用已有 SDK 上下文并准备实际缺失的五根项目，没有复制 DLL 或放宽签名检查。源码／链接检查与 API 覆盖分别留证。
+- `42104761730` 为 `0f0df3e` 的真实 Windows/macOS 运行，目前仍在执行，未取得绿色汇总。更新的本地修订尚未提交／推送，不把该运行算作这些修订的证据。
+- 临时托管工作区 `C:/Users/23842/.codex/worktrees/pipeline-acceptance-fixes/InnoEngine` 的桌面归档被拒绝：`The task's primary checkout cannot be removed.`；原 checkout 重新附加被拒绝：`The checkout exists but is not a managed worktree.`。修订已回到原 `ai-pipeline`，临时工作区保持可恢复，未绕过应用保护删除。当前磁盘可用约 74 GiB。
+
+- 组合回归揭示 Wiki 引用查询继承 `BuildProjectReferences=true` 后会重新编译已准备的依赖，关闭时输出新鲜度检查因此正确失败。首次组合与诊断日志保留；SDK 引用捕获现在独立关闭引用编译，并在执行边界覆盖 local property 的重新启用。两个真实 SDK 复现先失败，修复后全部 7 项图求值回归通过；原联合编译／变体用例正在复验，没有删除输出新鲜度检查。
+- 更新后的完整选择清单包含 248 项目、64 测试 owner（17 domain、33 contract、4 integration、8 native、2 performance），328 项必要检查；17 个 domain 均为 managed。`owner-coverage-final.json` 仅证明选择完整性。文档查询 24 项回归通过，当前源码架构检查通过。

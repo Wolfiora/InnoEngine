@@ -8,6 +8,7 @@ using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Scene;
+using Inno.Testing.Editor.Native;
 using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
@@ -19,7 +20,7 @@ public sealed class ListPanelKeyboardNativeTests
     [InlineData(true)]
     public void BrowserResolvesCurrentSourceEntriesAfterAnUnchangedRescan(bool tree)
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(ListPanelKeyboardNativeTests).Assembly);
         host.assets.CreateDirectory(AssetPath.Project("Alpha"));
         host.assets.CreateDirectory(AssetPath.Project("Beta"));
         host.assets.Rescan();
@@ -46,7 +47,7 @@ public sealed class ListPanelKeyboardNativeTests
         float width,
         float height
     ) {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(ListPanelKeyboardNativeTests).Assembly);
         host.native.SetDisplayMetrics(new(width, height), framebufferScale, zoom);
         GameScene scene = host.CreateScene();
         GameObject[] objects = Enumerable.Range(0, 12).Select(index => scene.CreateObject("Object " + index.ToString("D2"))).ToArray();
@@ -94,7 +95,7 @@ public sealed class ListPanelKeyboardNativeTests
         float width,
         float height
     ) {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(ListPanelKeyboardNativeTests).Assembly);
         host.native.SetDisplayMetrics(new(width, height), framebufferScale, zoom);
         AssetFileEntry[] entries = Enumerable.Range(0, 12).Select(index =>
         {

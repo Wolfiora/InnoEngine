@@ -28,16 +28,22 @@ internal sealed class ValidationBuildInputs
         m_outputDigests = outputDigests;
         m_cancellation = cancellation;
         m_checks = plan.checks.Where(check => check.kind == "build" && check.context == context && check.exclusion is null).ToArray();
+        var variantInputs = new HashSet<string>(StringComparer.Ordinal);
         foreach (ValidationCheck check in m_checks)
         {
             JsonElement snapshot = plan.contexts[context].sdkGraph.EnumerateArray().Single(snapshot =>
                 Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == check.owner);
+            if (snapshot.GetProperty("Variants").GetArrayLength() != 0)
+                variantInputs.UnionWith(plan.inputSets[check.owner]);
             var dependencyPaths = check.inputs.Where(input => input != "@" + check.owner)
                 .SelectMany(input => input.StartsWith('@') ? plan.inputSets[input[1..]] : [input]).ToHashSet(StringComparer.Ordinal);
             m_selectedSources.UnionWith(snapshot.GetProperty("Items").GetProperty("Compile").EnumerateArray()
                 .Select(item => Path.GetRelativePath(plan.root, item.GetProperty("FullPath").GetString()!).Replace('\\', '/'))
                 .Where(path => plan.inputs.ContainsKey(path) && !dependencyPaths.Contains(path)));
         }
+        // Root-only Clean does not cover additional property instances reached through another root's references.
+        // Keep their complete inputs protected until every effective output instance has an explicit clean boundary.
+        m_selectedSources.ExceptWith(variantInputs);
         m_path = PathBoundary.RequireUnlinkedPath(plan.artifacts, Path.Combine(plan.artifacts, "validation-build-" + context + ".json"));
         m_completed = File.Exists(m_path) ? JsonSerializer.Deserialize<Dictionary<string, Compilation>>(File.ReadAllBytes(m_path))
             ?? throw new InvalidDataException("Completed compilation input identities are empty.") : new(StringComparer.Ordinal);

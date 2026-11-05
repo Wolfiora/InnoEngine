@@ -50,9 +50,11 @@ public sealed class ValidationPlanningTests
     {
         using var repository = new ValidationRepository();
         const string C_OWNER = "tests/Cost.Tests/Cost.Tests.csproj";
+        const string C_FIXTURE = "tests/fixtures/CostFixture/CostFixture.csproj";
+        repository.Write(C_FIXTURE, ValidationRepository.Project());
         repository.Write(C_OWNER, ValidationRepository.Project("""
             <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer></PropertyGroup>
-            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /></ItemGroup>
+            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /><ProjectReference Include="../fixtures/CostFixture/CostFixture.csproj" /></ItemGroup>
             """));
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare cost sampling owner");
@@ -62,6 +64,14 @@ public sealed class ValidationPlanningTests
             JsonElement check = plan.RootElement.GetProperty("checks").EnumerateArray().Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
             Assert.Contains("Performance sampling requires", check.GetProperty("exclusion").GetString());
         }
+        repository.Write("tests/fixtures/CostFixture/Changed.cs", "namespace CostFixture; public class Changed { }");
+        using (JsonDocument plan = await repository.PlanAsync())
+        {
+            JsonElement check = plan.RootElement.GetProperty("checks").EnumerateArray().Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
+            Assert.Equal(JsonValueKind.Null, check.GetProperty("exclusion").ValueKind);
+        }
+        repository.Git("add", "tests/fixtures/CostFixture/Changed.cs");
+        repository.Git("commit", "-m", "Retain the now-verified fixture input");
         repository.Write("build/Changed.props", "<Project />");
         using (JsonDocument plan = await repository.PlanAsync())
         {
@@ -376,6 +386,19 @@ public sealed class ValidationPlanningTests
         string tests = repository.PathOf("tests/Example.Tests/Example.Tests.csproj");
         File.WriteAllText(tests, File.ReadAllText(tests).Replace("Flavor=selected", "Flavor=native", StringComparison.Ordinal));
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+    }
+
+    [Fact]
+    public async Task SolutionTargetsInvalidateCompilationAndExpandSharedAcceptance()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("Directory.Solution.targets", "<Project />");
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.True(plan.RootElement.GetProperty("full").GetBoolean());
+        Assert.Contains(plan.RootElement.GetProperty("inputSets").GetProperty("tooling").EnumerateArray(),
+            input => input.GetString() == "Directory.Solution.targets");
+        Assert.Contains(plan.RootElement.GetProperty("checks").EnumerateArray(), check =>
+            check.GetProperty("kind").GetString() == "build" && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
     }
 
     [Fact]

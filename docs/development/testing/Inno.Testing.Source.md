@@ -41,3 +41,7 @@ internal static class SourceInputs
 
 - [进程测试宿主](Inno.Testing.Processes.md)：隔离进程与超时、输出排空。
 - [构建契约测试](Inno.Build.Tests.md)：SDK、生成、发布和源码 owner。
+
+<!-- api: T:Inno.Testing.Source.TestRepository da8463026f1284e733d5566e89d2af4b1c73253d7c71a1b75918fac97fb60a50 -->
+<!-- api: M:Inno.Testing.Source.TestRepository.GetArtifactsPath(System.Reflection.Assembly) d3d8879bb42254e08f413f3e539aab70110ef71e556c12d6ba65187696415488 -->
+<!-- api: M:Inno.Testing.Source.TestRepository.GetRoot(System.Reflection.Assembly) 11b628e99c277926ba90f7659e7f0ce4867e3e44811ee5949bc66c9448e8e46c -->

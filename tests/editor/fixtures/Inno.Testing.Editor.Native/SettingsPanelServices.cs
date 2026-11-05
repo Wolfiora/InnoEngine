@@ -12,7 +12,7 @@ using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scripting.Compiler;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Testing.Editor.Native;
 
 internal sealed class SettingsPanelServices
 {

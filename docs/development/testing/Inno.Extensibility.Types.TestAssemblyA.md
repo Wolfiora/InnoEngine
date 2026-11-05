@@ -31,3 +31,8 @@ dotnet test tests/extensibility/Inno.Extensibility.Types.Tests/Inno.Extensibilit
 - [项目文件](../../../tests/extensibility/fixtures/Inno.Extensibility.Types.TestAssemblyA/Inno.Extensibility.Types.TestAssemblyA.csproj)：真实引用及构建配置。
 - [消费测试](Inno.Extensibility.Types.Tests.md)：断言、执行环境与场景入口。
 - [当前验收](../../../.agents/records/acceptance/current.md)：本轮实际运行结果；本页不声明测试已经通过。
+
+<!-- api: T:Inno.Extensibility.Types.TestAssets.A.AssemblyAMarkerAttribute 89d5e46060648c7daa29e434e342b615aa4775ed79698b7add3afcb174b4f04f -->
+<!-- api: M:Inno.Extensibility.Types.TestAssets.A.AssemblyAMarkerAttribute.#ctor a74cdad0c8858a2593fba34b6a0568802def67ef5e27abdcaeac017347ffd1df -->
+<!-- api: T:Inno.Extensibility.Types.TestAssets.A.AssemblyAMarkedType d43060d86d4cab1f99d925e0f4ca59bb52014c83bb7366b4c217792b4aa76a7b -->
+<!-- api: M:Inno.Extensibility.Types.TestAssets.A.AssemblyAMarkedType.#ctor cec96898dee825e4cbf5d3a217dfdb8a87a44334986efe1449b41ce4b389c294 -->

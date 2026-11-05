@@ -248,7 +248,7 @@ internal static class ValidationRunner
                                         await ValidationProcess.RunAsync(plan.dotnet, ["clean", solution, ..properties,
                                             "-p:InnoPrepareProductNative=false", "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N"),
                                             ..!compilationInputs.RequiresDependencyCompilation(dependencyInputs)
-                                                ? new[] { "-p:BuildProjectReferences=false" } : Array.Empty<string>(),
+                                                ? new[] { "-p:BuildProjectReferences=false", "-p:InnoCleanProjectReferences=false" } : Array.Empty<string>(),
                                             "--disable-build-servers", "-m:1", "-nr:false"],
                                             plan.root, Path.Combine(directory, contextId + "-clean.log"), cancellation).ConfigureAwait(false);
                                     await ValidationProcess.RunAsync(plan.dotnet,

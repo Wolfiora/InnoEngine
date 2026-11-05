@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Inno.Native.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
-namespace Inno.Editor.PlayMode.Tests;
+namespace Inno.Testing.Editor.Native;
 
 internal sealed unsafe class NativeClipboard : IDisposable
 {
