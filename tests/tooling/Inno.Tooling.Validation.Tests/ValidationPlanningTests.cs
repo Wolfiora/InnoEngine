@@ -52,14 +52,19 @@ public sealed class ValidationPlanningTests
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(plan));
     }
 
-    [Fact]
-    public async Task GitLineEndingConversionDoesNotSelectUnchangedOwners()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GitLineEndingConversionDoesNotSelectUnchangedOwners(bool committedCarriageReturns)
     {
         using var repository = new ValidationRepository();
-        repository.Write(".gitattributes", "*.cs text eol=crlf\n");
+        repository.Git("config", "core.autocrlf", "false");
+        if (!committedCarriageReturns)
+            repository.Write(".gitattributes", "*.cs text eol=crlf\n");
         repository.Write("src/Example/Unchanged.cs", "namespace Example;\r\npublic class Unchanged { }\r\n");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare checkout line endings");
+        repository.Git("config", "core.autocrlf", "true");
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Empty(Changes(plan));
         Assert.Empty(Owners(plan));
@@ -199,6 +204,25 @@ public sealed class ValidationPlanningTests
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Empty(Owners(plan));
         Assert.DoesNotContain(plan.RootElement.GetProperty("checks").EnumerateArray(), check => check.GetProperty("kind").GetString() == "build");
+        JsonElement wiki = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("kind").GetString() == "wiki");
+        Assert.Contains(wiki.GetProperty("prerequisites").EnumerateArray(), prerequisite => prerequisite.GetString() == "documentation");
+    }
+
+    [Fact]
+    public async Task SourceSelectedWikiRequiresStructureEvidenceIncludingProjectAndLinkTargets()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("docs/Example.md", "# Example\n");
+        repository.Write("src/Example/Existing.cs", "namespace Example; public class Existing { }\n");
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare project documentation and link target");
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }\n");
+        using JsonDocument plan = await repository.PlanAsync();
+        JsonElement structure = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "documentation");
+        Assert.Contains(structure.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "src/Example/Example.csproj");
+        Assert.Contains(structure.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "src/Example/Existing.cs");
+        JsonElement wiki = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("kind").GetString() == "wiki");
+        Assert.Contains(wiki.GetProperty("prerequisites").EnumerateArray(), prerequisite => prerequisite.GetString() == "documentation");
     }
 
     [Fact]
@@ -450,6 +474,74 @@ public sealed class ValidationPlanningTests
         Assert.Equal("unavailable:" + revision, plan.RootElement.GetProperty("inputs").GetProperty("extern/Uninitialized").GetString());
         Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(plan));
+    }
+
+    [Fact]
+    public async Task CachedSubmoduleStatusCannotCertifyMutatedNativeSource()
+    {
+        using var source = new ValidationRepository();
+        using var repository = new ValidationRepository();
+        repository.Git("-c", "protocol.file.allow=always", "submodule", "add", source.PathOf("."), "extern/Native");
+        repository.Git("commit", "-am", "Pin native source fixture");
+        repository.Git("-C", "extern/Native", "update-index", "--assume-unchanged", "fixtures/plugin.txt");
+        string path = repository.PathOf("extern/Native/fixtures/plugin.txt");
+        DateTime timestamp = File.GetLastWriteTimeUtc(path);
+        long length = new FileInfo(path).Length;
+        File.WriteAllText(path, "mutated input");
+        File.SetLastWriteTimeUtc(path, timestamp);
+        Assert.Equal(length, new FileInfo(path).Length);
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+        Assert.Contains("uncommitted inputs", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task IgnoredCompilerInputsCannotDisappearFromValidationIdentity()
+    {
+        using var repository = new ValidationRepository();
+        File.AppendAllText(repository.PathOf(".gitignore"), "Local.cs\n");
+        repository.Git("commit", "-am", "Ignore a local file");
+        repository.Write("src/Example/Local.cs", "namespace Example; public class Local { }\n");
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+        Assert.Contains("untracked ignored compiler input", failure.Message, StringComparison.Ordinal);
+        Assert.Contains("src/Example/Local.cs", failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SubmoduleLinksAreVerifiedAsLinkTextWithoutFollowingTheirTargets()
+    {
+        using var source = new ValidationRepository();
+        source.Write("link.txt", "../../outside-owner.txt");
+        string blob = source.Git("hash-object", "-w", "link.txt");
+        source.Git("update-index", "--add", "--cacheinfo", "120000," + blob + ",link.txt");
+        source.Git("commit", "-m", "Record a link without importing its target");
+        using var repository = new ValidationRepository();
+        repository.Git("-c", "protocol.file.allow=always", "submodule", "add", source.PathOf("."), "extern/Native");
+        repository.Git("commit", "-am", "Pin source with a symbolic link");
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project(
+            "<ItemGroup><Compile Include=\"../../extern/Native/src/Probe.cs\" /></ItemGroup>"));
+        source.Write("src/Probe.cs", "namespace Native; public class Probe { }");
+        source.Git("add", "src/Probe.cs");
+        source.Git("commit", "-m", "Declare a compiler input");
+        repository.Git("-C", "extern/Native", "fetch", "origin");
+        repository.Git("-C", "extern/Native", "checkout", "origin/master");
+        repository.Git("add", "extern/Native");
+        repository.Git("commit", "-m", "Update compiler input owner");
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.Contains(plan.RootElement.GetProperty("inputSets").GetProperty("src/Example/Example.csproj").EnumerateArray(),
+            input => input.GetString() == "extern/Native");
+        Assert.Contains(plan.RootElement.GetProperty("inputSets").GetProperty("native-sources").EnumerateArray(),
+            input => input.GetString() == "extern/Native");
+        string path = repository.PathOf("extern/Native/link.txt");
+        repository.Git("-C", "extern/Native", "update-index", "--assume-unchanged", "link.txt");
+        if (new FileInfo(path).LinkTarget is not null)
+        {
+            File.Delete(path);
+            File.CreateSymbolicLink(path, "../../another-owner.txt");
+        }
+        else
+            File.WriteAllText(path, "../../another-owner.txt");
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+        Assert.Contains("uncommitted inputs", failure.Message, StringComparison.Ordinal);
     }
 
     private static string[] Owners(JsonDocument document)

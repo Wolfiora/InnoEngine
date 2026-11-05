@@ -16,7 +16,7 @@ internal static class ValidationCompiledGraph
         var instances = snapshots.SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
             .ToDictionary(static instance => instance.GetProperty("Identity").GetString()!, StringComparer.Ordinal);
         string[] roots = check.kind is "build" or "test" ? [check.owner]
-            : check.projects ?? check.inputs.Where(static input => input.StartsWith('@') && input != "@tooling")
+            : check.projects ?? check.inputs.Where(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"))
                 .Select(static input => input[1..]).ToArray();
         var pending = new Queue<string>();
         foreach (string root in roots)

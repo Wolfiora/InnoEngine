@@ -15,7 +15,9 @@
 
 `ProductNativeCostTests.RealPresentationBuildUsesDeclaredCMakeAndFrozenWindowSource` 仅在显式设置 `INNO_ACCEPTANCE_IMGUI_BUILD` 时执行 WindowsX64 ImGui/ImGuizmo 实际构建。普通套件不算这项真实编译通过；macOS 对应的冷构建由 Engine CI 的真实 Editor 准备路径验证。
 
-`SolutionBootstrapOwnershipTests` 使用两个真实 MSBuild fixture 项目验证一次 Solution 操作共用 bootstrap owner，下一次操作产生新 owner。`BgfxNativeProfileTests` 验证工具生产者复用源码 owner，却不请求 Runtime 绑定；发行测试验证 Editor 与独立工具使用同一 Release 步骤。
+`SolutionBootstrapOwnershipTests` 使用两个真实 MSBuild fixture 项目验证一次 Solution 操作共用 bootstrap owner，下一次操作产生新 owner。真实 bootstrap Task 还验证同进程重复取得声明成功、退出进程的声明被拒绝、新身份可以取得独立声明；验证入口的 Clean 与 Build 分别拥有进程身份。`BgfxNativeProfileTests` 验证工具生产者复用源码 owner，却不请求 Runtime 绑定；发行测试验证 Editor 与独立工具使用同一 Release 步骤。
+
+同组回归使用真实 Editor 项目执行有界 Clean，要求无 Task runtime、无编译 DLL、无原生准备；它不代替后续 Build 的原生验收。
 
 绑定增量回归使用真实 SDK 检查：新的绑定选择文件不会使中立项目重编译；相同选择保持 import 时间戳；产品选择在 Build/Publish 后仍可核对。生成回归同时检查未选目标映射不失效、选中配置变化仍产生独立 generation。
 

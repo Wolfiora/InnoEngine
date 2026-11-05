@@ -40,6 +40,7 @@ public static partial class ArchitectureValidator
     /// The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output,
     /// and Wiki inventories with explicitly selected runtime and editor script reference assemblies.
     /// --wiki-target limits product compilation to that explicit target; shared Wiki checks remain complete.
+    /// --wiki-contracts-only checks signatures and examples; repository structure and links require separate documentation evidence.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels owned SDK evaluation processes and drains them before returning.
@@ -69,6 +70,7 @@ public static partial class ArchitectureValidator
         bool sourceOnly = false;
         bool metadataOnly = false;
         bool wikiOnly = false;
+        bool wikiContractsOnly = false;
         bool documentationOnly = false;
         var wikiPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         string? sdkSnapshot = null;
@@ -93,6 +95,12 @@ public static partial class ArchitectureValidator
                 wiki = true;
             else if (argument == "--wiki-only" && !wikiOnly)
                 wikiOnly = true;
+            else if (argument == "--wiki-contracts-only" && !wiki && !wikiOnly)
+            {
+                wiki = true;
+                wikiOnly = true;
+                wikiContractsOnly = true;
+            }
             else if (argument == "--documentation-only" && !documentationOnly)
                 documentationOnly = true;
             else if (argument == "--wiki-page" && index + 1 < arguments.Length)
@@ -192,8 +200,11 @@ public static partial class ArchitectureValidator
         var sourceTrees = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
         if (wiki)
         {
-            WikiContentBoundaryValidator.Validate(repositoryRoot, failures);
-            WikiLinkValidator.Validate(repositoryRoot, failures);
+            if (!wikiContractsOnly)
+            {
+                WikiContentBoundaryValidator.Validate(repositoryRoot, failures);
+                WikiLinkValidator.Validate(repositoryRoot, failures);
+            }
             WikiApiCoverageValidator.Validate(repositoryRoot, selectedProjectPages, documentationModels,
                 wikiInventoryPath, failures, cancellationToken);
             WikiExampleValidator.Validate(repositoryRoot, pages, documentationModels,
@@ -236,6 +247,7 @@ public static partial class ArchitectureValidator
         if (failures.Count == 0)
         {
             Console.WriteLine(sourceOnly ? "InnoEngine source architecture validation passed; compiled API evidence is separate."
+                : wikiContractsOnly ? "InnoEngine selected Wiki contracts passed; repository structure and links require separate evidence."
                 : wikiOnly ? "InnoEngine selected Wiki validation passed; source and compiled API evidence are separate."
                 : metadataOnly ? "InnoEngine selected compiled API validation passed." : "InnoEngine architecture validation passed.");
             return 0;

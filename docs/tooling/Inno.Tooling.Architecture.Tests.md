@@ -10,6 +10,8 @@
 
 ## 验证协议
 
+`WikiCoverageTests` 分别验证全仓文档结构与 Wiki 契约责任：缺失链接由结构检查拒绝，过期签名和不可编译示例由契约检查拒绝；独立的完整 Wiki 命令继续覆盖两者。统一计划不重复运行全仓链接和内容边界检查。
+
 `ArchitectureCommandTests.CliValidatesSourceContracts` 每次在临时目录建立隔离 solution，先验证其已知的三项“缺少产品 composition 项目”基线，再写入单项源码验证额外违规是否符合预期：
 
 - global using。

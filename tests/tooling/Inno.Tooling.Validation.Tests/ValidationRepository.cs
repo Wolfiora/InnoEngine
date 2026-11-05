@@ -42,7 +42,8 @@ internal sealed class ValidationRepository : IDisposable
         if (!root.StartsWith(parent, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The fixture owner escaped its temporary boundary.");
         foreach (string file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
-            File.SetAttributes(file, FileAttributes.Normal);
+            if (new FileInfo(file).LinkTarget is null)
+                File.SetAttributes(file, FileAttributes.Normal);
         Directory.Delete(root, recursive: true);
     }
 
@@ -57,7 +58,7 @@ internal sealed class ValidationRepository : IDisposable
         File.WriteAllText(destination, content);
     }
 
-    internal void Git(params string[] arguments)
+    internal string Git(params string[] arguments)
     {
         var start = new ProcessStartInfo("git") { WorkingDirectory = m_root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
         foreach (string argument in arguments)
@@ -68,6 +69,7 @@ internal sealed class ValidationRepository : IDisposable
         process.WaitForExit();
         if (process.ExitCode != 0)
             throw new InvalidOperationException(output.Result + error.Result);
+        return output.Result.Trim();
     }
 
     internal async Task<JsonDocument> PlanAsync(string baseline = "HEAD", bool extended = false, string configuration = "Debug")

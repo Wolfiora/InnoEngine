@@ -5,13 +5,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using Xunit;
 
 namespace Inno.Build.Toolchains.Tests;
 
 public sealed class ProductNativePreparationTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoPreparedNative", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoPreparedNative", Guid.NewGuid().ToString("N"));
     private readonly NativeComponentDescriptor m_owner = new("fixture", "component/Fixture.csproj", "component/Fixture.csproj");
     private int m_productions;
 
@@ -111,7 +112,7 @@ public sealed class ProductNativePreparationTests : IDisposable
 
     public void Dispose()
     {
-        string parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoPreparedNative")) + Path.DirectorySeparatorChar;
+        string parent = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoPreparedNative") + Path.DirectorySeparatorChar;
         if (!Path.GetFullPath(m_root).StartsWith(parent, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The native fixture escaped its temporary owner.");
         Directory.Delete(m_root, recursive: true);

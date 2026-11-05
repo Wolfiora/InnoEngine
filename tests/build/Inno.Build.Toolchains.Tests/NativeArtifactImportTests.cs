@@ -5,13 +5,14 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using Xunit;
 
 namespace Inno.Build.Toolchains.Tests;
 
 public sealed class NativeArtifactImportTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeImport", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoNativeImport", Guid.NewGuid().ToString("N"));
     private readonly NativeComponentDescriptor m_owner = new("fixture", "component/Fixture.csproj", "component/Fixture.csproj");
 
     [Fact]
@@ -161,7 +162,8 @@ public sealed class NativeArtifactImportTests : IDisposable
 
     private static string Import(NativeBuildProduct source, string producer, string consumer)
     {
-        string destination = Path.Combine(consumer, Path.GetRelativePath(producer, source.directory));
+        string sourceDirectory = PathBoundary.RequireUnlinkedPath(producer, source.directory);
+        string destination = PathBoundary.Resolve(consumer, Path.GetRelativePath(producer, sourceDirectory));
         foreach (string file in Directory.GetFiles(source.directory, "*", SearchOption.AllDirectories))
         {
             string target = Path.Combine(destination, Path.GetRelativePath(source.directory, file));
@@ -173,7 +175,7 @@ public sealed class NativeArtifactImportTests : IDisposable
 
     public void Dispose()
     {
-        string parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoNativeImport")) + Path.DirectorySeparatorChar;
+        string parent = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoNativeImport") + Path.DirectorySeparatorChar;
         if (!Path.GetFullPath(m_root).StartsWith(parent, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The import fixture escaped its owner.");
         if (Directory.Exists(m_root))

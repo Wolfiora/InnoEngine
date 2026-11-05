@@ -26,6 +26,8 @@ Editor 源码还检查同类型重复别名、重复 XML summary，以及循环�
 
 ## 检查范围
 
+统一验证计划先运行 `--documentation-only` 的全仓结构、内容边界与链接检查，再以 `--wiki-contracts-only` 检查选中页面的 API 签名与可编译示例。后者不声称覆盖结构和链接；计划必须将成功的文档检查列为前置证据。独立调用 `--wiki --wiki-only` 仍提供完整 Wiki 检查。
+
 `--documentation-only` 复用 Wiki owner 覆盖、正文与链接规则，验证导航和文档结构而不准备无关 native 产品。包含 API 符号或示例的变更仍由计划选择相应编译与 Wiki 证据。
 
 `--source-only` 只执行全仓廉价源码/所有权规则，不声称编译元数据已经验证。`--metadata-only` 与重复的 `--api-project <repo-relative.csproj>` 核对所选已构建公开边界；默认 `verify` 仍保留完整行为。统一计划将两类证据分别登记，并要求元数据阶段的编译前提通过。

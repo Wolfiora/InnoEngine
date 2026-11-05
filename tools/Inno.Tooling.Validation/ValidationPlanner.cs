@@ -53,6 +53,10 @@ internal static class ValidationPlanner
         await Task.WhenAll(toolCapture, graphCapture).ConfigureAwait(false);
         string captured = await graphCapture.ConfigureAwait(false);
         using JsonDocument graph = JsonDocument.Parse(captured);
+        string[] submoduleInputs = inputs.Where(pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)
+            || new DirectoryInfo(Path.GetFullPath(pair.Key, root)) is { Exists: true, LinkTarget: null })
+            .Select(static pair => pair.Key).Order(StringComparer.Ordinal).ToArray();
+        RequireCompilerInputs(graph.RootElement);
         ValidationProject[] projects = graph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot)).ToArray();
         var byPath = projects.ToDictionary(static project => project.path, StringComparer.Ordinal);
         RecordStage("managed-graph");
@@ -153,6 +157,7 @@ internal static class ValidationPlanner
             string nativeCapture = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
                 paths.Select(path => Path.Combine(root, path)).ToArray(), evaluationProperties, cancellation).ConfigureAwait(false);
             using JsonDocument nativeGraph = JsonDocument.Parse(nativeCapture);
+            RequireCompilerInputs(nativeGraph.RootElement);
             contexts.Add("native", new(nativeProperties, nativeGraph.RootElement.Clone()));
             nativeProjects = nativeGraph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot))
                 .ToDictionary(static project => project.path, StringComparer.Ordinal);
@@ -165,8 +170,9 @@ internal static class ValidationPlanner
             || path.StartsWith("build/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
             || path is "global.json" or "Directory.Build.props" or "Directory.Build.targets" or "InnoEngine.sln").ToArray();
         var inputSets = projects.ToDictionary(static project => project.path,
-            project => project.inputs.Concat(nativeProjects[project.path].inputs).Where(inputs.ContainsKey).Distinct(StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
+            project => CapturedInputs(project.inputs.Concat(nativeProjects[project.path].inputs)), StringComparer.Ordinal);
         inputSets.Add("tooling", toolingInputs);
+        inputSets.Add("native-sources", submoduleInputs);
         var checks = new List<ValidationCheck>
         {
             new("instructions", "instructions", "AGENTS.md", "Rule preservation, discoverability, budgets and links.", "any", [], policyInputs, true, null),
@@ -177,9 +183,9 @@ internal static class ValidationPlanner
                     || path is "InnoEngine.sln" or "Directory.Build.props" or "Directory.Build.targets")
                     .Order(StringComparer.Ordinal).ToArray(), true, null)
         };
-        if (changes.Any(IsDocumentation) || full)
+        if (changes.Any(IsDocumentation) || selectedWikiPages.Count != 0 || full)
             checks.Add(new("documentation", "documentation", "docs", "Changed documentation or explicit full validation.", "any", [],
-                inputs.Keys.Where(static path => path.StartsWith("docs/", StringComparison.Ordinal)).Concat(toolingInputs).Order(StringComparer.Ordinal).ToArray(), true, null));
+                inputs.Keys.Order(StringComparer.Ordinal).ToArray(), true, null));
         if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
             || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)))
             checks.Add(new("ci-contracts", "ci-contracts", "tests/ci", "Fail-closed aggregation contracts for missing, skipped, canceled, empty and tampered evidence.",
@@ -195,7 +201,8 @@ internal static class ValidationPlanner
                 throw new InvalidDataException($"Test execution layer is absent or unknown: {project.path} ({project.layer})");
             if (project.layer == "domain" && native)
                 throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
-            string[] selectedInputs = closure.Select(static path => "@" + path).Append("@tooling").Order(StringComparer.Ordinal).ToArray();
+            string[] selectedInputs = closure.Select(static path => "@" + path).Append("@tooling")
+                .Concat(native ? ["@native-sources"] : []).Order(StringComparer.Ordinal).ToArray();
             bool selected = affected.Contains(project.path);
             bool compile = selected || documentationOwners.Contains(project.path);
             string environment = project.environment.Length != 0 ? project.environment : native ? "native-host" : "any";
@@ -239,7 +246,7 @@ internal static class ValidationPlanner
             ValidationCheck[] requiredBuilds = builds.Where(check => check.context == pages.Key
                 || scriptWiki && pages.Key == "native" && check.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj").ToArray();
             checks.Add(new("wiki:" + pages.Key, "wiki", "docs", "Current public signatures and compilable examples in changed or affected project pages.",
-                "any", requiredBuilds.Select(static check => check.id).ToArray(), pages.Concat(requiredBuilds.SelectMany(static check => check.inputs))
+                "any", requiredBuilds.Select(static check => check.id).Append("documentation").ToArray(), pages.Concat(requiredBuilds.SelectMany(static check => check.inputs))
                     .Distinct().Order(StringComparer.Ordinal).ToArray(), true, null, pages.Key));
         }
         ValidationCheck? editorBuild = builds.SingleOrDefault(static check => check.owner == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
@@ -276,13 +283,14 @@ internal static class ValidationPlanner
                 string releaseCapture = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
                     paths.Select(path => Path.Combine(root, path)).ToArray(), evaluationProperties, cancellation).ConfigureAwait(false);
                 using JsonDocument releaseGraph = JsonDocument.Parse(releaseCapture);
+                RequireCompilerInputs(releaseGraph.RootElement);
                 contexts.Add(releaseContext, new(releaseProperties, releaseGraph.RootElement.Clone()));
                 releaseProjects = releaseGraph.RootElement.EnumerateArray().Select(snapshot => ValidationProject.Read(root, snapshot))
                     .ToDictionary(static project => project.path, StringComparer.Ordinal);
                 foreach (ValidationProject project in releaseProjects.Values)
-                    inputSets[project.path] = inputSets[project.path].Concat(project.inputs.Where(inputs.ContainsKey)).Distinct(StringComparer.Ordinal).ToArray();
+                    inputSets[project.path] = inputSets[project.path].Concat(CapturedInputs(project.inputs)).Distinct(StringComparer.Ordinal).ToArray();
             }
-            var releaseInputs = new HashSet<string>(StringComparer.Ordinal) { "@tooling" };
+            var releaseInputs = new HashSet<string>(StringComparer.Ordinal) { "@tooling", "@native-sources" };
             var releaseBuilds = new List<string>();
             foreach (string owner in new[] { editorBuild.owner, C_BUILD_ENTRY })
             {
@@ -297,7 +305,7 @@ internal static class ValidationPlanner
             {
                 checks.Add(new("compiled-api:release", "api", "tools/Inno.Tooling.Architecture", "Release symbols retain the same public boundary requirements.",
                     "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), true, null, releaseContext, "contract",
-                    releaseInputs.Where(static input => input.StartsWith('@') && input != "@tooling").Select(static input => input[1..]).Order(StringComparer.Ordinal).ToArray()));
+                    releaseInputs.Where(input => input.StartsWith('@') && releaseProjects.ContainsKey(input[1..])).Select(static input => input[1..]).Order(StringComparer.Ordinal).ToArray()));
                 checks.Add(new("editor-release-products", "products", editorBuild.owner, "Execute the actual Release Editor renderer, workflow and lifecycle before packaging.",
                     "native-host", releaseBuilds.ToArray(), editorBuild.inputs.Concat(releaseInputs).Distinct(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product"));
             }
@@ -351,6 +359,28 @@ internal static class ValidationPlanner
             full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings);
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
+
+        string[] CapturedInputs(IEnumerable<string> declared)
+        {
+            string[] paths = declared.ToArray();
+            return paths.Where(inputs.ContainsKey).Concat(submoduleInputs.Where(parent =>
+                paths.Any(path => path.StartsWith(parent + "/", StringComparison.Ordinal)))).Distinct(StringComparer.Ordinal).ToArray();
+        }
+
+        void RequireCompilerInputs(JsonElement snapshot)
+        {
+            foreach (JsonElement project in snapshot.EnumerateArray())
+            foreach (JsonElement variant in project.GetProperty("Variants").EnumerateArray().Append(project))
+            foreach (JsonElement item in variant.GetProperty("Items").GetProperty("Compile").EnumerateArray())
+            {
+                string path = Path.GetRelativePath(root, item.GetProperty("FullPath").GetString()!).Replace('\\', '/');
+                if (path.StartsWith("../", StringComparison.Ordinal) || Path.IsPathRooted(path) || inputs.ContainsKey(path)
+                    || submoduleInputs.Any(parent => path.StartsWith(parent + "/", StringComparison.Ordinal)))
+                    continue;
+                if (File.Exists(ValidationInputs.Resolve(root, path)))
+                    throw new InvalidDataException($"The SDK selected an untracked ignored compiler input: {path}. Make its source ownership explicit before validation.");
+            }
+        }
 
         void RecordStage(string name)
         {

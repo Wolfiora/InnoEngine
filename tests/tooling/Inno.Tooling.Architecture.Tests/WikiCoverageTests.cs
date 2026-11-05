@@ -115,6 +115,19 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.Contains("documents deleted symbol", Run(), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ContractScopeRetainsSignatureAndExampleFailuresWhileStructureOwnsLinks()
+    {
+        Write("docs/core/Inno.Core.Probe.md", "# Probe\n[Missing](absent.md)\n```csharp\nAbsentType.Run();\n```\n");
+        string contracts = Run(null, "--wiki-contracts-only");
+        Assert.Contains("no current signature mapping", contracts, StringComparison.Ordinal);
+        Assert.Contains("example 1 at line", contracts, StringComparison.Ordinal);
+        Assert.DoesNotContain("missing path 'absent.md'", contracts, StringComparison.Ordinal);
+        string structure = Run(null, "--documentation-only");
+        Assert.Contains("missing path 'absent.md'", structure, StringComparison.Ordinal);
+        Assert.DoesNotContain("example 1 at line", structure, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("int value = 1;", false)]
     [InlineData("int value = \"invalid\";", true)]
@@ -546,7 +559,8 @@ public sealed class WikiCoverageTests : IDisposable
         {
             Console.SetOut(captured);
             Console.SetError(captured);
-            string[] arguments = extraArguments.Contains("--documentation-only", StringComparer.Ordinal) ? [m_root]
+            string[] arguments = extraArguments.Contains("--documentation-only", StringComparer.Ordinal)
+                || extraArguments.Contains("--wiki-contracts-only", StringComparer.Ordinal) ? [m_root]
                 : inventory is null ? [m_root, "--wiki"] : [m_root, "--wiki", "--wiki-api", inventory];
             _ = ArchitectureValidator.Execute(arguments.Concat(extraArguments).ToArray());
             return captured.ToString();

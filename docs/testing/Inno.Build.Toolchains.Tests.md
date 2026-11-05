@@ -2,6 +2,8 @@
 
 SDK 图回归覆盖普通和 browser 限定框架的实际引用 pack 选择，以及显式 `TargetingPackVersion` 覆盖；不根据宿主平台猜测框架版本。
 
+盘点接续回归通过真实文件系统事件在 64 个分片的首批 checkpoint 落盘后取消维护，确认完整保护图建立前没有退休任何产物。后续维护保留已完成分片的内容与时间戳，完成全部盘点后才允许退休；没有取消专用生产入口。
+
 [测试索引](README.md) · [Wiki 首页](../README.md) · [中立工具链](../build/Inno.Build.Toolchains.md)
 
 ## 职责与边界

@@ -175,7 +175,7 @@ internal static class ValidationRunner
                                 }
                             }
                             string[] targetArguments = contextId == "native" ? ["--wiki-target", plan.contexts[contextId].properties["InnoNativeTarget"]] : [];
-                            if (ArchitectureValidator.Execute([plan.root, "--wiki", "--wiki-only", "--configuration", plan.configuration,
+                            if (ArchitectureValidator.Execute([plan.root, "--wiki-contracts-only", "--configuration", plan.configuration,
                                 "--dotnet", plan.dotnet, "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"], "--wiki-api", Path.Combine(directory, contextId + "-wiki-api.json"),
                                 "--wiki-examples", Path.Combine(directory, contextId + "-wiki-examples.json"), "--sdk-snapshot", graphPath, ..targetArguments, ..scriptArguments, ..pages], cancellation) != 0)
                                 throw new InvalidDataException("Scoped Wiki signatures or compiled examples failed.");
@@ -232,14 +232,15 @@ internal static class ValidationRunner
                                 try
                                 {
                                     var compilationInputs = new ValidationBuildInputs(plan, contextId, outputDigests, cancellation);
-                                    string[] properties = [..plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
-                                        "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N")];
+                                    string[] properties = plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value).ToArray();
                                     // Rebuild interleaves Clean and Build across root instances. Drain the one owned clean phase before any compiler starts.
                                     if (compilationInputs.RequiresCompilation(dependencyInputs))
-                                        await ValidationProcess.RunAsync(plan.dotnet, ["clean", solution, ..properties, "--disable-build-servers", "-m:1", "-nr:false"],
+                                        await ValidationProcess.RunAsync(plan.dotnet, ["clean", solution, ..properties,
+                                            "-p:InnoPrepareProductNative=false", "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N"),
+                                            "--disable-build-servers", "-m:1", "-nr:false"],
                                             plan.root, Path.Combine(directory, contextId + "-clean.log"), cancellation).ConfigureAwait(false);
                                     await ValidationProcess.RunAsync(plan.dotnet,
-                                        ["build", solution, ..properties,
+                                        ["build", solution, ..properties, "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N"),
                                             "--disable-build-servers", "-m:" + (contextId == "managed" ? Math.Min(Environment.ProcessorCount, 4) : 1),
                                             "-nr:false"], plan.root, Path.Combine(directory, contextId + "-build.log"), cancellation).ConfigureAwait(false);
                                     built.Add(contextId);

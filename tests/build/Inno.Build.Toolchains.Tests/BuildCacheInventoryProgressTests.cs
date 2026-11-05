@@ -88,6 +88,45 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         Assert.False(File.Exists(checkpoint));
     }
 
+    [Fact]
+    public async Task InterruptedInventoryResumesCompletedShardsBeforeRetiringAnyArtifact()
+    {
+        const int C_COUNT = 64;
+        for (int index = 0; index < C_COUNT; index++)
+            await PrepareAsync("shard-" + index.ToString("D3"), new string('x', 4096));
+        string directory = Path.Combine(m_root, "artifacts", "cache-owners", "inventory");
+        Directory.CreateDirectory(directory);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var watcher = new FileSystemWatcher(directory, "*.inventory") { NotifyFilter = NotifyFilters.FileName };
+        watcher.Created += (
+            _,
+            _
+        ) => cancellation.Cancel();
+        watcher.Renamed += (
+            _,
+            _
+        ) => cancellation.Cancel();
+        watcher.EnableRaisingEvents = true;
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Task.Run(() =>
+            BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0), true, false, null, cancellation.Token)));
+        watcher.EnableRaisingEvents = false;
+        string[] completed = Directory.GetFiles(directory, "*.inventory");
+        Assert.NotEmpty(completed);
+        Assert.True(completed.Length < C_COUNT, "The first checkpoint must interrupt discovery before the complete protection graph exists.");
+        var snapshots = completed.ToDictionary(static path => path, static path => (File.ReadAllText(path), File.GetLastWriteTimeUtc(path)));
+        Assert.Equal(C_COUNT, Directory.GetDirectories(Path.Combine(m_root, "cache")).Length);
+        await MaintainAsync();
+        Assert.Equal(C_COUNT, Directory.GetFiles(directory, "*.inventory").Length);
+        foreach (var snapshot in snapshots)
+        {
+            Assert.Equal(snapshot.Value.Item1, File.ReadAllText(snapshot.Key));
+            Assert.Equal(snapshot.Value.Item2, File.GetLastWriteTimeUtc(snapshot.Key));
+        }
+        await MaintainAsync(retireAll: true);
+        Assert.Empty(Directory.GetDirectories(Path.Combine(m_root, "cache")));
+        Assert.Empty(Directory.GetFiles(directory, "*.inventory"));
+    }
+
     private async Task PrepareAsync(string name, string content)
     {
         string root = Path.Combine(m_root, "cache");

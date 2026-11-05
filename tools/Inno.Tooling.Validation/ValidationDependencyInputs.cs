@@ -18,7 +18,7 @@ internal sealed class ValidationDependencyInputs(
 
     internal static bool Required(ValidationCheck check)
         => check.kind is "build" or "test" or "api" or "wiki" or "products" or "support-pack" or "release-bundle"
-            && check.inputs.Any(static input => input.StartsWith('@') && input != "@tooling");
+            && check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"));
 
     internal void Reset()
     {

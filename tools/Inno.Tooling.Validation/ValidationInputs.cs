@@ -19,6 +19,9 @@ internal static class ValidationInputs
         string files = await ValidationProcess.RunAsync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], root, null, cancellation).ConfigureAwait(false);
         string staged = await ValidationProcess.RunAsync("git", ["ls-files", "--stage", "-z"], root, null, cancellation).ConfigureAwait(false);
         var submodules = new Dictionary<string, string>(StringComparer.Ordinal);
+        var links = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string entry in staged.Split('\0', StringSplitOptions.RemoveEmptyEntries).Where(static entry => entry.StartsWith("120000 ", StringComparison.Ordinal)))
+            links.Add(entry[(entry.IndexOf('\t') + 1)..]);
         foreach (string entry in staged.Split('\0', StringSplitOptions.RemoveEmptyEntries).Where(static entry => entry.StartsWith("160000 ", StringComparison.Ordinal)))
         {
             int separator = entry.IndexOf('\t');
@@ -29,21 +32,15 @@ internal static class ValidationInputs
         foreach (string file in files.Split('\0', StringSplitOptions.RemoveEmptyEntries).Distinct().Order(StringComparer.Ordinal))
         {
             cancellation.ThrowIfCancellationRequested();
+            if (links.Contains(file))
+            {
+                byte[]? link = ReadLink(root, file);
+                inputs.Add(file, link is null ? "missing" : Convert.ToHexStringLower(SHA256.HashData(link)));
+                continue;
+            }
             string path = Resolve(root, file);
             if (submodules.TryGetValue(file, out string? expectedRevision))
-            {
-                // Submodules are inputs, not directories whose mutable object stores should be hashed.
-                if (!File.Exists(Path.Combine(path, ".git")) && !Directory.Exists(Path.Combine(path, ".git")))
-                {
-                    inputs.Add(file, "unavailable:" + expectedRevision);
-                    continue;
-                }
-                string revision = await ValidationProcess.RunAsync("git", ["-C", path, "rev-parse", "HEAD"], root, null, cancellation).ConfigureAwait(false);
-                string dirty = await ValidationProcess.RunAsync("git", ["-C", path, "status", "--porcelain"], root, null, cancellation).ConfigureAwait(false);
-                if (dirty.Length != 0)
-                    throw new InvalidDataException($"Submodule '{file}' has uncommitted inputs; commit or restore its explicit owner before certifying evidence.");
-                inputs.Add(file, revision.Trim());
-            }
+                inputs.Add(file, await CaptureSubmoduleAsync(path, expectedRevision, cancellation).ConfigureAwait(false));
             else
                 inputs.Add(file, File.Exists(path) ? Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path))) : "missing");
         }
@@ -70,12 +67,26 @@ internal static class ValidationInputs
             string path = entry[(separator + 1)..];
             if (metadata[1] == "commit")
             {
-                string current = inputs.GetValueOrDefault(path, "missing");
+                string current = inputs.TryGetValue(path, out string? captured) ? captured
+                    : await CaptureSubmoduleAsync(Resolve(root, path), metadata[2], cancellation).ConfigureAwait(false);
                 if (current != metadata[2] && current != "unavailable:" + metadata[2])
                     changes.Add(path);
             }
             else if (metadata[1] != "blob")
                 throw new InvalidDataException($"Unsupported committed input type: {metadata[1]}");
+            else if (metadata[0] == "120000")
+            {
+                byte[]? link = ReadLink(root, path);
+                if (link is null)
+                    changes.Add(path);
+                else
+                {
+                    string identity = await ValidationProcess.RunAsync("git", ["hash-object", "--stdin", "--no-filters"], root, null, cancellation,
+                        new UTF8Encoding(false, true).GetString(link)).ConfigureAwait(false);
+                    if (identity.Trim() != metadata[2])
+                        changes.Add(path);
+                }
+            }
             else if (!File.Exists(Resolve(root, path)))
                 changes.Add(path);
             else
@@ -89,9 +100,22 @@ internal static class ValidationInputs
             string[] identities = content.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
             if (identities.Length != blobs.Count)
                 throw new InvalidDataException("Git did not return one content identity for every committed input.");
-            for (int index = 0; index < blobs.Count; index++)
-                if (identities[index] != blobs[index].Value)
-                    changes.Add(blobs[index].Key);
+            KeyValuePair<string, string>[] different = blobs.Where((
+                pair,
+                index
+            ) => identities[index] != pair.Value).ToArray();
+            if (different.Length != 0)
+            {
+                // A committed CRLF blob can already equal its checkout, even when today's clean filter normalizes it.
+                string raw = await ValidationProcess.RunAsync("git", ["hash-object", "--no-filters", "--stdin-paths"], root, null, cancellation,
+                    string.Join('\n', different.Select(static pair => QuoteGitPath(pair.Key))) + "\n").ConfigureAwait(false);
+                string[] rawIdentities = raw.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+                if (rawIdentities.Length != different.Length)
+                    throw new InvalidDataException("Git did not return one raw identity for every differing input.");
+                for (int index = 0; index < different.Length; index++)
+                    if (rawIdentities[index] != different[index].Value)
+                        changes.Add(different[index].Key);
+            }
         }
         return changes.Order(StringComparer.Ordinal).ToArray();
     }
@@ -125,6 +149,21 @@ internal static class ValidationInputs
         return PathBoundary.RequireUnlinkedPath(Path.GetFullPath(root), path);
     }
 
+    private static async Task<string> CaptureSubmoduleAsync(
+        string path,
+        string expectedRevision,
+        CancellationToken cancellation
+    ) {
+        // Check checkout contents, never the mutable Git object store or its size/time index cache.
+        if (!File.Exists(Path.Combine(path, ".git")) && !Directory.Exists(Path.Combine(path, ".git")))
+            return "unavailable:" + expectedRevision;
+        string revision = (await ValidationProcess.RunAsync("git", ["rev-parse", "HEAD"], path, null, cancellation).ConfigureAwait(false)).Trim();
+        string dirty = await ValidationProcess.RunAsync("git", ["status", "--porcelain"], path, null, cancellation).ConfigureAwait(false);
+        if (dirty.Length != 0 || (await FindContentChangesAsync(path, revision, new Dictionary<string, string>(), cancellation).ConfigureAwait(false)).Length != 0)
+            throw new InvalidDataException($"Submodule '{path}' has uncommitted inputs; commit or restore its explicit owner before certifying evidence.");
+        return revision;
+    }
+
     private static string QuoteGitPath(string path)
     {
         var quoted = new StringBuilder("\"");
@@ -136,5 +175,19 @@ internal static class ValidationInputs
             else
                 quoted.Append(character);
         return quoted.Append('"').ToString();
+    }
+
+    private static byte[]? ReadLink(
+        string root,
+        string relative
+    ) {
+        // Git stores the link text, not the target's bytes. Never traverse the final entry.
+        string path = PathBoundary.Resolve(root, relative);
+        PathBoundary.RequireUnlinkedPath(root, Path.GetDirectoryName(path)!);
+        string? target = new FileInfo(path).LinkTarget;
+        if (target is not null)
+            return Encoding.UTF8.GetBytes(target);
+        PathBoundary.RequireUnlinkedPath(root, path);
+        return File.Exists(path) ? File.ReadAllBytes(path) : null;
     }
 }

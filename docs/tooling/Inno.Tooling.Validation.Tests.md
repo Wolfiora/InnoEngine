@@ -1,10 +1,14 @@
 # Inno.Tooling.Validation.Tests
 
+Wiki 计划回归要求文档结构检查先于签名与示例，并将真实项目及源码链接目标纳入证据。仅源码修改触发的项目页检查也必须具备这一前置责任。
+
 `ValidationSolutionTests` 使用真实 SDK 重现 IDE 配置未勾选构建时 `.slnf` 成功但不产出程序集的情况，再编译统一入口保留的 `.slnx`，验证所有选中 owner 参与构建且 SourceDebug 不被 IDE 重映射为 Debug。测试同时确认政策失败不会提前执行该构建。
 
 环境回归使用 SDK 实际选择的外部引用 pack、imports 和链接源码，修改相同长度内容并恢复时间戳，验证旧计划仍会失效。引用 pack 的名称和版本来自 SDK 声明，不维护另一份版本表。
 
 范围选择回归覆盖已跟踪源码等长修改并恢复时间戳、Git 索引缓存未刷新、暂存区修改但工作区恢复 HEAD，以及 CRLF checkout 转换与 Unicode 文件名。内容比较必须使用 Git 的实际 clean filters，不能依靠 `git diff` 的时间戳缓存，也不能把正常换行转换误认为源码变化。
+
+子模块回归覆盖索引隐藏的实际源码修改、指向 owner 外部的链接文本校验、被引用的子模块编译输入归属，以及被忽略的实际编译源码拒绝。换行用例分别覆盖规范化 blob 与直接提交 CRLF 的 blob；Unix 使用真实符号链接，Windows 使用 Git 的实际 checkout 表示。
 
 [Tooling 索引](README.md) · [验证入口](Inno.Tooling.Validation.md) · [Wiki 首页](../README.md)
 
