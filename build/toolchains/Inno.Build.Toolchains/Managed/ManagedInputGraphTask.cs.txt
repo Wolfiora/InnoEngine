@@ -279,9 +279,12 @@ public sealed class ManagedInputGraphTask : Task
             OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Select(node => node.ProjectInstance).ToArray(),
                 OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var entryPoints = graph.EntryPointNodes.ToDictionary(node => node.ProjectInstance.FullPath,
+            node => node.ProjectInstance, OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         foreach (ITaskItem root in RepositoryProjects.OrderBy(item => item.ItemSpec, StringComparer.Ordinal))
         {
-            var project = collection.LoadProject(root.ItemSpec);
+            // The graph already evaluated these roots. Loading another Project repeats evaluation and can change its inputs.
+            var project = entryPoints[Path.GetFullPath(root.ItemSpec)];
             var items = new Dictionary<string, object>(StringComparer.Ordinal);
             var properties = propertyNames.ToDictionary(name => name, name => project.GetPropertyValue(name), StringComparer.Ordinal);
             foreach (string name in itemNames)
@@ -315,7 +318,7 @@ public sealed class ManagedInputGraphTask : Task
                 foreach (ITaskItem item in captured.Where(item => item.GetMetadata("CaptureKind") == "Property"))
                     properties[item.ItemSpec] = item.GetMetadata("Value");
             }
-            string[] imports = project.Imports.Select(import => import.ImportedProject.FullPath).Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray();
+            string[] imports = project.ImportPaths.Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray();
             string[] packs = FrameworkPacks(project.GetPropertyValue("TargetFramework"), project.GetPropertyValue("NetCoreTargetingPackRoot"),
                 project.GetItems("FrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetingPackVersion"))),
                 project.GetItems("KnownFrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetFramework"),

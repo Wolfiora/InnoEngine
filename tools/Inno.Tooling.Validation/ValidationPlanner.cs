@@ -52,6 +52,7 @@ internal static class ValidationPlanner
         // Both read-only owners finish before a plan is emitted, including when either fails or is canceled.
         await Task.WhenAll(toolCapture, graphCapture).ConfigureAwait(false);
         string captured = await graphCapture.ConfigureAwait(false);
+        RecordStage("sdk-capture");
         using JsonDocument graph = JsonDocument.Parse(captured);
         string[] submoduleInputs = inputs.Where(pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)
             || new DirectoryInfo(Path.GetFullPath(pair.Key, root)) is { Exists: true, LinkTarget: null })

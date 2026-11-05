@@ -98,6 +98,8 @@ Native freshness hashing still contributes substantial cost. Repeated equivalent
 
 ## Remaining acceptance and external dependencies
 
+Bounded input capture on the initialized checkout at `97da56d3` produces warm samples 37.7982878, 37.9108416, 37.8039579, 38.2291831 and 38.3385058 seconds (median 37.9108416; fresh 54.1006921). This is 29.13% below the initialized serial baseline, still above 30 seconds. The next measured bottleneck was a second evaluation of every root through `ProjectCollection.LoadProject` after `ProjectGraph` had already evaluated it. Canonical snapshots now consume graph entry instances; six SDK graph cases pass, including conditional variants, reference packs, imported compiler inputs and nonrepeatable property consistency. `sdk-capture` and `managed-graph` timings now separate SDK work from snapshot interpretation.
+
 1. Complete tracked-content negative/recovery and current source/document closure, push independently validated follow-ups and verify complete owner metadata against the final matrix.
 2. Measure current plan stages and five matched warm samples; finish before comparison and optimize measured bottlenecks until targets are met or an explicit measured blocker remains.
 3. Complete actual Windows/macOS CI, full product/Release/reload/Support Pack/AOT and cancellation retention evidence; preserve first failed runs.
