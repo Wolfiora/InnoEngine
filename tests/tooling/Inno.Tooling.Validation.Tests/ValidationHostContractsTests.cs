@@ -5,11 +5,16 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Inno.Testing.Source;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Inno.Tooling.Validation.Tests;
 
 public sealed class ValidationHostContractsTests
 {
+    private readonly ITestOutputHelper m_output;
+
+    public ValidationHostContractsTests(ITestOutputHelper output) => m_output = output;
+
     [Fact]
     public async Task ActualTrxDistinguishesCompiledHostExclusionsFromMissingRequiredExecution()
     {
@@ -41,7 +46,17 @@ public sealed class ValidationHostContractsTests
         repository.Write(C_PROBE, source);
         using (JsonDocument plan = await repository.PlanAsync())
             Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
-        Assert.Equal(0, await repository.RunAsync());
+        try
+        {
+            Assert.Equal(0, await repository.RunAsync());
+        }
+        catch
+        {
+            foreach (string file in Directory.EnumerateFiles(repository.PathOf("artifacts/run"), "*", SearchOption.TopDirectoryOnly)
+                .Where(static path => path.EndsWith(".log", StringComparison.Ordinal) || Path.GetFileName(path) == "results.json"))
+                m_output.WriteLine(Path.GetFileName(file) + "\n" + File.ReadAllText(file));
+            throw;
+        }
         using (JsonDocument receipt = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/managed-trx/host-contracts.json"))))
         {
             string[] excluded = receipt.RootElement.GetProperty("tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj")

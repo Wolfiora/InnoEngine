@@ -77,11 +77,15 @@ internal static class ValidationTestHosts
     }
 
     internal static bool Applies(string[] hosts)
-        => hosts.Any(static host => host switch
+    {
+        if (hosts.Any(static host => host is not ("windows" or "macos" or "linux")))
+            throw new InvalidDataException("Unknown test host requirement.");
+        return hosts.Any(static host => host switch
         {
             "windows" => OperatingSystem.IsWindows(),
             "macos" => OperatingSystem.IsMacOS(),
             "linux" => OperatingSystem.IsLinux(),
             _ => throw new InvalidDataException("Unknown test host requirement.")
         });
+    }
 }

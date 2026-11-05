@@ -2,6 +2,8 @@
 
 [架构索引](README.md) · [当前问题](CURRENT_ISSUES.md) · [Wiki 首页](../README.md)
 
+AI 工作流改造仍在 [#75 实施验收](../../records/architecture/plans/AI_PIPELINE_IMPLEMENTATION.md) 中，不能继承下述历史 UI 认证。原生性能测试已归属独立 performance 项目，完整 checkout 文档反馈的五轮 warm 中位数为 28.8805035 秒；当前 Windows/macOS 矩阵、完整产品与发布演练以该记录中的实际结果和阻塞为准。
+
 当前 Editor UI 的分层、Session、Selection、History、插件调用方及十一项评价见[完整计划验收](../../records/architecture/acceptance/EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md)、[当前 UI 架构](EDITOR_UI_ARCHITECTURE.md)及[issue 闭合台账](../../records/architecture/EDITOR_UI_CLOSURE_PLAN.md)。生产实现 `dd5979c6` 的本地适用功能与验收已完成。最终交付 SHA、只含文档/证据的后续差异、精确提交 CI 与 PR Ready 状态以 [PR #26 验证附件](https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338)为准；本地结果不代替该附件，也不复用历史提交的绿色结果。
 
 | 当前 UI 范围 | 本地结果 |

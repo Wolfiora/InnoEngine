@@ -4,13 +4,14 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 using Inno.Tooling.Validation;
 
 namespace Inno.Tooling.Validation.Tests;
 
 internal sealed class ValidationRepository : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoValidation", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoValidation", Guid.NewGuid().ToString("N"));
     private readonly string m_dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
         ?? Path.Combine(Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? throw new InvalidOperationException("The test requires its selected SDK host."),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
@@ -45,7 +46,7 @@ internal sealed class ValidationRepository : IDisposable
     public void Dispose()
     {
         string root = Path.GetFullPath(m_root);
-        string parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoValidation")) + Path.DirectorySeparatorChar;
+        string parent = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoValidation") + Path.DirectorySeparatorChar;
         if (!root.StartsWith(parent, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The fixture owner escaped its temporary boundary.");
         foreach (string file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))

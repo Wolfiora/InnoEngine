@@ -13,9 +13,9 @@ Windows 编译器、目录共享与工具路径用例，以及 Unix 文件链接
 测试程序集按顺序调度用例，避免 SDK fixture 同时写共享 checkout 的 bin/obj。锁、取消、并发 publication 和两次构建的竞争仍由各用例显式创建，顺序调度不减少这些并发契约。Engine CI 使用独立的 .NET 10 安装目录，避免临时项目在 runner 上隐式选到另一主版本 SDK；测试及 Wiki 失败证据始终上传。
 
 
-`ProductNativeCacheLookupTests` 验证完整热命中批次、损坏回退及并发；`NativeVerificationPhaseTests` 验证逻辑输入保留、物理读取去重和阶段隔离。`ProductNativeCostTests` 只有显式设置 `INNO_ACCEPTANCE_NATIVE_COST` 时才执行真实产品串行/批次对照，普通测试运行不能当作该性能验收通过。
+`ProductNativeCacheLookupTests` 验证完整热命中批次、损坏回退及并发；`NativeVerificationPhaseTests` 验证逻辑输入保留、物理读取去重和阶段隔离。真实产品串行/批次成本验收归属 [Inno.Build.NativePerformance.Tests](Inno.Build.NativePerformance.Tests.md)，由统一计划按环境和执行前提选择。
 
-`ProductNativeCostTests.RealPresentationBuildUsesDeclaredCMakeAndFrozenWindowSource` 仅在显式设置 `INNO_ACCEPTANCE_IMGUI_BUILD` 时执行 WindowsX64 ImGui/ImGuizmo 实际构建。普通套件不算这项真实编译通过；macOS 对应的冷构建由 Engine CI 的真实 Editor 准备路径验证。
+WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真实产物断言；macOS 冷构建由 Engine CI 的实际 Editor 准备路径验证，不借用 Windows 测试结果。
 
 `SolutionBootstrapOwnershipTests` 使用两个真实 MSBuild fixture 项目验证一次 Solution 操作共用 bootstrap owner，下一次操作产生新 owner。真实 bootstrap Task 还验证同进程重复取得声明成功、退出进程的声明被拒绝、新身份可以取得独立声明；验证入口的 Clean 与 Build 分别拥有进程身份。`BgfxNativeProfileTests` 验证工具生产者复用源码 owner，却不请求 Runtime 绑定；发行测试验证 Editor 与独立工具使用同一 Release 步骤。
 

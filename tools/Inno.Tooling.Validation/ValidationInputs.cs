@@ -202,7 +202,8 @@ internal static class ValidationInputs
         PathBoundary.RequireUnlinkedPath(root, Path.GetDirectoryName(path)!);
         string? target = new FileInfo(path).LinkTarget;
         if (target is not null)
-            return Encoding.UTF8.GetBytes(target);
+            // Git for Windows stores slash-separated link text but creates native backslash-separated targets.
+            return Encoding.UTF8.GetBytes(OperatingSystem.IsWindows() ? target.Replace('\\', '/') : target);
         PathBoundary.RequireUnlinkedPath(root, path);
         return File.Exists(path) ? File.ReadAllBytes(path) : null;
     }

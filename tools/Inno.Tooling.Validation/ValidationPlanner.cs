@@ -97,6 +97,20 @@ internal static class ValidationPlanner
                 if (project.references.Any(affected.Contains))
                     expanded |= affected.Add(project.path);
         } while (expanded);
+        bool deepNative = extended || changes.Any(static path => path.StartsWith("build/", StringComparison.Ordinal)
+            || path.StartsWith("extern/", StringComparison.Ordinal) || path.Contains("/native/", StringComparison.Ordinal)
+            || path.Contains("/build/", StringComparison.Ordinal) || path.Contains("reload", StringComparison.OrdinalIgnoreCase)
+            || path is "Directory.Build.props" or "Directory.Build.targets" or "global.json");
+        var executionExclusions = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (ValidationProject project in projects)
+        {
+            if (project.environment.Length != 0 && project.environment is not ("any" or "native-host")
+                && !ValidationTestHosts.Applies(project.environment.Split(';')))
+                executionExclusions.Add(project.path, $"This owner requires OS environment '{project.environment}'; it is not validated on this host.");
+            else if (project.layer == "performance" && !deepNative && !changes.Any(path => path.StartsWith("tests/", StringComparison.Ordinal)
+                && (path.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal) || project.inputs.Contains(path, StringComparer.Ordinal))))
+                executionExclusions.Add(project.path, "Performance sampling requires extended acceptance or an affected build/native/reload or performance-test input.");
+        }
         foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full || affected.Any(owner =>
             !byPath[owner].test && Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page)))))
             selectedWikiPages.Add(page);
@@ -130,7 +144,8 @@ internal static class ValidationPlanner
         };
         Dictionary<string, ValidationProject> nativeProjects = byPath;
         string target = string.Empty;
-        if (scriptWiki || nativeOwners.Any(owner => affected.Contains(owner) || documentationOwners.Contains(owner)))
+        if (scriptWiki || nativeOwners.Any(owner => !executionExclusions.ContainsKey(owner)
+            && (affected.Contains(owner) || documentationOwners.Contains(owner))))
         {
             string[] unavailable = inputs.Where(static pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)).Select(static pair => pair.Key).ToArray();
             if (unavailable.Length != 0)
@@ -207,8 +222,9 @@ internal static class ValidationPlanner
             bool selected = affected.Contains(project.path);
             bool compile = selected || documentationOwners.Contains(project.path);
             string environment = project.environment.Length != 0 ? project.environment : native ? "native-host" : "any";
-            string? exclusion = project.productTarget.Length != 0 && target.Length != 0 && project.productTarget != target
-                ? $"Product '{project.productTarget}' requires its own supported target environment; current SDK host selects '{target}'." : null;
+            string? exclusion = executionExclusions.GetValueOrDefault(project.path)
+                ?? (project.productTarget.Length != 0 && target.Length != 0 && project.productTarget != target
+                    ? $"Product '{project.productTarget}' requires its own supported target environment; current SDK host selects '{target}'." : null);
             if (compile)
                 checks.Add(new("build:" + project.path, "build", project.path, "Changed owner or transitive consumer; compile the shared union once.",
                     environment, [], selectedInputs, false, exclusion, context, "compilation"));
@@ -230,7 +246,7 @@ internal static class ValidationPlanner
                         throw new InvalidDataException($"Unknown evaluated dependency '{dependency}' from '{node.path}'.");
             }
         }
-        if (affected.Count != 0 && !checks.Any(static check => check.kind == "test" && check.exclusion is null))
+        if (affected.Any(owner => !executionExclusions.ContainsKey(owner)) && !checks.Any(static check => check.kind == "test" && check.exclusion is null))
             throw new InvalidDataException("Affected production inputs have no selected behavior tests. Declare their real public contract consumers.");
         ValidationCheck[] builds = checks.Where(static check => check.kind == "build" && check.exclusion is null).ToArray();
         foreach (IGrouping<string?, ValidationCheck> group in builds.GroupBy(static check => check.context))
@@ -257,9 +273,7 @@ internal static class ValidationPlanner
             checks.Add(new("editor-products", "products", editorBuild.owner, "Real renderer startup, product workflows and native panel retirement for the affected Editor product.",
                 "native-host", [editorBuild.id], editorBuild.inputs.Concat(inputs.Keys.Where(static path => path.StartsWith("tests/fixtures/editor-ui/", StringComparison.Ordinal)
                     || path is "tests/Invoke-EditorSmoke.ps1" or "tests/Invoke-EditorUiProductJourney.ps1")).Distinct().Order(StringComparer.Ordinal).ToArray(), false, null, "native", "product"));
-        if (editorBuild is not null && (extended || changes.Any(static path => path.StartsWith("build/", StringComparison.Ordinal)
-                || path.StartsWith("extern/", StringComparison.Ordinal) || path.Contains("Reload", StringComparison.Ordinal)
-                || path is "Directory.Build.props" or "Directory.Build.targets" or "global.json")))
+        if (editorBuild is not null && deepNative)
             checks.Add(new("native-hot-builds", "hot-builds", editorBuild.owner,
                 "Ten unchanged native builds must retain content selections and start no native compiler or binding generation.",
                 "native-host", [editorBuild.id], editorBuild.inputs.Append("tests/Invoke-BuildCacheChecks.ps1").ToArray(), false, null, "native", "performance"));

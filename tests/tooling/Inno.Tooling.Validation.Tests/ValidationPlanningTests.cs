@@ -15,6 +15,55 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task PerformanceOwnersAreExplicitlyExcludedUntilTheirExecutionInputsChange()
+    {
+        using var repository = new ValidationRepository();
+        const string C_OWNER = "tests/Cost.Tests/Cost.Tests.csproj";
+        repository.Write(C_OWNER, ValidationRepository.Project("""
+            <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer></PropertyGroup>
+            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /></ItemGroup>
+            """));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare cost sampling owner");
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
+        using (JsonDocument plan = await repository.PlanAsync())
+        {
+            JsonElement check = plan.RootElement.GetProperty("checks").EnumerateArray().Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
+            Assert.Contains("Performance sampling requires", check.GetProperty("exclusion").GetString());
+        }
+        repository.Write("build/Changed.props", "<Project />");
+        using (JsonDocument plan = await repository.PlanAsync())
+        {
+            JsonElement check = plan.RootElement.GetProperty("checks").EnumerateArray().Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
+            Assert.Equal(JsonValueKind.Null, check.GetProperty("exclusion").ValueKind);
+            Assert.False(check.GetProperty("reusable").GetBoolean());
+        }
+    }
+
+    [Fact]
+    public async Task AnotherHostOwnerDoesNotRequestNativePreparationAndUnknownHostsFail()
+    {
+        using var repository = new ValidationRepository();
+        string other = OperatingSystem.IsWindows() ? "macos" : "windows";
+        const string C_OWNER = "tests/Host.Tests/Host.Tests.csproj";
+        string definition = ValidationRepository.Project("<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>native</InnoValidationLayer>"
+            + "<InnoValidationEnvironment>" + other + "</InnoValidationEnvironment><InnoTestNativeProduct>editor</InnoTestNativeProduct></PropertyGroup>");
+        repository.Write(C_OWNER, definition);
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare native host requirement");
+        repository.Write("tests/Host.Tests/Changed.cs", "// Actual host contract input.");
+        using (JsonDocument plan = await repository.PlanAsync())
+        {
+            Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
+            JsonElement check = plan.RootElement.GetProperty("checks").EnumerateArray().Single(item => item.GetProperty("id").GetString() == "test:" + C_OWNER);
+            Assert.Contains("requires OS environment", check.GetProperty("exclusion").GetString());
+        }
+        string current = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "macos" : "linux";
+        repository.Write(C_OWNER, definition.Replace(">" + other + "</InnoValidationEnvironment>", ">" + current + ";unknown</InnoValidationEnvironment>", StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+    }
+
+    [Fact]
     public async Task TrackedContentSelectsConsumersDespitePreservedTimestampAndCachedIndex()
     {
         using var repository = new ValidationRepository();

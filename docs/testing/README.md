@@ -30,6 +30,7 @@
 - [Inno.Audio.Runtime.Tests](Inno.Audio.Runtime.Tests.md)
 - [Inno.Audio.Tests](Inno.Audio.Tests.md)
 - [Inno.Build.Tests](Inno.Build.Tests.md)
+- [Inno.Build.NativePerformance.Tests](Inno.Build.NativePerformance.Tests.md)
 - [Inno.Build.Toolchains.Tests](Inno.Build.Toolchains.Tests.md)
 - [Inno.Content.Tests](Inno.Content.Tests.md)
 - [Inno.Content.CacheProbe](Inno.Content.CacheProbe.md)
