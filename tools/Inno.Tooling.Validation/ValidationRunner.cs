@@ -157,8 +157,9 @@ internal static class ValidationRunner
                             if (check.inputs.Where(static input => input.StartsWith("docs/", StringComparison.Ordinal))
                                 .Any(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(plan.root, page))))
                             {
-                                string entryContext = plan.checks.Single(static candidate => candidate.kind == "build"
-                                    && candidate.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj").context!;
+                                string entryContext = plan.checks.Single(candidate => candidate.kind == "build"
+                                    && candidate.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj"
+                                    && check.prerequisites.Contains(candidate.id, StringComparer.Ordinal)).context!;
                                 JsonElement snapshot = plan.contexts[entryContext].sdkGraph;
                                 string entry = snapshot.EnumerateArray().Single(node => Path.GetFileName(node.GetProperty("Path").GetString()) == "InnoEngine.Build.csproj")
                                     .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
