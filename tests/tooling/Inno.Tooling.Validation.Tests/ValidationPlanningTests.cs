@@ -15,6 +15,37 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task SharedTestExecutionChangesSelectAllTestOwnersAndInvalidateOnlyTheirExecutionInputs()
+    {
+        using var repository = new ValidationRepository();
+        const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
+        const string C_PERFORMANCE = "tests/Performance.Tests/Performance.Tests.csproj";
+        repository.Write(C_PERFORMANCE, ValidationRepository.Project(
+            "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer></PropertyGroup>"));
+        repository.Write(C_EXECUTOR, "Write-Host 'before'");
+        repository.Git("add", C_EXECUTOR, C_PERFORMANCE);
+        repository.Git("commit", "-m", "Declare the shared test executor");
+        using JsonDocument initial = await repository.PlanAsync();
+        string original = initial.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString()!;
+        repository.Write(C_EXECUTOR, "Write-Host 'after'");
+        using JsonDocument changed = await repository.PlanAsync();
+        Assert.False(changed.RootElement.GetProperty("full").GetBoolean());
+        Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(changed));
+        Assert.Contains(C_PERFORMANCE, Owners(changed));
+        Assert.DoesNotContain("src/Other/Other.csproj", Owners(changed));
+        Assert.NotEqual(original, changed.RootElement.GetProperty("inputs").GetProperty(C_EXECUTOR).GetString());
+        JsonElement[] checks = changed.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "test"), test =>
+        {
+            Assert.Equal(JsonValueKind.Null, test.GetProperty("exclusion").ValueKind);
+            Assert.Contains(C_EXECUTOR, test.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString()));
+        });
+        Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "build"), build =>
+            Assert.DoesNotContain(C_EXECUTOR, build.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString())));
+        Assert.DoesNotContain(C_EXECUTOR, changed.RootElement.GetProperty("inputSets").GetProperty("tooling").EnumerateArray().Select(static value => value.GetString()));
+    }
+
+    [Fact]
     public async Task PerformanceOwnersAreExplicitlyExcludedUntilTheirExecutionInputsChange()
     {
         using var repository = new ValidationRepository();

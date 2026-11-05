@@ -13,6 +13,8 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationRunner
 {
+    internal const string C_TEST_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
+
     internal static async Task<ValidationEvidence> RunAsync(
         ValidationPlan plan,
         string directory,
@@ -280,7 +282,7 @@ internal static class ValidationRunner
                                 {
                                     try
                                     {
-                                        await ShellAsync("tests/Invoke-IsolatedTests.ps1",
+                                        await ShellAsync(C_TEST_EXECUTOR,
                                             ["-Solution", solution, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
                                                 "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments], contextId + "-tests.log").ConfigureAwait(false);
                                     }

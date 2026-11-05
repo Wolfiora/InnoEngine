@@ -79,12 +79,15 @@ internal static class ValidationPlanner
                 || change.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal)).ToArray();
             foreach (ValidationProject owner in owners)
                 affected.Add(owner.path);
-            if (owners.Length == 0 && !IsDocumentation(change))
+            if (owners.Length == 0 && !IsDocumentation(change) && change != ValidationRunner.C_TEST_EXECUTOR)
             {
                 diagnostics.Add($"Unknown or shared input '{change}': conservatively selecting every owner.");
                 full = true;
             }
         }
+        bool changedTestExecutor = changes.Contains(ValidationRunner.C_TEST_EXECUTOR);
+        if (changedTestExecutor)
+            affected.UnionWith(projects.Where(static project => project.test).Select(static project => project.path));
         if (extended)
             full = true;
         if (full)
@@ -107,7 +110,7 @@ internal static class ValidationPlanner
             if (project.environment.Length != 0 && project.environment is not ("any" or "native-host")
                 && !ValidationTestHosts.Applies(project.environment.Split(';')))
                 executionExclusions.Add(project.path, $"This owner requires OS environment '{project.environment}'; it is not validated on this host.");
-            else if (project.layer == "performance" && !deepNative && !changes.Any(path => path.StartsWith("tests/", StringComparison.Ordinal)
+            else if (project.layer == "performance" && !deepNative && !changedTestExecutor && !changes.Any(path => path.StartsWith("tests/", StringComparison.Ordinal)
                 && (path.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal) || project.inputs.Contains(path, StringComparer.Ordinal))))
                 executionExclusions.Add(project.path, "Performance sampling requires extended acceptance or an affected build/native/reload or performance-test input.");
         }
@@ -232,7 +235,7 @@ internal static class ValidationPlanner
                 checks.Add(new("test:" + project.path, "test", project.path, selected
                     ? "Affected behavior or contract consumer; compiled SupportedOSPlatform requirements distinguish host exclusions from missing execution."
                     : "No affected input in its evaluated closure.",
-                    environment, ["build:" + project.path], selectedInputs, project.reusable && project.layer is not ("performance" or "product"),
+                    environment, ["build:" + project.path], [..selectedInputs, ValidationRunner.C_TEST_EXECUTOR], project.reusable && project.layer is not ("performance" or "product"),
                     selected ? exclusion : "Outside the affected evaluated dependency closure.", context, project.layer));
 
             void Visit(ValidationProject node)
