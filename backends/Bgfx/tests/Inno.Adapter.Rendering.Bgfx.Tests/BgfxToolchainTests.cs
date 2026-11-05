@@ -3,6 +3,7 @@ using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Buffers.Binary;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text;
@@ -79,6 +80,7 @@ public sealed class BgfxToolchainTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task BrowserProfileCompilesTheCommonGraphOnWindows()
     {
         if (!OperatingSystem.IsWindows())
@@ -109,6 +111,7 @@ public sealed class BgfxToolchainTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task Direct3DProfileCompilesTheCommonGraphOnWindows()
     {
         if (!OperatingSystem.IsWindows())
@@ -141,6 +144,8 @@ public sealed class BgfxToolchainTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("macos")]
     public async Task GlslReflectionPreservesUsedBindingsAndRemovesOptimizedBindings(bool browser)
     {
         if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS())
@@ -212,6 +217,8 @@ public sealed class BgfxToolchainTests : IDisposable
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("macos")]
     public async Task GlslFragmentOutputsPreserveSparseAttachmentLocations(bool browser)
     {
         if (!OperatingSystem.IsWindows() && !OperatingSystem.IsMacOS())

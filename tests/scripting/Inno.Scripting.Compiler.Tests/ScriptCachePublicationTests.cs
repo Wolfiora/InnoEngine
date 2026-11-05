@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -11,6 +12,7 @@ namespace Inno.Scripting.Compiler.Tests;
 /// <summary>
 /// Verifies publication through the public compiler while independently observing its owned artifacts.
 /// </summary>
+[SupportedOSPlatform("windows")]
 public sealed class ScriptCachePublicationTests
 {
     /// <summary>

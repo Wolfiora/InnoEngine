@@ -1,5 +1,7 @@
 # Inno.Core.IO.Tests
 
+Windows 目录共享、取消与失败回滚用例声明 `SupportedOSPlatform("windows")`。其他宿主上的历史提前返回及 Skip 只记录为 NotApplicable，不算该 Windows 契约通过。
+
 [测试索引](README.md) · [Wiki 首页](../README.md) · [当前验收](../architecture/CURRENT_ACCEPTANCE.md)
 
 ## 职责与边界

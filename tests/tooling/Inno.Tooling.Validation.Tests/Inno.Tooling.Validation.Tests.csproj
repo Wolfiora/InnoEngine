@@ -8,6 +8,12 @@
     <InnoValidationLayer>integration</InnoValidationLayer>
   </PropertyGroup>
 
+  <Import Project="../../RepositoryInput.targets" />
+
+  <ItemGroup>
+    <InnoValidationInput Include="../../input/Inno.Input.Tests/*.csproj;../../Invoke-IsolatedTests.ps1" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="../../../tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj" />
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />

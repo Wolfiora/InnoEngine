@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains.Bgfx.Tools;
@@ -22,6 +23,7 @@ public sealed class MetalShaderFactAttribute : FactAttribute
     }
 }
 
+[SupportedOSPlatform("macos")]
 public sealed class ShaderTypedNativeCompilationTests
 {
     [MetalShaderFact]

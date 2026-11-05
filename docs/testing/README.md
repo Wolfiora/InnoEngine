@@ -4,6 +4,8 @@
 
 按项目查找验证入口、生产依赖和环境要求。测试项目页面描述源码场景；实际运行结果、失败及未执行项目由当前验收统一记录。Native、浏览器、窗口和真实设备测试各有环境前提，托管编译通过不能替代运行。
 
+平台专属用例使用标准 `SupportedOSPlatform` 声明方法或类的 OS 契约。统一验证从已编译程序集读取该声明，并将其他宿主上的用例明确记为 NotApplicable；原有 Skip 文本或提前返回不能单独提供通过证据。当前宿主适用的用例仍必须实际通过，缺失工具、设备或普通 Skip 不能被当作平台排除。
+
 ## 项目索引
 
 - [Inno.Scripting.Compiler.Tests](Inno.Scripting.Compiler.Tests.md)

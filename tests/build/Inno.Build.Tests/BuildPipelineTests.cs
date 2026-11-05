@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
 using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
@@ -434,6 +435,7 @@ public sealed partial class BuildPipelineTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task CommittedGameReportsBackupCleanupAsAWarningWithoutLosingSuccess()
     {
         if (!OperatingSystem.IsWindows())

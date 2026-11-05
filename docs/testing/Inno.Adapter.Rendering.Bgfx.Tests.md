@@ -1,5 +1,7 @@
 # Inno.Adapter.Rendering.Bgfx.Tests
 
+Direct3D、Windows browser profile 与桌面 GLSL/嵌入程序用例在方法上声明实际支持的 OS，防止其他宿主上的提前返回被记录为目标平台通过。该声明不取代真实编译、反射与设备契约。
+
 创建真实 SDL/Cocoa 窗口的 surface 退休用例通过测试程序集自己的主线程入口执行，独立进程协议仍保留。入口只直接调用已声明的原断言，失败和超时传播给 xUnit；Noop 与进程生命周期测试仍使用各自独立 host，不创建生产可执行项目。
 
 [测试索引](README.md) · [Wiki 首页](../README.md) · [当前验收](../architecture/CURRENT_ACCEPTANCE.md)

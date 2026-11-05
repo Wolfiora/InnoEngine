@@ -15,9 +15,16 @@ internal sealed class ValidationRepository : IDisposable
         ?? Path.Combine(Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? throw new InvalidOperationException("The test requires its selected SDK host."),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
 
-    internal ValidationRepository()
+    internal ValidationRepository(string? source = null)
     {
         Directory.CreateDirectory(m_root);
+        if (source is not null)
+        {
+            Git("clone", "--shared", source, ".");
+            Git("config", "user.name", "Aaron Liao");
+            Git("config", "user.email", "hsuankailiao@gmail.com");
+            return;
+        }
         Write(".gitignore", "artifacts/\n**/obj/\n**/bin/\n");
         Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00\n");
         Write("Shared.props", "<Project />");
@@ -84,9 +91,12 @@ internal sealed class ValidationRepository : IDisposable
         => ValidationCommand.ExecuteAsync(["evidence", "--engine-root", m_root, "--dotnet", m_dotnet,
             "--plan", PathOf("artifacts/plan/plan.json"), "--evidence", evidence]);
 
-    internal Task<int> RunAsync(CancellationToken cancellation = default)
+    internal Task<int> RunAsync(
+        CancellationToken cancellation = default,
+        string output = "artifacts/run"
+    )
         => ValidationCommand.ExecuteAsync(["run", "--engine-root", m_root, "--dotnet", m_dotnet,
-            "--plan", PathOf("artifacts/plan/plan.json"), "--output", PathOf("artifacts/run")], cancellation);
+            "--plan", PathOf("artifacts/plan/plan.json"), "--output", PathOf(output)], cancellation);
 
     internal async Task BuildAsync(params string[] arguments)
     {

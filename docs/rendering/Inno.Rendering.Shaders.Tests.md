@@ -1,5 +1,7 @@
 # Inno.Rendering.Shaders.Tests
 
+真实 Metal 编译用例声明 `SupportedOSPlatform("macos")`；Windows 不被计为 Metal 验收通过。macOS 上编译工具缺失或实际编译失败仍必须失败。
+
 [Rendering 索引](README.md) · [Shader 创作 API](Inno.Rendering.Shaders.md) · [Wiki 首页](../README.md)
 
 ## 职责与边界

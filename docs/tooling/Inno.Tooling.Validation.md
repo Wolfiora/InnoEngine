@@ -16,6 +16,8 @@ Clean 通过既有 `InnoPrepareProductNative=false` 明确禁止产品准备，�
 
 计划内的检查顺序就是执行顺序：全仓政策先行，随后完成托管上下文的构建、API、Wiki 与行为检查，再进入原生和 Release 上下文，最终归档。每个必需前提必须排在消费者之前，否则计划生成失败。先前必需检查失败时，后续昂贵上下文明确阻塞，保留独立政策诊断，避免等待完整原生/Release 构建后才看到托管失败。
 
+测试方法或类用标准 `SupportedOSPlatform` 声明真实操作系统契约。执行器只读取当前 SDK 产物的元数据，不加载测试对象，也不维护测试名称白名单。当前宿主不适用的具体用例在 `host-contracts.json` 和 owner 结果中明确记录为 NotApplicable；对应宿主上的 Skip、普通 Skip、未知环境声明及没有任何必需用例实际执行仍然失败。旧测试的提前返回也不能冒充其他平台上的验证。设备或工具缺失不能借用 OS 声明变成通过。
+
 先通过选定 SDK 批量求值真实工程，再由 Git merge base、staged/unstaged/untracked 输入确定 owner 与消费者。源码、资源、imports、ProjectReference 和显式 `InnoValidationInput` 来自 SDK。未知关系扩大范围并记录原因；没有行为测试或领域测试传递引用 native 时拒绝计划。
 
 实际引用边上的全局属性变体也进入图，条件源码和条件 native 依赖不能因根项目默认属性而丢失。托管构建并行度为处理器数与 4 的较小值；原生准备仍保持单 owner，跨 MSBuild 工作进程的准备复用尚未获得并发验收，不能提前启用。

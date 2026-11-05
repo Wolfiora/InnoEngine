@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -12,6 +13,8 @@ namespace Inno.Build.Tests;
 public sealed class BuildCacheWorkspaceLinkTests
 {
     [UnixFileLinksFact]
+    [SupportedOSPlatform("macos")]
+    [SupportedOSPlatform("linux")]
     public async Task WorkspaceLibraryAliasesAreCountedOnceAndRetiredWithoutFollowingLinks()
     {
         using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(Path.GetTempPath(), "InnoCacheLinks"));
@@ -43,6 +46,8 @@ public sealed class BuildCacheWorkspaceLinkTests
     }
 
     [UnixFileLinksFact]
+    [SupportedOSPlatform("macos")]
+    [SupportedOSPlatform("linux")]
     public async Task FileAliasesCannotEscapeCycleDangleOrEnterImmutableArtifacts()
     {
         using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(Path.GetTempPath(), "InnoCacheLinkBoundary"));

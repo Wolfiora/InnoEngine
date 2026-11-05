@@ -1,5 +1,7 @@
 # Inno.Scripting.Compiler.Tests
 
+脚本缓存发布的 Windows 目录共享用例保留全部取消、修复与原产物保护断言，并通过类级 `SupportedOSPlatform("windows")` 声明环境。统一入口在其他宿主记录不适用，在 Windows 仍拒绝缺失执行。
+
 [测试索引](README.md) · [Wiki 首页](../README.md) · [脚本编译器](../scripting/Inno.Scripting.Compiler.md)
 
 ## 职责与边界

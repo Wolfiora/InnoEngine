@@ -38,6 +38,7 @@ internal static class ValidationRunner
         var executedTests = new HashSet<string>(StringComparer.Ordinal);
         var buildFailures = new Dictionary<string, string>(StringComparer.Ordinal);
         var testFailures = new Dictionary<string, string>(StringComparer.Ordinal);
+        var testDetails = new Dictionary<string, string>(StringComparer.Ordinal);
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
         foreach (ValidationCheck check in plan.checks)
@@ -73,7 +74,7 @@ internal static class ValidationRunner
                 && ValidationOutputs.Matches(plan, check, old, cancellation, outputDigests))
             {
                 status = "Reused";
-                detail = "Exact local deterministic input identity matches retained successful evidence.";
+                detail = check.kind == "test" ? old.detail : "Exact local deterministic input identity matches retained successful evidence.";
                 outputs = old.outputs;
                 dependencyIdentity = old.dependencyIdentity;
             }
@@ -279,7 +280,11 @@ internal static class ValidationRunner
                                     await ShellAsync("tests/Invoke-IsolatedTests.ps1",
                                         ["-Solution", solution, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
                                             "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments], contextId + "-tests.log").ConfigureAwait(false);
-                                    VerifyDiscovery(tests, resultsDirectory);
+                                    foreach (var evidence in VerifyDiscovery(tests.ToDictionary(static project => project, project =>
+                                        plan.contexts[contextId].sdkGraph.EnumerateArray().Single(snapshot =>
+                                            Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == project)
+                                            .GetProperty("Properties").GetProperty("TargetPath").GetString()!, StringComparer.Ordinal), resultsDirectory))
+                                        testDetails.Add(evidence.Key, evidence.Value);
                                     executedTests.UnionWith(tests);
                                     tested.Add(contextId);
                                     outputDigests.Clear();
@@ -293,6 +298,7 @@ internal static class ValidationRunner
                             }
                             if (!executedTests.Contains(check.owner))
                                 throw new InvalidDataException($"Previously reusable output changed before {check.id}; this test did not execute and cannot be certified.");
+                            detail = testDetails[check.owner];
                             break;
                         default:
                             throw new InvalidDataException($"Unknown required validation kind: {check.kind}");
@@ -389,31 +395,54 @@ internal static class ValidationRunner
         }
     }
 
-    internal static void VerifyDiscovery(
-        string[] projects,
+    private static Dictionary<string, string> VerifyDiscovery(
+        Dictionary<string, string> projects,
         string directory
     ) {
         string[] reports = Directory.GetFiles(directory, "*.trx", SearchOption.AllDirectories);
-        var assemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var assemblies = projects.ToDictionary(static pair => Path.GetFileNameWithoutExtension(pair.Value), static pair => pair.Key,
+            StringComparer.OrdinalIgnoreCase);
+        var hosts = projects.ToDictionary(static pair => pair.Key, static pair => ValidationTestHosts.Read(pair.Value), StringComparer.Ordinal);
+        var executed = projects.Keys.ToDictionary(static project => project, static _ => 0, StringComparer.Ordinal);
+        var excluded = projects.Keys.ToDictionary(static project => project, static _ => new List<string>(), StringComparer.Ordinal);
         foreach (string report in reports)
         {
             XDocument document = XDocument.Load(report);
             XElement counters = document.Descendants().Single(element => element.Name.LocalName == "Counters");
-            int? executed = (int?)counters.Attribute("executed");
+            int? count = (int?)counters.Attribute("executed");
             XElement[] records = document.Descendants().Where(static element => element.Name.LocalName == "UnitTestResult").ToArray();
-            if (executed is not >= 0 || (int?)counters.Attribute("failed") is not 0
-                || (int?)counters.Attribute("total") != executed || (int?)counters.Attribute("passed") != executed
-                || (int?)counters.Attribute("error") is not 0 || records.Length != executed
-                || records.Any(static result => (string?)result.Attribute("outcome") != "Passed"))
+            if (count is not >= 0 || (int?)counters.Attribute("failed") is not 0
+                || (int?)counters.Attribute("total") != records.Length || (int?)counters.Attribute("passed") != count
+                || (int?)counters.Attribute("error") is not 0 || records.Count(static result => (string?)result.Attribute("outcome") == "Passed") != count
+                || records.Any(static result => (string?)result.Attribute("outcome") is not ("Passed" or "NotExecuted")))
                 throw new InvalidDataException($"Invalid or failed test execution: {report}");
-            if (executed == 0)
-                continue;
-            foreach (XElement definition in document.Descendants().Where(static element => element.Name.LocalName == "UnitTest"))
-                assemblies.Add(Path.GetFileNameWithoutExtension((string?)definition.Attribute("storage") ?? string.Empty));
+            var definitions = document.Descendants().Where(static element => element.Name.LocalName == "UnitTest")
+                .ToDictionary(static definition => (string)definition.Attribute("id")!, StringComparer.Ordinal);
+            foreach (XElement record in records)
+            {
+                XElement definition = definitions[(string)record.Attribute("testId")!];
+                string assembly = Path.GetFileNameWithoutExtension((string?)definition.Attribute("storage") ?? string.Empty);
+                if (!assemblies.TryGetValue(assembly, out string? project))
+                    throw new InvalidDataException($"Test evidence has an unplanned assembly: {assembly}");
+                XElement method = definition.Elements().Single(static element => element.Name.LocalName == "TestMethod");
+                string name = (string?)method.Attribute("className") + "." + (string?)method.Attribute("name");
+                if (hosts[project].TryGetValue(name, out string[]? required) && !ValidationTestHosts.Applies(required))
+                {
+                    excluded[project].Add((string?)record.Attribute("testName") + " requires " + string.Join('/', required));
+                    continue;
+                }
+                if ((string?)record.Attribute("outcome") != "Passed")
+                    throw new InvalidDataException($"Required test was skipped without an inapplicable compiled OS contract: {name}");
+                executed[project]++;
+            }
         }
-        foreach (string project in projects)
-            if (!assemblies.Contains(Path.GetFileNameWithoutExtension(project)))
+        File.WriteAllText(Path.Combine(directory, "host-contracts.json"), JsonSerializer.Serialize(excluded,
+            new JsonSerializerOptions { WriteIndented = true }));
+        foreach (string project in projects.Keys)
+            if (executed[project] == 0)
                 throw new InvalidDataException($"No executed test evidence for required owner: {project}");
+        return projects.Keys.ToDictionary(static project => project, project =>
+            $"{executed[project]} required cases passed; {excluded[project].Count} OS contracts NotApplicable. See host-contracts.json.", StringComparer.Ordinal);
     }
 
 }

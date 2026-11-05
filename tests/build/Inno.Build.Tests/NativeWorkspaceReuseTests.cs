@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -172,6 +173,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task WindowsCMakeReusesUnchangedObjectsAndPublishesChangedSourceBytes()
     {
         if (!OperatingSystem.IsWindows())

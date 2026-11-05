@@ -212,7 +212,9 @@ internal static class ValidationPlanner
                 checks.Add(new("build:" + project.path, "build", project.path, "Changed owner or transitive consumer; compile the shared union once.",
                     environment, [], selectedInputs, false, exclusion, context, "compilation"));
             if (project.test)
-                checks.Add(new("test:" + project.path, "test", project.path, selected ? "Behavior or contract consumer of affected inputs." : "No affected input in its evaluated closure.",
+                checks.Add(new("test:" + project.path, "test", project.path, selected
+                    ? "Affected behavior or contract consumer; compiled SupportedOSPlatform requirements distinguish host exclusions from missing execution."
+                    : "No affected input in its evaluated closure.",
                     environment, ["build:" + project.path], selectedInputs, project.reusable && project.layer is not ("performance" or "product"),
                     selected ? exclusion : "Outside the affected evaluated dependency closure.", context, project.layer));
 
