@@ -10,6 +10,9 @@ if ($JobConclusion -cne 'success') { throw "The required producer job did not su
 if ($ExpectedCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'Certification requires an exact commit SHA.' }
 $plan = Get-Content -LiteralPath $PlanPath -Raw | ConvertFrom-Json
 $evidence = Get-Content -LiteralPath $ResultsPath -Raw | ConvertFrom-Json
+if ($evidence.completed -isnot [bool] -or -not $evidence.completed) {
+    throw 'The run did not complete its closing input, environment and output verification.'
+}
 $identity = (Get-FileHash -LiteralPath $PlanPath -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($evidence.planIdentity -cne $identity) { throw 'The results do not certify the exact uploaded plan bytes.' }
 if ($plan.commit -cne $ExpectedCommit -or $evidence.commit -cne $ExpectedCommit) { throw 'The evidence belongs to another commit or merge candidate.' }

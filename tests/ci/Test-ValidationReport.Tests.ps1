@@ -12,7 +12,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
         checks = @(@{ id = 'architecture'; kind = 'architecture'; prerequisites = @(); exclusion = $null })
     }
     $evidence = @{
-        commit = $commit; tree = $hash; environment = $hash
+        commit = $commit; tree = $hash; environment = $hash; completed = $true
         results = @(@{ id = 'architecture'; status = 'Passed'; inputIdentity = $hash; outputs = @{} })
     }
     $state = @{ plan = $plan; evidence = $evidence; conclusion = 'success'; expectedCommit = $commit; tamper = $false }
@@ -38,6 +38,9 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
 }
 
 Invoke-Case 'complete' { param($s) } $true
+Invoke-Case 'unfinished-closing-verification' { param($s) $s.evidence.completed = $false } $false
+Invoke-Case 'missing-completion' { param($s) $s.evidence.Remove('completed') } $false
+Invoke-Case 'malformed-completion' { param($s) $s.evidence.completed = 'true' } $false
 Invoke-Case 'missing-result' { param($s) $s.evidence.results = @() } $false
 Invoke-Case 'skipped-required' { param($s) $s.evidence.results[0].status = 'NotApplicable' } $false
 Invoke-Case 'canceled-job' { param($s) $s.conclusion = 'cancelled' } $false

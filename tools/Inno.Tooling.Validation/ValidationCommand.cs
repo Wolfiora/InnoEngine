@@ -128,6 +128,8 @@ public static class ValidationCommand
         ValidationPlan plan,
         ValidationEvidence evidence
     ) {
+        if (!evidence.completed)
+            throw new InvalidDataException("Validation did not complete its closing input, environment and output verification.");
         if (evidence.planIdentity != ValidationInputs.PlanIdentity(plan))
             throw new InvalidDataException("Evidence does not match the exact selected plan.");
         foreach (ValidationCheck check in plan.checks)

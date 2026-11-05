@@ -61,5 +61,6 @@ internal sealed record ValidationEvidence(
     string environment,
     DateTimeOffset started,
     ValidationResult[] results,
-    string planIdentity = ""
+    string planIdentity = "",
+    bool completed = false
 );

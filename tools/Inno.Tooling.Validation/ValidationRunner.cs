@@ -71,7 +71,7 @@ internal static class ValidationRunner
                 status = "Blocked";
                 detail = "A required preceding check did not pass; dependent work was not executed.";
             }
-            else if (check.reusable && previous?.environment == plan.environment && old is { status: "Passed" or "Reused" }
+            else if (check.reusable && previous is { completed: true } && previous.environment == plan.environment && old is { status: "Passed" or "Reused" }
                 && old.inputIdentity == identity && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
                 && dependencyInputs.Matches(check, old.dependencyIdentity)
                 && ValidationOutputs.Matches(plan, check, old, cancellation, outputDigests))
@@ -375,7 +375,8 @@ internal static class ValidationRunner
         }
         if (workspace is not null)
             ValidationWorkspace.RecordCompleted(plan, cancellation);
-        return new(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity);
+        await SaveAsync(completed: true).ConfigureAwait(false);
+        return new(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity, completed: true);
 
         Task ShellAsync(
             string script,
@@ -400,15 +401,15 @@ internal static class ValidationRunner
             return destination;
         }
 
-        Task SaveAsync() => File.WriteAllTextAsync(Path.Combine(directory, "results.json"),
-            JsonSerializer.Serialize(new ValidationEvidence(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity),
+        Task SaveAsync(bool completed = false) => File.WriteAllTextAsync(Path.Combine(directory, "results.json"),
+            JsonSerializer.Serialize(new ValidationEvidence(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity, completed),
                 new JsonSerializerOptions { WriteIndented = true }), CancellationToken.None);
 
         bool CanReuse(ValidationCheck candidate)
         {
             ValidationResult? retained = previous?.results.SingleOrDefault(result => result.id == candidate.id);
             return candidate.reusable && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
-                && previous?.environment == plan.environment && retained is { status: "Passed" or "Reused" }
+                && previous is { completed: true } && previous.environment == plan.environment && retained is { status: "Passed" or "Reused" }
                 && retained.inputIdentity == ValidationInputs.CheckIdentity(plan, candidate, current)
                 && dependencyInputs.Matches(candidate, retained.dependencyIdentity)
                 && ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests);

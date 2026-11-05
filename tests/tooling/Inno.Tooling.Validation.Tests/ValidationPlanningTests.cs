@@ -504,6 +504,7 @@ public sealed class ValidationPlanningTests
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
         using JsonDocument results = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json")));
         Assert.Contains(results.RootElement.GetProperty("results").EnumerateArray(), result => result.GetProperty("status").GetString() == "Failed");
+        Assert.True(results.RootElement.GetProperty("completed").GetBoolean());
         string identity = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(repository.PathOf("artifacts/run/plan.json"))));
         Assert.Equal(identity, results.RootElement.GetProperty("planIdentity").GetString());
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf("artifacts/run/results.json")));
