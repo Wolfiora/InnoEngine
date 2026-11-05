@@ -1,5 +1,7 @@
 # Inno.Tooling.Validation.Tests
 
+`ValidationSolutionTests` 使用真实 SDK 重现 IDE 配置未勾选构建时 `.slnf` 成功但不产出程序集的情况，再编译统一入口保留的 `.slnx`，验证所有选中 owner 参与构建且 SourceDebug 不被 IDE 重映射为 Debug。测试同时确认政策失败不会提前执行该构建。
+
 [Tooling 索引](README.md) · [验证入口](Inno.Tooling.Validation.md) · [Wiki 首页](../README.md)
 
 通过公开 `ValidationCommand.ExecuteAsync` 驱动真实临时 Git 仓库和选定 SDK，不使用 IVT、私有反射或生产后门。fixture 拥有临时源码、输出和 Git 元数据，排空子进程后清理明确的临时目录；测试程序集不进入产品。

@@ -70,11 +70,11 @@ internal sealed class ValidationRepository : IDisposable
             throw new InvalidOperationException(output.Result + error.Result);
     }
 
-    internal async Task<JsonDocument> PlanAsync(string baseline = "HEAD", bool extended = false)
+    internal async Task<JsonDocument> PlanAsync(string baseline = "HEAD", bool extended = false, string configuration = "Debug")
     {
         string output = PathOf("artifacts/plan");
         await ValidationCommand.ExecuteAsync(["plan", "--engine-root", m_root, "--dotnet", m_dotnet, "--base", baseline, "--output", output,
-            "--extended", extended.ToString()]);
+            "--extended", extended.ToString(), "--configuration", configuration]);
         return JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
     }
 
@@ -85,6 +85,21 @@ internal sealed class ValidationRepository : IDisposable
     internal Task<int> RunAsync(CancellationToken cancellation = default)
         => ValidationCommand.ExecuteAsync(["run", "--engine-root", m_root, "--dotnet", m_dotnet,
             "--plan", PathOf("artifacts/plan/plan.json"), "--output", PathOf("artifacts/run")], cancellation);
+
+    internal async Task BuildAsync(params string[] arguments)
+    {
+        var start = new ProcessStartInfo(m_dotnet) { WorkingDirectory = m_root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        foreach (string argument in new[] { "build", "--disable-build-servers", "-m:1", "-nr:false" })
+            start.ArgumentList.Add(argument);
+        foreach (string argument in arguments)
+            start.ArgumentList.Add(argument);
+        using Process process = Process.Start(start)!;
+        Task<string> output = process.StandardOutput.ReadToEndAsync();
+        Task<string> error = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+        if (process.ExitCode != 0)
+            throw new InvalidOperationException(await output + await error);
+    }
 
     internal static string Project(string content = "")
         => "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>disable</ImplicitUsings></PropertyGroup>" + content + "</Project>";

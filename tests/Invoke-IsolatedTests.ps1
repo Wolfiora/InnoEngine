@@ -87,7 +87,11 @@ try {
     Add-CheckResult 'Shared' $solutionPath 'Failed' -1 $_.Exception.Message
 }
 
-$selectedProjects = if ([System.IO.Path]::GetExtension($solutionPath) -eq '.slnf') {
+$selectedProjects = if ([System.IO.Path]::GetExtension($solutionPath) -eq '.slnx') {
+    ([xml](Get-Content -LiteralPath $solutionPath -Raw)).SelectNodes('/Solution//Project') | ForEach-Object {
+        [IO.Path]::GetFullPath($_.GetAttribute('Path'), (Split-Path $solutionPath -Parent))
+    }
+} elseif ([System.IO.Path]::GetExtension($solutionPath) -eq '.slnf') {
     (Get-Content -LiteralPath $solutionPath -Raw | ConvertFrom-Json).solution.projects
 } else {
     Get-Content -LiteralPath $solutionPath | ForEach-Object {

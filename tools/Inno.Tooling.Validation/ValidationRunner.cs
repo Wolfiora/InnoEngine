@@ -30,6 +30,9 @@ internal static class ValidationRunner
         Dictionary<string, string> current = await ValidationInputs.CaptureAsync(plan.root, cancellation).ConfigureAwait(false);
         if (ValidationInputs.Identity(current) != plan.tree)
             throw new InvalidDataException("Validation plan inputs changed before execution. Generate a new plan.");
+        var buildSolutions = plan.checks.Where(static check => check.kind == "build" && check.exclusion is null)
+            .GroupBy(static check => check.context!, StringComparer.Ordinal).ToDictionary(static group => group.Key,
+                group => WriteUnion(group.Key, "Build", group.Select(static check => check.owner).ToArray()), StringComparer.Ordinal);
         var built = new HashSet<string>(StringComparer.Ordinal);
         var tested = new HashSet<string>(StringComparer.Ordinal);
         var executedTests = new HashSet<string>(StringComparer.Ordinal);
@@ -225,15 +228,13 @@ internal static class ValidationRunner
                                 throw new InvalidOperationException(buildFailure);
                             if (!built.Contains(contextId))
                             {
-                                string[] builds = plan.checks.Where(candidate => candidate.kind == "build" && candidate.exclusion is null && candidate.context == contextId)
-                                    .Select(static candidate => candidate.owner).ToArray();
-                                string filter = WriteFilter(contextId + "-Build.slnf", builds);
+                                string solution = buildSolutions[contextId];
                                 try
                                 {
                                     var compilationInputs = new ValidationBuildInputs(plan, contextId, outputDigests, cancellation);
                                     string[] compilation = compilationInputs.RequiresCompilation(dependencyInputs) ? ["--no-incremental"] : [];
                                     await ValidationProcess.RunAsync(plan.dotnet,
-                                        ["build", filter, ..compilation, ..plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
+                                        ["build", solution, ..compilation, ..plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
                                             "--disable-build-servers", "-m:" + (contextId == "managed" ? Math.Min(Environment.ProcessorCount, 4) : 1),
                                             "-nr:false"], plan.root, Path.Combine(directory, contextId + "-build.log"), cancellation).ConfigureAwait(false);
                                     built.Add(contextId);
@@ -262,7 +263,7 @@ internal static class ValidationRunner
                                 string[] tests = plan.checks.Where(candidate => candidate.kind == "test" && candidate.exclusion is null && candidate.context == contextId
                                     && !CanReuse(candidate))
                                     .Select(static candidate => candidate.owner).ToArray();
-                                string filter = WriteFilter(contextId + "-Tests.slnf", tests);
+                                string solution = WriteUnion(contextId, "Tests", tests);
                                 string resultsDirectory = Path.Combine(directory, contextId + "-trx");
                                 Dictionary<string, string> properties = plan.contexts[contextId].properties;
                                 string[] productArguments = contextId == "native" ? ["-Target", properties["InnoNativeTarget"], "-ToolTarget", properties["InnoToolTarget"],
@@ -270,7 +271,7 @@ internal static class ValidationRunner
                                 try
                                 {
                                     await ShellAsync("tests/Invoke-IsolatedTests.ps1",
-                                        ["-Solution", filter, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
+                                        ["-Solution", solution, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
                                             "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments], contextId + "-tests.log").ConfigureAwait(false);
                                     VerifyDiscovery(tests, resultsDirectory);
                                     executedTests.UnionWith(tests);
@@ -351,14 +352,19 @@ internal static class ValidationRunner
         ) => ValidationProcess.RunAsync("pwsh", ["-NoProfile", "-File", Path.Combine(plan.root, script), ..arguments],
             plan.root, Path.Combine(directory, log), cancellation);
 
-        string WriteFilter(
-            string name,
+        string WriteUnion(
+            string context,
+            string operation,
             string[] projects
         ) {
             if (projects.Length == 0)
                 throw new InvalidDataException("A required build or test union is empty.");
-            string destination = Path.Combine(directory, name);
-            File.WriteAllText(destination, JsonSerializer.Serialize(new { solution = new { path = Path.Combine(plan.root, "InnoEngine.sln"), projects } }));
+            string destination = Path.Combine(directory, context + "-" + operation + ".slnx");
+            // IDE solution filters inherit Build.0 exclusions and configuration remapping. The plan owns this exact union.
+            new XDocument(new XElement("Solution",
+                new XElement("Configurations", new XElement("BuildType", new XAttribute("Name", plan.contexts[context].properties["Configuration"]))),
+                projects.Select(project => new XElement("Project", new XAttribute("Path", Path.Combine(plan.root, project).Replace('\\', '/'))))))
+                .Save(destination);
             return destination;
         }
 
