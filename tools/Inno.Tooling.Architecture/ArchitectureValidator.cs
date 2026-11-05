@@ -194,7 +194,8 @@ public static partial class ArchitectureValidator
         WikiProjectReferences? evaluatedReferences = dotnetHost is null ? null
             : new WikiProjectReferences(repositoryRoot, configuration, dotnetHost, wikiTarget, artifactsPath,
                 apiProjects.Count != 0 ? apiProjects.Select(project => Path.GetFullPath(project, repositoryRoot)).ToHashSet(StringComparer.OrdinalIgnoreCase)
-                    : selectedPages is null ? null : selectedProjectPages.Select(static page => Path.GetFullPath(page.project)).ToHashSet(StringComparer.OrdinalIgnoreCase), sdkSnapshot);
+                    : selectedPages is null || !wikiOnly ? null
+                        : selectedProjectPages.Select(static page => Path.GetFullPath(page.project)).ToHashSet(StringComparer.OrdinalIgnoreCase), sdkSnapshot);
         var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration,
             evaluatedReferences, cancellationToken, failures);
         var sourceTrees = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);

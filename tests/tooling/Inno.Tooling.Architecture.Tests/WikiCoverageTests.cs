@@ -496,7 +496,7 @@ public sealed class WikiCoverageTests : IDisposable
             "# Probe\n```csharp\npublic static class Example { public static string Read() => Inno.Core.Probe.Probe.Read(); "
             + "public static int Count(params System.ReadOnlySpan<int> values) => values.Length; }\n```\n");
         string inventory = Path.Combine(m_root, "sdk-api.json");
-        Assert.DoesNotContain("example 1 at line", Run(inventory, "--dotnet", host, "--wiki-page", "docs/core/Inno.Core.Probe.md"), StringComparison.Ordinal);
+        Assert.DoesNotContain("example 1 at line", Run(inventory, "--wiki-only", "--dotnet", host, "--wiki-page", "docs/core/Inno.Core.Probe.md"), StringComparison.Ordinal);
         string api = File.ReadAllText(inventory);
         Assert.Contains("T:Inno.Core.Probe.Selected", api, StringComparison.Ordinal);
         Assert.Contains("T:Inno.Core.Probe.GeneratedContract", api, StringComparison.Ordinal);
@@ -506,13 +506,13 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.DoesNotContain("T:Excluded", api, StringComparison.Ordinal);
         Write("docs/core/Inno.Core.Probe.md",
             "# Probe\n```csharp\npublic static class Example { public static int Read() => ForeignContract.Read(); }\n```\n");
-        Assert.Contains("example 1 at line", Run(null, "--dotnet", host), StringComparison.Ordinal);
+        Assert.Contains("example 1 at line", Run(null, "--wiki-only", "--dotnet", host), StringComparison.Ordinal);
         string validProject = File.ReadAllText(project);
         File.WriteAllText(project, validProject.Replace("</Project>",
             "<Target Name=\"SelectUnavailableReference\" AfterTargets=\"ResolveReferences\">"
             + "<ItemGroup><ReferencePath Include=\"absent-contract.dll\" /></ItemGroup></Target></Project>", StringComparison.Ordinal));
         Write("docs/architecture/GUIDE.md", "```csharp\nint value = missing;\n```\n");
-        string unavailable = Run(inventory, "--dotnet", host,
+        string unavailable = Run(inventory, "--wiki-only", "--dotnet", host,
             "--wiki-examples", Path.Combine(m_root, "unavailable-examples.json"));
         Assert.Contains("requires its evaluated compile reference", unavailable, StringComparison.Ordinal);
         Assert.Contains("GUIDE.md' example 1", unavailable, StringComparison.Ordinal);
@@ -523,7 +523,7 @@ public sealed class WikiCoverageTests : IDisposable
         File.WriteAllText(project, File.ReadAllText(project).Replace("</DefineConstants>",
             "</DefineConstants><LangVersion>99.0</LangVersion>", StringComparison.Ordinal));
         Assert.Contains("unsupported C# language version", Assert.Throws<InvalidDataException>(
-            () => Run(null, "--dotnet", host)).Message, StringComparison.Ordinal);
+            () => Run(null, "--wiki-only", "--dotnet", host)).Message, StringComparison.Ordinal);
     }
 
     private string EmitScriptReference(

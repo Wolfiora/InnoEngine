@@ -71,6 +71,12 @@ public sealed class ArchitectureOutputOwnerTests
             Assert.DoesNotContain("unresolved public signature type", captured, StringComparison.Ordinal);
             Assert.DoesNotContain("output is missing", captured, StringComparison.Ordinal);
 
+            Directory.CreateDirectory(Path.Combine(root, "docs/editor"));
+            File.WriteAllText(Path.Combine(root, "docs/editor/Inno.Editor.Probe.md"), "# Selected editor contract\n");
+            string combined = ArchitectureCommandFixture.Run(root, "--wiki", "--wiki-page", "docs/editor/Inno.Editor.Probe.md",
+                "--dotnet", host, "--artifacts-path", artifacts).output;
+            Assert.DoesNotContain("unresolved public signature type", combined, StringComparison.Ordinal);
+
             File.WriteAllText(project, File.ReadAllText(project).Replace("Include=", "PrivateAssets=\"compile\" Include=", StringComparison.Ordinal));
             string rejected = ArchitectureCommandFixture.Run(root, "--metadata-only", "--dotnet", host,
                 "--artifacts-path", artifacts, "--api-project", selectedOwner).output;
