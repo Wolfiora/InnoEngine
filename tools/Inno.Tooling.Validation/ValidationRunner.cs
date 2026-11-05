@@ -37,15 +37,7 @@ internal static class ValidationRunner
         var testFailures = new Dictionary<string, string>(StringComparer.Ordinal);
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
-        foreach (ValidationCheck check in plan.checks.OrderBy(static check => check.kind switch
-        {
-            "cold-inputs" => -1,
-            "instructions" or "architecture" or "documentation" or "ci-contracts" => 0,
-            "build" => 1,
-            "api" => 2,
-            "release-bundle" => 4,
-            _ => 3
-        }).ThenBy(static check => check.context?.StartsWith("native", StringComparison.Ordinal) == true ? 1 : 0))
+        foreach (ValidationCheck check in plan.checks)
         {
             string identity = ValidationInputs.CheckIdentity(plan, check, current);
             string contextId = check.context ?? "managed";
@@ -67,7 +59,7 @@ internal static class ValidationRunner
                 detail = "Validation was canceled before this required check completed.";
             }
             else if (check.prerequisites.Any(prerequisite => !results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused"))
-                || (check.kind is "build" or "api" or "test" && results.Any(static result => result.status is "Failed" or "Blocked")))
+                || (check.context is not null && results.Any(static result => result.status is "Failed" or "Blocked")))
             {
                 status = "Blocked";
                 detail = "A required preceding check did not pass; dependent work was not executed.";

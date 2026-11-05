@@ -275,6 +275,14 @@ public sealed class ValidationPlanningTests
             .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
         Assert.NotEqual(Output("managed"), Output("native"));
         Assert.StartsWith(contexts.GetProperty("native").GetProperty("properties").GetProperty("ArtifactsPath").GetString()!, Output("native"), StringComparison.Ordinal);
+        string[] sequence = plan.RootElement.GetProperty("checks").EnumerateArray().Select(check => check.GetProperty("id").GetString()!).ToArray();
+        const string C_NATIVE_BUILD = "build:backends/Example/native/Native/Native.csproj";
+        Assert.True(Array.IndexOf(sequence, domain.GetProperty("id").GetString()!) < Array.IndexOf(sequence, C_NATIVE_BUILD));
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
+        using JsonDocument results = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json")));
+        Assert.Equal(sequence, results.RootElement.GetProperty("results").EnumerateArray().Select(result => result.GetProperty("id").GetString()!).ToArray());
+        Assert.Equal("Blocked", results.RootElement.GetProperty("results").EnumerateArray().Single(result => result.GetProperty("id").GetString() == C_NATIVE_BUILD)
+            .GetProperty("status").GetString());
     }
 
     [Fact]

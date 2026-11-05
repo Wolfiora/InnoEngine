@@ -63,7 +63,7 @@ Host/Shell 不得公开具体 Adapter。
 Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的边界仍由专项规则约束，
 不宣称已经通过统一规则证明所有 ImGui 类型均不可见。
 
-必须先以 SourceDebug/SourceRelease 构建共享源码，再运行入口的 verify 命令；工具不替代编译，也不证明任意插件的动态线程行为。
+编译元数据检查使用所选 owner 与配置的当前输出，由[统一验证入口](Inno.Tooling.Validation.md)按实际计划准备。源码门禁本身无需预先编译整个解决方案；工具不替代必要编译，也不证明任意插件的动态线程行为。
 当前宿主产品采用已构建元数据；没有当前宿主 SDK 的产品组合库采用 Roslyn 源码签名审计，未解析的公开类型明确失败。这项契约检查不表示已在其他平台运行。
 只有完整编译元数据能证明某个公开引用未被使用；外国产品的手写源码审计不执行生成器，不能据此把生成注册协议的引用误判成实现依赖。该模式仍检查手写 public/protected 签名、缺失/错误私有引用、禁止的具体类型和分组顺序。生成后的完整公开表面仍需所属平台编译后审计。
 
@@ -79,9 +79,10 @@ Native 符号检查目前覆盖 BGFX、SDL3、MiniAudio；ImGui presentation 的
 - Audio scripting 清单不得导出设备、native binding 或 backend，MiniAudio 实时适配源码不得持有托管 extension generation/reflection 对象；
 - public/protected 多行英文 XML 的 summary/param/typeparam/returns/exception contract。
 
+日常开发由统一 `validate` 计划选择编译、源码、API 和 Wiki 证据。单独诊断源码规则时可执行：
+
 ```text
-dotnet build InnoEngine.sln --configuration SourceDebug -m:1 -p:UseSharedCompilation=false
-dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" -- verify .
+dotnet run --project "entry/InnoEngine.Build/InnoEngine.Build.csproj" -- verify . --source-only
 ```
 
 指定 `--dotnet <绝对 SDK executable>` 后还会通过 SDK 的只读 MSBuild item/property 查询检查实际导入后的

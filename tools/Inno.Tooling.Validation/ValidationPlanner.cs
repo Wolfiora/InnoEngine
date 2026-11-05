@@ -325,8 +325,23 @@ internal static class ValidationPlanner
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnet, root, cancellation).ConfigureAwait(false);
         string environmentIdentity = await ValidationEnvironment.CaptureAsync(root, sdk.hostPath, cancellation, contexts.Values).ConfigureAwait(false);
         RecordStage("execution-environment");
+        var phases = contexts.Keys.Select(static (
+            string context,
+            int index
+        ) => new KeyValuePair<string, int>(context, index + 1))
+            .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal);
+        ValidationCheck[] execution = checks.OrderBy(check => check.kind == "cold-inputs" ? -1 : check.kind == "release-bundle" ? int.MaxValue
+                : check.context is null ? 0 : phases.GetValueOrDefault(check.context, phases.Count + 1))
+            .ThenBy(static check => check.kind switch { "build" => 0, "api" => 1, "wiki" => 2, "test" => 3, _ => 4 }).ToArray();
+        var preceding = new HashSet<string>(StringComparer.Ordinal);
+        foreach (ValidationCheck check in execution)
+        {
+            if (check.exclusion is null && check.prerequisites.Any(prerequisite => !preceding.Contains(prerequisite)))
+                throw new InvalidDataException($"Required prerequisites are missing or scheduled after '{check.id}'.");
+            preceding.Add(check.id);
+        }
         return new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
-            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), checks.ToArray(), diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings);
+            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings);
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
 
