@@ -19,9 +19,9 @@ using Inno.Runtime;
 using Inno.Scripting.Compiler;
 using Xunit;
 
-namespace Inno.Build.Tests;
+namespace Inno.Editor.Hosting.Tests;
 
-[Collection("Build pipeline serialization")]
+[Collection("Editor script projection")]
 public sealed class RepositoryWikiTests
 {
     [Fact]

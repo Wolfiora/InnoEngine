@@ -32,7 +32,7 @@ WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真
 架构命令路由通过公开 `BuildApplication.Run` 验证；负向源码必须返回失败，不得启动 Task runtime 准备或创建构建产物。规则正反例由架构测试项目直接验证。
 
 
-Wiki 验收 Host 导入实际产品使用的共享 `EditorProduct.props`，通过公开 Catalog 与 ScriptCompiler 生成逻辑脚本引用。专项测试检查 Settings、Shaders 等已声明的产品扩展确实进入 `InnoEditor.*` 契约，不以手写类型白名单或实现侧 namespace 补齐失败示例。该组合不启动平台窗口或 Native 设备。
+完整 Editor 产品的脚本投影契约归属 [Inno.Editor.Hosting.Tests](Inno.Editor.Hosting.Tests.md)。本程序集只引用构建与导出断言实际使用的 Editor 契约，不再导入整个 `EditorProduct.props`；这样 Panel 的内部修改不会通过脚本投影测试牵连整个构建工具测试集合。
 
 ## 职责与边界
 
@@ -134,7 +134,7 @@ dotnet test tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj --configuration
 
 ## 生命周期与失败
 
-`RepositoryWikiTests` 是全仓当前 Wiki 的持续门禁，随现有完整测试套件执行。它在自己拥有的空项目中通过公开 ScriptCompiler 生成当前逻辑脚本引用，然后调用公开 BuildApplication 的 `verify --wiki`。API 和示例清单保存在 `artifacts/acceptance/wiki-gate/<operation>/`；临时项目在测试结束后释放，不修改用户项目。该测试串行进入构建/序列化测试集合，避免同时运行多个创作态全局上下文。
+完整 Editor 产品的逻辑脚本投影契约归属 [Inno.Editor.Hosting.Tests](Inno.Editor.Hosting.Tests.md)。本项目只直接引用导出工作流实际使用的 Editor Core、Interactions、Exporting 与 ImGui，不再因脚本投影测试导入所有 Panels。修改单个 Panel 不应选择无关的整个构建工具测试套件。全仓 Wiki 的结构、API 与示例门禁由统一验证计划负责，不在测试中重复执行。
 
 `TaskPublisherBootstrapTests` 使用两次真实 SDK 构建验证 publisher 编译复用、并行引用闭包、私有加载目录隔离和新的根构建 owner；`InteropRestoreOwnershipTests` 验证直接引用与 SDK 传递引用各自的 restore 职责。
 

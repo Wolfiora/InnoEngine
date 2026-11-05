@@ -6,6 +6,8 @@
 
 验证以下项目的公开行为与组合契约。该程序集属于测试闭包，不进入 Editor 或 Player 发行；测试类、fixture 和断言辅助类型不属于稳定产品 API。
 
+逻辑脚本投影消费真实 `EditorProduct.props` 的完整可发现功能闭包及 Build CLI 的公开脚本入口，验证 Runtime 动画/UI/渲染类型和 Editor Settings/Shader 类型仍然导出。该产品契约与宿主组合放在同一 owner，避免单个 Panel 的变化连带选择整个构建工具测试程序集。
+
 - [Inno.Build.Bindings](../build/Inno.Build.Bindings.md)
 - [Inno.Integration.WindowsX64.Bgfx.Runtime](../platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.Runtime.md)
 - [Inno.Adapter.Presentation.ImGui.Bgfx](../backends/ImGui/Inno.Adapter.Presentation.ImGui.Bgfx.md)
@@ -35,8 +37,11 @@ dotnet test tests/editor/Inno.Editor.Hosting.Tests/Inno.Editor.Hosting.Tests.csp
 | 测试文件 | 场景入口示例 |
 | --- | --- |
 | [EditorApplicationTests.cs](../../tests/editor/Inno.Editor.Hosting.Tests/EditorApplicationTests.cs) | `CancellationBeforeStartupDoesNotCreateProjectOrAcquireProductResources`、`MissingBackendSelectionFailsBeforeProjectIoOrNativeInitialization`、`UnregisteredDefaultTargetIsRejectedBeforeProductOwnershipBegins`、`InvalidFrameLimitDoesNotCreateProject` |
+| [RepositoryWikiTests.cs](../../tests/editor/Inno.Editor.Hosting.Tests/RepositoryWikiTests.cs) | `CliLogicalRuntimeReferencesIncludeAnimation`、`LogicalEditorReferencesIncludeTheSharedProductFeatures` |
 
 ## 生命周期与失败
+
+脚本投影用例在自己拥有的空项目中，通过公开 ScriptCompiler 生成并读取实际程序集元数据，保留迁移前的全部类型断言。`Editor script projection` 集合明确禁止并行，避免与其他创作态上下文同时运行；临时项目在完成后释放。它不重复运行全仓 Wiki 审计。
 
 测试通过公开入口及可替换契约检查行为，fixture 只负责自身创建的会话、临时目录和子进程。需要窗口、设备或 owner thread 的测试应保持其声明的执行线程与释放顺序。取消或失败后检查相应断言与清理结果，不通过删除共享锁文件解除等待。
 

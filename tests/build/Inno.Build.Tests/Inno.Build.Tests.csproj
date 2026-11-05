@@ -12,12 +12,13 @@
     <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
   </PropertyGroup>
 
-  <!-- Wiki script references use the same shared feature closure as real Editor products. -->
-  <Import Project="../../../src/composition/editor/EditorProduct.props" />
-
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
     <InnoValidationInput Include="../../../entry/**/*.csproj;../../../platforms/**/*.props;../../../platforms/**/*.targets;../../../platforms/**/build/**/*.cs;../../../build/**/*.props;../../../build/**/*.targets;../../../Directory.Solution.props;../../../Directory.Solution.targets" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj" PrivateAssets="compile" />
