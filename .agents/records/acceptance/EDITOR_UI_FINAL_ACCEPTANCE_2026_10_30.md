@@ -134,7 +134,7 @@ Core IO 的通用宿主文件系统实现也必须如实说明：create-only 发
 - 第一次冷发布观察脚本误将首轮导入的 metadata 时间戳写入当作缓存失效：19 个 `.imeta` bytes/hash/ID 未变。修正的是外部观测分类；五个独立 cold/warm 请求确认 warm 源/metadata/cache 的集合、内容及时间戳均不变。没有放宽生产校验。
 - 三个非当前 Windows 目标的产品 API 编译没有在本地冒充执行；精确交付的 Mac 自动构建/测试/产品 smoke 由最终 CI 附件说明。人工 Mac、不同物理显示器、OS IME、Rider Run 点击体验、音频听感和长期运行未执行。
 - Browser Editor、新 Timeline、渲染模型和其他全引擎独立 issue 不属于本轮。此前 Browser Player/BGCS 专项证据保留原 revision，不并入本次 UI 数量。
-- 验收大输出优先在 D 盘；正式维护先 dry-run，再以默认预算、600 秒显式预算执行 `clean --scope cache`，exit 0。逻辑库存 90,213,428,162 bytes，退休 90,039,337,805 bytes，保护 174,090,357 bytes；C 盘空闲实测 77.79 → 90.32 GiB，增加约 12.53 GiB，D 盘仍约 5.78 GiB。见[维护日志](editor-ui-2026-10-30/cache-maintenance.log)与卷空间 JSON。只回收明确 owner、无活动读取者的可退休内容，不把 hardlink 逻辑字节当实际释放空间。
+- 验收大输出优先在 D 盘；正式维护先 dry-run，再以默认预算、600 秒显式预算执行 `clean --scope cache`，exit 0。逻辑库存 90,213,428,162 bytes，退休 90,039,337,805 bytes，保护 174,090,357 bytes；C 盘空闲实测 77.79 → 90.32 GiB，增加约 12.53 GiB，D 盘仍约 5.78 GiB。见维护日志（历史本地产物，未纳入仓库：`editor-ui-2026-10-30/cache-maintenance.log`）与卷空间 JSON。只回收明确 owner、无活动读取者的可退休内容，不把 hardlink 逻辑字节当实际释放空间。
 - **自动审批曾拒绝**删除过期诊断 `e09/visual-capture/current/Runtime` 及 `e46/snapshot` 下四个旧诊断 runtime 目录，只返回 `blocked by policy`，未提供更具体理由。这五处保留，没有换工具绕过，也不宣称已释放其空间。
 - Windows 无指定 `/System/Library/Sounds/Glass.aiff`，并遵守静默操作要求，未播放提示音。
 

@@ -84,7 +84,7 @@ BGCS.Runtime 的地址、模块会话和 UTF-8 lease 被 Native/ImGui 实现使�
 
 ### R01：插件动画帧事件尚未统一 Core
 
-位置：[SpriteAnimator2D.cs](../../../../InnoEngine.Rendering2D/Assets/Runtime/Components/SpriteAnimator2D.cs)，公开 `frameEvent` 和 `ApplyFrame`。
+位置：SpriteAnimator2D.cs（外部仓库历史引用：`../../../../InnoEngine.Rendering2D/Assets/Runtime/Components/SpriteAnimator2D.cs`），公开 `frameEvent` 和 `ApplyFrame`。
 
 当前用 `event Action<string>` 直接订阅与调用。它没有第二套事件队列或管理器，因此不应夸大为完整 Event System 重复实现；但它未复用 Core 的订阅 token、hub scope 与销毁释放协议，和第 22 节要求的插件事件统一方向有差距。检索当前四仓库业务源码没有发现外部订阅该成员的调用方；这不证明不存在其他消费者。
 
@@ -94,7 +94,7 @@ BGCS.Runtime 的地址、模块会话和 UTF-8 lease 被 Native/ImGui 实现使�
 
 ### R02：Canvas 跨帧状态仍直接持有 owner
 
-位置：[CanvasViewContentSource.cs](../../../../InnoEngine.Canvas/Assets/Runtime/Rendering/CanvasViewContentSource.cs)，`m_states`、`CanvasState.owner` 与 `CompleteFrame`。
+位置：CanvasViewContentSource.cs（外部仓库历史引用：`../../../../InnoEngine.Canvas/Assets/Runtime/Rendering/CanvasViewContentSource.cs`），`m_states`、`CanvasState.owner` 与 `CompleteFrame`。
 
 字典已使用 Core RuntimeIdentity，但 value 仍保存 `Canvas` 强引用；跨帧操作通过该对象调用 `PublishEvents`，没有在实际使用边界由原 Identity scope 重新解析。`Collect` 中会检查 destroyed/runtime identity，provider.Dispose 也会清空状态，这些保护存在；它们不等于每个后续回调都经过 Identity。按 Identity 标准，这里仍应收口。
 

@@ -146,7 +146,7 @@ F02/F03 所在源码在本次审计及当前未提交的 BGCS 包升级中均没
 
 ### F04：Canvas 的 GPU 命中前已经发生完整纹理复制
 
-正常链为 [`CanvasViewDrawable.TryPrepare:100–141`](../../../../InnoEngine.Canvas/Assets/Runtime/Rendering/CanvasViewDrawable.cs#L100) 的逐 draw 循环 → `new RenderTextureSubresourceData(..., update.pixels.Span)` → [`RenderTextureSubresourceData.cs`](../../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderTextureSubresourceData.cs) 的 `data.ToArray()` → [`RenderResourceService.AcquireTexture`](../../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceService.cs#L192) 才比较相同 revision。
+正常链为 `CanvasViewDrawable.TryPrepare:100–141`（外部仓库历史引用：`../../../../InnoEngine.Canvas/Assets/Runtime/Rendering/CanvasViewDrawable.cs#L100`） 的逐 draw 循环 → `new RenderTextureSubresourceData(..., update.pixels.Span)` → [`RenderTextureSubresourceData.cs`](../../../src/services/rendering/Inno.Rendering.Runtime/Resources/RenderTextureSubresourceData.cs) 的 `data.ToArray()` → [`RenderResourceService.AcquireTexture`](../../../src/services/rendering/Inno.Rendering.Runtime/RenderResourceService.cs#L192) 才比较相同 revision。
 
 GPU 不重传不等于 managed 不复制。同一张不变纹理被多个 draw 使用时，也会逐 draw 复制。公开上传对象探针输入 1,048,576 bytes、预热后构造 32 次，多次反例运行观察到约 **33.6 MB（32 MiB 像素载荷加对象等开销）**分配；这是构造分配实测，不是完整 Canvas 帧时间测试，原始数字见 result.json。
 
@@ -154,9 +154,9 @@ GPU 不重传不等于 managed 不复制。同一张不变纹理被多个 draw �
 
 ### F05：Rendering2D 正常路径无法复用完整帧缓存
 
-[`RenderRuntime.Frames.cs:139`](../../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Frames.cs#L139) 总是给 RenderOutputSession 传入非空的 collector。[`Rendering2DModel.Build:1178`](../../../../InnoEngine.Rendering2D/Assets/Runtime/Pipeline/Rendering2DRenderer.cs#L1178) 原样交给 options，而 [`CreateCameraStackFrame:430`](../../../../InnoEngine.Rendering2D/Assets/Runtime/Pipeline/Rendering2DRenderer.cs#L430) / `CreateViewportFrame:518` 只有 `viewContent is null` 才复用完整帧。
+[`RenderRuntime.Frames.cs:139`](../../../src/services/rendering/Inno.Rendering.Runtime/RenderRuntime.Frames.cs#L139) 总是给 RenderOutputSession 传入非空的 collector。`Rendering2DModel.Build:1178`（外部仓库历史引用：`../../../../InnoEngine.Rendering2D/Assets/Runtime/Pipeline/Rendering2DRenderer.cs#L1178`） 原样交给 options，而 `CreateCameraStackFrame:430`（外部仓库历史引用：`../../../../InnoEngine.Rendering2D/Assets/Runtime/Pipeline/Rendering2DRenderer.cs#L430`） / `CreateViewportFrame:518` 只有 `viewContent is null` 才复用完整帧。
 
-因此不能把该缓存的存在当作正常 Player 静态场景已免重建的证据。Collect 会重新组合/排序、建立 pick records、逐 batch 创建并编码实例 byte[]；[`BuildBatches:2133`](../../../../InnoEngine.Rendering2D/Assets/Runtime/Runtime/Rendering2DFrame.cs#L2133) 为每 quad 80 bytes，persistent revision 也在编码后计算。10,000 quads 单次收集的实例载荷为 800,000 bytes，此数为源码计算，不是实测帧分配。
+因此不能把该缓存的存在当作正常 Player 静态场景已免重建的证据。Collect 会重新组合/排序、建立 pick records、逐 batch 创建并编码实例 byte[]；`BuildBatches:2133`（外部仓库历史引用：`../../../../InnoEngine.Rendering2D/Assets/Runtime/Runtime/Rendering2DFrame.cs#L2133`） 为每 quad 80 bytes，persistent revision 也在编码后计算。10,000 quads 单次收集的实例载荷为 800,000 bytes，此数为源码计算，不是实测帧分配。
 
 正确方向是分离稳定 2D 几何/实例与本帧外部内容、输入及交互路由，按真实 component/asset revision 更新；复用现有 snapshot、persistent resource、generation 生命周期。不能直接删除 `viewContent` 条件缓存整个帧，否则会冻结 Canvas 更新与输入。修复后要覆盖静态大场景、单对象变化、动态粒子、tilemap chunk、多个 camera、Canvas 与 reload，并测实际 CPU/分配。
 

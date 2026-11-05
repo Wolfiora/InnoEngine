@@ -1,6 +1,6 @@
 # AI pipeline implementation — issue #75
 
-Status: implementation handoff; comprehensive acceptance deferred at the user's explicit request on 2026-11-05. [Issue #75](https://github.com/Wolfiora/InnoEngine/issues/75) and [draft PR #76](https://github.com/Wolfiora/InnoEngine/pull/76) remain open. This milestone does not certify the complete pipeline.
+Status: comprehensive acceptance resumed at the user's explicit request on 2026-11-06, from `6b09276dfc42b8d18eeab2f8a037aa500f327e45`. [Issue #75](https://github.com/Wolfiora/InnoEngine/issues/75) and [draft PR #76](https://github.com/Wolfiora/InnoEngine/pull/76) remain open. Missing, failed and cancelled evidence is not certification.
 
 ## Scope and fixed decisions
 
@@ -10,7 +10,7 @@ Status: implementation handoff; comprehensive acceptance deferred at the user's 
 - Hosted Windows/macOS; daily changed-commit functional certification, weekly cold/ten-warm/long-running checks, verified immutable transfer and manual draft-only releases. No merge or formal publication is authorized.
 - Local SDK: `C:/Users/23842/.dotnet/dotnet.exe`, 10.0.402. Build tool output: `artifacts/validation/build`; reusable validation output: `artifacts/validation/workspaces/Debug`; prepared native output: `artifacts/validation/native`. Logs use separate run directories.
 - Prior detailed evidence/checkpoint history remains in this file at commit `98b51feb`; raw diagnostics remain under `artifacts/validation`. This checkpoint keeps current decisions and evidence instead of appending a chronological work transcript.
-- Current delivery boundary: finish the planned implementation and the in-flight test-ownership migration, retain necessary local checks, and defer large CI/CD matrices and performance/long-running acceptance. Do not automatically dispatch more matrices or keep extending optimization. Keep final local commits unpushed to avoid starting PR CI; remote issue/PR status must distinguish local implementation from the published head. This does not weaken the permanent validation or release gates.
+- Current delivery boundary: complete the original plan's local and hosted acceptance, including functional, performance, lifecycle and qualified draft-release checks. Commits, pushes and hosted validation are authorized by the resumed request. The original prohibition on automatic merge and formal publication remains; default-branch adoption is an external prerequisite for scheduled execution and positive release rehearsal.
 
 ## Implemented coverage and retired mechanisms
 

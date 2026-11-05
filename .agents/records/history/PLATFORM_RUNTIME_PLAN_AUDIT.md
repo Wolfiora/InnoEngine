@@ -29,7 +29,7 @@
 | Reload、Missing、History、Session 隔离 | 共同 generation transaction、弱 probe、Full GC/finalizer/Full GC、Faulted gate | Modules/Reload/Scripting/PlayMode 的成功、残留引用、失败和隔离测试 |
 | Sample 异步导入与取消 | 后台候选复制/编译，owner-thread 提交及任务退休 | FileBrowser/Scripting/Plugin 集成回归；不在 Panel 同步等待编译 |
 | 消费方和实际游戏行为 | 当前 Canvas/Rendering2D、Samples FlappyBird 及当前安装包 | Canvas 6 项、脚本/Plugin 消费；昼夜、星光、光照方向、输入、音频和持久化检查 |
-| BGCS 独立架构与验收 | 自身 target provider、AST 边界、冻结 IR、emitter、Runtime 和 fixture | [BGCS 独立报告](../../../../BindGen-CS/docs/architecture-refactor-acceptance.cn.md)；不以引擎联调替代 |
+| BGCS 独立架构与验收 | 自身 target provider、AST 边界、冻结 IR、emitter、Runtime 和 fixture | BGCS 独立报告（外部仓库历史引用：`../../../../BindGen-CS/docs/architecture-refactor-acceptance.cn.md`）；不以引擎联调替代 |
 | 清理旧路径、入口与无用协议 | 删除 AST 输出旁路、重复工具 Program、旧 Native 目标项目与旧 loader 归属 | 架构验证、源码搜索、Source 状态清单；没有 legacy alias 或测试后门 |
 
 证据路径从 `artifacts/acceptance/2026-10-04-refactor/` 起算；命令、环境和限制见验收报告。

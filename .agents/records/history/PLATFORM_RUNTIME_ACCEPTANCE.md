@@ -144,7 +144,7 @@ Web 检查包括昼夜画面、指针切换/开始、键盘飞行及得分、音
 
 ## BGCS 独立验收与联调
 
-BGCS 独立报告：[架构重构验收](../../../../BindGen-CS/docs/architecture-refactor-acceptance.cn.md)。
+BGCS 独立报告：架构重构验收（外部仓库历史引用：`../../../../BindGen-CS/docs/architecture-refactor-acceptance.cn.md`）。
 
 - 八个生产项目；11 个测试程序集，1018 项通过，零失败、零跳过。
 - 架构/style/XML、真实五个 C 库和 bimg C++、API snapshot、独立 package 消费通过。
