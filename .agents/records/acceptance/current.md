@@ -1,5 +1,7 @@
 # 当前源码验收
 
+本次文档与 Agent 信息架构的局部交付见 [阶段报告](DOCS_AGENT_INFORMATION_ARCHITECTURE_ACCEPTANCE.md)。以下引擎和 UI 结果保留各自原始提交与执行范围，不因文档迁移获得新认证。
+
 [架构索引](../../../docs/architecture/README.md) · [当前问题](../open-items.md) · [Wiki 首页](../../../docs/README.md)
 
 AI 工作流改造仍在 [#75 实施验收](../plans/AI_PIPELINE_IMPLEMENTATION.md) 中，不能继承下述历史 UI 认证。原生性能测试已归属独立 performance 项目，完整 checkout 文档反馈的五轮 warm 中位数为 28.8805035 秒；当前 Windows/macOS 矩阵、完整产品与发布演练以该记录中的实际结果和阻塞为准。

@@ -646,7 +646,7 @@
         "records/architecture/acceptance/MSBUILD_IDE_TASK_LOADING_2026_10_21.md"
       ],
       "rawEvidence": false,
-      "targetHash": "4cb483d7092521b888d270598308aed77cde60eb82c48753a88104701fe69f9f"
+      "targetHash": "2a5e5ff5203fd926bf3dec8b099f44f2306b6b7df2b1d8d37bee7d47cfb02bfe"
     },
     {
       "source": "docs/architecture/CURRENT_ISSUES.md",
@@ -822,7 +822,8 @@
       "rawEvidence": false,
       "fragments": [
         ".agents/records/history/IDENTITY_RECOVERY_NOTE_2026_09_07.md",
-        ".agents/records/history/DOCS_MIGRATED_STATUS_NOTES.md"
+        ".agents/records/history/DOCS_MIGRATED_STATUS_NOTES.md",
+        ".agents/records/open-items.md"
       ],
       "targetHash": "808cbb05fdeeb737482cd952c506714fcd5e8bed811d152f3c832015d1cdf9b8"
     },

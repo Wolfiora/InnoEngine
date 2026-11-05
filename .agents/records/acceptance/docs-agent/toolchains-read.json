@@ -1,0 +1,143 @@
+{
+  "status": "Navigation",
+  "snapshot": "98f32912144daec658b9eb9a5a40f1fa953ecbaad9b9a9f2147306cec3bd573e",
+  "sourceApiStatus": "Unverified",
+  "message": "The complete selection is large. Read the listed sections; no omitted contract is claimed to be read.",
+  "hits": [
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "",
+      "line": 1,
+      "project": "Inno.Build.Toolchains",
+      "text": "# Inno.Build.Toolchains\n\n托管工具使用 .NET 10 SDK。输入快照先读取求值后的工程图，再仅执行 SDK 的编译符号准备 target，捕获包括 `NET10_0` 在内的最终符号集合；该步骤不执行编译、原生准备或产品发布。SDK target 输入与求值器一起参与内容指纹，缺少符号准备能力时明确失败。\n\n托管输入快照包含当前 SDK Restore 实际解析的 assets、包内容、reference pack、项目声明和编译选项。输入路径通过 MSBuild 求值取得，完整 target、SDK 发布属性与输出隔离保持明确；源码目录不保存额外依赖清单。固定源码编译消费同一不可变输入，详见[依赖还原与 CI](DEPENDENCY_SUBMISSION.md)。\n\n[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../adding-platform.md)\n\n"
+    }
+  ],
+  "continuations": [
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "设计思路",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "使用教程",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "仓库批量求值",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "原生生成输入的中立契约",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "构建产物的借用与释放",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "缓存-owner-接入",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "固定托管编译输入",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "职责与边界",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "managed-输入快照",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "组合生命周期与扩展",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "显式组件配置",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "中立绑定与阶段校验",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "并发托管输出归属",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "轻量维护与工具发布",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "缓存管理公开契约",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "进程加载保护",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "进程与构建所有权-api",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "输入路径别名与创作归属",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "原生生成编译契约-api",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "api-参考",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    },
+    {
+      "page": "docs/development/build/Inno.Build.Toolchains.md",
+      "section": "项目依赖",
+      "title": "Markdig.Syntax.Inlines.ContainerInline",
+      "offset": 0
+    }
+  ]
+}
