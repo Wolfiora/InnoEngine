@@ -16,8 +16,11 @@ internal static class ValidationInputs
         string root,
         CancellationToken cancellation
     ) {
-        string files = await ValidationProcess.RunAsync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], root, null, cancellation).ConfigureAwait(false);
-        string staged = await ValidationProcess.RunAsync("git", ["ls-files", "--stage", "-z"], root, null, cancellation).ConfigureAwait(false);
+        Task<string> fileCapture = ValidationProcess.RunAsync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], root, null, cancellation);
+        Task<string> stageCapture = ValidationProcess.RunAsync("git", ["ls-files", "--stage", "-z"], root, null, cancellation);
+        await Task.WhenAll(fileCapture, stageCapture).ConfigureAwait(false);
+        string files = await fileCapture.ConfigureAwait(false);
+        string staged = await stageCapture.ConfigureAwait(false);
         var submodules = new Dictionary<string, string>(StringComparer.Ordinal);
         var links = new HashSet<string>(StringComparer.Ordinal);
         foreach (string entry in staged.Split('\0', StringSplitOptions.RemoveEmptyEntries).Where(static entry => entry.StartsWith("120000 ", StringComparison.Ordinal)))
@@ -28,23 +31,36 @@ internal static class ValidationInputs
             if (separator < 0 || !submodules.TryAdd(entry[(separator + 1)..], entry.Split(' ', 3)[1]))
                 throw new InvalidDataException("The submodule index contains an invalid or conflicted identity.");
         }
-        var inputs = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (string file in files.Split('\0', StringSplitOptions.RemoveEmptyEntries).Distinct().Order(StringComparer.Ordinal))
+        string[] paths = files.Split('\0', StringSplitOptions.RemoveEmptyEntries).Distinct().Order(StringComparer.Ordinal).ToArray();
+        var identities = new string[paths.Length];
+        // Independent owners may read concurrently, but every scan still reads current bytes and drains all workers.
+        await Parallel.ForAsync(0, paths.Length, new ParallelOptions
         {
-            cancellation.ThrowIfCancellationRequested();
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4), CancellationToken = cancellation
+        }, async (
+            index,
+            token
+        ) =>
+        {
+            token.ThrowIfCancellationRequested();
+            string file = paths[index];
             if (links.Contains(file))
             {
                 byte[]? link = ReadLink(root, file);
-                inputs.Add(file, link is null ? "missing" : Convert.ToHexStringLower(SHA256.HashData(link)));
-                continue;
+                identities[index] = link is null ? "missing" : Convert.ToHexStringLower(SHA256.HashData(link));
+                return;
             }
             string path = Resolve(root, file);
             if (submodules.TryGetValue(file, out string? expectedRevision))
-                inputs.Add(file, await CaptureSubmoduleAsync(path, expectedRevision, cancellation).ConfigureAwait(false));
+                identities[index] = await CaptureSubmoduleAsync(path, expectedRevision, token).ConfigureAwait(false);
             else
-                inputs.Add(file, File.Exists(path) ? Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path))) : "missing");
-        }
-        return inputs;
+                identities[index] = File.Exists(path) ? Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path))) : "missing";
+        }).ConfigureAwait(false);
+        return paths.Select((
+            path,
+            index
+        ) => new KeyValuePair<string, string>(path, identities[index]))
+            .ToDictionary(StringComparer.Ordinal);
     }
 
     internal static async Task<string[]> FindContentChangesAsync(

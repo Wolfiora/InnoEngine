@@ -481,7 +481,9 @@ public sealed class ValidationPlanningTests
     {
         using var source = new ValidationRepository();
         using var repository = new ValidationRepository();
+        repository.Git("-c", "protocol.file.allow=always", "submodule", "add", source.PathOf("."), "extern/Before");
         repository.Git("-c", "protocol.file.allow=always", "submodule", "add", source.PathOf("."), "extern/Native");
+        repository.Git("-c", "protocol.file.allow=always", "submodule", "add", source.PathOf("."), "extern/After");
         repository.Git("commit", "-am", "Pin native source fixture");
         repository.Git("-C", "extern/Native", "update-index", "--assume-unchanged", "fixtures/plugin.txt");
         string path = repository.PathOf("extern/Native/fixtures/plugin.txt");

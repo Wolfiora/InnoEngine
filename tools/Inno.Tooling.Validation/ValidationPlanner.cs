@@ -46,7 +46,7 @@ internal static class ValidationPlanner
             ["InnoProductRestore"] = "false",
             ["ArtifactsPath"] = artifacts
         };
-        Task<ValidationEnvironment.ToolSnapshot> toolCapture = ValidationEnvironment.CaptureToolsAsync(root, dotnet, cancellation);
+        Task<ValidationEnvironment.ToolSnapshot> toolCapture = Task.Run(() => ValidationEnvironment.CaptureToolsAsync(root, dotnet, cancellation), cancellation);
         Task<string> graphCapture = ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
             paths.Select(path => Path.Combine(root, path)).ToArray(), properties, cancellation);
         // Both read-only owners finish before a plan is emitted, including when either fails or is canceled.
