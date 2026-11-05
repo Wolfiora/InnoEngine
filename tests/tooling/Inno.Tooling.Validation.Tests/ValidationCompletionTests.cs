@@ -91,7 +91,8 @@ public sealed class ValidationCompletionTests
         DateTime dependencyTimestamp = File.GetLastWriteTimeUtc(dependency);
         repository.Write(C_DEPENDENCY, File.ReadAllText(dependency).Replace("value => 2", "value => 3", StringComparison.Ordinal));
         File.SetLastWriteTimeUtc(dependency, dependencyTimestamp);
-        repository.Git("add", C_DEPENDENCY);
+        // Force a content read: this fixture deliberately preserves the Git stat-cache size and timestamp.
+        repository.Git("add", "--renormalize", "--", C_DEPENDENCY);
         repository.Git("commit", "-m", "Change a previously compiled dependency without changing its timestamp");
         using (JsonDocument plan = await repository.PlanAsync())
             Assert.Single(plan.RootElement.GetProperty("owners").EnumerateArray());

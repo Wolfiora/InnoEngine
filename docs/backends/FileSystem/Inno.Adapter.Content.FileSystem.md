@@ -1,6 +1,6 @@
 # Inno.Adapter.Content.FileSystem
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [内容契约](../../assets/Inno.Content.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [内容契约](../../modules/assets/Inno.Content.md)
 
 ## 职责与依赖
 
@@ -122,6 +122,6 @@ static async Task<FileContentStore> PrepareAsync(
 
 ## 项目依赖
 
-- [Inno.Storage](../../storage/Inno.Storage.md)：公开引用边界由实际签名核对。
-- [Inno.Core.IO](../../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Content](../../assets/Inno.Content.md)：公开引用边界由实际签名核对。
+- [Inno.Storage](../../modules/storage/Inno.Storage.md)：公开引用边界由实际签名核对。
+- [Inno.Core.IO](../../modules/core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Content](../../modules/assets/Inno.Content.md)：公开引用边界由实际签名核对。

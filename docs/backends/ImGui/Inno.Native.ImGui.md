@@ -1,8 +1,8 @@
 # Inno.Native.ImGui
 
-[分类索引](README.md) · [Editor ImGui](../../editor/Inno.Editor.ImGui.md) · [Wiki 首页](../../README.md)
+[分类索引](README.md) · [Editor ImGui](../../modules/editor/Inno.Editor.ImGui.md) · [Wiki 首页](../../README.md)
 
-该项目提供 cimgui generated bindings。运行时源码只有 `ImGui.cs` 原生库/函数表加载器和 `Generated/Bindings.cs`。正式配置属于本项目 `Bindings/`；容器、纹理引用、指针与 DTO 均采用 SDK 的实际生成 ABI，Native 类型不越过适配边界。生成方式见 [Native binding generation](../../native/BindingGeneration.md)。完整声明从本页末尾的 ABI 参考进入。
+该项目提供 cimgui generated bindings。运行时源码只有 `ImGui.cs` 原生库/函数表加载器和 `Generated/Bindings.cs`。正式配置属于本项目 `Bindings/`；容器、纹理引用、指针与 DTO 均采用 SDK 的实际生成 ABI，Native 类型不越过适配边界。生成方式见 [Native binding generation](../../development/native-bindings.md)。完整声明从本页末尾的 ABI 参考进入。
 
 它只服务 Editor/SDL3-ImGui/BGFX-ImGui adapter。业务脚本与 Runtime 不应直接依赖 Native ImGui。
 

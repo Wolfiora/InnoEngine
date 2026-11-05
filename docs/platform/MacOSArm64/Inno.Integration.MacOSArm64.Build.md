@@ -1,6 +1,6 @@
 # Inno.Integration.MacOSArm64.Build
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [职责与文件树](../../architecture/NATIVE_BUILD_PLATFORM_OWNERSHIP.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [职责与文件树](../../architecture/platform-and-products.md)
 
 ## 职责、依赖与生命周期
 

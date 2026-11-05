@@ -1,0 +1,446 @@
+[
+  {
+    "file": ".agents/records/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md",
+    "label": "`D:/InnoEngine-Verification/bgcs412-2026-10-25`",
+    "path": "D:/InnoEngine-Verification/bgcs412-2026-10-25",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md",
+    "label": "`artifacts/acceptance/core-audit-2026-10-24/`",
+    "path": "../../../artifacts/acceptance/core-audit-2026-10-24",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md",
+    "label": "`bgcs411-2026-10-24/`",
+    "path": "../../../artifacts/acceptance/bgcs411-2026-10-24",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md",
+    "label": "`probe-runtime-results.json`",
+    "path": "../../../artifacts/acceptance/core-audit-2026-10-24/probe-runtime-results.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md",
+    "label": "`interop-signatures.json`",
+    "path": "../../../artifacts/acceptance/core-audit-2026-10-24/interop-signatures.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md",
+    "label": "`calli-probe/`",
+    "path": "../../../artifacts/acceptance/core-audit-2026-10-24/calli-probe",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md",
+    "label": "`test-assets-path-mismatch.json`",
+    "path": "../../../artifacts/acceptance/core-audit-2026-10-24/test-assets-path-mismatch.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md",
+    "label": "`artifacts/acceptance/priority-fixes-2026-10-25`",
+    "path": "../../../artifacts/acceptance/priority-fixes-2026-10-25",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "test-summary-final.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/test-summary-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "environment.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/baseline/environment.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "起始 revision/已有改动",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/baseline/revisions.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "最终工作区状态",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/revisions-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "file-map.tsv",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/file-map.tsv",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "consumer-file-map.tsv",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/consumer-file-map.tsv",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "file-map-summary.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/file-map-summary.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "final-source-manifest.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/final-source-manifest.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "acceptance-summary-final.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/acceptance-summary-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "solution-structure-final.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/solution-structure-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "project-public-api.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/project-public-api.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "stable-id-comparison-final.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/stable-id-comparison-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "白天",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/coreclr-day.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "夜晚星光",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/coreclr-night.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "输入/碰撞",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/coreclr-gameplay.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "白天",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/nativeaot-day.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "夜晚",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/nativeaot-night.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "玩法",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/nativeaot-gameplay.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "白天",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-interpreted-day.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "夜晚",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-interpreted-night.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "得分",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-interpreted-scored.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "Best 恢复",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-interpreted-best-restored.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "白天",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-aot-day.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "夜晚",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-aot-night.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "得分",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-aot-scored.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "Best 恢复",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/web-aot-best-restored.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "浮动 GameView 输入",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-floating-game-focused-input.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "主 Editor 阻止游戏输入",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-play-input-blocked-main.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "Stop Play 恢复 Edit",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-play-edit-restored.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "重叠窗口消费点击",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-overlap-consumption.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "短 selector",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-small-selector-fixed.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "菜单搜索宽度",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-context-menu-fixed.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "长 selector 向下有界",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-long-selector-bounded.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "Shader 小地图",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-shader-minimap-before.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "实际交互平移",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-shader-minimap-after.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "2:3 Export 表单",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-export-form-final.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "独占进度",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-export-exclusive-progress.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "取消关闭",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-export-cancel-closed.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "成功自动关闭",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-export-success-closed.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "失败自动关闭",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-export-failure-closed.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "最小化后恢复",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/captures/editor-minimize-restored.png",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "performance-final.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/performance-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "token proof",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/responsibility-split-token-proof.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "solution-release-completed.log",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/solution-release-completed.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "editor-debug-completed.log",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/editor-debug-completed.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "architecture-completed.log",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/architecture-completed.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "Debug",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/editor-debug-completed-smoke.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "Release",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/editor-release-completed-smoke.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "发布",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/flappybird-coreclr-final-current.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "运行",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/coreclr-player-final-current-smoke.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "发布",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/flappybird-nativeaot-final-current.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "运行",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/nativeaot-player-final-current-smoke.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "解释执行",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/flappybird-web-interpreted-config-fixed.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "AOT",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/flappybird-web-aot-final.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "日志",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/native-full-verification-final.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "结构化报告",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/native-contracts-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "editor-final-visible.out.log",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/logs/editor-final-visible.out.log",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "preflight TRX",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/deployment-preflight-final.trx",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "Contributor TRX",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/contributor-matrix-final.trx",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "BGCS 独立报告",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/BGCS_INDEPENDENT_ACCEPTANCE.md",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "独立汇总",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/bgcs-independent-summary-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
+    "label": "wiki-check-final.json",
+    "path": "../../../artifacts/acceptance/architecture-cleanup/results/wiki-check-final.json",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/PRECOMMIT_BGCS_AUDIT_2026_10_02.md",
+    "label": "Browser 工具链",
+    "path": "../../../docs/platform/Browser/Inno.Build.Browser.md",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md",
+    "label": "Browser Toolchain",
+    "path": "../../../docs/platform/Browser/Inno.Build.Browser.md",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/PRECOMMIT_SAMPLE_AUDIT_2026_10_03.md",
+    "label": "Browser 工具链",
+    "path": "../../../docs/platform/Browser/Inno.Build.Browser.md",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  },
+  {
+    "file": ".agents/records/history/WEB_PLAYER_ACCEPTANCE_2026_10_01.md",
+    "label": "Browser Build target",
+    "path": "../../../docs/platform/Browser/Inno.Build.Browser.md",
+    "disposition": "historical unavailable location retained as literal; no result changed"
+  }
+]

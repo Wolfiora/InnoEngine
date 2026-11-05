@@ -150,6 +150,10 @@ internal static class ValidationRunner
                             if (ArchitectureValidator.Execute([plan.root, "--documentation-only"], cancellation) != 0)
                                 throw new InvalidDataException("Documentation ownership, content or links failed.");
                             break;
+                        case "agent-documents":
+                            if (ArchitectureValidator.Execute([plan.root, "--agent-documents-only"], cancellation) != 0)
+                                throw new InvalidDataException("Agent document structure or links failed.");
+                            break;
                         case "wiki":
                             string[] pages = check.inputs.Where(static input => input.StartsWith("docs/", StringComparison.Ordinal))
                                 .SelectMany(static input => new[] { "--wiki-page", input }).ToArray();

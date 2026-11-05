@@ -33,7 +33,7 @@ public static partial class BuildApplication
         ArgumentNullException.ThrowIfNull(arguments);
         if (arguments.Length == 0 || arguments[0] is "help" or "--help" or "-h")
         {
-            Console.WriteLine("InnoEngine.Build <validate|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
+            Console.WriteLine("InnoEngine.Build <docs|validate|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
             Console.WriteLine("Default entry command: support --product editor (current SDK host and entry configuration).");
             Console.WriteLine("support --product editor|player --target TARGET: prepare reusable target support without building the Editor's managed source.");
             Console.WriteLine("editor [--clean]: build the complete Editor entry and its dependencies.");
@@ -53,6 +53,8 @@ public static partial class BuildApplication
                     return await ProjectBuildWorkflow.RunAsync(arguments, cancellationToken);
                 case "verify":
                     return ArchitectureValidator.Execute(options, cancellationToken);
+                case "docs":
+                    return await DocumentationCommand.ExecuteAsync(options, cancellationToken);
                 case "validate":
                     return await ValidationCommand.ExecuteAsync(options, cancellationToken);
                 case "verify-native":

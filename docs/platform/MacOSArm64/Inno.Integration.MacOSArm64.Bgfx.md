@@ -1,6 +1,6 @@
 # Inno.Integration.MacOSArm64.Bgfx
 
-[平台索引](README.md) · [Wiki 首页](../../README.md) · [扩展指南](../../architecture/PLATFORM_EXTENSION_GUIDE.md)
+[平台索引](README.md) · [Wiki 首页](../../README.md) · [扩展指南](../../development/adding-platform.md)
 
 ## 职责与边界
 
@@ -33,7 +33,7 @@ static IGameContentCompiler CreateCompiler(
 
 ## 测试与平台状态
 
-Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)。
+Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[当前验收](../../../.agents/records/acceptance/current.md)。
 
 ## 当前源码公开 API 清单
 

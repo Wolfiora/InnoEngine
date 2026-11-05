@@ -8,7 +8,7 @@
 
 ## 使用与边界
 
-Host 由 [默认 adapter catalog](../../runtime/Inno.Adapter.Default.md) 创建此 backend，再交给 `TextRuntime` 持有。`LoadFont(ReadOnlySpan<byte>, faceIndex)` 允许 OpenType collection 中的显式 face；`Shape` 处理 Unicode、语言/script/方向，`Rasterize` 输出 8-bit coverage，而不是 GPU texture。`ReleaseFont` 后或跨 backend 使用旧 handle 会失败。
+Host 由 [默认 adapter catalog](../../modules/runtime/Inno.Adapter.Default.md) 创建此 backend，再交给 `TextRuntime` 持有。`LoadFont(ReadOnlySpan<byte>, faceIndex)` 允许 OpenType collection 中的显式 face；`Shape` 处理 Unicode、语言/script/方向，`Rasterize` 输出 8-bit coverage，而不是 GPU texture。`ReleaseFont` 后或跨 backend 使用旧 handle 会失败。
 
 ```csharp
 using System;
@@ -30,7 +30,7 @@ static TextLayout ShapeText(ReadOnlySpan<byte> fontBytes)
 }
 ```
 
-此代码属于 Host/adapter 测试层；游戏脚本应使用 `InnoEngine.Text.Text`。详情参见 [Text Runtime](../../text/Inno.Text.Runtime.md)。
+此代码属于 Host/adapter 测试层；游戏脚本应使用 `InnoEngine.Text.Text`。详情参见 [Text Runtime](../../modules/text/Inno.Text.Runtime.md)。
 
 ## Composition provider
 
@@ -78,7 +78,7 @@ static TextLayout ShapeText(ReadOnlySpan<byte> fontBytes)
 
 ## 项目依赖
 
-- [Inno.Adapter.Text](../../text/Inno.Adapter.Text.md)：公开引用边界由实际签名核对。
-- [Inno.Text](../../text/Inno.Text.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Text](../../modules/text/Inno.Adapter.Text.md)：公开引用边界由实际签名核对。
+- [Inno.Text](../../modules/text/Inno.Text.md)：公开引用边界由实际签名核对。
 - [Inno.Native.Text](Inno.Native.Text.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

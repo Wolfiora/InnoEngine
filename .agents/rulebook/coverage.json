@@ -1,0 +1,4676 @@
+{
+  "baseline": "7f56dd64b",
+  "rootBudgetBytes": 8192,
+  "taskBudgetBytes": 16384,
+  "rules": [
+    {
+      "id": "1.1",
+      "source": "7f56dd64b:AGENTS.md#section-1",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "0438048c6c19d09a17302f8833d072eee0bc1dbbea42ef63792c8e182acdd9b6",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "style"
+    },
+    {
+      "id": "1.2",
+      "source": "7f56dd64b:AGENTS.md#section-1",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "7548a57f38c92debf7c5fbb29b5f477132cd9dc587bb166ecafd996d2529e745",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "style"
+    },
+    {
+      "id": "1.3",
+      "source": "7f56dd64b:AGENTS.md#section-1",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "4c955118aec3a46bfc2136417987f168069fe06a1991534daeea48f6e032490b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "style"
+    },
+    {
+      "id": "2.1",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "23ed7825005c55de7bab25a13ad15e4d6f9003fa963e9dc6c8f83f25aa156aba",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "2.2",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "7146fd46302f8cb642df8c5543f331a66155d896ac1e73a902b4225731cefb22",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "2.3",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "1254fc0af71afb409b4898cd71bc434108cda6aff826f68e79fed35a059b7a43",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "2.4",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "c7d1597e6822b378b28cff3f9a6360068544ad29df7f7118e736d012ffb58230",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "2.5",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "de1e8fc2ce15a3e73e3f8a940abf54b6279a7d557154acb8298b5e688b8d82b0",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "2.6",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "00238457aa080323c071fbab13a30fba20d564883baf55386c4e2b878f67da94",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "2.7",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "4dd1a89dc1b7a7b4354e70948fc01c4ae5993733201c0ff5bf7f4713a5abefcd",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "2.8",
+      "source": "7f56dd64b:AGENTS.md#section-2",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "779100086672741a3bd94e2b881aa35d8217edd739afdd017731e3983cff3a3f",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "naming"
+    },
+    {
+      "id": "3.1",
+      "source": "7f56dd64b:AGENTS.md#section-3",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "155b573531fa878aa6c0186be8cb195d0df3cdcfeb74ae9ef7426d4de92344b9",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "members"
+    },
+    {
+      "id": "3.2",
+      "source": "7f56dd64b:AGENTS.md#section-3",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "42c62c7d7814e5d5233bdf69c66252172ddb30d91cadd2d789f390959fac14ed",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "members"
+    },
+    {
+      "id": "3.3",
+      "source": "7f56dd64b:AGENTS.md#section-3",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "6a0621716390e0c953ed9eed37545093931c0c1eaf280210e4c8312a6981ac9e",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "members"
+    },
+    {
+      "id": "4.1",
+      "source": "7f56dd64b:AGENTS.md#section-4",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "b41c9ac4a02994caca07eae9f9f88b1a04a54588576dc83b210317d72f54f76f",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "encapsulation"
+    },
+    {
+      "id": "4.2",
+      "source": "7f56dd64b:AGENTS.md#section-4",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "c99a1440e54ed1f02f47977ef854a48b8e3ba1ad66f80b02acea7285a1ac5bc3",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "encapsulation"
+    },
+    {
+      "id": "4.3",
+      "source": "7f56dd64b:AGENTS.md#section-4",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "da4c375502ff67444749d190568441619c09ceecf1a2cb8afffb691b326f9bca",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "encapsulation"
+    },
+    {
+      "id": "5.1",
+      "source": "7f56dd64b:AGENTS.md#section-5",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "6b3170a223fbeeaa9708f03854dd47d7601bcc74996a78b9d7ec626f11fbc9d1",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "xml"
+    },
+    {
+      "id": "5.2",
+      "source": "7f56dd64b:AGENTS.md#section-5",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "53a79b0ffff61e3c64fadd0822b5eaf64d9d86c64f03abc4f10662923ebec648",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "xml"
+    },
+    {
+      "id": "5.3",
+      "source": "7f56dd64b:AGENTS.md#section-5",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "230cd76be9c06b7b0154b24b64777add074d6436884be6cba68c8ebd6ebd887c",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "xml"
+    },
+    {
+      "id": "5.4",
+      "source": "7f56dd64b:AGENTS.md#section-5",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "0771e910c76a4d4fe8240049d51a9777a9ca6d429b972d2b7f37c3915cfa24f6",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "xml"
+    },
+    {
+      "id": "5.5",
+      "source": "7f56dd64b:AGENTS.md#section-5",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "59a8922dc82b328b1745c0f3b91fc0db931b0eb3fd0e3c26fdf6b18bd3f38ced",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "xml"
+    },
+    {
+      "id": "6.1",
+      "source": "7f56dd64b:AGENTS.md#section-6",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "0980b1aadfe2ac68f2408411a4c8faa47d4827bfcab4626fa364d341f1c740fa",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "errors"
+    },
+    {
+      "id": "6.2",
+      "source": "7f56dd64b:AGENTS.md#section-6",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "76b50f93158d312ca2fdf09d100930fdac90a842695d5d71982bc1e62d47187c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "errors"
+    },
+    {
+      "id": "6.3",
+      "source": "7f56dd64b:AGENTS.md#section-6",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "4976e70e627ac2a6a257fa2480583a521c47ebccadf5a58e480b1da5512e369a",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "errors"
+    },
+    {
+      "id": "7.1",
+      "source": "7f56dd64b:AGENTS.md#section-7",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "5b08d747721d1fff4043b5b4cdcc9ff5a2012f5b2dc38d6cc15d1005115c3458",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-naming"
+    },
+    {
+      "id": "7.2",
+      "source": "7f56dd64b:AGENTS.md#section-7",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "4ade080ca04bd3a8af8c5cc2a079c0d7c576063df419672c0beec9f8e88c58eb",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-naming"
+    },
+    {
+      "id": "7.3",
+      "source": "7f56dd64b:AGENTS.md#section-7",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "714ca4b88d20ad2f599c3e8c7287cb819db79eeaef3377ce67c9590515568ca8",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-naming"
+    },
+    {
+      "id": "8.1",
+      "source": "7f56dd64b:AGENTS.md#section-8",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "4d36e33d8774770bda3087a17e046899067d6245b693c62d5c23b8d497390701",
+      "disposition": "superseded-by-approved-plan",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "tests"
+    },
+    {
+      "id": "8.2",
+      "source": "7f56dd64b:AGENTS.md#section-8",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "ee26061ccd340d9dcb274ba8facee84e6cbf1fae4cdd67df149028fe8e6ba697",
+      "disposition": "superseded-by-approved-plan",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "tests"
+    },
+    {
+      "id": "9.1",
+      "source": "7f56dd64b:AGENTS.md#section-9",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "a743bcef487abea16b872c402957ae77f7060eb95df7e2a912abd615215f0cef",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "compilation"
+    },
+    {
+      "id": "9.2",
+      "source": "7f56dd64b:AGENTS.md#section-9",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "191eedc7864cd1a54ce09fdaec1018a177b1364934c04d1d7b6ea850f6d3e6ad",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "compilation"
+    },
+    {
+      "id": "10.1",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "5f0ecb345e2161c7505f72636b3869f4b2f5d36c854a4cdf080a365154dced3b",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.2",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "cf4346c90282c6ab53c2e461e575b9d72eb07351721701f75db9577cf9736121",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.3",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "68be7e5cbe335410234b361ddc9a1d2a470d52a2efeec1cc51df20b1104df9fb",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.4",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "baf67bc8327069fca81f39fdd43a48c48942ad117e14c21a07d5d3ac3a2cf785",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.5",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "826058d66069113fdd2ddf34145f9a3cfcd007cbf94058820e4b16c739492a7e",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.6",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "994b998db615f982f3bec7be1d89e09f1c23f503c0919cc3d6e206713b2bd91e",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.7",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "aa4a2e04b024bba81ec11150d13eac13d2e640c7e908177c8e7a9d3a6221572e",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.8",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "3725c7f1220801b602870d097eb30b8101fe29c3d0f0dbcc25b9706b3d7b9ffd",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.9",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "22e3056d5cffccb699ab9f877c922098768541bf4f1f38f09d241ab128799ef9",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.10",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "b44cca91ac82e75c8eebc27fb13765fd4b7e7a77a7a8df68c6aae6f9b4d66e05",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "10.11",
+      "source": "7f56dd64b:AGENTS.md#section-10",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "163b6b3e30a395ad2deb4ac88fa58052e5b17073729b41c31e1b56f91a2606a3",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "directories"
+    },
+    {
+      "id": "11.1",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "96ccf044ebe34361538ac4c3dac0fd3d2b7c9db5ad532b3e7837d04945d57363",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.2",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "1dc0296ec2118708e1a75334f08d993e5b18f50ac371cd911d5862dfed847932",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.3",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "f3f7debbcd9b552b379d4bfeea8312c3c6d9a4c55564db4ba8005f7a6e461d16",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.4",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "2568dc23c50d9799f22535715a1d496259248c52318d5280129d71d928a350af",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.5",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "5534ff06531b8f0e4dcede3a7409924a894a57e11848043c894a891cc226419e",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.6",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "d84e481c7e94dccb3d7646f58403de71f291ddf796eb607f6762b5a8cd1d077a",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.7",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "8905a7d3ff5e3dc12c838f074a7eed0664d76a6695e44ff5a1f99d4f6b60f4a8",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.8",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "0e1d603608acd5aa204278ec1a5b69fc0e271ede6c8edb77edf667a1b3868b9b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.9",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "06dbaecfd67f1807ce241fa928a76e1b9da9fc66c5e19457f8ee84e843d95c44",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "11.10",
+      "source": "7f56dd64b:AGENTS.md#section-11",
+      "path": ".agents/rulebook/documentation.md",
+      "originalHash": "f91ef9d6d4abc6129c4ed63429a5786c8f63324d43544bc62422f4d51bd17cd9",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "wiki"
+    },
+    {
+      "id": "12.1",
+      "source": "7f56dd64b:AGENTS.md#section-12",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "originalHash": "5d9f37c482d7ed2d1831728bfe868cdf0ef116cf3dfda5a68ac0be5491c6b44d",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "scripting"
+    },
+    {
+      "id": "12.2",
+      "source": "7f56dd64b:AGENTS.md#section-12",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "originalHash": "5c9522580d5b894b7597f4f96ac9128b92e6635bc21fdf7fef209f33a09f14ac",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "scripting"
+    },
+    {
+      "id": "12.3",
+      "source": "7f56dd64b:AGENTS.md#section-12",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "originalHash": "500bf61050900845ef55695ad3920e9d6904499db3ac32b4ee13cd9a227c05c3",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "scripting"
+    },
+    {
+      "id": "12.4",
+      "source": "7f56dd64b:AGENTS.md#section-12",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "originalHash": "e7c01c6e4c8764cf658d961174e881c4c70cf317597643d35d9cd070e60d0633",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "scripting"
+    },
+    {
+      "id": "12.5",
+      "source": "7f56dd64b:AGENTS.md#section-12",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "originalHash": "94120d8bac9df2ed991b33100188f9a5785ac28cbd4ebc93c9649c31f8f4e937",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "scripting"
+    },
+    {
+      "id": "12.6",
+      "source": "7f56dd64b:AGENTS.md#section-12",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "originalHash": "7ed60e2fe34199e32bf4156299913bd1058fde36733c1eed362fc55a1adeb8f9",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "scripting"
+    },
+    {
+      "id": "12.7",
+      "source": "7f56dd64b:AGENTS.md#section-12",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "originalHash": "9d8ee25f4a083113ca0e53db9a1482d7a74aef76bd1b87fb9841bea819143dd1",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "scripting"
+    },
+    {
+      "id": "13.1",
+      "source": "7f56dd64b:AGENTS.md#section-13",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "9443cafc9093dae4fd32a2c037d02de87486add1e4cc1b52377cd1f94a125619",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-projects"
+    },
+    {
+      "id": "13.2",
+      "source": "7f56dd64b:AGENTS.md#section-13",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "4f5e5aed6897ace5c4b6cbfdb87904d6a6a8929cd0df981f479cee26ffd96743",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-projects"
+    },
+    {
+      "id": "13.3",
+      "source": "7f56dd64b:AGENTS.md#section-13",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "84cc6095ce04a31a8beeb1661912a58b8de562db0624475248f755b77a0e20e9",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-projects"
+    },
+    {
+      "id": "13.4",
+      "source": "7f56dd64b:AGENTS.md#section-13",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "5fe6ec264db83e6748ca0ae5daa13968f80aac8d6d005ee4e2ded8e32199491d",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-projects"
+    },
+    {
+      "id": "13.5",
+      "source": "7f56dd64b:AGENTS.md#section-13",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "bb394f03ce7c3962d38eb892f3240eeca07f7582563dfaaa56a128c5f9956757",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-projects"
+    },
+    {
+      "id": "13.6",
+      "source": "7f56dd64b:AGENTS.md#section-13",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "f03c8af813a56eea5cf54f57b7a6cbe268261de47a5d1c06c63facc942081797",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-projects"
+    },
+    {
+      "id": "13.7",
+      "source": "7f56dd64b:AGENTS.md#section-13",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "ea83c11a5783a0e4674ddbf18b0bd8d13ae741d859ba8d18ad3ac2d57309dead",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-projects"
+    },
+    {
+      "id": "14.1",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "802beca59c3c5542e350400d5553b4376e4fd603b93289346cddac56db95287f",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.2",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "ab15e73721074f5f58250e7e325e01403f065f8bf3ef26057fd9d4c287a2871f",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.3",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "4ab9e48bd4ad307a8eaf797efe07f0383ca83d3cf7a28f5f5c976ffcc21b71ec",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.4",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "f439cf9fc6e91c8205613454bef02d000df1f466bce557863dcdb89daa5467ea",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.5",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "5e625d5ffdba8dc2fa694a43c0e2d06993f973f21f2582fa12e3613ea1f4bd6f",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.6",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "8f1386ba061db6235bb1f467ac5ff571974533e5ce32362da4692176d8f1d544",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.7",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "c886a65a41f603a5bea7387efe60e2af979dbdd589945ec485b82c5473f3d972",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.8",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "11a421a9a00cf21080803c70bc4740cc226479a4c9adb1f5592e82eebd5e8550",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.9",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "80fd966faab70b6d56473c56b0bbffeaca4831ee75830e7195a4a7f8fc46262b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.10",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "6d61fb5dcecd2a282ec55c91f551fbf012adce132bdae2589a134bfeadd3d70d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.11",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "1e309e4880134bdf98872c3601eb16261a30b08ce818ce2919acb47877ffd8ed",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.12",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "89047a47e41186f278ab244de7f51ef84f5a4fc8e33999fa99e84eda365a4b1c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.13",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "ced6359a37b15683302c590a140cf9f9c5b8ce14a4583b80ab64082e9a164735",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.14",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "aa037a2eb62bc515463abef944986e311e5889fa1ee4bc031884fb591c405d61",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.15",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "38878299c8a97469089022a237b2896e3699d76cff0af54d8c2a21e8a68f453c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.16",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "d17b7484e2d5247bc6ed1dc891fa65149977f5d341c2079801f746c646c97843",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "14.17",
+      "source": "7f56dd64b:AGENTS.md#section-14",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "b8459066a743985e3556a91a0e8e30de69fbc32d33d2de7aa13e127e635f14ad",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-state"
+    },
+    {
+      "id": "15.1",
+      "source": "7f56dd64b:AGENTS.md#section-15",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "ca3db635c67a5e06af1fc552d2d14673df5219117c438670b2bb80261308e997",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "no-legacy"
+    },
+    {
+      "id": "15.2",
+      "source": "7f56dd64b:AGENTS.md#section-15",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "cd95d65721a19bed59819a9dfb3218039fbf58ce5532b9516c3db44984c7d452",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "no-legacy"
+    },
+    {
+      "id": "15.3",
+      "source": "7f56dd64b:AGENTS.md#section-15",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "e42ad938b23b8d9430521e0e67abcefb208494d08e4c19a53d5a45acd4e0d76b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "no-legacy"
+    },
+    {
+      "id": "15.4",
+      "source": "7f56dd64b:AGENTS.md#section-15",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "2b8f8939ec19c4de68cd0c8460a2366d20cdd71d6049839e54eb77572fd9cb28",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "no-legacy"
+    },
+    {
+      "id": "15.5",
+      "source": "7f56dd64b:AGENTS.md#section-15",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "2126318b976262755e90da066ca6efa95c95318fbafd150e1eff03f6b1d8578c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "no-legacy"
+    },
+    {
+      "id": "15.6",
+      "source": "7f56dd64b:AGENTS.md#section-15",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "5586fdaa422ec00e446f3499402e7672a9cd07466802b5c0d8e9cf8b2e2665cc",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "no-legacy"
+    },
+    {
+      "id": "16.1",
+      "source": "7f56dd64b:AGENTS.md#section-16",
+      "path": ".agents/rulebook/delivery.md",
+      "originalHash": "1df3e0e0a5f191314228a4d5be1242bd096be2fa118a256e29d168b2a59bd9f1",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "notification"
+    },
+    {
+      "id": "16.2",
+      "source": "7f56dd64b:AGENTS.md#section-16",
+      "path": ".agents/rulebook/delivery.md",
+      "originalHash": "8b74dc6c1bcb5502e35ce4ba58d7ca4be4828fb387862bb479937ba101029a76",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "notification"
+    },
+    {
+      "id": "17.1",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "ee5e8af526141af2cb7ee6ab91b439e48d714da2c1f8e832da7553ef22c503a6",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.2",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "656c7f1ead45a3c2d3163ae94c6f0c49657a07676f798b0615deb70769a5103e",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.3",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "1ea202115e8e050c1713a7233da99ad2bc40b4dd94cb29d5cbf5e7061bdec892",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.4",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "db8d1cd54f08743dd4298fd3d5411a31e8444aadbb26a42dcd8b3f5b27a8fd63",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.5",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "71eadeb9ec2aa3ec64d0f246f13251317f05bb6bbcc44f1aeab3f5433d01d2ac",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.6",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "f899f36c3b77d92fcc886d9b7d293b9881feeca684e86924773830af0b4b372f",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.7",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "6cbbcfde884e75e96c1efa01bc4eba9521b988dd0539a50971e71a34c7a6717a",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.8",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "7ede213dd1659d4ad6f51ee6eb413609ada0db844ff03f38311bef69b2e77cb1",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "17.9",
+      "source": "7f56dd64b:AGENTS.md#section-17",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "0e9ff540e001733230ba91a68544e1305ee617702ac64afa50608e05971e14db",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "rendering"
+    },
+    {
+      "id": "18.1",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "e1ea473d5024366f6c1b634551d461d2271cc9699cf1c765b2be393c8e947494",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "18.2",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "010d03f20e88a10ca3465d22b36ea51f9495938372834fb019c236ce8bb9a67b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "18.3",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "0a74219bb93287684baac21ff83548cae7bcb14e0e7fd53284e1763a11b6e548",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "18.4",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "af5f687faf8913e068718e3a73cba0003d520121aeeb249479f62505f3aaf3a6",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "18.5",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "c46d6878522f11987318a6a509d56e72b4f6681e98af45cff3623657630d9959",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "18.6",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "ad39665d09837ad8d1e4f78c284b97d4277c68a2d44ae4442a1185d9b8a3b896",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "18.7",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "f4ab19400c0702d8da6092df70ecdb4c75293f97205663411aa847c3c325963c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "18.8",
+      "source": "7f56dd64b:AGENTS.md#section-18",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "originalHash": "6397690af4b51494ac9f83bde6b137aca3326fdd6aa74bab0dc42d93490a2d21",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "plugins"
+    },
+    {
+      "id": "19.1",
+      "source": "7f56dd64b:AGENTS.md#section-19",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "b8e41433b5af0edc8f9e61054e6ac81c6aa2cacd0d90bbdbab1fb3b889c54bbd",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "completion"
+    },
+    {
+      "id": "19.2",
+      "source": "7f56dd64b:AGENTS.md#section-19",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "73e27ca28caa6f4e6c6f7cd1fe54ca2dc8e49e2ba15490ce7c5b1068354f8c71",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "completion"
+    },
+    {
+      "id": "19.3",
+      "source": "7f56dd64b:AGENTS.md#section-19",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "cde43bdde3090f6b7947886e50001b552d09d461f5ff40a0914968e988446ca2",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "completion"
+    },
+    {
+      "id": "19.4",
+      "source": "7f56dd64b:AGENTS.md#section-19",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "49c25780621007dcc71be5f2e2b4f4b002de2b0a9d96c40e81d193604c75f2ab",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "completion"
+    },
+    {
+      "id": "19.5",
+      "source": "7f56dd64b:AGENTS.md#section-19",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "c9950b8ac4190e36f1941ec0d592853ba28171f1c75724002906cf5eb1bb4b4d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "completion"
+    },
+    {
+      "id": "19.6",
+      "source": "7f56dd64b:AGENTS.md#section-19",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "24a6745290c0969a46d0461042c788fabc2e4d0d0b69b3d355aebe16f7de0e92",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "completion"
+    },
+    {
+      "id": "19.7",
+      "source": "7f56dd64b:AGENTS.md#section-19",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "38808df39142443fd505e2cadbcb49dadb6cbc8e876d68b23fdf516472173de4",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "completion"
+    },
+    {
+      "id": "20.1",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "d04589d0ce99484f813001832e92a2f8411d2d1a4bc64aaff8175fa1e1475e0b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.2",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "975f6da00e76191fdb166d04c732a9d0acc77828f65b1d270c6aa94bd0b0d07a",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.3",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "5c2f32dc18a4142ae2b41e7f0191688430deb3942f8d653c058ca5fb09ae9380",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.4",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "811e0a9fda7f7c75556ae181360e3af2a2c4a57ddf60a74bab1d17eabed0b896",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.5",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "92829893c198c28c5c8f6d5fb3542e80f592ee4c6b362826cc9965d23506bb79",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.6",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "63e109baa64f062a988a244a78754cf21234b8d3478124c99a0f3a5b131a4f3d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.7",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "da38afa634e638869a4aa17188dd56e7762b25c0d33026205f91a9df4fee53ee",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.8",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "54c7a14b2e0f3011f82089ee72b14d27f8963883d6ee166fcbc0e6deda1414d2",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.9",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "1b7d6605e20bbfa15843a42196d806ce2b1d06b97b9c7d678304cc474ed022c2",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "20.10",
+      "source": "7f56dd64b:AGENTS.md#section-20",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "originalHash": "9117cdcf7615cfaa27c12cdb1a27b762440a39595a279414c42e876acdc60e25",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "identity-reload"
+    },
+    {
+      "id": "21.1",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "0ee4a1381219a58a864b2d34e63490bc76b41a6d3a91f162d10b545296301eb4",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.2",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "b8fcd9e15d3ebd1fe14864d7337caf534fe5be36043c761b9da98aaf817f10ff",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.3",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "3ae787b3f7492f78c4d175c1afeb3440f337470bc957514fd541e334ca7a6791",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.4",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "f0646b2f9c636d6649ae60527b2a3171e98f1667369d7bca95825102773f09f3",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.5",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "fc03e6bc382adbe5a20029ffbb9d84bf52481670141c960b6ee9daa7188efc37",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.6",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "114ac52f6a6a08e00af88d925c557453cc899572151d6638fe5e6b485b98d7f1",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.7",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "1f55a6c4e2413d61a0c260b94b1379c3ba5381dd3fddb553d5068f8784585b6d",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.8",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "10a2bfdf68c81051d2f8b0fbab24495a609c1771531462fbf9868e9bef0bc320",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "21.9",
+      "source": "7f56dd64b:AGENTS.md#section-21",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "bab9bd3ed3aa17a1a152fa893a422014284ab69be0c24b7aa6576647c333335b",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "architecture"
+    },
+    {
+      "id": "22.1",
+      "source": "7f56dd64b:AGENTS.md#section-22",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "6fa5cc593dbe1d5fe96ff5e177c49a6b4feecd18f9cec91e80e7dcbec482cef8",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "core-reuse"
+    },
+    {
+      "id": "22.2",
+      "source": "7f56dd64b:AGENTS.md#section-22",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "43025970366c56e171047fa7cc31fb9ad071cd667dfba68297c36756f02e73cb",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "core-reuse"
+    },
+    {
+      "id": "23.1",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "a7180c7b2a595dffc271bbf430dad6da72ac8dbabaa7a713ac746d3be7bdcbd9",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "23.2",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "31891a8a828b1709293b0f1f3d81067b15c1e35e0a9e8b2f6ef6149a56f0c635",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "23.3",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "95e12ed427e31ee89b53ebdd3551f8b671bb56c5d8d85a7c141127c989abfcda",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "23.4",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "8338542136dae7aa818b9446f5050658f3e1e89402c0c97e9d4f5abcc8b7d0cd",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "23.5",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "41874671f58ef7bc6285d79b4539b0d61ea6e5787d16732d3e2493d84b043ba2",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "23.6",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "19ef285a86c7baaf07c63b9a8fc5cd74742cfdc2048821333f3cf14a22acb7c9",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "23.7",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "e37bcae5aa76b76e6688c78103d6163a25fc73ed080c760964579585038c086c",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "23.8",
+      "source": "7f56dd64b:AGENTS.md#section-23",
+      "path": ".agents/rulebook/coding.md",
+      "originalHash": "00ab8e1bf5ec15ca8c2df55c202cfcd4172b471b8fb6ee80cfa15a58bcbaf1bc",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "formatting"
+    },
+    {
+      "id": "24.1",
+      "source": "7f56dd64b:AGENTS.md#section-24",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "a78da5ad23986a44349374372658a6557ee2d9976628b07e933721594fc468fb",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-layout"
+    },
+    {
+      "id": "24.2",
+      "source": "7f56dd64b:AGENTS.md#section-24",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "ff8188e23b8af5d3991c935b771b773a59598b7babf864d5b944150c0e013e27",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-layout"
+    },
+    {
+      "id": "24.3",
+      "source": "7f56dd64b:AGENTS.md#section-24",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "d2f1efe96013a971a0f435d8592204bebbe86ec48abb5f4bb537ad6b12f3e7d4",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-layout"
+    },
+    {
+      "id": "24.4",
+      "source": "7f56dd64b:AGENTS.md#section-24",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "3376fbba35db3b14186fad6856628170c46b5ea568ec4da85d68e13a360df83e",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-layout"
+    },
+    {
+      "id": "24.5",
+      "source": "7f56dd64b:AGENTS.md#section-24",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "102fc73957d8dcc7555e9f021d87b707da29f344e4b6715357256318c6944ead",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-layout"
+    },
+    {
+      "id": "24.6",
+      "source": "7f56dd64b:AGENTS.md#section-24",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "9aa7299366b57f5a1b1b5ca963563c742683e3fb6380dacb2af72d6e1d99fc1d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-layout"
+    },
+    {
+      "id": "24.7",
+      "source": "7f56dd64b:AGENTS.md#section-24",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "a60a708374ddcfa25bb62fbd311ec7a8bb959a60e3d74fc03ccb28777eefae77",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-layout"
+    },
+    {
+      "id": "25.1",
+      "source": "7f56dd64b:AGENTS.md#section-25",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "b19118c564bf7869a979959cb5942e88df5ab3a54f541061adb140aa316ba10c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "build-host"
+    },
+    {
+      "id": "25.2",
+      "source": "7f56dd64b:AGENTS.md#section-25",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "c7c3e1e13e6ec6f3600f6355d31a4a8d755f43369274baf9acfbe21440e8a0d6",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "build-host"
+    },
+    {
+      "id": "25.3",
+      "source": "7f56dd64b:AGENTS.md#section-25",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "2ce9b85e57802b8c2a31c4cc3d0c8235b69068b7d46a7e5277978472f4de88d7",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "build-host"
+    },
+    {
+      "id": "25.4",
+      "source": "7f56dd64b:AGENTS.md#section-25",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "8b73963b3c9f46a9705c77b3a0a00ab19c234e26eaffd223d6fc0b2e932f603a",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "build-host"
+    },
+    {
+      "id": "25.5",
+      "source": "7f56dd64b:AGENTS.md#section-25",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "df22738791386899274f61f777a931262733f8a48f1744208c042fea57880d80",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "build-host"
+    },
+    {
+      "id": "25.6",
+      "source": "7f56dd64b:AGENTS.md#section-25",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "b2d018fd842124e7109ad0973e6e907e908ea05c3d29d2ff0bbde4cc7abc8e4e",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "build-host"
+    },
+    {
+      "id": "25.7",
+      "source": "7f56dd64b:AGENTS.md#section-25",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "224ccdec3ed83d364b31ccbc614ca441b1dc8b66d1985e44e5c5d615342d7a67",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "build-host"
+    },
+    {
+      "id": "26.1",
+      "source": "7f56dd64b:AGENTS.md#section-26",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "bb60b33ba54c7336e9799166c01b4052d126a112d4722915e3904b66fc4b5ab0",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "solution"
+    },
+    {
+      "id": "26.2",
+      "source": "7f56dd64b:AGENTS.md#section-26",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "96c711350d8ff162324062dfb4b49240d44be6a667a5fd42a42bf590c3a5e3ef",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "solution"
+    },
+    {
+      "id": "26.3",
+      "source": "7f56dd64b:AGENTS.md#section-26",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "fac2752dd3f41f02a5029638af0b428b76cd57c54b1e806d7075b11720f6e4d3",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "solution"
+    },
+    {
+      "id": "26.4",
+      "source": "7f56dd64b:AGENTS.md#section-26",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "24eb6050ce21ea7ff4821e7c8829d4beeed5e4ffa67e27dbff16f278a535ae78",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "solution"
+    },
+    {
+      "id": "26.5",
+      "source": "7f56dd64b:AGENTS.md#section-26",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "73642ccb128fdfa44c92f79efe6cfa8da42c7c16b4fc99e21e64f6ddac3c47ef",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "solution"
+    },
+    {
+      "id": "26.6",
+      "source": "7f56dd64b:AGENTS.md#section-26",
+      "path": ".agents/rulebook/architecture.md",
+      "originalHash": "25a9c3360ddadcf3681147ed90c1d86a63205a903b3dddde86992c1866b32e79",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "solution"
+    },
+    {
+      "id": "27.1",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "9cc6e95f7ea461fd696de07ce76f8797c96ed41f0433e310e1af26582805b22b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "27.2",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "7603640023e8356e822dbdca1f0bce8573039862e61d8e8926b0acd6611b9494",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "27.3",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "aa8f68717a46b2a24105079cfff00c2955062fc80da10d8005ef3611bd7d997d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "27.4",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "b95630e0b3deb0b2d09de1f2ce037457354b9e319ebd2f39c8106174275eb320",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "27.5",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "8e6c8256ca3966575e246bf2c4986d105214afbb19a069bbf83c3e0b40de379d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "27.6",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "2c398b51c32d526e1b9337797dc9d7a06302c34f25f22fb2806075bca491c99a",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "27.7",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "1eda47cd0c85d1ffa678dd58baa94224f78967bdd53aeb22c46f5b551bb403f8",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "27.8",
+      "source": "7f56dd64b:AGENTS.md#section-27",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "originalHash": "ee7ed4698848793ab73e52bd3e73fd8c709f75028df195bbe876b70e0f648a28",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "content-frame"
+    },
+    {
+      "id": "28.1",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "bbd068ddf45b8a55440546f88432f08f1bc7a2b94ed6aca1d4f72c53a59c15f8",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.2",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "38365fab9c07d85ea81c40cd0d181f0549b781dea9c48bdfeb0559a24a02c607",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.3",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "1e3f7d9acc0b4f337cc02dc2fe79d66ccda45221c943c14cf71f91de709ad989",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.4",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "e584940bd16fa8ff45182ea7674910860e3a03209a16703f1b06a98866620b01",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.5",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "a1d364c82b7a1c3cb16f56bd1aae66832cb7b15706a9a2c5206ba3fdaa79a886",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.6",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "875e20eacd91a77fba60d63920f357e4e7d1a3e3ae2c1f9f830da1fd8b8000a7",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.7",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "6af5d2f1a1c1f5083c4e8da9c181963e99d54ea38a9563da8747ea5fbcaab5e0",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.8",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "dbfa9fbd4fa122d1eb9ea53bd5d523239d856d17a436e8df8616730f411e6a95",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.9",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "c02df2b6b87a837d2297dead8bd588d68b1e0b158f265aa2f720331fb975487a",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.10",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "91e9b473ace4cf03421e9e288264dbc1c14ede8d85b92a96436ade4f1831095b",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.11",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "a80250da185512ce2c8cd8d97ae37f7e29f823e844cfb499659b0e89502d3ae3",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.12",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "627102228e1d72789f8c8c31687375dbeedb3e7c275a879eeed503ceaf1203d6",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.13",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "86fc3f18e3017b563ef8b55f15576986538a7e01dc9f61b869e698a24ee7cbfa",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.14",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "a5945bfa41a6b678b345609c3fb7753aa2aa3a183b9ebc7d11427caeaa0ab25c",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.15",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "a4e99ab18a653cd24bc57f0d7df13d1dfb5778cdbf0a59aee49002ac93b77915",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.16",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "0afee409eaa98d08d8e1a0334b61183523ae221b3f3b86f59d9607e0babec762",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.17",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "09969edea363049274eb103b0f3ed28431ee6c029070d88a2de8e287f5f0ceeb",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.18",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "066a20c7fa263bec6fb1bf35b123412cdc19b984fe121365b77d5eb4e8bd7fe2",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.19",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "f6b7f455387f2ffe8b272441fe9ccd7c6fb793a640332c7889ec4b963ceec35f",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.20",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "96a1de39674aff5c38eee8057c697e37d7b1a34051133b3471bb96ff56933c6c",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.21",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "2530d325d5dbe1448fda7a6e246d71380bddcb95a48162a33cf8950573e8b381",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.22",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "85f424ca1b9c5b3d21b925ef469a1a515c31f2ed651a82a92a208258f55e961a",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.23",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "1121c4faa7c7e120a90135449a220ec60b622d7831ad68c2c621d96fc0e7efcd",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.24",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "b61c0f0e7f3be551ed431b43a76b62991a811b2b51bafee0af5ebdb39d320a59",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.25",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "1193087c674adcad2e28e80da089bca39d1bb083e175c00c46e3bfac2e21f07a",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "28.26",
+      "source": "7f56dd64b:AGENTS.md#section-28",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "780f84046cc74eea6834fe6397421a5e76f32bc030c29b2d0a7e66ac18155bb1",
+      "disposition": "preserved",
+      "check": "architecture + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "platform-products"
+    },
+    {
+      "id": "29.1",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "1184ebc811c53110f9b93a156ddbfe721a06e84ff561b7b170de4b8a4f09c7d1",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.2",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "24e7a817f0f579805afd40f5ed16f6c767153b6ebd44dacee9c627313443d019",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.3",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "930fcd222b949ce695b267388f8203bd798c04c174217146304ffc68ac90e511",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.4",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "464eade4d3d14b2b800c761c2c5e26c77a22a4351b5ceebcd1f112dd3cfdfc2a",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.5",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "47a490a8d8506b2fb25cf4e48407c8654b2cbc143c272e53e509ecaeb52dbbb5",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.6",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "77c7d40f8caca628be02ac2147345e04132df08185765da27e5d6e823ac61f1c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.7",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "dca2a1bf003d9c82f5c57956cc315bd20cfe11d5c9c52caf2aa2c3c06a6ac852",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.8",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "1ea3f833bf68f4009d0a8baf5b54744de3b51c97d38370e47e41a34bc31a0f96",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.9",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "db9846f1d6d8462e20d840a76c3fd2271e2cb1c171ab6a3c3dab8373c31d5e6b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.10",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "4417ce20429062015905ffbe98b19a0d31908960f6d5863c80c27fd2b7644ea3",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.11",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "167343d8d3372823fd6a5c09a919f63b5bd1524b4cb1b6229f516f4eb6a7044f",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.12",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "d03b95720e5346978f818d1cee320f8eb0576eb915431635b925dd83b318f5bd",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "29.13",
+      "source": "7f56dd64b:AGENTS.md#section-29",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "originalHash": "d8360e8265f5088a3def25af85805151c7aebd7a508d09cc919f19f5e24d666b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "backend-build"
+    },
+    {
+      "id": "30.1",
+      "source": "7f56dd64b:AGENTS.md#section-30",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "3e0df150e5273f71eff27bbbc8671a331f09cb12a5c07a96c8e861a64bf28ae3",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "review"
+    },
+    {
+      "id": "30.2",
+      "source": "7f56dd64b:AGENTS.md#section-30",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "1d25bc7acfa0735c58e3814dca382bf3234a0e7d965325e173bd88a903c14af4",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "review"
+    },
+    {
+      "id": "30.3",
+      "source": "7f56dd64b:AGENTS.md#section-30",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "4c780ef5b65a99dad550c107a7c514591d3e2812ddff8d00cd308978579b15be",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "review"
+    },
+    {
+      "id": "30.4",
+      "source": "7f56dd64b:AGENTS.md#section-30",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "009ca6574de647708b05c24de08073f8af6183a5c3b7fc0abbcf5fb23fe9ed39",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "review"
+    },
+    {
+      "id": "30.5",
+      "source": "7f56dd64b:AGENTS.md#section-30",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "33c44f2b873bacb7822af7718aedd66c8967bd7cc3e1ac6f8a193caa4013a663",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "review"
+    },
+    {
+      "id": "30.6",
+      "source": "7f56dd64b:AGENTS.md#section-30",
+      "path": ".agents/rulebook/validation.md",
+      "originalHash": "e3dbaacfefac2daa3eef9aba4b6d0d9656b068941246544f122f5ac40e767e6d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "review"
+    },
+    {
+      "id": "31.1",
+      "source": "7f56dd64b:AGENTS.md#section-31",
+      "path": ".agents/rulebook/delivery.md",
+      "originalHash": "3b1ecfb344235b63cb4015fa1548529093f605c5673ae454bc1660106d7b3d3a",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "delivery"
+    },
+    {
+      "id": "31.2",
+      "source": "7f56dd64b:AGENTS.md#section-31",
+      "path": ".agents/rulebook/delivery.md",
+      "originalHash": "e5bc32830644660581c3286a3d352fcf4828b676c91c116afa23e08b48f00c85",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "delivery"
+    },
+    {
+      "id": "31.3",
+      "source": "7f56dd64b:AGENTS.md#section-31",
+      "path": ".agents/rulebook/delivery.md",
+      "originalHash": "5101467f70d294ab413e4befbd85c00c6717a855cf3fbee0aa1b24c48467f2c6",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "delivery"
+    },
+    {
+      "id": "31.4",
+      "source": "7f56dd64b:AGENTS.md#section-31",
+      "path": ".agents/rulebook/delivery.md",
+      "originalHash": "f67f47be3449ea304ec5c3279342840557c75efccf63bdcc783df37d2d974053",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "delivery"
+    },
+    {
+      "id": "31.5",
+      "source": "7f56dd64b:AGENTS.md#section-31",
+      "path": ".agents/rulebook/delivery.md",
+      "originalHash": "de6a01673254e95d66beda0153ba848d3f808fb9e3164e41d4561dfe6d07aed2",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "delivery"
+    },
+    {
+      "id": "32.1",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "1df2bd9d01c7611d9916939771fdd2becb76f37d10cbfa4d1542ee2c8f938eca",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.2",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "22fd6af1bb890a7d27b23d959b8504b5db470e401d2b581c63ba038f4c957914",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.3",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "22e9cf2e6c3a92b4655ca67b49479f7a54525bf1d3f59e904c1fb91168a97175",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.4",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "c6f50e26701141e063be238e81bb9c0fbf0c60e1a49bc1925e71e59b51cbb97c",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.5",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "87015c79749cfa3edcc9f013455858720122b3f2df306b9f507fd634e1fe53a5",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.6",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "cfa03efef9d5ec20da6ca65f90d6761a38e59891d567887476cc392e0b32b09d",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.7",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "616d978818c8ea9234ef6765a405f2099a74021ea0a5b43f6b6e72c965516b22",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.8",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "5e7b3322365eeb3a3a454a09842e63914b9c1ed22fb330012dbb026612372641",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.9",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "0ec49656b2d037e60ea3b07ae7d8ca86fa67f996e8395e7baf375163b28e47ed",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.10",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "e425b5e45991d571e96373a3315bf81929ff0b8984a0dcb5c1ade024fe38f965",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.11",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "74cbd2228ca2f4aa825d56f3716cad9b10b6def5eeeaf1b9923bd511f2986ffe",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.12",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "26c8b3a4f5b3d5912f20cf6fd304de30470a8a81618e5a441ed1e497762bba27",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.13",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "ecbde133185bbf5cf11dcd67eef943701bd229a987d8201b48f769e1adc2bbec",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.14",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "0a616cb021da2aca735b276f89b6bc78090c19fdcbec1ec83cbef96e2bd7023b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.15",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "7306cf65c6b8dcd323bb97ad664f248e95f7da3934d6414041f959dd2649908b",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.16",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "8f22deaf3629f8fccb357421384db74be421c8e9a05a672ebb22409ada07cf5f",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.17",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "fbbbb0cd6acaf286fbde2fd4e51abe04c768ecf13ab67d53d313d47d1ba054ea",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    },
+    {
+      "id": "32.18",
+      "source": "7f56dd64b:AGENTS.md#section-32",
+      "path": ".agents/rulebook/domains/editor.md",
+      "originalHash": "ed3692df56697465796d1e95ae805068eabf4418cf8e9ec3ed5327607578d4a4",
+      "disposition": "preserved",
+      "check": "owner contract tests + semantic review",
+      "reviewer": "implementing owner",
+      "unit": "editor-acceptance"
+    }
+  ],
+  "units": [
+    {
+      "id": "style",
+      "path": ".agents/rulebook/architecture.md",
+      "anchor": "style",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/style.md",
+      "sourceHash": "c92daaba3fab8ddd29a07e2f41f68108dabc168f285256d0c8dab2ae8bd61ea0",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "style"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "encapsulation",
+      "path": ".agents/rulebook/architecture.md",
+      "anchor": "encapsulation",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/encapsulation.md",
+      "sourceHash": "ad4eda770415dc6f4a543bd0724f31d6652f88baae3e7ed8d6c2cdce9b845e81",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "encapsulation",
+        "new-boundary",
+        "public-api"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "directories",
+      "path": ".agents/rulebook/architecture.md",
+      "anchor": "directories",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/directories.md",
+      "sourceHash": "9190caf277e7690896e060164a74a6b92ca99e1714dc48dc95fb37fcfe6bf524",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "directories",
+        "new-boundary"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "no-legacy",
+      "path": ".agents/rulebook/architecture.md",
+      "anchor": "no-legacy",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/no-legacy.md",
+      "sourceHash": "35f95260d922e900c047f140671b4805f65fd755f4e086822c2a50b8ba1ec3b1",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "no-legacy",
+        "new-boundary"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "architecture",
+      "path": ".agents/rulebook/architecture.md",
+      "anchor": "architecture",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/architecture.md",
+      "sourceHash": "f67344b2282dc9dfa2850382f5e398fb0e3fff0727d274e523231ae25532756c",
+      "requires": [
+        "csharp-standard-1",
+        "csharp-standard-13"
+      ],
+      "paths": [],
+      "tags": [
+        "architecture",
+        "new-boundary",
+        "ownership"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "core-reuse",
+      "path": ".agents/rulebook/architecture.md",
+      "anchor": "core-reuse",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/core-reuse.md",
+      "sourceHash": "81f1f41f250d478973221b4e118e33d2a2a63e38dffcf4fe0eb1f0e541382b22",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "core-reuse",
+        "new-boundary",
+        "ownership"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "solution",
+      "path": ".agents/rulebook/architecture.md",
+      "anchor": "solution",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/solution.md",
+      "sourceHash": "20387390e2515fcecb193685b6832b6c072b6f9ac77528104274a70a01961346",
+      "requires": [
+        "csharp-standard-12"
+      ],
+      "paths": [],
+      "tags": [
+        "solution"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "naming",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "naming",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/naming.md",
+      "sourceHash": "ac51c466873569f50b4d319ede1e533d53ae6eaa4cf2ef63709b37dc80e20f30",
+      "requires": [
+        "csharp-standard-2"
+      ],
+      "paths": [],
+      "tags": [
+        "naming"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "members",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "members",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/members.md",
+      "sourceHash": "c2d7dcf9f01fd35785f5ca48ddab736ef338c05d6c3a831b979fa9ddacf6feca",
+      "requires": [
+        "csharp-standard-3"
+      ],
+      "paths": [],
+      "tags": [
+        "members"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "xml",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "xml",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/xml.md",
+      "sourceHash": "393dd0ea6825ded193ef10f1d6b114980d329af7a8c4bb4413a73b23e5aa54c3",
+      "requires": [
+        "csharp-standard-6"
+      ],
+      "paths": [],
+      "tags": [
+        "xml",
+        "public-api",
+        "documentation"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "errors",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "errors",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/errors.md",
+      "sourceHash": "30704c6cf70560a9fc721937bcdfd23a425314b3023129c0d49d3fa310b051b1",
+      "requires": [
+        "csharp-standard-7",
+        "csharp-standard-8"
+      ],
+      "paths": [],
+      "tags": [
+        "errors",
+        "ownership"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "identity-naming",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "identity-naming",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/identity-naming.md",
+      "sourceHash": "200622c79a19914f1fc0a446f45ef0435af2fd895cc21f3eae3e8d04caf8943e",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "identity-naming"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "formatting",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "formatting",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/formatting.md",
+      "sourceHash": "a1ea00ddad629daac88c8803b1f3bcac004a281b7ba86d761467118270ccb4d2",
+      "requires": [
+        "csharp-standard-4"
+      ],
+      "paths": [],
+      "tags": [
+        "formatting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "wiki",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "wiki",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/wiki.md",
+      "sourceHash": "f133fa3bf600afe23b9f9c689e2ec6dba577a8bb40e2d0b4e103ea03e33dad86",
+      "requires": [
+        "documentation-standard-0",
+        "documentation-standard-1",
+        "documentation-standard-2",
+        "documentation-standard-3",
+        "documentation-standard-4",
+        "documentation-standard-5",
+        "documentation-standard-6"
+      ],
+      "paths": [],
+      "tags": [
+        "wiki",
+        "public-api",
+        "documentation"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "tests",
+      "path": ".agents/rulebook/validation.md",
+      "anchor": "tests",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/tests.md",
+      "sourceHash": "08acc77e48825494e38da726f62129622ae84b2624c745fb3e3665ab6475f5a3",
+      "requires": [
+        "csharp-standard-10"
+      ],
+      "paths": [],
+      "tags": [
+        "tests"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "compilation",
+      "path": ".agents/rulebook/validation.md",
+      "anchor": "compilation",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/compilation.md",
+      "sourceHash": "1eee0e7df80eff706cfb890d9af48b5b0d4da8ea26ea6e16172d750369af3cdb",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "compilation"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "completion",
+      "path": ".agents/rulebook/validation.md",
+      "anchor": "completion",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/completion.md",
+      "sourceHash": "4dac1cd4f65641310d3e2d43ff402c91b56ab43868072cf219154ec861a8f391",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "completion",
+        "new-boundary",
+        "rules",
+        "skills"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "review",
+      "path": ".agents/rulebook/validation.md",
+      "anchor": "review",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/review.md",
+      "sourceHash": "d50c80da5e8711ba64a368e4702b72a6bcfd74cfa244dc5be4841e431909a14a",
+      "requires": [
+        "csharp-standard-11"
+      ],
+      "paths": [],
+      "tags": [
+        "review",
+        "public-api",
+        "ownership",
+        "delivery",
+        "rules",
+        "skills",
+        "records"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "delivery",
+      "path": ".agents/rulebook/delivery.md",
+      "anchor": "delivery",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/delivery.md",
+      "sourceHash": "2885f4b1c8b1e7df776974fe199eb1434472042809972ed3be880e06ec65896f",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "delivery"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "notification",
+      "path": ".agents/rulebook/delivery.md",
+      "anchor": "notification",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/notification.md",
+      "sourceHash": "fb194215eb09cff4767222c9ba6d7c40d67ca7605f4f5a8acfeaa0927e65b3ff",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "notification",
+        "delivery"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "editor-projects",
+      "path": ".agents/rulebook/domains/editor.md",
+      "anchor": "editor-projects",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/editor-projects.md",
+      "sourceHash": "d9d573caae906f0630b035ec9a3bfa54a80a3c50599f7e7c5cef9341b5a60077",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "editor-projects"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "editor-state",
+      "path": ".agents/rulebook/domains/editor.md",
+      "anchor": "editor-state",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/editor-state.md",
+      "sourceHash": "e72034747237a4a58c7793a1089a9edeffca5f3d5928f44421d622ea64cabc57",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "editor-state"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "editor-layout",
+      "path": ".agents/rulebook/domains/editor.md",
+      "anchor": "editor-layout",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/editor-layout.md",
+      "sourceHash": "5efec2d08af93248bdcb799473c0feffedb7252e6b79e21dd4e817a891853635",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "editor-layout"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "editor-acceptance",
+      "path": ".agents/rulebook/domains/editor.md",
+      "anchor": "editor-acceptance",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/editor-acceptance.md",
+      "sourceHash": "90c48174dc83e59f7a4c41cb0fb050b7f66ca7f9ee1f3754e0080e2a2e4b0681",
+      "requires": [
+        "editor-standard-9",
+        "editor-standard-10"
+      ],
+      "paths": [],
+      "tags": [
+        "editor-acceptance"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "identity-reload",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "anchor": "identity-reload",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/identity-reload.md",
+      "sourceHash": "444b49c1e3ce53936fee718115595fdf49d01ac03ba1f2b51555f4700b4cc2d9",
+      "requires": [
+        "identity-standard-12",
+        "identity-standard-13",
+        "identity-standard-14"
+      ],
+      "paths": [],
+      "tags": [
+        "identity-reload",
+        "serialization",
+        "reload"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "scripting",
+      "path": ".agents/rulebook/domains/scripting.md",
+      "anchor": "scripting",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/scripting.md",
+      "sourceHash": "80e8df6fc099479be2c0ff32979713e750ae82d3bfdb4eabf93ed80cdf3400f1",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "scripting"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "plugins",
+      "path": ".agents/rulebook/domains/plugins.md",
+      "anchor": "plugins",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/plugins.md",
+      "sourceHash": "534004fd37921a54e1c0f376836cbdfd1aa6ecfe3fa6a1633b2138e4f582cf08",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "plugins"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "rendering",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "anchor": "rendering",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/rendering.md",
+      "sourceHash": "3ce1ddba07e09326bbda59b5ea8fc931e767d0698f14871d5d3178c0432ed78a",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "rendering"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "content-frame",
+      "path": ".agents/rulebook/domains/rendering.md",
+      "anchor": "content-frame",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/content-frame.md",
+      "sourceHash": "2497480b3fccd8e6cd5151273000b4e58403d7564490ed0fa416c020ab55c3bb",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "content-frame"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "build-host",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "anchor": "build-host",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/build-host.md",
+      "sourceHash": "cdffaedc391e3a93d30493d9b9313e68b9b4cce51909986ad08d9854fb83b5d5",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "build-host",
+        "native"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "platform-products",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "anchor": "platform-products",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/platform-products.md",
+      "sourceHash": "2944ea52876d78948249d82531ccd4e288b06747115d925e3dd82fe97984a24e",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "platform-products",
+        "native"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "backend-build",
+      "path": ".agents/rulebook/domains/build-native.md",
+      "anchor": "backend-build",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/rules/backend-build.md",
+      "sourceHash": "0148f6f69bbb6ba3463ae4341dd1f406496948fe9fa5bd4ec8156be0b2db35a6",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "backend-build",
+        "native"
+      ],
+      "reviewer": "implementing owner",
+      "check": "Test-AgentRules.ps1 + semantic review"
+    },
+    {
+      "id": "csharp-standard-0",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-0",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 0,
+      "sourceHash": "1ae167521e9170f3f63e3f8945bdb849e260d44c79aa523435df060da55077ab",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-1",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-1",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 1,
+      "sourceHash": "e6bb6be83dda2765ee0b7f4147efe8d179357e106fa40a77b666d79b6f7764d0",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-2",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-2",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 2,
+      "sourceHash": "cd7faf5c94f1eaf2ce951777b9dbc7220c57528b38bfe38f1b47ae1cb18470ec",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-3",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-3",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 3,
+      "sourceHash": "75f0a926f0b06b60c211588ca953b239d229e9967fcca8f7cc8a27be8091a3e7",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-4",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-4",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 4,
+      "sourceHash": "30b69ca4a4f4788914691f57fbf66ea5f84a89b41b4d123b57f3c294e926deb8",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-5",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-5",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 5,
+      "sourceHash": "ace556d3813740e6a4e788f488e34cb5fc4442a4b15f50db0349e7effaffc237",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-6",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-6",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 6,
+      "sourceHash": "9513894db97113c26aa081c3cd9d382cdf0ee4676d5c15cb127e0c54103d6194",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-7",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-7",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 7,
+      "sourceHash": "d2f70bc4ab9ed29686da1c043ffd9630fc160b4ad5259a2dc48ea698e90b56c7",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-8",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-8",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 8,
+      "sourceHash": "d59caf636e6d1a2614a542203c5d2e502d47299ad9b434c12083afa1642b0020",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-9",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-9",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 9,
+      "sourceHash": "264a7aa49566628811332c607f0a852dfa14135e8319c3945e20e8f7bd7f1425",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-10",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-10",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 10,
+      "sourceHash": "8e9915979f7d691ef5b067c80bcbf944331135f4d4073e1e90db7fd6b5cddbce",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-11",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-11",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 11,
+      "sourceHash": "594831b9bba1df40656233274f526cd7462d02baef33d61b47a401ca3b77cf42",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-12",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-12",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 12,
+      "sourceHash": "ec9f401d7f7c23a50e563ee86d16a3a852ddb58c3c595ba4b6be4619650627f4",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "csharp-standard-13",
+      "path": ".agents/rulebook/coding.md",
+      "anchor": "csharp-standard-13",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "sourceSection": 13,
+      "sourceHash": "b52fbd3c7d57be9738c521c668ba64a2493bc01d6b44c8100f9d3fd75a8b08d4",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "csharp-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "documentation-standard-0",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "documentation-standard-0",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/DOCUMENTATION_STANDARD.md",
+      "sourceSection": 0,
+      "sourceHash": "2b3f30679024db5d9b1d07ff1086179e79654d12aeb7d585f9101d857c7c5cd5",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "documentation-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "documentation-standard-1",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "documentation-standard-1",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/DOCUMENTATION_STANDARD.md",
+      "sourceSection": 1,
+      "sourceHash": "6b05a0ec83b508519b83132ffd74c35db7f53ebd1d955367afd966333a3e9c30",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "documentation-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "documentation-standard-2",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "documentation-standard-2",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/DOCUMENTATION_STANDARD.md",
+      "sourceSection": 2,
+      "sourceHash": "652d09619bf30978b0061ed778331dd33c9154f3ce49c509f05b128e6fd909fa",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "documentation-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "documentation-standard-3",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "documentation-standard-3",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/DOCUMENTATION_STANDARD.md",
+      "sourceSection": 3,
+      "sourceHash": "d50017b48c0e71a1ce5f026d029ffb6ee93a88d8d018a5f002118d88aa00314c",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "documentation-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "documentation-standard-4",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "documentation-standard-4",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/DOCUMENTATION_STANDARD.md",
+      "sourceSection": 4,
+      "sourceHash": "b4e203ad58328e392684d984491729c023a8643bb8daf527e3c1431dfa495196",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "documentation-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "documentation-standard-5",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "documentation-standard-5",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/DOCUMENTATION_STANDARD.md",
+      "sourceSection": 5,
+      "sourceHash": "d17e16a584ffa310b40873a100b302ae616e77495c262be03a8d6c9a14565b66",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "documentation-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "documentation-standard-6",
+      "path": ".agents/rulebook/documentation.md",
+      "anchor": "documentation-standard-6",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/DOCUMENTATION_STANDARD.md",
+      "sourceSection": 6,
+      "sourceHash": "e4755ac95fa67c8079c901ee495f1f523c103f3a0f2d7bf419a9e2760367a8f2",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "documentation-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "editor-standard-9",
+      "path": ".agents/rulebook/domains/editor.md",
+      "anchor": "editor-standard-9",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/EDITOR_UI_DESIGN_STANDARD.md",
+      "sourceSection": 9,
+      "sourceHash": "4c27d71eeeb375245a649934a3e280a722687d62110e88c0ca371ea607dade70",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "editor-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "editor-standard-10",
+      "path": ".agents/rulebook/domains/editor.md",
+      "anchor": "editor-standard-10",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/EDITOR_UI_DESIGN_STANDARD.md",
+      "sourceSection": 10,
+      "sourceHash": "7c051be2869f46bd2beac2d5dacfd75da8afb5b39047d02955d8c4bea5fcb475",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "editor-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "identity-standard-12",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "anchor": "identity-standard-12",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md",
+      "sourceSection": 12,
+      "sourceHash": "c04a13c50f3dfe682a2b41855e42100b349db014d40a7a06530c0b3ee4dd6779",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "identity-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "identity-standard-13",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "anchor": "identity-standard-13",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md",
+      "sourceSection": 13,
+      "sourceHash": "52493148de955847cbea6609f0c895bfdefe5008ba5cbd50a6283a5664cac692",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "identity-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    },
+    {
+      "id": "identity-standard-14",
+      "path": ".agents/rulebook/domains/identity-reload.md",
+      "anchor": "identity-standard-14",
+      "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md",
+      "sourceSection": 14,
+      "sourceHash": "b04c5ad7493811978bc460e2dfe6f77919b7024e230bb0f8fc2afff0f790ebeb",
+      "requires": [],
+      "paths": [],
+      "tags": [
+        "identity-standard"
+      ],
+      "reviewer": "implementing owner",
+      "check": "full source section preservation + semantic review"
+    }
+  ],
+  "routes": [
+    {
+      "pattern": "\\.cs$",
+      "units": [
+        "naming",
+        "members",
+        "xml",
+        "errors",
+        "formatting",
+        "csharp-standard-0",
+        "csharp-standard-5",
+        "csharp-standard-8",
+        "csharp-standard-9"
+      ]
+    },
+    {
+      "pattern": "(\\.csproj$|\\.sln$|\\.props$|\\.targets$)",
+      "units": [
+        "solution",
+        "directories"
+      ]
+    },
+    {
+      "pattern": "(^tests/|/tests/)",
+      "units": [
+        "tests",
+        "compilation",
+        "review"
+      ]
+    },
+    {
+      "pattern": "^docs/",
+      "units": [
+        "wiki",
+        "xml"
+      ]
+    },
+    {
+      "pattern": "(scripting|ScriptingApi)",
+      "units": [
+        "scripting",
+        "identity-reload"
+      ]
+    },
+    {
+      "pattern": "(plugins|identity|scene|assets)",
+      "units": [
+        "identity-reload"
+      ]
+    },
+    {
+      "pattern": "plugins",
+      "units": [
+        "plugins",
+        "no-legacy"
+      ]
+    },
+    {
+      "pattern": "composition/editor",
+      "units": [
+        "editor-projects"
+      ]
+    },
+    {
+      "pattern": "(editor/.+(presentation|panels)|ImGui)",
+      "units": [
+        "editor-layout",
+        "editor-acceptance"
+      ]
+    },
+    {
+      "pattern": "(History|Workspace|State)",
+      "units": [
+        "editor-state"
+      ]
+    },
+    {
+      "pattern": "rendering",
+      "units": [
+        "rendering",
+        "content-frame"
+      ]
+    },
+    {
+      "pattern": "^(build/|backends/|platforms/|\\.github/)",
+      "units": [
+        "build-host",
+        "platform-products",
+        "backend-build"
+      ]
+    },
+    {
+      "pattern": "^(AGENTS\\.md$|CONTRIBUTING\\.md$|\\.agents/(rulebook|skills)/)",
+      "units": [
+        "completion",
+        "review"
+      ]
+    },
+    {
+      "pattern": "^\\.agents/records/",
+      "units": [
+        "review"
+      ]
+    }
+  ],
+  "supplementalSources": [
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 0,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-0",
+      "hash": "1ae167521e9170f3f63e3f8945bdb849e260d44c79aa523435df060da55077ab"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 1,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-1",
+      "hash": "e6bb6be83dda2765ee0b7f4147efe8d179357e106fa40a77b666d79b6f7764d0"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 2,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-2",
+      "hash": "cd7faf5c94f1eaf2ce951777b9dbc7220c57528b38bfe38f1b47ae1cb18470ec"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 3,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-3",
+      "hash": "75f0a926f0b06b60c211588ca953b239d229e9967fcca8f7cc8a27be8091a3e7"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 4,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-4",
+      "hash": "30b69ca4a4f4788914691f57fbf66ea5f84a89b41b4d123b57f3c294e926deb8"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 5,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-5",
+      "hash": "ace556d3813740e6a4e788f488e34cb5fc4442a4b15f50db0349e7effaffc237"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 6,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-6",
+      "hash": "9513894db97113c26aa081c3cd9d382cdf0ee4676d5c15cb127e0c54103d6194"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 7,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-7",
+      "hash": "d2f70bc4ab9ed29686da1c043ffd9630fc160b4ad5259a2dc48ea698e90b56c7"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 8,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-8",
+      "hash": "d59caf636e6d1a2614a542203c5d2e502d47299ad9b434c12083afa1642b0020"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 9,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-9",
+      "hash": "264a7aa49566628811332c607f0a852dfa14135e8319c3945e20e8f7bd7f1425"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 10,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-10",
+      "hash": "8e9915979f7d691ef5b067c80bcbf944331135f4d4073e1e90db7fd6b5cddbce"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 11,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-11",
+      "hash": "594831b9bba1df40656233274f526cd7462d02baef33d61b47a401ca3b77cf42"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 12,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-12",
+      "hash": "ec9f401d7f7c23a50e563ee86d16a3a852ddb58c3c595ba4b6be4619650627f4"
+    },
+    {
+      "source": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "section": 13,
+      "target": ".agents/rulebook/coding.md",
+      "unit": "csharp-standard-13",
+      "hash": "b52fbd3c7d57be9738c521c668ba64a2493bc01d6b44c8100f9d3fd75a8b08d4"
+    },
+    {
+      "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "section": 0,
+      "target": ".agents/rulebook/documentation.md",
+      "unit": "documentation-standard-0",
+      "hash": "2b3f30679024db5d9b1d07ff1086179e79654d12aeb7d585f9101d857c7c5cd5"
+    },
+    {
+      "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "section": 1,
+      "target": ".agents/rulebook/documentation.md",
+      "unit": "documentation-standard-1",
+      "hash": "6b05a0ec83b508519b83132ffd74c35db7f53ebd1d955367afd966333a3e9c30"
+    },
+    {
+      "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "section": 2,
+      "target": ".agents/rulebook/documentation.md",
+      "unit": "documentation-standard-2",
+      "hash": "652d09619bf30978b0061ed778331dd33c9154f3ce49c509f05b128e6fd909fa"
+    },
+    {
+      "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "section": 3,
+      "target": ".agents/rulebook/documentation.md",
+      "unit": "documentation-standard-3",
+      "hash": "d50017b48c0e71a1ce5f026d029ffb6ee93a88d8d018a5f002118d88aa00314c"
+    },
+    {
+      "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "section": 4,
+      "target": ".agents/rulebook/documentation.md",
+      "unit": "documentation-standard-4",
+      "hash": "b4e203ad58328e392684d984491729c023a8643bb8daf527e3c1431dfa495196"
+    },
+    {
+      "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "section": 5,
+      "target": ".agents/rulebook/documentation.md",
+      "unit": "documentation-standard-5",
+      "hash": "d17e16a584ffa310b40873a100b302ae616e77495c262be03a8d6c9a14565b66"
+    },
+    {
+      "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "section": 6,
+      "target": ".agents/rulebook/documentation.md",
+      "unit": "documentation-standard-6",
+      "hash": "e4755ac95fa67c8079c901ee495f1f523c103f3a0f2d7bf419a9e2760367a8f2"
+    },
+    {
+      "source": "docs/architecture/EDITOR_UI_DESIGN_STANDARD.md",
+      "section": 9,
+      "target": ".agents/rulebook/domains/editor.md",
+      "unit": "editor-standard-9",
+      "hash": "4c27d71eeeb375245a649934a3e280a722687d62110e88c0ca371ea607dade70"
+    },
+    {
+      "source": "docs/architecture/EDITOR_UI_DESIGN_STANDARD.md",
+      "section": 10,
+      "target": ".agents/rulebook/domains/editor.md",
+      "unit": "editor-standard-10",
+      "hash": "7c051be2869f46bd2beac2d5dacfd75da8afb5b39047d02955d8c4bea5fcb475"
+    },
+    {
+      "source": "docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md",
+      "section": 12,
+      "target": ".agents/rulebook/domains/identity-reload.md",
+      "unit": "identity-standard-12",
+      "hash": "c04a13c50f3dfe682a2b41855e42100b349db014d40a7a06530c0b3ee4dd6779"
+    },
+    {
+      "source": "docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md",
+      "section": 13,
+      "target": ".agents/rulebook/domains/identity-reload.md",
+      "unit": "identity-standard-13",
+      "hash": "52493148de955847cbea6609f0c895bfdefe5008ba5cbd50a6283a5664cac692"
+    },
+    {
+      "source": "docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md",
+      "section": 14,
+      "target": ".agents/rulebook/domains/identity-reload.md",
+      "unit": "identity-standard-14",
+      "hash": "b04c5ad7493811978bc460e2dfe6f77919b7024e230bb0f8fc2afff0f790ebeb"
+    }
+  ],
+  "migrationBaseline": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b",
+  "pathReplacements": [
+    {
+      "old": "`docs/core`",
+      "current": "`docs/modules/core`"
+    },
+    {
+      "old": "`docs/assets`",
+      "current": "`docs/modules/assets`"
+    },
+    {
+      "old": "`docs/engine`",
+      "current": "`docs/modules/runtime`"
+    },
+    {
+      "old": "`docs/rendering`",
+      "current": "`docs/modules/rendering`"
+    },
+    {
+      "old": "`docs/editor`",
+      "current": "`docs/modules/editor`"
+    },
+    {
+      "old": "docs/core/Inno.Extensibility.Types.md",
+      "current": "docs/modules/extensibility/Inno.Extensibility.Types.md"
+    },
+    {
+      "old": "`records/`",
+      "current": "`.agents/records/`"
+    },
+    {
+      "old": "docs/testing/Inno.Assets.Pipeline.DuplicateImporterFixture.md",
+      "current": "docs/development/testing/Inno.Assets.Pipeline.DuplicateImporterFixture.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Modules.TestModule.Invalid.md",
+      "current": "docs/development/testing/Inno.Extensibility.Modules.TestModule.Invalid.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Modules.TestDependency.md",
+      "current": "docs/development/testing/Inno.Extensibility.Modules.TestDependency.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Modules.TestModule.V1.md",
+      "current": "docs/development/testing/Inno.Extensibility.Modules.TestModule.V1.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Modules.TestModule.V2.md",
+      "current": "docs/development/testing/Inno.Extensibility.Modules.TestModule.V2.md"
+    },
+    {
+      "old": "docs/testing/Inno.Rendering.Runtime.Reload.TestModule.md",
+      "current": "docs/development/testing/Inno.Rendering.Runtime.Reload.TestModule.md"
+    },
+    {
+      "old": "docs/architecture/IDENTITY_REFERENCE_RELOAD_STANDARD.md",
+      "current": "docs/architecture/identity-and-reload.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Types.TestAssemblyA.md",
+      "current": "docs/development/testing/Inno.Extensibility.Types.TestAssemblyA.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Types.TestAssemblyB.md",
+      "current": "docs/development/testing/Inno.Extensibility.Types.TestAssemblyB.md"
+    },
+    {
+      "old": "docs/testing/Inno.Adapter.Content.FileSystem.Tests.md",
+      "current": "docs/development/testing/Inno.Adapter.Content.FileSystem.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Rendering.Assets.Authoring.Tests.md",
+      "current": "docs/development/testing/Inno.Rendering.Assets.Authoring.Tests.md"
+    },
+    {
+      "old": "docs/architecture/NATIVE_BUILD_PLATFORM_OWNERSHIP.md",
+      "current": "docs/architecture/platform-and-products.md"
+    },
+    {
+      "old": "docs/architecture/DEVELOPMENT_ENTRY_ARCHITECTURE.md",
+      "current": "docs/development/entry/README.md"
+    },
+    {
+      "old": "docs/architecture/PLATFORM_RUNTIME_ARCHITECTURE.md",
+      "current": "docs/architecture/platform-and-products.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Adapter.Rendering.Authoring.md",
+      "current": "docs/modules/rendering/Inno.Adapter.Rendering.Authoring.md"
+    },
+    {
+      "old": "docs/testing/Inno.Adapter.Audio.MiniAudio.Tests.md",
+      "current": "docs/development/testing/Inno.Adapter.Audio.MiniAudio.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Build.NativePerformance.Tests.md",
+      "current": "docs/development/testing/Inno.Build.NativePerformance.Tests.md"
+    },
+    {
+      "old": "docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md",
+      "current": "docs/architecture/overview.md"
+    },
+    {
+      "old": "docs/extensibility/Inno.Extensibility.Catalogs.md",
+      "current": "docs/modules/extensibility/Inno.Extensibility.Catalogs.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Rendering.Assets.Authoring.md",
+      "current": "docs/modules/rendering/Inno.Rendering.Assets.Authoring.md"
+    },
+    {
+      "old": "docs/testing/Inno.Adapter.Rendering.Bgfx.Tests.md",
+      "current": "docs/development/testing/Inno.Adapter.Rendering.Bgfx.Tests.md"
+    },
+    {
+      "old": "docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
+      "current": ".agents/rulebook/coding.md"
+    },
+    {
+      "old": "docs/extensibility/Inno.Extensibility.Modules.md",
+      "current": "docs/modules/extensibility/Inno.Extensibility.Modules.md"
+    },
+    {
+      "old": "docs/testing/Inno.Adapter.Platform.Sdl3.Tests.md",
+      "current": "docs/development/testing/Inno.Adapter.Platform.Sdl3.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Modules.Tests.md",
+      "current": "docs/development/testing/Inno.Extensibility.Modules.Tests.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Serialization.Generators.md",
+      "current": "docs/modules/core/Inno.Core.Serialization.Generators.md"
+    },
+    {
+      "old": "docs/extensibility/Inno.Extensibility.Reload.md",
+      "current": "docs/modules/extensibility/Inno.Extensibility.Reload.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Reload.Tests.md",
+      "current": "docs/development/testing/Inno.Extensibility.Reload.Tests.md"
+    },
+    {
+      "old": "docs/tooling/Inno.Tooling.Architecture.Tests.md",
+      "current": "docs/development/testing/Inno.Tooling.Architecture.Tests.md"
+    },
+    {
+      "old": "docs/architecture/EDITOR_UI_DESIGN_STANDARD.md",
+      "current": "docs/architecture/editor-ui.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Distribution.Standard.md",
+      "current": "docs/development/build/Inno.Build.Distribution.Standard.md"
+    },
+    {
+      "old": "docs/extensibility/Inno.Extensibility.Types.md",
+      "current": "docs/modules/extensibility/Inno.Extensibility.Types.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Rendering.Shaders.Tests.md",
+      "current": "docs/development/testing/Inno.Rendering.Shaders.Tests.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Adapter.Authoring.Default.md",
+      "current": "docs/modules/runtime/Inno.Adapter.Authoring.Default.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.Interactions.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.Interactions.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.Presentation.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.Presentation.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Extensibility.Types.Tests.md",
+      "current": "docs/development/testing/Inno.Extensibility.Types.Tests.md"
+    },
+    {
+      "old": "docs/architecture/BUILD_CACHE_ARCHITECTURE.md",
+      "current": "docs/architecture/build-and-cache.md"
+    },
+    {
+      "old": "docs/architecture/PLATFORM_EXTENSION_GUIDE.md",
+      "current": "docs/development/adding-platform.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.ShaderEditor.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.ShaderEditor.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Serialization.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Serialization.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Runtime.Generators.Tests.md",
+      "current": "docs/development/testing/Inno.Runtime.Generators.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Scripting.Compiler.Tests.md",
+      "current": "docs/development/testing/Inno.Scripting.Compiler.Tests.md"
+    },
+    {
+      "old": "docs/tooling/Inno.Tooling.Validation.Tests.md",
+      "current": "docs/development/testing/Inno.Tooling.Validation.Tests.md"
+    },
+    {
+      "old": "docs/architecture/WEB_PLAYER_ARCHITECTURE.md",
+      "current": "docs/architecture/web-player.md"
+    },
+    {
+      "old": "docs/architecture/rules/editor-acceptance.md",
+      "current": ".agents/rulebook/domains/editor.md"
+    },
+    {
+      "old": "docs/architecture/rules/platform-products.md",
+      "current": ".agents/rulebook/domains/build-native.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.FileBrowser.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.FileBrowser.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.Inspection.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.Inspection.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Rendering.Runtime.Tests.md",
+      "current": "docs/development/testing/Inno.Rendering.Runtime.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Scene.Reload.TestModule.md",
+      "current": "docs/development/testing/Inno.Scene.Reload.TestModule.md"
+    },
+    {
+      "old": "docs/testing/Inno.Testing.Processes.Tests.md",
+      "current": "docs/development/testing/Inno.Testing.Processes.Tests.md"
+    },
+    {
+      "old": "docs/architecture/DOCUMENTATION_STANDARD.md",
+      "current": ".agents/rulebook/documentation.md"
+    },
+    {
+      "old": "docs/architecture/EDITOR_UI_ARCHITECTURE.md",
+      "current": "docs/architecture/editor-ui.md"
+    },
+    {
+      "old": "docs/testing/Inno.Build.Toolchains.Tests.md",
+      "current": "docs/development/testing/Inno.Build.Toolchains.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Collections.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Collections.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Diagnostics.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Diagnostics.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Mathematics.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Mathematics.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.Scripting.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.Scripting.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Native.MiniAudio.Tests.md",
+      "current": "docs/development/testing/Inno.Native.MiniAudio.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Rendering.Assets.Tests.md",
+      "current": "docs/development/testing/Inno.Rendering.Assets.Tests.md"
+    },
+    {
+      "old": "docs/architecture/rules/editor-projects.md",
+      "current": ".agents/rulebook/domains/editor.md"
+    },
+    {
+      "old": "docs/architecture/rules/identity-naming.md",
+      "current": ".agents/rulebook/coding.md"
+    },
+    {
+      "old": "docs/architecture/rules/identity-reload.md",
+      "current": ".agents/rulebook/domains/identity-reload.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Products.Standard.md",
+      "current": "docs/development/build/Inno.Build.Products.Standard.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.SupportPacks.Core.md",
+      "current": "docs/development/build/Inno.Build.SupportPacks.Core.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.Hierarchy.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.Hierarchy.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.Inspector.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.Inspector.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.SceneView.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.SceneView.md"
+    },
+    {
+      "old": "docs/testing/Inno.Assets.Pipeline.Tests.md",
+      "current": "docs/development/testing/Inno.Assets.Pipeline.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Coroutines.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Coroutines.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.PlayMode.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.PlayMode.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Native.ImGuizmo.Tests.md",
+      "current": "docs/development/testing/Inno.Native.ImGuizmo.Tests.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.GameView.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.GameView.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.Settings.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.Settings.md"
+    },
+    {
+      "old": "docs/scripting/Inno.Scripting.Compiler.md",
+      "current": "docs/modules/scripting/Inno.Scripting.Compiler.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Execution.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Execution.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.Hosting.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.Hosting.Tests.md"
+    },
+    {
+      "old": "docs/tooling/Inno.Tooling.Architecture.md",
+      "current": "docs/development/tooling/Inno.Tooling.Architecture.md"
+    },
+    {
+      "old": "docs/animation/Inno.Animation.Runtime.md",
+      "current": "docs/modules/animation/Inno.Animation.Runtime.md"
+    },
+    {
+      "old": "docs/architecture/rules/backend-build.md",
+      "current": ".agents/rulebook/domains/build-native.md"
+    },
+    {
+      "old": "docs/architecture/rules/content-frame.md",
+      "current": ".agents/rulebook/domains/rendering.md"
+    },
+    {
+      "old": "docs/architecture/rules/editor-layout.md",
+      "current": ".agents/rulebook/domains/editor.md"
+    },
+    {
+      "old": "docs/architecture/rules/encapsulation.md",
+      "current": ".agents/rulebook/architecture.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.Logging.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.Logging.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Shaders.ImGui.md",
+      "current": "docs/modules/editor/Inno.Editor.Shaders.ImGui.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Adapter.Rendering.md",
+      "current": "docs/modules/rendering/Inno.Adapter.Rendering.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Rendering.Runtime.md",
+      "current": "docs/modules/rendering/Inno.Rendering.Runtime.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Rendering.Shaders.md",
+      "current": "docs/modules/rendering/Inno.Rendering.Shaders.md"
+    },
+    {
+      "old": "docs/testing/Inno.Audio.Runtime.Tests.md",
+      "current": "docs/development/testing/Inno.Audio.Runtime.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Identity.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Identity.Tests.md"
+    },
+    {
+      "old": "docs/animation/Inno.Animation.Assets.md",
+      "current": "docs/modules/animation/Inno.Animation.Assets.md"
+    },
+    {
+      "old": "docs/architecture/CURRENT_ACCEPTANCE.md",
+      "current": ".agents/records/acceptance/current.md"
+    },
+    {
+      "old": "docs/architecture/rules/architecture.md",
+      "current": ".agents/rulebook/architecture.md"
+    },
+    {
+      "old": "docs/architecture/rules/editor-state.md",
+      "current": ".agents/rulebook/domains/editor.md"
+    },
+    {
+      "old": "docs/architecture/rules/notification.md",
+      "current": ".agents/rulebook/delivery.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Assets.ImGui.md",
+      "current": "docs/modules/editor/Inno.Editor.Assets.ImGui.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Interactions.md",
+      "current": "docs/modules/editor/Inno.Editor.Interactions.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Rendering.Assets.md",
+      "current": "docs/modules/rendering/Inno.Rendering.Assets.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Runtime.Generators.md",
+      "current": "docs/modules/runtime/Inno.Runtime.Generators.md"
+    },
+    {
+      "old": "docs/scripting/Inno.Scripting.Reload.md",
+      "current": "docs/modules/scripting/Inno.Scripting.Reload.md"
+    },
+    {
+      "old": "docs/testing/Inno.Audio.Assets.Tests.md",
+      "current": "docs/development/testing/Inno.Audio.Assets.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Content.CacheProbe.md",
+      "current": "docs/development/testing/Inno.Content.CacheProbe.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Logging.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Logging.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.Audio.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.Audio.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.Graph.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.Graph.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Editor.ImGui.Tests.md",
+      "current": "docs/development/testing/Inno.Editor.ImGui.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Native.ImGui.Tests.md",
+      "current": "docs/development/testing/Inno.Native.ImGui.Tests.md"
+    },
+    {
+      "old": "docs/tooling/Inno.Tooling.Validation.md",
+      "current": "docs/development/tooling/Inno.Tooling.Validation.md"
+    },
+    {
+      "old": "docs/architecture/rules/compilation.md",
+      "current": ".agents/rulebook/validation.md"
+    },
+    {
+      "old": "docs/architecture/rules/directories.md",
+      "current": ".agents/rulebook/architecture.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Annotations.md",
+      "current": "docs/modules/editor/Inno.Editor.Annotations.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Diagnostics.md",
+      "current": "docs/modules/editor/Inno.Editor.Diagnostics.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Graph.ImGui.md",
+      "current": "docs/modules/editor/Inno.Editor.Graph.ImGui.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Panel.Stats.md",
+      "current": "docs/modules/editor/Inno.Editor.Panel.Stats.md"
+    },
+    {
+      "old": "docs/plugins/Inno.Plugins.Authoring.md",
+      "current": "docs/modules/plugins/Inno.Plugins.Authoring.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Runtime.Contracts.md",
+      "current": "docs/modules/runtime/Inno.Runtime.Contracts.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Events.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Events.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Graphs.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Graphs.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Layers.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Layers.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Native.Bgfx.Tests.md",
+      "current": "docs/development/testing/Inno.Native.Bgfx.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Native.Sdl3.Tests.md",
+      "current": "docs/development/testing/Inno.Native.Sdl3.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Testing.Processes.md",
+      "current": "docs/development/testing/Inno.Testing.Processes.md"
+    },
+    {
+      "old": "docs/ui/Inno.Adapter.UI.RmlUi.Tests.md",
+      "current": "docs/development/testing/Inno.Adapter.UI.RmlUi.Tests.md"
+    },
+    {
+      "old": "docs/architecture/rules/build-host.md",
+      "current": ".agents/rulebook/domains/build-native.md"
+    },
+    {
+      "old": "docs/architecture/rules/completion.md",
+      "current": ".agents/rulebook/validation.md"
+    },
+    {
+      "old": "docs/architecture/rules/core-reuse.md",
+      "current": ".agents/rulebook/architecture.md"
+    },
+    {
+      "old": "docs/architecture/rules/formatting.md",
+      "current": ".agents/rulebook/coding.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Inspection.md",
+      "current": "docs/modules/editor/Inno.Editor.Inspection.md"
+    },
+    {
+      "old": "docs/testing/Inno.References.Tests.md",
+      "current": "docs/development/testing/Inno.References.Tests.md"
+    },
+    {
+      "old": "docs/architecture/rules/no-legacy.md",
+      "current": ".agents/rulebook/architecture.md"
+    },
+    {
+      "old": "docs/architecture/rules/rendering.md",
+      "current": ".agents/rulebook/domains/rendering.md"
+    },
+    {
+      "old": "docs/architecture/rules/scripting.md",
+      "current": ".agents/rulebook/domains/scripting.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Composition.md",
+      "current": "docs/development/build/Inno.Build.Composition.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.TaskHosting.md",
+      "current": "docs/development/build/Inno.Build.TaskHosting.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Serialization.md",
+      "current": "docs/modules/core/Inno.Core.Serialization.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Exporting.md",
+      "current": "docs/modules/editor/Inno.Editor.Exporting.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Rendering.md",
+      "current": "docs/modules/editor/Inno.Editor.Rendering.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Scripting.md",
+      "current": "docs/modules/editor/Inno.Editor.Scripting.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Workbench.md",
+      "current": "docs/modules/editor/Inno.Editor.Workbench.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Adapter.Default.md",
+      "current": "docs/modules/runtime/Inno.Adapter.Default.md"
+    },
+    {
+      "old": "docs/scripting/Inno.Scripting.Api.md",
+      "current": "docs/modules/scripting/Inno.Scripting.Api.md"
+    },
+    {
+      "old": "docs/storage/Inno.Adapter.Storage.md",
+      "current": "docs/modules/storage/Inno.Adapter.Storage.md"
+    },
+    {
+      "old": "docs/storage/Inno.Storage.Runtime.md",
+      "current": "docs/modules/storage/Inno.Storage.Runtime.md"
+    },
+    {
+      "old": "docs/testing/Inno.Animation.Tests.md",
+      "current": "docs/development/testing/Inno.Animation.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Content.Testing.md",
+      "current": "docs/development/testing/Inno.Content.Testing.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.Jobs.Tests.md",
+      "current": "docs/development/testing/Inno.Core.Jobs.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Rendering.Tests.md",
+      "current": "docs/development/testing/Inno.Rendering.Tests.md"
+    },
+    {
+      "old": "docs/architecture/CURRENT_ISSUES.md",
+      "current": ".agents/records/open-items.md"
+    },
+    {
+      "old": "docs/architecture/rules/delivery.md",
+      "current": ".agents/rulebook/delivery.md"
+    },
+    {
+      "old": "docs/architecture/rules/solution.md",
+      "current": ".agents/rulebook/architecture.md"
+    },
+    {
+      "old": "docs/assets/Inno.Assets.Pipeline.md",
+      "current": "docs/modules/assets/Inno.Assets.Pipeline.md"
+    },
+    {
+      "old": "docs/build/DEPENDENCY_SUBMISSION.md",
+      "current": "docs/development/build/DEPENDENCY_SUBMISSION.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Toolchains.md",
+      "current": "docs/development/build/Inno.Build.Toolchains.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.PlayMode.md",
+      "current": "docs/modules/editor/Inno.Editor.PlayMode.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Settings.md",
+      "current": "docs/modules/editor/Inno.Editor.Settings.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Engine.Default.md",
+      "current": "docs/modules/runtime/Inno.Engine.Default.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Player.Runtime.md",
+      "current": "docs/modules/runtime/Inno.Player.Runtime.md"
+    },
+    {
+      "old": "docs/testing/Inno.Testing.Source.md",
+      "current": "docs/development/testing/Inno.Testing.Source.md"
+    },
+    {
+      "old": "docs/architecture/rules/members.md",
+      "current": ".agents/rulebook/coding.md"
+    },
+    {
+      "old": "docs/architecture/rules/plugins.md",
+      "current": ".agents/rulebook/domains/plugins.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Collections.md",
+      "current": "docs/modules/core/Inno.Core.Collections.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Diagnostics.md",
+      "current": "docs/modules/core/Inno.Core.Diagnostics.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Mathematics.md",
+      "current": "docs/modules/core/Inno.Core.Mathematics.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Hosting.md",
+      "current": "docs/modules/editor/Inno.Editor.Hosting.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Shaders.md",
+      "current": "docs/modules/editor/Inno.Editor.Shaders.md"
+    },
+    {
+      "old": "docs/references/Inno.References.md",
+      "current": "docs/modules/references/Inno.References.md"
+    },
+    {
+      "old": "docs/testing/Inno.Content.Tests.md",
+      "current": "docs/development/testing/Inno.Content.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Core.IO.Tests.md",
+      "current": "docs/development/testing/Inno.Core.IO.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Plugins.Tests.md",
+      "current": "docs/development/testing/Inno.Plugins.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Runtime.Tests.md",
+      "current": "docs/development/testing/Inno.Runtime.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Storage.Tests.md",
+      "current": "docs/development/testing/Inno.Storage.Tests.md"
+    },
+    {
+      "old": "docs/architecture/rules/README.md",
+      "current": ".agents/rulebook/README.md"
+    },
+    {
+      "old": "docs/architecture/rules/errors.md",
+      "current": ".agents/rulebook/coding.md"
+    },
+    {
+      "old": "docs/architecture/rules/naming.md",
+      "current": ".agents/rulebook/coding.md"
+    },
+    {
+      "old": "docs/architecture/rules/review.md",
+      "current": ".agents/rulebook/validation.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Bindings.md",
+      "current": "docs/development/build/Inno.Build.Bindings.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Coroutines.md",
+      "current": "docs/modules/core/Inno.Core.Coroutines.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Assets.md",
+      "current": "docs/modules/editor/Inno.Editor.Assets.md"
+    },
+    {
+      "old": "docs/testing/Inno.Assets.Tests.md",
+      "current": "docs/development/testing/Inno.Assets.Tests.md"
+    },
+    {
+      "old": "docs/animation/Inno.Animation.md",
+      "current": "docs/modules/animation/Inno.Animation.md"
+    },
+    {
+      "old": "docs/architecture/rules/style.md",
+      "current": ".agents/rulebook/architecture.md"
+    },
+    {
+      "old": "docs/architecture/rules/tests.md",
+      "current": ".agents/rulebook/validation.md"
+    },
+    {
+      "old": "docs/audio/Inno.Adapter.Audio.md",
+      "current": "docs/modules/audio/Inno.Adapter.Audio.md"
+    },
+    {
+      "old": "docs/audio/Inno.Audio.Runtime.md",
+      "current": "docs/modules/audio/Inno.Audio.Runtime.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Managed.md",
+      "current": "docs/development/build/Inno.Build.Managed.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Execution.md",
+      "current": "docs/modules/core/Inno.Core.Execution.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Audio.md",
+      "current": "docs/modules/editor/Inno.Editor.Audio.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Graph.md",
+      "current": "docs/modules/editor/Inno.Editor.Graph.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.ImGui.md",
+      "current": "docs/modules/editor/Inno.Editor.ImGui.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Scene.md",
+      "current": "docs/modules/editor/Inno.Editor.Scene.md"
+    },
+    {
+      "old": "docs/input/Inno.Adapter.Input.md",
+      "current": "docs/modules/input/Inno.Adapter.Input.md"
+    },
+    {
+      "old": "docs/input/Inno.Input.Runtime.md",
+      "current": "docs/modules/input/Inno.Input.Runtime.md"
+    },
+    {
+      "old": "docs/native/BindingGeneration.md",
+      "current": "docs/development/native-bindings.md"
+    },
+    {
+      "old": "docs/rendering/Inno.Rendering.md",
+      "current": "docs/modules/rendering/Inno.Rendering.md"
+    },
+    {
+      "old": "docs/testing/Inno.Audio.Tests.md",
+      "current": "docs/development/testing/Inno.Audio.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Build.Tests.md",
+      "current": "docs/development/testing/Inno.Build.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Input.Tests.md",
+      "current": "docs/development/testing/Inno.Input.Tests.md"
+    },
+    {
+      "old": "docs/testing/Inno.Scene.Tests.md",
+      "current": "docs/development/testing/Inno.Scene.Tests.md"
+    },
+    {
+      "old": "docs/architecture/rules/wiki.md",
+      "current": ".agents/rulebook/documentation.md"
+    },
+    {
+      "old": "docs/audio/Inno.Audio.Assets.md",
+      "current": "docs/modules/audio/Inno.Audio.Assets.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Identity.md",
+      "current": "docs/modules/core/Inno.Core.Identity.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Settings.md",
+      "current": "docs/modules/core/Inno.Core.Settings.md"
+    },
+    {
+      "old": "docs/editor/Inno.Editor.Core.md",
+      "current": "docs/modules/editor/Inno.Editor.Core.md"
+    },
+    {
+      "old": "docs/entry/InnoEngine.Editor.md",
+      "current": "docs/development/entry/InnoEngine.Editor.md"
+    },
+    {
+      "old": "docs/scene/Inno.Scene.Assets.md",
+      "current": "docs/modules/scene/Inno.Scene.Assets.md"
+    },
+    {
+      "old": "docs/architecture/rules/xml.md",
+      "current": ".agents/rulebook/coding.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Tasks.md",
+      "current": "docs/development/build/Inno.Build.Tasks.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Logging.md",
+      "current": "docs/modules/core/Inno.Core.Logging.md"
+    },
+    {
+      "old": "docs/entry/InnoEngine.Build.md",
+      "current": "docs/development/entry/InnoEngine.Build.md"
+    },
+    {
+      "old": "docs/text/Inno.Adapter.Text.md",
+      "current": "docs/modules/text/Inno.Adapter.Text.md"
+    },
+    {
+      "old": "docs/text/Inno.Text.Runtime.md",
+      "current": "docs/modules/text/Inno.Text.Runtime.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Events.md",
+      "current": "docs/modules/core/Inno.Core.Events.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Graphs.md",
+      "current": "docs/modules/core/Inno.Core.Graphs.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Layers.md",
+      "current": "docs/modules/core/Inno.Core.Layers.md"
+    },
+    {
+      "old": "docs/text/Inno.Text.Assets.md",
+      "current": "docs/modules/text/Inno.Text.Assets.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.Cli.md",
+      "current": "docs/development/build/Inno.Build.Cli.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Input.md",
+      "current": "docs/modules/core/Inno.Core.Input.md"
+    },
+    {
+      "old": "docs/extensibility/README.md",
+      "current": "docs/modules/extensibility/README.md"
+    },
+    {
+      "old": "docs/plugins/Inno.Plugins.md",
+      "current": "docs/modules/plugins/Inno.Plugins.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Adapter.md",
+      "current": "docs/modules/runtime/Inno.Adapter.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Runtime.md",
+      "current": "docs/modules/runtime/Inno.Runtime.md"
+    },
+    {
+      "old": "docs/storage/Inno.Storage.md",
+      "current": "docs/modules/storage/Inno.Storage.md"
+    },
+    {
+      "old": "docs/text/Inno.Text.Tests.md",
+      "current": "docs/development/testing/Inno.Text.Tests.md"
+    },
+    {
+      "old": "docs/assets/Inno.Content.md",
+      "current": "docs/modules/assets/Inno.Content.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.Jobs.md",
+      "current": "docs/modules/core/Inno.Core.Jobs.md"
+    },
+    {
+      "old": "docs/assets/Inno.Assets.md",
+      "current": "docs/modules/assets/Inno.Assets.md"
+    },
+    {
+      "old": "docs/runtime/Inno.Shell.md",
+      "current": "docs/modules/runtime/Inno.Shell.md"
+    },
+    {
+      "old": "docs/ui/Inno.Adapter.UI.md",
+      "current": "docs/modules/ui/Inno.Adapter.UI.md"
+    },
+    {
+      "old": "docs/ui/Inno.UI.Runtime.md",
+      "current": "docs/modules/ui/Inno.UI.Runtime.md"
+    },
+    {
+      "old": "docs/core/Inno.Core.IO.md",
+      "current": "docs/modules/core/Inno.Core.IO.md"
+    },
+    {
+      "old": "docs/references/README.md",
+      "current": "docs/modules/references/README.md"
+    },
+    {
+      "old": "docs/ui/Inno.UI.Assets.md",
+      "current": "docs/modules/ui/Inno.UI.Assets.md"
+    },
+    {
+      "old": "docs/animation/README.md",
+      "current": "docs/modules/animation/README.md"
+    },
+    {
+      "old": "docs/audio/Inno.Audio.md",
+      "current": "docs/modules/audio/Inno.Audio.md"
+    },
+    {
+      "old": "docs/build/Inno.Build.md",
+      "current": "docs/development/build/Inno.Build.md"
+    },
+    {
+      "old": "docs/input/Inno.Input.md",
+      "current": "docs/modules/input/Inno.Input.md"
+    },
+    {
+      "old": "docs/rendering/README.md",
+      "current": "docs/modules/rendering/README.md"
+    },
+    {
+      "old": "docs/scene/Inno.Scene.md",
+      "current": "docs/modules/scene/Inno.Scene.md"
+    },
+    {
+      "old": "docs/scripting/README.md",
+      "current": "docs/modules/scripting/README.md"
+    },
+    {
+      "old": "docs/ui/Inno.UI.Tests.md",
+      "current": "docs/development/testing/Inno.UI.Tests.md"
+    },
+    {
+      "old": "docs/plugins/README.md",
+      "current": "docs/modules/plugins/README.md"
+    },
+    {
+      "old": "docs/runtime/README.md",
+      "current": "docs/modules/runtime/README.md"
+    },
+    {
+      "old": "docs/storage/README.md",
+      "current": "docs/modules/storage/README.md"
+    },
+    {
+      "old": "docs/testing/README.md",
+      "current": "docs/development/testing/README.md"
+    },
+    {
+      "old": "docs/text/Inno.Text.md",
+      "current": "docs/modules/text/Inno.Text.md"
+    },
+    {
+      "old": "docs/tooling/README.md",
+      "current": "docs/development/tooling/README.md"
+    },
+    {
+      "old": "docs/assets/README.md",
+      "current": "docs/modules/assets/README.md"
+    },
+    {
+      "old": "docs/editor/README.md",
+      "current": "docs/modules/editor/README.md"
+    },
+    {
+      "old": "docs/native/README.md",
+      "current": "docs/development/README.md"
+    },
+    {
+      "old": "docs/audio/README.md",
+      "current": "docs/modules/audio/README.md"
+    },
+    {
+      "old": "docs/build/README.md",
+      "current": "docs/development/build/README.md"
+    },
+    {
+      "old": "docs/entry/README.md",
+      "current": "docs/development/building.md"
+    },
+    {
+      "old": "docs/input/README.md",
+      "current": "docs/modules/input/README.md"
+    },
+    {
+      "old": "docs/scene/README.md",
+      "current": "docs/modules/scene/README.md"
+    },
+    {
+      "old": "docs/core/README.md",
+      "current": "docs/modules/core/README.md"
+    },
+    {
+      "old": "docs/text/README.md",
+      "current": "docs/modules/text/README.md"
+    },
+    {
+      "old": "docs/ui/Inno.UI.md",
+      "current": "docs/modules/ui/Inno.UI.md"
+    },
+    {
+      "old": "docs/ui/README.md",
+      "current": "docs/modules/ui/README.md"
+    }
+  ]
+}

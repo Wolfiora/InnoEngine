@@ -72,6 +72,7 @@ public static partial class ArchitectureValidator
         bool wikiOnly = false;
         bool wikiContractsOnly = false;
         bool documentationOnly = false;
+        bool agentDocumentsOnly = false;
         var wikiPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         string? sdkSnapshot = null;
         var apiProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -103,6 +104,8 @@ public static partial class ArchitectureValidator
             }
             else if (argument == "--documentation-only" && !documentationOnly)
                 documentationOnly = true;
+            else if (argument == "--agent-documents-only" && !agentDocumentsOnly)
+                agentDocumentsOnly = true;
             else if (argument == "--wiki-page" && index + 1 < arguments.Length)
                 wikiPages.Add(arguments[++index]);
             else if (argument == "--source-only" && !sourceOnly)
@@ -172,6 +175,15 @@ public static partial class ArchitectureValidator
             return 0;
         }
         List<string> failures = [];
+        if (agentDocumentsOnly)
+        {
+            if (wiki || sourceOnly || metadataOnly || documentationOnly || dotnetHost is not null)
+                throw new ArgumentException("Agent document checks do not claim product or SDK validation.");
+            AgentDocumentValidator.Validate(repositoryRoot, failures);
+            foreach (string failure in failures)
+                Console.Error.WriteLine(failure);
+            return failures.Count == 0 ? 0 : 1;
+        }
         if (documentationOnly)
         {
             if (wiki || sourceOnly || metadataOnly || apiProjects.Count != 0 || dotnetHost is not null)
@@ -179,6 +191,8 @@ public static partial class ArchitectureValidator
             WikiProjectCoverageValidator.Validate(repositoryRoot, failures);
             WikiContentBoundaryValidator.Validate(repositoryRoot, failures);
             WikiLinkValidator.Validate(repositoryRoot, failures);
+            if (failures.Count == 0)
+                _ = DocumentationCommand.GetProjectDocuments(repositoryRoot);
             foreach (string failure in failures)
                 Console.Error.WriteLine(failure);
             return failures.Count == 0 ? 0 : 1;
@@ -189,6 +203,14 @@ public static partial class ArchitectureValidator
                 || !page.StartsWith(Path.Combine(repositoryRoot, "docs") + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
             throw new ArgumentException("Every selected Wiki page must exist inside the repository docs owner.", nameof(arguments));
         IReadOnlyList<WikiProjectPage> pages = wiki ? WikiProjectCoverageValidator.Validate(repositoryRoot, failures) : [];
+        if (wiki && selectedPages is not null)
+        {
+            IReadOnlyDictionary<string, string> ownership = Documentation.DocumentationCatalog.Read(repositoryRoot, pages).owners;
+            var selectedOwners = selectedPages.Select(page => Path.GetRelativePath(repositoryRoot, page).Replace('\\', '/'))
+                .Where(ownership.ContainsKey).Select(page => ownership[page]).ToHashSet(StringComparer.Ordinal);
+            foreach (var pair in ownership.Where(pair => selectedOwners.Contains(pair.Value)))
+                selectedPages.Add(Path.Combine(repositoryRoot, pair.Key));
+        }
         IReadOnlyList<WikiProjectPage> selectedProjectPages = selectedPages is null ? pages
             : pages.Where(page => selectedPages.Contains(Path.GetFullPath(page.page))).ToArray();
         WikiProjectReferences? evaluatedReferences = dotnetHost is null ? null

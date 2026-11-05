@@ -16,7 +16,7 @@ Binding 由当前 BGCS 和本项目配置从 `extern/miniaudio/miniaudio.h` 生�
 
 当前 generated function table 的精确符号集合以生成文件为准，并由独立 native tests 检查。首次调用任一 generated 函数会装载整个 function table；缺失任何 required export 都会立即失败。调用方必须遵守 miniaudio 原生的 init/uninit、线程与 callback 生命周期，不得跨插件代际持有 native pointer、delegate 或运行时对象。
 
-当前发行目标包括 macOS ARM64、Windows x64 与 Browser Wasm；实机验收范围见 [当前验收](../../architecture/CURRENT_ACCEPTANCE.md)。Linux 不在当前发行范围内。
+当前发行目标包括 macOS ARM64、Windows x64 与 Browser Wasm；实机验收范围见 [当前验收](../../../.agents/records/acceptance/current.md)。Linux 不在当前发行范围内。
 
 ## 初始化、内存与失败边界
 
@@ -50,11 +50,11 @@ unsafe
 }
 ```
 
-生产代码通过 [中立 Audio API](../../audio/Inno.Audio.md) 工作；上述调用仅用于 Native test 与底层 adapter 实现。
+生产代码通过 [中立 Audio API](../../modules/audio/Inno.Audio.md) 工作；上述调用仅用于 Native test 与底层 adapter 实现。
 
 ## 静态目标
 
-组件仅维护公共 `Bindings/bindgen.json`。Browser Build integration 提供明确 wasm32 ABI、托管 runtime 和静态库名称；Windows、macOS integration 分别提供自己的 Profile，组件没有平台目标表。静态产品使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。HostSource 输出属于组件的 `Generated/Bindings.cs` 和 `Native/Generated`；TargetArtifacts 的 managed/native 输出共同属于 `artifacts/bindings/miniaudio/<target>/<generationFingerprint>`。是否可运行以[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)为准。
+组件仅维护公共 `Bindings/bindgen.json`。Browser Build integration 提供明确 wasm32 ABI、托管 runtime 和静态库名称；Windows、macOS integration 分别提供自己的 Profile，组件没有平台目标表。静态产品使用 `INNO_STATIC_NATIVE`，不初始化动态 loader。HostSource 输出属于组件的 `Generated/Bindings.cs` 和 `Native/Generated`；TargetArtifacts 的 managed/native 输出共同属于 `artifacts/bindings/miniaudio/<target>/<generationFingerprint>`。是否可运行以[当前验收](../../../.agents/records/acceptance/current.md)为准。
 
 ## 源码归属
 

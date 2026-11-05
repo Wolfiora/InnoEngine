@@ -1,6 +1,6 @@
 # Inno.Build.Toolchains.Bgfx.Shaders
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [MSBuild Task](../../build/Inno.Build.Tasks.md) · [统一 CLI](../../build/Inno.Build.Cli.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [MSBuild Task](../../development/build/Inno.Build.Tasks.md) · [统一 CLI](../../development/build/Inno.Build.Cli.md)
 
 ## 职责与公开 API
 
@@ -65,16 +65,16 @@ static void CompileGraph(
 
 ## 项目依赖
 
-- [Inno.Build.Toolchains](../../build/Inno.Build.Toolchains.md)：实现依赖；复用内容指纹机制，输入文件清单不越过编译库边界。
+- [Inno.Build.Toolchains](../../development/build/Inno.Build.Toolchains.md)：实现依赖；复用内容指纹机制，输入文件清单不越过编译库边界。
 
 - [Inno.Build.Toolchains.Bgfx.Tools](Inno.Build.Toolchains.Bgfx.Tools.md)：公开引用边界由实际签名核对。
-- [Inno.Assets.Pipeline](../../assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Diagnostics](../../core/Inno.Core.Diagnostics.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Logging](../../core/Inno.Core.Logging.md)：公开引用边界由实际签名核对。
-- [Inno.Core.IO](../../core/Inno.Core.IO.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Modules](../../extensibility/Inno.Extensibility.Modules.md)：公开引用边界由实际签名核对。
+- [Inno.Assets.Pipeline](../../modules/assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Diagnostics](../../modules/core/Inno.Core.Diagnostics.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Logging](../../modules/core/Inno.Core.Logging.md)：公开引用边界由实际签名核对。
+- [Inno.Core.IO](../../modules/core/Inno.Core.IO.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Modules](../../modules/extensibility/Inno.Extensibility.Modules.md)：公开引用边界由实际签名核对。
 - [Inno.Adapter.Modules.DotNet](../DotNet/Inno.Adapter.Modules.DotNet.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Serialization.DotNet](../DotNet/Inno.Adapter.Serialization.DotNet.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-- [Inno.Rendering.Assets](../../rendering/Inno.Rendering.Assets.md)：公开引用边界由实际签名核对。
-- [Inno.Rendering.Assets.Authoring](../../rendering/Inno.Rendering.Assets.Authoring.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Assets](../../modules/rendering/Inno.Rendering.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Assets.Authoring](../../modules/rendering/Inno.Rendering.Assets.Authoring.md)：公开引用边界由实际签名核对。

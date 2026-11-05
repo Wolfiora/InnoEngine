@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Tooling.Architecture;
 
 namespace Inno.Tooling.Validation;
 
@@ -64,7 +65,8 @@ internal static class ValidationPlanner
         var affected = new HashSet<string>(StringComparer.Ordinal);
         var documentationOwners = new HashSet<string>(StringComparer.Ordinal);
         string[] wikiPages = inputs.Keys.Where(static path => path.StartsWith("docs/", StringComparison.Ordinal)
-            && path.EndsWith(".md", StringComparison.OrdinalIgnoreCase) && !path.StartsWith("docs/architecture/rules/", StringComparison.Ordinal)).ToArray();
+            && path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)).ToArray();
+        IReadOnlyDictionary<string, string> documentOwners = DocumentationCommand.GetProjectDocuments(root);
         var selectedWikiPages = new HashSet<string>(StringComparer.Ordinal);
         var diagnostics = new List<string>();
         foreach (string change in changes)
@@ -72,8 +74,11 @@ internal static class ValidationPlanner
             if (wikiPages.Contains(change, StringComparer.Ordinal) && inputs[change] != "missing")
             {
                 selectedWikiPages.Add(change);
-                foreach (ValidationProject owner in projects.Where(project => Path.GetFileNameWithoutExtension(project.path) == Path.GetFileNameWithoutExtension(change)))
-                    documentationOwners.Add(owner.path);
+                if (documentOwners.TryGetValue(change, out string? documentOwner))
+                {
+                    documentationOwners.Add(documentOwner);
+                    selectedWikiPages.UnionWith(documentOwners.Where(pair => pair.Value == documentOwner).Select(static pair => pair.Key));
+                }
             }
             ValidationProject[] owners = projects.Where(project => project.inputs.Contains(change, StringComparer.Ordinal)
                 || change.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal)).ToArray();
@@ -100,10 +105,10 @@ internal static class ValidationPlanner
                 if (project.references.Any(affected.Contains))
                     expanded |= affected.Add(project.path);
         } while (expanded);
-        bool deepNative = extended || changes.Any(static path => path.StartsWith("build/", StringComparison.Ordinal)
+        bool deepNative = extended || changes.Any(static path => !IsDocumentation(path) && (path.StartsWith("build/", StringComparison.Ordinal)
             || path.StartsWith("extern/", StringComparison.Ordinal) || path.Contains("/native/", StringComparison.Ordinal)
             || path.Contains("/build/", StringComparison.Ordinal) || path.Contains("reload", StringComparison.OrdinalIgnoreCase)
-            || path is "Directory.Build.props" or "Directory.Build.targets" or "global.json");
+            || path is "Directory.Build.props" or "Directory.Build.targets" or "global.json"));
         var executionExclusions = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ValidationProject project in projects)
         {
@@ -114,8 +119,8 @@ internal static class ValidationPlanner
                 && (path.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal) || project.inputs.Contains(path, StringComparer.Ordinal))))
                 executionExclusions.Add(project.path, "Performance sampling requires extended acceptance or an affected build/native/reload or performance-test input.");
         }
-        foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full || affected.Any(owner =>
-            !byPath[owner].test && Path.GetFileNameWithoutExtension(owner) == Path.GetFileNameWithoutExtension(page)))))
+        foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full
+            || documentOwners.TryGetValue(page, out string? owner) && affected.Contains(owner) && !byPath[owner].test)))
             selectedWikiPages.Add(page);
         bool scriptWiki = selectedWikiPages.Any(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)));
         if (scriptWiki)
@@ -183,8 +188,8 @@ internal static class ValidationPlanner
             RecordStage("native-graph");
         }
 
-        string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith("docs/architecture/rules/", StringComparison.Ordinal)
-            || path.StartsWith(".agents/", StringComparison.Ordinal) || path == "tests/ci/Test-AgentRules.ps1").Order(StringComparer.Ordinal).ToArray();
+        string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith(".agents/rulebook/", StringComparison.Ordinal)
+            || path == "tests/ci/Test-AgentRules.ps1").Order(StringComparer.Ordinal).ToArray();
         string[] toolingInputs = inputs.Keys.Where(static path => path.StartsWith("tools/", StringComparison.Ordinal)
             || path.StartsWith("build/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
             || path is "global.json" or "Directory.Build.props" or "Directory.Build.targets" or "InnoEngine.sln").ToArray();
@@ -197,12 +202,18 @@ internal static class ValidationPlanner
             new("instructions", "instructions", "AGENTS.md", "Rule preservation, discoverability, budgets and links.", "any", [], policyInputs, true, null),
             new("architecture", "architecture", "tools/Inno.Tooling.Architecture", "Cheap repository-wide source, ownership and architecture invariants.", "any", [],
                 inputs.Keys.Where(static path => path.Split('/')[0] is "src" or "entry" or "backends" or "platforms" or "build" or "tools"
-                    || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".cs.txt", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".cs.txt", StringComparison.OrdinalIgnoreCase) && !path.StartsWith(".agents/records/", StringComparison.Ordinal)
                     || Path.GetExtension(path) is ".csproj" or ".props" or ".targets"
                     || path is "InnoEngine.sln" or "Directory.Build.props" or "Directory.Build.targets")
                     .Order(StringComparer.Ordinal).ToArray(), true, null)
         };
-        if (changes.Any(IsDocumentation) || selectedWikiPages.Count != 0 || full)
+        if (changes.Any(static path => path.StartsWith(".agents/", StringComparison.Ordinal) || path is "AGENTS.md" or "CONTRIBUTING.md") || full)
+            checks.Add(new("agent-documents", "agent-documents", ".agents", "Rule, skill and record structure and links; no product compilation.", "any", [],
+                inputs.Keys.Where(static path => path.StartsWith(".agents/", StringComparison.Ordinal) || path is "AGENTS.md" or "CONTRIBUTING.md")
+                    .Append("@tooling").Order(StringComparer.Ordinal).ToArray(), true, null));
+        if (changes.Any(static path => path.StartsWith("docs/", StringComparison.Ordinal)) || selectedWikiPages.Count != 0
+            || affected.Any(owner => !byPath[owner].test) || full)
             checks.Add(new("documentation", "documentation", "docs", "Changed documentation or explicit full validation.", "any", [],
                 inputs.Keys.Order(StringComparer.Ordinal).ToArray(), true, null));
         if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
@@ -414,6 +425,8 @@ internal static class ValidationPlanner
     private static string DirectoryOf(string project) => project[..(project.LastIndexOf('/') + 1)];
 
     private static bool IsDocumentation(string path)
-        => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase) || path.StartsWith("docs/", StringComparison.Ordinal)
-            || path.StartsWith("records/", StringComparison.Ordinal) || path.StartsWith(".agents/", StringComparison.Ordinal);
+        => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
+            || path == ".agents/rulebook/coverage.json"
+            || (path.StartsWith("docs/", StringComparison.Ordinal) || path.StartsWith(".agents/records/", StringComparison.Ordinal))
+                && (Path.GetExtension(path) is ".json" or ".csv" or ".png" or ".jpg" or ".svg" || path.EndsWith(".cs.txt", StringComparison.Ordinal));
 }

@@ -1,32 +1,17 @@
 # Inno.Build.Toolchains.Bgfx.Tools
 
-[分类索引](README.md) · [Rendering Assets](../../rendering/Inno.Rendering.Assets.md) · [Wiki 首页](../../README.md)
+[分类索引](README.md) · [Rendering Assets](../../modules/rendering/Inno.Rendering.Assets.md) · [Wiki 首页](../../README.md)
 
-## 公开 API 与平台边界
+## API 参考
 
-- `BgfxShaderTargetProfile(id, renderers)`：开放目标身份及不可变 renderer catalog，重复 renderer 或空集合明确失败。
-- `BgfxShaderCompilerProfile(capabilities, shadercPlatform, vertexProfile, fragmentProfile, computeProfile, defines)`：冻结编译方言、能力和 defines；`key` 包含全部输入，调用方修改原集合不会改变它。
-- `BgfxShadercToolchain(profile, tools)`：只执行配置指定的编译，未知引擎目标无需增加 backend switch。
-- `BgfxAuthoringProvider(profile, tools)`：向创作组合注册同一 compiler。
-- `BgfxGameContentCompiler(assets, serialization, types, profile, backends, tools)`：借用明确工具，构造时验证完整 renderer 闭包，`CompileAsync` 输出 source-free Shader 与 portable KTX。
-- `BgfxTargetCapabilities.Create(backend)`：提供可复用的完整离线能力集合。平台可以直接提供自己的更严格 `GraphicsCapabilities`。
-- `BgfxTextureTargetCompiler`：离线纹理编译。
-- `BgfxShaderSourceFrontend`：显式 BGFX SC 前端；具体语言语义属于 backend。
+[完整声明、行为与调用约束](Inno.Build.Toolchains.Bgfx.Tools/api.md)
 
-Windows、macOS、Browser 的实际 Shader profile 分别由所属平台的 `*BgfxShaderProfiles.target` 提供。
-Browser 使用 `asm.js` / `300_es` 和 WebGL 2 能力集合，拒绝 Compute；macOS Vulkan 所需
-`BGFX_SHADER_LANGUAGE_SPIRV=1` 由其配置声明。共享 compiler 不识别命名平台或维护平台表。
-配置改变会进入内容编译和内置 Shader 指纹，不复用旧 dialect、能力或 defines 的产物。
-
-这些类型属于 authoring/build。`ToolRunner` 只执行冻结 host tools，Shader target 与 tool execution target 独立。
-Player 从内容 store 读取编译产物，不引用本项目；没有旧平台枚举或三个封闭内容工厂。
-
-`ToolRunner()` 只消费应用部署索引中的逻辑工具名，不根据当前程序集的 DEBUG 符号选择文件。显式 `ToolRunner(executables, includesDirectory)` 借用同一个受保护工具产物的执行文件与 Shader include；调用者持有其读取 owner 至全部编译结束。`BgfxAuthoringProvider` 将同一 runner 交给 Shader 和纹理编译器。缺工具或 include 明确失败，不向仓库的 extern 目录回退。
+<!-- api-include: Inno.Build.Toolchains.Bgfx.Tools/api.md -->
 
 ## 源码函数前端
 
 定义和原型都禁止 `main()`；resolver 的共同 retirement barrier 原样传播，不能降格成普通 include 诊断。
-跨实现/变体接口一致性与完整输入快照由 [`ShaderSourceFrontendCatalog.AnalyzeModule`](../../rendering/Inno.Rendering.Shaders.md)
+跨实现/变体接口一致性与完整输入快照由 [`ShaderSourceFrontendCatalog.AnalyzeModule`](../../modules/rendering/Inno.Rendering.Shaders.md)
 负责，BGFX 前端只分析其明确给定的一个配置。
 
 前端包含词法、条件预处理与声明分析，不使用正则匹配函数签名。当前已覆盖注释、宏替换和别名重扫描、
@@ -35,7 +20,7 @@ token 拼接、include guard/pragma once、常量表达式、结构体、typedef
 
 函数体作边界与隐式阶段访问检查，完整合法性由 shaderc 检查；前端经 typed stage 编译进入当前统一 Shader 资产链。
 完整 BGFX 原生头文件、所有 storage/image 类型和语言扩展的覆盖仍待后续集成验证，不能把接口单元测试
-当作真实 GPU 编译结果。扩展接口见 [Inno.Rendering.Shaders](../../rendering/Inno.Rendering.Shaders.md)。
+当作真实 GPU 编译结果。扩展接口见 [Inno.Rendering.Shaders](../../modules/rendering/Inno.Rendering.Shaders.md)。
 
 源码模块禁止非 const 全局绑定；阶段输入、varying 和实际资源槽由图目标/后端拥有。
 源码不得隐式读取 `gl_*`、默认阶段 attribute/varying、预定义矩阵或生成绑定名，必须通过公开函数参数传入。
@@ -281,19 +266,19 @@ ToolRunResult result = runner.Run(BgfxTool.Shaderc, ["--help"]);
 
 ## 项目依赖
 
-- [Inno.Build.Toolchains](../../build/Inno.Build.Toolchains.md)：公开工作区执行接口；宿主注入具体 provider。
+- [Inno.Build.Toolchains](../../development/build/Inno.Build.Toolchains.md)：公开工作区执行接口；宿主注入具体 provider。
 
 - [Inno.Native.LibraryLoading](../Interop/Inno.Native.LibraryLoading.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../../modules/core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Native.Bgfx](Inno.Native.Bgfx.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Assets](../../assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build](../../build/Inno.Build.md)：公开引用边界由实际签名核对。
-- [Inno.Assets.Pipeline](../../assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Serialization](../../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Types](../../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
-- [Inno.Rendering.Shaders](../../rendering/Inno.Rendering.Shaders.md)：公开引用边界由实际签名核对。
-- [Inno.Rendering](../../rendering/Inno.Rendering.md)：公开引用边界由实际签名核对。
-- [Inno.Rendering.Assets](../../rendering/Inno.Rendering.Assets.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-- [Inno.Rendering.Assets.Authoring](../../rendering/Inno.Rendering.Assets.Authoring.md)：公开引用边界由实际签名核对。
-- [Inno.Adapter.Rendering.Authoring](../../rendering/Inno.Adapter.Rendering.Authoring.md)：公开引用边界由实际签名核对。
+- [Inno.Assets](../../modules/assets/Inno.Assets.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Build](../../development/build/Inno.Build.md)：公开引用边界由实际签名核对。
+- [Inno.Assets.Pipeline](../../modules/assets/Inno.Assets.Pipeline.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../../modules/core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../../modules/extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Shaders](../../modules/rendering/Inno.Rendering.Shaders.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering](../../modules/rendering/Inno.Rendering.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Assets](../../modules/rendering/Inno.Rendering.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Rendering.Assets.Authoring](../../modules/rendering/Inno.Rendering.Assets.Authoring.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Rendering.Authoring](../../modules/rendering/Inno.Adapter.Rendering.Authoring.md)：公开引用边界由实际签名核对。

@@ -2,7 +2,7 @@
 
 Clip 不再只是文件描述。`CreateClip` 创建并保留 native resource-manager data source，使用异步 Decode/Stream；`GetClipState` 无阻塞查询 Preparing/Ready/Failed。每个 Voice 仍有独立播放游标，decoded buffer 由 native resource manager 共享。播放准备错误以 DecodeFailed 完成。DestroyClip/Dispose 在 EngineUninit 前释放所有 data source 和原生分配；Artifact 路径的寿命由上层 cache 租约保证。
 
-[分类索引](README.md) · [Runtime](../../audio/Inno.Audio.Runtime.md) · [Native binding](Inno.Native.MiniAudio.md) · [Build toolchain](Inno.Build.Toolchains.MiniAudio.md) · [Wiki 首页](../../README.md)
+[分类索引](README.md) · [Runtime](../../modules/audio/Inno.Audio.Runtime.md) · [Native binding](Inno.Native.MiniAudio.md) · [Build toolchain](Inno.Build.Toolchains.MiniAudio.md) · [Wiki 首页](../../README.md)
 
 `Inno.Adapter.Audio.MiniAudio` 是 `IAudioDevice` 的官方后端适配器，也是运行时中唯一允许引用 `Inno.Native.MiniAudio` 的项目。程序集 public/protected API 只暴露后端中立类型。
 
@@ -47,7 +47,7 @@ using IAudioDevice device = new MiniAudioDevice(new MiniAudioDeviceOptions
 
 
 
-## 本轮边界与所有权
+## 所有权与生命周期
 
 MiniAudio 的文件型 native 入口所需 materialization 仅属于此 Adapter。编码缓存按内容身份复用，不按 voice 复制；Stream 保留 native 流式解码，不变为整段 PCM 常驻。准备任务在后台执行，native audio callback 保留在原生侧；销毁顺序为完成/取消准备、释放 native clip、释放 source lease。
 
@@ -129,9 +129,9 @@ MiniAudio 的文件型 native 入口所需 materialization 仅属于此 Adapter�
 
 ## 项目依赖
 
-- [Inno.Core.IO](../../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.IO](../../modules/core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../../modules/core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Native.MiniAudio](Inno.Native.MiniAudio.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Audio](../../audio/Inno.Adapter.Audio.md)：公开引用边界由实际签名核对。
-- [Inno.Audio](../../audio/Inno.Audio.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Audio](../../modules/audio/Inno.Adapter.Audio.md)：公开引用边界由实际签名核对。
+- [Inno.Audio](../../modules/audio/Inno.Audio.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

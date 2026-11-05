@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,13 +25,27 @@ internal sealed class ValidationRepository : IDisposable
             Git("clone", "--shared", source, ".");
             Git("config", "user.name", "Aaron Liao");
             Git("config", "user.email", "hsuankailiao@gmail.com");
-            const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
-            string executor = File.ReadAllText(Path.Combine(source, C_EXECUTOR));
-            if (executor != File.ReadAllText(PathOf(C_EXECUTOR)))
+            string[] changed = Git("-C", source, "diff", "--name-only", "HEAD")
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            string[] added = Git("-C", source, "ls-files", "--others", "--exclude-standard")
+                .Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            // Pair the isolated checkout with the current tool inputs, including uncommitted layout migrations.
+            foreach (string relative in changed.Concat(added).Distinct(StringComparer.Ordinal))
             {
-                Write(C_EXECUTOR, executor);
-                Git("add", C_EXECUTOR);
-                Git("commit", "-m", "Use the executor input paired with the validation assembly");
+                string original = PathBoundary.RequireUnlinkedPath(source, Path.Combine(source, relative));
+                string destination = PathBoundary.RequireUnlinkedPath(m_root, PathOf(relative));
+                if (File.Exists(original))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                    File.Copy(original, destination, overwrite: true);
+                }
+                else
+                    File.Delete(destination);
+            }
+            if (changed.Length != 0 || added.Length != 0)
+            {
+                Git("add", "--all");
+                Git("commit", "-m", "Use the checkout inputs paired with the validation assembly");
             }
             return;
         }

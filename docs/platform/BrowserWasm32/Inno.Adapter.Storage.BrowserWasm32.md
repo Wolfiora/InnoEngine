@@ -1,6 +1,6 @@
 # Inno.Adapter.Storage.BrowserWasm32
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [Storage 契约](../../storage/Inno.Storage.md) · [Browser Player](Inno.Player.BrowserWasm32.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [Storage 契约](../../modules/storage/Inno.Storage.md) · [Browser Player](Inno.Player.BrowserWasm32.md)
 
 ## 职责与边界
 
@@ -8,7 +8,7 @@
 
 ## 依赖与初始化
 
-浏览器入口向 `DefaultAdapterCatalog` 注入 `BrowserWasm32StorageBackendProvider`；Runtime 使用当前 manifest 的 `persistentDataPath` 选择 sandbox。`BrowserWasm32ApplicationStorage` 通过 JS interop 访问 origin storage，数据先编码为 Base64。应用脚本继续依赖 [Inno.Storage](../../storage/Inno.Storage.md)，无需知道浏览器 API。
+浏览器入口向 `DefaultAdapterCatalog` 注入 `BrowserWasm32StorageBackendProvider`；Runtime 使用当前 manifest 的 `persistentDataPath` 选择 sandbox。`BrowserWasm32ApplicationStorage` 通过 JS interop 访问 origin storage，数据先编码为 Base64。应用脚本继续依赖 [Inno.Storage](../../modules/storage/Inno.Storage.md)，无需知道浏览器 API。
 
 ## Public API
 
@@ -43,7 +43,7 @@ static IApplicationStorage CreateOwnedBrowserStorage(StorageScope scope)
 
 
 
-## 本轮边界与所有权
+## 所有权与生命周期
 
 将同一 StorageScope namespace 映射到浏览器 origin 存储。生命周期回调由 Browser 宿主注入，领域服务不判断浏览器平台。
 
@@ -89,6 +89,6 @@ static IApplicationStorage CreateOwnedBrowserStorage(StorageScope scope)
 
 ## 项目依赖
 
-- [Inno.Adapter.Storage](../../storage/Inno.Adapter.Storage.md)：公开引用边界由实际签名核对。
-- [Inno.Storage](../../storage/Inno.Storage.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Storage](../../modules/storage/Inno.Adapter.Storage.md)：公开引用边界由实际签名核对。
+- [Inno.Storage](../../modules/storage/Inno.Storage.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

@@ -9,7 +9,8 @@ internal static class WikiProjectCoverageValidator
 {
     internal static IReadOnlyList<WikiProjectPage> Validate(
         string root,
-        ICollection<string> failures
+        ICollection<string> failures,
+        bool requireCompleteCoverage = true
     ) {
         string[] pages = RepositorySourceInventory.Files(Path.Combine(root, "docs"), "*.md").ToArray();
         var result = new List<WikiProjectPage>();
@@ -23,12 +24,13 @@ internal static class WikiProjectCoverageValidator
                 || relative.Contains("/tests/", StringComparison.Ordinal);
             if (matches.Length != 1)
             {
-                failures.Add($"Wiki project '{relative}' requires one authoritative page; found {matches.Length}.");
+                if (requireCompleteCoverage || matches.Length != 0)
+                    failures.Add($"Wiki project '{relative}' requires one authoritative page; found {matches.Length}.");
                 continue;
             }
             string page = matches[0];
             string index = Path.Combine(Path.GetDirectoryName(page)!, "README.md");
-            if (!File.Exists(index) || !File.ReadAllText(index).Contains(Path.GetFileName(page), StringComparison.Ordinal))
+            if (requireCompleteCoverage && (!File.Exists(index) || !File.ReadAllText(index).Contains(Path.GetFileName(page), StringComparison.Ordinal)))
                 failures.Add($"Wiki page '{Path.GetRelativePath(root, page)}' is absent from its category index.");
             result.Add(new WikiProjectPage(project, page, test));
         }

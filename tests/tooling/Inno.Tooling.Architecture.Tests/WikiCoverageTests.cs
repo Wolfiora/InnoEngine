@@ -140,6 +140,17 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.Equal(rejected, Run().Contains("example 1 at line", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("~~~cs\nAbsentType.Run();\n~~~\n", true)]
+    [InlineData("````csharp\nAbsentType.Run();\n````\n", true)]
+    [InlineData("````text\n```csharp\nAbsentType.Run();\n```\n````\n", false)]
+    [InlineData("~~~cs\nint value = 1;\n", true)]
+    public void MarkdownFencesUseTheSameSyntaxTreeAsDocumentNavigation(string text, bool rejected)
+    {
+        Write("docs/core/Inno.Core.Probe.md", "# Probe\n" + text);
+        Assert.Equal(rejected, Run().Contains("example 1 at line", StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task ExplicitWikiTargetRecordsForeignProductsWithoutSubstitutingTheirReferences()
     {

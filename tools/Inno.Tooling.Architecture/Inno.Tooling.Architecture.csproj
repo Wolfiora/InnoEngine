@@ -9,10 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+    <PackageReference Include="Markdig" Version="1.5.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
     <ProjectReference Include="../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
   </ItemGroup>
 </Project>

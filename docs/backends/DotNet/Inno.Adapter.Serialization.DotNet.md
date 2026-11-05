@@ -1,6 +1,6 @@
 # Inno.Adapter.Serialization.DotNet
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [Serialization](../../core/Inno.Core.Serialization.md) · [Modules Adapter](Inno.Adapter.Modules.DotNet.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [Serialization](../../modules/core/Inno.Core.Serialization.md) · [Modules Adapter](Inno.Adapter.Modules.DotNet.md)
 
 ## 职责与边界
 
@@ -25,7 +25,7 @@ static ISerializationMetadataSource CreateMetadata()
     => new ReflectionSerializationMetadataSource();
 ```
 
-组合入口将该来源交给 [SerializationRegistry](../../core/Inno.Core.Serialization.md)，并提供已初始化的类型目录。序列化上下文由对象 owner 提供完整引用解析服务。Registry 在构造时建立 Converter generation；退出时先退休使用它的 Session，再释放 Registry 和类型目录。
+组合入口将该来源交给 [SerializationRegistry](../../modules/core/Inno.Core.Serialization.md)，并提供已初始化的类型目录。序列化上下文由对象 owner 提供完整引用解析服务。Registry 在构造时建立 Converter generation；退出时先退休使用它的 Session，再释放 Registry 和类型目录。
 
 来源按 `Type` 弱缓存元数据，不把 collectible 类型保存在强静态表中。成员顺序、重复键检查、属性可见性和恢复回调验证与静态来源遵循相同契约。恢复通知在完整操作成功后提交；构造或回调失败传播到调用方事务。
 
@@ -57,5 +57,5 @@ static ISerializationMetadataSource CreateMetadata()
 
 ## 项目依赖
 
-- [Inno.Core.Serialization](../../core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Serialization](../../modules/core/Inno.Core.Serialization.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

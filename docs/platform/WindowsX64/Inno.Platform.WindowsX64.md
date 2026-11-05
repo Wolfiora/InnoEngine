@@ -1,6 +1,6 @@
 # Inno.Platform.WindowsX64
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../architecture/PLATFORM_EXTENSION_GUIDE.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../development/adding-platform.md)
 
 ## 职责与边界
 
@@ -30,4 +30,4 @@ Windows 实际 OS 应用位置规则。只回答应用内容位置和用户数�
 
 ## 项目依赖
 
-- [Inno.Extensibility.Modules](../../extensibility/Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Modules](../../modules/extensibility/Inno.Extensibility.Modules.md)：实现依赖，PrivateAssets="compile"。

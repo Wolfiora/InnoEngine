@@ -2,87 +2,19 @@
 
 **Innovate As You Want.** A plugin-oriented game engine written in C#.
 
-Build your game's rendering models, gameplay systems, and Editor tools on a shared foundation. InnoEngine provides backend-neutral mechanisms, explicit platform composition, and a common asset and plugin workflow.
-
-[Get started](#get-started) · [Wiki](docs/README.md) · [Architecture](docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md) · [Extend the engine](docs/architecture/PLATFORM_EXTENSION_GUIDE.md)
+InnoEngine combines shared mechanisms for assets, scenes, scripting and resource lifetimes with replaceable backends and explicit platform products. Game systems and Editor extensions use the same discovery and authoring infrastructure.
 
 ![InnoEngine.Editor](preview.png)
 
-> Active development. APIs and project data evolve together. See [current validation and limitations](docs/architecture/CURRENT_ACCEPTANCE.md) before relying on a product path.
-
-## Get started
-
-**Requirements:** Git, the native x64/ARM64 .NET SDK 10.0.402 (C# 14), and your host's C++ toolchain. Windows x64 requires MSVC C++ desktop tools, Windows SDK, and C++ CMake tools. macOS ARM64 requires Xcode command line tools and CMake on PATH. [Host setup and first launch](docs/platform/PRODUCT_STARTUP.md#from-zero).
-
-```sh
-git clone --branch dotnet10 --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
-cd InnoEngine
-```
-
-Open **InnoEngine.sln** in a .NET 10-capable Rider or Visual Studio 2026. Choose one of two startup projects:
-
-| Start | What it does |
-|---|---|
-| **InnoEngine.Editor** | Builds the current host Editor through project references and opens a project-folder picker. |
-| **InnoEngine.Build** | Prepares host Editor support by default; `editor` builds the complete Editor. Successful root builds perform bounded cache maintenance; full cleaning is explicit. |
-
-The same commands work from a terminal:
-
-```sh
-dotnet run --project "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
-```
-
-Use the branch containing these changes; the command above selects `dotnet10`. BGCS 4.1.2 is restored from exact pinned NuGet packages, and third-party sources are submodules under `extern/`. The first build needs network access and prepares native support and bindings before opening a window. Subsequent builds compile changed C# dependencies and reuse valid support caches. No prior Build run, shared `.run` file, or Browser workload is required for a desktop Editor. Game scripts and assets use import and reload; game exports prepare their own Player support packs.
-
-Have a project already? Pass its directory after `--`. To try FlappyBird, clone [InnoEngine.Samples](https://github.com/Wolfiora/InnoEngine.Samples) separately and select its FlappyBird folder.
-
-[Startup, advanced commands, and game exports →](docs/platform/PRODUCT_STARTUP.md) · [Current acceptance](docs/architecture/CURRENT_ACCEPTANCE.md)
-
-NuGet dependencies use standard project `PackageReference` declarations and SDK restore. Resolved assets remain in the selected intermediate output directory. See [dependency updates and CI](docs/build/DEPENDENCY_SUBMISSION.md).
-
-## Product targets
-
-| Target | Products | Managed deployment |
-|---|---|---|
-| Windows x64 | Editor, Player | CoreCLR, NativeAOT |
-| macOS ARM64 | Editor, Player | CoreCLR, NativeAOT |
-| Browser Wasm32 / WebGL 2 | Player | Mono Wasm, Mono Wasm AOT |
-
-Windows x64 acceptance covers the Editor and published players separately. Browser Mono and AOT products have passed bounded runtime checks with the official BGCS extension. macOS requires a native ARM64 host. See the [current results and remaining checks](docs/architecture/CURRENT_ACCEPTANCE.md). Visual, DPI, input, audio, and long-running device checks are recorded separately.
-
-## Built to compose
-
-- **Shared mechanisms.** Identity, serialization, events, assets, scenes, rendering, audio, input, storage, and execution lifecycles.
-- **Replaceable implementations.** SDL3, BGFX, MiniAudio, FreeType/HarfBuzz, RmlUi, and ImGui live in reusable backends. Platform integrations connect actual SDK differences.
-- **Explicit ownership.** Sessions own resources; candidate publication, Missing recovery, and verified generation retirement support hot reload.
-- **Plugins shape the engine.** Rendering models, components, importers, and Editor tools share the same discovery and authoring infrastructure.
-
-Author under `Assets/`; install `.iplugin` packages under `Plugins/`. Installed plugin content enters the existing asset pipeline as read-only sources. [Plugin workflow →](docs/plugins/Inno.Plugins.Authoring.md)
-
-```text
-entry/       Two development launchers and host dispatch
-src/         Shared foundation, content, services, runtime, and product hosting
-backends/    Reusable adapters, native bindings, and component build recipes
-platforms/   System/SDK integration, product entry points, and packaging
-build/       Common pipelines, toolchains, and explicit distribution composition
-tests/       Domain and cross-component contract tests
-extern/      Third-party source dependencies
-docs/        Architecture, workflows, and API Wiki
-```
-
-New platforms select backends and supply the required integrations. New backends implement domain contracts and join the explicit product/build composition. [Extension guide →](docs/architecture/PLATFORM_EXTENSION_GUIDE.md)
-
-## Learn more
-
 | Start here | Find |
-|---|---|
-| [API Wiki](docs/README.md) | Project pages and public contracts |
-| [Scripting](docs/scripting/README.md) | Game code and extension APIs |
-| [Build](docs/build/README.md) | CLI, native toolchains, and game exports |
-| [Architecture](docs/architecture/ENGINE_ARCHITECTURE_OVERVIEW.md) | Layers, dependencies, and ownership |
+| --- | --- |
+| [Get started](docs/getting-started/README.md) | Host prerequisites, first Editor session and project workflow |
+| [Documentation](docs/README.md) | Design, implementation, usage and API contracts |
+| [Architecture](docs/architecture/README.md) | Module responsibilities, dependency direction and ownership |
+| [Development](docs/development/README.md) | Building, validation, local documentation queries and platform extensions |
+| [Contributing](CONTRIBUTING.md) | The shared development rules for humans and agents |
+| [Acceptance and limitations](.agents/records/acceptance/current.md) | Exact evidence scopes and outstanding checks |
 
-## License
+APIs and project data evolve together during active development. Product support and device validation are separate; consult the linked acceptance records for the relevant commit and environment.
 
 [Apache License 2.0](LICENSE). Third-party dependencies retain their respective licenses.
-
-Native ABI, SDK, link settings and deployment layout are owned by platform integrations. Shared backends keep one common binding definition. [Native build ownership and file tree](docs/architecture/NATIVE_BUILD_PLATFORM_OWNERSHIP.md) · [Cache ownership and maintenance](docs/architecture/BUILD_CACHE_ARCHITECTURE.md).

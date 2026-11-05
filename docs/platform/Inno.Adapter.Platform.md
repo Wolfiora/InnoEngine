@@ -4,31 +4,11 @@
 
 该项目定义平台 Adapter family 的稳定边界，不包含 SDL3 引用。
 
-## 公开 API
+## API 参考
 
-- `PlatformBackendId`：Composition 启动时使用的后端选择；默认注册 ID 为 `sdl3`。
-- `IPlatformBackendFactory.CreateApplication`：把中立选择解析为 caller-owned `IPlatformApplication`。
+[完整声明、行为与调用约束](Inno.Adapter.Platform/api.md)
 
-Host 只保存稳定 ID、factory 和 `IPlatformApplication` / `IPlatformWindow`。未知或未安装的 backend 必须明确失败；不得返回伪实现。原生 surface 只在相互配合的具体 Adapter 之间传递，不进入服务、Shell、Player 或脚本契约。
-
-```csharp
-using System;
-using Inno.Adapter.Platform;
-using Inno.Platform;
-
-static void RunWithWindow(
-    IPlatformBackendFactory factory,
-    PlatformBackendId selection,
-    PlatformWindowOptions options,
-    Action<IPlatformApplication, IPlatformWindow> run
-) {
-    using IPlatformApplication application = factory.CreateApplication(selection);
-    using IPlatformWindow window = application.CreateWindow(options);
-    run(application, window);
-}
-```
-
-相邻职责：窗口/事件语义见 [Inno.Platform](Inno.Platform.md)，SDL3 映射见 [Inno.Adapter.Platform.Sdl3](../backends/Sdl3/Inno.Adapter.Platform.Sdl3.md)。
+<!-- api-include: Inno.Adapter.Platform/api.md -->
 
 ## 开放注册与生命周期
 
@@ -205,4 +185,4 @@ provider 及其 delegate/资源由 composition owner 释放；catalog 不接管 
 ## 项目依赖
 
 - [Inno.Platform](Inno.Platform.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

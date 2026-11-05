@@ -1,6 +1,6 @@
 # Inno.Build.Toolchains.ImGuizmo
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [统一 CLI](../../build/Inno.Build.Cli.md) · [Native](Inno.Native.ImGuizmo.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [统一 CLI](../../development/build/Inno.Build.Cli.md) · [Native](Inno.Native.ImGuizmo.md)
 
 ## 职责、依赖和公开 API
 
@@ -50,7 +50,7 @@ static Task<NativeBuildProduct> PrepareGizmoAsync(
 
 | 声明 | 行为、参数与结果 |
 | --- | --- |
-| <a id="api-3edcd1cd76a4bd6b"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.BindImGui(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBuildRecipe sourceRecipe, Inno.Build.Toolchains.NativeBuildProduct imGui)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L149) | Freezes the exact ImGui link input for both compilation and complete product cache lookup.<br>`context`：The operation owning the explicit target SDK.<br>`sourceRecipe`：The component's previously declared source recipe.<br>`imGui`：The borrowed, integrity-checked dependency matching this target.<br>返回：A recipe including the selected link library and dependency fingerprint.<br>T:System.ArgumentException：The dependency belongs to a different component or target.<br>T:System.InvalidOperationException：The dependency does not expose exactly one link library. |
+| <a id="api-3edcd1cd76a4bd6b"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.BindImGui(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBuildRecipe sourceRecipe, Inno.Build.Toolchains.NativeBuildProduct imGui)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L149) | Freezes the exact ImGui link input for both compilation and complete product cache lookup.<br>`context`：The operation owning the explicit target SDK.<br>`sourceRecipe`：The component's previously declared source recipe.<br>`imGui`：The borrowed, integrity-checked dependency matching this target.<br>返回：A recipe including the selected link library and dependency fingerprint.<br>T:System.ArgumentException：The dependency belongs to a different component or target.<br>T:System.InvalidOperationException：The dependency does not expose exactly one link library. |<br>Freezes the exact ImGui link input for both compilation and complete product cache lookup. | 遵循本页对应生命周期；借用依赖不转移其 owner。 | 参数、边界和操作状态不满足时拒绝执行；详见类型说明。 |
 | <a id="api-395f2da4230f08fb"></a>[`public static System.Threading.Tasks.Task<Inno.Build.Toolchains.NativeBuildProduct> Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.BuildAsync(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBuildProduct imGui, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L49) | Builds and installs the component for the explicitly selected native target.<br>`context`：The checkout and configuration whose sources and outputs belong to this operation.<br>`imGui`：The matching published ImGui product providing the native link dependency.<br>T:System.ArgumentException：The configuration is invalid.<br>T:System.InvalidOperationException：A native build process fails.<br>`cancellationToken`：Cancels child processes and prevents artifact installation after cancellation.<br>返回：The validated gizmo library linked against the explicitly supplied ImGui product.<br>T:System.OperationCanceledException：The operation was canceled. |
 | <a id="api-044245144f0cecef"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.CreateRecipe(Inno.Build.Toolchains.NativeBuildContext context)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L112) | Declares gizmo source inputs before preparing bindings or its ImGui link dependency.<br>`context`：The operation with a frozen target SDK and explicit shared component options.<br>返回：The source recipe; execution adds the validated ImGui library and its artifact identity.<br>T:System.ArgumentNullException：The context is null.<br>T:System.InvalidOperationException：Required upstream source, SDK or component options are unavailable.<br>T:System.NotSupportedException：The requested linkage is not supported by this recipe. |
 | <a id="api-2d14cacb08205e7d"></a>[`public static Inno.Build.Toolchains.NativeComponentDescriptor Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.componentDescriptor { get; }`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L19) | Gets the unique native and recipe owners used for sources and target-scoped intermediates. |
@@ -58,16 +58,14 @@ static Task<NativeBuildProduct> PrepareGizmoAsync(
 
 ## 项目依赖
 
-- [Inno.Build.Toolchains](../../build/Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Build.Toolchains](../../development/build/Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
 
 
 ## 本轮公开契约补充
 
 以下声明对应当前源码；工作流、所有权与失败说明见本页前文。
 
-<!-- api: M:Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.BindImGui(Inno.Build.Toolchains.NativeBuildContext,Inno.Build.Toolchains.NativeBuildRecipe,Inno.Build.Toolchains.NativeBuildProduct) 64bae928c54972e481c912a47c931f6a2942f5183603f156bbfaede3966c9b6b -->
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| <a id="api-3edcd1cd76a4bd6b"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.BindImGui(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBuildRecipe sourceRecipe, Inno.Build.Toolchains.NativeBuildProduct imGui)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L141) | Freezes the exact ImGui link input for both compilation and complete product cache lookup. | 遵循本页对应生命周期；借用依赖不转移其 owner。 | 参数、边界和操作状态不满足时拒绝执行；详见类型说明。 |

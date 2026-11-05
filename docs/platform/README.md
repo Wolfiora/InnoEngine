@@ -1,6 +1,6 @@
 # 平台与系统接入
 
-[Wiki 首页](../README.md) · [共享后端](../backends/README.md) · [扩展指南](../architecture/PLATFORM_EXTENSION_GUIDE.md)
+[Wiki 首页](../README.md) · [共享后端](../backends/README.md) · [扩展指南](../development/adding-platform.md)
 
 中立窗口和平台事件契约属于 `Inno.Platform`；系统、SDK、启动与打包实现集中在所属平台包。运行目标必须包含 CPU/ABI，维护目录不等同于发布目标。
 

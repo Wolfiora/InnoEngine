@@ -1,6 +1,6 @@
 # Inno.Platform
 
-[Platform 索引](README.md) · [Wiki 首页](../README.md) · [Platform Adapter](Inno.Adapter.Platform.md) · [Shell](../runtime/Inno.Shell.md)
+[Platform 索引](README.md) · [Wiki 首页](../README.md) · [Platform Adapter](Inno.Adapter.Platform.md) · [Shell](../modules/runtime/Inno.Shell.md)
 
 ## 职责与依赖
 
@@ -54,7 +54,7 @@ static void PumpOnce(IPlatformApplication application)
 
 焦点由 `WindowFocusChangedEvent` 通知。可见性由 `WindowVisibilityChangedEvent` 通知；应用进入后台由 `ApplicationSuspensionChangedEvent` 通知。Shell 合并暂停原因，停帧并释放输入状态；恢复不会把后台经过的时间补成一大帧。隐藏验收窗口是否暂停由 Shell 的显式 `suspendWhenHidden` 策略决定。
 
-原生渲染集成通过 [Adapter 的 `INativeWindowSurface`](Inno.Adapter.Platform.md) 获取借用句柄。中立窗口 API、脚本和持久化状态均不保存这些句柄。布局持久化属于 Editor presentation，见 [Editor ImGui](../editor/Inno.Editor.ImGui.md)。
+原生渲染集成通过 [Adapter 的 `INativeWindowSurface`](Inno.Adapter.Platform.md) 获取借用句柄。中立窗口 API、脚本和持久化状态均不保存这些句柄。布局持久化属于 Editor presentation，见 [Editor ImGui](../modules/editor/Inno.Editor.ImGui.md)。
 
 ## 扩展与验收
 
@@ -144,5 +144,5 @@ static void PumpOnce(IPlatformApplication application)
 
 ## 项目依赖
 
-- [Inno.Core.Events](../core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Events](../modules/core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
