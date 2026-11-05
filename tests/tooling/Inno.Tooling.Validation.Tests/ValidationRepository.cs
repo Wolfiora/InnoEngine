@@ -124,11 +124,12 @@ internal sealed class ValidationRepository : IDisposable
             "--plan", PathOf("artifacts/plan/plan.json"), "--output", PathOf(output),
             ..evidence is null ? Array.Empty<string>() : new[] { "--evidence", PathOf(evidence) }], cancellation);
 
-    internal async Task BuildAsync(params string[] arguments)
+    internal Task BuildAsync(params string[] arguments)
+        => SdkAsync(["build", "--disable-build-servers", "-m:1", "-nr:false", ..arguments]);
+
+    internal async Task SdkAsync(params string[] arguments)
     {
         var start = new ProcessStartInfo(m_dotnet) { WorkingDirectory = m_root, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
-        foreach (string argument in new[] { "build", "--disable-build-servers", "-m:1", "-nr:false" })
-            start.ArgumentList.Add(argument);
         foreach (string argument in arguments)
             start.ArgumentList.Add(argument);
         using Process process = Process.Start(start)!;

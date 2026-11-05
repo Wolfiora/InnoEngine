@@ -12,6 +12,92 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationCompletionTests
 {
     [Fact]
+    public async Task ChangedUnionRootsRecompileWithoutCleaningUnchangedDependencies()
+    {
+        using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
+        const string C_FIXTURE = "tests/input/fixtures/Inno.Input.CompilationFixture";
+        const string C_PROJECT = "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
+        const string C_TEST = "tests/input/Inno.Input.Tests/UnionCompilationProbe.cs";
+        repository.Write(C_FIXTURE + "/Inno.Input.CompilationFixture.csproj", ValidationRepository.Project(
+            "<ItemGroup><ProjectReference Include=\"../../../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj\" /></ItemGroup>"));
+        repository.Write(C_FIXTURE + "/Probe.cs", """
+            namespace Inno.Input.CompilationFixture;
+            /// <summary>Exposes a real fixture compilation value.</summary>
+            public static class Probe
+            {
+                /// <summary>Reads the value compiled from this source.</summary>
+                /// <returns>The current fixture value.</returns>
+                public static int Read() => 1;
+            }
+            """);
+        repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT)).Replace("</Project>",
+            "<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\" /></ItemGroup></Project>", StringComparison.Ordinal));
+        repository.Write(C_TEST, """
+            using Xunit;
+            using Inno.Input.CompilationFixture;
+            namespace Inno.Input.Tests;
+            public sealed class UnionCompilationProbe
+            {
+                [Fact]
+                public void ReadsTheChangedDependency() { Assert.Equal(1, Probe.Read()); }
+            }
+            """);
+        repository.Write("docs/development/testing/Inno.Input.CompilationFixture.md", "# Inno.Input.CompilationFixture\n实际编译依赖验收 fixture。\n");
+        const string C_INDEX = "docs/development/testing/README.md";
+        repository.Write(C_INDEX, File.ReadAllText(repository.PathOf(C_INDEX)) + "\n[Compilation fixture](Inno.Input.CompilationFixture.md)\n");
+        await repository.SdkAsync("sln", "InnoEngine.sln", "add", C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
+            "--solution-folder", "tests/input/fixtures");
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare the compilation dependency and its real assertion");
+
+        string dependencyOutput = string.Empty;
+        string restoredEnvironment = string.Empty;
+        DateTime outputTimestamp = default;
+        byte[] dependencyBytes = [];
+        // The first build restores previously absent SDK imports. Establish that real environment before comparing warm compilations.
+        for (int value = 2; value <= 4; value++)
+        {
+            foreach (string relative in new[] { C_FIXTURE + "/Probe.cs", C_TEST })
+            {
+                string path = repository.PathOf(relative);
+                DateTime timestamp = File.GetLastWriteTimeUtc(path);
+                repository.Write(relative, File.ReadAllText(path)
+                    .Replace("=> " + (value - 1), "=> " + value, StringComparison.Ordinal)
+                    .Replace("Assert.Equal(" + (value - 1), "Assert.Equal(" + value, StringComparison.Ordinal));
+                File.SetLastWriteTimeUtc(path, timestamp);
+            }
+            using (JsonDocument plan = await repository.PlanAsync())
+            {
+                Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
+                Assert.Equal(2, plan.RootElement.GetProperty("owners").GetArrayLength());
+                string environment = plan.RootElement.GetProperty("environment").GetString()!;
+                if (value == 3)
+                    restoredEnvironment = environment;
+                else if (value == 4)
+                    Assert.Equal(restoredEnvironment, environment);
+                dependencyOutput = plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
+                    .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Core.IO.csproj", StringComparison.Ordinal))
+                    .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
+            }
+            string output = "artifacts/union-" + value;
+            Assert.Equal(0, await repository.RunAsync(cancellation.Token, output));
+            if (value == 3)
+            {
+                outputTimestamp = File.GetLastWriteTimeUtc(dependencyOutput);
+                dependencyBytes = File.ReadAllBytes(dependencyOutput);
+            }
+            else if (value == 4)
+            {
+                Assert.Equal(dependencyBytes, File.ReadAllBytes(dependencyOutput));
+                Assert.True(outputTimestamp == File.GetLastWriteTimeUtc(dependencyOutput),
+                    "An unchanged dependency was rebuilt. Clean log:\n" + File.ReadAllText(repository.PathOf(output + "/managed-clean.log")));
+                Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf(output + "/results.json")));
+            }
+        }
+    }
+
+    [Fact]
     public async Task ChangedCompilationInputsCannotPublishReusableBuildIdentity()
     {
         using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
