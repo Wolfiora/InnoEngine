@@ -235,7 +235,8 @@ public static partial class ArchitectureValidator
             outputs = MSBuildProjectGraphValidator.ValidateAsync(repositoryRoot, configuration, dotnetHost, artifactsPath,
                 projectGraphPath, failures, cancellationToken, sdkSnapshot, apiProjects.Count == 0 ? null : apiProjects).GetAwaiter().GetResult();
         if (!sourceOnly && !wikiOnly)
-            PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures, outputs, apiProjects.Count == 0 ? null : apiProjects);
+            PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures, outputs,
+                apiProjects.Count == 0 ? null : apiProjects, evaluatedReferences, cancellationToken);
         if (metadataOnly)
         {
             IEnumerable<string> projects = apiProjects.Count == 0

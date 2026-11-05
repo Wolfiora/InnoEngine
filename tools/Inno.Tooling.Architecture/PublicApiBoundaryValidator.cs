@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -15,7 +16,9 @@ internal static class PublicApiBoundaryValidator
         string configuration,
         ICollection<string> failures,
         IReadOnlyDictionary<string, string>? evaluatedOutputs = null,
-        IReadOnlySet<string>? selectedProjects = null
+        IReadOnlySet<string>? selectedProjects = null,
+        WikiProjectReferences? evaluatedReferences = null,
+        CancellationToken cancellationToken = default
     ) {
         Project[] projects = new[] { "entry", "src", "backends", "platforms", "build" }
             .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj"))
@@ -51,7 +54,17 @@ internal static class PublicApiBoundaryValidator
             if (references.TryGetValue(project.name, out PortableExecutableReference? assemblyReference)
                 && compilation.GetAssemblyOrModuleSymbol(assemblyReference) is IAssemblySymbol compiledAssembly)
             {
-                assembly = compiledAssembly;
+                if (evaluatedReferences is null)
+                    assembly = compiledAssembly;
+                else
+                {
+                    // Resolve this owner's real SDK references, including dependencies outside the audit selection.
+                    CSharpCompilation contract = evaluatedReferences.GetCompilation(project.path, cancellationToken);
+                    PortableExecutableReference output = contract.References.OfType<PortableExecutableReference>()
+                        .Single(reference => string.Equals(reference.FilePath, project.output,
+                            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
+                    assembly = (IAssemblySymbol)contract.GetAssemblyOrModuleSymbol(output)!;
+                }
                 compiledContract = true;
             }
             else if (project.product)

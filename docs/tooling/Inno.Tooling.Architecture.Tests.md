@@ -46,6 +46,8 @@
 
 SDK 引用隔离测试建立两个无依赖关系的真实项目，验证所属项目 API 可用、另一项目即使已经编译也不能被示例调用。同时检查 `Compile Remove` 和条件编译符号实际决定 API 清单。使用 design-time `ResolveReferences`，不执行 Native 或产品准备。
 
+`ArchitectureOutputOwnerTests` 编译相互依赖的真实程序集，同时保留过期的默认输出。限定单个 API owner 时，独立求值与已有 SDK 快照两条路径都必须解析其契约依赖；把公开依赖改为 `PrivateAssets="compile"` 后仍必须拒绝，不能靠忽略未解析类型通过。
+
 `WikiCoverageTests` 通过公开验证入口构造临时 Wiki：检查项目唯一页面、索引、签名变更、缺失符号、相对链接、锚点和外部产品边界。所有页面的 C# 示例都参与编译，包括架构页和分类索引。逻辑脚本例使用独立生成的 Runtime/Editor 契约 fixture，验证缺引用、错程序集角色及宿主实现不可见的失败路径；这组测试不代替实际引擎裁剪 reference 的全量示例验收。
 
 ```sh

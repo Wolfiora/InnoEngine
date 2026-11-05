@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -52,8 +53,27 @@ public sealed class ArchitectureOutputOwnerTests
             Assert.DoesNotContain("Inno.Core.Contract is an implementation dependency", correct, StringComparison.Ordinal);
             Assert.Contains(artifacts.Replace('\\', '/'), File.ReadAllText(graph).Replace('\\', '/').Replace("//", "/"), StringComparison.OrdinalIgnoreCase);
 
+            string selectedOwner = Path.GetRelativePath(root, project).Replace('\\', '/');
+            string selected = ArchitectureCommandFixture.Run(root, "--metadata-only", "--dotnet", host,
+                "--artifacts-path", artifacts, "--api-project", selectedOwner).output;
+            Assert.DoesNotContain("unresolved public signature type", selected, StringComparison.Ordinal);
+            Assert.DoesNotContain("output is missing", selected, StringComparison.Ordinal);
+
+            string snapshot = Path.Combine(root, "sdk-graph.json");
+            File.WriteAllText(snapshot, await ManagedProjectGraphCapture.CaptureAsync(root, host,
+                [project, Path.Combine(contract, "Inno.Core.Contract.csproj")], new Dictionary<string, string>
+                {
+                    ["Configuration"] = "Debug", ["ArtifactsPath"] = artifacts,
+                    ["DesignTimeBuild"] = "true", ["BuildProjectReferences"] = "false", ["InnoProductRestore"] = "false"
+                }, cancellation.Token));
+            string captured = ArchitectureCommandFixture.Run(root, "--metadata-only", "--dotnet", host,
+                "--artifacts-path", artifacts, "--api-project", selectedOwner, "--sdk-snapshot", snapshot).output;
+            Assert.DoesNotContain("unresolved public signature type", captured, StringComparison.Ordinal);
+            Assert.DoesNotContain("output is missing", captured, StringComparison.Ordinal);
+
             File.WriteAllText(project, File.ReadAllText(project).Replace("Include=", "PrivateAssets=\"compile\" Include=", StringComparison.Ordinal));
-            string rejected = ArchitectureCommandFixture.Run(root, "--dotnet", host, "--artifacts-path", artifacts).output;
+            string rejected = ArchitectureCommandFixture.Run(root, "--metadata-only", "--dotnet", host,
+                "--artifacts-path", artifacts, "--api-project", selectedOwner).output;
             Assert.Contains("public/protected API exposes Inno.Core.Contract", rejected, StringComparison.Ordinal);
 
             async Task Build(string[] properties)

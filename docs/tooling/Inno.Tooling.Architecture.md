@@ -6,6 +6,8 @@
 
 使用 `--dotnet <host>` 和 `--artifacts-path <absolute-output-root>` 检查独立 SDK 输出。求值图的 `TargetPath` 决定公开程序集的 owner，Wiki 的 `ReferencePath`、`Compile`、语言和符号也使用同一输出选择。不要把独立输出复制回默认 bin 来满足检查。
 
+`--api-project` 只限制需要审查的 owner，不裁掉其公开签名依赖。编译元数据审查与 XML 语义检查共用一次批量 SDK 引用解析，包含实际传递依赖和包引用；没有选中审查的依赖仍从当前输出闭包读取，不能借用旧默认目录中的 DLL。
+
 `--configuration` 支持 `Debug`、`SourceDebug` 和 `Release`。`--artifacts-path` 要求显式 `--dotnet`；SDK 失败、缺失引用或取消均不能当作通过。
 
 
