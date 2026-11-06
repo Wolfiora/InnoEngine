@@ -108,7 +108,8 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         ) => cancellation.Cancel();
         watcher.EnableRaisingEvents = true;
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Task.Run(() =>
-            BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0), true, false, null, cancellation.Token)));
+            BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
+                true, false, null, cancellation.Token)));
         watcher.EnableRaisingEvents = false;
         string[] completed = Directory.GetFiles(directory, "*.inventory");
         Assert.NotEmpty(completed);
@@ -139,8 +140,14 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         File.WriteAllText(Path.Combine(directory, "payload"), content);
     }
 
-    private Task MaintainAsync(bool dryRun = false, bool retireAll = false)
-        => BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0), retireAll, dryRun, null, CancellationToken.None);
+    private Task MaintainAsync(
+        bool dryRun = false,
+        bool retireAll = false
+    ) {
+        // Full inventory and retirement assertions are foreground work, not a five-second automatic maintenance slice.
+        return BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
+            retireAll, dryRun, null, CancellationToken.None);
+    }
 
     public void Dispose()
     {
