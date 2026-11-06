@@ -243,18 +243,20 @@ internal static class ValidationRunner
                                 {
                                     var compilationInputs = new ValidationBuildInputs(plan, contextId, outputDigests, cancellation);
                                     string[] properties = plan.contexts[contextId].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value).ToArray();
+                                    bool retainDependencies = !compilationInputs.RequiresDependencyCompilation(dependencyInputs);
                                     // Rebuild interleaves Clean and Build across root instances. Drain the one owned clean phase before any compiler starts.
                                     if (compilationInputs.RequiresCompilation(dependencyInputs))
                                         await ValidationProcess.RunAsync(plan.dotnet, ["clean", solution, ..properties,
                                             "-p:InnoPrepareProductNative=false", "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N"),
-                                            ..!compilationInputs.RequiresDependencyCompilation(dependencyInputs)
+                                            ..retainDependencies
                                                 ? new[] { "-p:BuildProjectReferences=false", "-p:InnoCleanProjectReferences=false" } : Array.Empty<string>(),
                                             "--disable-build-servers", "-m:1", "-nr:false"],
                                             plan.root, Path.Combine(directory, contextId + "-clean.log"), cancellation).ConfigureAwait(false);
                                     await ValidationProcess.RunAsync(plan.dotnet,
                                         ["build", solution, ..properties, "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N"),
+                                            ..retainDependencies ? new[] { "-p:InnoUseVerifiedProjectOutputs=true" } : Array.Empty<string>(),
                                             "--disable-build-servers", "-m:" + (contextId == "managed" ? Math.Min(Environment.ProcessorCount, 4) : 1),
-                                            "-nr:false"], plan.root, Path.Combine(directory, contextId + "-build.log"), cancellation).ConfigureAwait(false);
+                                            "-nr:false", "-clp:PerformanceSummary"], plan.root, Path.Combine(directory, contextId + "-build.log"), cancellation).ConfigureAwait(false);
                                     built.Add(contextId);
                                     outputDigests.Clear();
                                     dependencyInputs.Reset();

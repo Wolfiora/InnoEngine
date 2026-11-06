@@ -70,7 +70,7 @@ internal sealed class ValidationBuildInputs
                 return true;
             }
         }
-        Console.WriteLine($"Retaining verified dependency outputs; cleaning {m_checks.Length} selected roots.");
+        Console.WriteLine($"Verified dependency inputs and outputs for {m_checks.Length} selected roots.");
         return false;
     }
 

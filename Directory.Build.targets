@@ -353,4 +353,19 @@
       <BuildProjectReferences>false</BuildProjectReferences>
     </PropertyGroup>
   </Target>
+
+  <!-- The validation owner has verified dependency inputs and outputs, and the SDK solution
+       orders every selected root. Resolve those outputs without repeating dependency Build targets. -->
+  <Target
+    Name="UseInnoVerifiedProjectOutputs"
+    BeforeTargets="ResolveProjectReferences"
+    DependsOnTargets="PrepareProjectReferences"
+    Condition="'$(InnoUseVerifiedProjectOutputs)' == 'true'">
+    <ItemGroup>
+      <_MSBuildProjectReferenceExistent Update="@(_MSBuildProjectReferenceExistent)"
+        Condition="'%(_MSBuildProjectReferenceExistent.Targets)' == '' or '%(_MSBuildProjectReferenceExistent.Targets)' == 'Build'">
+        <Targets>GetTargetPath</Targets>
+      </_MSBuildProjectReferenceExistent>
+    </ItemGroup>
+  </Target>
 </Project>

@@ -16,7 +16,7 @@
     <!-- Compiler references stay in the solution build; private task preparation owns a separate graph. -->
     <InnoTaskExcludedProperties>$(InnoCompilerToolExcludedProperties);BuildingInsideVisualStudio;BuildingSolutionFile;CurrentSolutionConfigurationContents;DesignTimeBuild</InnoTaskExcludedProperties>
     <!-- Tool restore has its own project closure, independent of the IDE solution. -->
-    <InnoTaskExcludedProperties>$(InnoTaskExcludedProperties);SolutionPath;SolutionDir;SolutionName;SolutionFileName;SolutionExt;RestoreGraphProjectInput;_RestoreSolutionFileUsed;InnoTaskBootstrapOwner</InnoTaskExcludedProperties>
+    <InnoTaskExcludedProperties>$(InnoTaskExcludedProperties);SolutionPath;SolutionDir;SolutionName;SolutionFileName;SolutionExt;RestoreGraphProjectInput;_RestoreSolutionFileUsed;InnoTaskBootstrapOwner;InnoUseVerifiedProjectOutputs</InnoTaskExcludedProperties>
   </PropertyGroup>
 
   <UsingTask TaskName="Inno.Build.Tasks.GenerateBindingsTask" AssemblyFile="$(InnoTaskHostAssembly)" />

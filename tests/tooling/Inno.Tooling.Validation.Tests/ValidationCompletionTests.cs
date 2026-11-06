@@ -60,12 +60,20 @@ public sealed class ValidationCompletionTests
             """);
         const string C_INDEX = "docs/development/testing/README.md";
         repository.Write(C_INDEX, File.ReadAllText(repository.PathOf(C_INDEX)) + "\n[Compilation fixture](Inno.Input.CompilationFixture.md)\n");
+        repository.Write("Directory.Build.targets", File.ReadAllText(repository.PathOf("Directory.Build.targets")).Replace("</Project>", """
+            <Target Name="RecordDependencyBuild" AfterTargets="Build" Condition="'$(MSBuildProjectName)' == 'Inno.Core.IO'">
+              <WriteLinesToFile File="$(ArtifactsPath)/dependency-builds.log" Lines="$(MSBuildProjectFullPath)" Overwrite="false" />
+            </Target>
+            </Project>
+            """, StringComparison.Ordinal));
         await repository.SdkAsync("sln", "InnoEngine.sln", "add", C_FIXTURE + "/Inno.Input.CompilationFixture.csproj",
             "--solution-folder", "tests/input/fixtures");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the compilation dependency and its real assertion");
 
         string dependencyOutput = string.Empty;
+        string dependencyBuildLog = string.Empty;
+        int dependencyBuilds = 0;
         string restoredEnvironment = string.Empty;
         string variantArtifacts = string.Empty;
         string workspace = string.Empty;
@@ -119,6 +127,8 @@ public sealed class ValidationCompletionTests
                 dependencyOutput = plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
                     .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Core.IO.csproj", StringComparison.Ordinal))
                     .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
+                dependencyBuildLog = Path.Combine(plan.RootElement.GetProperty("contexts").GetProperty("managed")
+                    .GetProperty("properties").GetProperty("ArtifactsPath").GetString()!, "dependency-builds.log");
             }
             string output = "artifacts/union-" + value;
             try
@@ -141,13 +151,17 @@ public sealed class ValidationCompletionTests
             {
                 outputTimestamp = File.GetLastWriteTimeUtc(dependencyOutput);
                 dependencyBytes = File.ReadAllBytes(dependencyOutput);
+                dependencyBuilds = File.ReadAllLines(dependencyBuildLog).Length;
             }
             else if (value == 4)
             {
                 Assert.Equal(dependencyBytes, File.ReadAllBytes(dependencyOutput));
                 if (!variant)
+                {
                     Assert.True(outputTimestamp == File.GetLastWriteTimeUtc(dependencyOutput),
                         "An unchanged dependency was rebuilt. Clean log:\n" + File.ReadAllText(repository.PathOf(output + "/managed-clean.log")));
+                    Assert.Equal(dependencyBuilds, File.ReadAllLines(dependencyBuildLog).Length);
+                }
                 Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf(output + "/results.json")));
             }
         }
