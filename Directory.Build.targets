@@ -354,18 +354,32 @@
     </PropertyGroup>
   </Target>
 
-  <!-- The validation owner has verified dependency inputs and outputs, and the SDK solution
-       orders every selected root. Resolve those outputs without repeating dependency Build targets. -->
+  <!-- Only unselected dependencies have reusable outputs. Selected roots still build through
+       their actual references, including product instances selected after SDK evaluation. -->
   <Target
     Name="UseInnoVerifiedProjectOutputs"
     BeforeTargets="ResolveProjectReferences"
     DependsOnTargets="PrepareProjectReferences"
     Condition="'$(InnoUseVerifiedProjectOutputs)' == 'true'">
+    <PropertyGroup>
+      <_InnoValidationSolutionExtension>$([System.IO.Path]::GetExtension('$(SolutionPath)'))</_InnoValidationSolutionExtension>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionPath)') or '$(_InnoValidationSolutionExtension)' != '.slnx'"
+      Text="Verified dependency outputs require the validation owner's explicit solution." />
+    <XmlPeek XmlInputPath="$(SolutionPath)" Query="/Solution/Project/@Path">
+      <Output TaskParameter="Result" ItemName="_InnoValidationBuildRoot" />
+    </XmlPeek>
+    <Error Condition="'@(_InnoValidationBuildRoot)' == ''" Text="The validation build has no selected roots." />
     <ItemGroup>
-      <_MSBuildProjectReferenceExistent Update="@(_MSBuildProjectReferenceExistent)"
-        Condition="'%(_MSBuildProjectReferenceExistent.Targets)' == '' or '%(_MSBuildProjectReferenceExistent.Targets)' == 'Build'">
+      <_InnoVerifiedDependency Include="@(_MSBuildProjectReferenceExistent)"
+        Condition="'%(_MSBuildProjectReferenceExistent.Targets)' == '' or '%(_MSBuildProjectReferenceExistent.Targets)' == 'Build'" />
+      <_InnoVerifiedDependency Remove="@(_InnoValidationBuildRoot)"
+        MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+      <_InnoVerifiedDependency>
         <Targets>GetTargetPath</Targets>
-      </_MSBuildProjectReferenceExistent>
+      </_InnoVerifiedDependency>
+      <_MSBuildProjectReferenceExistent Remove="@(_InnoVerifiedDependency)" />
+      <_MSBuildProjectReferenceExistent Include="@(_InnoVerifiedDependency)" />
     </ItemGroup>
   </Target>
 </Project>

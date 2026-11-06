@@ -17,7 +17,10 @@ public sealed class ValidationCompletionTests
     [Fact]
     public Task ChangedPropertyVariantsCannotReuseAnUncleanedOutput() => ChangedUnionRootsAsync(variant: true);
 
-    private static async Task ChangedUnionRootsAsync(bool variant)
+    [Fact]
+    public Task ChangedRootsCompileReferencesSelectedDuringBuild() => ChangedUnionRootsAsync(variant: false, lateSelection: true);
+
+    private static async Task ChangedUnionRootsAsync(bool variant, bool lateSelection = false)
     {
         using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
@@ -50,6 +53,23 @@ public sealed class ValidationCompletionTests
                 public void ReadsTheChangedDependency() { Assert.Equal(1, Probe.Read()); }
             }
             """);
+        if (lateSelection)
+        {
+            repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT))
+                .Replace("<ItemGroup><ProjectReference Include=\"../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj\" /></ItemGroup>",
+                    string.Empty, StringComparison.Ordinal)
+                .Replace("</Project>", """
+                <ItemGroup>
+                  <InnoValidationInput Include="../fixtures/Inno.Input.CompilationFixture/*.cs;../fixtures/Inno.Input.CompilationFixture/*.csproj" />
+                </ItemGroup>
+                <Target Name="SelectCompilationReference" BeforeTargets="AssignProjectConfiguration">
+                  <ItemGroup>
+                    <ProjectReference Include="../fixtures/Inno.Input.CompilationFixture/Inno.Input.CompilationFixture.csproj" />
+                  </ItemGroup>
+                </Target>
+                </Project>
+                """, StringComparison.Ordinal));
+        }
         repository.Write("docs/development/testing/Inno.Input.CompilationFixture.md", """
             # Inno.Input.CompilationFixture
 
@@ -108,6 +128,11 @@ public sealed class ValidationCompletionTests
             {
                 Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
                 Assert.Equal(2, plan.RootElement.GetProperty("owners").GetArrayLength());
+                if (lateSelection)
+                    Assert.DoesNotContain(plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
+                        .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Input.Tests.csproj", StringComparison.Ordinal))
+                        .GetProperty("Items").GetProperty("ProjectReference").EnumerateArray(), reference =>
+                            reference.GetProperty("FullPath").GetString()!.EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal));
                 JsonElement fixture = plan.RootElement.GetProperty("contexts").GetProperty("managed").GetProperty("sdkGraph").EnumerateArray()
                     .Single(snapshot => snapshot.GetProperty("Path").GetString()!.EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal));
                 if (variant && value >= 3)
