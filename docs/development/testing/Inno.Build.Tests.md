@@ -25,7 +25,7 @@ WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真
 
 同组回归使用真实 Editor 项目执行有界 Clean，要求无 Task runtime、无编译 DLL、无原生准备；它不代替后续 Build 的原生验收。
 
-绑定增量回归使用真实 SDK 检查：新的绑定选择文件不会使中立项目重编译；相同选择保持 import 时间戳；产品选择在 Build/Publish 后仍可核对。生成回归同时检查未选目标映射不失效、选中配置变化仍产生独立 generation。
+绑定增量回归使用真实 SDK 检查：新的绑定选择文件不会使中立项目重编译；相同选择保持 import 时间戳；产品选择在 Build/Publish 后仍可核对。SDK 生成与输入身份回归归属 [Inno.Build.Bindings.Tests](Inno.Build.Bindings.Tests.md)，不请求 Editor 产品准备。
 
 绑定扩展准备通过实际项目验证 SDK Restore 在冻结包与源码输入前完成，再执行生成和热请求复用。扩展加载使用独立测试进程，父进程在子进程退出后清理其预先登记的目录；构建后的 fresh 校验继续检查真实变化。
 
@@ -97,8 +97,6 @@ WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真
 | 测试文件 | 场景入口示例 |
 | --- | --- |
 | [BgfxNativeProfileTests.cs](../../../tests/build/Inno.Build.Tests/BgfxNativeProfileTests.cs) | `OpenTargetAcceptsItsExplicitSdkInvocationBeforeSourceValidation`、`ForeignTargetIsRejectedBeforeInvokingTheProfile`、`InvocationOwnsAnImmutableArgumentSnapshot` |
-| [BindingDefinitionTests.cs](../../../tests/build/Inno.Build.Tests/BindingDefinitionTests.cs) | `ExecutableOrNonLiteralDefinitionsFailBeforeOutputCreation`、`UndeclaredTargetNeverFallsBackToTheHostAbi` |
-| [BindingGenerationBatchTests.cs](../../../tests/build/Inno.Build.Tests/BindingGenerationBatchTests.cs) | `OneBatchReusesSharedReadsOnlyWithinEachFreshPhase`、`ActiveConsumersBlockReplacementAndReleaseAllowsRepair`、`AFailedBatchPublishesNoPartialClosureAndPreservesEarlierOutputs`、`FrozenSdkPathsSelectIndependentHeadersWithoutChangingTheProcessEnvironment` |
 | [BindingSelectionLifetimeTests.cs](../../../tests/build/Inno.Build.Tests/BindingSelectionLifetimeTests.cs) | `PublicationWithoutItsCompiledSelectionFailsBeforePreparingTheTaskRuntime`、`SelectionRemainsOwnedThroughBuildAndIsReleasedAfterPublish` |
 | [BindingToolchainTaskTests.cs](../../../tests/build/Inno.Build.Tests/BindingToolchainTaskTests.cs) | `MissingOrCanceledDefinitionCannotCreateGenerationCandidates` |
 | [BrowserSupportPackTests.cs](../../../tests/build/Inno.Build.Tests/BrowserSupportPackTests.cs) | `BrowserPackRequiresItsStaticGameLinkerClosure` |
@@ -114,7 +112,6 @@ WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真
 | [ManagedDeploymentTests.cs](../../../tests/build/Inno.Build.Tests/ManagedDeploymentTests.cs) | `OpenProviderCatalogDispatchesCustomIdentityWithoutPlatformBranches`、`CapabilityInputsAndPublicationArtifactsAreImmutable` |
 | [NativeArtifactPublicationTests.cs](../../../tests/build/Inno.Build.Tests/NativeArtifactPublicationTests.cs) | `RepairWaitsForReadersAndCancellationPreservesThePinnedDirectory`、`MaterializationPreservesIdenticalTimestampsAndRejectsChangesAfterTheSourceSnapshot`、`CanceledMaterializationPreservesTheOwnedIntermediate`、`SdkDirectoryAliasesContributeContentAndDirectoryCyclesFailBeforeProducingOutput` |
 | [NativeBindingCompilationTests.cs](../../../tests/build/Inno.Build.Tests/NativeBindingCompilationTests.cs) | `TargetCompilationReplacesHostSourceAndRejectsAMissingSelection` |
-| [NativeBindingGenerationTests.cs](../../../tests/build/Inno.Build.Tests/NativeBindingGenerationTests.cs) | `ManagedSelectionPreservesExactNativeIdentitiesInStableProjectOrder`、`PublicationRejectsChangedOrIncompleteManagedSelection`、`CollidingManagedSelectionDoesNotReplaceAnExistingCompleteSelection`、`UnsafeManagedProjectNameIsRejectedBeforeCreatingSelectionOutput` |
 | [NativeBuildContextTests.cs](../../../tests/build/Inno.Build.Tests/NativeBuildContextTests.cs) | `SelectedCheckoutOwnsIntermediatesEvenWhenTheToolRunsFromAnotherCheckout`、`ContextRejectsMissingCheckoutAndUnsupportedConfiguration`、`CanceledBuildDoesNotStartAComponentOrCreateIntermediates`、`UnresolvedToolchainsFailBeforeIntermediatesOrSourceDiscovery` |
 | [NativeComponentBuildOptionsTests.cs](../../../tests/build/Inno.Build.Tests/NativeComponentBuildOptionsTests.cs) | `OptionsFreezeOrderedDefinitionsAndRejectAmbiguousSdkOverrides`、`RecipeOwnedDefinitionsCannotBeReplacedBeforeAnyToolStarts`、`ProductPlanDeclaresStaticArchivesAndDoesNotGuessLinkageFromTheHost`、`LinkageOrderedArgumentsAndConfigurationBytesAllChangeRecipeIdentity` |
 | [NativeRecipeClosureTests.cs](../../../tests/build/Inno.Build.Tests/NativeRecipeClosureTests.cs) | 无生成输出时声明源码输入；缺 generation 在执行前失败；最终绑定字节与 generation identity 变化使产物失效，热命中不重复 producer |
@@ -152,7 +149,7 @@ WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真
 
 - ManagedBuildInputSnapshotTests：真实 SDK 求值、相同输入复用、同长度同 mtime 的源码/资源/import 修改、新增源码以及请求目录清理。
 - NativeRecipeClosureTests：producer 与纯输入声明一同注册、foreign owner/target 拒绝，规划不执行编译。
-- BindingGenerationBatchTests：当前 config/继承/headers 输入身份、未选目标配置不失效、无需生成输出。
+- [Inno.Build.Bindings.Tests](Inno.Build.Bindings.Tests.md)：当前 config/继承/headers 输入身份、未选目标配置不失效、无需生成输出。
 - SupportPackPreparationCacheTests：并发只准备一次、命中跳过 producer、损坏/额外输出修复、等待后或 validation 中输入变化拒绝；已安装 current 保持。
 
 这些契约 fixture 与 SDK 图测试不能代替实际 Player/Web 发布、GUI 或性能证据。

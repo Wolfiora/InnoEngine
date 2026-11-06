@@ -10,7 +10,7 @@ using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Bindings.Tests;
 
 public sealed class NativeBindingGenerationTests : IDisposable
 {
@@ -215,7 +215,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         File.WriteAllText(Path.Combine(m_root, "UnselectedPlatform.cs"), "unrelated target policy");
 
         var unchangedContext = new NativeBuildContext(m_root, "release");
-        using (NativeBindingGenerationResult unchanged = await BuildTestProducts.Generator("fixture-target")
+        using (NativeBindingGenerationResult unchanged = await BindingTestProfiles.Generator("fixture-target")
             .GenerateAsync(unchangedContext, request, CancellationToken.None))
         {
             Assert.Equal(first.fingerprint, unchanged[owner.nativeProject].fingerprint);
@@ -358,7 +358,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var fingerprints = expected is null ? null : new Dictionary<string, string> { [owner.nativeProject] = expected };
         var request = new NativeBindingGenerationRequest([owner], "fixture-target", mode, checkOnly, fingerprints);
-        using var result = await BuildTestProducts.Generator("fixture-target").GenerateAsync(
+        using var result = await BindingTestProfiles.Generator("fixture-target").GenerateAsync(
             new NativeBuildContext(m_root, "release"), request, cancellation);
         return result[owner.nativeProject];
     }

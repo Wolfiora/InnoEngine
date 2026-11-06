@@ -8,7 +8,7 @@ using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Bindings.Tests;
 
 [Trait("ExternalDependency", "BGCS")]
 public sealed class BindingGenerationBatchTests : IDisposable
@@ -34,7 +34,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string unselected = Path.Combine(directory, "bindgen.unselected.json");
         File.WriteAllText(unselected, "{}");
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
-        var generator = BuildTestProducts.Generator();
+        var generator = BindingTestProfiles.Generator();
         NativeBuildContext initial = new(m_root, "release");
         string identity = await generator.ComputeInputFingerprintAsync(initial, request, CancellationToken.None);
         File.WriteAllText(unselected, "{\"changed\":true}");
@@ -55,7 +55,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     {
         var components = new[] { CreateComponent("first"), CreateComponent("second") };
         var context = new NativeBuildContext(m_root, "release");
-        var generator = BuildTestProducts.Generator();
+        var generator = BindingTestProfiles.Generator();
         var request = new NativeBindingGenerationRequest(components, "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var result = await generator.GenerateAsync(context, request, CancellationToken.None);
         Assert.Equal(2, result.Count);
@@ -81,7 +81,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     public async Task ActiveConsumersBlockReplacementAndReleaseAllowsRepair()
     {
         var component = CreateComponent("reader");
-        var generator = BuildTestProducts.Generator();
+        var generator = BindingTestProfiles.Generator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
         var context = new NativeBuildContext(m_root, "release");
         using NativeBindingGenerationResult first = await generator.GenerateAsync(context, request, CancellationToken.None);
@@ -114,7 +114,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
     {
         var first = CreateComponent("first");
         var second = CreateComponent("second");
-        var generator = BuildTestProducts.Generator();
+        var generator = BindingTestProfiles.Generator();
         var request = new NativeBindingGenerationRequest([first, second], "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var completed = await generator.GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
         string original = File.ReadAllText(completed[first.nativeProject].bindingsPath);
@@ -140,7 +140,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string firstSdk = CreateSdk("sdk-first", "int");
         string secondSdk = CreateSdk("sdk-second", "long long");
         string? original = Environment.GetEnvironmentVariable(variable);
-        var generator = BuildTestProducts.Generator();
+        var generator = BindingTestProfiles.Generator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
 
         using var first = await generator.GenerateAsync(SdkContext(variable, firstSdk), request, CancellationToken.None);
@@ -158,7 +158,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
         string variable = "INNO_BINDING_SDK_" + Guid.NewGuid().ToString("N");
         var component = CreateSdkComponent();
         string sdk = CreateSdk("sdk", "int");
-        var generator = BuildTestProducts.Generator();
+        var generator = BindingTestProfiles.Generator();
         var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
         using var result = await generator.GenerateAsync(SdkContext(variable, sdk), request, CancellationToken.None);
         string source = File.ReadAllText(result[component.nativeProject].bindingsPath);

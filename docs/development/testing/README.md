@@ -35,6 +35,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Required validation failed.' }
 - [Inno.Audio.Assets.Tests](Inno.Audio.Assets.Tests.md)
 - [Inno.Audio.Runtime.Tests](Inno.Audio.Runtime.Tests.md)
 - [Inno.Audio.Tests](Inno.Audio.Tests.md)
+- [Inno.Build.Bindings.Tests](Inno.Build.Bindings.Tests.md)
 - [Inno.Build.NativePerformance.Tests](Inno.Build.NativePerformance.Tests.md)
 - [Inno.Build.Tests](Inno.Build.Tests.md)
 - [Inno.Build.Toolchains.Tests](Inno.Build.Toolchains.Tests.md)

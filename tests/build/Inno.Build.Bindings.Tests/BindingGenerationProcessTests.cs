@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Xunit;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Bindings.Tests;
 
 /// <summary>
 /// Verifies binding identities through independent SDK test hosts rather than a shared dictionary hash seed.
@@ -31,7 +31,7 @@ public sealed class BindingGenerationProcessTests
         {
             var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
             var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
-            string identity = await BuildTestProducts.Generator().ComputeInputFingerprintAsync(
+            string identity = await BindingTestProfiles.Generator().ComputeInputFingerprintAsync(
                 new NativeBuildContext(inherited, "release"), request, CancellationToken.None);
             File.WriteAllText(Environment.GetEnvironmentVariable(C_OUTPUT)!, identity);
             return;

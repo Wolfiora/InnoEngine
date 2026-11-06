@@ -105,3 +105,9 @@
 - Windows artifact `13476860376` 完整 SHA-256 为 `00a7775bbf01bceb9d958fe7a076baba5cce3834ad87df272cfca18fe94d2acb`，已核验并安全提取。八项 workflow TSV 完整，stderr 为空；超时发生在场景完成后继续等待固定帧上限，首次结果仍保持失败。产品旅程改为原子完成通知、全部原有证据核对、操作系统正常退出请求、退出后证据与 Dispose 核对。没有增加引擎运行入口或改变产品 API；frameLimit 仍为保护上限，普通／扩展循环与资源预算保持。
 - 本机真实 Workflows、Lifecycle 100 和 Lifecycle 1000 三项通过，分别 55.032、51.524、66.438 秒；正常 WindowCloseEvent、状态保存、产品资源释放和 Dispose end 均有实际日志。前两项保留 30,000 帧上限，扩展项保留 180,000 帧／5,400 秒上限；不再把上限报告为实际完成帧数。证据为 `journey-completion-workflows/`、`journey-completion-lifecycle/` 和 `journey-completion-extended/`。macOS 的正常取消退出仍待托管认证。
 - 产品驱动协议回归通过 16 项，包括缺失场景／采样／循环、错误完成通知、非零退出、超时、扩展 1,000 循环、内存增长、待处理事件及释放失败。首次 15 项断言通过但手动调用保留了最后一个预期失败的 native exit code，脚本现显式在全部成功和清理后返回零；原日志保留，`journey-protocol-final.log` 为最终成功入口证据。测试临时目录在自己的边界内清理。原生应用真实验收与协议 fixture 分开记录，不以模拟进程替代实际产品。
+
+## Binding SDK test ownership
+
+- 五份绑定 SDK 回归迁入 `Inno.Build.Bindings.Tests`，只引用 Bindings 与中立 Toolchains；产品原生准备、窗口和 GPU 不在该闭包。全部原断言通过反向命名空间／helper 替换与 Git 原字节比较，迁移清单为 `binding-test-owner-migration.json`。源码项目总数及层次仍由 SDK 图求值，不新增测试名单。
+- 独立 owner 的 30 项实际 SDK 回归全部通过、零跳过，执行约 2 分 56 秒；`binding-owner-serial.log` 与 `binding-owner-serial-trx/` 保留。此次运行没有 Editor 或 Native 产品准备。原套件的顺序调度属性随后同步保留；真正的竞争仍在用例内部显式执行，托管 CI 会验证最终项目结构。
+- 源码架构与文档链接检查通过。解决方案仅增加新 owner 的声明、配置与分组，不接受 `dotnet sln add` 对其他已有项目配置的重排。

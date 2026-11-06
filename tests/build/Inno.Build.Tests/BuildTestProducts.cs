@@ -1,7 +1,5 @@
 using System;
 using System.IO;
-using BGCS.Configuration;
-using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
@@ -20,6 +18,4 @@ internal static class BuildTestProducts
     internal static ProductNativeBuildPlan Editor() => Distribution().ResolveNativeProduct("windows-x64", "editor").plan;
     internal static ProductNativeBuildPlan StaticPlayer() => Distribution().ResolveNativeProduct("browser-wasm", "player").plan;
 
-    internal static NativeBindingGenerator Generator(string target = "fixture")
-        => new(new NativeBindingProfile(target, new TargetConfiguration { id = "windows-x64-msvc" }));
 }

@@ -11,7 +11,7 @@ using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
 using Xunit;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Bindings.Tests;
 
 /// <summary>
 /// Exercises platform-owned SDK extension registration through the public generation boundary.
