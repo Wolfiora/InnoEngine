@@ -111,9 +111,16 @@ internal sealed class ValidationRepository : IDisposable
         return JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
     }
 
-    internal Task<int> EvidenceAsync(string evidence)
+    internal Task<int> EvidenceAsync(string evidence, string plan = "artifacts/plan/plan.json")
         => ValidationCommand.ExecuteAsync(["evidence", "--engine-root", m_root, "--dotnet", m_dotnet,
-            "--plan", PathOf("artifacts/plan/plan.json"), "--evidence", evidence]);
+            "--plan", PathOf(plan), "--evidence", evidence]);
+
+    internal Task<int> RunCurrentAsync(
+        CancellationToken cancellation,
+        string output
+    )
+        => ValidationCommand.ExecuteAsync(["run", "--engine-root", m_root, "--dotnet", m_dotnet,
+            "--base", "HEAD", "--output", PathOf(output)], cancellation);
 
     internal Task<int> RunAsync(
         CancellationToken cancellation = default,

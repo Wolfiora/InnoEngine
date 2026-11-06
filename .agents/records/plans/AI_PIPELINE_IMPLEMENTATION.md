@@ -14,8 +14,8 @@ Status: comprehensive acceptance resumed at the user's explicit request on 2026-
 
 ## Implemented coverage and retired mechanisms
 
-- 241 preserved rule mappings in `docs/architecture/rules/coverage.json`; root AGENTS is 3,275 bytes. Root-start discovery, links and byte budgets pass. Current verification-tool instruction set is 8,559 bytes. Four repository skills use the unified plan and canonical rules.
-- Source architecture covers all 246 evaluated projects. All 63 test owners declare execution requirements: 17 domain, 33 contract, 4 integration, 8 native, 1 performance. Product/static evidence is represented by actual plan checks. `owner-evidence-coverage.json` records the complete inventory; its native flag is a direct declaration, not a transitive-closure claim.
+- Rule authority is `.agents/rulebook/coverage.json`: 241 original mappings plus 26 requirements recovered from the former detailed standards, organized as 58 complete units. Root AGENTS is 3,268 bytes. Root-start discovery, links, staged loading and byte-budget regressions pass. Four repository skills use the unified plan and canonical rules.
+- The latest complete SDK selection covers 248 projects and 64 test owners: 17 domain, 33 contract, 4 integration, 8 native and 2 performance. All 17 domain owners select managed execution. `artifacts/validation/overnight-2026-11-06/owner-coverage-final.json` records 328 required checks; it proves selection coverage, not execution success. The earlier 246-project/63-owner inventory is historical.
 - Input/UI domain owners are independent of SDL/RmlUi. Editor Graph and Interactions remain domain owners; real presentation/lifecycle cases retain backend prerequisites. Architecture guards traverse actual domain dependencies and reject native preparation.
 - Removed `Invoke-ManagedChecks.ps1`, `Invoke-EditorUiAcceptance.ps1`, `Invoke-WikiChecks.ps1`, `Select-ValidationScope.ps1`, `Test-ValidationScope.ps1`, `New-ValidationSolutionFilter.ps1`, duplicate full-repository xUnit policy/Wiki execution and the duplicate repository NuGet submission workflow. Isolated execution, product journeys and performance sampling keep distinct implementations called by the plan.
 - Dependency submission ownership was compared using actual automatic run 41871525488 and custom run 41326947632. Platform automatic submission remains responsible; Windows/macOS/configuration/NativeAOT restore checks remain in Engine CI.
@@ -23,7 +23,7 @@ Status: comprehensive acceptance resumed at the user's explicit request on 2026-
 
 ## Current changes and verified behavior
 
-Latest pushed input: `adad2781`, with finalized compilation proofs and proven managed dependency retention. Local commit `541d1e79` fixes the actual native Wiki executor-context failure; the subsequent handoff separates Editor script projection from Build integration tests. No complete hosted certification exists.
+Latest pushed implementation is `5f6c4dd824769371ad6aed3316580489e0320a17`; Windows/macOS run `42127319050` is executing. Local `74669734` and `3c26e834` additionally correct test-guide-only selection and route Native test documentation through the evaluated plan. The ongoing [closure record](../acceptance/AI_PIPELINE_CI_CLOSURE_2026_11_06.md) owns current failures, corrections and bounded evidence. No complete hosted certification exists. Historical measurements and earlier runs below retain their original identities and are not current-head certification.
 
 - Selection includes merge-base/worktree changes, actual SDK property instances, imports, generated/dynamic inputs, submodule/link bytes and same-size/same-time mutations. Unknown ownership, empty discovery, unavailable requirements and skipped required execution fail closed.
 - Exact SDK unions separate managed/native/Release outputs. Clean completes before Build; bootstrap claims are shared only inside their owning process. Managed compilation is bounded to four workers; native preparation remains serial.
@@ -97,7 +97,7 @@ The approved seven implementation areas now have code, canonical instructions/do
 | End-to-end performance | Measure an actual Editor presentation change through all required feedback, plus paired original/current workloads on the same machine/SDK. Keep cold samples separate, at least five warm samples per local scenario, and weekly ten-warm/long-running evidence. Current Input/domain/doc medians do not prove the complete UI latency target. Optimize only against measured remaining bottlenecks in the next phase. |
 | Draft release | From an eligible successful default-branch full run, execute verify_only first, then an explicitly authorized draft rehearsal using the exact artifacts. Reject wrong source/commit/run, expiry, missing bytes or digest tampering. Confirm uploaded digests match validation without rebuilding. Positive rehearsal requires default-branch adoption and a qualified run; formal publication remains the user's decision. |
 
-Do not close #75 or mark its unchecked acceptance items passed at this milestone. Resume deferred work only when requested; retain first failures and inspect existing evidence before deciding which checks to rerun.
+Do not close #75 or mark its unchecked acceptance items passed. The user resumed this work on 2026-11-06: continue the outstanding groups without another permission request, retaining first failures and checking evidence identities before rerunning anything. Default-branch adoption and a qualified positive release rehearsal remain external prerequisites; automatic merge and formal publication remain unauthorized.
 
 ## Disk and continuation
 

@@ -194,14 +194,12 @@ public sealed class ValidationCompletionTests
                 public void CompiledInputMatchesItsDeclaredSource() { Assert.Equal(2, CompilationDependencyProbe.value); }
             }
             """);
-        using (await repository.PlanAsync()) { }
-        Assert.Equal(0, await repository.RunAsync(cancellation.Token, "artifacts/warmup"));
+        Assert.Equal(0, await repository.RunCurrentAsync(cancellation.Token, "artifacts/warmup"));
         repository.Write(C_PROBE, File.ReadAllText(source) + "\n// Change this owner's compilation input.\n");
         byte[] original = File.ReadAllBytes(source);
         DateTime timestamp = File.GetLastWriteTimeUtc(source);
         File.WriteAllText(gate, "mutate after planning");
-        using (await repository.PlanAsync()) { }
-        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync(cancellation.Token));
+        await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunCurrentAsync(cancellation.Token, "artifacts/run"));
         using (JsonDocument failed = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json"))))
         {
             JsonElement[] results = failed.RootElement.GetProperty("results").EnumerateArray().ToArray();
@@ -213,9 +211,8 @@ public sealed class ValidationCompletionTests
         }
         File.WriteAllBytes(source, original);
         File.SetLastWriteTimeUtc(source, timestamp);
-        using (await repository.PlanAsync()) { }
-        Assert.Equal(0, await repository.RunAsync(cancellation.Token, "artifacts/repaired"));
-        Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf("artifacts/repaired/results.json")));
+        Assert.Equal(0, await repository.RunCurrentAsync(cancellation.Token, "artifacts/repaired"));
+        Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf("artifacts/repaired/results.json"), "artifacts/repaired/plan.json"));
 
         repository.Write(C_PROBE, File.ReadAllText(source) + "\n// Recompile only this owner's changed source.\n");
         string dependencyOutput;

@@ -66,3 +66,14 @@
 - 同一批 15 个实际文档文件修改经修复后统一计划与执行通过：instructions、architecture、documentation、wiki:managed 四项，零构建、零测试执行、零 Native 上下文。分别耗时 4.04、11.40、3.32、1.45 秒；这些是有其他构建并发的正确性记录，不是五轮空闲 warm 基准。原始证据 `native-guide-fixed/`，已完成状态为 true。
 - Native 套件文档改为链接同一个实际计划入口，删除省略目标属性的直接 `dotnet test` 示例和重复的 BGFX 隔离名单；平台、进程与资源约束保留。运行说明明确 `--base HEAD` 只包含未提交变化，不能把空范围误当成已运行某个套件。
 - `5f6c4dd824769371ad6aed3316580489e0320a17` 已推送；新 [Engine CI 42127319050](https://github.com/Wolfiora/InnoEngine/actions/runs/42127319050) 正在两个托管平台执行，后续范围选择修订仍为本地证据，不冒充该运行已覆盖。
+
+## Native 输出与托管回归时限
+
+- 13 个实际 Native 测试 owner 的本地联合编译完成，零警告／错误，耗时 46 分 02 秒。该轮包含工具输入更新后的首次原生产物准备，不作为 warm 样本。相同冻结 Editor 请求的后续消费者均记录 `reusedPreparation=1`、零 Native 编译及绑定生成；独立消费者仍完整读取 27,756 文件／2,248,079,121 字节，耗时约 40–102 秒，尚不能声明完整 UI 反馈达标。
+- 联合回归得到 311 项 Passed、16 项具有 macOS 契约的 Metal NotExecuted；后者仍需 macOS 实际执行。运行前后全部选中测试输出仅新增 Native ImGui 的 `imgui.ini`。`TextDisabled_UsesTheLoadedCimguiSymbol` 保留所有操作与断言，关闭默认 ini 写入；修订后的单 owner 回归正在执行。原证据为 `deployment-closure-trx/`、`deployment-output-before.json`、`deployment-output-after.json` 和 `native-imgui-output-first-failure.json`。
+- Build 套件此次 53 项全部通过，耗时 11 分 27 秒。长时间无控制台输出时使用官方 dotnet-stack 10.0.750501 取得线程栈，定位到真实 fixture 的 Support Pack 指纹读取；临时目录持续正常推进／回收，不是锁死。诊断工具及原栈位于本轮产物目录，不进入产品或工作流依赖。
+- 本地联合驱动的 `finally` 将 PowerShell `$null` 转成空字符串，导致公共 publisher 的 `Record` 正确拒绝空 targetId。首次异常保留；只在相同 workspace lease 下用显式 `NullString.Value` 补正登记，不重跑已完成测试，不改 publisher 的参数校验。该问题属于临时验收驱动，正式 C# 验证入口仍传递真正的 null。
+- `42127319050` 的 macOS job `127594831396` 在托管工具回归失败，后续 Native／Release 检查被阻塞。SHA-256 验证的原始诊断 ZIP 为 `ci-421273-macos.zip`（`4346aa55fe5665ade89daf75341d24d6c10a96ce726a6c3ecfdb2ac59c56db35`）。唯一失败用例 `ChangedCompilationInputsCannotPublishReusableBuildIdentity` 用时 20 分 07 秒；五轮共用的 20 分钟 token 在最后一次执行前的 SDK 环境复核耗尽。未发现可冒充通过的陈旧证据；也未完成最后一轮的预期失败断言。
+- 前三轮没有中间计划断言，改为调用既有 `validate run` 的自动计划路径，避免单独 plan 后紧接 supplied-plan 环境复核；repaired evidence 明确引用该次执行保存的计划。后两轮仍验证分离计划，五轮行为及全部断言、20 分钟限制保持。修订后的本地真实 SDK 回归正在执行，不能将方法调整本身视为已解决托管时限问题。
+- Native ImGui 修订后的独立编译零警告／错误，5 项测试通过，120 个输出文件哈希不变且没有重新创建 ini。`native-imgui-output-receipt.json` 与前后清单保留；正在运行的临时脚本仍使用旧 AST，在最后登记处再次暴露同一 PowerShell 空字符串错误，随后 `Record-DeploymentWorkspace.ps1` 在同一 producer lease 下完成正式登记，`deployment-workspace-recorded.json` 确认成功。没有为登记错误重复构建或执行测试。
+- 精简调用后的五轮编译回归通过，用时 10 分 00.147 秒，原 20 分钟预算及全部行为断言保持；TRX 为 `compilation-direct-plan-trx/`。源码架构和记录链接检查通过。Native ImGui 修订已独立提交为 `731617678fb75f938eb763aa1f39823d23229976`；macOS 时限问题仍需新托管运行验证。推送修订会让既有并发策略取消旧 `42127319050` 的未完成 Windows 工作，原因是 macOS 已明确失败且旧树仍包含已复现的 Native ImGui 输出污染，不能通过重跑原树解决。
