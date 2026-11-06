@@ -15,8 +15,16 @@ $ErrorActionPreference = 'Stop'
 function Request-EditorJourneyExit([Diagnostics.Process]$OwnedProcess) {
     if ($OwnedProcess.HasExited) { return $false }
     if ($IsMacOS) {
-        # SDL translates SIGTERM into its ordinary quit event. SIGINT instead reaches the Editor's cancellation handler.
-        & /bin/kill -TERM ([string]$OwnedProcess.Id)
+        # Request the owned Cocoa application's normal quit event; process signals can bypass SDL and retirement.
+        $quit = @'
+use framework "AppKit"
+on run arguments
+    set ownedApplication to current application's NSRunningApplication's runningApplicationWithProcessIdentifier:((item 1 of arguments) as integer)
+    if ownedApplication is missing value then error "The owned Editor has no running Cocoa application."
+    if not ((ownedApplication's terminate()) as boolean) then error "The owned Editor refused its normal quit request."
+end run
+'@
+        & /usr/bin/osascript -e $quit -- ([string]$OwnedProcess.Id)
         if ($LASTEXITCODE -ne 0) {
             if ($OwnedProcess.HasExited) { return $false }
             throw 'The owned Editor did not accept its orderly quit request.'
