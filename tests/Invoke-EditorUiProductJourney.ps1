@@ -15,10 +15,11 @@ $ErrorActionPreference = 'Stop'
 function Request-EditorJourneyExit([Diagnostics.Process]$OwnedProcess) {
     if ($OwnedProcess.HasExited) { return $false }
     if ($IsMacOS) {
-        & /bin/kill -INT ([string]$OwnedProcess.Id)
+        # SDL translates SIGTERM into its ordinary quit event. SIGINT instead reaches the Editor's cancellation handler.
+        & /bin/kill -TERM ([string]$OwnedProcess.Id)
         if ($LASTEXITCODE -ne 0) {
             if ($OwnedProcess.HasExited) { return $false }
-            throw 'The owned Editor did not accept its orderly interrupt.'
+            throw 'The owned Editor did not accept its orderly quit request.'
         }
         return $true
     }
@@ -170,7 +171,7 @@ try {
         }
     }
     $code = $process.ExitCode
-    if ($code -ne 0 -and -not ($IsMacOS -and $exitRequested -and $code -eq 2)) { throw "The owned Editor exited with code $code." }
+    if ($code -ne 0) { throw "The owned Editor exited with code $code." }
     Assert-JourneyEvidence -Project $project -Scenario $Scenario -Cycles $Cycles
     $boot = Get-Content -LiteralPath (Join-Path $project 'Logs/EditorBoot.log') -Raw
     if ($boot -notmatch 'Dispose end\.' -or $boot -match 'Teardown failure') { throw 'The completed journey did not retire its real product resources successfully.' }

@@ -16,7 +16,7 @@ int cycles = int.Parse(Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL
 string evidence = Path.Combine(project, "Library", "Acceptance");
 Directory.CreateDirectory(evidence);
 Directory.CreateDirectory(Path.Combine(project, "Logs"));
-File.WriteAllText(Path.Combine(project, "Logs", "EditorBoot.log"), mode == "missing-retirement" ? "Starting" :
+File.WriteAllText(Path.Combine(project, "Logs", "EditorBoot.log"), mode == "missing-retirement" || mode.StartsWith("signal-", StringComparison.Ordinal) ? "Starting" :
     mode == "teardown-failure" ? "Dispose end.\nTeardown failure" : "Dispose end.");
 if (mode == "timeout") { Thread.Sleep(Timeout.Infinite); return 0; }
 if (mode == "extension-failure")
@@ -47,7 +47,40 @@ if (mode == "wrong-notification")
     File.WriteAllText(Path.Combine(evidence, "journey-completed.txt"), "Lifecycle");
     Thread.Sleep(30000);
 }
-return mode == "failed-process" ? 3 : 0;
+if (mode.StartsWith("signal-", StringComparison.Ordinal))
+{
+    using var stopped = new ManualResetEventSlim();
+    bool interrupted = false;
+    ConsoleCancelEventHandler onInterrupt = (
+        _,
+        options
+    ) =>
+    {
+        options.Cancel = true;
+        interrupted = true;
+        stopped.Set();
+    };
+    Console.CancelKeyPress += onInterrupt;
+    try
+    {
+        using var signal = System.Runtime.InteropServices.PosixSignalRegistration.Create(
+            System.Runtime.InteropServices.PosixSignal.SIGTERM, context =>
+            {
+                context.Cancel = true;
+                stopped.Set();
+            });
+        string completion = Path.Combine(evidence, "journey-completed.txt");
+        File.WriteAllText(completion + ".pending", scenario);
+        File.Move(completion + ".pending", completion);
+        stopped.Wait();
+        if (interrupted) return 2;
+        File.WriteAllText(Path.Combine(project, "Logs", "EditorBoot.log"),
+            mode == "signal-retirement-failure" ? "Dispose end.\nTeardown failure" : "Dispose end.");
+        return mode == "signal-failed-process" ? 2 : 0;
+    }
+    finally { Console.CancelKeyPress -= onInterrupt; }
+}
+return mode == "failed-process" ? 3 : mode == "canceled-process" ? 2 : 0;
 '@)
     & $dotnet build (Join-Path $root 'Fixture.csproj') --configuration Debug --disable-build-servers -m:1 -nr:false *> (Join-Path $root 'build.log')
     if ($LASTEXITCODE -ne 0) { throw "Protocol fixture build failed:`n$(Get-Content (Join-Path $root 'build.log') -Raw)" }
@@ -58,6 +91,7 @@ return mode == "failed-process" ? 3 : 0;
         @{ name='missing-evidence'; scenario='Workflows'; cycles=100; reason='did not complete the journey' },
         @{ name='missing-stage'; scenario='Workflows'; cycles=100; reason='Expected eight completed workflow stages' },
         @{ name='failed-process'; scenario='Workflows'; cycles=100; reason='exited with code 3' },
+        @{ name='canceled-process'; scenario='Workflows'; cycles=100; reason='exited with code 2' },
         @{ name='missing-retirement'; scenario='Workflows'; cycles=100; reason='did not retire its real product resources' },
         @{ name='teardown-failure'; scenario='Workflows'; cycles=100; reason='did not retire its real product resources' },
         @{ name='wrong-notification'; scenario='Workflows'; cycles=100; reason='different journey' },
@@ -71,6 +105,13 @@ return mode == "failed-process" ? 3 : 0;
         @{ name='growth'; scenario='Lifecycle'; cycles=100; reason='beyond its 4 MiB final live-memory budget' },
         @{ name='pending-events'; scenario='Lifecycle'; cycles=100; reason='retained pending events' }
     )
+    if ($IsMacOS) {
+        $cases += @(
+            @{ name='signal-exit'; scenario='Workflows'; cycles=100; success=$true },
+            @{ name='signal-retirement-failure'; scenario='Workflows'; cycles=100; reason='did not retire its real product resources' },
+            @{ name='signal-failed-process'; scenario='Workflows'; cycles=100; reason='exited with code 2' }
+        )
+    }
     $oldCase = $env:INNO_JOURNEY_PROTOCOL_CASE
     $oldScenario = $env:INNO_JOURNEY_PROTOCOL_SCENARIO
     try {
