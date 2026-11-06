@@ -17,7 +17,7 @@ Windows 编译器、目录共享与工具路径用例，以及 Unix 文件链接
 测试程序集按顺序调度用例，避免 SDK fixture 同时写共享 checkout 的 bin/obj。锁、取消、并发 publication 和两次构建的竞争仍由各用例显式创建，顺序调度不减少这些并发契约。Engine CI 使用独立的 .NET 10 安装目录，避免临时项目在 runner 上隐式选到另一主版本 SDK；测试及 Wiki 失败证据始终上传。
 
 
-`ProductNativeCacheLookupTests` 验证完整热命中批次、损坏回退及并发；`NativeVerificationPhaseTests` 验证逻辑输入保留、物理读取去重和阶段隔离。真实产品串行/批次成本验收归属 [Inno.Build.NativePerformance.Tests](Inno.Build.NativePerformance.Tests.md)，由统一计划按环境和执行前提选择。
+`ProductNativeCacheLookupTests` 验证完整热命中批次、损坏回退及并发；原生输入身份和阶段隔离回归归属 [Inno.Build.Toolchains.Tests](Inno.Build.Toolchains.Tests.md)，无需准备真实原生产物。真实产品串行/批次成本验收归属 [Inno.Build.NativePerformance.Tests](Inno.Build.NativePerformance.Tests.md)，由统一计划按环境和执行前提选择。
 
 WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真实产物断言；macOS 冷构建由 Engine CI 的实际 Editor 准备路径验证，不借用 Windows 测试结果。
 
@@ -112,13 +112,11 @@ WindowsX64 ImGui/ImGuizmo 实际构建也归属该性能 owner，保留原有真
 | [FileProductPublicationTests.cs](../../../tests/build/Inno.Build.Tests/FileProductPublicationTests.cs) | `SingleFilePublicationRetainsTheNativeClosureAndRejectsMissingInputs` |
 | [GameContentCompilerBindingTests.cs](../../../tests/build/Inno.Build.Tests/GameContentCompilerBindingTests.cs) | `BindingRejectsMissingOrMismatchedComponentsBeforeAnyWork`、`ContentCompilerCanBeReplacedWithoutChangingPlatformPackaging` |
 | [ManagedDeploymentTests.cs](../../../tests/build/Inno.Build.Tests/ManagedDeploymentTests.cs) | `OpenProviderCatalogDispatchesCustomIdentityWithoutPlatformBranches`、`CapabilityInputsAndPublicationArtifactsAreImmutable` |
-| [NativeArtifactIdentityTests.cs](../../../tests/build/Inno.Build.Tests/NativeArtifactIdentityTests.cs) | `MultipurposeRecipeOwnerIncludesOnlyItsDeclaredImplementationClosure`、`FingerprintPreservesDeclarationOrderAndChangesForSourceOrSdkIdentity`、`LogicalInputsCanMoveWithoutChangingIdentityAndSameTimestampTamperingInvalidatesIt`、`ManifestChecksIdentityBytesAndTheCompleteOutputSet` |
 | [NativeArtifactPublicationTests.cs](../../../tests/build/Inno.Build.Tests/NativeArtifactPublicationTests.cs) | `RepairWaitsForReadersAndCancellationPreservesThePinnedDirectory`、`MaterializationPreservesIdenticalTimestampsAndRejectsChangesAfterTheSourceSnapshot`、`CanceledMaterializationPreservesTheOwnedIntermediate`、`SdkDirectoryAliasesContributeContentAndDirectoryCyclesFailBeforeProducingOutput` |
 | [NativeBindingCompilationTests.cs](../../../tests/build/Inno.Build.Tests/NativeBindingCompilationTests.cs) | `TargetCompilationReplacesHostSourceAndRejectsAMissingSelection` |
 | [NativeBindingGenerationTests.cs](../../../tests/build/Inno.Build.Tests/NativeBindingGenerationTests.cs) | `ManagedSelectionPreservesExactNativeIdentitiesInStableProjectOrder`、`PublicationRejectsChangedOrIncompleteManagedSelection`、`CollidingManagedSelectionDoesNotReplaceAnExistingCompleteSelection`、`UnsafeManagedProjectNameIsRejectedBeforeCreatingSelectionOutput` |
 | [NativeBuildContextTests.cs](../../../tests/build/Inno.Build.Tests/NativeBuildContextTests.cs) | `SelectedCheckoutOwnsIntermediatesEvenWhenTheToolRunsFromAnotherCheckout`、`ContextRejectsMissingCheckoutAndUnsupportedConfiguration`、`CanceledBuildDoesNotStartAComponentOrCreateIntermediates`、`UnresolvedToolchainsFailBeforeIntermediatesOrSourceDiscovery` |
 | [NativeComponentBuildOptionsTests.cs](../../../tests/build/Inno.Build.Tests/NativeComponentBuildOptionsTests.cs) | `OptionsFreezeOrderedDefinitionsAndRejectAmbiguousSdkOverrides`、`RecipeOwnedDefinitionsCannotBeReplacedBeforeAnyToolStarts`、`ProductPlanDeclaresStaticArchivesAndDoesNotGuessLinkageFromTheHost`、`LinkageOrderedArgumentsAndConfigurationBytesAllChangeRecipeIdentity` |
-| [NativeVerificationPhaseTests.cs](../../../tests/build/Inno.Build.Tests/NativeVerificationPhaseTests.cs) | `FreshPhasesDetectSameLengthSameTimestampChangesAndReuseSharedReads` |
 | [NativeRecipeClosureTests.cs](../../../tests/build/Inno.Build.Tests/NativeRecipeClosureTests.cs) | 无生成输出时声明源码输入；缺 generation 在执行前失败；最终绑定字节与 generation identity 变化使产物失效，热命中不重复 producer |
 | [NativeWorkspaceReuseTests.cs](../../../tests/build/Inno.Build.Tests/NativeWorkspaceReuseTests.cs) | 内容变化与不兼容参数的 workspace 选择；Windows 实际 CMake 编译验证同长度、同 mtime 修改、未改变 `.obj` 复用及第三次缓存命中 |
 | [OwnedRestoreTests.cs](../../../tests/build/Inno.Build.Tests/OwnedRestoreTests.cs) | `EmptyProjectSelectionFailsBeforeTakingOwnership`、`ExactPropertiesAreForwardedAndFailureReleasesOwnership`、`RestoreRemovesTheParentSolutionEntryPoint` |

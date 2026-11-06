@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Xunit;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Toolchains.Tests;
 
 public sealed class NativeVerificationPhaseTests
 {
