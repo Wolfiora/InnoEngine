@@ -21,7 +21,8 @@ public sealed class DevelopmentAppHostSdkTests
         string executable = OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet";
         string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..", executable));
         Assert.True(File.Exists(host));
-        using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(AppContext.BaseDirectory, "SdkHostFixtures"));
+        // Process claims belong to the temporary owner, not the verified assembly deployment.
+        using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(Path.GetTempPath(), "InnoSdkHostFixtures"));
         string project = Path.Combine(owner.directory, "SdkHostProbe.csproj");
         Type[] references = [typeof(StandardBuildEnvironment), typeof(BuildCompositionContext), typeof(BuildTargetId)];
         var items = new XElement("ItemGroup");
