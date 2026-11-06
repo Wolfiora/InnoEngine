@@ -336,7 +336,8 @@ internal static class ValidationPlanner
             }
             var releaseInputs = new HashSet<string>(StringComparer.Ordinal) { "@tooling", "@native-sources" };
             var releaseBuilds = new List<string>();
-            foreach (string owner in new[] { editorBuild.owner, C_BUILD_ENTRY })
+            string[] releaseRoots = [editorBuild.owner, C_BUILD_ENTRY];
+            foreach (string owner in releaseRoots)
             {
                 VisitRelease(owner);
                 string id = (releaseContext == "native" ? "build:" : "release-build:") + owner;
@@ -365,9 +366,10 @@ internal static class ValidationPlanner
             checks.Add(new("native-aot-restore", "restore-aot", playerOwner,
                 "Restore the actual host Player with NativeAOT SDK inputs in an independently owned restore layout.",
                 "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "contract"));
+            // Restore-only inputs still invalidate the bundle, but only built roots provide compiled output instances.
             checks.Add(new("release-bundle", "release-bundle", editorBuild.owner, "Archive the exact verified Release outputs after every required functional result passes.",
                 "native-host", checks.Where(static check => check.exclusion is null).Select(static check => check.id).ToArray(),
-                releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product"));
+                releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product", releaseRoots));
 
             void VisitRelease(string owner)
             {

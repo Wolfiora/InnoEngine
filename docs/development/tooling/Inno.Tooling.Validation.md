@@ -91,6 +91,8 @@ SDK 路径按本机显式选择，Windows 使用 `dotnet.exe`。构建目录稳�
 
 计划分别记录静态、领域、公共契约、集成、Native、产品和性能证据；编译是这些证据共享的前提。完整功能计划还准备 Release 上下文，运行真实 Release 产品旅程、验证 source-independent Player Support Pack，并在所有必要结果成功后归档同一份产物。不同配置有独立 SDK 输出；发布不会再次构建。
 
+发布包的源码输入与已编译产物分别登记。NativeAOT 还原涉及的 Player 及其依赖仍参与输入身份和前置验收，但不能因此要求它们在独立 Release 编译目录中存在 DLL。打包检查沿实际构建的 Editor、Build 入口及 SDK 引用闭包核对编译产物，并校验已经验证的 Support Pack 与 Editor 归档摘要；这不代表执行过 NativeAOT 产品。
+
 测试项目的 `InnoValidationEnvironment` 可以声明分号分隔的标准 OS 名称（windows、macos、linux）；未知名称失败，其他宿主在准备产物前明确排除。performance 层只在 extended、构建/原生/reload 或性能测试输入变化时采样，结果不可复用；普通完整功能矩阵保留明确排除理由，不把未采样记录为通过。
 
 GitHub 的 Plan 阶段只准备工具和一个计划，Run 阶段消费该计划。`--cache-input` / `--cache-output` 指定不可变 native/bindings 的运输归档。发布器验证请求身份、完整文件集合及内容哈希，并重新建立本地登记和读取保护；只导出已实际采用的完整生成物，未采用候选不随每轮缓存累积。跨 runner 不传输活动 lease、PID、cache owner 记录或可写 `obj`。外层运输缓存以完整归档内容为键，归档包含 recipe/工具/SDK/目标/配置身份的 generation manifests；旧候选不能充当测试结果。

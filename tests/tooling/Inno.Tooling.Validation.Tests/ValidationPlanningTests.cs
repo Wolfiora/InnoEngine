@@ -790,26 +790,44 @@ public sealed class ValidationPlanningTests
     private static string[] Owners(JsonDocument document)
         => document.RootElement.GetProperty("owners").EnumerateArray().Select(value => value.GetString()!).ToArray();
 
-    [Fact]
-    public async Task ExtendedAcceptanceIncludesColdWarmLifecycleAndReleaseProductRequirements()
+    [Theory]
+    [InlineData("Debug")]
+    [InlineData("Release")]
+    public async Task ExtendedAcceptanceIncludesColdWarmLifecycleAndReleaseProductRequirements(string configuration)
     {
         using var repository = new ValidationRepository();
         repository.Write("Product.props", "<Project />");
         repository.Write("entry/InnoEngine.Build/InnoEngine.Build.csproj", ValidationRepository.Project());
+        repository.Write("src/PlayerOnly/PlayerOnly.csproj", ValidationRepository.Project());
         repository.Write("platforms/Fixture/player/Player.csproj", ValidationRepository.Project(
-            "<PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>fixture-target</InnoProductTarget></PropertyGroup>"));
+            "<PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>fixture-target</InnoProductTarget></PropertyGroup>"
+            + "<ItemGroup><ProjectReference Include=\"../../../src/PlayerOnly/PlayerOnly.csproj\" /></ItemGroup>"));
         repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
             "<PropertyGroup><InnoProductId>editor</InnoProductId><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
             + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
-        using JsonDocument plan = await repository.PlanAsync(extended: true);
+        using JsonDocument plan = await repository.PlanAsync(extended: true, configuration: configuration);
         Assert.True(plan.RootElement.GetProperty("full").GetBoolean());
         Assert.True(plan.RootElement.GetProperty("extended").GetBoolean());
         JsonElement.ArrayEnumerator checks = plan.RootElement.GetProperty("checks").EnumerateArray();
-        foreach (string required in new[] { "cold-inputs", "native-hot-builds", "editor-products", "editor-release-products", "support-pack", "native-aot-restore" })
+        foreach (string required in new[] { "cold-inputs", "native-hot-builds", "editor-products", "support-pack", "native-aot-restore", "release-bundle" })
             Assert.Contains(checks, check => check.GetProperty("id").GetString() == required && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
-        Assert.Equal("Release", plan.RootElement.GetProperty("contexts").GetProperty("native-release").GetProperty("properties").GetProperty("Configuration").GetString());
-        Assert.NotEqual(plan.RootElement.GetProperty("contexts").GetProperty("native").GetProperty("properties").GetProperty("ArtifactsPath").GetString(),
-            plan.RootElement.GetProperty("contexts").GetProperty("native-release").GetProperty("properties").GetProperty("ArtifactsPath").GetString());
+        JsonElement bundle = checks.Single(check => check.GetProperty("id").GetString() == "release-bundle");
+        string releaseContext = bundle.GetProperty("context").GetString()!;
+        Assert.Equal("Release", plan.RootElement.GetProperty("contexts").GetProperty(releaseContext).GetProperty("properties").GetProperty("Configuration").GetString());
+        if (configuration != "Release")
+        {
+            Assert.Contains(checks, check => check.GetProperty("id").GetString() == "editor-release-products"
+                && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
+            Assert.NotEqual(plan.RootElement.GetProperty("contexts").GetProperty("native").GetProperty("properties").GetProperty("ArtifactsPath").GetString(),
+                plan.RootElement.GetProperty("contexts").GetProperty(releaseContext).GetProperty("properties").GetProperty("ArtifactsPath").GetString());
+        }
+        // Restore-only sources still invalidate the bundle, but their unbuilt standalone DLLs are not package inputs.
+        string[] bundleInputs = bundle.GetProperty("inputs").EnumerateArray().Select(value => value.GetString()!).ToArray();
+        Assert.Contains("@platforms/Fixture/player/Player.csproj", bundleInputs);
+        Assert.Contains("@src/PlayerOnly/PlayerOnly.csproj", bundleInputs);
+        Assert.Equal(new[] { "entry/InnoEngine.Build/InnoEngine.Build.csproj", "entry/InnoEngine.Editor/InnoEngine.Editor.csproj" },
+            bundle.GetProperty("projects").EnumerateArray().Select(value => value.GetString()!).Order(StringComparer.Ordinal).ToArray());
+        Assert.Contains("native-aot-restore", bundle.GetProperty("prerequisites").EnumerateArray().Select(value => value.GetString()));
         Assert.All(checks.Where(check => check.GetProperty("kind").GetString() == "test"),
             check => Assert.Equal("domain", check.GetProperty("layer").GetString()));
     }
