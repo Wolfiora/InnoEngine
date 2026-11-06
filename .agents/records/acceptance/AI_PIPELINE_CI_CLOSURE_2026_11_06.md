@@ -76,4 +76,11 @@
 - `42127319050` 的 macOS job `127594831396` 在托管工具回归失败，后续 Native／Release 检查被阻塞。SHA-256 验证的原始诊断 ZIP 为 `ci-421273-macos.zip`（`4346aa55fe5665ade89daf75341d24d6c10a96ce726a6c3ecfdb2ac59c56db35`）。唯一失败用例 `ChangedCompilationInputsCannotPublishReusableBuildIdentity` 用时 20 分 07 秒；五轮共用的 20 分钟 token 在最后一次执行前的 SDK 环境复核耗尽。未发现可冒充通过的陈旧证据；也未完成最后一轮的预期失败断言。
 - 前三轮没有中间计划断言，改为调用既有 `validate run` 的自动计划路径，避免单独 plan 后紧接 supplied-plan 环境复核；repaired evidence 明确引用该次执行保存的计划。后两轮仍验证分离计划，五轮行为及全部断言、20 分钟限制保持。修订后的本地真实 SDK 回归正在执行，不能将方法调整本身视为已解决托管时限问题。
 - Native ImGui 修订后的独立编译零警告／错误，5 项测试通过，120 个输出文件哈希不变且没有重新创建 ini。`native-imgui-output-receipt.json` 与前后清单保留；正在运行的临时脚本仍使用旧 AST，在最后登记处再次暴露同一 PowerShell 空字符串错误，随后 `Record-DeploymentWorkspace.ps1` 在同一 producer lease 下完成正式登记，`deployment-workspace-recorded.json` 确认成功。没有为登记错误重复构建或执行测试。
+
+## Console 首次完整通过与产品预算试验
+
+- `367af11fb2d3c4c6d549f92ee297c79552bdb665` 的 Console 内部颜色修改完整计划首次通过，共 544 项测试，零跳过，未选择 Build integration 或规模性能套件；真实启动、八项工作流和全部实际面板生命周期均通过。总耗时 1656.793 秒，产品旅程 480.058 秒，其他反馈 1176.735 秒。首次联合构建 14 分 27 秒，不作为 warm 成绩。`console-v4-0/` 保存完整输入、计划、TRX 和结果。
+- 临时计时驱动对 OrderedDictionary 使用属性过滤，导致产品耗时字段写成 null；逐项检查中原始 480.058 秒保持完整。修正派生总计单独保存在 `console-v4-timing-correction.json`，不覆盖首次记录。后续驱动将阶段行显式转为对象。
+- 产品帧预算从 30,000 缩到 3,000 的探索运行在 17.768 秒后正常退出，但异步脚本尚未完成，验证明确失败：`The source extension did not complete the journey.`。保留 `journey-frame-Workflows/`，恢复原 30,000 帧，不把退出码零当成功。普通／扩展的循环、资源采样、帧预算和期限保持；报告新增实际耗时及循环数，修复扩展模式仍写“100 cycles”的错误文字。
+- Windows/macOS 运行 `42135531646` 当前仍在执行；此前成功只属于上述局部输入，不能替代完整托管认证。
 - 精简调用后的五轮编译回归通过，用时 10 分 00.147 秒，原 20 分钟预算及全部行为断言保持；TRX 为 `compilation-direct-plan-trx/`。源码架构和记录链接检查通过。Native ImGui 修订已独立提交为 `731617678fb75f938eb763aa1f39823d23229976`；macOS 时限问题仍需新托管运行验证。推送修订会让既有并发策略取消旧 `42127319050` 的未完成 Windows 工作，原因是 macOS 已明确失败且旧树仍包含已复现的 Native ImGui 输出污染，不能通过重跑原树解决。

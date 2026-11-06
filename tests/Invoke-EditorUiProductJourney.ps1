@@ -58,6 +58,7 @@ $process.StartInfo = $start
 $code = $null
 $failure = $null
 $started = $false
+$elapsed = [Diagnostics.Stopwatch]::StartNew()
 try {
     if (-not $process.Start()) { throw 'The owned Editor process did not start.' }
     $started = $true
@@ -106,12 +107,14 @@ finally {
             Set-Content -LiteralPath (Join-Path $results 'stderr.log') -Encoding utf8
     }
     $process.Dispose()
+    $elapsed.Stop()
     [pscustomobject]@{
         revision = (& git -C $repository rev-parse HEAD).Trim()
         workingChanges = @(& git -C $repository status --porcelain=v1)
         editor = $editor; graphicsApi = $GraphicsApi; frames = $Frames; exitCode = $code; scenario = $Scenario
+        seconds = $elapsed.Elapsed.TotalSeconds; cycles = $(if ($Scenario -eq 'Lifecycle') { $Cycles } else { $null })
         status = $(if ($failure) { 'Failed' } else { 'Passed' })
-        diagnostic = $(if ($failure) { $failure.Exception.Message } elseif ($Scenario -eq 'Lifecycle') { 'Every actual product panel completed 100 cycles and eleven full-GC resource observations.' } else { 'Eight actual-product feature workflows completed.' })
+        diagnostic = $(if ($failure) { $failure.Exception.Message } elseif ($Scenario -eq 'Lifecycle') { "Every actual product panel completed $Cycles cycles and $($Cycles / 10 + 1) full-GC resource observations." } else { 'Eight actual-product feature workflows completed.' })
         limitation = 'Public feature commands with real panel drawing; native pointer/keyboard contracts and physical-device experience are separate evidence.'
     } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $results 'result.json') -Encoding utf8
 }
