@@ -108,6 +108,9 @@ public sealed class PanelLifecycle(
                     .Concat(m_panels.Select(panel => panel + "\t" + m_requiredCycles.ToString(System.Globalization.CultureInfo.InvariantCulture))));
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-resources.tsv"), m_resources);
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-preparation.tsv"), m_preparationResources);
+            string completion = Path.Combine(directory, "journey-completed.txt");
+            File.WriteAllText(completion + ".pending", "Lifecycle");
+            File.Move(completion + ".pending", completion);
             m_completed = true;
             return;
         }

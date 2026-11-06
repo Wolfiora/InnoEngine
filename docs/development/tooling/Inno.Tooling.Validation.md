@@ -48,6 +48,10 @@ Clean 通过既有 `InnoPrepareProductNative=false` 明确禁止产品准备，�
 
 真实产品旅程的 Samples 输入由固定仓库 URL 与提交选择。Git 依赖缓存放在有写入 lease 的稳定验证工作区，运行目录只保留输入 archive 和来源／完整性日志。每次使用检查 bare owner、远端身份、全部 Git 对象完整性和确切 commit，再从对象导出固定项目；不读取相邻工作区的未提交文件。有同来源、同提交的相邻仓库时只读导入对象，否则从声明的 HTTPS 来源获取。损坏对象缓存隔离并重新获取；网络或实际构建失败仍失败，不把失败重试改写为通过。
 
+旅程源码扩展完成全部行为和资源采样后，原子发布仅用于通知的完成消息。驱动先核对八项工作流，或完整面板循环、冷准备、full-GC 序列、内存增长和待处理事件，再请求它拥有的进程正常退出。Windows 只向该 PID 唯一的 `Inno Editor` 主窗口发送正常关闭消息；macOS 使用产品现有的控制台取消路径。退出后再次核对行为证据和 `Dispose end`，资源释放失败仍失败；只有驱动主动请求的 macOS 取消才允许产品约定的退出码 2。其他非零退出、提前退出、错误完成消息和超时不能通过。正常退出机制参考 [WM_CLOSE](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-close) 和 [.NET Console.CancelKeyPress](https://learn.microsoft.com/en-us/dotnet/api/system.console.cancelkeypress)。
+
+帧数是防止场景无法完成的上限，不是完成后继续空转的要求；独立 renderer smoke 仍核对完整帧数。普通旅程保留 100 次面板循环和十一轮 full-GC，扩展旅程保留 1,000 次循环和 101 轮 full-GC。结果中的 `frameLimit` 不冒充实际帧数，`exitTrigger` 区分场景完成与达到帧上限；完成通知本身不作为通过证据，也不进入任何产物缓存的新鲜度判断。
+
 编译证据沿 SDK 实际项目实例的引用边取得还原图和输出，区分相同项目被不同消费者以不同属性引用的情况。范围分析可以保守扩大源码影响，但不能把未选中消费者的私有构建目录当作当前必需产物。SDK 自带图求值使用至多四个线程，不在整个求值外层追加串行锁。
 
 Wiki 的脚本投影使用该检查明确声明的 Build 前置项及其 SDK 输出；完整计划中同一个项目可以同时具有 Debug 和 Release 构建项，不能只按项目名查找执行入口，也不能借用尚未执行的 Release 产物。

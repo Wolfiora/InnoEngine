@@ -267,6 +267,9 @@ public sealed class WorkflowJourney(
                 string directory = Path.Combine(context.projectDirectory, "Library", "Acceptance");
                 Directory.CreateDirectory(directory);
                 File.WriteAllLines(Path.Combine(directory, "workflow-journey.tsv"), m_verified);
+                string completion = Path.Combine(directory, "journey-completed.txt");
+                File.WriteAllText(completion + ".pending", "Workflows");
+                File.Move(completion + ".pending", completion);
                 m_finished = true;
                 break;
         }
