@@ -196,7 +196,9 @@ public sealed class ValidationCompletionTests
     public async Task ChangedCompilationInputsCannotPublishReusableBuildIdentity()
     {
         using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));
+        // Five real SDK validation cycles exercise identity correctness; their aggregate duration is not a latency contract.
+        // Keep a generous runaway safeguard without canceling a healthy final build on a slower hosted runner.
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
         const string C_PROBE = "tests/input/Inno.Input.Tests/CompilationInputProbe.cs";
         const string C_DEPENDENCY = "src/foundation/core/Inno.Core.IO/CompilationDependencyProbe.cs";
         const string C_RULES = "tests/ci/Test-AgentRules.ps1";
