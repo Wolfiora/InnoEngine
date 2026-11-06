@@ -45,6 +45,7 @@ internal static class ValidationPlanner
             ["DesignTimeBuild"] = "true",
             ["BuildProjectReferences"] = "true",
             ["BuildingInsideVisualStudio"] = "false",
+            ["ShouldUnsetParentConfigurationAndPlatform"] = "false",
             ["InnoProductRestore"] = "false",
             ["ArtifactsPath"] = artifacts
         };
@@ -157,7 +158,8 @@ internal static class ValidationPlanner
             ["managed"] = new(new Dictionary<string, string>
             {
                 ["Configuration"] = configuration, ["ArtifactsPath"] = artifacts,
-                ["BuildProjectReferences"] = "true", ["BuildingInsideVisualStudio"] = "false"
+                ["BuildProjectReferences"] = "true", ["BuildingInsideVisualStudio"] = "false",
+                ["ShouldUnsetParentConfigurationAndPlatform"] = "false"
             }, graph.RootElement.Clone())
         };
         Dictionary<string, ValidationProject> nativeProjects = byPath;

@@ -95,3 +95,10 @@
 - 复用策略收窄到 solution 名单之外的未变化依赖；选中根的实际引用继续执行 Build，保留后期产品属性实例。首个新增 fixture 把两种 AssemblyName 放进同一 intermediate 目录，冷构建即发生输出冲突；改为声明动态输入并在 AssignProjectConfiguration 前添加实际引用，原独立属性变体断言仍保留。小型实际 MSBuild 查询另外暴露并修复了条件中嵌套引号、target 内 Update 作用范围的问题。`selected-root-reference-metadata-scoped.json` 现在证实 Editor 的平台根保留 Build，而 Core 依赖使用 GetTargetPath；对应首个失败和修正查询均保留。真实编译回归及后续产品 warm 样本仍待完成，不将元数据查询等同于编译通过。
 - 精简调用后的五轮编译回归通过，用时 10 分 00.147 秒，原 20 分钟预算及全部行为断言保持；TRX 为 `compilation-direct-plan-trx/`。源码架构和记录链接检查通过。Native ImGui 修订已独立提交为 `731617678fb75f938eb763aa1f39823d23229976`；macOS 时限问题仍需新托管运行验证。推送修订会让既有并发策略取消旧 `42127319050` 的未完成 Windows 工作，原因是 macOS 已明确失败且旧树仍包含已复现的 Native ImGui 输出污染，不能通过重跑原树解决。
 - 动态引用修正的真实 SDK 回归已通过、零跳过：`ChangedRootsCompileReferencesSelectedDuringBuild` 用时 8 分 25.583 秒（`late-reference-compilation-trx/`），在单处理器下验证初始 SDK 图未包含的实际引用仍正确编译后续变化。普通联合根与独立属性变体也各有通过证据；原错误 fixture、字面路径架构失败和旧目标条件失败均保留，不重写为通过。源码架构与文档检查通过；真实 Console 产品样本继续单独验证。
+
+## Selected configuration and hosted product closure
+
+- `8a590bd1` 的 `console-v7-0` 首次完整样本通过，1740.567 秒，产品 480.763 秒，其余 1259.804 秒。随后 `console-v7-1` warm 样本完整通过，1061.443 秒，产品 480.663 秒，其余 580.780 秒；544 项契约、八项工作流和 100 次生命周期循环全部通过。warm 联合构建 4 分 39.48 秒；首个 Native 准备 130.192 秒，第二消费者独立核验复用 38.409 秒，均无 native 编译或绑定生成。五分钟非产品反馈目标仍未达到；这是一轮诊断，不是五轮中位数。
+- 托管运行 `42135531646` 已完成且汇总失败。macOS 的托管／原生测试、实际 Debug 产品旅程及十轮热缓存检查通过，Release 输出核对失败。实际 Release Editor 根依赖被 SDK 编译到 Debug 目录：solution 外的引用默认清除父 Configuration／Platform，根成功不能证明整条依赖使用 Release。首份诊断从经过认证的 artifact 读取具体日志，完整 ZIP 哈希核验另行进行，范围读取不冒充完整产物认证。
+- 统一计划现在在图求值和执行属性中显式保留未选中依赖的父配置，仍让 SDK 处理显式引用映射，并保留全部真实输出核对。实际 SDK 回归覆盖 Debug、SourceDebug、Release，依赖不列为 solution 根。初次 SourceDebug 复现错误；新增 Release fixture 起初缺少 IDE solution 的 Release 声明，补齐后组合三项通过、零跳过（`release-configuration-declared-trx/`，43 秒）。中途失败记录保留。源码架构与文档检查通过。
+- Windows 同次运行的契约测试通过，但 Debug 产品工作流等待退出超过 600 秒；后续热缓存和 Release 等检查被阻塞。已有日志确认 Direct3D11 初始化及首帧成功，artifact 包含 workflow-journey.tsv，仍需核对其内容和超时原因，不能据文件存在声称工作流通过。

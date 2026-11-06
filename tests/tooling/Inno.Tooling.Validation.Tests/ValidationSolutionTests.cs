@@ -13,9 +13,17 @@ public sealed class ValidationSolutionTests
     [Theory]
     [InlineData("Debug")]
     [InlineData("SourceDebug")]
+    [InlineData("Release")]
     public async Task PlannedUnionBuildsOwnersExcludedByTheIdeSolution(string configuration)
     {
         using var repository = new ValidationRepository();
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project(
+            "<ItemGroup><ProjectReference Include=\"../Other/Other.csproj\" /></ItemGroup>"));
+        repository.Write("src/Other/Other.csproj", ValidationRepository.Project($"""
+            <Target Name="RequireSelectedConfiguration" BeforeTargets="CoreCompile">
+              <Error Condition="'$(Configuration)' != '{configuration}'" Text="The unselected dependency lost the planned configuration." />
+            </Target>
+            """));
         repository.Write("InnoEngine.sln", """
             Microsoft Visual Studio Solution File, Format Version 12.00
             Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "src/Example/Example.csproj", "{11111111-1111-1111-1111-111111111111}"
@@ -24,10 +32,12 @@ public sealed class ValidationSolutionTests
                 GlobalSection(SolutionConfigurationPlatforms) = preSolution
                     Debug|Any CPU = Debug|Any CPU
                     SourceDebug|Any CPU = SourceDebug|Any CPU
+                    Release|Any CPU = Release|Any CPU
                 EndGlobalSection
                 GlobalSection(ProjectConfigurationPlatforms) = postSolution
                     {11111111-1111-1111-1111-111111111111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
                     {11111111-1111-1111-1111-111111111111}.SourceDebug|Any CPU.ActiveCfg = Debug|Any CPU
+                    {11111111-1111-1111-1111-111111111111}.Release|Any CPU.ActiveCfg = Release|Any CPU
                 EndGlobalSection
             EndGlobal
             """);
@@ -57,6 +67,8 @@ public sealed class ValidationSolutionTests
         Assert.Equal(expected, union.Descendants("Project").Select(project => Path.GetFullPath(project.Attribute("Path")!.Value))
             .Order(StringComparer.Ordinal).ToArray());
         Assert.Equal(configuration, union.Descendants("BuildType").Single().Attribute("Name")!.Value);
+        Assert.DoesNotContain(union.Descendants("Project"), project =>
+            Path.GetFullPath(project.Attribute("Path")!.Value) == repository.PathOf("src/Other/Other.csproj"));
         Assert.False(File.Exists(target));
         await repository.BuildAsync([solution, ..properties]);
         Assert.True(File.Exists(target));
