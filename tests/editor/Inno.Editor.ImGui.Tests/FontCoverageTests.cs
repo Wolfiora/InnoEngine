@@ -53,19 +53,24 @@ public sealed unsafe class FontCoverageTests
                         ImFontGlyph* glyph = NativeImGui.Raw.FindGlyphNoFallback(baked, value);
                         Assert.True(glyph is not null, $"Face {style} has no U+{(int)value:X4} glyph.");
                         Assert.Equal((uint)value, glyph->Codepoint);
-                        Assert.Equal(value is 'A' or 'é' ? 0u : 3u, glyph->SourceIdx);
+                        Assert.Equal(value is 'A' or 'é' ? 0u : 4u, glyph->SourceIdx);
                     }
                     ImFontGlyph* icon = NativeImGui.Raw.FindGlyphNoFallback(baked, 0xf0e2);
                     Assert.True(icon is not null);
                     Assert.InRange(icon->SourceIdx, 1u, 2u);
-                    Assert.Equal(4, font->Sources.Size);
-                    ImFontConfig* supplemental = font->Sources.Data[3];
+                    ImFontGlyph* logo = NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.Inno[0]);
+                    Assert.True(logo is not null);
+                    Assert.Equal((uint)ImGuiIcon.Inno[0], logo->Codepoint);
+                    Assert.Equal(3u, logo->SourceIdx);
+                    Assert.True(logo->AdvanceX > 0 && logo->X1 > logo->X0 && logo->Y1 > logo->Y0);
+                    Assert.Equal(5, font->Sources.Size);
+                    ImFontConfig* supplemental = font->Sources.Data[4];
                     Assert.Equal(16_437_364, supplemental->FontDataSize);
                     Assert.Equal(0, supplemental->FontDataOwnedByAtlas);
                     if (sharedData == 0)
                         sharedData = (nint)supplemental->FontData;
                     Assert.Equal(sharedData, (nint)supplemental->FontData);
-                    NativeImGui.TextUnformatted("Aé资源漢字 / undo");
+                    NativeImGui.TextUnformatted(ImGuiIcon.Inno + " Aé资源漢字 / undo");
                 }
             }
             finally
@@ -206,7 +211,7 @@ public sealed unsafe class FontCoverageTests
         {
             using BackendFontScope scope = BackendFont.PushStyle(BackendFontStyle.Regular);
             Assert.True(NativeImGui.Raw.FindGlyphNoFallback(NativeImGui.Raw.GetFontBaked(), 0x6f22) is not null);
-            source = (nint)NativeImGui.Raw.GetFont()->Sources.Data[3]->FontData;
+            source = (nint)NativeImGui.Raw.GetFont()->Sources.Data[4]->FontData;
         });
         Assert.NotEqual((nint)0, source);
         return source;
