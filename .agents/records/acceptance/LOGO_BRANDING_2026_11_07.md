@@ -2,6 +2,47 @@
 
 [获批计划](../plans/LOGO_BRANDING.md) · [品牌资源](../../../assets/branding/README.md)
 
+## 当前修订：空心字体与移除内置原图
+
+- 基线为 `402a191e`，分支 `logo`。用户确认四块各自描边的预览，并要求替换为其提供的 v2 SVG、彻底删除内置原图能力。
+- 正式 TTF 与已确认预览字节相同，U+E000、度量、作者署名和合并入口不变；字形由八条内外轮廓组成，四块内部透明。
+- 正式 SVG 与用户提供文件字节相同；512px 透明 PNG 从新 SVG 导出，仅保存在品牌目录。默认组合的图片 API、资源链接、专用测试和测试引用已删除，产品文档同步清理。
+- SVG SHA-256：`62f84df21f90b626db5aef502cb064645c05d3bcd92a6d1fc152cf3ef0ba55ed`。
+- TTF SHA-256：`143dce4e0ca463e7a71d647fd52d607e34e56068089dfb70620c105124ca5cc3`。
+- SDK 显式使用 `C:/Users/23842/.dotnet/dotnet.exe` 10.0.402；没有修改全局 SDK 配置。实现后的记录收尾于 2026-11-08；以下专项证据属于本轮输入。
+
+### 本轮实际证据
+
+| 检查 | 结果与证据 |
+| --- | --- |
+| 正式资源 | TTF 与批准预览、新 SVG 与提供文件逐字节一致。八条内外轮廓方向相反，四块内部采样透明，SVG 精确复现 TTF 轮廓；PNG 为 512×512 RGBA，可见边界 (34,16)…(478,496)，中央接缝 57 个采样 alpha 均为 255。`artifacts/branding-work/outline-checks.json`。 |
+| 视觉 | 批准的空心字体预览保存在 `artifacts/branding-work/outline-preview/icon-preview.png`；新灰阶 PNG 深浅背景检查见 `artifacts/branding-work/logo-v2-review.png`。 |
+| 原生专项编译 | 正常构建默认组合、Editor ImGui 测试及 Build 工具依赖闭包，没有跳过原生准备或项目引用；0 警告、0 错误。`artifacts/branding-work/outline-focused-build.log`。 |
+| 字体回归 | 当前部署的 TTF 哈希与批准字体一致；FontCoverageTests 9 项通过、0 失败、0 跳过，覆盖四种样式、缩放、CJK、既有图标、字体源共享和 Context 生命周期。`artifacts/validation/logo-outline-focused/fonts/font-coverage.trx`。 |
+| 运行时回归 | 移除专用图片测试与额外引用后重新构建，0 警告、0 错误；剩余 62 项通过、0 失败、0 跳过。`artifacts/branding-work/outline-runtime-build.log`、`artifacts/validation/logo-outline-focused/runtime/runtime.trx`。 |
+| 删除完整性 | 源码、项目文件、测试和当前使用文档没有被删 API 或资源名的引用。对新编译默认组合的 PE 元数据检查 21 个类型，无品牌类型，资源表为空。`artifacts/validation/logo-outline-focused/default-assembly.json`。 |
+| 编译 API | 默认组合、ImGui SDL3 backend、Editor ImGui 三个 owner 检查通过。`artifacts/branding-work/outline-api.log`。 |
+| Wiki 契约 | 使用本次生成的 Windows 逻辑脚本引用检查三个相关项目页，API 映射和示例通过。`artifacts/branding-work/outline-wiki-retry.log`；清单位于 `artifacts/validation/logo-outline-focused/wiki-api.json`、`wiki-examples.json`。 |
+| 最终源码与文档 | 249 个工程的源码架构检查、规则登记检查、产品文档结构与 agent 文档检查通过；`git diff --check` 通过。日志为 `outline-source-final.log`、`outline-rules-final-retry.log`、`outline-documentation-final.log`、`outline-agent-documents-final.log`（均在 `artifacts/branding-work`）。规则脚本首次多路径参数写法有误，改为 PowerShell 数组后通过，首次输出保留在 `outline-rules-final.log`。 |
+
+PNG SHA-256：`2656f31f52669a51345928718b18d8bb94f2a239d5ee8e93f754e32359e60aa9`。默认组合 DLL SHA-256：`4ccaad2c86c753425d9d09070d61aa2482e50824c3e2a6293d940745c56db64b`。最终文件输入清单位于 `artifacts/validation/logo-outline-focused/input-manifest.json`；收尾只补写记录，未改变已验证的产品或测试输入。
+
+### 本轮统一计划与未完成项
+
+1. 正确工具生成的统一计划为 `artifacts/validation/logo-outline-plan-02/plan.json`；品牌文件未知 owner 触发保守全量选择（249 个 owner、324 个必需检查），没有手工改写计划。一次较早的运行误用了旧缓存 CLI，识别后终止，保留 `outline-run.log`，不作为证据。
+2. 正确全量运行 `logo-outline-run-02` 执行过程中，独立的当前 SDK 元数据预检再次确认既有 fixture 问题：`Inno.Testing.Editor.Native` 为 `IsTestProject=true`，但 `InnoValidationLayer` 为空；预检退出 1，仅此一项违规。日志为 `artifacts/branding-work/outline-fixture-preflight.log`，对应 [现有问题](../open-items.md#原生-editor-测试支持库的执行层分类)。
+3. 确认该全量门禁阻塞后终止尚在进行的全量原生构建；该运行 `completed:false`，不提供全量完成认证，也不将其中已观察到的通过数作为完成证据。上表来自随后独立完成的专项执行，不替代统一全量门禁。
+4. 首次 Wiki 命令错误地从输出子目录寻找生成项目，缺少引用参数而失败；改为实际项目根目录读取引用后检查通过。首次日志 `outline-wiki.log` 保留。脚本投影成功，但自动缓存盘点超过预算而推迟；没有退休缓存，见 `outline-wiki-projection.log`。
+5. 全量原生测试、产品旅程、Release、Support Pack、NativeAOT、发布归档及 macOS/其他设备没有本轮完成证据；未将既有环境阻塞记为通过。Windows 不存在 `/System/Library/Sounds/Glass.aiff`，未播放提示音。
+
+### 本轮语义审查
+
+品牌 SVG/PNG 只保留在仓库资源目录；默认组合删除图片 API、资源链接与专用测试，没有兼容入口、替代管理器或运行时图片依赖。字体沿用现有 loader、常量、码点和 EditorIconCatalog；生命周期由原有字体测试覆盖。空心图标精确采用用户批准预览，灰阶原稿采用用户新文件。交互、Undo/Redo 和菜单行为未修改，其全量旅程也未宣称通过。
+
+以下均为初版历史证据，不代表本轮字形、资源或删除行为通过。
+
+## 初版历史证据（已被上述范围取代）
+
 ## 范围与输入
 
 - 分支 `logo`，基线 `1294d148f445f00df7e6a9dbf22de53a75b886fa`，工作区实现尚未提交。

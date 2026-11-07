@@ -27,25 +27,6 @@ Session 级 Reporter 的 source ID 必须包含实际 owner 范围。Animation �
 
 生成器通过 `OutputItemType="Analyzer"`、`ReferenceOutputAssembly="false"` 引入，不是运行时依赖。Editor 可传入自己的 session audio factory，以保留预览/Play 管理；它不需要复制整个默认子系统列表。
 
-## 品牌图片
-
-`EngineBranding.OpenLogoPng()` 返回内嵌的 512×512 透明灰阶 PNG。每次调用返回从起点开始的独立只读流，由调用方释放；不需要 Session、窗口、渲染上下文、源码目录或当前工作目录。不同调用可以并行使用，同一条流的访问由调用方协调。
-
-```csharp
-using System.IO;
-using Inno.Engine.Default;
-
-static byte[] ReadEngineLogo()
-{
-    using Stream source = EngineBranding.OpenLogoPng();
-    using var bytes = new MemoryStream();
-    source.CopyTo(bytes);
-    return bytes.ToArray();
-}
-```
-
-产品只读取原始图片字节，纹理解码、绘制和纹理释放继续由实际消费者负责。程序集缺少必需图片时抛出 `InvalidDataException`。资源由项目显式链接仓库品牌目录中的 PNG，构建时嵌入；运行时没有文件探测或图片生成流程。设计作者与制作参数见 [品牌资源](../../../assets/branding/README.md)。
-
 ## 错误与扩展
 
 重复 ID、错误 owner lifetime、缺少依赖或循环依赖拒绝启动。设备选择是中立 enum，不允许在 Host public/protected API 返回 concrete adapter 或 Native handle。这里不自动安装、创建或启用任何玩法 Plugin。
@@ -112,19 +93,3 @@ static byte[] ReadEngineLogo()
 - [Inno.Audio](../audio/Inno.Audio.md)：公开引用边界由实际签名核对。
 - [Inno.Rendering.Runtime](../rendering/Inno.Rendering.Runtime.md)：公开引用边界由实际签名核对。
 - [Inno.Extensibility.Catalogs](../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
-
-### `Inno.Engine.Default.EngineBranding`
-
-<!-- api: T:Inno.Engine.Default.EngineBranding 8808312fd6687a16dd24b4b569186c2be2bd3bfbb6b330e76da9a56593b3eb0b -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| `public static class Inno.Engine.Default.EngineBranding` | 提供默认发行内嵌品牌图片，无 Session 或窗口依赖。 | — | — |
-
-### `Inno.Engine.Default.EngineBranding.OpenLogoPng`
-
-<!-- api: M:Inno.Engine.Default.EngineBranding.OpenLogoPng 275f7e8bf690e665e01712a321da0f9a04c331859601ed96a2a532aac0b50271 -->
-
-| 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
-| --- | --- | --- | --- |
-| `public static System.IO.Stream Inno.Engine.Default.EngineBranding.OpenLogoPng()` | 返回从起点开始的 512×512 透明 PNG 只读流。 | 每次调用独立；调用方负责释放。 | 缺少内嵌资源时抛出 InvalidDataException。 |

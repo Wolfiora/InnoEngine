@@ -8,7 +8,7 @@ Viewport 位置与尺寸 setter 经共享 Native ImGui 的标量 callback adapte
 
 ## API 参考
 
-默认字体还合并 `BuiltIn/Icons/InnoEngine-Icons.ttf` 中的 U+E000，公开常量为 `ImGuiIcon.InnoEngine`。它保留 Logo 轮廓与镂空，以当前文字颜色绘制。四种正文样式和替换样式的既有图标合并入口共用该资源，图标加载尺寸仍为 14px。制作与作者信息见 [品牌资源](../../../assets/branding/README.md)。
+默认字体还合并 `BuiltIn/Icons/InnoEngine-Icons.ttf` 中的 U+E000，公开常量为 `ImGuiIcon.InnoEngine`。它以四块独立空心边框保留 Logo 轮廓与镂空间隔，以当前文字颜色绘制。四种正文样式和替换样式的既有图标合并入口共用该资源，图标加载尺寸仍为 14px。制作与作者信息见 [品牌资源](../../../assets/branding/README.md)。
 
 [完整声明、行为与调用约束](Inno.Adapter.Presentation.ImGui.Sdl3/api.md)
 
