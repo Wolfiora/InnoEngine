@@ -7,6 +7,7 @@ using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
@@ -24,7 +25,7 @@ public sealed unsafe class ConsoleSearchNativeTests
         float width,
         float height
     ) {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        using var host = new NativePanelHost(typeof(ConsoleSearchNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.SetDisplayMetrics(new(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
@@ -61,7 +62,7 @@ public sealed unsafe class ConsoleSearchNativeTests
         float width,
         float height
     ) {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        using var host = new NativePanelHost(typeof(ConsoleSearchNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.SetDisplayMetrics(new(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();

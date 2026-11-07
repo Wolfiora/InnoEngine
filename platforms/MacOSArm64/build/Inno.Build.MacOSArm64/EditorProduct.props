@@ -2,6 +2,7 @@
   <Import Project="ProductBuild.props" />
 
   <PropertyGroup>
+    <InnoValidationBackendPattern>Rendering initialized with Metal</InnoValidationBackendPattern>
     <InnoImGuiShaderTarget>$(InnoBgfxShaderTarget)</InnoImGuiShaderTarget>
     <InnoImGuiShaderApis>$(InnoBgfxShaderApis)</InnoImGuiShaderApis>
   </PropertyGroup>

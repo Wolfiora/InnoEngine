@@ -35,7 +35,7 @@ static void RenderMarkup(
 }
 ```
 
-`markup` 与 `input` 由调用方提供；该代码只适用于 Host/adapter 层，脚本使用 `InnoEngine.UI.UI`。Context/Document handle 在进程内不复用；无效或已退休 handle 抛错。Context 销毁时清理 DOM 和像素，因 RmlUi 的全局字体缓存可能在 `Rml::Shutdown` 再调用渲染接口，极小的接口壳保留至最后一个 UI backend 停止。实现不允许外部文件/网络读取隐式绕过 Asset Pipeline。参见 [UI Runtime](../../ui/Inno.UI.Runtime.md)。
+`markup` 与 `input` 由调用方提供；该代码只适用于 Host/adapter 层，脚本使用 `InnoEngine.UI.UI`。Context/Document handle 在进程内不复用；无效或已退休 handle 抛错。Context 销毁时清理 DOM 和像素，因 RmlUi 的全局字体缓存可能在 `Rml::Shutdown` 再调用渲染接口，极小的接口壳保留至最后一个 UI backend 停止。实现不允许外部文件/网络读取隐式绕过 Asset Pipeline。参见 [UI Runtime](../../modules/ui/Inno.UI.Runtime.md)。
 
 未指定文档根 `width`、`height` 时，RML 文档在其所属 Context 内默认占满整个 viewport；文档明确通过 CSS/RCSS 设置宽高时保留作者值。因此绝对定位的 `right`、`bottom` 和百分比以当前 UI Context 的范围为基准，而不是以零尺寸的自动收缩文档为基准。遵循 CSS 的盒模型，`left: 50%; top: 50%` 定位的是元素左上角；要让元素本身居中，再写 `transform: translate(-50%, -50%)`，也可以使用 flex 布局。作者端支持 RML `<style>`、指向 `.rcss` 的 `<link>` 和样式表 `@import`，它们由 RML frontend 在 Asset Pipeline 中展开并追踪依赖；这是 RmlUi 支持的 CSS/RCSS 子集，并不宣称实现完整浏览器 CSS。
 
@@ -127,9 +127,9 @@ static void RenderMarkup(
 
 ## 项目依赖
 
-- [Inno.Adapter.UI](../../ui/Inno.Adapter.UI.md)：公开引用边界由实际签名核对。
-- [Inno.UI](../../ui/Inno.UI.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Input](../../core/Inno.Core.Input.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Mathematics](../../core/Inno.Core.Mathematics.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.UI](../../modules/ui/Inno.Adapter.UI.md)：公开引用边界由实际签名核对。
+- [Inno.UI](../../modules/ui/Inno.UI.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Input](../../modules/core/Inno.Core.Input.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Mathematics](../../modules/core/Inno.Core.Mathematics.md)：公开引用边界由实际签名核对。
 - [Inno.Native.UI](Inno.Native.UI.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

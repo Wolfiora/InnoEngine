@@ -6,11 +6,10 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>domain</InnoValidationLayer>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../../platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj" PrivateAssets="compile" />
-    <ProjectReference Include="../../../backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj" />
     <ProjectReference Include="../../../src/services/input/Inno.Input/Inno.Input.csproj" />
     <ProjectReference Include="../../../src/services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj" />
     <ProjectReference Include="../../../src/adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj" />

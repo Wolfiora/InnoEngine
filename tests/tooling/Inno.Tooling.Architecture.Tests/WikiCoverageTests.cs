@@ -63,6 +63,23 @@ public sealed class WikiCoverageTests : IDisposable
     }
 
     [Fact]
+    public void FixtureLibrariesKeepPublicApiCoverageInsideTheTestTree()
+    {
+        const string C_PROJECT = "tests/fixtures/SharedFixture/SharedFixture.csproj";
+        Write(C_PROJECT, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        Write("tests/fixtures/SharedFixture/Fixture.cs", "namespace SharedFixture; public sealed class Fixture { public int Read() => 1; }");
+        Write("docs/development/testing/README.md", "[Fixture](SharedFixture.md)");
+        Write("docs/development/testing/SharedFixture.md", "# Shared fixture\n");
+        string inventory = Path.Combine(m_root, "fixture-api.json");
+        string failure = Run(inventory);
+        Assert.Contains("M:SharedFixture.Fixture.Read", failure, StringComparison.Ordinal);
+        using (JsonDocument document = JsonDocument.Parse(File.ReadAllText(inventory)))
+            Assert.Contains(document.RootElement.EnumerateArray(), entry => entry.GetProperty("project").GetString() == "SharedFixture");
+        Write(C_PROJECT, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework><IsTestProject>true</IsTestProject></PropertyGroup></Project>");
+        Assert.DoesNotContain("M:SharedFixture.Fixture.Read", Run(), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ProjectPagesMustBeUniqueAndIndexed()
     {
         File.Delete(Path.Combine(m_root, "docs/core/Inno.Core.Probe.md"));
@@ -75,8 +92,10 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.Contains("absent from its category index", Run(), StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void LinksValidatePathsAndAnchorsOutsideCodeFences()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LinksValidatePathsAndAnchorsOutsideCodeFences(bool structureOnly)
     {
         Write("docs/core/Inno.Core.Probe.md", """
             # Probe
@@ -88,7 +107,7 @@ public sealed class WikiCoverageTests : IDisposable
             [Example syntax](example-only.md)
             ```
             """);
-        string diagnostics = Run();
+        string diagnostics = structureOnly ? Run(null, "--documentation-only") : Run();
         Assert.Contains("missing anchor '#missing'", diagnostics, StringComparison.Ordinal);
         Assert.Contains("missing path 'absent.md'", diagnostics, StringComparison.Ordinal);
         Assert.DoesNotContain("example-only.md", diagnostics, StringComparison.Ordinal);
@@ -113,6 +132,19 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.Contains("documents deleted symbol", Run(), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ContractScopeRetainsSignatureAndExampleFailuresWhileStructureOwnsLinks()
+    {
+        Write("docs/core/Inno.Core.Probe.md", "# Probe\n[Missing](absent.md)\n```csharp\nAbsentType.Run();\n```\n");
+        string contracts = Run(null, "--wiki-contracts-only");
+        Assert.Contains("no current signature mapping", contracts, StringComparison.Ordinal);
+        Assert.Contains("example 1 at line", contracts, StringComparison.Ordinal);
+        Assert.DoesNotContain("missing path 'absent.md'", contracts, StringComparison.Ordinal);
+        string structure = Run(null, "--documentation-only");
+        Assert.Contains("missing path 'absent.md'", structure, StringComparison.Ordinal);
+        Assert.DoesNotContain("example 1 at line", structure, StringComparison.Ordinal);
+    }
+
     [Theory]
     [InlineData("int value = 1;", false)]
     [InlineData("int value = \"invalid\";", true)]
@@ -122,6 +154,17 @@ public sealed class WikiCoverageTests : IDisposable
         bool rejected
     ) {
         Write("docs/core/Inno.Core.Probe.md", "# Probe\n\n```csharp\n" + example + "\n```\n");
+        Assert.Equal(rejected, Run().Contains("example 1 at line", StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("~~~cs\nAbsentType.Run();\n~~~\n", true)]
+    [InlineData("````csharp\nAbsentType.Run();\n````\n", true)]
+    [InlineData("````text\n```csharp\nAbsentType.Run();\n```\n````\n", false)]
+    [InlineData("~~~cs\nint value = 1;\n", true)]
+    public void MarkdownFencesUseTheSameSyntaxTreeAsDocumentNavigation(string text, bool rejected)
+    {
+        Write("docs/core/Inno.Core.Probe.md", "# Probe\n" + text);
         Assert.Equal(rejected, Run().Contains("example 1 at line", StringComparison.Ordinal));
     }
 
@@ -190,6 +233,59 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.Contains("unique Markdown page", Assert.Throws<InvalidDataException>(() => Run()).Message, StringComparison.Ordinal);
         Write("docs/core/Inno.Core.Probe.md", "<!-- api-include: ../../outside.md -->");
         Assert.Contains("within the current Wiki", Assert.Throws<InvalidDataException>(() => Run()).Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("Inno.Core.Probe/api.md")]
+    [InlineData("fragments/contract.md")]
+    public async Task SelectedFragmentsRetainTheirProjectSignaturesAndExampleCompilation(string fragment)
+    {
+        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        var start = new ProcessStartInfo(host)
+        {
+            UseShellExecute = false, CreateNoWindow = true,
+            RedirectStandardOutput = true, RedirectStandardError = true
+        };
+        foreach (string argument in new[] { "build", Path.Combine(m_root, "src/foundation/core/Inno.Core.Probe/Inno.Core.Probe.csproj"),
+            "--disable-build-servers", "--nologo", "-m:1", "-nr:false" })
+            start.ArgumentList.Add(argument);
+        using Process process = Process.Start(start)!;
+        Task<string> standardOutput = process.StandardOutput.ReadToEndAsync();
+        Task<string> standardError = process.StandardError.ReadToEndAsync();
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        try
+        {
+            await process.WaitForExitAsync(cancellation.Token);
+            Assert.True(process.ExitCode == 0, await standardOutput + await standardError);
+        }
+        finally
+        {
+            if (!process.HasExited)
+                process.Kill(entireProcessTree: true);
+            await process.WaitForExitAsync();
+            await Task.WhenAll(standardOutput, standardError);
+        }
+        string inventory = Path.Combine(m_root, "api.json");
+        _ = Run(inventory, "--dotnet", host);
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(inventory));
+        string markers = string.Join('\n', document.RootElement.EnumerateArray().Select(entry =>
+            $"<!-- api: {entry.GetProperty("id").GetString()} {entry.GetProperty("signatureHash").GetString()} -->"));
+        string page = "docs/core/" + fragment;
+        Write("docs/core/Inno.Core.Probe.md", "<!-- api-include: " + fragment + " -->\n");
+        Write(page, markers + "\n```csharp\nusing Inno.Core.Probe;\nstring? value = Probe.Read();\n```\n");
+        string examples = Path.Combine(m_root, "examples.json");
+        string output = Run(inventory, "--dotnet", host, "--wiki-page", page, "--wiki-examples", examples);
+        Assert.DoesNotContain("example 1 at line", output, StringComparison.Ordinal);
+        using JsonDocument signatures = JsonDocument.Parse(File.ReadAllText(inventory));
+        Assert.Equal(document.RootElement.GetArrayLength(), signatures.RootElement.GetArrayLength());
+        using JsonDocument results = JsonDocument.Parse(File.ReadAllText(examples));
+        JsonElement example = Assert.Single(results.RootElement.EnumerateArray());
+        Assert.Equal(page, example.GetProperty("page").GetString());
+        Assert.Equal("host-sdk", example.GetProperty("referenceMode").GetString());
+        Assert.Empty(example.GetProperty("errors").EnumerateArray());
+        Write(page, markers + "\n```csharp\nusing Inno.Core.Probe;\nProbe.Absent();\n```\n");
+        Assert.Contains("example 1 at line", Run(null, "--dotnet", host, "--wiki-page", page), StringComparison.Ordinal);
     }
 
     [Fact]
@@ -408,10 +504,11 @@ public sealed class WikiCoverageTests : IDisposable
     {
         string projectDirectory = Path.Combine(m_root, "src/foundation/core/Inno.Core.Probe");
         string project = Path.Combine(projectDirectory, "Inno.Core.Probe.csproj");
+        File.WriteAllText(Path.Combine(projectDirectory, "Framework.props"), "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
         File.WriteAllText(project, """
             <Project Sdk="Microsoft.NET.Sdk">
+              <Import Project="Framework.props" />
               <PropertyGroup>
-                <TargetFramework>net10.0</TargetFramework>
                 <DefineConstants>SELECTED_CONTRACT</DefineConstants>
               </PropertyGroup>
               <ItemGroup><Compile Remove="Excluded.cs" /><Compile Include="obj/SelectedBindings.cs" /></ItemGroup>
@@ -480,7 +577,7 @@ public sealed class WikiCoverageTests : IDisposable
             "# Probe\n```csharp\npublic static class Example { public static string Read() => Inno.Core.Probe.Probe.Read(); "
             + "public static int Count(params System.ReadOnlySpan<int> values) => values.Length; }\n```\n");
         string inventory = Path.Combine(m_root, "sdk-api.json");
-        Assert.DoesNotContain("example 1 at line", Run(inventory, "--dotnet", host), StringComparison.Ordinal);
+        Assert.DoesNotContain("example 1 at line", Run(inventory, "--wiki-only", "--dotnet", host, "--wiki-page", "docs/core/Inno.Core.Probe.md"), StringComparison.Ordinal);
         string api = File.ReadAllText(inventory);
         Assert.Contains("T:Inno.Core.Probe.Selected", api, StringComparison.Ordinal);
         Assert.Contains("T:Inno.Core.Probe.GeneratedContract", api, StringComparison.Ordinal);
@@ -490,13 +587,13 @@ public sealed class WikiCoverageTests : IDisposable
         Assert.DoesNotContain("T:Excluded", api, StringComparison.Ordinal);
         Write("docs/core/Inno.Core.Probe.md",
             "# Probe\n```csharp\npublic static class Example { public static int Read() => ForeignContract.Read(); }\n```\n");
-        Assert.Contains("example 1 at line", Run(null, "--dotnet", host), StringComparison.Ordinal);
+        Assert.Contains("example 1 at line", Run(null, "--wiki-only", "--dotnet", host), StringComparison.Ordinal);
         string validProject = File.ReadAllText(project);
         File.WriteAllText(project, validProject.Replace("</Project>",
             "<Target Name=\"SelectUnavailableReference\" AfterTargets=\"ResolveReferences\">"
             + "<ItemGroup><ReferencePath Include=\"absent-contract.dll\" /></ItemGroup></Target></Project>", StringComparison.Ordinal));
         Write("docs/architecture/GUIDE.md", "```csharp\nint value = missing;\n```\n");
-        string unavailable = Run(inventory, "--dotnet", host,
+        string unavailable = Run(inventory, "--wiki-only", "--dotnet", host,
             "--wiki-examples", Path.Combine(m_root, "unavailable-examples.json"));
         Assert.Contains("requires its evaluated compile reference", unavailable, StringComparison.Ordinal);
         Assert.Contains("GUIDE.md' example 1", unavailable, StringComparison.Ordinal);
@@ -507,7 +604,7 @@ public sealed class WikiCoverageTests : IDisposable
         File.WriteAllText(project, File.ReadAllText(project).Replace("</DefineConstants>",
             "</DefineConstants><LangVersion>99.0</LangVersion>", StringComparison.Ordinal));
         Assert.Contains("unsupported C# language version", Assert.Throws<InvalidDataException>(
-            () => Run(null, "--dotnet", host)).Message, StringComparison.Ordinal);
+            () => Run(null, "--wiki-only", "--dotnet", host)).Message, StringComparison.Ordinal);
     }
 
     private string EmitScriptReference(
@@ -543,7 +640,9 @@ public sealed class WikiCoverageTests : IDisposable
         {
             Console.SetOut(captured);
             Console.SetError(captured);
-            string[] arguments = inventory is null ? [m_root, "--wiki"] : [m_root, "--wiki", "--wiki-api", inventory];
+            string[] arguments = extraArguments.Contains("--documentation-only", StringComparer.Ordinal)
+                || extraArguments.Contains("--wiki-contracts-only", StringComparer.Ordinal) ? [m_root]
+                : inventory is null ? [m_root, "--wiki"] : [m_root, "--wiki", "--wiki-api", inventory];
             _ = ArchitectureValidator.Execute(arguments.Concat(extraArguments).ToArray());
             return captured.ToString();
         }

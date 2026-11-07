@@ -1,0 +1,647 @@
+{
+  "host": "C:/Users/23842/.dotnet/dotnet.exe",
+  "sdk": "10.0.402",
+  "root": "C:\\Dev\\GameEngineDev\\InnoEngine",
+  "os": "win32",
+  "measurement": "CLI process wall clock; first index uses an isolated copy of the same docs and actual project inventory, with an empty owned cache; warm queries use the current checkout. No pre-change docs CLI existed.",
+  "firstIndex": {
+    "milliseconds": 25286.5707,
+    "bytes": 277,
+    "status": "Indexed",
+    "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+    "sourceApiStatus": "Unverified",
+    "sections": 0,
+    "sources": [],
+    "continuations": 0,
+    "message": "Indexed 434 pages; reparsed 434. No source API validation was performed."
+  },
+  "workloads": [
+    {
+      "name": "console",
+      "arguments": [
+        "search",
+        "--query",
+        "ConsoleStyle"
+      ],
+      "expectedOwner": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+      "medianMilliseconds": 12724.968600000007,
+      "samples": [
+        {
+          "milliseconds": 19666.207700000006,
+          "bytes": 3659,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 5,
+          "sources": [
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "innoeditorpanellogging"
+            },
+            {
+              "page": "docs/development/documentation.md",
+              "section": "本地查询"
+            },
+            {
+              "page": "docs/development/entry/InnoEngine.Build.md",
+              "section": "查询本地文档"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "设计思路"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "实现原理与调用约束"
+            }
+          ],
+          "continuations": 0,
+          "message": "8 matching sections; showing 5. Excerpts are navigation, not complete contracts."
+        },
+        {
+          "milliseconds": 12863.391499999998,
+          "bytes": 3659,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 5,
+          "sources": [
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "innoeditorpanellogging"
+            },
+            {
+              "page": "docs/development/documentation.md",
+              "section": "本地查询"
+            },
+            {
+              "page": "docs/development/entry/InnoEngine.Build.md",
+              "section": "查询本地文档"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "设计思路"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "实现原理与调用约束"
+            }
+          ],
+          "continuations": 0,
+          "message": "8 matching sections; showing 5. Excerpts are navigation, not complete contracts."
+        },
+        {
+          "milliseconds": 12724.968600000007,
+          "bytes": 3659,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 5,
+          "sources": [
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "innoeditorpanellogging"
+            },
+            {
+              "page": "docs/development/documentation.md",
+              "section": "本地查询"
+            },
+            {
+              "page": "docs/development/entry/InnoEngine.Build.md",
+              "section": "查询本地文档"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "设计思路"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "实现原理与调用约束"
+            }
+          ],
+          "continuations": 0,
+          "message": "8 matching sections; showing 5. Excerpts are navigation, not complete contracts."
+        },
+        {
+          "milliseconds": 7095.282099999997,
+          "bytes": 3659,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 5,
+          "sources": [
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "innoeditorpanellogging"
+            },
+            {
+              "page": "docs/development/documentation.md",
+              "section": "本地查询"
+            },
+            {
+              "page": "docs/development/entry/InnoEngine.Build.md",
+              "section": "查询本地文档"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "设计思路"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "实现原理与调用约束"
+            }
+          ],
+          "continuations": 0,
+          "message": "8 matching sections; showing 5. Excerpts are navigation, not complete contracts."
+        },
+        {
+          "milliseconds": 7657.794999999998,
+          "bytes": 3659,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 5,
+          "sources": [
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "innoeditorpanellogging"
+            },
+            {
+              "page": "docs/development/documentation.md",
+              "section": "本地查询"
+            },
+            {
+              "page": "docs/development/entry/InnoEngine.Build.md",
+              "section": "查询本地文档"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "设计思路"
+            },
+            {
+              "page": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+              "section": "实现原理与调用约束"
+            }
+          ],
+          "continuations": 0,
+          "message": "8 matching sections; showing 5. Excerpts are navigation, not complete contracts."
+        }
+      ]
+    },
+    {
+      "name": "identity",
+      "arguments": [
+        "symbol",
+        "--project",
+        "Inno.Core.Identity",
+        "--id",
+        "P:Inno.Core.Identity.Identity.runtimeId"
+      ],
+      "expectedOwner": "docs/modules/core/Inno.Core.Identity.md",
+      "medianMilliseconds": 5948.16829999999,
+      "samples": [
+        {
+          "milliseconds": 6225.678100000005,
+          "bytes": 7975,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 11,
+          "sources": [
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "设计思路与实现原理"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityobject"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityallocator"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "冲突与陈旧-id"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "热重载用法"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "当前源码公开-api-清单"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "项目依赖"
+            }
+          ],
+          "continuations": 0,
+          "message": "Declaration and project guidance. API markers are not current source verification evidence; continuations, when present, must also be read."
+        },
+        {
+          "milliseconds": 6437.366999999998,
+          "bytes": 7975,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 11,
+          "sources": [
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "设计思路与实现原理"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityobject"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityallocator"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "冲突与陈旧-id"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "热重载用法"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "当前源码公开-api-清单"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "项目依赖"
+            }
+          ],
+          "continuations": 0,
+          "message": "Declaration and project guidance. API markers are not current source verification evidence; continuations, when present, must also be read."
+        },
+        {
+          "milliseconds": 5733.042200000011,
+          "bytes": 7975,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 11,
+          "sources": [
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "设计思路与实现原理"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityobject"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityallocator"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "冲突与陈旧-id"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "热重载用法"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "当前源码公开-api-清单"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "项目依赖"
+            }
+          ],
+          "continuations": 0,
+          "message": "Declaration and project guidance. API markers are not current source verification evidence; continuations, when present, must also be read."
+        },
+        {
+          "milliseconds": 5948.16829999999,
+          "bytes": 7975,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 11,
+          "sources": [
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "设计思路与实现原理"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityobject"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityallocator"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "冲突与陈旧-id"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "热重载用法"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "当前源码公开-api-清单"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "项目依赖"
+            }
+          ],
+          "continuations": 0,
+          "message": "Declaration and project guidance. API markers are not current source verification evidence; continuations, when present, must also be read."
+        },
+        {
+          "milliseconds": 5734.250499999995,
+          "bytes": 7975,
+          "status": "Found",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 11,
+          "sources": [
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "设计思路与实现原理"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityobject"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "identityallocator"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "冲突与陈旧-id"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "热重载用法"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "当前源码公开-api-清单"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "innocoreidentityidentity"
+            },
+            {
+              "page": "docs/modules/core/Inno.Core.Identity.md",
+              "section": "项目依赖"
+            }
+          ],
+          "continuations": 0,
+          "message": "Declaration and project guidance. API markers are not current source verification evidence; continuations, when present, must also be read."
+        }
+      ]
+    },
+    {
+      "name": "toolchains",
+      "arguments": [
+        "read",
+        "--project",
+        "Inno.Build.Toolchains"
+      ],
+      "expectedOwner": "docs/development/build/Inno.Build.Toolchains.md",
+      "medianMilliseconds": 5383.381599999993,
+      "samples": [
+        {
+          "milliseconds": 5728.872199999998,
+          "bytes": 5183,
+          "status": "Navigation",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 1,
+          "sources": [
+            {
+              "page": "docs/development/build/Inno.Build.Toolchains.md",
+              "section": ""
+            }
+          ],
+          "continuations": 19,
+          "message": "The complete selection is large. Read the listed sections; no omitted contract is claimed to be read."
+        },
+        {
+          "milliseconds": 6542.544399999999,
+          "bytes": 5183,
+          "status": "Navigation",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 1,
+          "sources": [
+            {
+              "page": "docs/development/build/Inno.Build.Toolchains.md",
+              "section": ""
+            }
+          ],
+          "continuations": 19,
+          "message": "The complete selection is large. Read the listed sections; no omitted contract is claimed to be read."
+        },
+        {
+          "milliseconds": 5383.381599999993,
+          "bytes": 5183,
+          "status": "Navigation",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 1,
+          "sources": [
+            {
+              "page": "docs/development/build/Inno.Build.Toolchains.md",
+              "section": ""
+            }
+          ],
+          "continuations": 19,
+          "message": "The complete selection is large. Read the listed sections; no omitted contract is claimed to be read."
+        },
+        {
+          "milliseconds": 4740.039900000003,
+          "bytes": 5183,
+          "status": "Navigation",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 1,
+          "sources": [
+            {
+              "page": "docs/development/build/Inno.Build.Toolchains.md",
+              "section": ""
+            }
+          ],
+          "continuations": 19,
+          "message": "The complete selection is large. Read the listed sections; no omitted contract is claimed to be read."
+        },
+        {
+          "milliseconds": 4418.973400000017,
+          "bytes": 5183,
+          "status": "Navigation",
+          "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+          "sourceApiStatus": "Unverified",
+          "sections": 1,
+          "sources": [
+            {
+              "page": "docs/development/build/Inno.Build.Toolchains.md",
+              "section": ""
+            }
+          ],
+          "continuations": 19,
+          "message": "The complete selection is large. Read the listed sections; no omitted contract is claimed to be read."
+        }
+      ]
+    }
+  ],
+  "chinese": {
+    "milliseconds": 5530.602799999993,
+    "bytes": 4058,
+    "status": "Found",
+    "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+    "sourceApiStatus": "Unverified",
+    "sections": 5,
+    "sources": [
+      {
+        "page": "docs/architecture/identity-and-reload.md",
+        "section": "innoengine-identity可恢复引用与热重载强制标准"
+      },
+      {
+        "page": "docs/architecture/identity-and-reload.md",
+        "section": "63-asset-删除与重现"
+      },
+      {
+        "page": "docs/development/build/Inno.Build.TaskHosting.md",
+        "section": "restore-与编译的求值边界"
+      },
+      {
+        "page": "docs/development/build/Inno.Build.Tasks.md",
+        "section": "task-宿主-rid"
+      },
+      {
+        "page": "docs/development/build/Inno.Build.Toolchains.md",
+        "section": "组合生命周期与扩展"
+      }
+    ],
+    "continuations": 0,
+    "message": "42 matching sections; showing 5. Excerpts are navigation, not complete contracts."
+  },
+  "zero": {
+    "milliseconds": 6494.058999999979,
+    "bytes": 283,
+    "status": "Empty",
+    "snapshot": "e4fb409a3634106a2f837079ad77bd6e9b0459ad2ccd669dd97cc5110589e406",
+    "sourceApiStatus": "Unverified",
+    "sections": 0,
+    "sources": [],
+    "continuations": 0,
+    "message": "0 matching sections; showing 0. Excerpts are navigation, not complete contracts."
+  },
+  "previousReadingSize": [
+    {
+      "name": "console",
+      "baselinePage": "docs/editor/Inno.Editor.Panel.Logging.md",
+      "baselineBytes": 7466,
+      "currentEntry": "docs/modules/editor/Inno.Editor.Panel.Logging.md",
+      "currentEntryBytes": 8487,
+      "comparison": "whole entry bytes, not a measured prior query latency"
+    },
+    {
+      "name": "identity",
+      "baselinePage": "docs/core/Inno.Core.Identity.md",
+      "baselineBytes": 27193,
+      "currentEntry": "docs/modules/core/Inno.Core.Identity.md",
+      "currentEntryBytes": 28034,
+      "comparison": "whole entry bytes, not a measured prior query latency"
+    },
+    {
+      "name": "toolchains",
+      "baselinePage": "docs/build/Inno.Build.Toolchains.md",
+      "baselineBytes": 362130,
+      "currentEntry": "docs/development/build/Inno.Build.Toolchains.md",
+      "currentEntryBytes": 64307,
+      "comparison": "whole entry bytes, not a measured prior query latency"
+    }
+  ]
+}

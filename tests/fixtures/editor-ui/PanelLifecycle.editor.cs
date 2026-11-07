@@ -38,6 +38,7 @@ public sealed class PanelLifecycle(
     private int m_preparationFrames;
     private int m_frame;
     private int m_cycles;
+    private readonly int m_requiredCycles = ReadRequiredCycles();
     private bool m_baselineCaptured;
     private bool m_completed;
 
@@ -92,7 +93,7 @@ public sealed class PanelLifecycle(
             if (m_cycles % 10 == 0)
                 CaptureResources();
         }
-        if (m_cycles == 100 && !expectedOpen)
+        if (m_cycles == m_requiredCycles && !expectedOpen)
         {
             for (int index = 0; index < m_panels.Length; index++)
             {
@@ -104,9 +105,12 @@ public sealed class PanelLifecycle(
             Directory.CreateDirectory(directory);
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle.tsv"),
                 new[] { "panel\tcompleted-open-close-cycles", "protocol\tpublic EditorInteractions / actual product drawing" }
-                    .Concat(m_panels.Select(static panel => panel + "\t100")));
+                    .Concat(m_panels.Select(panel => panel + "\t" + m_requiredCycles.ToString(System.Globalization.CultureInfo.InvariantCulture))));
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-resources.tsv"), m_resources);
             File.WriteAllLines(Path.Combine(directory, "panel-lifecycle-preparation.tsv"), m_preparationResources);
+            string completion = Path.Combine(directory, "journey-completed.txt");
+            File.WriteAllText(completion + ".pending", "Lifecycle");
+            File.Move(completion + ".pending", completion);
             m_completed = true;
             return;
         }
@@ -139,6 +143,15 @@ public sealed class PanelLifecycle(
 
     private void CaptureResources()
         => m_resources.Add(CaptureResourceRow(m_cycles.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+    private static int ReadRequiredCycles()
+    {
+        string value = Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL_CYCLES") ?? "100";
+        if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int cycles)
+            || cycles < 100 || cycles > 10000 || cycles % 10 != 0)
+            throw new InvalidOperationException("The lifecycle acceptance requires 100–10000 cycles in ten-cycle intervals.");
+        return cycles;
+    }
 
     private string CaptureResourceRow(string observation)
     {

@@ -8,6 +8,7 @@ param(
     [string]$ArtifactsPath,
     [string]$Filter,
     [string]$TemporaryDirectory,
+    [Parameter(Mandatory)][string]$SdkSnapshot,
     [string]$Solution = 'InnoEngine.sln'
 )
 
@@ -43,7 +44,9 @@ function Add-CheckResult(
     [string]$Identity,
     [string]$Status,
     [int]$ExitCode,
-    [string]$Diagnostic
+    [string]$Diagnostic,
+    [string]$Owner = '',
+    [string[]]$Contracts = @()
 ) {
     $checks.Add([pscustomobject]@{
         stage = $Stage
@@ -51,6 +54,8 @@ function Add-CheckResult(
         status = $Status
         exitCode = $ExitCode
         diagnostic = $Diagnostic
+        owner = $Owner
+        contracts = @($Contracts)
     })
     ConvertTo-Json -InputObject @($checks.ToArray()) -Depth 4 |
         Set-Content -LiteralPath (Join-Path $resultsRoot 'execution-summary.json') -Encoding utf8
@@ -69,12 +74,7 @@ if ($Filter) {
 if ($Target) {
     if (-not $ProductProperties) { throw 'A target test build requires explicit product properties.' }
     if (-not $ToolTarget) {
-        $entry = Join-Path $repositoryRoot 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj'
-        $selectedTool = @(& $Dotnet msbuild $entry -nologo -getProperty:InnoToolTarget)
-        if ($LASTEXITCODE -ne 0 -or $selectedTool.Count -ne 1 -or -not $selectedTool[0]) {
-            throw 'The SDK-selected development host did not provide a tool target.'
-        }
-        $ToolTarget = $selectedTool[0].Trim()
+        throw 'A planned target test requires its explicitly evaluated tool target.'
     }
     $productArguments += @("-p:InnoNativeTarget=$Target", "-p:InnoToolTarget=$ToolTarget",
         "-p:InnoProductBuildProperties=$ProductProperties")
@@ -91,33 +91,34 @@ try {
     Add-CheckResult 'Shared' $solutionPath 'Failed' -1 $_.Exception.Message
 }
 
-$selectedProjects = if ([System.IO.Path]::GetExtension($solutionPath) -eq '.slnf') {
+$selectedProjects = if ([System.IO.Path]::GetExtension($solutionPath) -eq '.slnx') {
+    ([xml](Get-Content -LiteralPath $solutionPath -Raw)).SelectNodes('/Solution//Project') | ForEach-Object {
+        [IO.Path]::GetFullPath($_.GetAttribute('Path'), (Split-Path $solutionPath -Parent))
+    }
+} elseif ([System.IO.Path]::GetExtension($solutionPath) -eq '.slnf') {
     (Get-Content -LiteralPath $solutionPath -Raw | ConvertFrom-Json).solution.projects
 } else {
     Get-Content -LiteralPath $solutionPath | ForEach-Object {
         if ($_ -match '^Project\("[^"]+"\) = "[^"]+", "([^"]+\.csproj)"') { $Matches[1] }
     }
 }
+$snapshots = @(Get-Content -LiteralPath $SdkSnapshot -Raw | ConvertFrom-Json)
 $projects = @($selectedProjects | ForEach-Object {
         $relativeProject = $_.Replace([char]92, [System.IO.Path]::DirectorySeparatorChar)
         $projectPath = [System.IO.Path]::GetFullPath($relativeProject, $repositoryRoot)
-        if (([xml](Get-Content -LiteralPath $projectPath -Raw)).Project.PropertyGroup.IsTestProject -contains 'true') {
+        $evaluated = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $projectPath })
+        if ($evaluated.Count -ne 1) { throw "The selected SDK graph does not uniquely declare this project: $projectPath" }
+        if ($evaluated[0].Properties.IsTestProject -eq 'true') {
             Get-Item -LiteralPath $projectPath
         }
 })
 
-$projectConfiguration = switch ($Configuration) {
-    'SourceDebug' { 'Debug' }
-    'SourceRelease' { 'Release' }
-    default { $Configuration }
-}
-
 foreach ($project in $projects) {
     try {
-        $targetPath = @(& $Dotnet msbuild $project.FullName -nologo -getProperty:TargetPath `
-            "-p:Configuration=$projectConfiguration" -m:1 -nr:false @productArguments)
-        if ($LASTEXITCODE -ne 0 -or $targetPath.Count -ne 1 -or -not (Test-Path -LiteralPath $targetPath[0])) {
-            Add-CheckResult 'Discovery' $project.FullName 'Blocked' -1 'The compiled test assembly is unavailable.'
+        $matches = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $project.FullName })
+        $targetPath = @($matches[0].Properties.TargetPath)
+        if ($targetPath.Count -ne 1 -or -not (Test-Path -LiteralPath $targetPath[0])) {
+            Add-CheckResult 'Discovery' $project.FullName 'Blocked' -1 'The compiled test assembly is unavailable.' -Owner $project.FullName
             continue
         }
         $assembly = $targetPath[0]
@@ -126,27 +127,31 @@ foreach ($project in $projects) {
         $listed | Set-Content -LiteralPath (Join-Path $resultsRoot ($project.BaseName + '.discovery.log')) -Encoding utf8
         $discoveryErrors = @($listed | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
         if ($discoveryExit -ne 0 -or $discoveryErrors.Count -ne 0) {
-            Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine)
+            Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine) -Owner $project.FullName
             continue
         }
         $names = @($listed | ForEach-Object {
             if ($_ -match '^\s+(Inno\.[^\s]+)\s*$') { $Matches[1] }
         } | Sort-Object -Unique)
-        Add-CheckResult 'Discovery' $project.FullName 'Passed' 0 "$($names.Count) isolated contracts selected."
+        Add-CheckResult 'Discovery' $project.FullName 'Passed' 0 "$($names.Count) isolated contracts selected." -Owner $project.FullName -Contracts $names
     } catch {
-        Add-CheckResult 'Discovery' $project.FullName 'Failed' -1 $_.Exception.Message
+        Add-CheckResult 'Discovery' $project.FullName 'Failed' -1 $_.Exception.Message -Owner $project.FullName
         continue
     }
     foreach ($name in $names) {
         # A failed independent contract does not prevent the remaining isolated hosts from running.
         $caseFilter = "($isolatedFilter)&(FullyQualifiedName=$name)"
         try {
+            $reportName = 'isolated-' + [Guid]::NewGuid().ToString('N') + '.trx'
             & $Dotnet test $assembly --filter $caseFilter `
-                --blame-hang-timeout 10m --blame-hang-dump-type none --logger 'trx' --results-directory $resultsRoot @assemblyEnvironment
+                --blame-hang-timeout 10m --blame-hang-dump-type none --logger "trx;LogFileName=$reportName" --results-directory $resultsRoot @assemblyEnvironment
             $caseExit = $LASTEXITCODE
-            Add-CheckResult 'Isolated' $name $(if ($caseExit -eq 0) { 'Passed' } else { 'Failed' }) $caseExit ''
+            if ($caseExit -eq 0) {
+                & (Join-Path $PSScriptRoot 'ci/Test-IsolatedExecution.ps1') -Report (Join-Path $resultsRoot $reportName) -Contract $name
+            }
+            Add-CheckResult 'Isolated' $name $(if ($caseExit -eq 0) { 'Passed' } else { 'Failed' }) $caseExit '' -Owner $project.FullName
         } catch {
-            Add-CheckResult 'Isolated' $name 'Failed' -1 $_.Exception.Message
+            Add-CheckResult 'Isolated' $name 'Failed' -1 $_.Exception.Message -Owner $project.FullName
         }
     }
 }

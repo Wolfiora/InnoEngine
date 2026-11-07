@@ -27,3 +27,7 @@ dotnet test backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.R
 ```
 
 涉及实际 Native 调用时，使用发行组合解析同一目标的 `ProductNativeBuildPlan`，并经 `ProductNativeDeployment.InstallAsync` 准备该测试输出。测试配置不会向共享 backend 增加默认平台；macOS 实机应选择所属产品的属性和工具宿主，不能运行 Windows 产物替代验收。
+
+## 上游与使用边界
+
+[bgfx](https://github.com/bkaradzic/bgfx)、[bimg](https://github.com/bkaradzic/bimg)、[bx](https://github.com/bkaradzic/bx) 是本 backend 消费的上游源码入口，所选 revision 以仓库 `.gitmodules` 和 gitlink 为准。上游 API 的存在不表示可以绕过 Inno 的 adapter、目标部署或资源 owner；句柄、线程、回调与退休义务由上列 adapter/native 项目页说明。引擎封装没有承诺的上游能力不自动成为产品 API。

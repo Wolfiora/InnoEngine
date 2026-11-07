@@ -14,6 +14,7 @@ using Inno.Extensibility.Catalogs;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeGui = Inno.Native.ImGui.ImGui;
 
@@ -29,7 +30,7 @@ public sealed unsafe class DefaultLayoutNativeTests
         float width,
         float height
     ) {
-        using var host = new NativePanelHost();
+        using var host = new NativePanelHost(typeof(DefaultLayoutNativeTests).Assembly);
         using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(DefaultLayoutNativeTests).Assembly) });
         using var types = new TypeCatalog(modules, new EmptyTypeSource());
         using var logs = new LogRouter();

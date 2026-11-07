@@ -97,6 +97,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         m_runtime = CreateRuntime();
         m_imgui = ImGuiApi.Raw.CreateContext(null);
         ImGuiIO* io = ImGuiApi.Raw.GetIO();
+        io->IniFilename = null;
         io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(1200, 800));
         io->DeltaTime = 1f / 60;
         io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;

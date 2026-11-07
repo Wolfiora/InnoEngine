@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Versioning;
 using Inno.Rendering;
 using Xunit;
 
@@ -9,6 +10,8 @@ public sealed class BgfxCompositionProgramProviderTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("macos")]
     public void EmbeddedTargetProgramMatchesTheDeviceBackendAndFullscreenLayout(bool outputTransfer)
     {
         if (!OperatingSystem.IsMacOS() && !OperatingSystem.IsWindows())

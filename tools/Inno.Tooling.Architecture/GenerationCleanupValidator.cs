@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Inno.Tooling.Architecture;
@@ -10,10 +10,10 @@ internal static class GenerationCleanupValidator
 {
     internal static void Validate(
         string relative,
-        string source,
+        SyntaxTree syntax,
         ICollection<string> failures
     ) {
-        var root = CSharpSyntaxTree.ParseText(source).GetRoot();
+        SyntaxNode root = syntax.GetRoot();
         foreach (CatchClauseSyntax clause in root.DescendantNodes().OfType<CatchClauseSyntax>())
         {
             string? type = clause.Declaration?.Type.ToString().Split('.').Last();

@@ -35,10 +35,10 @@ internal sealed class DocumentationSourceModels
         m_projectReferences = projectReferences;
         m_cancellation = cancellationToken;
         m_failures = failures;
-        string[] projects = new[] { "entry", "src", "backends", "platforms", "build", "tools" }
+        string[] projects = new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" }
             .SelectMany(folder => RepositorySourceInventory.Files(
                 Path.Combine(repositoryRoot, folder), "*.csproj"))
-            .Where(IsSourcePath)
+            .Where(path => IsSourcePath(path) && !WikiProjectCoverageValidator.IsDeclaredTestProject(path))
             .ToArray();
         m_projectNames = projects.Select(Path.GetFileNameWithoutExtension)
             .OfType<string>().ToHashSet(StringComparer.Ordinal);

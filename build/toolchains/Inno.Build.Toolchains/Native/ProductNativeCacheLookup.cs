@@ -19,6 +19,7 @@ internal static class ProductNativeCacheLookup
             || step.dependencies.Count != 0 && step.bindDependencies is null))
             return null;
         var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
+        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.Combine(context.engineRoot, "artifacts", "native"), "native", cache.role, cancellation);
         var activities = new List<FileLease>();
         var ownership = new List<FileLease>();
         var products = new Dictionary<string, NativeBuildProduct>(StringComparer.Ordinal);

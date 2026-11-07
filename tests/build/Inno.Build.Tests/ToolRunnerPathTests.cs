@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Build.Windows.Host;
@@ -11,6 +12,7 @@ namespace Inno.Build.Tests;
 public sealed class ToolRunnerPathTests
 {
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task DeepOwnedExecutableStartsAndRemainsAfterItsAliasIsReleased()
     {
         if (!OperatingSystem.IsWindows())

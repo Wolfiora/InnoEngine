@@ -4,7 +4,7 @@
 
 直接 Dispose 与文件 IO 在同一个 gate 串行化，不能在 Write 的 finally Release 之前销毁 SemaphoreSlim。已有 waiter 可以观察 disposed 状态并退出；未请求 OS wait handle 的托管 semaphore 随最后的 waiter 回收。写入在原子替换前再次检查取消。Runtime owner 通常会先取消并排空操作，再调用 adapter Dispose。
 
-[分类索引](README.md) · [Runtime](../../storage/Inno.Storage.Runtime.md) · [Wiki 首页](../../README.md)
+[分类索引](README.md) · [Runtime](../../modules/storage/Inno.Storage.Runtime.md) · [Wiki 首页](../../README.md)
 
 `FileSystemApplicationStorage` 是默认本地 adapter。构造时固定绝对 sandbox root；每次操作重新验证现有路径组件，拒绝 symlink/reparse point 越界。
 
@@ -23,7 +23,7 @@
 
 
 
-## 本轮边界与所有权
+## 所有权与生命周期
 
 宿主向 provider 注入物理根；StorageScope 只负责 namespace。生成路径受 sandbox 边界约束，不改变游戏逻辑 API。
 
@@ -73,7 +73,7 @@
 
 ## 项目依赖
 
-- [Inno.Core.IO](../../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Storage](../../storage/Inno.Adapter.Storage.md)：公开引用边界由实际签名核对。
-- [Inno.Storage](../../storage/Inno.Storage.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.IO](../../modules/core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Storage](../../modules/storage/Inno.Adapter.Storage.md)：公开引用边界由实际签名核对。
+- [Inno.Storage](../../modules/storage/Inno.Storage.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

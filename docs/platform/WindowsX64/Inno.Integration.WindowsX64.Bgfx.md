@@ -2,7 +2,7 @@
 
 Native GENie/MSBuild 执行选择只保留实际使用的编译器、生成器与 SDK 输入，不把未执行的 .NET host 放入 Shader 工具身份。Windows SDK 以独立系统 PATH 初始化，外层 Browser 的 CMake/Ninja PATH 不改变它的编译身份；实际 SDK、环境与有序参数仍冻结并校验。
 
-[平台索引](README.md) · [Wiki 首页](../../README.md) · [扩展指南](../../architecture/PLATFORM_EXTENSION_GUIDE.md)
+[平台索引](README.md) · [Wiki 首页](../../README.md) · [扩展指南](../../development/adding-platform.md)
 
 ## 职责与边界
 
@@ -33,7 +33,7 @@ static IGameContentCompiler CreateCompiler(
 
 ## 测试与平台状态
 
-Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)。
+Build 的 PlatformBackendIntegrationTests、BuildCompositionTests、NativeComponentBuildOptionsTests 与真实发布验证此契约。当前实机与未实测状态见[当前验收](../../../.agents/records/acceptance/current.md)。
 
 ## 当前源码公开 API 清单
 

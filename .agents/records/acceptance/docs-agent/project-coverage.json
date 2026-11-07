@@ -1,0 +1,990 @@
+{
+  "implementation": "a9b6c08ba080afcda697ba1bb18238f4f80d87d8",
+  "source": "Actual tracked csproj inventory; canonical page uniqueness is enforced by WikiProjectCoverageValidator.",
+  "projects": [
+    {
+      "project": "backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj",
+      "entry": "docs/backends/Bgfx/Inno.Build.Toolchains.Bgfx.Shaders.md"
+    },
+    {
+      "project": "backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj",
+      "entry": "docs/backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md"
+    },
+    {
+      "project": "backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj",
+      "entry": "docs/backends/Bgfx/Inno.Build.Toolchains.Bgfx.md"
+    },
+    {
+      "project": "backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj",
+      "entry": "docs/backends/Bgfx/Inno.Native.Bgfx.md"
+    },
+    {
+      "project": "backends/Bgfx/runtime/Inno.Adapter.Rendering.Bgfx/Inno.Adapter.Rendering.Bgfx.csproj",
+      "entry": "docs/backends/Bgfx/Inno.Adapter.Rendering.Bgfx.md"
+    },
+    {
+      "project": "backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.Rendering.Bgfx.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Adapter.Rendering.Bgfx.Tests.md"
+    },
+    {
+      "project": "backends/Bgfx/tests/Inno.Native.Bgfx.Tests/Inno.Native.Bgfx.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Native.Bgfx.Tests.md"
+    },
+    {
+      "project": "backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj",
+      "entry": "docs/backends/DotNet/Inno.Build.Managed.DotNet.md"
+    },
+    {
+      "project": "backends/DotNet/runtime/Inno.Adapter.Modules.DotNet/Inno.Adapter.Modules.DotNet.csproj",
+      "entry": "docs/backends/DotNet/Inno.Adapter.Modules.DotNet.md"
+    },
+    {
+      "project": "backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj",
+      "entry": "docs/backends/DotNet/Inno.Adapter.Serialization.DotNet.md"
+    },
+    {
+      "project": "backends/FileSystem/runtime/Inno.Adapter.Content.FileSystem/Inno.Adapter.Content.FileSystem.csproj",
+      "entry": "docs/backends/FileSystem/Inno.Adapter.Content.FileSystem.md"
+    },
+    {
+      "project": "backends/FileSystem/runtime/Inno.Adapter.Storage.FileSystem/Inno.Adapter.Storage.FileSystem.csproj",
+      "entry": "docs/backends/FileSystem/Inno.Adapter.Storage.FileSystem.md"
+    },
+    {
+      "project": "backends/FileSystem/tests/Inno.Adapter.Content.FileSystem.Tests/Inno.Adapter.Content.FileSystem.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Adapter.Content.FileSystem.Tests.md"
+    },
+    {
+      "project": "backends/ImGui/build/Inno.Build.Toolchains.ImGui/Inno.Build.Toolchains.ImGui.csproj",
+      "entry": "docs/backends/ImGui/Inno.Build.Toolchains.ImGui.md"
+    },
+    {
+      "project": "backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/Inno.Build.Toolchains.ImGuizmo.csproj",
+      "entry": "docs/backends/ImGui/Inno.Build.Toolchains.ImGuizmo.md"
+    },
+    {
+      "project": "backends/ImGui/native/Inno.Native.ImGui/Inno.Native.ImGui.csproj",
+      "entry": "docs/backends/ImGui/Inno.Native.ImGui.md"
+    },
+    {
+      "project": "backends/ImGui/native/Inno.Native.ImGuizmo/Inno.Native.ImGuizmo.csproj",
+      "entry": "docs/backends/ImGui/Inno.Native.ImGuizmo.md"
+    },
+    {
+      "project": "backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Bgfx/Inno.Adapter.Presentation.ImGui.Bgfx.csproj",
+      "entry": "docs/backends/ImGui/Inno.Adapter.Presentation.ImGui.Bgfx.md"
+    },
+    {
+      "project": "backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/Inno.Adapter.Presentation.ImGui.Sdl3.csproj",
+      "entry": "docs/backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md"
+    },
+    {
+      "project": "backends/ImGui/tests/Inno.Native.ImGui.Tests/Inno.Native.ImGui.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Native.ImGui.Tests.md"
+    },
+    {
+      "project": "backends/ImGui/tests/Inno.Native.ImGuizmo.Tests/Inno.Native.ImGuizmo.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Native.ImGuizmo.Tests.md"
+    },
+    {
+      "project": "backends/Interop/native/Inno.Native.LibraryLoading/Inno.Native.LibraryLoading.csproj",
+      "entry": "docs/backends/Interop/Inno.Native.LibraryLoading.md"
+    },
+    {
+      "project": "backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio/Inno.Build.Toolchains.MiniAudio.csproj",
+      "entry": "docs/backends/MiniAudio/Inno.Build.Toolchains.MiniAudio.md"
+    },
+    {
+      "project": "backends/MiniAudio/native/Inno.Native.MiniAudio/Inno.Native.MiniAudio.csproj",
+      "entry": "docs/backends/MiniAudio/Inno.Native.MiniAudio.md"
+    },
+    {
+      "project": "backends/MiniAudio/runtime/Inno.Adapter.Audio.MiniAudio/Inno.Adapter.Audio.MiniAudio.csproj",
+      "entry": "docs/backends/MiniAudio/Inno.Adapter.Audio.MiniAudio.md"
+    },
+    {
+      "project": "backends/MiniAudio/tests/Inno.Adapter.Audio.MiniAudio.Tests/Inno.Adapter.Audio.MiniAudio.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Adapter.Audio.MiniAudio.Tests.md"
+    },
+    {
+      "project": "backends/MiniAudio/tests/Inno.Native.MiniAudio.Tests/Inno.Native.MiniAudio.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Native.MiniAudio.Tests.md"
+    },
+    {
+      "project": "backends/RmlUi/build/Inno.Build.Toolchains.UI/Inno.Build.Toolchains.UI.csproj",
+      "entry": "docs/backends/RmlUi/Inno.Build.Toolchains.UI.md"
+    },
+    {
+      "project": "backends/RmlUi/native/Inno.Native.UI/Inno.Native.UI.csproj",
+      "entry": "docs/backends/RmlUi/Inno.Native.UI.md"
+    },
+    {
+      "project": "backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi.Authoring/Inno.Adapter.UI.RmlUi.Authoring.csproj",
+      "entry": "docs/backends/RmlUi/Inno.Adapter.UI.RmlUi.Authoring.md"
+    },
+    {
+      "project": "backends/RmlUi/runtime/Inno.Adapter.UI.RmlUi/Inno.Adapter.UI.RmlUi.csproj",
+      "entry": "docs/backends/RmlUi/Inno.Adapter.UI.RmlUi.md"
+    },
+    {
+      "project": "backends/RmlUi/tests/Inno.Adapter.UI.RmlUi.Tests/Inno.Adapter.UI.RmlUi.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Adapter.UI.RmlUi.Tests.md"
+    },
+    {
+      "project": "backends/Sdl3/build/Inno.Build.Toolchains.Sdl3/Inno.Build.Toolchains.Sdl3.csproj",
+      "entry": "docs/backends/Sdl3/Inno.Build.Toolchains.Sdl3.md"
+    },
+    {
+      "project": "backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj",
+      "entry": "docs/backends/Sdl3/Inno.Native.Sdl3.md"
+    },
+    {
+      "project": "backends/Sdl3/runtime/Inno.Adapter.Platform.Sdl3/Inno.Adapter.Platform.Sdl3.csproj",
+      "entry": "docs/backends/Sdl3/Inno.Adapter.Platform.Sdl3.md"
+    },
+    {
+      "project": "backends/Sdl3/tests/Inno.Adapter.Platform.Sdl3.Tests/Inno.Adapter.Platform.Sdl3.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Adapter.Platform.Sdl3.Tests.md"
+    },
+    {
+      "project": "backends/Sdl3/tests/Inno.Native.Sdl3.Tests/Inno.Native.Sdl3.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Native.Sdl3.Tests.md"
+    },
+    {
+      "project": "backends/Text/build/Inno.Build.Toolchains.Text/Inno.Build.Toolchains.Text.csproj",
+      "entry": "docs/backends/Text/Inno.Build.Toolchains.Text.md"
+    },
+    {
+      "project": "backends/Text/native/Inno.Native.Text/Inno.Native.Text.csproj",
+      "entry": "docs/backends/Text/Inno.Native.Text.md"
+    },
+    {
+      "project": "backends/Text/runtime/Inno.Adapter.Text.FreeTypeHarfBuzz/Inno.Adapter.Text.FreeTypeHarfBuzz.csproj",
+      "entry": "docs/backends/Text/Inno.Adapter.Text.FreeTypeHarfBuzz.md"
+    },
+    {
+      "project": "build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj",
+      "entry": "docs/development/build/Inno.Build.Bindings.md"
+    },
+    {
+      "project": "build/cli/Inno.Build.Cli/Inno.Build.Cli.csproj",
+      "entry": "docs/development/build/Inno.Build.Cli.md"
+    },
+    {
+      "project": "build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj",
+      "entry": "docs/development/build/Inno.Build.Composition.md"
+    },
+    {
+      "project": "build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj",
+      "entry": "docs/development/build/Inno.Build.Distribution.Standard.md"
+    },
+    {
+      "project": "build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj",
+      "entry": "docs/development/build/Inno.Build.Managed.md"
+    },
+    {
+      "project": "build/pipeline/Inno.Build/Inno.Build.csproj",
+      "entry": "docs/development/build/Inno.Build.md"
+    },
+    {
+      "project": "build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj",
+      "entry": "docs/development/build/Inno.Build.Products.Standard.md"
+    },
+    {
+      "project": "build/support/Inno.Build.SupportPacks.Core/Inno.Build.SupportPacks.Core.csproj",
+      "entry": "docs/development/build/Inno.Build.SupportPacks.Core.md"
+    },
+    {
+      "project": "build/tasks/Inno.Build.TaskHosting/Inno.Build.TaskHosting.csproj",
+      "entry": "docs/development/build/Inno.Build.TaskHosting.md"
+    },
+    {
+      "project": "build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj",
+      "entry": "docs/development/build/Inno.Build.Tasks.md"
+    },
+    {
+      "project": "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+      "entry": "docs/development/build/Inno.Build.Toolchains.md"
+    },
+    {
+      "project": "entry/InnoEngine.Build/InnoEngine.Build.csproj",
+      "entry": "docs/development/entry/InnoEngine.Build.md"
+    },
+    {
+      "project": "entry/InnoEngine.Editor/InnoEngine.Editor.csproj",
+      "entry": "docs/development/entry/InnoEngine.Editor.md"
+    },
+    {
+      "project": "platforms/BrowserWasm32/build/Inno.Build.BrowserWasm32/Inno.Build.BrowserWasm32.csproj",
+      "entry": "docs/platform/BrowserWasm32/Inno.Build.BrowserWasm32.md"
+    },
+    {
+      "project": "platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx.Runtime/Inno.Integration.BrowserWasm32.Bgfx.Runtime.csproj",
+      "entry": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.Runtime.md"
+    },
+    {
+      "project": "platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx/Inno.Integration.BrowserWasm32.Bgfx.csproj",
+      "entry": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.md"
+    },
+    {
+      "project": "platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Build/Inno.Integration.BrowserWasm32.Build.csproj",
+      "entry": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Build.md"
+    },
+    {
+      "project": "platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Sdl3/Inno.Integration.BrowserWasm32.Sdl3.csproj",
+      "entry": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Sdl3.md"
+    },
+    {
+      "project": "platforms/BrowserWasm32/player/Inno.Player.BrowserWasm32/Inno.Player.BrowserWasm32.csproj",
+      "entry": "docs/platform/BrowserWasm32/Inno.Player.BrowserWasm32.md"
+    },
+    {
+      "project": "platforms/BrowserWasm32/runtime/Inno.Adapter.Storage.BrowserWasm32/Inno.Adapter.Storage.BrowserWasm32.csproj",
+      "entry": "docs/platform/BrowserWasm32/Inno.Adapter.Storage.BrowserWasm32.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/build/Inno.Build.MacOSArm64/Inno.Build.MacOSArm64.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Build.MacOSArm64.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/editor/Inno.Editor.MacOSArm64/Inno.Editor.MacOSArm64.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Editor.MacOSArm64.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx.Runtime/Inno.Integration.MacOSArm64.Bgfx.Runtime.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.Runtime.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Bgfx/Inno.Integration.MacOSArm64.Bgfx.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Build/Inno.Integration.MacOSArm64.Build.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Build.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Sdl3/Inno.Integration.MacOSArm64.Sdl3.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Sdl3.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/player/Inno.Player.MacOSArm64/Inno.Player.MacOSArm64.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Player.MacOSArm64.md"
+    },
+    {
+      "project": "platforms/MacOSArm64/runtime/Inno.Platform.MacOSArm64/Inno.Platform.MacOSArm64.csproj",
+      "entry": "docs/platform/MacOSArm64/Inno.Platform.MacOSArm64.md"
+    },
+    {
+      "project": "platforms/Windows/build/Inno.Build.Windows.Host/Inno.Build.Windows.Host.csproj",
+      "entry": "docs/platform/Windows/Inno.Build.Windows.Host.md"
+    },
+    {
+      "project": "platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Build.WindowsX64.md"
+    },
+    {
+      "project": "platforms/WindowsX64/editor/Inno.Editor.WindowsX64/Inno.Editor.WindowsX64.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Editor.WindowsX64.md"
+    },
+    {
+      "project": "platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx.Runtime/Inno.Integration.WindowsX64.Bgfx.Runtime.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.Runtime.md"
+    },
+    {
+      "project": "platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Bgfx/Inno.Integration.WindowsX64.Bgfx.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.md"
+    },
+    {
+      "project": "platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Build/Inno.Integration.WindowsX64.Build.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Build.md"
+    },
+    {
+      "project": "platforms/WindowsX64/integrations/Inno.Integration.WindowsX64.Sdl3/Inno.Integration.WindowsX64.Sdl3.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md"
+    },
+    {
+      "project": "platforms/WindowsX64/player/Inno.Player.WindowsX64/Inno.Player.WindowsX64.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Player.WindowsX64.md"
+    },
+    {
+      "project": "platforms/WindowsX64/runtime/Inno.Platform.WindowsX64/Inno.Platform.WindowsX64.csproj",
+      "entry": "docs/platform/WindowsX64/Inno.Platform.WindowsX64.md"
+    },
+    {
+      "project": "src/adapters/audio/Inno.Adapter.Audio/Inno.Adapter.Audio.csproj",
+      "entry": "docs/modules/audio/Inno.Adapter.Audio.md"
+    },
+    {
+      "project": "src/adapters/common/Inno.Adapter/Inno.Adapter.csproj",
+      "entry": "docs/modules/runtime/Inno.Adapter.md"
+    },
+    {
+      "project": "src/adapters/input/Inno.Adapter.Input/Inno.Adapter.Input.csproj",
+      "entry": "docs/modules/input/Inno.Adapter.Input.md"
+    },
+    {
+      "project": "src/adapters/platform/Inno.Adapter.Platform/Inno.Adapter.Platform.csproj",
+      "entry": "docs/platform/Inno.Adapter.Platform.md"
+    },
+    {
+      "project": "src/adapters/presentation/Inno.Adapter.Presentation/Inno.Adapter.Presentation.csproj",
+      "entry": "docs/platform/Inno.Adapter.Presentation.md"
+    },
+    {
+      "project": "src/adapters/rendering/Inno.Adapter.Rendering.Authoring/Inno.Adapter.Rendering.Authoring.csproj",
+      "entry": "docs/modules/rendering/Inno.Adapter.Rendering.Authoring.md"
+    },
+    {
+      "project": "src/adapters/rendering/Inno.Adapter.Rendering/Inno.Adapter.Rendering.csproj",
+      "entry": "docs/modules/rendering/Inno.Adapter.Rendering.md"
+    },
+    {
+      "project": "src/adapters/storage/Inno.Adapter.Storage/Inno.Adapter.Storage.csproj",
+      "entry": "docs/modules/storage/Inno.Adapter.Storage.md"
+    },
+    {
+      "project": "src/adapters/text/Inno.Adapter.Text/Inno.Adapter.Text.csproj",
+      "entry": "docs/modules/text/Inno.Adapter.Text.md"
+    },
+    {
+      "project": "src/adapters/ui/Inno.Adapter.UI/Inno.Adapter.UI.csproj",
+      "entry": "docs/modules/ui/Inno.Adapter.UI.md"
+    },
+    {
+      "project": "src/composition/adapters/Inno.Adapter.Authoring.Default/Inno.Adapter.Authoring.Default.csproj",
+      "entry": "docs/modules/runtime/Inno.Adapter.Authoring.Default.md"
+    },
+    {
+      "project": "src/composition/adapters/Inno.Adapter.Default/Inno.Adapter.Default.csproj",
+      "entry": "docs/modules/runtime/Inno.Adapter.Default.md"
+    },
+    {
+      "project": "src/composition/default/Inno.Engine.Default/Inno.Engine.Default.csproj",
+      "entry": "docs/modules/runtime/Inno.Engine.Default.md"
+    },
+    {
+      "project": "src/composition/editor/contracts/Inno.Editor.Annotations/Inno.Editor.Annotations.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Annotations.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.Assets/Inno.Editor.Assets.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Assets.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.Audio/Inno.Editor.Audio.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Audio.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Exporting.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.PlayMode/Inno.Editor.PlayMode.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.PlayMode.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.Rendering/Inno.Editor.Rendering.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Rendering.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.Scene/Inno.Editor.Scene.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Scene.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.Scripting/Inno.Editor.Scripting.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Scripting.md"
+    },
+    {
+      "project": "src/composition/editor/features/Inno.Editor.Shaders/Inno.Editor.Shaders.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Shaders.md"
+    },
+    {
+      "project": "src/composition/editor/framework/Inno.Editor.Core/Inno.Editor.Core.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Core.md"
+    },
+    {
+      "project": "src/composition/editor/framework/Inno.Editor.Diagnostics/Inno.Editor.Diagnostics.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Diagnostics.md"
+    },
+    {
+      "project": "src/composition/editor/framework/Inno.Editor.Graph/Inno.Editor.Graph.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Graph.md"
+    },
+    {
+      "project": "src/composition/editor/framework/Inno.Editor.Inspection/Inno.Editor.Inspection.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Inspection.md"
+    },
+    {
+      "project": "src/composition/editor/framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Interactions.md"
+    },
+    {
+      "project": "src/composition/editor/framework/Inno.Editor.Settings/Inno.Editor.Settings.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Settings.md"
+    },
+    {
+      "project": "src/composition/editor/hosting/Inno.Editor.Hosting/Inno.Editor.Hosting.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Hosting.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.FileBrowser/Inno.Editor.Panel.FileBrowser.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.FileBrowser.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.GameView/Inno.Editor.Panel.GameView.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.GameView.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.Hierarchy/Inno.Editor.Panel.Hierarchy.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.Hierarchy.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.Inspector/Inno.Editor.Panel.Inspector.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.Inspector.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.Logging/Inno.Editor.Panel.Logging.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.Logging.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.SceneView/Inno.Editor.Panel.SceneView.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.SceneView.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.Settings/Inno.Editor.Panel.Settings.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.Settings.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.ShaderEditor/Inno.Editor.Panel.ShaderEditor.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.ShaderEditor.md"
+    },
+    {
+      "project": "src/composition/editor/panels/Inno.Editor.Panel.Stats/Inno.Editor.Panel.Stats.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Panel.Stats.md"
+    },
+    {
+      "project": "src/composition/editor/presentation/Inno.Editor.Assets.ImGui/Inno.Editor.Assets.ImGui.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Assets.ImGui.md"
+    },
+    {
+      "project": "src/composition/editor/presentation/Inno.Editor.Graph.ImGui/Inno.Editor.Graph.ImGui.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Graph.ImGui.md"
+    },
+    {
+      "project": "src/composition/editor/presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.ImGui.md"
+    },
+    {
+      "project": "src/composition/editor/presentation/Inno.Editor.Shaders.ImGui/Inno.Editor.Shaders.ImGui.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Shaders.ImGui.md"
+    },
+    {
+      "project": "src/composition/editor/presentation/Inno.Editor.Workbench/Inno.Editor.Workbench.csproj",
+      "entry": "docs/modules/editor/Inno.Editor.Workbench.md"
+    },
+    {
+      "project": "src/composition/player/Inno.Player.Runtime/Inno.Player.Runtime.csproj",
+      "entry": "docs/modules/runtime/Inno.Player.Runtime.md"
+    },
+    {
+      "project": "src/composition/shell/Inno.Shell/Inno.Shell.csproj",
+      "entry": "docs/modules/runtime/Inno.Shell.md"
+    },
+    {
+      "project": "src/content/animation/Inno.Animation.Assets/Inno.Animation.Assets.csproj",
+      "entry": "docs/modules/animation/Inno.Animation.Assets.md"
+    },
+    {
+      "project": "src/content/animation/Inno.Animation.Runtime/Inno.Animation.Runtime.csproj",
+      "entry": "docs/modules/animation/Inno.Animation.Runtime.md"
+    },
+    {
+      "project": "src/content/animation/Inno.Animation/Inno.Animation.csproj",
+      "entry": "docs/modules/animation/Inno.Animation.md"
+    },
+    {
+      "project": "src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj",
+      "entry": "docs/modules/assets/Inno.Assets.Pipeline.md"
+    },
+    {
+      "project": "src/content/assets/Inno.Assets/Inno.Assets.csproj",
+      "entry": "docs/modules/assets/Inno.Assets.md"
+    },
+    {
+      "project": "src/content/deployment/Inno.Content/Inno.Content.csproj",
+      "entry": "docs/modules/assets/Inno.Content.md"
+    },
+    {
+      "project": "src/content/references/Inno.References/Inno.References.csproj",
+      "entry": "docs/modules/references/Inno.References.md"
+    },
+    {
+      "project": "src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj",
+      "entry": "docs/modules/scene/Inno.Scene.Assets.md"
+    },
+    {
+      "project": "src/content/scene/Inno.Scene/Inno.Scene.csproj",
+      "entry": "docs/modules/scene/Inno.Scene.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Collections/Inno.Core.Collections.csproj",
+      "entry": "docs/modules/core/Inno.Core.Collections.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Coroutines/Inno.Core.Coroutines.csproj",
+      "entry": "docs/modules/core/Inno.Core.Coroutines.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Diagnostics/Inno.Core.Diagnostics.csproj",
+      "entry": "docs/modules/core/Inno.Core.Diagnostics.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Events/Inno.Core.Events.csproj",
+      "entry": "docs/modules/core/Inno.Core.Events.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Execution/Inno.Core.Execution.csproj",
+      "entry": "docs/modules/core/Inno.Core.Execution.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Graphs/Inno.Core.Graphs.csproj",
+      "entry": "docs/modules/core/Inno.Core.Graphs.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj",
+      "entry": "docs/modules/core/Inno.Core.IO.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Identity/Inno.Core.Identity.csproj",
+      "entry": "docs/modules/core/Inno.Core.Identity.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Input/Inno.Core.Input.csproj",
+      "entry": "docs/modules/core/Inno.Core.Input.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Jobs/Inno.Core.Jobs.csproj",
+      "entry": "docs/modules/core/Inno.Core.Jobs.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Layers/Inno.Core.Layers.csproj",
+      "entry": "docs/modules/core/Inno.Core.Layers.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Logging/Inno.Core.Logging.csproj",
+      "entry": "docs/modules/core/Inno.Core.Logging.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Mathematics/Inno.Core.Mathematics.csproj",
+      "entry": "docs/modules/core/Inno.Core.Mathematics.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Serialization.Generators/Inno.Core.Serialization.Generators.csproj",
+      "entry": "docs/modules/core/Inno.Core.Serialization.Generators.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Serialization/Inno.Core.Serialization.csproj",
+      "entry": "docs/modules/core/Inno.Core.Serialization.md"
+    },
+    {
+      "project": "src/foundation/core/Inno.Core.Settings/Inno.Core.Settings.csproj",
+      "entry": "docs/modules/core/Inno.Core.Settings.md"
+    },
+    {
+      "project": "src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj",
+      "entry": "docs/modules/extensibility/Inno.Extensibility.Catalogs.md"
+    },
+    {
+      "project": "src/foundation/extensibility/Inno.Extensibility.Modules/Inno.Extensibility.Modules.csproj",
+      "entry": "docs/modules/extensibility/Inno.Extensibility.Modules.md"
+    },
+    {
+      "project": "src/foundation/extensibility/Inno.Extensibility.Reload/Inno.Extensibility.Reload.csproj",
+      "entry": "docs/modules/extensibility/Inno.Extensibility.Reload.md"
+    },
+    {
+      "project": "src/foundation/extensibility/Inno.Extensibility.Types/Inno.Extensibility.Types.csproj",
+      "entry": "docs/modules/extensibility/Inno.Extensibility.Types.md"
+    },
+    {
+      "project": "src/foundation/scripting/Inno.Scripting.Api/Inno.Scripting.Api.csproj",
+      "entry": "docs/modules/scripting/Inno.Scripting.Api.md"
+    },
+    {
+      "project": "src/runtime/contracts/Inno.Runtime.Contracts/Inno.Runtime.Contracts.csproj",
+      "entry": "docs/modules/runtime/Inno.Runtime.Contracts.md"
+    },
+    {
+      "project": "src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj",
+      "entry": "docs/modules/runtime/Inno.Runtime.md"
+    },
+    {
+      "project": "src/runtime/generators/Inno.Runtime.Generators/Inno.Runtime.Generators.csproj",
+      "entry": "docs/modules/runtime/Inno.Runtime.Generators.md"
+    },
+    {
+      "project": "src/runtime/plugins/Inno.Plugins.Authoring/Inno.Plugins.Authoring.csproj",
+      "entry": "docs/modules/plugins/Inno.Plugins.Authoring.md"
+    },
+    {
+      "project": "src/runtime/plugins/Inno.Plugins/Inno.Plugins.csproj",
+      "entry": "docs/modules/plugins/Inno.Plugins.md"
+    },
+    {
+      "project": "src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj",
+      "entry": "docs/modules/scripting/Inno.Scripting.Compiler.md"
+    },
+    {
+      "project": "src/runtime/scripting/Inno.Scripting.Reload/Inno.Scripting.Reload.csproj",
+      "entry": "docs/modules/scripting/Inno.Scripting.Reload.md"
+    },
+    {
+      "project": "src/services/audio/Inno.Audio.Assets/Inno.Audio.Assets.csproj",
+      "entry": "docs/modules/audio/Inno.Audio.Assets.md"
+    },
+    {
+      "project": "src/services/audio/Inno.Audio.Runtime/Inno.Audio.Runtime.csproj",
+      "entry": "docs/modules/audio/Inno.Audio.Runtime.md"
+    },
+    {
+      "project": "src/services/audio/Inno.Audio/Inno.Audio.csproj",
+      "entry": "docs/modules/audio/Inno.Audio.md"
+    },
+    {
+      "project": "src/services/input/Inno.Input.Runtime/Inno.Input.Runtime.csproj",
+      "entry": "docs/modules/input/Inno.Input.Runtime.md"
+    },
+    {
+      "project": "src/services/input/Inno.Input/Inno.Input.csproj",
+      "entry": "docs/modules/input/Inno.Input.md"
+    },
+    {
+      "project": "src/services/platform/Inno.Platform/Inno.Platform.csproj",
+      "entry": "docs/platform/Inno.Platform.md"
+    },
+    {
+      "project": "src/services/rendering/Inno.Rendering.Assets.Authoring/Inno.Rendering.Assets.Authoring.csproj",
+      "entry": "docs/modules/rendering/Inno.Rendering.Assets.Authoring.md"
+    },
+    {
+      "project": "src/services/rendering/Inno.Rendering.Assets/Inno.Rendering.Assets.csproj",
+      "entry": "docs/modules/rendering/Inno.Rendering.Assets.md"
+    },
+    {
+      "project": "src/services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj",
+      "entry": "docs/modules/rendering/Inno.Rendering.Runtime.md"
+    },
+    {
+      "project": "src/services/rendering/Inno.Rendering.Shaders/Inno.Rendering.Shaders.csproj",
+      "entry": "docs/modules/rendering/Inno.Rendering.Shaders.md"
+    },
+    {
+      "project": "src/services/rendering/Inno.Rendering/Inno.Rendering.csproj",
+      "entry": "docs/modules/rendering/Inno.Rendering.md"
+    },
+    {
+      "project": "src/services/storage/Inno.Storage.Runtime/Inno.Storage.Runtime.csproj",
+      "entry": "docs/modules/storage/Inno.Storage.Runtime.md"
+    },
+    {
+      "project": "src/services/storage/Inno.Storage/Inno.Storage.csproj",
+      "entry": "docs/modules/storage/Inno.Storage.md"
+    },
+    {
+      "project": "src/services/text/Inno.Text.Assets/Inno.Text.Assets.csproj",
+      "entry": "docs/modules/text/Inno.Text.Assets.md"
+    },
+    {
+      "project": "src/services/text/Inno.Text.Runtime/Inno.Text.Runtime.csproj",
+      "entry": "docs/modules/text/Inno.Text.Runtime.md"
+    },
+    {
+      "project": "src/services/text/Inno.Text/Inno.Text.csproj",
+      "entry": "docs/modules/text/Inno.Text.md"
+    },
+    {
+      "project": "src/services/ui/Inno.UI.Assets/Inno.UI.Assets.csproj",
+      "entry": "docs/modules/ui/Inno.UI.Assets.md"
+    },
+    {
+      "project": "src/services/ui/Inno.UI.Runtime/Inno.UI.Runtime.csproj",
+      "entry": "docs/modules/ui/Inno.UI.Runtime.md"
+    },
+    {
+      "project": "src/services/ui/Inno.UI/Inno.UI.csproj",
+      "entry": "docs/modules/ui/Inno.UI.md"
+    },
+    {
+      "project": "tests/animation/Inno.Animation.Tests/Inno.Animation.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Animation.Tests.md"
+    },
+    {
+      "project": "tests/assets/Inno.Assets.Pipeline.Tests/Inno.Assets.Pipeline.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Assets.Pipeline.Tests.md"
+    },
+    {
+      "project": "tests/assets/Inno.Assets.Tests/Inno.Assets.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Assets.Tests.md"
+    },
+    {
+      "project": "tests/assets/fixtures/Inno.Assets.Pipeline.DuplicateImporterFixture/Inno.Assets.Pipeline.DuplicateImporterFixture.csproj",
+      "entry": "docs/development/testing/Inno.Assets.Pipeline.DuplicateImporterFixture.md"
+    },
+    {
+      "project": "tests/audio/Inno.Audio.Assets.Tests/Inno.Audio.Assets.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Audio.Assets.Tests.md"
+    },
+    {
+      "project": "tests/audio/Inno.Audio.Runtime.Tests/Inno.Audio.Runtime.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Audio.Runtime.Tests.md"
+    },
+    {
+      "project": "tests/audio/Inno.Audio.Tests/Inno.Audio.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Audio.Tests.md"
+    },
+    {
+      "project": "tests/build/Inno.Build.NativePerformance.Tests/Inno.Build.NativePerformance.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Build.NativePerformance.Tests.md"
+    },
+    {
+      "project": "tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Build.Tests.md"
+    },
+    {
+      "project": "tests/build/Inno.Build.Toolchains.Tests/Inno.Build.Toolchains.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Build.Toolchains.Tests.md"
+    },
+    {
+      "project": "tests/content/Inno.Content.Tests/Inno.Content.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Content.Tests.md"
+    },
+    {
+      "project": "tests/content/fixtures/Inno.Content.CacheProbe/Inno.Content.CacheProbe.csproj",
+      "entry": "docs/development/testing/Inno.Content.CacheProbe.md"
+    },
+    {
+      "project": "tests/content/fixtures/Inno.Content.Testing/Inno.Content.Testing.csproj",
+      "entry": "docs/development/testing/Inno.Content.Testing.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Collections.Tests/Inno.Core.Collections.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Collections.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Coroutines.Tests/Inno.Core.Coroutines.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Coroutines.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Diagnostics.Tests/Inno.Core.Diagnostics.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Diagnostics.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Events.Tests/Inno.Core.Events.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Events.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Execution.Tests/Inno.Core.Execution.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Execution.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Graphs.Tests/Inno.Core.Graphs.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Graphs.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.IO.Tests/Inno.Core.IO.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.IO.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Identity.Tests/Inno.Core.Identity.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Identity.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Jobs.Tests/Inno.Core.Jobs.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Jobs.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Layers.Tests/Inno.Core.Layers.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Layers.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Logging.Tests/Inno.Core.Logging.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Logging.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Mathematics.Tests/Inno.Core.Mathematics.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Mathematics.Tests.md"
+    },
+    {
+      "project": "tests/core/Inno.Core.Serialization.Tests/Inno.Core.Serialization.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Core.Serialization.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.Audio.Tests/Inno.Editor.Audio.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.Audio.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.Graph.Tests/Inno.Editor.Graph.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.Graph.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.Hosting.Tests/Inno.Editor.Hosting.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.Hosting.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.ImGui.Tests/Inno.Editor.ImGui.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.ImGui.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.Inspection.Tests/Inno.Editor.Inspection.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.Inspection.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.Interactions.Tests/Inno.Editor.Interactions.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.Interactions.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.PlayMode.Tests/Inno.Editor.PlayMode.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.PlayMode.Tests.md"
+    },
+    {
+      "project": "tests/editor/Inno.Editor.Presentation.Tests/Inno.Editor.Presentation.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.Presentation.Tests.md"
+    },
+    {
+      "project": "tests/extensibility/Inno.Extensibility.Modules.Tests/Inno.Extensibility.Modules.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Modules.Tests.md"
+    },
+    {
+      "project": "tests/extensibility/Inno.Extensibility.Reload.Tests/Inno.Extensibility.Reload.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Reload.Tests.md"
+    },
+    {
+      "project": "tests/extensibility/Inno.Extensibility.Types.Tests/Inno.Extensibility.Types.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Types.Tests.md"
+    },
+    {
+      "project": "tests/extensibility/fixtures/Inno.Extensibility.Modules.TestDependency/Inno.Extensibility.Modules.TestDependency.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Modules.TestDependency.md"
+    },
+    {
+      "project": "tests/extensibility/fixtures/Inno.Extensibility.Modules.TestModule.Invalid/Inno.Extensibility.Modules.TestModule.Invalid.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Modules.TestModule.Invalid.md"
+    },
+    {
+      "project": "tests/extensibility/fixtures/Inno.Extensibility.Modules.TestModule.V1/Inno.Extensibility.Modules.TestModule.V1.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Modules.TestModule.V1.md"
+    },
+    {
+      "project": "tests/extensibility/fixtures/Inno.Extensibility.Modules.TestModule.V2/Inno.Extensibility.Modules.TestModule.V2.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Modules.TestModule.V2.md"
+    },
+    {
+      "project": "tests/extensibility/fixtures/Inno.Extensibility.Types.TestAssemblyA/Inno.Extensibility.Types.TestAssemblyA.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Types.TestAssemblyA.md"
+    },
+    {
+      "project": "tests/extensibility/fixtures/Inno.Extensibility.Types.TestAssemblyB/Inno.Extensibility.Types.TestAssemblyB.csproj",
+      "entry": "docs/development/testing/Inno.Extensibility.Types.TestAssemblyB.md"
+    },
+    {
+      "project": "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Input.Tests.md"
+    },
+    {
+      "project": "tests/plugins/Inno.Plugins.Tests/Inno.Plugins.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Plugins.Tests.md"
+    },
+    {
+      "project": "tests/process/Inno.Testing.Processes.Tests/Inno.Testing.Processes.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Testing.Processes.Tests.md"
+    },
+    {
+      "project": "tests/process/Inno.Testing.Processes/Inno.Testing.Processes.csproj",
+      "entry": "docs/development/testing/Inno.Testing.Processes.md"
+    },
+    {
+      "project": "tests/references/Inno.References.Tests/Inno.References.Tests.csproj",
+      "entry": "docs/development/testing/Inno.References.Tests.md"
+    },
+    {
+      "project": "tests/rendering/Inno.Rendering.Assets.Authoring.Tests/Inno.Rendering.Assets.Authoring.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Rendering.Assets.Authoring.Tests.md"
+    },
+    {
+      "project": "tests/rendering/Inno.Rendering.Assets.Tests/Inno.Rendering.Assets.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Rendering.Assets.Tests.md"
+    },
+    {
+      "project": "tests/rendering/Inno.Rendering.Runtime.Tests/Inno.Rendering.Runtime.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Rendering.Runtime.Tests.md"
+    },
+    {
+      "project": "tests/rendering/Inno.Rendering.Shaders.Tests/Inno.Rendering.Shaders.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Rendering.Shaders.Tests.md"
+    },
+    {
+      "project": "tests/rendering/Inno.Rendering.Tests/Inno.Rendering.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Rendering.Tests.md"
+    },
+    {
+      "project": "tests/rendering/fixtures/Inno.Rendering.Runtime.Reload.TestModule/Inno.Rendering.Runtime.Reload.TestModule.csproj",
+      "entry": "docs/development/testing/Inno.Rendering.Runtime.Reload.TestModule.md"
+    },
+    {
+      "project": "tests/runtime/Inno.Runtime.Generators.Tests/Inno.Runtime.Generators.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Runtime.Generators.Tests.md"
+    },
+    {
+      "project": "tests/runtime/Inno.Runtime.Tests/Inno.Runtime.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Runtime.Tests.md"
+    },
+    {
+      "project": "tests/scene/Inno.Scene.Tests/Inno.Scene.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Scene.Tests.md"
+    },
+    {
+      "project": "tests/scene/fixtures/Inno.Scene.Reload.TestModule/Inno.Scene.Reload.TestModule.csproj",
+      "entry": "docs/development/testing/Inno.Scene.Reload.TestModule.md"
+    },
+    {
+      "project": "tests/scripting/Inno.Editor.Scripting.Tests/Inno.Editor.Scripting.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Editor.Scripting.Tests.md"
+    },
+    {
+      "project": "tests/scripting/Inno.Scripting.Compiler.Tests/Inno.Scripting.Compiler.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Scripting.Compiler.Tests.md"
+    },
+    {
+      "project": "tests/source/Inno.Testing.Source/Inno.Testing.Source.csproj",
+      "entry": "docs/development/testing/Inno.Testing.Source.md"
+    },
+    {
+      "project": "tests/storage/Inno.Storage.Tests/Inno.Storage.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Storage.Tests.md"
+    },
+    {
+      "project": "tests/text/Inno.Text.Tests/Inno.Text.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Text.Tests.md"
+    },
+    {
+      "project": "tests/tooling/Inno.Tooling.Architecture.Tests/Inno.Tooling.Architecture.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Tooling.Architecture.Tests.md"
+    },
+    {
+      "project": "tests/tooling/Inno.Tooling.Validation.Tests/Inno.Tooling.Validation.Tests.csproj",
+      "entry": "docs/development/testing/Inno.Tooling.Validation.Tests.md"
+    },
+    {
+      "project": "tests/ui/Inno.UI.Tests/Inno.UI.Tests.csproj",
+      "entry": "docs/development/testing/Inno.UI.Tests.md"
+    },
+    {
+      "project": "tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj",
+      "entry": "docs/development/tooling/Inno.Tooling.Architecture.md"
+    },
+    {
+      "project": "tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj",
+      "entry": "docs/development/tooling/Inno.Tooling.Validation.md"
+    }
+  ]
+}

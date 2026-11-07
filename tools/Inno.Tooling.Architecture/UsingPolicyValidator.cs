@@ -13,7 +13,8 @@ internal static class UsingPolicyValidator
 {
     internal static void Validate(
         string root,
-        ICollection<string> failures
+        ICollection<string> failures,
+        IReadOnlyDictionary<string, SyntaxTree> sourceTrees
     ) {
         foreach (string file in RepositorySourceInventory.Files(root, "*"))
         {
@@ -21,7 +22,8 @@ internal static class UsingPolicyValidator
             if (file.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
                 || file.EndsWith(".cs.txt", StringComparison.OrdinalIgnoreCase))
             {
-                var tree = CSharpSyntaxTree.ParseText(File.ReadAllText(file), new CSharpParseOptions(LanguageVersion.CSharp14));
+                SyntaxTree tree = sourceTrees.TryGetValue(file, out SyntaxTree? parsed) ? parsed
+                    : CSharpSyntaxTree.ParseText(File.ReadAllText(file), new CSharpParseOptions(LanguageVersion.CSharp14));
                 if (tree.GetRoot().DescendantNodes().OfType<UsingDirectiveSyntax>().Any(static item => item.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword)))
                     failures.Add($"{relative}: global using directives are forbidden.");
                 continue;

@@ -130,7 +130,7 @@ public static class BuildMaintenanceApplication
             inventoryBudget.CancelAfter(policy.timeBudget);
             try
             {
-                owners = BuildCacheOwnerCatalog.ReadOwners(engineRoot, inventoryBudget.Token);
+                owners = BuildCacheOwnerCatalog.ReadOwners(engineRoot, new BuildCacheInventoryProgress(engineRoot, dryRun), inventoryBudget.Token);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {

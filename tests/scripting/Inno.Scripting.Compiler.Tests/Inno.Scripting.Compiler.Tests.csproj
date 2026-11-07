@@ -5,11 +5,13 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>contract</InnoValidationLayer>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <InnoValidationInput Include="../../../Directory.Solution.props;../../../Directory.Solution.targets" />
     <ProjectReference Include="../../../build/pipeline/Inno.Build/Inno.Build.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../src/runtime/scripting/Inno.Scripting.Compiler/Inno.Scripting.Compiler.csproj" />
     <ProjectReference Include="../../../src/runtime/engine/Inno.Runtime/Inno.Runtime.csproj" />

@@ -1,6 +1,6 @@
 # Inno.Build.BrowserWasm32
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../architecture/PLATFORM_EXTENSION_GUIDE.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../development/adding-platform.md)
 
 ## 职责与边界
 
@@ -142,9 +142,9 @@ Validator 由平台贡献传入同一个不可变 `ProductNativeBuildPlan`，直
 
 ## 项目依赖
 
-- [Inno.Build](../../build/Inno.Build.md)：公开引用边界由实际签名核对。
-- [Inno.Build.Managed](../../build/Inno.Build.Managed.md)：公开引用边界由实际签名核对。
-- [Inno.Build.Toolchains](../../build/Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
-- [Inno.Core.IO](../../core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Composition](../../build/Inno.Build.Composition.md)：公开引用边界由实际签名核对。
-- [Inno.Build.SupportPacks.Core](../../build/Inno.Build.SupportPacks.Core.md)：公开引用边界由实际签名核对。
+- [Inno.Build](../../development/build/Inno.Build.md)：公开引用边界由实际签名核对。
+- [Inno.Build.Managed](../../development/build/Inno.Build.Managed.md)：公开引用边界由实际签名核对。
+- [Inno.Build.Toolchains](../../development/build/Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
+- [Inno.Core.IO](../../modules/core/Inno.Core.IO.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Build.Composition](../../development/build/Inno.Build.Composition.md)：公开引用边界由实际签名核对。
+- [Inno.Build.SupportPacks.Core](../../development/build/Inno.Build.SupportPacks.Core.md)：公开引用边界由实际签名核对。

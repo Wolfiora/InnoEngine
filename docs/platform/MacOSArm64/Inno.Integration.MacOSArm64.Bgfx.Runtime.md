@@ -25,7 +25,7 @@ var rendering = new BgfxRenderingBackendProvider(new MacOSArm64BgfxSurfaceIntegr
 
 ## 验证入口
 
-BgfxSurfaceIntegrationTests 通过公开 SPI 验证未知 surface、错误角色和组合；BgfxSurfaceRetirementTests 验证真实窗口/命令退休。本轮结果见[当前验收](../../architecture/CURRENT_ACCEPTANCE.md)。
+BgfxSurfaceIntegrationTests 通过公开 SPI 验证未知 surface、错误角色和组合；BgfxSurfaceRetirementTests 验证真实窗口/命令退休。本轮结果见[当前验收](../../../.agents/records/acceptance/current.md)。
 
 ## 当前源码公开 API 清单
 

@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using Inno.Tooling.Architecture.Documentation;
+using Markdig.Syntax;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -20,16 +22,28 @@ internal static class WikiExampleValidator
         WikiProjectReferences? projectReferences,
         string? inventoryPath,
         ICollection<string> failures,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        IReadOnlySet<string>? selectedPages = null
     ) {
         var results = new List<WikiExampleResult>();
         var owners = projects.ToDictionary(static project => Path.GetFullPath(project.page),
             StringComparer.OrdinalIgnoreCase);
+        foreach (var pair in Documentation.DocumentationCatalog.Read(root, projects).owners)
+        {
+            WikiProjectPage? owner = projects.FirstOrDefault(project => Path.GetFileNameWithoutExtension(project.project) == pair.Value);
+            if (owner is not null)
+                owners[Path.GetFullPath(Path.Combine(root, pair.Key))] = owner;
+        }
         foreach (string pagePath in RepositorySourceInventory.Files(Path.Combine(root, "docs"), "*.md"))
         {
+            if (selectedPages is not null && !selectedPages.Contains(Path.GetFullPath(pagePath)))
+                continue;
             owners.TryGetValue(Path.GetFullPath(pagePath), out WikiProjectPage? project);
             bool excluded = project is not null && models.IsExcludedProduct(Path.GetDirectoryName(project.project)!);
-            string[] lines = File.ReadAllLines(pagePath);
+            FencedCodeBlock[] examples = DocumentationMarkdown.ParseDocument(File.ReadAllText(pagePath))
+                .Descendants<FencedCodeBlock>().Where(static block => block.Info is "csharp" or "cs").ToArray();
+            if (examples.Length == 0)
+                continue;
             Compilation? owner = project is null ? null
                 : models.GetCompilation(Path.GetDirectoryName(project.project)!);
             CSharpCompilation? compiler = owner as CSharpCompilation;
@@ -37,14 +51,9 @@ internal static class WikiExampleValidator
                 compiler = CSharpCompilation.Create("WikiGuide", references: models.frameworkReferences,
                     options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
             int example = 0;
-            for (int index = 0; index < lines.Length; index++)
+            foreach (FencedCodeBlock block in examples)
             {
-                string opening = lines[index].Trim();
-                if (opening is not "```csharp" and not "```cs")
-                    continue;
-                int start = ++index;
-                while (index < lines.Length && lines[index].Trim() != "```")
-                    index++;
+                int start = block.Line + 1;
                 example++;
                 string page = Path.GetRelativePath(root, pagePath).Replace('\\', '/');
                 var diagnostics = new List<string>();
@@ -56,13 +65,13 @@ internal static class WikiExampleValidator
                         "Not evaluated: product target differs from the explicitly selected Wiki target."));
                     continue;
                 }
-                if (index == lines.Length)
+                if (block.ClosingFencedCharCount == 0)
                     diagnostics.Add("The C# example has no closing fence.");
                 if (compiler is null)
                     diagnostics.Add("The owning project has no available semantic compilation.");
                 else
                 {
-                    SyntaxTree tree = CSharpSyntaxTree.ParseText(string.Join('\n', lines[start..index]),
+                    SyntaxTree tree = CSharpSyntaxTree.ParseText(block.Lines.ToString(),
                         (CSharpParseOptions?)compiler.SyntaxTrees.FirstOrDefault()?.Options,
                         path: page + "#example-" + example, cancellationToken: cancellationToken);
                     OutputKind output = tree.GetRoot(cancellationToken).DescendantNodes()

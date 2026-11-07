@@ -9,3 +9,7 @@
 - [Inno.Adapter.Audio.MiniAudio](Inno.Adapter.Audio.MiniAudio.md)
 - [Inno.Build.Toolchains.MiniAudio](Inno.Build.Toolchains.MiniAudio.md)
 - [Inno.Native.MiniAudio](Inno.Native.MiniAudio.md)
+
+## 上游与使用边界
+
+[miniaudio](https://github.com/mackron/miniaudio) 是本 backend 消费的上游源码入口，所选 revision 以仓库 `.gitmodules` 和 gitlink 为准。上游 API 的存在不表示可以绕过 Inno 的 adapter、目标部署或资源 owner；句柄、线程、回调与退休义务由上列 adapter/native 项目页说明。引擎封装没有承诺的上游能力不自动成为产品 API。

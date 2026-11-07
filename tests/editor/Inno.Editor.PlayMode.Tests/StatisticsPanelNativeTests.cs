@@ -2,6 +2,7 @@ using System;
 using System.Numerics;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
@@ -13,7 +14,7 @@ public sealed unsafe class StatisticsPanelNativeTests
     [Fact]
     public void ActualPanelSamplesAtHalfSecondIntervalsAndResetsAfterHiddenFrames()
     {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Stats");
+        using var host = new NativePanelHost(typeof(StatisticsPanelNativeTests).Assembly, "Inno.Editor.Panel.Stats");
         EditorPanelExtension panel = host.GetPanel("diagnostics.stats");
         Assert.Equal(0, DrawAndCountTrendVertices(host, panel, 0.1f));
         for (int frame = 0; frame < 4; frame++)
@@ -34,7 +35,7 @@ public sealed unsafe class StatisticsPanelNativeTests
         float deltaTime,
         int maximumSamples
     ) {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Stats");
+        using var host = new NativePanelHost(typeof(StatisticsPanelNativeTests).Assembly, "Inno.Editor.Panel.Stats");
         EditorPanelExtension panel = host.GetPanel("diagnostics.stats");
         Assert.Equal(0, DrawAndCountTrendVertices(host, panel, deltaTime));
         int verticesPerInterval = DrawAndCountTrendVertices(host, panel, deltaTime);

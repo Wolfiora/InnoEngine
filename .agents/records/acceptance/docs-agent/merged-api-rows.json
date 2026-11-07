@@ -1,0 +1,74 @@
+[
+  {
+    "file": "docs/backends/ImGui/Inno.Build.Toolchains.ImGuizmo.md",
+    "anchor": "api-3edcd1cd76a4bd6b",
+    "first": "| <a id=\"api-3edcd1cd76a4bd6b\"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.BindImGui(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBuildRecipe sourceRecipe, Inno.Build.Toolchains.NativeBuildProduct imGui)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L149) | Freezes the exact ImGui link input for both compilation and complete product cache lookup.<br>`context`：The operation owning the explicit target SDK.<br>`sourceRecipe`：The component's previously declared source recipe.<br>`imGui`：The borrowed, integrity-checked dependency matching this target.<br>返回：A recipe including the selected link library and dependency fingerprint.<br>T:System.ArgumentException：The dependency belongs to a different component or target.<br>T:System.InvalidOperationException：The dependency does not expose exactly one link library. |",
+    "second": "| <a id=\"api-3edcd1cd76a4bd6b\"></a>[`public static Inno.Build.Toolchains.NativeBuildRecipe Inno.Build.Toolchains.ImGuizmo.ImGuizmoToolchain.BindImGui(Inno.Build.Toolchains.NativeBuildContext context, Inno.Build.Toolchains.NativeBuildRecipe sourceRecipe, Inno.Build.Toolchains.NativeBuildProduct imGui)`](../../../backends/ImGui/build/Inno.Build.Toolchains.ImGuizmo/ImGuizmoToolchain.cs#L141) | Freezes the exact ImGui link input for both compilation and complete product cache lookup. | 遵循本页对应生命周期；借用依赖不转移其 owner。 | 参数、边界和操作状态不满足时拒绝执行；详见类型说明。 |"
+  },
+  {
+    "file": "docs/development/build/Inno.Build.TaskHosting.md",
+    "anchor": "api-4e36554364566d29",
+    "first": "| <a id=\"api-4e36554364566d29\"></a>[`public sealed class Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner : Microsoft.Build.Utilities.Task`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L13) | Claims bootstrap storage before SDK compilation without depending on the full task runtime. |",
+    "second": "| <a id=\"api-4e36554364566d29\"></a>[`public sealed class Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner : Microsoft.Build.Utilities.Task`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L12) | 轻量 SDK Task 适配，不包含另一套 claim writer。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |"
+  },
+  {
+    "file": "docs/development/build/Inno.Build.TaskHosting.md",
+    "anchor": "api-e44083ab7509d2ff",
+    "first": "| <a id=\"api-e44083ab7509d2ff\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Root { get; set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L19) | Gets or sets the absolute publisher root managed by the standard distribution. |",
+    "second": "| <a id=\"api-e44083ab7509d2ff\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Root { get; set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L18) | 标准发行登记的绝对 publisher 根。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |"
+  },
+  {
+    "file": "docs/development/build/Inno.Build.TaskHosting.md",
+    "anchor": "api-6cb80b7cfa19243c",
+    "first": "| <a id=\"api-6cb80b7cfa19243c\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Identity { get; set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L25) | Gets or sets the current operation identity already propagated through the project graph. |",
+    "second": "| <a id=\"api-6cb80b7cfa19243c\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Identity { get; set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L24) | 引用图共享的当前操作 GUID，不能每个 target 重新生成。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |"
+  },
+  {
+    "file": "docs/development/build/Inno.Build.TaskHosting.md",
+    "anchor": "api-4c7de22179e2ea95",
+    "first": "| <a id=\"api-4c7de22179e2ea95\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.FoundationAssembly { get; set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L31) | Gets or sets the freshly built Foundation assembly selected by this SDK bootstrap. |",
+    "second": "| <a id=\"api-4c7de22179e2ea95\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.FoundationAssembly { get; set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L30) | 当前 SDK 构建的 Foundation 程序集路径，用于调用公开 Core.IO 入口。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |"
+  },
+  {
+    "file": "docs/development/build/Inno.Build.TaskHosting.md",
+    "anchor": "api-ac8a6472636a0774",
+    "first": "| <a id=\"api-ac8a6472636a0774\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Directory { get; private set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L37) | Gets the new process-owned directory whose claim precedes all bootstrap payloads. |",
+    "second": "| <a id=\"api-ac8a6472636a0774\"></a>[`public string Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Directory { get; private set; }`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L36) | 首次 payload 前已经登记的 bootstrap 目录。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |"
+  },
+  {
+    "file": "docs/development/build/Inno.Build.TaskHosting.md",
+    "anchor": "api-65479adfba3085af",
+    "first": "| <a id=\"api-65479adfba3085af\"></a>[`public override bool Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Execute()`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L45) | Establishes ownership through Core.IO; no SDK object or lease enters the Build registry.<br>返回：True after a new claim, or false with an error before payload compilation. |",
+    "second": "| <a id=\"api-65479adfba3085af\"></a>[`public override bool Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.Execute()`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L44) | 建立当前进程 claim，成功返回 true；失败记录诊断并返回 false。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |"
+  },
+  {
+    "file": "docs/development/build/Inno.Build.TaskHosting.md",
+    "anchor": "api-b8337cdb3323d9d9",
+    "first": "| <a id=\"api-b8337cdb3323d9d9\"></a>[`public Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.TaskRuntimeBootstrapOwner()`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L13) | 由 C# 生成，遵循所属类型的值语义与本页的生命周期约束。 |",
+    "second": "| <a id=\"api-b8337cdb3323d9d9\"></a>[`public Inno.Build.TaskHosting.TaskRuntimeBootstrapOwner.TaskRuntimeBootstrapOwner()`](../../../build/tasks/Inno.Build.TaskHosting/TaskRuntimeBootstrapOwner.cs#L12) | 创建尚未配置的 SDK Task；执行前设置 Required 属性。 | SDK 调用 Core.IO 的公开 claim；只交付 BCL 字符串，不保存 ALC 或 lease。 | 初始化/边界失败报告 MSBuild error，并阻止 payload 编译。 |"
+  },
+  {
+    "file": "docs/modules/assets/Inno.Assets.Pipeline.md",
+    "anchor": "api-01f9789655046883",
+    "first": "| <a id=\"api-01f9789655046883\"></a>[`public sealed class Inno.Assets.Pipeline.AssetArtifactWriter`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L11) | 建立本次 aggregate build 的输出/诊断收集器。 | 内部结果由 Pipeline 使用；公开 Writer 不提供物理路径。 | 输出不能重复写入。 |",
+    "second": "| <a id=\"api-01f9789655046883\"></a>[`public sealed class Inno.Assets.Pipeline.AssetArtifactWriter`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L11) | Collects immutable named outputs for an aggregate asset build. | — | — |"
+  },
+  {
+    "file": "docs/modules/assets/Inno.Assets.Pipeline.md",
+    "anchor": "api-39ae535d337b9f0d",
+    "first": "| <a id=\"api-39ae535d337b9f0d\"></a>[`public System.Threading.Tasks.ValueTask Inno.Assets.Pipeline.AssetArtifactWriter.WriteAsync(string outputName, System.ReadOnlyMemory<byte> bytes, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken), Inno.Assets.Pipeline.AssetDeploymentScope deploymentScope = Inno.Assets.Pipeline.AssetDeploymentScope.Runtime)`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L36) | 复制 bytes，暂存唯一的命名输出；返回已完成的 ValueTask。AuthoringOnly 输出不进入运行闭包。 | Writer 属于当前 aggregate build；调用后可释放/修改传入缓冲区。 | 空名称、非法 scope、将 runtime/asset-state 标为 AuthoringOnly、重复名称或预取消均失败。 |",
+    "second": "| <a id=\"api-39ae535d337b9f0d\"></a>[`public System.Threading.Tasks.ValueTask Inno.Assets.Pipeline.AssetArtifactWriter.WriteAsync(string outputName, System.ReadOnlyMemory<byte> bytes, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken), Inno.Assets.Pipeline.AssetDeploymentScope deploymentScope = Inno.Assets.Pipeline.AssetDeploymentScope.Runtime)`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L36) | Writes one named build output.<br>`outputName`: The stable output name.<br>`bytes`: The output content.<br>`cancellationToken`: Cancellation for the write operation.<br>`deploymentScope`: Whether runtime packages retain this output. | A completed operation after the output has been staged. | — |"
+  },
+  {
+    "file": "docs/modules/assets/Inno.Assets.Pipeline.md",
+    "anchor": "api-d59e99d5149b6bdc",
+    "first": "| <a id=\"api-d59e99d5149b6bdc\"></a>[`public void Inno.Assets.Pipeline.AssetArtifactWriter.ReportDiagnostic(string message)`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L60) | 向本次构建加入诊断文本。 | 不开始导入、发布或文件 IO。 | 空白诊断会抛 ArgumentException。 |",
+    "second": "| <a id=\"api-d59e99d5149b6bdc\"></a>[`public void Inno.Assets.Pipeline.AssetArtifactWriter.ReportDiagnostic(string message)`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L60) | Adds a build diagnostic.<br>`message`: The diagnostic message. | — | — |"
+  },
+  {
+    "file": "docs/modules/assets/Inno.Assets.Pipeline.md",
+    "anchor": "api-2ba783329f0d79ec",
+    "first": "| <a id=\"api-2ba783329f0d79ec\"></a>[`public Inno.Assets.Pipeline.AssetArtifactWriter.AssetArtifactWriter()`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L11) | 建立本次 aggregate build 的输出/诊断收集器。 | 内部结果由 Pipeline 使用；公开 Writer 不提供物理路径。 | 输出不能重复写入。 |",
+    "second": "| <a id=\"api-2ba783329f0d79ec\"></a>[`public Inno.Assets.Pipeline.AssetArtifactWriter.AssetArtifactWriter()`](../../../src/content/assets/Inno.Assets.Pipeline/Importing/Artifacts/AssetArtifactWriter.cs#L11) | Inherited or compiler-provided contract. | — | — |"
+  }
+]

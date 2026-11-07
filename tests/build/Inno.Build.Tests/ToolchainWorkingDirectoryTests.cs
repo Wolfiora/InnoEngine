@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -80,6 +81,7 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task OccupiedAliasFailsWithoutRemovingTheOccupantAndReleasesOwnership()
     {
         if (!OperatingSystem.IsWindows())

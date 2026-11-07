@@ -90,6 +90,12 @@ public static class BuildCacheOwnerCatalog
     public static IReadOnlyList<BuildCacheOwnerDescriptor> ReadOwners(
         string engineRoot,
         CancellationToken cancellationToken = default
+    ) => ReadOwners(engineRoot, null, cancellationToken);
+
+    internal static IReadOnlyList<BuildCacheOwnerDescriptor> ReadOwners(
+        string engineRoot,
+        BuildCacheInventoryProgress? progress,
+        CancellationToken cancellationToken
     ) {
         string root = Path.GetFullPath(engineRoot);
         string catalog = CatalogRoot(root);
@@ -106,7 +112,8 @@ public static class BuildCacheOwnerCatalog
             if (!identities.Add(value.id))
                 throw new InvalidDataException("Cache registration identities must be unique.");
             string owned = PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, value.directory));
-            result.Add(new BuildCachePublisher(owned, value.role).Describe(value.id));
+            result.Add((progress is null ? new BuildCachePublisher(owned, value.role)
+                : new BuildCachePublisher(owned, value.role, progress)).Describe(value.id));
         }
         return result.AsReadOnly();
     }

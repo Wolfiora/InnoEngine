@@ -72,6 +72,7 @@ public sealed class InspectionPipelineTests : IDisposable
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -109,6 +110,7 @@ public sealed class InspectionPipelineTests : IDisposable
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             PrepareNativeFrame();
@@ -148,6 +150,7 @@ public sealed class InspectionPipelineTests : IDisposable
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             DrawPropertyFrame(firstRenderer, editor, firstOwner, firstProperty);
@@ -177,6 +180,7 @@ public sealed class InspectionPipelineTests : IDisposable
         var nativeContext = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             DrawPropertyFrame(renderer, editor, owner, property);

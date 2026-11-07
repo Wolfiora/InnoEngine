@@ -26,6 +26,8 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>contract</InnoValidationLayer>
+    <InnoValidationReusable>false</InnoValidationReusable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoAssemblyScope>Editor</InnoAssemblyScope>
     <InnoTestNativeProduct>editor</InnoTestNativeProduct>
@@ -86,4 +88,5 @@
   <ItemGroup>
     <ProjectReference Include="../../../backends/DotNet/runtime/Inno.Adapter.Serialization.DotNet/Inno.Adapter.Serialization.DotNet.csproj" PrivateAssets="compile" />
   </ItemGroup>
+  <ItemGroup><ProjectReference Include="../fixtures/Inno.Testing.Editor.Native/Inno.Testing.Editor.Native.csproj" /></ItemGroup>
 </Project>

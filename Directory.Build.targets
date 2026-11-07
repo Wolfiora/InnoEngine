@@ -1,4 +1,17 @@
 <Project>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'SourceDebug'">
+    <!-- Apply after the SDK's default configuration. Development symbols retain exact source bytes without commit churn;
+         Release keeps commit-based informational versions and Source Link provenance. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
+    <EnableSourceLink>false</EnableSourceLink>
+    <EmbedAllSources>true</EmbedAllSources>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'SourceDebug'">
+    <SourceRoot Include="$(MSBuildThisFileDirectory)" />
+  </ItemGroup>
+
   <Target
     Name="MaintainInnoRootBuildCaches"
     AfterTargets="Build;Publish"
@@ -331,5 +344,42 @@
       Configuration="$(Configuration)"
       BindingSelectionInputPath="$(InnoNativeBindingSelection)"
       OutputDirectory="$(PublishDir)" />
+  </Target>
+  <Target
+    Name="ApplyInnoCleanReferencePolicy"
+    BeforeTargets="CleanReferencedProjects"
+    Condition="'$(InnoCleanProjectReferences)' == 'false'">
+    <PropertyGroup>
+      <BuildProjectReferences>false</BuildProjectReferences>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Only unselected dependencies have reusable outputs. Selected roots still build through
+       their actual references, including product instances selected after SDK evaluation. -->
+  <Target
+    Name="UseInnoVerifiedProjectOutputs"
+    BeforeTargets="ResolveProjectReferences"
+    DependsOnTargets="PrepareProjectReferences"
+    Condition="'$(InnoUseVerifiedProjectOutputs)' == 'true'">
+    <PropertyGroup>
+      <_InnoValidationSolutionExtension>$([System.IO.Path]::GetExtension('$(SolutionPath)'))</_InnoValidationSolutionExtension>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionPath)') or '$(_InnoValidationSolutionExtension)' != '.slnx'"
+      Text="Verified dependency outputs require the validation owner's explicit solution." />
+    <XmlPeek XmlInputPath="$(SolutionPath)" Query="/Solution/Project/@Path">
+      <Output TaskParameter="Result" ItemName="_InnoValidationBuildRoot" />
+    </XmlPeek>
+    <Error Condition="'@(_InnoValidationBuildRoot)' == ''" Text="The validation build has no selected roots." />
+    <ItemGroup>
+      <_InnoVerifiedDependency Include="@(_MSBuildProjectReferenceExistent)"
+        Condition="'%(_MSBuildProjectReferenceExistent.Targets)' == '' or '%(_MSBuildProjectReferenceExistent.Targets)' == 'Build'" />
+      <_InnoVerifiedDependency Remove="@(_InnoValidationBuildRoot)"
+        MatchOnMetadata="FullPath" MatchOnMetadataOptions="PathLike" />
+      <_InnoVerifiedDependency>
+        <Targets>GetTargetPath</Targets>
+      </_InnoVerifiedDependency>
+      <_MSBuildProjectReferenceExistent Remove="@(_InnoVerifiedDependency)" />
+      <_MSBuildProjectReferenceExistent Include="@(_InnoVerifiedDependency)" />
+    </ItemGroup>
   </Target>
 </Project>

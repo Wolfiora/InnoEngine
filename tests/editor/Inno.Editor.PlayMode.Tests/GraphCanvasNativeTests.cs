@@ -5,6 +5,7 @@ using Inno.Core.Graphs;
 using Inno.Editor.Graph;
 using Inno.Editor.Graph.ImGui;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
@@ -16,7 +17,7 @@ public sealed unsafe class GraphCanvasNativeTests
     [Fact]
     public void NonShaderPointerWorkflowUsesTheRealDocumentHistory()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(GraphCanvasNativeTests).Assembly);
         var document = new GraphDocument();
         var first = new GraphNodeRecord(new("workflow.first"), "workflow.step") { position = new(20f, 20f) };
         var second = new GraphNodeRecord(new("workflow.second"), "workflow.step") { position = new(300f, 20f) };
@@ -100,7 +101,7 @@ public sealed unsafe class GraphCanvasNativeTests
     [Fact]
     public void NonShaderNodeDrawingRestoresItsClipAfterAnExtensionThrows()
     {
-        using var host = new NativePanelHost();
+        using var host = new NativePanelHost(typeof(GraphCanvasNativeTests).Assembly);
         var state = new GraphCanvasState();
         GraphNodeId id = new("workflow.begin");
         var node = new GraphCanvasNode(id, new(10f, 10f), new(200f, 100f), 24f, "Workflow step",

@@ -109,6 +109,8 @@ public static class NativeArtifactPublisher
             Record(cached);
             return new(component, targetId, fingerprint, destination, bindingGeneration, context.toolchain?.linkPlan.sharedLibraryExtension, cached);
         }
+        if (Directory.Exists(destination))
+            Console.Error.WriteLine($"Rejected incomplete or modified Native cache '{destination}'; it remains isolated from consumers until verified replacement succeeds.");
 
         void Record(BuildArtifactReadLease reading)
         {

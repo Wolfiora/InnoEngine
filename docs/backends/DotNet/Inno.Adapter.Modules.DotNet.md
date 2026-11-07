@@ -2,7 +2,7 @@
 
 SDK 依赖清单中的程序集从该显式根的部署目录装载；CLR 引用仍使用所属 Host ALC。库宿主需要部署自身的 SDK 清单与 runtime copy-local 闭包，不能依赖编译引用传递来推断运行时发现。这里不扫描任意目录或进程程序集，也不保存插件代际的额外解析表。
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [Modules](../../extensibility/Inno.Extensibility.Modules.md) · [Types](../../extensibility/Inno.Extensibility.Types.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [Modules](../../modules/extensibility/Inno.Extensibility.Modules.md) · [Types](../../modules/extensibility/Inno.Extensibility.Types.md)
 
 ## 职责与允许依赖
 
@@ -58,7 +58,7 @@ static DotNetModuleSource DescribeModule(
 
 
 
-## 本轮边界与所有权
+## 所有权与生命周期
 
 DotNetModuleSource 自己持有 artifact root，负责 ALC、shadow copy 与动态依赖解析。Foundation 不替它选择路径；退休继续执行 Full GC → finalizers → Full GC 与弱监测，Pending 不得当作 Success。
 
@@ -146,7 +146,7 @@ DotNetModuleSource 自己持有 artifact root，负责 ALC、shadow copy 与动�
 
 ## 项目依赖
 
-- [Inno.Core.Collections](../../core/Inno.Core.Collections.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Modules](../../extensibility/Inno.Extensibility.Modules.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Types](../../extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Collections](../../modules/core/Inno.Core.Collections.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Modules](../../modules/extensibility/Inno.Extensibility.Modules.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Types](../../modules/extensibility/Inno.Extensibility.Types.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

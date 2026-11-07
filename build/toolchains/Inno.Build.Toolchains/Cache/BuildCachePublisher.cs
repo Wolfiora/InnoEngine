@@ -18,6 +18,7 @@ public sealed class BuildCachePublisher
 {
     private readonly string m_root;
     private readonly BuildCacheArtifactRole m_role;
+    private readonly BuildCacheInventoryProgress? m_inventoryProgress;
 
     /// <summary>
     /// Creates a publisher for one absolute, non-overlapping cache boundary.
@@ -42,6 +43,15 @@ public sealed class BuildCachePublisher
         if (!Enum.IsDefined(role))
             throw new ArgumentOutOfRangeException(nameof(role));
         m_role = role;
+    }
+
+    internal BuildCachePublisher(
+        string directory,
+        BuildCacheArtifactRole role,
+        BuildCacheInventoryProgress progress
+    ) : this(directory, role)
+    {
+        m_inventoryProgress = progress;
     }
 
     /// <summary>
@@ -338,14 +348,18 @@ public sealed class BuildCachePublisher
             // has zero bytes and must be inspected; this metadata never validates Native contents.
             long bytes = m_role == BuildCacheArtifactRole.ImmutableArtifact
                 || m_role == BuildCacheArtifactRole.ReusableWorkspace && entry.bytes > 0
-                ? entry.bytes : BuildCacheFileInventory.Measure(directory, m_role, cancellation);
+                ? entry.bytes : m_inventoryProgress?.Measure(directory, path, lease, m_role, cancellation)
+                    ?? BuildCacheFileInventory.Measure(directory, m_role, cancellation);
             result.Add(new(directory, lease, entry.targetId, bytes, entry.lastUseUtc, entry.dependencies, m_role));
         }
         foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
         {
             if (result.Any(entry => BuildCacheInventory.pathComparer.Equals(entry.directory, working.directory)))
                 continue;
-            long bytes = BuildCacheFileInventory.Measure(working.directory, BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation);
+            string metadata = Path.Combine(m_root, Key(Path.GetRelativePath(m_root, working.directory)) + ".work.json");
+            long bytes = working.ownerState == ProcessOwnerState.Exited && m_inventoryProgress is not null
+                ? m_inventoryProgress.Measure(working.directory, metadata, working.leasePath, BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation)
+                : BuildCacheFileInventory.Measure(working.directory, BuildCacheArtifactRole.ProcessWorkingDirectory, cancellation);
             result.Add(new(working.directory, working.leasePath, null, bytes, Directory.GetLastWriteTimeUtc(working.directory), [], BuildCacheArtifactRole.ProcessWorkingDirectory));
         }
         return result;

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -159,6 +160,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     /// </summary>
     /// <returns>The completed cancellation and rollback checks.</returns>
     [WindowsDirectorySharingFact]
+    [SupportedOSPlatform("windows")]
     public async Task DirectoryInstallCancellationRestoresThePreviousTreeDuringABlockedRename()
     {
         string candidate = Path.Combine(m_root, "candidate");
@@ -203,6 +205,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task DirectoryPublicationToleratesATemporaryWindowsReaderWithoutDeleteSharing()
     {
         if (!OperatingSystem.IsWindows())
@@ -224,6 +227,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public async Task DirectoryPublicationCancellationPreservesTheCandidateAndDoesNotReplaceAnExistingOwner()
     {
         if (!OperatingSystem.IsWindows())
@@ -251,6 +255,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public void DirectoryCleanupFailurePreservesTheCompleteCommittedCandidate()
     {
         if (!OperatingSystem.IsWindows())
@@ -302,6 +307,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     [Fact]
+    [SupportedOSPlatform("windows")]
     public void DirectoryInstallRestoresThePreviousTreeWhenTheCandidateCannotMove()
     {
         if (!OperatingSystem.IsWindows())

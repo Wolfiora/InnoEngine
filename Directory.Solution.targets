@@ -1,12 +1,9 @@
 <Project>
-  <!-- A solution operation owns one bootstrap graph; private task load directories remain independent. -->
-  <Target
-    Name="ShareSolutionTaskBootstrapOwner"
-    BeforeTargets="ValidateSolutionConfiguration"
-    Condition="'$(SolutionPath)' == '$(MSBuildThisFileDirectory)InnoEngine.sln'">
-    <PropertyGroup>
-      <InnoTaskBootstrapOwner Condition="'$(InnoTaskBootstrapOwner)' == ''">$([System.Guid]::NewGuid().ToString('N'))</InnoTaskBootstrapOwner>
-    </PropertyGroup>
+  <PropertyGroup>
+    <InnoTaskBootstrapOwner Condition="'$(InnoTaskBootstrapOwner)' == ''">$([System.Guid]::NewGuid().ToString('N'))</InnoTaskBootstrapOwner>
+  </PropertyGroup>
+  <!-- All solution roots share one invocation owner; private task loading remains independently owned. -->
+  <Target Name="ShareInnoSolutionBootstrapOwner" BeforeTargets="Build;Rebuild;Clean;Restore;Publish">
     <ItemGroup>
       <ProjectReference Update="@(ProjectReference)">
         <AdditionalProperties>%(ProjectReference.AdditionalProperties);InnoTaskBootstrapOwner=$(InnoTaskBootstrapOwner)</AdditionalProperties>

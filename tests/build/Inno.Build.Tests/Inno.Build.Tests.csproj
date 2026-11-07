@@ -6,17 +6,21 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <InnoValidationLayer>integration</InnoValidationLayer>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <InnoTestNativeProduct>editor</InnoTestNativeProduct>
     <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
   </PropertyGroup>
 
-  <!-- Wiki script references use the same shared feature closure as real Editor products. -->
-  <Import Project="../../../src/composition/editor/EditorProduct.props" />
-
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Core/Inno.Editor.Core.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/framework/Inno.Editor.Interactions/Inno.Editor.Interactions.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/features/Inno.Editor.Exporting/Inno.Editor.Exporting.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.ImGui/Inno.Editor.ImGui.csproj" PrivateAssets="compile" />
+    <ProjectReference Include="../../../src/composition/editor/presentation/Inno.Editor.Workbench/Inno.Editor.Workbench.csproj" PrivateAssets="compile" />
+    <InnoValidationInput Include="../../../entry/**/*.csproj;../../../platforms/**/*.props;../../../platforms/**/*.targets;../../../platforms/**/build/**/*.cs;../../../build/**/*.props;../../../build/**/*.targets;../../../Directory.Solution.props;../../../Directory.Solution.targets" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../build/products/Inno.Build.Products.Standard/Inno.Build.Products.Standard.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows.Host/Inno.Build.Windows.Host.csproj" PrivateAssets="compile" />
@@ -73,7 +77,6 @@
   <ItemGroup>
     <PackageReference Include="BGCS.Runtime" Version="[$(InnoBgcsPackageVersion)]" />
     <PackageReference Include="BGCS" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="all" />
-    <PackageReference Include="BGCS.Extension.BrowserWasm" Version="[$(InnoBgcsPackageVersion)]" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Microsoft.Build" Version="18.9.6" />
     <PackageReference Include="Microsoft.Build.Framework" Version="18.9.6" />

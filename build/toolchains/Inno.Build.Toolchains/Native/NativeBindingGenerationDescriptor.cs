@@ -141,19 +141,7 @@ public sealed class NativeBindingGenerationDescriptor
     {
         NativeBindingGenerationDescriptor descriptor = JsonSerializer.Deserialize<NativeBindingGenerationDescriptor>(
             File.ReadAllText(path)) ?? throw new InvalidDataException("The binding generation descriptor is empty.");
-        if (string.IsNullOrWhiteSpace(descriptor.fingerprint)
-            || string.IsNullOrWhiteSpace(descriptor.bindingsPath) || !Path.IsPathFullyQualified(descriptor.bindingsPath)
-            || !File.Exists(descriptor.bindingsPath) || descriptor.nativeDirectory is null || descriptor.artifactDirectory is null
-            || descriptor.artifactOwnerDirectory is null
-            || descriptor.artifactDirectory.Length == 0 && descriptor.artifactOwnerDirectory.Length != 0
-            || descriptor.artifactDirectory.Length > 0 && !Path.IsPathFullyQualified(descriptor.artifactOwnerDirectory)
-            || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
-                || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
-            || descriptor.nativeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.nativeDirectory)
-                || !Directory.Exists(descriptor.nativeDirectory)))
-            throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
-        if (descriptor.artifactDirectory.Length > 0)
-            BuildCacheCleanupPlan.RequireChild(descriptor.artifactOwnerDirectory, descriptor.artifactDirectory);
+        descriptor.Validate();
         return descriptor;
     }
 
@@ -178,6 +166,24 @@ public sealed class NativeBindingGenerationDescriptor
             if (File.Exists(staging))
                 File.Delete(staging);
         }
+    }
+
+    internal void Validate()
+    {
+        NativeBindingGenerationDescriptor descriptor = this;
+        if (string.IsNullOrWhiteSpace(descriptor.fingerprint)
+            || string.IsNullOrWhiteSpace(descriptor.bindingsPath) || !Path.IsPathFullyQualified(descriptor.bindingsPath)
+            || !File.Exists(descriptor.bindingsPath) || descriptor.nativeDirectory is null || descriptor.artifactDirectory is null
+            || descriptor.artifactOwnerDirectory is null
+            || descriptor.artifactDirectory.Length == 0 && descriptor.artifactOwnerDirectory.Length != 0
+            || descriptor.artifactDirectory.Length > 0 && !Path.IsPathFullyQualified(descriptor.artifactOwnerDirectory)
+            || descriptor.artifactDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.artifactDirectory)
+                || Path.GetFullPath(descriptor.bindingsPath) != Path.Combine(Path.GetFullPath(descriptor.artifactDirectory), "Generated", "Bindings.cs"))
+            || descriptor.nativeDirectory.Length > 0 && (!Path.IsPathFullyQualified(descriptor.nativeDirectory)
+                || !Directory.Exists(descriptor.nativeDirectory)))
+            throw new InvalidDataException("The binding generation descriptor does not identify complete outputs.");
+        if (descriptor.artifactDirectory.Length > 0)
+            BuildCacheCleanupPlan.RequireChild(descriptor.artifactOwnerDirectory, descriptor.artifactDirectory);
     }
 
     private static XDocument CreateSelection(

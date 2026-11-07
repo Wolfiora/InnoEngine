@@ -1,0 +1,47 @@
+[
+  {
+    "page": "docs/modules/core/Inno.Core.Identity.md",
+    "example": 1,
+    "line": 34,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/modules/core/Inno.Core.Identity.md",
+    "example": 2,
+    "line": 59,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/development/build/Inno.Build.Toolchains.md",
+    "example": 1,
+    "line": 88,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/development/build/Inno.Build.Toolchains.md",
+    "example": 2,
+    "line": 156,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  },
+  {
+    "page": "docs/development/tooling/Inno.Tooling.Validation.md",
+    "example": 1,
+    "line": 93,
+    "referenceMode": "host-sdk",
+    "referenceIdentity": "",
+    "errors": [],
+    "notEvaluatedReason": null
+  }
+]

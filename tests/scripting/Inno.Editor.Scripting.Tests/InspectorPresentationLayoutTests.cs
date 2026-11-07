@@ -23,6 +23,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
     {
         m_uiScope = m_ui.Enter();
         ImGuiIO* io = NativeImGui.Raw.GetIO();
+        io->IniFilename = null;
         io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640, 480));
         io->DeltaTime = 1f / 60f;
         io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;

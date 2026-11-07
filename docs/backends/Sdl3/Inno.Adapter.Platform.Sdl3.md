@@ -183,8 +183,8 @@ Sdl3WindowOperations.CreateWindow 使用统一 SDL properties 并总是释放临
 ## 项目依赖
 
 - [Inno.Native.Sdl3](Inno.Native.Sdl3.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Input](../../core/Inno.Core.Input.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Input](../../modules/core/Inno.Core.Input.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Platform](../../platform/Inno.Adapter.Platform.md)：公开引用边界由实际签名核对。
 - [Inno.Platform](../../platform/Inno.Platform.md)：公开引用边界由实际签名核对。
-- [Inno.Core.Events](../../core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Events](../../modules/core/Inno.Core.Events.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

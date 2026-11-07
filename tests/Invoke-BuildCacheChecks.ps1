@@ -1,7 +1,7 @@
 param(
     [string]$Dotnet = 'dotnet',
-    [ValidateSet('Debug', 'Release')]
-    [string]$Configuration = 'Debug',
+    [Parameter(Mandatory)][string]$PlanPath,
+    [Parameter(Mandatory)][string]$Context,
     [string]$ResultsDirectory = 'artifacts/acceptance/build-cache',
     [ValidateRange(10, 100)]
     [int]$Iterations = 10
@@ -13,6 +13,13 @@ $Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
 $results = [IO.Path]::GetFullPath($ResultsDirectory, $repository)
 New-Item -ItemType Directory -Force -Path $results | Out-Null
 $entry = Join-Path $repository 'entry/InnoEngine.Editor/InnoEngine.Editor.csproj'
+$plan = Get-Content -LiteralPath $PlanPath -Raw | ConvertFrom-Json
+if ([IO.Path]::GetFullPath($plan.root) -ne [IO.Path]::GetFullPath($repository)) { throw 'The benchmark plan belongs to another checkout.' }
+$selection = $plan.contexts.$Context
+if ($null -eq $selection -or -not $selection.properties.InnoNativeTarget) { throw 'A declared native execution context is required.' }
+$editor = @($selection.sdkGraph | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $entry })
+if ($editor.Count -ne 1 -or -not (Test-Path -LiteralPath $editor[0].Properties.TargetPath)) { throw 'The plan must build its Editor union before hot sampling.' }
+$buildArguments = @($selection.properties.PSObject.Properties | ForEach-Object { "-p:$($_.Name)=$($_.Value)" })
 $samples = [Collections.Generic.List[object]]::new()
 
 function Read-Selections {
@@ -27,15 +34,11 @@ function Read-Selections {
     return $state
 }
 
-$warmup = Join-Path $results 'warmup.log'
-& $Dotnet build $entry --configuration $Configuration --disable-build-servers -m:1 -nr:false 2>&1 |
-    Tee-Object -FilePath $warmup
-if ($LASTEXITCODE -ne 0) { throw "The selected configuration could not be prepared; see $warmup." }
 $before = Read-Selections
 for ($iteration = 1; $iteration -le $Iterations; $iteration++) {
     $log = Join-Path $results "hot-$iteration.log"
     $timer = [Diagnostics.Stopwatch]::StartNew()
-    & $Dotnet build $entry --configuration $Configuration --disable-build-servers -m:1 -nr:false `
+    & $Dotnet build $entry @buildArguments --disable-build-servers -m:1 -nr:false `
         "-bl:$(Join-Path $results "hot-$iteration.binlog")" 2>&1 | Tee-Object -FilePath $log
     if ($LASTEXITCODE -ne 0) { throw "Hot build $iteration failed; see $log." }
     $timer.Stop()
@@ -45,6 +48,13 @@ for ($iteration = 1; $iteration -le $Iterations; $iteration++) {
     foreach ($preparation in $preparations) {
         if ($preparation.Groups[1].Value -ne '0' -or $preparation.Groups[2].Value -ne '0') {
             throw "Build $iteration unexpectedly compiled Native inputs or regenerated bindings: $($preparation.Value)"
+        }
+    }
+    $requests = [regex]::Matches($content, 'INNO-NATIVE-PREPARE request=([a-f0-9]{64})[^\r\n]*reusedPreparation=(\d+)')
+    if ($requests.Count -ne $preparations.Count) { throw "Build $iteration lacks complete frozen request identities." }
+    foreach ($request in $requests | Group-Object { $_.Groups[1].Value }) {
+        if (@($request.Group | Where-Object { $_.Groups[2].Value -eq '0' }).Count -gt 1) {
+            throw "Build $iteration prepared the same frozen native request more than once: $($request.Name)"
         }
     }
     $after = Read-Selections

@@ -13,6 +13,27 @@ namespace Inno.Tooling.Architecture.Tests;
 public sealed class ArchitectureSymbolTests
 {
     [Fact]
+    public void SourceOnlyDefersInheritedXmlButCompiledAcceptanceStillRejectsAnUnrelatedMethod()
+    {
+        using var fixture = new SymbolFixture();
+        const string project = "src/foundation/core/Inno.Core.Probe";
+        const string source = """
+            namespace Inno.Core.Probe;
+            public sealed class Probe
+            {
+                /// <inheritdoc />
+                public int Read() => 1;
+            }
+            """;
+        fixture.Compile(project, "Inno.Core.Probe", source);
+        fixture.WriteSource(project, source);
+        Assert.DoesNotContain("inheritdoc requires a documented overridden or implemented contract",
+            fixture.Run("--source-only"), StringComparison.Ordinal);
+        Assert.Contains("inheritdoc requires a documented overridden or implemented contract",
+            fixture.Run("--metadata-only", "--api-project", project + "/Inno.Core.Probe.csproj"), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void InheritedDocumentationUsesTheOwningProjectInsteadOfACopiedDependency()
     {
         using var fixture = new SymbolFixture();
@@ -400,9 +421,9 @@ public sealed class ArchitectureSymbolTests
 
         internal string PathFor(string relative) => Path.Combine(m_root, relative);
 
-        internal string Run()
+        internal string Run(params string[] arguments)
         {
-            (int exitCode, string output) = ArchitectureCommandFixture.Run(m_root);
+            (int exitCode, string output) = ArchitectureCommandFixture.Run(m_root, arguments);
             // These fixtures deliberately omit the complete product composition.
             Assert.Equal(1, exitCode);
             return output;

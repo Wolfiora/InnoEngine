@@ -1,6 +1,6 @@
 # Inno.Editor.MacOSArm64
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../architecture/PLATFORM_EXTENSION_GUIDE.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../development/adding-platform.md)
 
 ## 职责与边界
 
@@ -32,19 +32,19 @@ MacOS Editor 的平台产品组合库。选择明确运行目标、共享 backen
 
 ## 项目依赖
 
-- [Inno.Core.Serialization](../../core/Inno.Core.Serialization.md) 与 [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：生成注册 API 的公开签名依赖，独立公共引用组。
+- [Inno.Core.Serialization](../../modules/core/Inno.Core.Serialization.md) 与 [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：生成注册 API 的公开签名依赖，独立公共引用组。
 - [Inno.Integration.MacOSArm64.Bgfx.Runtime](Inno.Integration.MacOSArm64.Bgfx.Runtime.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.MacOSArm64.Sdl3](Inno.Integration.MacOSArm64.Sdl3.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.MacOSArm64.Bgfx](Inno.Integration.MacOSArm64.Bgfx.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Presentation.ImGui.Bgfx](../../backends/ImGui/Inno.Adapter.Presentation.ImGui.Bgfx.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Build.MacOSArm64](Inno.Build.MacOSArm64.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Editor.Hosting](../../editor/Inno.Editor.Hosting.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Adapter.Authoring.Default](../../runtime/Inno.Adapter.Authoring.Default.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Editor.Hosting](../../modules/editor/Inno.Editor.Hosting.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Adapter.Authoring.Default](../../modules/runtime/Inno.Adapter.Authoring.Default.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Storage.FileSystem](../../backends/FileSystem/Inno.Adapter.Storage.FileSystem.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Modules.DotNet](../../backends/DotNet/Inno.Adapter.Modules.DotNet.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Adapter.Serialization.DotNet](../../backends/DotNet/Inno.Adapter.Serialization.DotNet.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Build.Distribution.Standard](../../build/Inno.Build.Distribution.Standard.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Build.Distribution.Standard](../../development/build/Inno.Build.Distribution.Standard.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Core.Execution](../../modules/core/Inno.Core.Execution.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Platform.MacOSArm64](Inno.Platform.MacOSArm64.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Build.Toolchains.Bgfx.Tools](../../backends/Bgfx/Inno.Build.Toolchains.Bgfx.Tools.md)：实现依赖，PrivateAssets="compile"。
 

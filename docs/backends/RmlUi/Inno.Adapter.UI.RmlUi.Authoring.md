@@ -1,6 +1,6 @@
 # Inno.Adapter.UI.RmlUi.Authoring
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [UI 资产契约](../../ui/Inno.UI.Assets.md) · [RmlUi 后端](Inno.Adapter.UI.RmlUi.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [UI 资产契约](../../modules/ui/Inno.UI.Assets.md) · [RmlUi 后端](Inno.Adapter.UI.RmlUi.md)
 
 ## 职责与依赖
 
@@ -78,5 +78,5 @@ static UiDocumentAnalysis AnalyzeRml(UiDocumentSourceFile source)
 ## 项目依赖
 
 - [Inno.Adapter.UI.RmlUi](Inno.Adapter.UI.RmlUi.md)：公开引用边界由实际签名核对。
-- [Inno.UI.Assets](../../ui/Inno.UI.Assets.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.UI.Assets](../../modules/ui/Inno.UI.Assets.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

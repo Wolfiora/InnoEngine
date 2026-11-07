@@ -1,6 +1,6 @@
 # Inno.Player.WindowsX64
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../architecture/PLATFORM_EXTENSION_GUIDE.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [平台归属与扩展](../../development/adding-platform.md)
 
 ## 职责与边界
 
@@ -24,9 +24,9 @@ Windows Player 的平台产品组合与发布源码。源码项目为 Library，
 
 - [Inno.Integration.WindowsX64.Bgfx.Runtime](Inno.Integration.WindowsX64.Bgfx.Runtime.md)：实现依赖，PrivateAssets="compile"。
 - [Inno.Integration.WindowsX64.Sdl3](Inno.Integration.WindowsX64.Sdl3.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Core.Execution](../../core/Inno.Core.Execution.md)：公开引用边界由实际签名核对。
-- [Inno.Player.Runtime](../../runtime/Inno.Player.Runtime.md)：公开引用边界由实际签名核对。
-- [Inno.Adapter.Default](../../runtime/Inno.Adapter.Default.md)：公开引用边界由实际签名核对。
+- [Inno.Core.Execution](../../modules/core/Inno.Core.Execution.md)：公开引用边界由实际签名核对。
+- [Inno.Player.Runtime](../../modules/runtime/Inno.Player.Runtime.md)：公开引用边界由实际签名核对。
+- [Inno.Adapter.Default](../../modules/runtime/Inno.Adapter.Default.md)：公开引用边界由实际签名核对。
 - [Inno.Adapter.Content.FileSystem](../../backends/FileSystem/Inno.Adapter.Content.FileSystem.md)：公开引用边界由实际签名核对。
 - [Inno.Adapter.Storage.FileSystem](../../backends/FileSystem/Inno.Adapter.Storage.FileSystem.md)：公开引用边界由实际签名核对。
 - [Inno.Platform.WindowsX64](Inno.Platform.WindowsX64.md)：公开引用边界由实际签名核对。

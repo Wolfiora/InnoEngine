@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using Inno.Editor.Interactions;
 using Inno.Scene;
+using Inno.Testing.Editor.Native;
 using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
@@ -14,7 +15,7 @@ public sealed class SceneDocumentLifecycleNativeTests
     [Trait("Acceptance", "Lifecycle")]
     public void OneHundredSavedSceneCyclesRetireLiveScenesAndPreserveSourceAndHistory()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(SceneDocumentLifecycleNativeTests).Assembly);
         GameScene original = host.CreateScene();
         _ = original.CreateObject("Persistent lifecycle object");
         string path = host.workspace.Save(original, string.Empty);

@@ -1,6 +1,6 @@
 # Inno.Native.LibraryLoading
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [显式构建部署](../../build/Inno.Build.Toolchains.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [显式构建部署](../../development/build/Inno.Build.Toolchains.md)
 
 ## 职责与边界
 
@@ -89,4 +89,3 @@ Native handle 只存在于所属 Native/Adapter 边界，不进入服务层或�
 | <a id="api-a59b5df50444484c"></a>[`public static class Inno.Native.LibraryLoading.NativeDllLoader`](../../../backends/Interop/native/Inno.Native.LibraryLoading/NativeDllLoader.cs#L10) | Resolves explicitly deployed native binaries and files without consulting repository caches. |
 
 ## 项目依赖
-

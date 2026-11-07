@@ -3,8 +3,10 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
@@ -40,6 +42,10 @@ internal sealed class NativeInputReadCache
         => new(m_readingPaths.Select(entry => new NativeInputSnapshot.Entry(
             NativeBuildInput.FromPath(engineRoot, entry.Key).logicalPath, entry.Key, m_hashes[entry.Value])));
 
+    internal string[][] CaptureRootMembership()
+        => m_roots.OrderBy(static pair => pair.Key, pathComparer)
+            .Select(pair => new[] { pair.Key }.Concat(pair.Value.Select(static entry => entry.relative).Order(StringComparer.Ordinal)).ToArray()).ToArray();
+
     internal IReadOnlyList<(string relative, string physical)> Enumerate(
         string path,
         CancellationToken cancellationToken
@@ -58,42 +64,91 @@ internal sealed class NativeInputReadCache
         return cached;
     }
 
-    internal byte[] Hash(
-        string path,
+    internal byte[][] Hash(
+        IReadOnlyList<string> paths,
         CancellationToken cancellationToken
     ) {
-        string readingPath = Path.GetFullPath(path);
-        path = m_physicalPaths.Resolve(readingPath);
-        m_readingPaths[readingPath] = path;
-        if (m_hashes.TryGetValue(path, out byte[]? hash))
+        var physicalPaths = new string[paths.Count];
+        var pending = new List<string>();
+        var unique = new HashSet<string>(pathComparer);
+        for (int index = 0; index < paths.Count; index++)
         {
-            m_state.RecordReuse(m_phase);
-            return hash;
+            cancellationToken.ThrowIfCancellationRequested();
+            string readingPath = Path.GetFullPath(paths[index]);
+            string physical = m_physicalPaths.Resolve(readingPath);
+            m_readingPaths[readingPath] = physical;
+            physicalPaths[index] = physical;
+            if (m_hashes.ContainsKey(physical) || !unique.Add(physical))
+                m_state.RecordReuse(m_phase);
+            else
+                pending.Add(physical);
         }
-        using FileStream input = File.OpenRead(path);
-        using IncrementalHash digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
-        long bytes = 0;
+        var hashes = new byte[pending.Count][];
+        var bytes = new long[pending.Count];
+        var opened = new bool[pending.Count];
+        ExceptionDispatchInfo? failure = null;
         try
         {
-            int length;
-            while ((length = input.Read(buffer)) != 0)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                digest.AppendData(buffer.AsSpan(0, length));
-                bytes += length;
-            }
-            hash = digest.GetHashAndReset();
-            m_hashes.Add(path, hash);
-            return hash;
+            if (pending.Count == 1)
+                Read(0);
+            else if (pending.Count > 1)
+                Parallel.For(0, pending.Count, new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
+                    CancellationToken = cancellationToken
+                }, (
+                    index,
+                    loop
+                ) => {
+                    try
+                    {
+                        Read(index);
+                    }
+                    catch (Exception exception)
+                    {
+                        Interlocked.CompareExchange(ref failure, ExceptionDispatchInfo.Capture(exception), null);
+                        loop.Stop();
+                    }
+                });
+            failure?.Throw();
+            cancellationToken.ThrowIfCancellationRequested();
         }
         finally
         {
-            m_state.RecordHash(bytes, m_phase);
-            ArrayPool<byte>.Shared.Return(buffer);
+            // Initial capture holds the state gate. Workers only read bytes; record after all workers drain.
+            for (int index = 0; index < pending.Count; index++)
+                if (opened[index])
+                    m_state.RecordHash(bytes[index], m_phase);
+        }
+        // Publish this batch only after every read succeeds; failed/canceled batches never become frozen inputs.
+        for (int index = 0; index < pending.Count; index++)
+            m_hashes.Add(pending[index], hashes[index]);
+        return physicalPaths.Select(path => m_hashes[path]).ToArray();
+
+        void Read(int index)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            using FileStream input = File.OpenRead(pending[index]);
+            opened[index] = true;
+            using IncrementalHash digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(64 * 1024);
+            try
+            {
+                int length;
+                while ((length = input.Read(buffer)) != 0)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    digest.AppendData(buffer.AsSpan(0, length));
+                    bytes[index] += length;
+                }
+                hashes[index] = digest.GetHashAndReset();
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
         }
     }
-
     private void EnumerateDirectory(
         string directory,
         string relativeRoot,

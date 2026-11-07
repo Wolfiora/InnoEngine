@@ -1,6 +1,6 @@
 # 启动 Editor、构建与发布游戏
 
-[平台索引](README.md) · [Wiki 首页](../README.md) · [开发入口](../entry/README.md)
+[平台索引](README.md) · [Wiki 首页](../README.md) · [开发入口](../development/building.md)
 
 <a id="from-zero"></a>
 
@@ -18,7 +18,7 @@
 在 PowerShell 中：
 
 ```powershell
-git clone --branch dotnet10 --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+git clone --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
 cd InnoEngine
 dotnet --version
 ```
@@ -30,7 +30,7 @@ Rider 打开 `InnoEngine.sln`，选择 **Debug / Any CPU**，选择 `entry/InnoE
 在终端中：
 
 ```sh
-git clone --branch dotnet10 --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
+git clone --recurse-submodules https://github.com/Wolfiora/InnoEngine.git
 cd InnoEngine
 dotnet --info
 xcrun --find clang
@@ -95,7 +95,7 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- clean --s
 
 产品清理先检查目标与 SDK，再取得 owner 保护；活动 Editor 阻止对应产品被删除。其他目标、Native/Binding 缓存、有效 Support Pack、游戏输出、日志和全局 SDK 缓存保留。Ctrl+C 取消后不会提交半成品。
 
-缓存清理仅处理已登记 owner 的可退休产物。`clean --scope cache --target windows-x64 --dry-run` 预览该目标；不传 target 检查所有 owner。共享宿主工具及未选目标的依赖仍受保护。实际验证状态见[问题台账](../architecture/CURRENT_ISSUES.md)。
+缓存清理仅处理已登记 owner 的可退休产物。`clean --scope cache --target windows-x64 --dry-run` 预览该目标；不传 target 检查所有 owner。共享宿主工具及未选目标的依赖仍受保护。实际验证状态见[问题台账](../../.agents/records/open-items.md)。
 
 ## 支持状态与 not built
 
@@ -116,7 +116,7 @@ dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- support-p
 dotnet run --project entry/InnoEngine.Build/InnoEngine.Build.csproj -- game --tools-target windows-x64 --project /absolute/MyGame --support-packs artifacts/support-packs --target windows-x64 --deployment coreclr --startup-scene Scenes/Main.iscene --output artifacts/games
 ```
 
-Pack 是目标编译、链接与运行输入，不包含游戏内容。可单独准备，也可由游戏发布获取。Windows 的 CoreCLR / NativeAOT 发布已有实际通过记录；其他目标、完整构建成本及设备检查以[当前验收](../architecture/CURRENT_ACCEPTANCE.md)为准，不能由一个目标推断全部通过。
+Pack 是目标编译、链接与运行输入，不包含游戏内容。可单独准备，也可由游戏发布获取。Windows 的 CoreCLR / NativeAOT 发布已有实际通过记录；其他目标、完整构建成本及设备检查以[当前验收](../../.agents/records/acceptance/current.md)为准，不能由一个目标推断全部通过。
 
 macOS 产品目标为 `macos-arm64`。Browser 目标为 `browser-wasm`，部署选 `mono-wasm` 或 `mono-wasm-aot`，实际发布需要匹配的 workload 和 Emscripten。网页通过 HTTP 服务运行，不能把 Browser 源码库当作独立网页游戏启动。
 
@@ -140,4 +140,4 @@ Browser 页面支持共享 Player 参数，例如 `index.html?arg=--smoke-frames
 
 最终用户运行发布后的 Player 时不执行开发入口、MSBuild、BGCS 或 C++ 编译。发布方式决定是否需要外部 .NET 运行时。
 
-相邻页面：[构建命令](../build/Inno.Build.Cli.md) · [平台扩展](../architecture/PLATFORM_EXTENSION_GUIDE.md) · [当前验收](../architecture/CURRENT_ACCEPTANCE.md)
+相邻页面：[构建命令](../development/build/Inno.Build.Cli.md) · [平台扩展](../development/adding-platform.md) · [当前验收](../../.agents/records/acceptance/current.md)

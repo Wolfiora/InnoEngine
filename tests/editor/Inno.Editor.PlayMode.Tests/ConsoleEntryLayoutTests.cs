@@ -112,6 +112,7 @@ public sealed unsafe class ConsoleEntryLayoutTests
     private static void ConfigureContext()
     {
         ImGuiIO* io = NativeImGui.Raw.GetIO();
+        io->IniFilename = null;
         io->DisplaySize = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(640f, 480f));
         io->DeltaTime = 1f / 60f;
         io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;

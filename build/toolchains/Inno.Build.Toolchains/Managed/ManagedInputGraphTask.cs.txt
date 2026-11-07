@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -48,6 +49,16 @@ public sealed class ManagedInputGraphTask : Task
     public string CompilerInputsTargets { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets project roots for a shared, evaluation-only repository snapshot.
+    /// </summary>
+    public ITaskItem[] RepositoryProjects { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets whether repository snapshots include SDK-resolved compile references and symbols.
+    /// </summary>
+    public bool ResolveRepositoryReferences { get; set; }
+
+    /// <summary>
     /// Writes complete source declarations and reports SDK evaluation failures.
     /// </summary>
     /// <returns>
@@ -60,6 +71,8 @@ public sealed class ManagedInputGraphTask : Task
 
             var globals = (Properties ?? new Microsoft.Build.Framework.ITaskItem[0])
                 .ToDictionary(item => item.ItemSpec, item => item.GetMetadata("Value"), StringComparer.OrdinalIgnoreCase);
+            if (RepositoryProjects.Length != 0)
+                return CaptureRepository(globals);
             var result = new XElement("ManagedInputs");
             var paths = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
             var compilerProperties = new[] {
@@ -240,4 +253,171 @@ public sealed class ManagedInputGraphTask : Task
             return false;
         }
     }
+    private bool CaptureRepository(Dictionary<string, string> globals)
+    {
+        string[] propertyNames = ["AssemblyName", "OutputType", "InnoProductId", "InnoProductTarget", "InnoNativeTarget",
+            "ImplicitUsings", "TargetPath", "IsTestProject", "IsRoslynComponent", "TargetFramework", "RuntimeIdentifier",
+            "InnoTestNativeProduct", "InnoTestNativeTarget", "InnoValidationLayer", "InnoValidationEnvironment",
+            "InnoValidationIsolation", "InnoValidationReusable", "NETCoreSdkVersion", "NETCoreSdkRuntimeIdentifier", "ProjectAssetsFile",
+            "InnoValidationBackendPattern", "NetCoreTargetingPackRoot",
+            "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks", "BindGenGeneratedBindings",
+            "InnoDevelopmentTarget", "InnoDevelopmentEditorBuildProperties", "InnoDevelopmentEditorProject"];
+        string[] itemNames = ["ProjectReference", "Compile", "Using", "EmbeddedResource", "Content", "None", "Analyzer",
+            "AdditionalFiles", "EditorConfigFiles", "AdditionalCompileInputs", "InnoBuildInputProject", "InnoValidationInput"];
+        var snapshots = new List<object>();
+        using var collection = new ProjectCollection(globals);
+        var elapsed = Stopwatch.StartNew();
+        var graph = new ProjectGraph(RepositoryProjects.Select(item => new ProjectGraphEntryPoint(item.ItemSpec, globals)), collection,
+            null, Math.Min(Environment.ProcessorCount, 4), System.Threading.CancellationToken.None);
+        Log.LogMessage(MessageImportance.High, $"INNO-SDK-GRAPH evaluationSeconds={elapsed.Elapsed.TotalSeconds:F3} nodes={graph.ProjectNodes.Count}");
+        elapsed.Restart();
+        var nodes = graph.ProjectNodes.GroupBy(node => node.ProjectInstance.FullPath,
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(),
+                OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var variants = graph.ProjectNodes.GroupBy(node => node.ProjectInstance.FullPath,
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Select(node => node.ProjectInstance).ToArray(),
+                OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var entryPoints = graph.EntryPointNodes.ToDictionary(node => node.ProjectInstance.FullPath,
+            node => node.ProjectInstance, OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        foreach (ITaskItem root in RepositoryProjects.OrderBy(item => item.ItemSpec, StringComparer.Ordinal))
+        {
+            // The graph already evaluated these roots. Loading another Project repeats evaluation and can change its inputs.
+            var project = entryPoints[Path.GetFullPath(root.ItemSpec)];
+            var items = new Dictionary<string, object>(StringComparer.Ordinal);
+            var properties = propertyNames.ToDictionary(name => name, name => project.GetPropertyValue(name), StringComparer.Ordinal);
+            foreach (string name in itemNames)
+                items[name] = project.GetItems(name).Select(item =>
+                {
+                    var metadata = item.Metadata.OrderBy(value => value.Name, StringComparer.Ordinal)
+                        .ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
+                    metadata["Identity"] = item.EvaluatedInclude;
+                    metadata["FullPath"] = item.GetMetadataValue("FullPath");
+                    return metadata;
+                }).ToArray();
+            if (ResolveRepositoryReferences)
+            {
+                var selected = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);
+                foreach (var property in globals)
+                    selected[property.Key] = property.Value;
+                // Reference collection is read-only even when the evaluated build context compiles dependencies.
+                // The injected target also handles projects that redeclare this as a local property.
+                selected["BuildProjectReferences"] = "false";
+                selected["InnoOriginalCustomAfterMicrosoftCommonTargets"] = project.GetPropertyValue("CustomAfterMicrosoftCommonTargets");
+                selected["CustomAfterMicrosoftCommonTargets"] = CompilerInputsTargets;
+                var outputs = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);
+                if (!BuildEngine.BuildProjectFile(project.FullPath, new[] { "CaptureInnoRepositoryReferences" }, selected, outputs))
+                    throw new InvalidOperationException("SDK repository reference resolution failed: " + project.FullPath);
+                var captured = (ITaskItem[])outputs["CaptureInnoRepositoryReferences"];
+                foreach (string name in new[] { "ReferencePath", "Compile" })
+                    items[name] = captured.Where(item => item.GetMetadata("CaptureKind") == name).Select(item =>
+                    {
+                        var metadata = item.MetadataNames.Cast<string>().ToDictionary(key => key, item.GetMetadata, StringComparer.OrdinalIgnoreCase);
+                        metadata["Identity"] = item.ItemSpec;
+                        metadata["FullPath"] = item.GetMetadata("FullPath");
+                        return metadata;
+                    }).ToArray();
+                foreach (ITaskItem item in captured.Where(item => item.GetMetadata("CaptureKind") == "Property"))
+                    properties[item.ItemSpec] = item.GetMetadata("Value");
+            }
+            string[] imports = project.ImportPaths.Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray();
+            string[] packs = FrameworkPacks(project.GetPropertyValue("TargetFramework"), project.GetPropertyValue("NetCoreTargetingPackRoot"),
+                project.GetItems("FrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetingPackVersion"))),
+                project.GetItems("KnownFrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetFramework"),
+                    item.GetMetadataValue("TargetingPackName"), item.GetMetadataValue("TargetingPackVersion"))));
+            string canonical = SnapshotIdentity(properties, items, imports, packs);
+            var effective = variants[project.FullPath].OrderBy(instance => string.Join(";", instance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                    .Select(pair => pair.Key + "=" + pair.Value)), StringComparer.Ordinal).Select(instance => new
+                {
+                    Path = instance.FullPath,
+                    GlobalProperties = instance.GlobalProperties,
+                    FrameworkPacks = FrameworkPacks(instance.GetPropertyValue("TargetFramework"), instance.GetPropertyValue("NetCoreTargetingPackRoot"),
+                        instance.GetItems("FrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetingPackVersion"))),
+                        instance.GetItems("KnownFrameworkReference").Select(item => (item.EvaluatedInclude, item.GetMetadataValue("TargetFramework"),
+                            item.GetMetadataValue("TargetingPackName"), item.GetMetadataValue("TargetingPackVersion")))),
+                    Properties = propertyNames.ToDictionary(name => name, instance.GetPropertyValue, StringComparer.Ordinal),
+                    Items = itemNames.ToDictionary(name => name, name => instance.GetItems(name).Select(item =>
+                    {
+                        var metadata = item.Metadata.OrderBy(value => value.Name, StringComparer.Ordinal)
+                            .ToDictionary(value => value.Name, value => value.EvaluatedValue, StringComparer.OrdinalIgnoreCase);
+                        metadata["Identity"] = item.EvaluatedInclude;
+                        metadata["FullPath"] = item.GetMetadataValue("FullPath");
+                        return metadata;
+                    }).ToArray(), StringComparer.Ordinal),
+                    Imports = instance.ImportPaths.Distinct().OrderBy(path => path, StringComparer.Ordinal).ToArray()
+                }).GroupBy(value => SnapshotIdentity(value.Properties, value.Items, value.Imports, value.FrameworkPacks), StringComparer.Ordinal).ToArray();
+            snapshots.Add(new
+            {
+                Path = project.FullPath,
+                GlobalProperties = globals,
+                Instances = nodes[project.FullPath].Select(node => new
+                {
+                    Identity = InstanceIdentity(node),
+                    node.ProjectInstance.GlobalProperties,
+                    TargetPath = node.ProjectInstance.GetPropertyValue("TargetPath"),
+                    ProjectAssetsFile = node.ProjectInstance.GetPropertyValue("ProjectAssetsFile"),
+                    References = node.ProjectReferences.Select(InstanceIdentity).OrderBy(value => value, StringComparer.Ordinal).ToArray()
+                }).OrderBy(instance => instance.Identity, StringComparer.Ordinal).ToArray(),
+                EquivalentGlobalProperties = effective.Where(group => group.Key == canonical).SelectMany(group => group.Select(value => value.GlobalProperties)).ToArray(),
+                Properties = properties,
+                FrameworkPacks = packs,
+                Items = items,
+                Imports = imports,
+                // Keep every effective input and every originating property set, without repeating identical item arrays.
+                Variants = effective.Where(group => group.Key != canonical).Select(group => new
+                {
+                    group.First().Path,
+                    group.First().GlobalProperties,
+                    EquivalentGlobalProperties = group.Select(value => value.GlobalProperties).ToArray(),
+                    group.First().Properties,
+                    group.First().FrameworkPacks,
+                    group.First().Items,
+                    group.First().Imports
+                }).ToArray()
+            });
+        }
+        File.WriteAllText(OutputPath, JsonSerializer.Serialize(snapshots));
+        Log.LogMessage(MessageImportance.High, $"INNO-SDK-GRAPH captureSeconds={elapsed.Elapsed.TotalSeconds:F3} bytes={new FileInfo(OutputPath).Length}");
+        return true;
+
+        static string InstanceIdentity(ProjectGraphNode node)
+            => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                node.ProjectInstance.FullPath,
+                Properties = node.ProjectInstance.GlobalProperties.OrderBy(pair => pair.Key, StringComparer.Ordinal).ToArray()
+            })));
+
+        static string SnapshotIdentity(
+            object properties,
+            object items,
+            string[] imports,
+            string[] packs
+        ) => Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(new { Properties = properties, Items = items, Imports = imports, FrameworkPacks = packs })));
+
+        static string[] FrameworkPacks(
+            string framework,
+            string root,
+            IEnumerable<(string name, string version)> references,
+            IEnumerable<(string name, string framework, string pack, string version)> declarations
+        ) {
+            NuGetFramework target = NuGetFramework.ParseFolder(framework);
+            var known = declarations.ToArray();
+            var paths = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var reference in references)
+            {
+                var candidates = known.Where(candidate => candidate.name == reference.name).Where(candidate =>
+                {
+                    NuGetFramework parsed = NuGetFramework.ParseFolder(candidate.framework);
+                    return parsed.Framework == target.Framework && parsed.Version == target.Version;
+                }).ToArray();
+                if (candidates.Length != 1)
+                    throw new InvalidOperationException("The SDK did not uniquely declare a framework reference pack: " + reference.name + " for " + framework);
+                var selected = candidates[0];
+                paths.Add(Path.GetFullPath(Path.Combine(root, selected.pack, string.IsNullOrWhiteSpace(reference.version) ? selected.version : reference.version)));
+            }
+            return paths.OrderBy(path => path, StringComparer.Ordinal).ToArray();
+        }
+    }
+
 }

@@ -80,6 +80,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -116,6 +117,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -171,6 +173,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -232,6 +235,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -280,6 +284,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -323,6 +328,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -357,6 +363,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             Inno.Native.ImGui.ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -413,6 +420,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -455,6 +463,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -496,6 +505,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -565,6 +575,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -590,6 +601,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -613,6 +625,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -636,6 +649,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -672,6 +686,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -711,6 +726,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -734,6 +750,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -764,6 +781,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
@@ -798,6 +816,7 @@ public sealed unsafe class EditorStyleMetricsTests
         var context = NativeImGui.Raw.CreateContext(null);
         try
         {
+            NativeImGui.Raw.GetIO()->IniFilename = null;
             using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();

@@ -1,6 +1,6 @@
 # Inno.Build.Managed.DotNet
 
-[分类索引](README.md) · [Wiki 首页](../../README.md) · [托管契约](../../build/Inno.Build.Managed.md) · [Toolchains](../../build/Inno.Build.Toolchains.md)
+[分类索引](README.md) · [Wiki 首页](../../README.md) · [托管契约](../../development/build/Inno.Build.Managed.md) · [Toolchains](../../development/build/Inno.Build.Toolchains.md)
 
 ## 分层与公开入口
 
@@ -29,7 +29,7 @@ prepared project 的执行目录复用 `ToolchainWorkingDirectory`。Windows 工
 `managed-working-directory.txt` 记录物理目录与执行目录；SDK 仍从原项目解析，代码输入、最终 staging 和日志的 owner 不变。
 这同时服务桌面和 Web 发布，不在共同运行时加入宿主判断。进程退出并排空后删除 alias，物理产物保留。
 
-调用示例见 [Managed](../../build/Inno.Build.Managed.md)。自动化验证不得以 build 成功代替真实 runtime 调用、游戏启动或视觉验收。
+调用示例见 [Managed](../../development/build/Inno.Build.Managed.md)。自动化验证不得以 build 成功代替真实 runtime 调用、游戏启动或视觉验收。
 
 ## 源码归属
 
@@ -89,6 +89,6 @@ prepared project 的执行目录复用 `ToolchainWorkingDirectory`。Windows 工
 
 ## 项目依赖
 
-- [Inno.Build.Managed](../../build/Inno.Build.Managed.md)：公开引用边界由实际签名核对。
-- [Inno.Build.Toolchains](../../build/Inno.Build.Toolchains.md)：实现依赖，PrivateAssets="compile"。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Build.Managed](../../development/build/Inno.Build.Managed.md)：公开引用边界由实际签名核对。
+- [Inno.Build.Toolchains](../../development/build/Inno.Build.Toolchains.md)：实现依赖，PrivateAssets="compile"。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

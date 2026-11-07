@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using Xunit.Abstractions;
 using NativeGui = Inno.Native.ImGui.ImGui;
@@ -16,7 +17,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     [InlineData(true)]
     public void RetiringTheContextRecordClosesItsPopup(bool clear)
     {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 16;
         var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
@@ -58,7 +59,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     [Fact]
     public void RepeatedContextMenusDoNotAccumulateRetiredOccurrenceWindows()
     {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 16;
         var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
@@ -95,7 +96,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     [Fact]
     public void TenThousandOccurrencesSubmitOnlyViewportCardsAndKeepKeyboardNavigation()
     {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 10_000;
         var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         for (int index = 0; index < 10_000; index++)
@@ -121,7 +122,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     [Fact]
     public void RetiredOccurrencesDoNotAccumulateNativeChildWindows()
     {
-        using var host = new NativePanelHost("Inno.Editor.Panel.Logging");
+        using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 16;
         var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");

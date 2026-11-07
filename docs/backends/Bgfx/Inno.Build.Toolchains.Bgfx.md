@@ -115,5 +115,5 @@ Browser 静态构建复用组件 CMake recipe，由其平台 aggregate 执行，
 
 ## 项目依赖
 
-- [Inno.Build.Toolchains](../../build/Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
-- [Inno.Extensibility.Catalogs](../../extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。
+- [Inno.Build.Toolchains](../../development/build/Inno.Build.Toolchains.md)：公开引用边界由实际签名核对。
+- [Inno.Extensibility.Catalogs](../../modules/extensibility/Inno.Extensibility.Catalogs.md)：公开引用边界由实际签名核对。

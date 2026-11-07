@@ -10,6 +10,8 @@ using System.Threading;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Inno.Core.IO;
+using Inno.Tooling.Architecture.Documentation;
 
 namespace Inno.Tooling.Architecture;
 
@@ -119,10 +121,11 @@ internal static class WikiApiCoverageValidator
             || relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
             || Path.GetExtension(absolute) != ".md" || !visited.Add(absolute))
             throw new InvalidDataException("A Wiki API inclusion must be a unique Markdown page within the current Wiki.");
+        PathBoundary.RequireUnlinkedPath(Path.Combine(root, "docs"), absolute);
         string text = File.ReadAllText(absolute);
         var content = new StringBuilder(text);
-        foreach (Match include in Regex.Matches(text, @"(?m)^<!-- api-include: (?<path>[^\r\n]+) -->\r?$", RegexOptions.CultureInvariant))
-            content.AppendLine().Append(ReadApiSurface(root, Path.GetFullPath(include.Groups["path"].Value,
+        foreach (string include in DocumentationMarkdown.Parse(absolute, text, includeSymbols: false).includes)
+            content.AppendLine().Append(ReadApiSurface(root, Path.GetFullPath(include,
                 Path.GetDirectoryName(absolute)!), visited, cancellation));
         return content.ToString();
     }

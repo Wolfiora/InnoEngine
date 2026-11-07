@@ -36,6 +36,7 @@ public sealed unsafe class ImGuiInitTests
         try
         {
             ImGuiIO* io = ImGui.Raw.GetIO();
+            io->IniFilename = null;
             io->DisplaySize = new ImVec2C { X = 320f, Y = 200f };
             io->DeltaTime = 1f / 60f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;

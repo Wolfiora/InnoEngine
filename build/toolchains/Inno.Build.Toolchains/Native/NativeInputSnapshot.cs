@@ -1,9 +1,6 @@
 using System;
-using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 
 namespace Inno.Build.Toolchains;
@@ -26,22 +23,27 @@ internal sealed class NativeInputSnapshot
         NativeInputReadCache cache,
         CancellationToken cancellationToken
     ) {
-        Dictionary<string, Entry> entries = new(StringComparer.Ordinal);
+        Dictionary<string, string> paths = new(StringComparer.Ordinal);
         foreach (NativeBuildInput input in inputs)
         {
             cancellationToken.ThrowIfCancellationRequested();
             foreach ((string relative, string physical) in cache.Enumerate(input.physicalPath, cancellationToken))
             {
                 string logical = relative.Length == 0 ? input.logicalPath : input.logicalPath + "/" + relative;
-                if (entries.TryGetValue(logical, out Entry? previous))
+                if (paths.TryGetValue(logical, out string? previous))
                 {
-                    if (!cache.pathComparer.Equals(previous.physicalPath, physical))
+                    if (!cache.pathComparer.Equals(previous, physical))
                         throw new ArgumentException($"Native input identity '{logical}' maps to different reading locations.");
                     continue;
                 }
-                entries.Add(logical, new Entry(logical, physical, cache.Hash(physical, cancellationToken)));
+                paths.Add(logical, physical);
             }
         }
-        return new NativeInputSnapshot(entries.Values);
+        var ordered = paths.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray();
+        byte[][] hashes = cache.Hash(ordered.Select(static pair => pair.Value).ToArray(), cancellationToken);
+        return new NativeInputSnapshot(ordered.Select((
+            pair,
+            index
+        ) => new Entry(pair.Key, pair.Value, hashes[index])));
     }
 }

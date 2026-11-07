@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,7 +15,10 @@ internal static class PublicApiBoundaryValidator
         string root,
         string configuration,
         ICollection<string> failures,
-        IReadOnlyDictionary<string, string>? evaluatedOutputs = null
+        IReadOnlyDictionary<string, string>? evaluatedOutputs = null,
+        IReadOnlySet<string>? selectedProjects = null,
+        WikiProjectReferences? evaluatedReferences = null,
+        CancellationToken cancellationToken = default
     ) {
         Project[] projects = new[] { "entry", "src", "backends", "platforms", "build" }
             .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj"))
@@ -24,6 +28,7 @@ internal static class PublicApiBoundaryValidator
             .Where(path => !path.Split(Path.DirectorySeparatorChar).Contains("tests", StringComparer.Ordinal))
             .Where(path => !XDocument.Load(path).Descendants("OutputType").Any(static item => item.Value == "Exe"))
             .Select(path => Project.Read(path, configuration, evaluatedOutputs)).ToArray();
+        bool Selected(Project project) => selectedProjects is null || selectedProjects.Contains(Path.GetRelativePath(root, project.path).Replace('\\', '/'));
         var byName = projects.ToDictionary(project => project.name, StringComparer.Ordinal);
         var references = new Dictionary<string, PortableExecutableReference>(StringComparer.OrdinalIgnoreCase);
         string[] platform = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty).Split(Path.PathSeparator);
@@ -36,20 +41,30 @@ internal static class PublicApiBoundaryValidator
         {
             if (File.Exists(project.output))
                 references[project.name] = MetadataReference.CreateFromFile(project.output);
-            else if (!project.product)
+            else if (!project.product && Selected(project))
                 failures.Add($"{Path.GetRelativePath(root, project.path)}: public API symbol audit requires a {configuration} solution build; output is missing.");
         }
         CSharpCompilation compilation = CSharpCompilation.Create("Inno.Architecture.SymbolAudit", references: references.Values,
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-        foreach (Project project in projects.Where(project => project.product
-            || project.path.Contains(Path.DirectorySeparatorChar + "src" + Path.DirectorySeparatorChar, StringComparison.Ordinal)))
+        foreach (Project project in projects.Where(project => Selected(project) && (project.product
+            || project.path.Contains(Path.DirectorySeparatorChar + "src" + Path.DirectorySeparatorChar, StringComparison.Ordinal))))
         {
             IAssemblySymbol assembly;
             bool compiledContract = false;
             if (references.TryGetValue(project.name, out PortableExecutableReference? assemblyReference)
                 && compilation.GetAssemblyOrModuleSymbol(assemblyReference) is IAssemblySymbol compiledAssembly)
             {
-                assembly = compiledAssembly;
+                if (evaluatedReferences is null)
+                    assembly = compiledAssembly;
+                else
+                {
+                    // Resolve this owner's real SDK references, including dependencies outside the audit selection.
+                    CSharpCompilation contract = evaluatedReferences.GetCompilation(project.path, cancellationToken);
+                    PortableExecutableReference output = contract.References.OfType<PortableExecutableReference>()
+                        .Single(reference => string.Equals(reference.FilePath, project.output,
+                            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
+                    assembly = (IAssemblySymbol)contract.GetAssemblyOrModuleSymbol(output)!;
+                }
                 compiledContract = true;
             }
             else if (project.product)

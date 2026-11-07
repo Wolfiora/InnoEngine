@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using Inno.Assets;
 using Inno.Scene;
+using Inno.Testing.Editor.Native;
 using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
@@ -15,7 +16,7 @@ public sealed class MissingSceneSourceTests
     [Trait("Acceptance", "Workflows")]
     public void UnavailableSourceKeepsAssignmentEditsAndIdentityUntilRecovery(bool edited)
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(MissingSceneSourceTests).Assembly);
         GameScene scene = host.CreateScene();
         GameObject value = scene.CreateObject("Retained object");
         string path = host.workspace.Save(scene, string.Empty);
@@ -58,7 +59,7 @@ public sealed class MissingSceneSourceTests
     [Trait("Acceptance", "Workflows")]
     public void ExplicitSaveToAnotherDirectoryDoesNotRecreateTheMissingAssignedSource()
     {
-        using var host = new NativeProjectPanelHost();
+        using var host = new NativeProjectPanelHost(typeof(MissingSceneSourceTests).Assembly);
         GameScene scene = host.CreateScene();
         GameObject value = scene.CreateObject("Retained object");
         string original = host.workspace.Save(scene, string.Empty);

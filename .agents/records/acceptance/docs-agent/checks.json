@@ -1,0 +1,57 @@
+{
+  "implementation": "a9b6c08ba080afcda697ba1bb18238f4f80d87d8",
+  "checks": [
+    {
+      "name": "Documentation and Wiki regressions",
+      "status": "Passed",
+      "cases": 51,
+      "log": "documentation-regression-closure.log"
+    },
+    {
+      "name": "Validation tooling suite",
+      "status": "Passed",
+      "cases": 49,
+      "log": "validation-tests-final.log",
+      "detail": "First full run: 47 passed, 2 failed. Both Completion tests passed after fixture corrections; HostContracts and TestOwnership also passed with the revised fixture. Counts are distinct tests, not retry totals.",
+      "retests": [
+        "completion-tests-second.log",
+        "fixture-tests-second.log"
+      ]
+    },
+    {
+      "name": "Rule provenance, routing and negative cases",
+      "status": "Passed",
+      "rules": 241,
+      "units": 58,
+      "log": "rules-final.log"
+    },
+    {
+      "name": "Source architecture",
+      "status": "Passed",
+      "log": "source-closure.log"
+    },
+    {
+      "name": "All product documentation structure and links",
+      "status": "Passed",
+      "pages": 434,
+      "log": "documentation-closure.log"
+    },
+    {
+      "name": "Agent document structure and links",
+      "status": "Passed",
+      "log": "agents-closure.log"
+    },
+    {
+      "name": "Selected real SDK API and example contracts",
+      "status": "Passed",
+      "apiDeclarations": 513,
+      "compiledExamples": 5,
+      "log": "contracts-closure.log"
+    },
+    {
+      "name": "Native, cross-platform CI/CD and long-running matrices",
+      "status": "NotRun",
+      "reason": "Explicitly deferred by the approved delivery boundary; issue #75 remains open."
+    }
+  ]
+}

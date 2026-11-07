@@ -4,6 +4,7 @@ using Inno.Core.Input;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Native.ImGui;
+using Inno.Testing.Editor.Native;
 using Xunit;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
@@ -21,7 +22,7 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
         bool commandKeyBehavior,
         KeyModifier primaryModifier
     ) {
-        using var host = new NativePanelHost(false, new EditorKeyboardPolicy(primaryModifier, "Super"));
+        using var host = new NativePanelHost(typeof(TreeKeyboardOwnershipNativeTests).Assembly, false, new EditorKeyboardPolicy(primaryModifier, "Super"));
         ImGuiIO* io = NativeImGui.Raw.GetIO();
         io->ConfigMacOsxBehaviors = commandKeyBehavior ? (byte)1 : (byte)0;
         ImGuiKey primaryKey = primaryModifier == KeyModifier.Super ? ImGuiKey.ImGuiModSuper : ImGuiKey.ImGuiModCtrl;

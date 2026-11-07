@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <InnoValidationLayer>integration</InnoValidationLayer>
+  </PropertyGroup>
+
+  <Import Project="../../RepositoryInput.targets" />
+
+  <ItemGroup>
+    <InnoValidationInput Include="../../input/Inno.Input.Tests/*.csproj;../../ui/Inno.UI.Tests/*.csproj;../../Invoke-IsolatedTests.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj" />
+    <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
+    <ProjectReference Include="../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
