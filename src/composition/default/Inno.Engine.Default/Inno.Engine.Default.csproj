@@ -45,4 +45,7 @@
     <ProjectReference Include="../../../services/rendering/Inno.Rendering.Runtime/Inno.Rendering.Runtime.csproj" />
     <ProjectReference Include="../../../foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../../../assets/branding/logo.png" Link="Branding/logo.png" LogicalName="Inno.Engine.Branding.Logo.png" />
+  </ItemGroup>
 </Project>

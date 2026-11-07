@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../src/composition/default/Inno.Engine.Default/Inno.Engine.Default.csproj" />
     <ProjectReference Include="../../../src/content/assets/Inno.Assets.Pipeline/Inno.Assets.Pipeline.csproj" />
     <ProjectReference Include="../../../src/content/scene/Inno.Scene.Assets/Inno.Scene.Assets.csproj" />
     <ProjectReference Include="../../../src/services/audio/Inno.Audio.Runtime/Inno.Audio.Runtime.csproj" />

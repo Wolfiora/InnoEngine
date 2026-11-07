@@ -5,6 +5,11 @@ namespace Inno.Editor.ImGui;
 public static class ImGuiIcon
 {
     /// <summary>
+    /// Gets the InnoEngine logo glyph available in every default Editor font style.
+    /// </summary>
+    public const string InnoEngine = Inno.Adapter.Presentation.ImGui.ImGuiIcon.InnoEngine;
+
+    /// <summary>
     /// Gets the angle left glyph used by standard Editor controls.
     /// </summary>
     public const string AngleLeft = Inno.Adapter.Presentation.ImGui.ImGuiIcon.AngleLeft;

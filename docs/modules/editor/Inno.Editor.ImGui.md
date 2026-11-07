@@ -1,5 +1,20 @@
 # Inno.Editor.ImGui
 
+## 引擎 Logo 图标
+
+`ImGuiIcon.InnoEngine` 是 U+E000 单色字形，随文字颜色显示。普通、粗体、斜体与粗斜体四种默认字体均合并该字形，`EditorIconCatalog.standard` 中的名称为 `InnoEngine`。使用时应处于已进入的 Editor UI 绘制回调；它不创建独立字体或纹理。
+
+```csharp
+using Inno.Editor.ImGui;
+
+static void DrawEngineLabel()
+{
+    ImGui.Text(ImGuiIcon.InnoEngine + " InnoEngine");
+}
+```
+
+原始灰阶图片与字体字形分别使用；[品牌资源](../../../assets/branding/README.md) 记录源稿、署名与字体规格。
+
 ## 时间条与画布指针
 
 动画时间条等自绘控件在 Editor 绘制回调中使用以下 UI 查询。它们复用当前 ImGui 输入状态；控件命中后再查询，不能用游戏 Input 判断已被 UI 消费的手势。

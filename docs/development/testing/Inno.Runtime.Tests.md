@@ -25,6 +25,8 @@
 
 ## 运行
 
+`EngineBrandingTests` 在无引擎 Session 的情况下验证默认发行内嵌 PNG 的内容身份、只读语义，以及多次读取的独立位置和释放行为。
+
 从仓库根目录运行：
 
 ```powershell

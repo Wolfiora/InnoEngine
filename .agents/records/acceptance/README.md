@@ -2,6 +2,8 @@
 
 [记录首页](../README.md) · [当前问题](../open-items.md) · [当前验收](../acceptance/current.md)
 
+- [Logo、默认字体图标与署名](LOGO_BRANDING_2026_11_07.md)：实现与专项通过；全量门禁存在既有 fixture 分类阻塞。
+
 每份记录只证明其明确列出的输入、提交、环境与执行范围；历史通过不能提升为当前通过。原始附件保持字节，未能随 Git 历史取得的旧附件入口由迁移清单单独说明。
 
 - [ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md](ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md)
