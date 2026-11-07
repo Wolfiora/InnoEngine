@@ -2,14 +2,14 @@
 
 ## 引擎 Logo 图标
 
-`ImGuiIcon.InnoEngine` 是 U+E000 空心单色字形，四块形状分别描边、内部透明，保留原有间隔，随文字颜色显示。普通、粗体、斜体与粗斜体四种默认字体均合并该字形，`EditorIconCatalog.standard` 中的名称为 `InnoEngine`。使用时应处于已进入的 Editor UI 绘制回调；它不创建独立字体或纹理。
+`ImGuiIcon.Inno` 是 U+E000 空心单色字形，四块形状分别描边、内部透明，保留原有间隔，随文字颜色显示。普通、粗体、斜体与粗斜体四种默认字体均合并该字形，`EditorIconCatalog.standard` 中的名称为 `Inno`。使用时应处于已进入的 Editor UI 绘制回调；它不创建独立字体或纹理。
 
 ```csharp
 using Inno.Editor.ImGui;
 
 static void DrawEngineLabel()
 {
-    ImGui.Text(ImGuiIcon.InnoEngine + " InnoEngine");
+    ImGui.Text(ImGuiIcon.Inno + " InnoEngine");
 }
 ```
 

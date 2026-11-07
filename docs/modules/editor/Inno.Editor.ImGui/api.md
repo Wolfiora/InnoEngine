@@ -2492,10 +2492,10 @@
 | <a id="api-c2f34732c8ad422a"></a>[`public System.Numerics.Vector2 Inno.Editor.ImGui.ImGuiWidget.TreeNodeResult.max { get; }`](../../../../src/composition/editor/presentation/Inno.Editor.ImGui/Widgets/ImGuiWidget.Tree.cs#L582) | Gets the row maximum screen coordinate. | — | — |
 | <a id="api-04746bffe73deba1"></a>[`public System.Numerics.Vector2 Inno.Editor.ImGui.ImGuiWidget.TreeNodeResult.contentMin { get; }`](../../../../src/composition/editor/presentation/Inno.Editor.ImGui/Widgets/ImGuiWidget.Tree.cs#L586) | Gets the minimum screen coordinate of the row's interactive content, excluding tree indentation. | — | — |
 
-### `Inno.Editor.ImGui.ImGuiIcon.InnoEngine`
+### `Inno.Editor.ImGui.ImGuiIcon.Inno`
 
-<!-- api: F:Inno.Editor.ImGui.ImGuiIcon.InnoEngine dbee76827c3944e3a86448627c1f92b4beb095b8b11b8aded089cc4e752645af -->
+<!-- api: F:Inno.Editor.ImGui.ImGuiIcon.Inno 11d9ca5f7ffe11b426b3e1294716ec32a35220d2a061dccc158b008896bc4d1a -->
 
 | 声明 | 行为与结果 | 所有权 / 调用约束 | 失败或限制 |
 | --- | --- | --- | --- |
-| `public const string Inno.Editor.ImGui.ImGuiIcon.InnoEngine = ""` | 四种默认字体均包含的 InnoEngine 单色字形。 | 绘制通过已进入的 Editor UI scope。 | — |
+| `public const string Inno.Editor.ImGui.ImGuiIcon.Inno = ""` | 四种默认字体均包含的 InnoEngine 单色字形。 | 绘制通过已进入的 Editor UI scope。 | — |

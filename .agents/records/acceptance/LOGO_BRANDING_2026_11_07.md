@@ -2,6 +2,22 @@
 
 [获批计划](../plans/LOGO_BRANDING.md) · [品牌资源](../../../assets/branding/README.md)
 
+## 后续修订：Inno 命名与 README 尺寸
+
+基线 `e3b3143e`，分支 `logo`。将两个公开图标常量改为 `ImGuiIcon.Inno`，同步字体测试、使用示例和 API 映射；目录从公开常量自动取得名称 `Inno`，不保留旧别名。Editor 常量引用使用 `global::` 避免与根命名空间同名。README 的 Logo 宽度改为 240，居中与替代文本保留。按用户最后确认，只删除根 README 的 Logo 设计致谢；品牌说明、代码注释和 TTF 作者元数据保留。字体、PNG、SVG 内容没有变化。
+
+本轮采用同一显式 SDK 10.0.402 与原生构建上下文。当前通过：
+
+- Editor ImGui 测试工程及其实际引用闭包正常构建，0 警告、0 错误，保留原生准备和部署核验：`artifacts/branding-work/inno-build.log`。
+- 改名后的 FontCoverageTests 9 项通过、0 失败、0 跳过：`artifacts/validation/logo-inno-focused/fonts/fonts.trx`。
+- 两个生产 owner 的编译 API 检查、全仓源码架构和最终文档结构检查通过：`artifacts/branding-work/inno-api.log`、`inno-source.log`、`inno-documentation-final.log`。
+- 文档工具及其闭包正常构建，0 警告、0 错误；使用本轮生成的逻辑脚本引用核验两个相关项目页，API 映射和全部示例通过：`artifacts/branding-work/inno-cli-build-retry.log`、`inno-wiki-projection.log`、`inno-wiki.log`。清单位于 `artifacts/validation/logo-inno-focused/wiki-api.json`、`wiki-examples.json`。
+- 根 README 不再包含作者致谢，品牌说明、代码注释、字体 name 表的 designer 和 URL 仍保留；TTF 和全部图片资源相对基线无差异。
+
+统一计划为 `artifacts/validation/logo-inno-plan-final/plan.json`（35 个受影响 owner、47 个必需检查）。当前 SDK 元数据预检仍复现既有原生 fixture 执行层分类违规，见 `artifacts/branding-work/inno-fixture-preflight.log`；没有执行或声称通过整个统一计划、完整产品旅程和其他平台矩阵。一次文档查询命令参数写法错误，改用 `docs symbol --project ... --id ...` 后定位正确页面；首次 CLI 准备在用户调整署名范围时取消，后续正常重建，不将取消的执行记为通过。
+
+最终文件输入清单位于 `artifacts/validation/logo-inno-focused/input-manifest.json`。收尾只补写记录与 README 致谢，不改变已验证的生产代码、测试或字体输入。架构、owner、加载方式、状态和生命周期均延续原实现；此次只改变公开常量与目录名称、README 展示，未修改交互、Undo/Redo 或菜单流程。下文旧证据不作为重命名后的编译证据。
+
 ## 当前修订：空心字体与移除内置原图
 
 - 基线为 `402a191e`，分支 `logo`。用户确认四块各自描边的预览，并要求替换为其提供的 v2 SVG、彻底删除内置原图能力。
