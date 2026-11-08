@@ -11,6 +11,11 @@ namespace Inno.Adapter.Presentation.ImGui;
 
 public static class ImGuiIcon
 {
+    /// <summary>
+    /// The monochrome InnoEngine logo designed by xdzzyq, supplied by the bundled engine icon font.
+    /// </summary>
+    public const string Inno = "\ue000";
+
     /// <summary>Letter mark used for authored Shader graph assets.</summary>
     public const string Shader = "S";
     public const string Num0 = "\u0030";

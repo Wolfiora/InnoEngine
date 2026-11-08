@@ -30,6 +30,12 @@ B02 / F09 的当前处理是使用标准 `.csproj` 依赖还原，不再维护�
 
 ## 仍开放的问题
 
+### 原生 Editor 测试支持库的执行层分类
+
+2026-11-07 Logo 验收中，全量 `compiled-api:native` 拒绝 `tests/editor/fixtures/Inno.Testing.Editor.Native/Inno.Testing.Editor.Native.csproj`：该支持库经 xUnit 包导入后的实际 SDK 属性为 `IsTestProject=true`，但没有 `InnoValidationLayer`。本轮未修改这个工程。复现与输入见 [Logo 验收](acceptance/LOGO_BRANDING_2026_11_07.md)。
+
+Owner 为 Editor 测试基础设施与架构/验证工具。后续应按支持库和测试 runner 的实际职责明确项目身份，保留真正 runner 的原生要求，并验证源码/编译后架构检查使用一致分类；不能跳过门禁或把无测试的支持库当成已执行的 runner。完成后续跑当前输入对应的原生测试、产品与发布验收，不能将 Logo 专项结果视为全量通过。
+
 ### 持久删除身份的既有缺口
 
 原 Identity 规范的要求保留如下：

@@ -1,10 +1,14 @@
+<p align="center">
+  <img src="assets/branding/logo.svg" width="240" alt="InnoEngine Logo" />
+</p>
+
 # InnoEngine
 
 **Innovate As You Want.** A plugin-oriented game engine written in C#.
 
 InnoEngine combines shared mechanisms for assets, scenes, scripting and resource lifetimes with replaceable backends and explicit platform products. Game systems and Editor extensions use the same discovery and authoring infrastructure.
 
-![InnoEngine.Editor](preview.png)
+![InnoEngine.Editor](assets/screenshots/editor.png)
 
 | Start here | Find |
 | --- | --- |
