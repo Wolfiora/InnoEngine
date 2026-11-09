@@ -46,6 +46,8 @@ cmake --version
 dotnet run --project entry/InnoEngine.Editor/InnoEngine.Editor.csproj
 ```
 
+需要带图标和 `Info.plist` 的独立应用包时，在 macOS 上按 [Editor 入口的 macOS 应用包](../development/entry/InnoEngine.Editor.md#macos-应用包)执行 Release publish；日常 `dotnet run` 仍运行裸可执行文件，不创建 `.app`。
+
 已经 clone 但未初始化子模块时，在仓库根目录执行 `git submodule update --init --recursive`。
 
 ### 两个日常入口
