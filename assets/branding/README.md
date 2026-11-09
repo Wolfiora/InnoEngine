@@ -4,7 +4,7 @@ Logo 设计：[xdzzyq](https://github.com/XDzzzzzZyq)。PNG、单色字形和图
 
 ## 文件与使用
 
-- `logo.svg`：作者提供的 `Logo 3D v2(1).svg` 原稿，原样保留 512×512 viewBox、灰阶与多边形。
+- `logo.svg`：作者提供的原稿，原样保留 512×512 viewBox、灰阶与多边形。
 - `logo.png`：由上述 SVG 导出的 512×512 RGBA，透明背景，图形居中，上下最小边距 16px；供品牌展示使用。
 - `logo-fill-simple.svg`：简化实心单色源稿，使用四条开放 polyline 的隐式闭合填充形状；当前 `InnoEngine-Icons.ttf` 的 U+E000 字形消费该文件。
 - `logo-fill.svg`：细节实心源稿，保留原稿的四个闭合多边形与透明间隔；仅作设计参考，当前字体不再消费该文件。
