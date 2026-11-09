@@ -1,5 +1,7 @@
 # Inno.Tooling.Validation.Tests
 
+`ValidationRuntimeClosureTests` 通过真实 SDK 构建可执行入口、导出运行时闭包的库及两层私有编译依赖。冷构建和仅清理入口后的已验证依赖复用都必须部署并实际加载最深层程序集；暖构建不能重新执行未选中依赖的 Build 目标。该回归覆盖 `GetTargetPath` 路径未进入 SDK 构建状态时丢失传递运行时依赖的问题。
+
 测试指南选择回归通过真实 SDK 图区分托管／Native runner 的纯说明、Native C# 示例及 `tests/` 下的公开支持库。说明变化没有编译前置；示例分片仍选择正确 Native 上下文，支持库仍进入编译 API 契约，不能按所在目录整体豁免。
 
 [测试与 fixture 索引](README.md)

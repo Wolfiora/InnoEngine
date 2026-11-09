@@ -290,10 +290,12 @@
     </ItemGroup>
   </Target>
 
+  <!-- Path-only dependency reuse does not enter Build. Runtime closure export still needs
+       the SDK's build-time transitive reference resolution, without invoking compilation. -->
   <Target
     Name="ExposeInnoHostRuntimeClosure"
     BeforeTargets="GetCopyToOutputDirectoryItems;GetCopyToPublishDirectoryItems"
-    DependsOnTargets="GenerateBuildDependencyFile"
+    DependsOnTargets="BuildOnlySettings;ResolveReferences;GenerateBuildDependencyFile"
     Condition="'$(InnoExposeRuntimeClosure)' == 'true' and '$(DesignTimeBuild)' != 'true'">
     <ItemGroup>
       <ContentWithTargetPath

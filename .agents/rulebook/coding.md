@@ -173,6 +173,9 @@ internal sealed class CommandSet
 - 禁止 global using、隐式导入及 MSBuild Using item。
 - 启用 nullable。unsafe 仅限真实互操作边界，并明确缓冲区、指针及资源生命周期。
 - 编译目标和 SDK 从工程声明解析；缓存不能替代正确性校验。
+
+<!-- approved-addition -->
+- 手写 C# 代码禁止使用 `global::` 限定名。名称冲突通过显式普通 `using`、文件级语义明确的 `using` 类型／命名空间别名或调整局部命名解决；同一目标只保留一个别名，不逐处重复完整限定名。生成代码、生成器输出模板及用于验证该输出的测试按生成协议管理，不为满足手写风格规则改写其限定名。
 <!-- /rule-unit: csharp-standard-5 -->
 
 <!-- rule-unit: csharp-standard-6 -->
