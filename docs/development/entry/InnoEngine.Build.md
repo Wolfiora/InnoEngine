@@ -6,6 +6,8 @@
 
 普通 .NET 10 可执行项目，通过 ProjectReference 直接调用 BuildApplication.Run。SDK 编译工具源码；运行入口不再准备、发布或反射加载另一份 CLI。
 
+Windows 入口可执行文件通过 `<ApplicationIcon>` 嵌入 `build/branding/logo.ico`，Explorer 与任务管理器使用该图标；构建资源说明见 [build/branding](../../../build/branding/README.md)，设计源见[品牌资源](../../../assets/branding/README.md)。
+
 无参数时准备当前 SDK 宿主的 Editor 支持产物。宿主只在 entry 选择，显式游戏发布目标继续由调用参数决定。
 
 ## 快速使用

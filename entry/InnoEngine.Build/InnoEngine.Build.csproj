@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>InnoEngine.Build</AssemblyName>
     <RootNamespace>InnoEngine.Build</RootNamespace>
+    <ApplicationIcon>../../build/branding/logo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
