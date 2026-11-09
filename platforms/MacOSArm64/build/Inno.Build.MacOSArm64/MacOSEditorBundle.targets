@@ -1,0 +1,33 @@
+<Project>
+  <!-- Owned by the macOS platform build and imported by the development Editor entry. -->
+  <Target
+    Name="CreateMacOSEditorApplicationBundle"
+    AfterTargets="Publish"
+    Condition="$([MSBuild]::IsOSPlatform('OSX')) and ('$(RuntimeIdentifier)' == '' or $(RuntimeIdentifier.StartsWith('osx-')))">
+    <PropertyGroup>
+      <_InnoEditorPublishRoot>$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))</_InnoEditorPublishRoot>
+      <_InnoEditorAppBundle>$(_InnoEditorPublishRoot)../$(AssemblyName).app</_InnoEditorAppBundle>
+      <_InnoEditorContents>$(_InnoEditorAppBundle)/Contents</_InnoEditorContents>
+      <_InnoEditorMacOS>$(_InnoEditorContents)/MacOS</_InnoEditorMacOS>
+      <_InnoEditorResources>$(_InnoEditorContents)/Resources</_InnoEditorResources>
+      <_InnoEditorIcon>$(MSBuildThisFileDirectory)../../../../assets/branding/logo.icns</_InnoEditorIcon>
+      <_InnoEditorInfoPlist>$(MSBuildThisFileDirectory)Templates/MacOSEditor.Info.plist</_InnoEditorInfoPlist>
+    </PropertyGroup>
+    <Error
+      Condition="!Exists('$(_InnoEditorPublishRoot)$(AssemblyName)')"
+      Text="macOS publish output does not contain the '$(AssemblyName)' apphost." />
+    <Error
+      Condition="!Exists('$(_InnoEditorIcon)')"
+      Text="The macOS application icon is absent: '$(_InnoEditorIcon)'." />
+    <Error
+      Condition="!Exists('$(_InnoEditorInfoPlist)')"
+      Text="The macOS Info.plist template is absent: '$(_InnoEditorInfoPlist)'." />
+    <RemoveDir Directories="$(_InnoEditorAppBundle)" />
+    <MakeDir Directories="$(_InnoEditorMacOS);$(_InnoEditorResources)" />
+    <Exec Command="ditto &quot;$(_InnoEditorPublishRoot)&quot; &quot;$(_InnoEditorMacOS)&quot;" />
+    <Copy SourceFiles="$(_InnoEditorIcon)" DestinationFolder="$(_InnoEditorResources)" />
+    <Copy SourceFiles="$(_InnoEditorInfoPlist)" DestinationFiles="$(_InnoEditorContents)/Info.plist" />
+    <Exec Command="chmod +x &quot;$(_InnoEditorMacOS)/$(AssemblyName)&quot;" />
+    <Message Importance="high" Text="Created macOS application bundle '$(_InnoEditorAppBundle)'." />
+  </Target>
+</Project>
