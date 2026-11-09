@@ -5,7 +5,9 @@
     AfterTargets="Publish"
     Condition="$([MSBuild]::IsOSPlatform('OSX')) and ('$(RuntimeIdentifier)' == '' or $(RuntimeIdentifier.StartsWith('osx-')))">
     <PropertyGroup>
-      <_InnoEditorPublishRoot>$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))</_InnoEditorPublishRoot>
+      <!-- PublishDir is project-relative by default; normalize it before Exec resolves the path. -->
+      <_InnoEditorPublishRoot>$([System.IO.Path]::GetFullPath('$(PublishDir)', '$(MSBuildProjectDirectory)'))</_InnoEditorPublishRoot>
+      <_InnoEditorPublishRoot>$([MSBuild]::EnsureTrailingSlash('$(_InnoEditorPublishRoot)'))</_InnoEditorPublishRoot>
       <_InnoEditorAppBundle>$(_InnoEditorPublishRoot)../$(AssemblyName).app</_InnoEditorAppBundle>
       <_InnoEditorContents>$(_InnoEditorAppBundle)/Contents</_InnoEditorContents>
       <_InnoEditorMacOS>$(_InnoEditorContents)/MacOS</_InnoEditorMacOS>
