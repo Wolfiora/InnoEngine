@@ -118,7 +118,11 @@ internal static class WikiApiCoverageValidator
                         page is null ? string.Empty : Path.GetRelativePath(root, page).Replace('\\', '/'),
                         Documentation(symbol, new HashSet<ISymbol>(SymbolEqualityComparer.Default), cancellationToken),
                         symbol.IsImplicitlyDeclared,
-                        symbol is IFieldSymbol { HasConstantValue: true } field ? field.ConstantValue : null));
+                        symbol is IFieldSymbol { HasConstantValue: true } field ? field.ConstantValue : null,
+                        symbol.Kind.ToString(), symbol.ContainingType?.GetDocumentationCommentId(),
+                        symbol is INamedTypeSymbol named ? named.BaseType?.ToDisplayString() : null,
+                        symbol is INamedTypeSymbol namedType
+                            ? namedType.Interfaces.Select(static contract => contract.ToDisplayString()).ToArray() : []));
                 }
             }
         }
@@ -272,6 +276,10 @@ internal static class WikiApiCoverageValidator
         string page,
         string documentation,
         bool implicitDeclaration,
-        object? constantValue
+        object? constantValue,
+        string kind,
+        string? containingType,
+        string? baseType,
+        IReadOnlyList<string> interfaces
     );
 }

@@ -76,6 +76,11 @@ public sealed class DocumentationReferenceTests : IDisposable
             && symbol.GetProperty("documentation").GetString()!.Contains("Borrowed text", StringComparison.Ordinal));
         Assert.Contains(symbols, symbol => symbol.GetProperty("id").GetString() == "M:Inno.Probe.Probe.Read(System.Int32)");
         Assert.Contains(symbols, symbol => symbol.GetProperty("id").GetString() == "M:Inno.Probe.Probe.OnRead");
+        Assert.Contains(symbols, symbol => symbol.GetProperty("id").GetString() == "T:Inno.Probe.Probe"
+            && symbol.GetProperty("baseType").GetString() == "object"
+            && symbol.GetProperty("kind").GetString() == "NamedType");
+        Assert.Contains(symbols, symbol => symbol.GetProperty("id").GetString() == "M:Inno.Probe.Probe.OnRead"
+            && symbol.GetProperty("containingType").GetString() == "T:Inno.Probe.Probe");
         byte[] previous = File.ReadAllBytes(output);
         Write("src/Inno.Probe/Probe.cs", "namespace Inno.Probe; public class Probe { public MissingContract Read() => null; }");
         Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi(arguments));
