@@ -2,6 +2,16 @@
 
 [获批计划](../plans/LOGO_BRANDING.md) · [品牌资源](../../../assets/branding/README.md)
 
+## 2026-11-11 字体官方许可与独立品牌许可
+
+分支 `logo`，基线 `483bdee6f32ba076bf631be4632c1e725503eaad`。用户明确确认已取得 xdzzyq 的授权，但 Logo 仅允许随 InnoEngine 使用；新增 `assets/branding/LICENSE.txt` 覆盖 Logo 与衍生图标字体，保留作者归属，明确与源码 Apache-2.0、第三方字体 OFL 分开，不添加根 README 设计致谢。字体资源仍归 ImGui SDL3 后端部署，没有修改图片、字形、运行时 API、平台分层或资源生命周期。
+
+从字体 name 表确认 JetBrains Mono 2.304 和 Font Awesome Free 6.7.2，并逐一核对六份第三方 TTF 与官方版本的 Git blob；全部相同。官方许可分别取自 [JetBrains v2.304](https://github.com/JetBrains/JetBrainsMono/blob/v2.304/OFL.txt) 和 [Font Awesome 6.7.2](https://github.com/FortAwesome/Font-Awesome/blob/6.7.2/LICENSE.txt)，原样保存，Git blob 分别为 `8bee4148c1d54dbf5dae6d6c117fc80414266abb`、`e69c5e39a30ce8d112e012cac36289e77691a9b7`。`.gitattributes` 保留官方文本字节和原有空白，删除已移除补充字体的过期条目。Font Awesome 完整文件中的 SVG／JS 和代码条款未删改，文档明确本仓库 TTF 适用字体 OFL 条款。
+
+本机显式使用 SDK 10.0.402，复用生产源码未变的已验证原生依赖，构建受影响后端并发布成功，0 警告、0 错误。实际构建目录和发布目录均包含三份许可，内容 SHA-256 与源文件逐项相同；两处的七份 TTF 也逐项与源文件相同。日志为 `artifacts/branding-work/font-license-build.log`、`font-license-publish.log`，许可部署清单为 `font-license-deployment.json`。源码架构检查通过；文档与记录收尾检查见 `font-license-docs-final.log`、`font-license-agent-docs-final.log`。未新增与实现镜像的测试，未将此前字体回归冒充本次执行。
+
+统一计划 `artifacts/validation/font-license-plan/plan.json` 因 `.gitattributes` 为共享输入保守选择 249 个 owner、324 项必需检查，未削弱计划选择。当前证据仅覆盖本次许可来源、资源部署／发布、源码架构和文档；按用户要求不等待远端长时间 CI，不声明完整 Windows/macOS、Release 和发行矩阵已通过。历史验收继续保留原始输入及失败语境。
+
 ## 2026-11-11 移除内置语言补充字体
 
 按用户最新要求，在 `logo`、基线 `8ee4ab383812d9d9c5db25ed66b0d6c1846482ae` 上删除内置 Noto 字体、来源和许可、后端部署条目、自动合并代码及 Context 固定缓冲区。默认只配置英文界面正文与图标，自定义字体不再被自动追加语言字形。既有 `RegisterFontStyle`、游戏 `FontAsset`、`ITextService` 和 `ITextBackend` 保留，语言资源与字体选择由项目负责；没有新增 Core、平台分支或兼容路径。历史验收中的中文覆盖描述仅代表当时输入，不再是当前默认能力。

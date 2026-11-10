@@ -2,6 +2,10 @@
 
 Logo 设计：[xdzzyq](https://github.com/XDzzzzzZyq)。PNG、单色字形、ICO/ICNS 和图标 TTF 均由该 Logo 转换而来；当前字体使用简化实心源稿 `logo-fill-simple.svg`。转换不改变原设计的作者归属。
 
+## 许可
+
+Logo 原稿、各格式衍生成品和 `InnoEngine-Icons.ttf` 适用[独立品牌许可](LICENSE.txt)，仅允许随 InnoEngine 的源码、二进制、界面和配套文档使用与分发，并保留署名及许可。不得独立用于其他产品的品牌，也不适用引擎源码的 Apache-2.0 或第三方字体的 OFL。其他用途需另获权利人许可。第三方字体许可见[字体目录](../fonts/README.md#许可证)。
+
 ## 文件与使用
 
 - `logo.svg`：作者提供的原稿，原样保留 512×512 viewBox、灰阶与多边形。
@@ -24,7 +28,7 @@ Logo 设计：[xdzzyq](https://github.com/XDzzzzzZyq)。PNG、单色字形、ICO
 3. 扫描全部默认正文和 Font Awesome 字体的 Unicode cmap。首个共同空闲的 BMP 私用区码点为 **U+E000**，固定映射到 `innoengine`；后续更新保持这个码点并检查冲突。
 4. 字体 family 为 `InnoEngine Icons`，style 为 `Regular`，units/em=512，advance width=512，ascender=459，descender=-75，line gap=0。纵向度量参考当前 Font Awesome Solid。
 5. 当前字体消费 `logo-fill-simple.svg` 的四条 polyline；每条按隐式闭合填充。源可见边界为 x=39.48…472.84、y=21.04…490.96；应用 `s=480/469.92`、`x'=256+(x-256)*s`、`y'=432+(21.04-y)*s`。TrueType 取整并去除重合点后为四个同向 contour、24 个点，可见边界 (35,-48)…(477,432)，左侧 bearing=35，advance width=512。细节实心版 `logo-fill.svg` 使用 y=20.88 起点和 60 个点；空心版 `logo-edge.svg` 使用 `s=480/469.93`、`y'=432+(16.62-y)*s` 和八个内外 contour，二者仅作参考。运行时沿用 14px 图标加载尺寸。
-6. 保留 `.notdef` 和 `innoengine` 两个 glyph。字体 designer 为 `xdzzyq`，designer URL 为上述 GitHub 地址；不添加未经提供的授权声明。
+6. 保留 `.notdef` 和 `innoengine` 两个 glyph。字体 designer 为 `xdzzyq`，designer URL 为上述 GitHub 地址；该字体随附本目录的独立品牌许可，部署文件名为 `BuiltIn/Icons/LICENSE-InnoEngine.txt`。
 7. `logo.ico` 使用 Pillow 11.1.0 从 `logo.png` 生成，保留透明背景与灰阶。每个尺寸由 512px 源图缩放，并以 PNG 条目写入；Windows Vista 及以上支持该格式。重新生成命令：
 
    ```sh

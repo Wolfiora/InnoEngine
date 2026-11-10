@@ -1,0 +1,40 @@
+InnoEngine Logo and Icon Font License
+
+Copyright (c) 2026 xdzzyq (https://github.com/XDzzzzzZyq)
+All rights reserved except for the limited permission stated below.
+
+Scope
+
+This license applies to the InnoEngine logo artwork in this directory,
+including its SVG, PNG, ICO and ICNS versions, and to the derived
+InnoEngine-Icons.ttf font distributed from assets/fonts/icons.
+It does not apply to JetBrains Mono or Font Awesome.
+
+Permitted use
+
+Permission is granted to use, reproduce and redistribute these assets only
+with InnoEngine, as part of its source or binary distributions, its interface,
+or its accompanying documentation. Resizing and format conversion are allowed
+solely as necessary for that permitted use.
+
+The copyright notice, author attribution and this license must be retained
+when redistributing the assets, including the derived icon font.
+
+Limitations
+
+This license does not permit standalone use or redistribution of the assets,
+use as the branding of another product or service, or relicensing them under
+Apache-2.0, SIL OFL, or any other license. Other uses require separate
+permission from the copyright holder. No permission is granted to imply
+endorsement by the logo's author.
+
+The Apache-2.0 license of InnoEngine's source code does not extend to these
+assets. All rights not expressly granted here are reserved.
+
+Disclaimer
+
+THE ASSETS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM THE USE OF THE ASSETS.
