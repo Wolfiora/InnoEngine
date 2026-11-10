@@ -17,7 +17,7 @@ public static class DocumentationCommand
     /// Explicitly indexes a selected checkout or queries an already prepared immutable snapshot.
     /// </summary>
     /// <param name="arguments">
-    /// index, search, read, symbol, resource or status followed by engine-root, cache-root, docs-root,
+    /// index, search, read, symbol, resource, status or catalog followed by engine-root, cache-root, docs-root,
     /// snapshot, source-tree, query, page, project, surface, section, id, offset, limit and format as applicable.
     /// Index requires docs-root. Read-only commands reject docs-root rather than implicitly refreshing mutable content.
     /// </param>
@@ -42,8 +42,8 @@ public static class DocumentationCommand
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
-        if (arguments.Length == 0 || arguments[0] is not ("index" or "search" or "read" or "symbol" or "resource" or "status"))
-            throw new ArgumentException("Usage: docs <index|search|read|symbol|resource|status> --engine-root ROOT [--cache-root PATH] [--format text|json]. Index requires --docs-root CHECKOUT; reads require a prepared snapshot.");
+        if (arguments.Length == 0 || arguments[0] is not ("index" or "search" or "read" or "symbol" or "resource" or "status" or "catalog"))
+            throw new ArgumentException("Usage: docs <index|search|read|symbol|resource|status|catalog> --engine-root ROOT [--cache-root PATH] [--format text|json]. Index requires --docs-root CHECKOUT; reads require a prepared snapshot.");
         string operation = arguments[0];
         string[] specific = operation switch
         {
@@ -78,6 +78,22 @@ public static class DocumentationCommand
         {
             using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, options.GetValueOrDefault("--snapshot"),
                 options.GetValueOrDefault("--source-tree"), cancellationToken).ConfigureAwait(false);
+            if (operation == "catalog")
+            {
+                DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellationToken).ConfigureAwait(false);
+                if (format == "json")
+                    Console.WriteLine(JsonSerializer.Serialize(catalog, DocumentationStore.json));
+                else
+                {
+                    Console.WriteLine($"Snapshot: {catalog.snapshot}; content: {catalog.contentIdentity}; source API: {catalog.sourceApiStatus}");
+                    foreach (DocumentationPageInfo page in catalog.pages)
+                        Console.WriteLine($"{page.id}: {page.path} ({page.kind}; {page.sections.Count} sections)");
+                    foreach (var project in catalog.projects)
+                        if (project.Value is null)
+                            Console.WriteLine("Missing project entry: " + project.Key);
+                }
+                return 0;
+            }
             string? value = operation switch
             {
                 "search" => Required("--query"),

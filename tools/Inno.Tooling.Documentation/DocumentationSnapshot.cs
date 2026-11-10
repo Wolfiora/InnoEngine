@@ -37,6 +37,50 @@ public sealed class DocumentationSnapshot : IDisposable
     /// </summary>
     public string sourceTree => m_manifest.binding.sourceTree;
 
+    /// <summary>
+    /// Exports canonical metadata for coverage, navigation and rendered-anchor verification.
+    /// Reads protected cached pages only; it does not rescan a checkout or refresh the snapshot.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels reads without changing the selected generation or source content.
+    /// </param>
+    /// <returns>
+    /// Complete page and project metadata. Missing project entries remain null; API evidence remains explicit.
+    /// </returns>
+    /// <exception cref="IOException">
+    /// A cached page is missing, corrupt or outside its owned boundary.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The session was opened for a different engine source tree.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Export was canceled before the complete report was returned.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The session has released its reading protection.
+    /// </exception>
+    public async Task<DocumentationCatalogReport> ExportCatalogAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (m_expectedSourceTree is not null && m_expectedSourceTree != sourceTree)
+            throw new InvalidOperationException("Cannot export a catalog bound to a different source tree.");
+        var pages = new List<DocumentationPageInfo>();
+        foreach (string path in m_manifest.pages.Keys.Order(StringComparer.Ordinal))
+        {
+            DocumentationPage page = await LoadAsync(m_manifest.pages[path].pageId, cancellationToken).ConfigureAwait(false);
+            pages.Add(new(page.metadata.uid, path, page.identity, page.title, page.metadata.kind,
+                page.metadata.owners, page.metadata.apiSurface,
+                page.sections.ToDictionary(static section => section.anchor, static section => section.line, StringComparer.Ordinal),
+                page.symbols.ToDictionary(static symbol => symbol.id, static symbol => symbol.anchor, StringComparer.Ordinal),
+                page.metadata.contracts, page.includes));
+        }
+        string contentIdentity = DocumentationMarkdown.Hash(string.Join('\n', pages.Select(static page => page.path + "\0" + page.contentIdentity)));
+        return new(identity, contentIdentity, m_manifest.binding.repository, m_manifest.binding.revision,
+            sourceTree, m_manifest.binding.toolingRevision, "Unverified",
+            m_manifest.projects.ToDictionary(static project => project.name, static project => project.entry, StringComparer.Ordinal), pages);
+    }
+
     internal DocumentationSnapshot(
         string cache,
         DocumentationManifest manifest,

@@ -43,6 +43,52 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task CatalogUsesThePreparedSnapshotAndReportsMissingProjectCoverage()
+    {
+        await IndexAsync();
+        using DocumentationSnapshot initial = await DocumentationStore.OpenAsync(cache);
+        DocumentationCatalogReport first = await initial.ExportCatalogAsync();
+        Assert.Equal("probe", first.projects["Inno.Probe"]);
+        DocumentationPageInfo page = Assert.Single(first.pages, item => item.id == "probe");
+        Assert.Contains("ownership", page.sections.Keys);
+        Assert.Equal("Unverified", first.sourceApiStatus);
+        Directory.Move(source, Path.Combine(m_root, "unavailable-source"));
+        DocumentationCatalogReport repeated = await initial.ExportCatalogAsync();
+        Assert.Equal(first.contentIdentity, repeated.contentIdentity);
+        Assert.Equal(first.pages.Select(item => item.contentIdentity), repeated.pages.Select(item => item.contentIdentity));
+        using DocumentationSnapshot mismatch = await DocumentationStore.OpenAsync(cache, expectedSourceTree: new string('c', 40));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => mismatch.ExportCatalogAsync());
+    }
+
+    [Theory]
+    [InlineData("[Missing](absent.md)", typeof(InvalidDataException))]
+    [InlineData("[Missing](probe.md#absent)", typeof(InvalidDataException))]
+    [InlineData("[Escape](../../../outside.md)", typeof(IOException))]
+    [InlineData("[Executable](javascript:alert)", typeof(InvalidDataException))]
+    public async Task BrokenOrUnsafeLinksCannotPublishANewGeneration(
+        string link,
+        Type failureType
+    )
+    {
+        DocumentationResult original = await IndexAsync();
+        Write("content/en/broken.md", Page("broken", "Broken", link));
+        Exception? failure = await Record.ExceptionAsync(() => IndexAsync());
+        Assert.NotNull(failure);
+        Assert.Equal(failureType, failure.GetType());
+        using DocumentationSnapshot retained = await DocumentationStore.OpenAsync(cache);
+        Assert.Equal(original.snapshot, retained.identity);
+    }
+
+    [Fact]
+    public async Task ReferenceLinksAndEncodedHeadingTargetsUseCanonicalParsing()
+    {
+        Write("content/en/links.md", Page("links", "Links", "[Ownership][target]\n\n[target]: probe.md#ownership\n\n[Self](#links)\n\n[API](api.md#api-" + Hash(Encoding.UTF8.GetBytes(C_SYMBOL))[..16] + ")\n"));
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        Assert.Contains((await snapshot.ExportCatalogAsync()).pages, page => page.id == "links");
+    }
+
+    [Fact]
     public async Task PreparedQueriesNeedNeitherSourceCheckoutNorAnSdkAndNeverRewriteTheIndex()
     {
         DocumentationResult indexed = await IndexAsync();

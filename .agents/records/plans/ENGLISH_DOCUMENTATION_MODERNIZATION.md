@@ -87,3 +87,6 @@ The implementation is intentionally incomplete: full English content and API mig
 - Project manifest JSON now uses deterministic LF on Windows and Unix. Three project reference export tests passed. The Build entry compiled with zero warnings and errors.
 - One overlapping local test/build invocation caused two output-file copy retries while the prior test host held the assembly; the subsequent build succeeded. Test host execution and output mutation must remain sequential for this output directory.
 - Local TRX files are under artifacts/acceptance/english-documentation/query-tests. These checks do not certify Native products, Windows/macOS CI, paired PRs or publication.
+## Shared catalog and website projection
+
+The immutable query session now exports complete canonical page, project, section, symbol and contract metadata through ExportCatalogAsync and Build docs catalog. Website checks consume this result without reparsing Markdown. The writer validates source-relative/reference links and exact canonical anchors before publication; invalid links preserve the previous generation. Twenty snapshot/catalog tests passed, with four exact link-failure assertions subsequently verified. The Build entry and source architecture check passed. Source API status remains Unverified, and missing project entries remain explicit nulls rather than disappearing from coverage.
