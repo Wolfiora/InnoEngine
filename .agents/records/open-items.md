@@ -28,13 +28,13 @@ B02 / F09 的当前处理是使用标准 `.csproj` 依赖还原，不再维护�
 
 完整证据与全部英文 issues 见[本轮专项报告](acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。以下未关闭项目仍需按 issue 验收。
 
-## 仍开放的问题
-
 ### 原生 Editor 测试支持库的执行层分类
 
-2026-11-07 Logo 验收中，全量 `compiled-api:native` 拒绝 `tests/editor/fixtures/Inno.Testing.Editor.Native/Inno.Testing.Editor.Native.csproj`：该支持库经 xUnit 包导入后的实际 SDK 属性为 `IsTestProject=true`，但没有 `InnoValidationLayer`。本轮未修改这个工程。复现与输入见 [Logo 验收](acceptance/LOGO_BRANDING_2026_11_07.md)。
+2026-11-08 已修正项目分类：`Inno.Testing.Editor.Native` 显式声明 `IsTestProject=false`，只引用实际使用的 `xunit.assert`，不再由 `xunit.core` 的导入被隐式标记为测试 runner。使用当前 SDK 重新求值的编译 API 预检通过；PlayMode 与 Performance 消费项目仍保留 contract／performance 执行层和原生产品准备要求。
 
-Owner 为 Editor 测试基础设施与架构/验证工具。后续应按支持库和测试 runner 的实际职责明确项目身份，保留真正 runner 的原生要求，并验证源码/编译后架构检查使用一致分类；不能跳过门禁或把无测试的支持库当成已执行的 runner。完成后续跑当前输入对应的原生测试、产品与发布验收，不能将 Logo 专项结果视为全量通过。
+2026-11-10 最终统一 Windows 验收完成：329 项必需检查均有成功证据（328 Passed、1 Reused），3 项其他平台产品不适用，无失败或阻塞，包含 native 编译 API、实际消费测试、10 轮热构建、Debug/Release 产品与发行检查。2026-11-07 的首次失败、当前证据及其他平台边界见 [Logo 验收](acceptance/LOGO_BRANDING_2026_11_07.md)。此分类问题已闭合，不以此声明其他平台实机通过。
+
+## 仍开放的问题
 
 ### 持久删除身份的既有缺口
 

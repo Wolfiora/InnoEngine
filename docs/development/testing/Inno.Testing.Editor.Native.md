@@ -6,6 +6,8 @@
 
 测试专用的原生 Editor fixture 库，唯一拥有真实 ImGui 上下文、输入注入和临时项目组合的共享实现。契约与性能程序集通过 ProjectReference 消费；不复制 Compile 源码，不引用另一个测试程序集，不增加引擎测试入口或暴露生产 internal 成员。
 
+该项目显式声明 `IsTestProject=false`，只引用提供断言的 `xunit.assert`，不引入把工程标记为测试项目的 `xunit.core` 构建配置。它不包含独立运行的测试用例，不声明测试执行层；真正执行测试的消费项目继续声明各自的 `InnoValidationLayer` 和原生产品准备要求。
+
 ## 使用教程
 
 创建 `NativePanelHost` 或 `NativeProjectPanelHost` 时显式传入调用测试类型的 `Assembly`，并在同一线程完成使用和释放。调用方项目必须声明实际动态加载的 panel 和序列化类型依赖。项目 host 提供工作区、资产、场景与编辑服务；简单 panel host 只准备其声明的组合。

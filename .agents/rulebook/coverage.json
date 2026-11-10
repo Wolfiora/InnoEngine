@@ -3008,6 +3008,10 @@
       "source": "6e2cd51e4a5f7c3df1119a840e100b5cea90a57b:docs/architecture/CSHARP_DEVELOPMENT_STANDARD.md",
       "sourceSection": 5,
       "sourceHash": "ace556d3813740e6a4e788f488e34cb5fc4442a4b15f50db0349e7effaffc237",
+      "approvedAddition": {
+        "approval": "User request on 2026-11-08: prohibit global:: in handwritten C# and record the rule in coding.md.",
+        "hash": "11daf5b535242c204be26f40eebc86a38ae7449501f035ab867d8d5416cce465"
+      },
       "requires": [],
       "paths": [],
       "tags": [

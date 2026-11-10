@@ -12,6 +12,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>InnoEngine.Editor</AssemblyName>
     <RootNamespace>InnoEngine.Editor</RootNamespace>
+    <ApplicationIcon>../../assets/branding/logo.ico</ApplicationIcon>
     <!-- The host product is built through this reference, rather than as a second solution root. -->
     <OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>false</OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>
     <BuildProjectReferences Condition="'$(DesignTimeBuild)' != 'true'">true</BuildProjectReferences>
@@ -37,4 +38,6 @@
       Include="Inno.Editor.ProductLock"
       Value="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/../../artifacts/products/editor/$(InnoDevelopmentTarget)/$(Configuration)/product.lock'))" />
   </ItemGroup>
+
+  <Import Project="$(InnoDevelopmentEditorTargets)" Condition="'$(InnoDevelopmentEditorTargets)' != ''" />
 </Project>

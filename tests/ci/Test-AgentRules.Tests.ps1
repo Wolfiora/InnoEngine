@@ -66,6 +66,37 @@ try {
         [IO.File]::WriteAllText($unitPath, $originalUnit)
         if (-not $failure.Contains($expected)) { throw "Wrong rejection for $scenario : $failure" }
     }
+    [IO.File]::WriteAllText($registry, $originalRegistry)
+    $additionUnit = ($originalRegistry | ConvertFrom-Json).units | Where-Object id -CEQ 'csharp-standard-5'
+    $additionPath = Join-Path $fixture $additionUnit.path
+    $originalAddition = [IO.File]::ReadAllText($additionPath)
+    $loaded = @(& $entry -Rules $additionUnit.id -ShowInstructions) -join "`n"
+    if (-not $loaded.Contains('手写 C# 代码禁止使用 `global::`')) { throw 'Approved addition was not loaded.' }
+    foreach ($scenario in @('changed-addition', 'missing-addition', 'missing-approval', 'changed-baseline')) {
+        [IO.File]::WriteAllText($registry, $originalRegistry)
+        [IO.File]::WriteAllText($additionPath, $originalAddition)
+        $expected = 'Invalid approved rule addition'
+        switch ($scenario) {
+            'changed-addition' {
+                [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('手写 C# 代码禁止使用', '手写 C# 代码允许使用'))
+            }
+            'missing-addition' {
+                [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('<!-- approved-addition -->', ''))
+            }
+            'missing-approval' {
+                $copy = $originalRegistry | ConvertFrom-Json
+                ($copy.units | Where-Object id -CEQ $additionUnit.id).approvedAddition.approval = ''
+                [IO.File]::WriteAllText($registry, ($copy | ConvertTo-Json -Depth 50))
+            }
+            'changed-baseline' {
+                [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('- 每个文件显式声明普通 using。', ''))
+                $expected = 'Lost nested requirements, examples or prose'
+            }
+        }
+        $failure = ''
+        try { & $fixtureEntry | Out-Null } catch { $failure = $_.Exception.Message }
+        if (-not $failure.Contains($expected)) { throw "Wrong rejection for $scenario : $failure" }
+    }
 } finally {
     $resolved = [IO.Path]::GetFullPath($fixture)
     if (-not $resolved.StartsWith($fixtureParent, [StringComparison]::Ordinal) -or (Split-Path $resolved -Leaf) -notmatch '^InnoRuleTests-[a-f0-9]{32}$') {
@@ -73,4 +104,4 @@ try {
     }
     if (Test-Path -LiteralPath $resolved) { Remove-Item -LiteralPath $resolved -Recurse -Force }
 }
-Write-Output 'Agent rule coverage, actual loading, root/nested routing, staged budgets, invalid selections, missing units and cyclic dependencies passed.'
+Write-Output 'Agent rule coverage, actual loading, root/nested routing, staged budgets, invalid selections, missing units, cyclic dependencies and approved additions passed.'

@@ -2,6 +2,49 @@
 
 [获批计划](../plans/LOGO_BRANDING.md) · [品牌资源](../../../assets/branding/README.md)
 
+## 2026-11-10 复查发现：暖构建运行时依赖部署
+
+最终复核 `logo-alias-fixture-final-run` 的规则、文档、全部所选测试、Debug 产品、Release 编译和编译 API 均通过，但 Release smoke 失败，不能认证全量成功。首次产品日志报告缺少 `Inno.Editor.Annotations.dll`；依赖清单核对同时发现 `Inno.Editor.Diagnostics.dll` 缺失，后续 Support Pack、NativeAOT restore、发行归档被正确阻塞。日志保存在 `artifacts/validation/logo-alias-fixture-final-run/editor-release-products/Source/Logs/`。
+
+问题位于先前 #76 的已验证依赖复用与既有运行时闭包导出的交界：依赖仅执行 `GetTargetPath`，没有设置 SDK 的 `BuildingProject`；单独执行 `ResolveReferences` 仍不足，SDK 因此关闭传递依赖查找。实际平台选择和依赖方向没有越层，但暖构建产品不完整，属于必须修复的构建契约问题。最终修复在 `Directory.Build.targets` 的原有 `ExposeInnoHostRuntimeClosure` 中依次执行 SDK 的 `BuildOnlySettings;ResolveReferences;GenerateBuildDependencyFile`，不重新编译未选中依赖，不复制文件清单、不增加平台条件或运行时 fallback。
+
+最小四项目复现通过正常冷构建、仅清理入口、暖构建、实际进程加载证实：修改前冷构建可运行，暖构建缺少私有传递依赖；修改后两次均成功。首次缩减 fixture 未引用叶子类型，不能代表原失败；修正为实现中引用叶子类型而公开 API 不暴露该类型后复现成立。原始输出为 `artifacts/branding-work/warm-deployment-before.log`、`warm-deployment-after.log`。正式回归 `ValidationRuntimeClosureTests` 同时核对叶子程序集字节与依赖 Build 执行记录，防止用重复编译掩盖问题。
+
+最终统一计划与结果为 `artifacts/validation/logo-warm-closure-plan/plan.json`、`logo-warm-closure-run/results.json`，日志为 `artifacts/branding-work/logo-warm-closure-run.log`。执行已完成，退出码 0、`completed=true`：328 项 Passed、1 项 Reused（规则检查输入完全一致）、3 项 NotApplicable，无 Failed 或 Blocked。329 项必需检查均有有效成功证据。输入 tree 为 `2cd1e7aa83b15973c33772fe389bd13ed05e88af0e6be94aa3c8cf426579a971`，基线为 `6024657d748688a0e2a43794c34ffa0339d6c8fe`，SDK 为 10.0.402，环境身份为 `5ca4b34ee8d4f0647f6769ee16a0a67c0b04bd2f37bf9a0f265f230fd7363a60`。
+
+- 源码架构、规则／CI 契约、文档、managed/native/release 编译 API、所选测试与 Debug/Release Editor 产品检查均通过。Validation 66 项、Build 357 项、NativePerformance 6 项、Editor Performance 15 项、PlayMode 433 项、Presentation 99 项、Scripting 260 项必需用例通过；宿主专属用例另由 `host-contracts.json` 核对，不计为当前宿主通过。
+- 10 轮热构建通过，中位耗时 174669.749 ms，原生编译进程数和绑定生成次数均为 0。Release smoke、工作流与生命周期检查通过，未重现缺失程序集；Support Pack 独立源码构建、NativeAOT restore、发行归档均通过。NativeAOT restore 不代表完整 NativeAOT 发布。
+- 3 项产品排除为 BrowserWasm32 Player、MacOSArm64 Editor 和 Player；不声明其他平台实机通过。自动缓存维护因扫描时间预算被推迟，没有退休产物，不影响构建成功。
+- 完成后仅补写本段、计划状态与开放记录，不改变受验代码、项目、规则或使用文档；这些记录收尾单独执行 agent 文档结构／链接检查与 `git diff --check`，不以记录修改或提交为由重复产品验收。首次失败和下文旧输入证据保留，不替代本轮结论。
+
+## 后续修订：局部别名与限定名规范
+
+2026-11-10 接续时先 fetch，并将工作区快进到 `origin/master` 的 `6024657d`，再建立 `codex/icon-alias-fixture`。远端相对原基线 `21948bcd` 只有 PR #77 合并提交，两者 Git tree 相同，没有需要覆盖或移植的他人源码修改；原有 12 个未提交文件完整保留。
+
+Editor 图标类的 44 个后端常量引用统一使用文件级 `BackendIcon` 别名，解决 `Inno` 字段遮蔽根命名空间的问题；调用方仍直接使用 `ImGuiIcon.Inno`，公开名称、码点、字体资源和加载流程不变。coding 的 using 规则新增手写 C# 禁用 `global::` 的约束，保留生成代码、生成模板及其输出验证的协议边界。
+
+Editor 项目本轮正常构建通过，0 警告、0 错误；新程序集的全部 44 个公开图标常量与改动前名称、值完全相同。日志为 `artifacts/branding-work/alias-build.log`，比较输入和结果为 `alias-before.json`、`alias-after.json`。相关 API 源码链接同步到实际行号。
+
+用户随后要求一并修复原生 Editor 支持库分类：显式 `IsTestProject=false`，将仅用于断言的 `xunit` 依赖收窄为 `xunit.assert`；PlayMode runner 的 contract 层、Performance runner 的 performance 层及二者原生产品准备声明不变。规则加载器仍核对完整历史原文，新增条款通过登记批准依据及独立正文哈希追加；首次直接插入条款被原文保护拒绝，改用该机制，不删除或放宽历史检查。隔离回归覆盖追加内容篡改、标记缺失、批准依据缺失及原文删改。
+
+### 完整 Windows 验收与证据复用
+
+上次后台统一执行已完成：`artifacts/validation/logo-alias-fixture-plan/plan.json` 对应的 `logo-alias-fixture-run/results.json` 为 `completed=true`，326 项 Passed、5 项 NotApplicable，无 Failed 或 Blocked。输入 tree 为 `2dfbdad8fee65a65101f91bdce968f0165e86d1cc48dcf69d36a388733e227ee`，SDK 为 10.0.402，环境身份为 `5ca4b34ee8d4f0647f6769ee16a0a67c0b04bd2f37bf9a0f265f230fd7363a60`。
+
+- 源码架构、规则／CI 契约、文档、managed/native/release 编译 API 通过；原 `compiled-api:native` 支持库分类阻塞已消除。
+- PlayMode 433 项、Editor Performance 15 项、Validation 65 项必需用例通过；Debug/Release Editor smoke、工作流和生命周期旅程通过；Release 编译、Support Pack、NativeAOT restore 和发行归档通过。NativeAOT restore 不等于完整 NativeAOT 发布。
+- 5 项明确排除为 Browser 产品、两个 macOS 产品，以及本轮未选择 extended 的 NativePerformance 构建与测试。没有把其他平台实机、扩展冷／热缓存或长期人工体验标为通过。
+- 同步 master 未改变产品源码；本轮只规范登记缩进并补写记录。使用 `logo-alias-fixture-final-plan/plan.json` 和 `logo-alias-fixture-final-run/results.json` 重新计算当前输入，并由统一 runner 核对旧证据的工具、环境、依赖及输出，补跑失效检查。日志为 `artifacts/branding-work/alias-fixture-final-run.log`；最终状态以该结果为准。
+
+### 已合入 PR 的平台边界复查
+
+复查最近已合入的 #76（`1294d148`）与 #77（`6024657d`）相关边界，没有发现本范围需要阻断交付的平台反向依赖：
+
+- `ValidationPlanner` 从正式 Editor 入口的 SDK 求值读取目标和平台产品 props；`ValidationRunner` 读取平台声明的 `InnoValidationBackendPattern`，缺失即失败。Direct3D／Metal 预期分别由 Windows／macOS owner 声明，未移入领域层。
+- `Inno.Tooling.Validation` 只引用 Core IO、中立 Toolchains 和 Architecture。宿主环境指纹、测试宿主适用性、归档保留 Unix 权限属于验证工具的执行环境处理，没有据此在中立运行时选择平台 backend。
+- 原生准备复用仍通过既有 Core `FileLease`、构建期登记及独立产物读取租约完成；复用前重验输入，失败释放已取得的租约，未新增平行资源管理器。Logo 资源仍归 backend 字体 owner，Editor 只公开字符串常量，Core/SPI 未引入品牌数据。
+- 本轮不改变 UI 状态所有权、交互、Undo/Redo、菜单或字形；API、组织、抽象与复用保持原边界。以上是相关链路审查与现有架构门禁的结论，不是对两个大型 PR 的所有历史行为作无缺陷保证。
+
 ## 后续修订：Inno 命名与 README 尺寸
 
 基线 `e3b3143e`，分支 `logo`。将两个公开图标常量改为 `ImGuiIcon.Inno`，同步字体测试、使用示例和 API 映射；目录从公开常量自动取得名称 `Inno`，不保留旧别名。Editor 常量引用使用 `global::` 避免与根命名空间同名。README 的 Logo 宽度改为 240，居中与替代文本保留。按用户最后确认，只删除根 README 的 Logo 设计致谢；品牌说明、代码注释和 TTF 作者元数据保留。字体、PNG、SVG 内容没有变化。

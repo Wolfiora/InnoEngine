@@ -43,7 +43,17 @@ foreach ($unit in $manifest.units) {
     if ($unit.PSObject.Properties.Name -contains 'sourceSection') { $source = [regex]::Split($source, '(?m)(?=^## )')[$unit.sourceSection] }
     if ((Get-Hash $source.Trim()) -cne $unit.sourceHash) { throw "Changed source identity: $($unit.id)" }
     foreach ($replacement in $manifest.pathReplacements) { $source = $source.Replace($replacement.old, $replacement.current) }
-    if ((Normalize-Links $body) -cne (Normalize-Links $source)) { throw "Lost nested requirements, examples or prose: $($unit.id)" }
+    $preservedBody = $body
+    if ($unit.PSObject.Properties.Name -contains 'approvedAddition') {
+        $parts = [regex]::Split($body, '(?m)^<!-- approved-addition -->\r?$')
+        if ($parts.Count -ne 2 -or [string]::IsNullOrWhiteSpace($parts[1]) -or
+            [string]::IsNullOrWhiteSpace($unit.approvedAddition.approval) -or
+            (Get-Hash $parts[1].Replace("`r`n", "`n").Trim()) -cne $unit.approvedAddition.hash) {
+            throw "Invalid approved rule addition: $($unit.id)"
+        }
+        $preservedBody = $parts[0]
+    }
+    if ((Normalize-Links $preservedBody) -cne (Normalize-Links $source)) { throw "Lost nested requirements, examples or prose: $($unit.id)" }
     $units[$unit.id] = $unit; $bodies[$unit.id] = $body
 }
 $original = Read-Source "$($manifest.baseline):AGENTS.md"
