@@ -3067,8 +3067,9 @@
       "sha256": "2cfa4223b03cc060b58c1b076c5a008df75fdea8655a6a5793417a16495ce34d",
       "bytes": 13674,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/tooling-migration.json",
+      "documentationRevision": "b980236341befa0fa865e1cae52ea455e18fb9b5"
     },
     {
       "source": "docs/development/build/Inno.Build.Composition.md",
@@ -3091,8 +3092,9 @@
       "sha256": "7959d532e8aee41947109e0a7805a6fb6c8b1bb36da4d6e1cfb525733767be0f",
       "bytes": 14959,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/tooling-migration.json",
+      "documentationRevision": "b980236341befa0fa865e1cae52ea455e18fb9b5"
     },
     {
       "source": "docs/development/build/Inno.Build.Managed.md",
@@ -3899,8 +3901,9 @@
       "sha256": "26a5dbe29c83b39b0b54884d5e3b946ee7fe5e6cba4e82bd731dbb647adffc3b",
       "bytes": 19148,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/tooling-migration.json",
+      "documentationRevision": "b980236341befa0fa865e1cae52ea455e18fb9b5"
     },
     {
       "source": "docs/development/tooling/Inno.Tooling.Validation.md",
@@ -4331,8 +4334,9 @@
       "sha256": "74d66596d6082673e50e282260eb6cbc19ddd08e4db8b495e8e02463c8a6271b",
       "bytes": 32152,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Assets.ImGui.md",
@@ -4379,24 +4383,27 @@
       "sha256": "5758efa259220f86c3be9912b9119c367e2856800f4fef4b0068540224134c4a",
       "bytes": 19588,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Core/api.md",
       "sha256": "79116b4a5ce458ae624f2eb16de1ac187e4f9f85ed1edc494c0e158bdc3e339d",
       "bytes": 82102,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Diagnostics.md",
       "sha256": "256142930d3c30a9fa4d0bc638dcd8e7884e3281ac1538553fab5e2d0f0e0b2e",
       "bytes": 22953,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Exporting.md",
@@ -4475,16 +4482,18 @@
       "sha256": "7e1c217b0d1b34450ba2558e43eb28126368335f9d88730b053ab4ea9ad3f9ad",
       "bytes": 29160,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Interactions/api.md",
       "sha256": "77d52516f2284e2f03ac2e28bb6634e76dd852864f2273649f03532e2825675f",
       "bytes": 301552,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Panel.FileBrowser.md",
@@ -4524,7 +4533,8 @@
       "bytes": 8487,
       "kind": "product-documentation",
       "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "Wolfiora/InnoEngine.Docs/content/en/api/projects/inno-editor-panel-logging.md"
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Panel.SceneView.md",
@@ -4555,8 +4565,9 @@
       "sha256": "4cc7d1d8e3f21b0a8b06cf3d3ae721e573bf20b30f091f3790a946bcd9f70bde",
       "bytes": 3604,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.PlayMode.md",
@@ -4619,16 +4630,18 @@
       "sha256": "9a02943fb990cffdc59014756e3f8dcbfdfa685ab59a3ece97e48b9fb72ddcbd",
       "bytes": 52360,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Settings/api.md",
       "sha256": "35ec8cd9c6f65fefa0ee0997b9c256f57f770f31c537c8a9845cd02a135df9bc",
       "bytes": 961,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/editor-migration.json",
+      "documentationRevision": "7e6666ecdc3d6ea307bcf8d01348e80977f7386f"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Shaders.ImGui.md",

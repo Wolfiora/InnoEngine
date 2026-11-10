@@ -366,6 +366,26 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task TaskHeadingTermsOutrankAssemblyIndexesWithoutAnExactPhrase()
+    {
+        Write("content/en/probe.md", Page("probe", "Probe", "Read keyboard, pointer and text input in the task guide.\n\n## Ownership\n\nBorrow the lease.\n",
+            "kind: project\nowners: [Inno.Probe]\n"));
+        Write("content/en/task.md", Page("z-task", "Read keyboard, pointer and text input", "Observe one immutable frame.\n",
+            "kind: how-to\nowners: [Inno.Probe]\n"));
+        Write("content/en/index.md", Page("a-index", "All members", "Read data. Keyboard values. Pointer fields. Text formatting. Input functions.\n"));
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        Dictionary<string, string> before = Files();
+        DocumentationResult result = await snapshot.QueryAsync(new("search", "read keyboard pointer text input"));
+        Assert.Equal("z-task", result.hits[0].pageId);
+        Assert.Equal("All query terms in heading", result.hits[0].reason);
+        Assert.Equal("Excerpt", result.hits[0].completeness);
+        Assert.Contains(result.hits, hit => hit.pageId == "probe");
+        Assert.Contains(result.hits, hit => hit.pageId == "a-index");
+        Assert.Equal(before.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
+    }
+
+    [Fact]
     public async Task StructuredPaginationAndExactSymbolSearchNeedNoConsoleParsing()
     {
         Write("content/en/second.md", Page("second", "Ownership details", "Borrow the lease; observe the ownership contract.\n"));

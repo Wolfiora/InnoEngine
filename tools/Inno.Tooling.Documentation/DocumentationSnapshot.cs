@@ -233,8 +233,8 @@ public sealed class DocumentationSnapshot : IDisposable
         }
         var ranked = selected!.Select(index => m_manifest.search[index])
             .Where(entry => Scope(m_manifest.pages[m_paths[entry.pageId]].metadata, request))
-            .Select(entry => (entry, score: Score(entry, request.value)))
-            .OrderByDescending(static pair => pair.score).ThenBy(static pair => pair.entry.pageId, StringComparer.Ordinal)
+            .Select(entry => (entry, match: Score(entry, request.value, tokens)))
+            .OrderByDescending(static pair => pair.match.score).ThenBy(static pair => pair.entry.pageId, StringComparer.Ordinal)
             .ThenBy(static pair => pair.entry.section, StringComparer.Ordinal).ToArray();
         var hits = new List<DocumentationHit>();
         foreach (var pair in ranked.Skip(request.offset).Take(request.limit))
@@ -243,23 +243,35 @@ public sealed class DocumentationSnapshot : IDisposable
             DocumentationSection section = page.sections.Single(candidate => candidate.anchor == pair.entry.section);
             string body = DocumentationMarkdown.OwnText(page, section);
             string excerpt = body[..Math.Min(body.Length, 320)];
-            hits.Add(Hit(page, section.anchor, section.line, null, "Indexed terms; exact titles, project identities and aliases rank first", "Excerpt", excerpt));
+            hits.Add(Hit(page, section.anchor, section.line, null, pair.match.reason, "Excerpt", excerpt));
         }
         return Result(hits.Count == 0 ? "Empty" : "Found",
             $"{ranked.Length} matching sections; offset {request.offset}, returned {hits.Count}. Search excerpts are navigation, not complete contracts.", hits)
             with { nextRequest = request.offset + hits.Count < ranked.Length ? request with { offset = request.offset + hits.Count } : null };
     }
 
-    private int Score(
+    private (int score, string reason) Score(
         DocumentationSearchEntry entry,
-        string query
+        string query,
+        string[] tokens
     ) {
         DocumentationMetadata metadata = m_manifest.pages[m_paths[entry.pageId]].metadata;
-        return (entry.title.Equals(query, StringComparison.OrdinalIgnoreCase) ? 100 : 0)
+        var heading = new HashSet<string>(DocumentationMarkdown.Tokens(entry.title), StringComparer.Ordinal);
+        int matched = tokens.Count(heading.Contains);
+        bool exactHeading = entry.title.Equals(query, StringComparison.OrdinalIgnoreCase);
+        bool exactProject = metadata.owners.Contains(query, StringComparer.OrdinalIgnoreCase);
+        bool exactAlias = metadata.aliases.Contains(query, StringComparer.OrdinalIgnoreCase);
+        int score = (exactHeading ? 100 : 0)
             + (entry.title.Contains(query, StringComparison.OrdinalIgnoreCase) ? 60 : 0)
-            + (metadata.aliases.Contains(query, StringComparer.OrdinalIgnoreCase) ? 80 : 0)
-            + (metadata.owners.Contains(query, StringComparer.OrdinalIgnoreCase) ? 90 : 0)
-            + (metadata.kind == "project" ? 5 : 0);
+            + (exactAlias ? 80 : 0) + (exactProject ? 90 : 0)
+            + 50 * matched / tokens.Length;
+        string reason = exactHeading ? "Exact heading"
+            : exactProject ? "Exact project identity"
+            : exactAlias ? "Exact query alias"
+            : matched == tokens.Length ? "All query terms in heading"
+            : matched > 0 ? "Heading and indexed body terms"
+            : "Indexed body terms";
+        return (score, reason);
     }
 
     private async Task<DocumentationResult> SymbolAsync(
