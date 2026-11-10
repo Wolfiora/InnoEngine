@@ -130,18 +130,16 @@ public sealed unsafe class FontCoverageTests
         using var retained = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
         retained.SetIniFile(null);
         nint source = CaptureSource(retained);
-        long baseline = GC.GetTotalMemory(forceFullCollection: true);
+        long baseline = CollectLiveManagedBytes();
         var retired = new List<WeakReference<PlatformImGuiContext>>();
         for (int cycle = 0; cycle < 10; cycle++)
         {
             retired.Add(CreateAndRetire(application, source));
             Assert.Equal(source, CaptureSource(retained));
         }
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        long after = CollectLiveManagedBytes();
         Assert.All(retired, reference => Assert.False(reference.TryGetTarget(out _)));
-        Assert.InRange(GC.GetTotalMemory(forceFullCollection: true) - baseline, long.MinValue, 2L * 1024 * 1024);
+        Assert.InRange(after - baseline, long.MinValue, 2L * 1024 * 1024);
         Assert.Single(application.GetWindows());
     }
 
@@ -189,6 +187,22 @@ public sealed unsafe class FontCoverageTests
             Assert.Throws<FileNotFoundException>(Create);
         Assert.Single(application.GetWindows());
         Assert.False(BackendFont.IsAvailable(BackendFontStyle.Regular));
+    }
+
+    private static long CollectLiveManagedBytes()
+    {
+        long previousIndex = GC.GetGCMemoryInfo(GCKind.FullBlocking).Index;
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        GCMemoryInfo snapshot = GC.GetGCMemoryInfo(GCKind.FullBlocking);
+        Assert.True(snapshot.Index > previousIndex);
+        Assert.Equal(GC.MaxGeneration, snapshot.Generation);
+        Assert.True(snapshot.Compacted);
+        Assert.False(snapshot.Concurrent);
+        Assert.InRange(snapshot.FragmentedBytes, 0, snapshot.HeapSizeBytes);
+        // Measure the same completed collection; estimated counters can drift around pinned font buffers.
+        return checked(snapshot.HeapSizeBytes - snapshot.FragmentedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]

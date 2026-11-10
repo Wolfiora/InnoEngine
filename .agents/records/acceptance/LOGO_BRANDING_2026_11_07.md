@@ -16,6 +16,8 @@
 
 CI 协议检查现在把旅程驱动及共享夹具纳入选择和证据身份；只改共享采样代码也不能复用旧 CI 协议结果。两个真实 SDK／Git 计划回归通过，日志为 `artifacts/branding-work/journey-input-regression.log`。使用已验收且生产输入未变的 Editor 产物，实际编译新旅程源码并执行 100 轮面板开关，11 轮完整采样、4 MiB 门槛和正常退出均通过，最终存活内存增长 730,272 字节；结果为 `artifacts/validation/font-ci-lifecycle/result.json` 和同目录 `Project/Library/Acceptance`。源码架构、文档结构／链接和 agent 记录检查通过。新的全量计划需要覆盖 Windows 和 macOS、Debug／Release 产品及打包，最终由 `logo` 到 `master` 的 PR 所关联 Engine CI 对确切提交执行；上述定向结果不替代远端全量证据。原始失败保留，不循环重跑旧提交直到绿色。
 
+补充交叉检查发现字体 Context 退休测试也以估算 API 判断 2 MiB 增长，现改用本测试私有的完整 GC 快照采样，保留弱引用回收、其他 Context 字体源和窗口存活断言。最初的跨项目源码链接被架构门禁拒绝，已撤销，未增加项目依赖或放宽规则。最终原生测试程序集构建 0 警告、0 错误，9 项字体覆盖／退休／内容失败测试全部通过，无跳过；日志为 `artifacts/branding-work/font-snapshot-final-build.log`、`font-snapshot-tests.log`，TRX 为 `font-snapshot-tests/font-snapshot.trx`。源码架构与文档检查重新通过。检索 `src`、`tests`、`tools`、`backends` 后，估算 API 只剩旅程诊断字段，不再决定验收门槛。远端全量证据以 [PR #82](https://github.com/Wolfiora/InnoEngine/pull/82) 的最终提交及对应 Engine CI 为准。
+
 ## 2026-11-10 复查发现：暖构建运行时依赖部署
 
 最终复核 `logo-alias-fixture-final-run` 的规则、文档、全部所选测试、Debug 产品、Release 编译和编译 API 均通过，但 Release smoke 失败，不能认证全量成功。首次产品日志报告缺少 `Inno.Editor.Annotations.dll`；依赖清单核对同时发现 `Inno.Editor.Diagnostics.dll` 缺失，后续 Support Pack、NativeAOT restore、发行归档被正确阻塞。日志保存在 `artifacts/validation/logo-alias-fixture-final-run/editor-release-products/Source/Logs/`。
