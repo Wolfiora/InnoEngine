@@ -2,6 +2,20 @@
 
 [获批计划](../plans/LOGO_BRANDING.md) · [品牌资源](../../../assets/branding/README.md)
 
+## 2026-11-10 字体迁移与合并后 CI 复查
+
+按用户要求在 `logo` 分支先快进到已合并的 master `9d336f486076c8fa9e903c9ce7f1b5b6a414584f`，先完成字体迁移，再修复 CI。8 份字体及已有来源和许可原样迁入 `assets/fonts`，由 ImGui SDL3 后端的 MSBuild 链接维持产品内 `BuiltIn/Fonts`、`BuiltIn/Icons` 路径；源码与实际构建部署的 8 份字体哈希逐项相同。资源仍由后端拥有，没有 Core、平台中立接口或源码目录 fallback。
+
+字体阶段提交为 `e39e2b9c`。统一计划 `artifacts/validation/font-assets-plan/plan.json` 和结果 `font-assets-run/results.json` 已完成：47 项必需检查全部 Passed、60 项明确 NotApplicable，无 Failed 或 Blocked。输入 tree 为 `e178fe8b4a33d3e425e5b0bee55cd1a2cd8fcdf1488b7058c3958c469e6b4051`，环境身份为 `5ca4b34ee8d4f0647f6769ee16a0a67c0b04bd2f37bf9a0f265f230fd7363a60`，SDK 10.0.402。包括编译、API、Wiki、95 项 ImGui、433 项 PlayMode、99 项 Presentation、260 项 Scripting 必需用例和真实 Editor 启动／工作流／100 轮面板旅程；产品检查耗时 128.55 秒。自动缓存维护因时间预算推迟，没有退休产物；不将此范围冒充全量 Release 或 macOS 通过。
+
+合并前 [PR CI](https://github.com/Wolfiora/InnoEngine/actions/runs/42740936596) 与合并后 [master CI](https://github.com/Wolfiora/InnoEngine/actions/runs/42768759341) 的 Git tree 相同。后者 Windows 通过，macOS 首次失败为 `editor-products` 的面板内存观察：最终 `GC.GetTotalMemory(false)` 比基线增加 5,442,096 字节，超过 4 MiB；后面的 required-evidence 错误和 Release 等阻塞是该失败的后果。两轮 macOS 原始 TSV 都有上涨后回落的序列；成功轮中途同样越过门槛，场景、历史、选择和事件计数稳定。
+
+本机 .NET 10.0.13 的独立固定对象／堆碎片复现进一步证明旧估算值不能作为存活内存：释放 3,991,008 字节固定缓冲区后，同一完整 GC 快照的存活内存下降 3,993,888 字节，估算值反而上升 4,623,464 字节，足以误报 4 MiB 超限；增加压缩 GC 不能修复这个估算 API。原始复现和回归输出位于 `artifacts/branding-work/gc-observation-large.log`、`gc-snapshot-regression.log`、`product-journey-memory.log`。Mac 历史 artifact 的原始 ZIP 与 TSV 保留于 `artifacts/validation/macos-panel-retention`，不以仅重跑变绿解释问题。
+
+修复将采样留在普通 Editor 验收源码中，以同一完整 GC 快照的 `HeapSizeBytes - FragmentedBytes` 表示存活字节，保留估算值用于诊断。驱动核对 GC 身份、最高代、压缩／并发状态及字节一致性，原有 4 MiB、循环数、历史、事件、退出和退休断言全部保留。隔离回归编译真实采样文件，验证固定对象和回收、实际 8 MiB 保留，以及 25 种产品证据成功／失败协议，全部通过。
+
+CI 协议检查现在把旅程驱动及共享夹具纳入选择和证据身份；只改共享采样代码也不能复用旧 CI 协议结果。两个真实 SDK／Git 计划回归通过，日志为 `artifacts/branding-work/journey-input-regression.log`。使用已验收且生产输入未变的 Editor 产物，实际编译新旅程源码并执行 100 轮面板开关，11 轮完整采样、4 MiB 门槛和正常退出均通过，最终存活内存增长 730,272 字节；结果为 `artifacts/validation/font-ci-lifecycle/result.json` 和同目录 `Project/Library/Acceptance`。源码架构、文档结构／链接和 agent 记录检查通过。新的全量计划需要覆盖 Windows 和 macOS、Debug／Release 产品及打包，最终由 `logo` 到 `master` 的 PR 所关联 Engine CI 对确切提交执行；上述定向结果不替代远端全量证据。原始失败保留，不循环重跑旧提交直到绿色。
+
 ## 2026-11-10 复查发现：暖构建运行时依赖部署
 
 最终复核 `logo-alias-fixture-final-run` 的规则、文档、全部所选测试、Debug 产品、Release 编译和编译 API 均通过，但 Release smoke 失败，不能认证全量成功。首次产品日志报告缺少 `Inno.Editor.Annotations.dll`；依赖清单核对同时发现 `Inno.Editor.Diagnostics.dll` 缺失，后续 Support Pack、NativeAOT restore、发行归档被正确阻塞。日志保存在 `artifacts/validation/logo-alias-fixture-final-run/editor-release-products/Source/Logs/`。

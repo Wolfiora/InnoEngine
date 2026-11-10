@@ -24,8 +24,11 @@ public sealed class PanelLifecycle(
     IEditorSceneWorkspace workspace
 ) : EditorModule
 {
-    private readonly List<string> m_resources = ["completed-cycles\tmanaged-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"];
-    private readonly List<string> m_preparationResources = ["phase\tmanaged-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events"];
+    private const string C_RESOURCE_COLUMNS =
+        "managed-bytes-after-full-gc\tprivate-bytes\tselection-count\tscene-count\thistory-resident-bytes\thistory-disk-bytes\tpending-events" +
+        "\tgc-index\tgc-generation\tgc-compacted\tgc-concurrent\tgc-heap-bytes\tgc-fragmented-bytes\testimated-managed-bytes";
+    private readonly List<string> m_resources = ["completed-cycles\t" + C_RESOURCE_COLUMNS];
+    private readonly List<string> m_preparationResources = ["phase\t" + C_RESOURCE_COLUMNS];
     private string[] m_panels = [];
     private bool[] m_originalOpenStates = [];
     private string? m_undoName;
@@ -155,11 +158,9 @@ public sealed class PanelLifecycle(
 
     private string CaptureResourceRow(string observation)
     {
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
-        long managed = GC.GetTotalMemory(forceFullCollection: false);
+        ManagedMemorySample memory = ManagedMemorySample.Capture();
         using Process process = Process.GetCurrentProcess();
-        return FormattableString.Invariant($"{observation}\t{managed}\t{process.PrivateMemorySize64}\t{interactions.selection.count}\t{workspace.scenes.Count}\t{interactions.history.residentBytes}\t{interactions.history.diskBytes}\t{interactions.events.pendingCount}");
+        string state = FormattableString.Invariant($"{observation}\t{memory.liveBytes}\t{process.PrivateMemorySize64}\t{interactions.selection.count}\t{workspace.scenes.Count}\t{interactions.history.residentBytes}\t{interactions.history.diskBytes}\t{interactions.events.pendingCount}");
+        return state + FormattableString.Invariant($"\t{memory.collectionIndex}\t{memory.generation}\t{memory.compacted}\t{memory.concurrent}\t{memory.heapBytes}\t{memory.fragmentedBytes}\t{memory.estimatedBytes}");
     }
 }

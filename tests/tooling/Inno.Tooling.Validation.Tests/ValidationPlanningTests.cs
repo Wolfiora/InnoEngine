@@ -208,6 +208,29 @@ public sealed class ValidationPlanningTests
     }
 
     [Theory]
+    [InlineData("tests/fixtures/editor-ui/ManagedMemorySample.editor.cs")]
+    [InlineData("tests/Invoke-EditorUiProductJourney.ps1")]
+    public async Task JourneySourceChangesSelectCiContractsAndInvalidateTheirEvidence(string path)
+    {
+        using var repository = new ValidationRepository();
+        repository.Write(path, "// Before\n");
+        repository.Git("add", path);
+        repository.Git("commit", "-m", "Declare shared journey input");
+        using JsonDocument initial = await repository.PlanAsync();
+        Assert.DoesNotContain(initial.RootElement.GetProperty("checks").EnumerateArray(),
+            check => check.GetProperty("id").GetString() == "ci-contracts");
+        repository.Write(path, "// After!\n");
+        using JsonDocument changed = await repository.PlanAsync();
+        JsonElement contracts = changed.RootElement.GetProperty("checks").EnumerateArray()
+            .Single(check => check.GetProperty("id").GetString() == "ci-contracts");
+        Assert.Contains(path, contracts.GetProperty("inputs").EnumerateArray().Select(static input => input.GetString()));
+        Assert.NotEqual(initial.RootElement.GetProperty("inputs").GetProperty(path).GetString(),
+            changed.RootElement.GetProperty("inputs").GetProperty(path).GetString());
+        Assert.DoesNotContain(path, changed.RootElement.GetProperty("inputSets").GetProperty("tooling").EnumerateArray()
+            .Select(static input => input.GetString()));
+    }
+
+    [Theory]
     [InlineData("tests/Example.Tests/Changed.cs", "global using System;")]
     [InlineData("docs/Example.cs.txt", "global using System;")]
     [InlineData("Policy.props", "<Project><PropertyGroup><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>")]

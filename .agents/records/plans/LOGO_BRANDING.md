@@ -7,7 +7,7 @@
 ## Owner 与决策
 
 - 品牌原稿唯一位于 `assets/branding`，截图位于 `assets/screenshots`。
-- 字体归 ImGui SDL3 backend 的既有 BuiltIn/Icons；Editor 通过现有常量与目录使用。新增字体排序在两个 Font Awesome 来源之后、CJK 来源之前。
+- 字体源文件统一于 `assets/fonts`，由 ImGui SDL3 backend 链接部署到既有 `BuiltIn/Fonts` 和 `BuiltIn/Icons`；Editor 通过现有常量与目录使用。Inno 字体排序在两个 Font Awesome 来源之后、CJK 来源之前。
 - SVG/PNG 只归仓库品牌目录；删除默认组合的图片 API、嵌入资源、专用测试及由此增加的测试项目引用，不保留兼容入口。
 - 署名位于 README、品牌说明与 TTF designer metadata；不代替开发指南，不推断额外授权。
 

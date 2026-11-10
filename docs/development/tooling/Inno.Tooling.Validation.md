@@ -48,9 +48,13 @@ Clean 通过既有 `InnoPrepareProductNative=false` 明确禁止产品准备，�
 
 真实产品旅程的 Samples 输入由固定仓库 URL 与提交选择。Git 依赖缓存放在有写入 lease 的稳定验证工作区，运行目录只保留输入 archive 和来源／完整性日志。每次使用检查 bare owner、远端身份、全部 Git 对象完整性和确切 commit，再从对象导出固定项目；不读取相邻工作区的未提交文件。有同来源、同提交的相邻仓库时只读导入对象，否则从声明的 HTTPS 来源获取。损坏对象缓存隔离并重新获取；网络或实际构建失败仍失败，不把失败重试改写为通过。
 
-旅程源码扩展完成全部行为和资源采样后，原子发布仅用于通知的完成消息。驱动先核对八项工作流，或完整面板循环、冷准备、full-GC 序列、内存增长和待处理事件，再请求它拥有的进程正常退出。Windows 只向该 PID 唯一的 `Inno Editor` 主窗口发送正常关闭消息；macOS 使用产品现有的控制台取消路径。退出后再次核对行为证据和 `Dispose end`，资源释放失败仍失败；只有驱动主动请求的 macOS 取消才允许产品约定的退出码 2。其他非零退出、提前退出、错误完成消息和超时不能通过。正常退出机制参考 [WM_CLOSE](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-close) 和 [.NET Console.CancelKeyPress](https://learn.microsoft.com/en-us/dotnet/api/system.console.cancelkeypress)。
+旅程源码扩展完成全部行为和资源采样后，原子发布仅用于通知的完成消息。驱动先核对八项工作流，或完整面板循环、冷准备、full-GC 序列、内存增长和待处理事件，再请求它拥有的进程正常退出。Windows 只向该 PID 唯一的 `Inno Editor` 主窗口发送正常关闭消息；macOS 通过 `NSRunningApplication.terminate` 请求同一 PID 的 AppKit 正常退出。退出后再次核对行为证据和 `Dispose end`，资源释放失败仍失败；任何非零退出、提前退出、错误完成消息和超时不能通过。实际协议见[产品旅程驱动](../../../tests/Invoke-EditorUiProductJourney.ps1)。
 
 帧数是防止场景无法完成的上限，不是完成后继续空转的要求；独立 renderer smoke 仍核对完整帧数。普通旅程保留 100 次面板循环和十一轮 full-GC，扩展旅程保留 1,000 次循环和 101 轮 full-GC。结果中的 `frameLimit` 不冒充实际帧数，`exitTrigger` 区分场景完成与达到帧上限；完成通知本身不作为通过证据，也不进入任何产物缓存的新鲜度判断。
+
+面板存活内存由测试源码夹具执行两次同步、压缩、最高代 GC，并在中间等待终结器后，读取同一次 `GCKind.FullBlocking` 快照的 `HeapSizeBytes - FragmentedBytes`。快照中的[堆大小](https://learn.microsoft.com/en-us/dotnet/api/system.gcmemoryinfo.heapsizebytes)与[碎片大小](https://learn.microsoft.com/en-us/dotnet/api/system.gcmemoryinfo.fragmentedbytes)属于同一次完成的 GC；`GC.GetTotalMemory(false)` 的估算值只作诊断，不参与存活内存预算。驱动拒绝缺失、重复、非最高代、非压缩或并发 GC 证据，以及与堆和碎片不一致的存活字节数；最终相对基线的 4 MiB 门槛不变。隔离回归编译同一采样源，验证固定缓冲区、释放后的回收以及真实保留 8 MiB 时仍超限。采样代码只进入验收项目，不进入引擎运行时。
+
+旅程驱动及 `tests/fixtures/editor-ui` 源码同时属于产品旅程和 CI 协议检查的输入；单独修改它们也会选择 CI 协议检查并使相关证据失效，不把这些夹具加入普通编译的全局 tooling 输入。
 
 编译证据沿 SDK 实际项目实例的引用边取得还原图和输出，区分相同项目被不同消费者以不同属性引用的情况。范围分析可以保守扩大源码影响，但不能把未选中消费者的私有构建目录当作当前必需产物。SDK 自带图求值使用至多四个线程，不在整个求值外层追加串行锁。
 
