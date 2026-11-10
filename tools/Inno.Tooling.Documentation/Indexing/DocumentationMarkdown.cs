@@ -19,7 +19,7 @@ namespace Inno.Tooling.Documentation.Indexing;
 internal static class DocumentationMarkdown
 {
     // Changes to parsing, tokenization or cached contracts must change this schema identity.
-    internal const string C_SCHEMA = "inno-doc/1;markdig/1.5.1;yaml/16.3.0;tokens/1";
+    internal const string C_SCHEMA = "inno-doc/2;markdig/1.5.1;yaml/16.3.0;tokens/1";
     private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder()
         .UseYamlFrontMatter().UsePipeTables().UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
         .UseGenericAttributes().Build();

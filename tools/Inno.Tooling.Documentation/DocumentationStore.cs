@@ -18,7 +18,9 @@ namespace Inno.Tooling.Documentation;
 public static class DocumentationStore
 {
     internal static JsonSerializerOptions json { get; } = new() { WriteIndented = false };
-    internal static string schema => DocumentationMarkdown.C_SCHEMA + ":" + typeof(DocumentationStore).Assembly.ManifestModule.ModuleVersionId;
+    // Snapshot format compatibility is a parser/index protocol, not a compilation artifact identity.
+    // MVID includes build provenance and can differ between adapters compiling identical parser sources.
+    internal static string schema { get; } = CreateSchemaIdentity();
 
     /// <summary>
     /// Explicitly scans a Docs checkout and publishes a consistent generation using reusable parsed pages.
@@ -220,6 +222,24 @@ public static class DocumentationStore
     private static string[] EnumerateContent(string content)
         => PathBoundary.EnumerateFiles(content).Where(static path => path.EndsWith(".md", StringComparison.Ordinal))
             .OrderBy(path => Path.GetRelativePath(content, path).Replace('\\', '/'), StringComparer.Ordinal).ToArray();
+
+    private static string CreateSchemaIdentity()
+    {
+        var assembly = typeof(DocumentationStore).Assembly;
+        string[] sources = assembly.GetManifestResourceNames().Where(static name => name.StartsWith("DocumentationSource/", StringComparison.Ordinal))
+            .Order(StringComparer.Ordinal).ToArray();
+        if (sources.Length == 0)
+            throw new InvalidDataException("Documentation tooling lacks its authored query protocol inputs.");
+        var inputs = new List<string>();
+        foreach (string source in sources)
+        {
+            using Stream stream = assembly.GetManifestResourceStream(source)
+                ?? throw new InvalidDataException("Missing query protocol input: " + source);
+            using var reader = new StreamReader(stream);
+            inputs.Add(source + "\0" + DocumentationMarkdown.Hash(reader.ReadToEnd().Replace("\r\n", "\n", StringComparison.Ordinal)));
+        }
+        return DocumentationMarkdown.C_SCHEMA + ":" + DocumentationMarkdown.Hash(string.Join('\n', inputs));
+    }
 
     private static DocumentationManifest ReadManifest(
         string output,

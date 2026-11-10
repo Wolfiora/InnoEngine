@@ -90,3 +90,9 @@ The implementation is intentionally incomplete: full English content and API mig
 ## Shared catalog and website projection
 
 The immutable query session now exports complete canonical page, project, section, symbol and contract metadata through ExportCatalogAsync and Build docs catalog. Website checks consume this result without reparsing Markdown. The writer validates source-relative/reference links and exact canonical anchors before publication; invalid links preserve the previous generation. Twenty snapshot/catalog tests passed, with four exact link-failure assertions subsequently verified. The Build entry and source architecture check passed. Source API status remains Unverified, and missing project entries remain explicit nulls rather than disappearing from coverage.
+
+## Portable query protocol identity
+
+An attempted measurement found that the CLI could not read a snapshot produced by the site adapter: the MVID-based schema included compiler/commit provenance. The first failure was InvalidDataException: Documentation snapshot integrity or schema mismatch; explicitly rebuild its index. No timing from that failed attempt is a successful query sample.
+
+Protocol identity now hashes normalized authored query/parser/model inputs and their project dependency declaration, plus the explicit format version. Embedded inputs exclude generated assembly metadata and the CLI adapter. This preserves invalidation for actual query-tool edits while avoiding invalidation caused solely by commit metadata, output paths or adapter-specific compilation. All 20 snapshot tests passed after this change. Cross-adapter execution is verified separately below.

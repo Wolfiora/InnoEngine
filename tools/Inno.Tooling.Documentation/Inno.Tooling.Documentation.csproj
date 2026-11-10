@@ -9,6 +9,10 @@
     <WarningsAsErrors>$(WarningsAsErrors);CS1572;CS1573;CS1591</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Query protocol identity comes from authored implementation, not compiler/commit metadata. -->
+    <EmbeddedResource Include="*.cs;Indexing/*.cs;Inno.Tooling.Documentation.csproj" Exclude="DocumentationCommand.cs">
+      <LogicalName>DocumentationSource/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
     <PackageReference Include="Markdig" Version="1.5.1" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
     <ProjectReference Include="../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
