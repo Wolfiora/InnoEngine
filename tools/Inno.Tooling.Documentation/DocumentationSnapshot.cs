@@ -72,7 +72,8 @@ public sealed class DocumentationSnapshot : IDisposable
             pages.Add(new(page.metadata.uid, path, page.identity, page.title, page.metadata.kind,
                 page.metadata.owners, page.metadata.apiSurface,
                 page.sections.ToDictionary(static section => section.anchor, static section => section.line, StringComparer.Ordinal),
-                page.symbols.ToDictionary(static symbol => symbol.id, static symbol => symbol.anchor, StringComparer.Ordinal),
+                page.symbols.ToDictionary(static symbol => symbol.id,
+                    static symbol => new DocumentationSymbolInfo(symbol.anchor, symbol.signatureIdentity, symbol.code), StringComparer.Ordinal),
                 page.metadata.contracts, page.includes));
         }
         string contentIdentity = DocumentationMarkdown.Hash(string.Join('\n', pages.Select(static page => page.path + "\0" + page.contentIdentity)));

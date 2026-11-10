@@ -37,7 +37,8 @@ internal sealed record DocumentationSymbol(
     string signatureIdentity,
     string anchor,
     string section,
-    string declaration
+    string declaration,
+    IReadOnlyList<string> code
 );
 
 internal sealed record DocumentationProject(

@@ -75,7 +75,12 @@ internal static class DocumentationMarkdown
             int start = row?.Span.Start ?? text.IndexOf(marker.Value, StringComparison.Ordinal);
             DocumentationSection section = sections.Last(candidate => candidate.start <= start && candidate.end > start);
             string declaration = row is null ? text[section.start..section.end] : text[row.Span.Start..(row.Span.End + 1)];
-            symbols.Add(new(id, marker.Groups["hash"].Value, anchor, section.anchor, declaration));
+            string[] code = row is not null
+                ? row.Descendants<CodeInline>().Select(static item => item.Content).ToArray()
+                : document.Descendants<FencedCodeBlock>()
+                    .Where(item => item.Span.Start >= section.start && item.Span.End < section.end && item.Info == "csharp")
+                    .Select(static item => item.Lines.ToString().Replace("\r\n", "\n").TrimEnd('\n')).ToArray();
+            symbols.Add(new(id, marker.Groups["hash"].Value, anchor, section.anchor, declaration, code));
         }
         string[] includes = html.SelectMany(block => Regex.Matches(block, @"<!-- api-include: (?<path>[^\r\n]+?) -->")
             .Select(static marker => marker.Groups["path"].Value)).ToArray();

@@ -30,7 +30,7 @@ namespace Inno.Tooling.Documentation;
 /// Canonical heading anchors mapped to one-based source lines.
 /// </param>
 /// <param name="symbols">
-/// Exact XML symbol identities mapped to their explicit API anchors.
+/// Exact XML symbol identities mapped to canonical anchors, signature identities and visible code.
 /// </param>
 /// <param name="contracts">
 /// Necessary page or section identities that must remain visible to readers.
@@ -47,7 +47,7 @@ public sealed record DocumentationPageInfo(
     IReadOnlyList<string> owners,
     string? surface,
     IReadOnlyDictionary<string, int> sections,
-    IReadOnlyDictionary<string, string> symbols,
+    IReadOnlyDictionary<string, DocumentationSymbolInfo> symbols,
     IReadOnlyList<string> contracts,
     IReadOnlyList<string> includes
 );

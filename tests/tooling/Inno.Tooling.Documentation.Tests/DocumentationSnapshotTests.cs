@@ -52,12 +52,35 @@ public sealed class DocumentationSnapshotTests : IDisposable
         DocumentationPageInfo page = Assert.Single(first.pages, item => item.id == "probe");
         Assert.Contains("ownership", page.sections.Keys);
         Assert.Equal("Unverified", first.sourceApiStatus);
+        DocumentationSymbolInfo symbol = Assert.Single(first.pages, item => item.id == "probe-api").symbols[C_SYMBOL];
+        Assert.Equal(new string('a', 64), symbol.signatureIdentity);
+        Assert.Contains("Read(string key)", symbol.code);
         Directory.Move(source, Path.Combine(m_root, "unavailable-source"));
         DocumentationCatalogReport repeated = await initial.ExportCatalogAsync();
         Assert.Equal(first.contentIdentity, repeated.contentIdentity);
         Assert.Equal(first.pages.Select(item => item.contentIdentity), repeated.pages.Select(item => item.contentIdentity));
         using DocumentationSnapshot mismatch = await DocumentationStore.OpenAsync(cache, expectedSourceTree: new string('c', 40));
         await Assert.ThrowsAsync<InvalidOperationException>(() => mismatch.ExportCatalogAsync());
+    }
+
+    [Fact]
+    public async Task CatalogPreservesSectionDeclarationsWithoutTreatingExamplesAsCertification()
+    {
+        Write("content/en/api.md", Page("probe-api", "Probe API",
+            "## Read\n\n<!-- api: " + C_SYMBOL + " " + new string('a', 64)
+            + " -->\n\n```csharp\npublic string? Read(string key = \"default\");\n```\n\nThe caller retains ownership.\n"
+            + "\n## Other task\n\n```csharp\nUnrelatedExample();\n```\n",
+            "kind: api\nowners: [Inno.Probe]\napiSurface: host-runtime\ncontracts: [probe#ownership]\n"));
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        DocumentationSymbolInfo symbol = Assert.Single(catalog.pages, page => page.id == "probe-api").symbols[C_SYMBOL];
+        Assert.Equal("public string? Read(string key = \"default\");", Assert.Single(symbol.code));
+        Assert.Equal("Unverified", catalog.sourceApiStatus);
+        DocumentationResult result = await snapshot.QueryAsync(new("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"));
+        Assert.Contains("caller retains ownership", Assert.Single(result.hits).text);
+        Assert.DoesNotContain("UnrelatedExample", Assert.Single(result.hits).text);
+        Assert.Single(result.continuations);
     }
 
     [Theory]
