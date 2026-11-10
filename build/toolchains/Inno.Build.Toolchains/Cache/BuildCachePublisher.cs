@@ -142,6 +142,69 @@ public sealed class BuildCachePublisher
     }
 
     /// <summary>
+    /// Establishes an immutable artifact's ownership once, or confirms its unchanged registration without rewriting it.
+    /// </summary>
+    /// <param name="directory">
+    /// The completed artifact within this publisher's exact boundary.
+    /// </param>
+    /// <param name="leasePath">
+    /// The persistent artifact lease held by the caller alongside this publisher's activity lease.
+    /// </param>
+    /// <param name="dependencies">
+    /// The exact dependency closure, in its original publication order.
+    /// </param>
+    /// <param name="targetId">
+    /// The producer's explicit target, or null for shared host work.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels inspection or initial registration before publication.
+    /// </param>
+    /// <remarks>
+    /// This confirms ownership, not content integrity. The producer must verify the immutable payload itself.
+    /// Existing registration age is retained; use an active lease or a current generation dependency to protect
+    /// consumers. This operation neither selects a current root nor records a new use time.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// This publisher does not own immutable artifacts.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Paths cross ownership boundaries or links, payload files are unavailable, or existing metadata disagrees.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// Inspection or registration was canceled.
+    /// </exception>
+    public void EnsureImmutableRegistration(
+        string directory,
+        string leasePath,
+        IReadOnlyList<string> dependencies,
+        string? targetId,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(dependencies);
+        if (targetId is not null)
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+        if (m_role != BuildCacheArtifactRole.ImmutableArtifact)
+            throw new InvalidOperationException("Only immutable artifacts can retain publication registration.");
+        BuildCacheCleanupPlan.RequireChild(m_root, directory);
+        BuildCacheCleanupPlan.RequireChild(m_root, leasePath);
+        string relative = Path.GetRelativePath(m_root, directory).Replace('\\', '/');
+        string record = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, Key(relative) + ".cache.json"));
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!File.Exists(record))
+        {
+            Record(directory, leasePath, dependencies, null, targetId, cancellationToken);
+            return;
+        }
+        Entry previous = ReadEntry(record);
+        long bytes = BuildCacheFileInventory.Measure(directory, m_role, cancellationToken);
+        if (previous.directory != relative
+            || !BuildCacheInventory.pathComparer.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
+            || !previous.dependencies.SequenceEqual(dependencies.Select(Path.GetFullPath), BuildCacheInventory.pathComparer)
+            || previous.targetId != targetId || previous.bytes != bytes)
+            throw new InvalidDataException("Immutable ownership differs from its completed publication registration.");
+    }
+
+    /// <summary>
     /// Registers only explicitly recorded ownership, without discovering artifacts by extension or directory age.
     /// </summary>
     /// <param name="id">

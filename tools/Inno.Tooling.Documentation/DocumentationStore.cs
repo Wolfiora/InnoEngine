@@ -117,7 +117,7 @@ public static class DocumentationStore
                 parsed++;
             }
             long registrationStarted = Stopwatch.GetTimestamp();
-            publisher.Record(directory, lease, [], null, null);
+            publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellationToken);
             registrationMilliseconds += Stopwatch.GetElapsedTime(registrationStarted).TotalMilliseconds;
             pages.Add(page);
             entries.Add(relative, new(page.metadata.uid, key, DocumentationMarkdown.Hash(bytes!), page.metadata));
