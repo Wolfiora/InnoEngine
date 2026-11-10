@@ -27,7 +27,7 @@ foreach ($match in [regex]::Matches($all, 'Stage \d+: (\d+) bytes')) {
     if ([int]$match.Groups[1].Value -gt 16384) { throw 'A staged instruction set exceeds its complete-read budget.' }
 }
 $first = @(& $entry -Paths 'src/services/input/Example.cs' -Rules completion -Stage 1 -ShowInstructions) -join "`n"
-if (-not $first.Contains('# InnoEngine agent instructions') -or -not $first.Contains('完整')) { throw 'Actual instruction bodies were not emitted.' }
+if (-not $first.Contains('# InnoEngine agent instructions') -or -not $first.Contains('Define clear assembly/domain boundaries')) { throw 'Actual instruction bodies were not emitted.' }
 $fixtureParent = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
 $fixture = Join-Path $fixtureParent ('InnoRuleTests-' + [guid]::NewGuid().ToString('N'))
 try {
@@ -38,6 +38,11 @@ try {
     Copy-Item -LiteralPath (Join-Path $repository '.agents/rulebook') -Destination (Join-Path $fixture '.agents/rulebook') -Recurse
     Copy-Item -LiteralPath (Join-Path $repository 'AGENTS.md') -Destination $fixture
     Copy-Item -LiteralPath $entry -Destination (Join-Path $fixture 'tests/ci/Test-AgentRules.ps1')
+    foreach ($review in @($manifest.units | Where-Object translation | ForEach-Object { ($_.translation.review -split '#')[0] } | Sort-Object -Unique)) {
+        $reviewTarget = Join-Path $fixture $review
+        [void][IO.Directory]::CreateDirectory((Split-Path $reviewTarget))
+        Copy-Item -LiteralPath (Join-Path $repository $review) -Destination $reviewTarget
+    }
     $fixtureEntry = Join-Path $fixture 'tests/ci/Test-AgentRules.ps1'
     $registry = Join-Path $fixture '.agents/rulebook/coverage.json'
     $originalRegistry = [IO.File]::ReadAllText($registry)
@@ -66,6 +71,46 @@ try {
         [IO.File]::WriteAllText($unitPath, $originalUnit)
         if (-not $failure.Contains($expected)) { throw "Wrong rejection for $scenario : $failure" }
     }
+    [IO.File]::WriteAllText($registry, $originalRegistry)
+    $translationUnit = ($originalRegistry | ConvertFrom-Json).units | Where-Object id -CEQ 'delivery'
+    $translationPath = Join-Path $fixture $translationUnit.path
+    $originalTranslation = [IO.File]::ReadAllText($translationPath)
+    foreach ($scenario in @('changed-translation', 'missing-clause', 'changed-source-map', 'missing-review', 'escaped-review', 'lost-original-rule')) {
+        $copy = $originalRegistry | ConvertFrom-Json
+        $translated = $copy.units | Where-Object id -CEQ 'delivery'
+        [IO.File]::WriteAllText($translationPath, $originalTranslation)
+        $expected = switch ($scenario) {
+            'changed-translation' {
+                [IO.File]::WriteAllText($translationPath, $originalTranslation.Replace('must be entirely in English', 'may be in any language'))
+                'Changed or unmapped translation clause'
+            }
+            'missing-clause' {
+                $translated.translation.lines = @($translated.translation.lines | Select-Object -Skip 1)
+                'Incomplete translation coverage'
+            }
+            'changed-source-map' {
+                $translated.translation.lines[0].sourceHash = 'invalid'
+                'Changed or unmapped translation clause'
+            }
+            'missing-review' {
+                $translated.translation.review = '.agents/records/missing.md'
+                'Missing translation review'
+            }
+            'escaped-review' {
+                $translated.translation.review = '.agents/records/../../AGENTS.md'
+                'Missing translation review'
+            }
+            'lost-original-rule' {
+                ($copy.rules | Where-Object id -CEQ '31.1').translatedHash = 'invalid'
+                'Rule translation was lost'
+            }
+        }
+        [IO.File]::WriteAllText($registry, ($copy | ConvertTo-Json -Depth 50))
+        $failure = ''
+        try { & $fixtureEntry | Out-Null } catch { $failure = $_.Exception.Message }
+        if (-not $failure.Contains($expected)) { throw "Wrong rejection for $scenario : $failure" }
+    }
+    [IO.File]::WriteAllText($translationPath, $originalTranslation)
     [IO.File]::WriteAllText($registry, $originalRegistry)
     $additionUnit = ($originalRegistry | ConvertFrom-Json).units | Where-Object id -CEQ 'csharp-standard-5'
     $additionPath = Join-Path $fixture $additionUnit.path
@@ -104,4 +149,4 @@ try {
     }
     if (Test-Path -LiteralPath $resolved) { Remove-Item -LiteralPath $resolved -Recurse -Force }
 }
-Write-Output 'Agent rule coverage, actual loading, root/nested routing, staged budgets, invalid selections, missing units, cyclic dependencies and approved additions passed.'
+Write-Output 'Agent rule coverage, actual loading, root/nested routing, staged budgets, invalid selections, missing units, cyclic dependencies, approved additions and English translation provenance passed.'

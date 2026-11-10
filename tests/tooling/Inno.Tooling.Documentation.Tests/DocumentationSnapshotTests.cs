@@ -215,6 +215,18 @@ public sealed class DocumentationSnapshotTests : IDisposable
     private Task<DocumentationResult> IndexAsync() => DocumentationStore.IndexAsync(m_root, source, cache);
 
     [Fact]
+    public async Task TaskHeadingsRankAboveTutorialsThatMerelyDemonstrateTheQuery()
+    {
+        Write("content/en/task.md", Page("z-task", "Customize Console **presentation**", "Inspect the panel style owner.\n"));
+        Write("content/en/query.md", Page("a-query", "Search documentation", "Example: search Console presentation.\n"));
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        DocumentationResult result = await snapshot.QueryAsync(new("search", "Console presentation"));
+        Assert.Equal("z-task", result.hits[0].pageId);
+        Assert.Equal("customize-console-presentation", result.hits[0].section);
+    }
+
+    [Fact]
     public async Task StructuredPaginationAndExactSymbolSearchNeedNoConsoleParsing()
     {
         Write("content/en/second.md", Page("second", "Ownership details", "Borrow the lease; observe the ownership contract.\n"));

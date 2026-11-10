@@ -54,7 +54,7 @@ internal static class DocumentationMarkdown
             HeadingBlock heading = headings[index];
             HeadingBlock? next = headings.Skip(index + 1).FirstOrDefault(candidate => candidate.Level <= heading.Level);
             sections.Add(new(heading.GetAttributes().Id ?? throw new InvalidDataException("Missing section identity: " + path),
-                heading.Inline?.ToString() ?? "", heading.Level, heading.Span.Start,
+                HeadingText(heading), heading.Level, heading.Span.Start,
                 next?.Span.Start ?? text.Length, heading.Line + 1));
         }
         if (sections.Select(static section => section.anchor).Distinct(StringComparer.Ordinal).Count() != sections.Count)
@@ -79,9 +79,12 @@ internal static class DocumentationMarkdown
         }
         string[] includes = html.SelectMany(block => Regex.Matches(block, @"<!-- api-include: (?<path>[^\r\n]+?) -->")
             .Select(static marker => marker.Groups["path"].Value)).ToArray();
-        return new(path, Hash(text), headings.Single(static heading => heading.Level == 1).Inline?.ToString() ?? "",
+        return new(path, Hash(text), HeadingText(headings.Single(static heading => heading.Level == 1)),
             text, facts, sections, symbols, includes, document.Descendants<LinkInline>()
                 .Where(static link => link.Url is not null).Select(static link => link.Url!).Distinct(StringComparer.Ordinal).ToArray());
+
+        string HeadingText(HeadingBlock heading)
+            => Markdown.ToPlainText(text[heading.Span.Start..(heading.Span.End + 1)], S_PIPELINE).Trim();
 
         string? Scalar(string key)
         {

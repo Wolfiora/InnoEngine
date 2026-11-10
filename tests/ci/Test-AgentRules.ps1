@@ -29,6 +29,31 @@ function Normalize-Links([string]$value) {
     # Relocated link destinations do not change their labels or surrounding requirements.
     return [regex]::Replace($value.Replace("`r`n", "`n").Trim(), '(\]\()[^)]+(\))', '$1<relocated>$2')
 }
+function Get-RuleLines([string]$value) {
+    # Every nonblank line participates, including headings, examples and nested requirements.
+    return @($value.Replace("`r`n", "`n").Trim() -split "`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+}
+function Test-Translation($unit, [string]$source, [string]$target) {
+    $translation = $unit.translation
+    if ($translation.language -cne 'en' -or [string]::IsNullOrWhiteSpace($translation.approval) -or
+        [string]::IsNullOrWhiteSpace($translation.review)) { throw "Incomplete translation review: $($unit.id)" }
+    $reviewRoot = [IO.Path]::GetFullPath('.agents/records/', $repository)
+    $reviewPath = [IO.Path]::GetFullPath(($translation.review -split '#')[0], $repository)
+    if (-not $reviewPath.StartsWith($reviewRoot, [StringComparison]::Ordinal) -or
+        -not (Test-Path -LiteralPath $reviewPath -PathType Leaf)) { throw "Missing translation review: $($unit.id)" }
+    $sourceLines = @(Get-RuleLines $source)
+    $targetLines = @(Get-RuleLines $target)
+    if ($translation.lines.Count -ne $sourceLines.Count -or $targetLines.Count -ne $sourceLines.Count) {
+        throw "Incomplete translation coverage: $($unit.id)"
+    }
+    for ($index = 0; $index -lt $sourceLines.Count; $index++) {
+        $line = $translation.lines[$index]
+        if ($line.ordinal -ne $index + 1 -or $line.sourceHash -cne (Get-Hash (Normalize-Links $sourceLines[$index])) -or
+            $line.targetHash -cne (Get-Hash (Normalize-Links $targetLines[$index]))) {
+            throw "Changed or unmapped translation clause: $($unit.id) line $($index + 1)"
+        }
+    }
+}
 $units = @{}; $bodies = @{}
 foreach ($unit in $manifest.units) {
     if ($units.ContainsKey($unit.id)) { throw "Duplicate rule unit: $($unit.id)" }
@@ -53,7 +78,9 @@ foreach ($unit in $manifest.units) {
         }
         $preservedBody = $parts[0]
     }
-    if ((Normalize-Links $preservedBody) -cne (Normalize-Links $source)) { throw "Lost nested requirements, examples or prose: $($unit.id)" }
+    if ($unit.PSObject.Properties.Name -contains 'translation') {
+        Test-Translation $unit $source $preservedBody
+    } elseif ((Normalize-Links $preservedBody) -cne (Normalize-Links $source)) { throw "Lost nested requirements, examples or prose: $($unit.id)" }
     $units[$unit.id] = $unit; $bodies[$unit.id] = $body
 }
 $original = Read-Source "$($manifest.baseline):AGENTS.md"
@@ -81,7 +108,10 @@ foreach ($section in [regex]::Matches($original, '(?ms)^## (\d+)\. .*?(?=^## \d+
         $expected = $bullet.Value
         foreach ($replacement in $manifest.pathReplacements) { $expected = $expected.Replace($replacement.old, $replacement.current) }
         if ($row.disposition -eq 'preserved') {
-            if (-not (Normalize-Links $bodies[$row.unit]).Contains((Normalize-Links $expected), [StringComparison]::Ordinal)) { throw "Rule was lost: $id" }
+            if ($units[$row.unit].PSObject.Properties.Name -contains 'translation') {
+                $mapping = @($units[$row.unit].translation.lines | Where-Object sourceHash -CEQ (Get-Hash (Normalize-Links $expected)))
+                if ($mapping.Count -ne 1 -or $row.translatedHash -cne $mapping[0].targetHash) { throw "Rule translation was lost: $id" }
+            } elseif (-not (Normalize-Links $bodies[$row.unit]).Contains((Normalize-Links $expected), [StringComparison]::Ordinal)) { throw "Rule was lost: $id" }
         } elseif ($number -ne 8 -or $row.disposition -ne 'superseded-by-approved-plan') { throw "Unapproved replacement: $id" }
         $count++
     }

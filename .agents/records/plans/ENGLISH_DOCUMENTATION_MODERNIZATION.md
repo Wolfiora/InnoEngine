@@ -32,8 +32,8 @@ Status: implementation in progress. This record does not certify completion.
 | Docs repository creation | Complete | Public repository created through authenticated GitHub API; administrator access confirmed |
 | Full migration inventory | Captured; review pending | 686 inventoried files, 437 product Markdown pages, 249 baseline projects; individual dispositions still require review |
 | English content and website | In progress | Initial task pages and Astro/Starlight build work; Pages Actions configuration exists, but no deployment or complete coverage is claimed |
-| Query core and immutable snapshots | In progress | Independent library and Build route implemented; 13 snapshot regressions pass. Old validator/catalog consumers remain to migrate |
-| English rules and workflow | In progress | Root instructions, CONTRIBUTING and four skills are English. The detailed rulebook and translation-preservation mapping remain outstanding |
+| Query core and immutable snapshots | In progress | Independent library and Build route implemented; 14 snapshot regressions pass. Old validator/catalog consumers remain to migrate |
+| English rules and workflow | In progress | Root instructions, CONTRIBUTING and four skills are English. Eight complete rule units have reviewed clause mappings; remaining units and cross-repository documentation-rule ownership are outstanding |
 | Incremental validation and CI/CD | Pending | No new certification claimed |
 | Legacy removal and final acceptance | Pending | Old content remains until verified migration |
 
@@ -68,3 +68,11 @@ Cross-repository GitHub App installation/credentials, branch protection, and Pag
 ## Remaining work at this checkpoint
 
 The implementation is intentionally incomplete: full English content and API migration; exact source/reference binding and export; source-validation evidence status; explicit remote snapshot preparation; common parser and validator migration; full rule translation/mapping; precise validation dependency refinement; paired PR and App setup; actual CI/Pages/draft-release acceptance; old documentation/query removal; comparable performance samples; full visual review and final migration reconciliation. The previous product documentation remains until its reviewed destinations and callers are migrated.
+
+## Clause preservation and real query follow-up
+
+- Four rule files now contain English delivery, notification, tests, compilation, completion, review, scripting and plugin units. Every nonblank source line and English counterpart is mapped; original numbered rules retain their hashes and identify the translated clause. The review record documents preserved obligations and the compilation wording interpretation. Remaining Chinese rules retain their original full-text verification.
+- The complete agent-rule regression script passed, including changed English clauses, missing mappings, changed source mappings, missing or escaping review records and lost original-rule associations. All 241 original rules and 58 units remain registered. Translation hashes detect changes; they do not establish semantic equivalence without the recorded review.
+- A real CLI query exposed Markdig inline containers being used as titles. Extracting plain heading text fixed task ranking. Fourteen documentation snapshot tests passed in `documentation-snapshots-06.trx`; a rebuilt Build entry returned the Console presentation task first for `Console presentation`.
+- The explicit refresh published 20 pages under snapshot `7a1bfa613d31dea914313074af8889f090c65dcfca044720d05289de072d5f36`. The source API status remains Unverified. This is a representative content slice, not full migration acceptance.
+- C-drive free space was approximately 45.9 GB at this checkpoint. Rule-test fixtures were cleaned by their existing guarded ownership cleanup. No adjacent workspace or shared cache was removed.
