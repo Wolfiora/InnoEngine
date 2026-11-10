@@ -59,6 +59,8 @@ public static partial class BuildApplication
                         return DocumentationReferences.ExportProjects(options[1..], cancellationToken);
                     if (options.Length > 0 && options[0] == "export-api")
                         return DocumentationReferences.ExportApi(options[1..], cancellationToken);
+                    if (options.Length > 0 && options[0] == "validate-examples")
+                        return await DocumentationExamples.ExecuteAsync(options[1..], cancellationToken);
                     return await DocumentationCommand.ExecuteAsync(options, cancellationToken);
                 case "validate":
                     return await ValidationCommand.ExecuteAsync(options, cancellationToken);

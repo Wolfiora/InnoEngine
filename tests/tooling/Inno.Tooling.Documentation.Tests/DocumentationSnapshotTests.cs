@@ -325,6 +325,34 @@ public sealed class DocumentationSnapshotTests : IDisposable
 
     private Task<DocumentationResult> IndexAsync() => DocumentationStore.IndexAsync(m_root, source, cache);
 
+    [Theory]
+    [InlineData("exampleMode: guessed\nexampleProjects: [Inno.Probe]\n")]
+    [InlineData("exampleMode: host\n")]
+    [InlineData("exampleProjects: [Inno.Probe]\n")]
+    [InlineData("exampleMode: host\nexampleProjects: [Inno.Missing]\n")]
+    public async Task InvalidExampleContextsCannotReplaceThePublishedSnapshot(string metadata)
+    {
+        await IndexAsync();
+        byte[] pointer = File.ReadAllBytes(Path.Combine(cache, "current.json"));
+        Write("content/en/example.md", Page("example", "Example", "```csharp\npublic class Example { }\n```\n",
+            "kind: tutorial\n" + metadata));
+        await Assert.ThrowsAsync<InvalidDataException>(() => IndexAsync());
+        Assert.Equal(pointer, File.ReadAllBytes(Path.Combine(cache, "current.json")));
+    }
+
+    [Fact]
+    public async Task CatalogRetainsExplicitScriptContextWithoutPreparingItsReferences()
+    {
+        Write("content/en/example.md", Page("example", "Example", "```csharp\npublic class Example { }\n```\n",
+            "kind: tutorial\nexampleMode: editor-script\nexampleProjects: [Inno.Probe]\n"));
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages, page => page.id == "example");
+        Assert.Equal("editor-script", page.examples!.mode);
+        Assert.Equal("Inno.Probe", Assert.Single(page.examples.projects));
+        Assert.Single(page.codeBlocks);
+    }
+
     [Fact]
     public async Task TaskHeadingsRankAboveTutorialsThatMerelyDemonstrateTheQuery()
     {

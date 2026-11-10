@@ -39,8 +39,15 @@ internal static class DocumentationMarkdown
         string uid = Scalar("uid") ?? throw new InvalidDataException("Missing page uid: " + path);
         if (!Regex.IsMatch(uid, "^[a-z0-9][a-z0-9._/-]*$") || uid.Split('/').Any(static segment => segment is "" or "." or ".."))
             throw new InvalidDataException("Invalid stable page identity: " + uid);
+        string? exampleMode = Scalar("exampleMode");
+        string[] exampleProjects = Sequence("exampleProjects");
+        if (exampleMode is not (null or "host" or "runtime-script" or "editor-script")
+            || (exampleMode is null) != (exampleProjects.Length == 0)
+            || exampleProjects.Distinct(StringComparer.Ordinal).Count() != exampleProjects.Length)
+            throw new InvalidDataException("Examples require an explicit reference mode and unique project identities: " + path);
         var facts = new DocumentationMetadata(uid, Scalar("kind") ?? "", Sequence("owners"),
-            Sequence("aliases"), Sequence("contracts"), Scalar("apiSurface"));
+            Sequence("aliases"), Sequence("contracts"), Scalar("apiSurface"),
+            exampleMode is null ? null : new DocumentationExampleContext(exampleMode, exampleProjects));
         if (facts.kind is not ("landing" or "tutorial" or "how-to" or "explanation" or "project" or "api" or "troubleshooting"))
             throw new InvalidDataException("Unknown documentation page kind: " + path);
         if (facts.kind == "project" && facts.owners.Length != 1)

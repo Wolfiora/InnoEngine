@@ -168,7 +168,10 @@ public sealed class BuildCachePublisher
     /// This publisher does not own immutable artifacts.
     /// </exception>
     /// <exception cref="IOException">
-    /// Paths cross ownership boundaries or links, payload files are unavailable, or existing metadata disagrees.
+    /// Paths cross ownership boundaries or links, or payload files are unavailable.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// Existing ownership metadata disagrees with the immutable publication.
     /// </exception>
     /// <exception cref="OperationCanceledException">
     /// Inspection or registration was canceled.

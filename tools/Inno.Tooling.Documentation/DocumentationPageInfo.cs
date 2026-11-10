@@ -42,6 +42,10 @@ namespace Inno.Tooling.Documentation;
 /// Canonical fenced code for example selection and declaration comparison, without reparsing Markdown.
 /// Compilation contexts and execution evidence belong to the validation caller.
 /// </param>
+/// <param name="examples">
+/// Explicit authored reference context, or null when the page declares no example context.
+/// A validator must report executable examples without a context as blocked, not guess one from a namespace.
+/// </param>
 public sealed record DocumentationPageInfo(
     string id,
     string path,
@@ -54,5 +58,6 @@ public sealed record DocumentationPageInfo(
     IReadOnlyDictionary<string, DocumentationSymbolInfo> symbols,
     IReadOnlyList<string> contracts,
     IReadOnlyList<string> includes,
-    IReadOnlyList<DocumentationCodeBlockInfo> codeBlocks
+    IReadOnlyList<DocumentationCodeBlockInfo> codeBlocks,
+    DocumentationExampleContext? examples
 );

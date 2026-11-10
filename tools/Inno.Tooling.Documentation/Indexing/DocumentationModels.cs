@@ -8,7 +8,8 @@ internal sealed record DocumentationMetadata(
     string[] owners,
     string[] aliases,
     string[] contracts,
-    string? apiSurface
+    string? apiSurface,
+    DocumentationExampleContext? examples
 );
 
 internal sealed record DocumentationPage(

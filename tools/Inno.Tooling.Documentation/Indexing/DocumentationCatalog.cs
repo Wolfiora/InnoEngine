@@ -31,6 +31,10 @@ internal static class DocumentationCatalog
             foreach (string owner in page.metadata.owners)
                 if (!owners.ContainsKey(owner))
                     throw new InvalidDataException("Unknown project owner " + owner + ": " + page.path);
+            if (page.metadata.examples is DocumentationExampleContext examples)
+                foreach (string project in examples.projects)
+                    if (!owners.ContainsKey(project))
+                        throw new InvalidDataException("Unknown example project " + project + ": " + page.path);
             if (page.symbols.Count != 0 && (page.metadata.owners.Length != 1 || page.metadata.apiSurface is null))
                 throw new InvalidDataException("API pages require one actual owner and an explicit surface: " + page.path);
             if (page.metadata.apiSurface is string surface && !page.metadata.owners.Any(owner => owners[owner].surfaces.Contains(surface, StringComparer.Ordinal)))
