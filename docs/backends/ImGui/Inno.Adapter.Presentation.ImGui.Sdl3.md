@@ -28,7 +28,7 @@ CreateImGuiContext 必须显式传入 ImGuiInteractionOptions，窗口必须属�
 
 ## 文本字体与 Context 退休
 
-四种默认字形保留 JetBrains Mono 与 Font Awesome 图标，并合并随产品分发的 Noto Sans CJK SC 2.004。补充字体的来源、SIL Open Font License 与内容身份位于 `BuiltIn/Fonts/Supplemental`。只读取产品自己的字体资源，不探测系统安装目录；缺失、长度错误或内容身份错误立即拒绝创建 Context。
+四种默认字形保留 JetBrains Mono 与 Font Awesome 图标，并合并随产品分发的 Noto Sans CJK SC 2.004。全部字体源文件统一位于 [assets/fonts](../../../assets/fonts/README.md)，由后端项目链接部署到产物的 `BuiltIn/Fonts` 与 `BuiltIn/Icons`；构建和发布使用同一份源文件。补充字体的来源、SIL Open Font License 与内容身份保留于源目录及产物的 `Supplemental` 中。只读取产品自己的字体资源，不探测源码或系统安装目录；缺失、长度错误或内容身份错误立即拒绝创建 Context。
 
 每个 Context 只持有一份固定内存的补充字体 bytes，四种 face 共享借用至 Native Context 销毁。应用不长期缓存字体数据；自定义字体注册同样补齐 CJK。该资源属于共享呈现 backend，不把文字支持下放为平台分支。
 

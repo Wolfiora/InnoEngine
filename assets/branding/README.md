@@ -11,7 +11,7 @@ Logo 设计：[xdzzyq](https://github.com/XDzzzzzZyq)。PNG、单色字形、ICO
 - `logo-edge.svg`：空心描边版本，保留旧字体的八条内外轮廓；仅作设计参考，当前字体不再消费该文件。
 - `logo.ico`：Windows 可执行文件图标，包含 16、20、24、32、40、48、64、128、256 像素条目；供入口 `<ApplicationIcon>` 使用。
 - `logo.icns`：macOS `.app` 图标，包含 16、32、64、128、256、512 及对应 @2x 条目；由 macOS Editor publish 目标放入 `Contents/Resources`。
-- [InnoEngine-Icons.ttf](../../backends/ImGui/runtime/Inno.Adapter.Presentation.ImGui.Sdl3/BuiltIn/Icons/InnoEngine-Icons.ttf)：默认字体合并使用的独立字形文件。
+- [InnoEngine-Icons.ttf](../fonts/icons/InnoEngine-Icons.ttf)：默认字体合并使用的独立字形文件。
 
 本目录同时保存设计源和构建图标。Windows 入口和 macOS Editor publish 目标直接读取 `logo.ico`/`logo.icns`，不维护额外构建副本，也不把它们作为普通运行时文件部署；TTF 随 ImGui 呈现程序集分发。字体使用见 [Editor ImGui](../../docs/modules/editor/Inno.Editor.ImGui.md#引擎-logo-图标)。
 

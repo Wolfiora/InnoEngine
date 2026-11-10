@@ -17,6 +17,8 @@
 
 ## 当前进度
 
+2026-11-10 用户要求先将内置字体统一迁移到根目录 `assets/fonts`，适配后端构建／发布资源链接并保持运行时路径和字体字节；再核查合入 master 后 macOS 面板生命周期内存超限。先完成字体迁移验收，再对比 PR 成功运行与 master 失败运行的完整采样，按实际资源 owner 修复原因，保留 4 MiB 门禁和首次失败，不用重复重跑或放宽阈值代替修复。
+
 2026-11-10 最终 Windows 统一验收完成：329 项必需检查均成功（328 Passed、1 项按完全相同输入复用），3 项其他平台产品不适用，无失败或阻塞。包含新增真实暖构建回归、10 轮热构建、Debug/Release 产品、Support Pack、NativeAOT restore 与发行归档。别名、手写限定名规范、支持库分类和复查发现的运行时依赖部署问题均已完成；当前证据身份及未覆盖平台见[验收记录](../acceptance/LOGO_BRANDING_2026_11_07.md)。
 
 2026-11-10 最终 Release 产品检查实际发现 #76 复用路径的部署缺口：`GetTargetPath` 不进入 `BuildOnlySettings`，导出运行时闭包时 SDK 将传递依赖解析关闭，缺少 Annotations／Diagnostics。纳入本次已授权的先前 PR 审查修复：在既有 `ExposeInnoHostRuntimeClosure` 中先执行 SDK `BuildOnlySettings;ResolveReferences`，保留平台声明和依赖复用；新增真实冷／暖构建和进程加载回归。首次失败保留，按包含此修复的最终输入重新规划验收；此前 326 项结果不能代替新输入的完整证据。
