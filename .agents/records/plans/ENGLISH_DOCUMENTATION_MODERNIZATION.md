@@ -114,3 +114,5 @@ API facts additionally retain Roslyn symbol kind, containing type, base type and
 ## Canonical API declaration comparisons
 
 The canonical catalog now includes a symbol's signature identity and visible C# declarations parsed from its actual section or legacy table row. Site consumers can compare exact nullable, overload and default-value signatures against bound extraction facts without introducing another Markdown parser. Twenty-one documentation regressions passed, including a member-section fixture proving that adjacent examples are not included in a symbol's contract and associated ownership continuations remain present.
+
+The full Core Identity narrative review found three source XML inaccuracies/omissions: omitted Register overrides retain the object's existing persistent ID; count observes weak registry entries rather than proving every object is live; and Register/Unregister expose null/conflict failures. XML now describes these existing behaviors, and RuntimeIdentity explicitly distinguishes equality from liveness. No implementation or public signature changed. The English project, task and type pages preserve these constraints.

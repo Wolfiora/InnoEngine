@@ -7,6 +7,7 @@ namespace Inno.Core.Identity;
 /// </summary>
 /// <remarks>
 /// This value is suitable for transient interaction payloads only and must never be persisted.
+    /// Equality compares the stored domain and runtime identifier; it does not verify that an object is still live.
 /// </remarks>
 public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
 {
