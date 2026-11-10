@@ -14,6 +14,101 @@ namespace Inno.Tooling.Architecture;
 public static class DocumentationReferences
 {
     /// <summary>
+    /// Exports selected CLR source contracts using the existing evaluated API extractor, independently of Wiki pages.
+    /// This operation does not certify script projection, behavioral prose, examples or product execution.
+    /// </summary>
+    /// <param name="arguments">
+    /// Required engine-root, dotnet, output and one or more project options; optional configuration and target.
+    /// Project paths are relative to the engine root and must occur in its actual source inventory.
+    /// The selected SDK and prepared references supply compilation facts; no product build is requested.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels evaluated capture and extraction before atomic publication.
+    /// </param>
+    /// <returns>
+    /// Zero after publishing complete facts for every selected project, including explicit empty public surfaces.
+    /// Source API certification remains separate from this extraction result.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Required options are absent, an option is duplicated or unsupported, or a project is not an actual owner.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Inputs are unavailable, escape ownership, or cannot be published.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// A selected compilation or public signature is unavailable or unresolved.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The caller cancels capture, extraction or publication.
+    /// </exception>
+    public static int ExportApi(
+        string[] arguments,
+        CancellationToken cancellationToken = default
+    ) {
+        ArgumentNullException.ThrowIfNull(arguments);
+        var options = new Dictionary<string, string>(StringComparer.Ordinal);
+        var requested = new HashSet<string>(StringComparer.Ordinal);
+        for (int index = 0; index < arguments.Length; index += 2)
+        {
+            string key = arguments[index];
+            if (index + 1 >= arguments.Length)
+                throw new ArgumentException("Incomplete API export option: " + key);
+            if (key == "--project")
+            {
+                if (!requested.Add(arguments[index + 1].Replace('\\', '/')))
+                    throw new ArgumentException("Duplicate API project selection.");
+            }
+            else if (key is not ("--engine-root" or "--dotnet" or "--output" or "--configuration" or "--target")
+                || !options.TryAdd(key, arguments[index + 1]))
+                throw new ArgumentException("Unknown or duplicate API export option: " + key);
+        }
+        if (!options.TryGetValue("--engine-root", out string? engineRoot) || !options.TryGetValue("--dotnet", out string? dotnet)
+            || !options.TryGetValue("--output", out string? output) || requested.Count == 0)
+            throw new ArgumentException("Usage: docs export-api --engine-root ROOT --dotnet SDK --project OWNER.csproj [--project OWNER.csproj] --output FACTS.json [--configuration Debug|SourceDebug|Release] [--target TARGET].");
+        string configuration = options.GetValueOrDefault("--configuration", "Debug");
+        if (configuration is not ("Debug" or "SourceDebug" or "Release"))
+            throw new ArgumentException("Unsupported API extraction configuration.");
+        string root = Path.GetFullPath(engineRoot);
+        string[] projects = RepositorySourceInventory.Projects(root).ToArray();
+        var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string project in requested)
+        {
+            string absolute = PathBoundary.Resolve(root, project);
+            PathBoundary.RequireUnlinkedPath(root, absolute);
+            if (!projects.Contains(absolute, StringComparer.Ordinal))
+                throw new ArgumentException("Selected API owner is absent from the actual source inventory: " + project);
+            selected.Add(absolute);
+        }
+        var failures = new List<string>();
+        var references = new WikiProjectReferences(root, configuration, Path.GetFullPath(dotnet),
+            options.GetValueOrDefault("--target"), selectedProjects: selected);
+        var models = new DocumentationSourceModels(root, configuration, references, cancellationToken, failures);
+        var inventory = new List<object>();
+        foreach (string project in selected.Order(StringComparer.Ordinal))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string directory = Path.GetDirectoryName(project)!;
+            if (models.IsExcludedProduct(directory))
+                throw new InvalidDataException("Selected API project is outside the requested product target: " + project);
+            var compilation = models.GetCompilation(directory)
+                ?? throw new InvalidDataException("Selected API compilation is unavailable: " + project);
+            var symbols = WikiApiCoverageValidator.Capture(root, project, null, compilation, failures, cancellationToken);
+            inventory.Add(new { project = Path.GetRelativePath(root, project).Replace('\\', '/'),
+                name = Path.GetFileNameWithoutExtension(project), symbols });
+        }
+        if (failures.Count != 0)
+            throw new InvalidDataException("API extraction did not establish complete source facts:\n" + string.Join('\n', failures));
+        cancellationToken.ThrowIfCancellationRequested();
+        AtomicFile.WriteAllBytes(Path.GetFullPath(output), JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            model = "source-clr", configuration, target = options.GetValueOrDefault("--target"),
+            sourceApiStatus = "Unverified", projects = inventory
+        }, new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }));
+        Console.WriteLine($"Exported {inventory.Count} evaluated CLR project surfaces. Script projections and source API certification remain separate.");
+        return 0;
+    }
+
+    /// <summary>
     /// Writes a deterministic project inventory without claiming evaluated API surfaces or source verification.
     /// </summary>
     /// <param name="arguments">

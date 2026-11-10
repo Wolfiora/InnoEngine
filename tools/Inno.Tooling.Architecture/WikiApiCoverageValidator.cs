@@ -53,42 +53,12 @@ internal static class WikiApiCoverageValidator
                 continue;
             }
             Compilation? compilation = models.GetCompilation(directory);
-            foreach (SyntaxTree tree in compilation?.SyntaxTrees ?? [])
+            foreach (WikiApiEntry entry in Capture(root, project.project, project.page, compilation, failures, cancellationToken))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                SemanticModel model = compilation!.GetSemanticModel(tree);
-                foreach (SyntaxNode node in model.SyntaxTree.GetRoot(cancellationToken).DescendantNodes()
-                    .Where(static node => node is BaseTypeDeclarationSyntax or DelegateDeclarationSyntax))
-                {
-                    if (model.GetDeclaredSymbol(node, cancellationToken) is not INamedTypeSymbol type)
-                        continue;
-                    foreach (ISymbol symbol in new ISymbol[] { type }.Concat(type.GetMembers()))
-                    {
-                        if (!IsVisible(symbol) || symbol.Name.StartsWith('<')
-                            || symbol is IMethodSymbol { AssociatedSymbol: not null }
-                            || symbol is IMethodSymbol { IsImplicitlyDeclared: true, MethodKind: MethodKind.Constructor,
-                                ContainingType.TypeKind: TypeKind.Struct or TypeKind.Enum })
-                            continue;
-                        string? id = symbol.GetDocumentationCommentId();
-                        if (id is null || !seen.Add(id))
-                            continue;
-                        if (HasUnresolvedContract(symbol))
-                            failures.Add($"Wiki '{Path.GetRelativePath(root, project.page)}' cannot resolve the complete public signature of '{id}'; prepare its evaluated reference closure.");
-                        string signature = Signature(symbol);
-                        string identity = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(signature)));
-                        string marker = $"<!-- api: {id} {identity} -->";
-                        Location location = symbol.Locations.FirstOrDefault(static location => location.IsInSource) ?? node.GetLocation();
-                        string source = Path.GetRelativePath(root, location.SourceTree?.FilePath ?? tree.FilePath).Replace('\\', '/');
-                        inventory.Add(new WikiApiEntry(Path.GetFileNameWithoutExtension(project.project), id,
-                            signature, identity, source, location.GetLineSpan().StartLinePosition.Line + 1,
-                            Path.GetRelativePath(root, project.page).Replace('\\', '/'),
-                            Documentation(symbol, new HashSet<ISymbol>(SymbolEqualityComparer.Default), cancellationToken),
-                            symbol.IsImplicitlyDeclared,
-                            symbol is IFieldSymbol { HasConstantValue: true } field ? field.ConstantValue : null));
-                        if (!page.Contains(marker, StringComparison.Ordinal))
-                            failures.Add($"Wiki '{Path.GetRelativePath(root, project.page)}' has no current signature mapping for '{id}'.");
-                    }
-                }
+                inventory.Add(entry);
+                seen.Add(entry.id);
+                if (!page.Contains($"<!-- api: {entry.id} {entry.signatureHash} -->", StringComparison.Ordinal))
+                    failures.Add($"Wiki '{Path.GetRelativePath(root, project.page)}' has no current signature mapping for '{entry.id}'.");
             }
             if (models.IsUnavailable(directory))
                 continue;
@@ -106,6 +76,53 @@ internal static class WikiApiCoverageValidator
             File.WriteAllText(output, JsonSerializer.Serialize(inventory,
                 new JsonSerializerOptions { WriteIndented = true }));
         }
+    }
+
+    internal static IReadOnlyList<WikiApiEntry> Capture(
+        string root,
+        string project,
+        string? page,
+        Compilation? compilation,
+        ICollection<string> failures,
+        CancellationToken cancellationToken
+    ) {
+        var result = new List<WikiApiEntry>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (SyntaxTree tree in compilation?.SyntaxTrees ?? [])
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            SemanticModel model = compilation!.GetSemanticModel(tree);
+            foreach (SyntaxNode node in model.SyntaxTree.GetRoot(cancellationToken).DescendantNodes()
+                .Where(static node => node is BaseTypeDeclarationSyntax or DelegateDeclarationSyntax))
+            {
+                if (model.GetDeclaredSymbol(node, cancellationToken) is not INamedTypeSymbol type)
+                    continue;
+                foreach (ISymbol symbol in new ISymbol[] { type }.Concat(type.GetMembers()))
+                {
+                    if (!IsVisible(symbol) || symbol.Name.StartsWith('<')
+                        || symbol is IMethodSymbol { AssociatedSymbol: not null }
+                        || symbol is IMethodSymbol { IsImplicitlyDeclared: true, MethodKind: MethodKind.Constructor,
+                            ContainingType.TypeKind: TypeKind.Struct or TypeKind.Enum })
+                        continue;
+                    string? id = symbol.GetDocumentationCommentId();
+                    if (id is null || !seen.Add(id))
+                        continue;
+                    if (HasUnresolvedContract(symbol))
+                        failures.Add($"API '{Path.GetRelativePath(root, project)}' cannot resolve the complete public signature of '{id}'; prepare its evaluated reference closure.");
+                    string signature = Signature(symbol);
+                    string identity = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(signature)));
+                    Location location = symbol.Locations.FirstOrDefault(static location => location.IsInSource) ?? node.GetLocation();
+                    string source = Path.GetRelativePath(root, location.SourceTree?.FilePath ?? tree.FilePath).Replace('\\', '/');
+                    result.Add(new(Path.GetFileNameWithoutExtension(project), id, signature, identity, source,
+                        location.GetLineSpan().StartLinePosition.Line + 1,
+                        page is null ? string.Empty : Path.GetRelativePath(root, page).Replace('\\', '/'),
+                        Documentation(symbol, new HashSet<ISymbol>(SymbolEqualityComparer.Default), cancellationToken),
+                        symbol.IsImplicitlyDeclared,
+                        symbol is IFieldSymbol { HasConstantValue: true } field ? field.ConstantValue : null));
+                }
+            }
+        }
+        return result;
     }
 
     private static string ReadApiSurface(
@@ -245,7 +262,7 @@ internal static class WikiApiCoverageValidator
         return true;
     }
 
-    private sealed record WikiApiEntry(
+    internal sealed record WikiApiEntry(
         string project,
         string id,
         string signature,
