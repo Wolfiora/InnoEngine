@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -23,6 +24,7 @@ public sealed class DocumentationSnapshot : IDisposable
     private readonly Dictionary<string, string> m_paths;
     private readonly Dictionary<string, int[]> m_terms;
     private readonly Dictionary<string, DocumentationSymbolReference[]> m_symbols;
+    private readonly ConcurrentDictionary<string, DocumentationPage> m_pages = new(StringComparer.Ordinal);
     private bool m_disposed;
 
     /// <summary>
@@ -275,6 +277,8 @@ public sealed class DocumentationSnapshot : IDisposable
         CancellationToken cancellation
     ) {
         cancellation.ThrowIfCancellationRequested();
+        if (m_pages.TryGetValue(pageId, out DocumentationPage? loaded))
+            return loaded;
         string path = m_paths[pageId];
         DocumentationPageReference reference = m_manifest.pages[path];
         DocumentationStore.RequireHash(reference.key, "page payload");
@@ -287,7 +291,7 @@ public sealed class DocumentationSnapshot : IDisposable
         DocumentationPage page = DocumentationStore.Deserialize<DocumentationPage>(bytes);
         if (page.path != path || page.metadata.uid != pageId)
             throw new InvalidDataException("Documentation page identity mismatch: " + path);
-        return page;
+        return m_pages.GetOrAdd(pageId, page);
     }
 
     private List<DocumentationContinuation> Contracts(DocumentationPage page)

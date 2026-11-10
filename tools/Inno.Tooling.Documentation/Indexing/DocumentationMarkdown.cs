@@ -41,6 +41,10 @@ internal static class DocumentationMarkdown
             throw new InvalidDataException("Invalid stable page identity: " + uid);
         var facts = new DocumentationMetadata(uid, Scalar("kind") ?? "", Sequence("owners"),
             Sequence("aliases"), Sequence("contracts"), Scalar("apiSurface"));
+        if (facts.kind is not ("landing" or "tutorial" or "how-to" or "explanation" or "project" or "api" or "troubleshooting"))
+            throw new InvalidDataException("Unknown documentation page kind: " + path);
+        if (facts.kind == "project" && facts.owners.Length != 1)
+            throw new InvalidDataException("A project entry requires exactly one actual owner: " + path);
         HeadingBlock[] headings = document.Descendants<HeadingBlock>().ToArray();
         if (headings.Count(static heading => heading.Level == 1) != 1)
             throw new InvalidDataException("Documentation requires exactly one H1: " + path);

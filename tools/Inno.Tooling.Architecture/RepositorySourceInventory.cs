@@ -11,6 +11,13 @@ internal static class RepositorySourceInventory
         "bin", "obj", "Generated", "extern", "dependencies", "artifacts", ".git"
     };
 
+    internal static IEnumerable<string> Projects(string root)
+    {
+        foreach (string owner in new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" })
+            foreach (string project in Files(Path.Combine(root, owner), "*.csproj"))
+                yield return project;
+    }
+
     internal static IEnumerable<string> Files(
         string root,
         string pattern

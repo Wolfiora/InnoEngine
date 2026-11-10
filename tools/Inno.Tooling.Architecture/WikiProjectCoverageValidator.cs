@@ -15,8 +15,7 @@ internal static class WikiProjectCoverageValidator
     ) {
         string[] pages = RepositorySourceInventory.Files(Path.Combine(root, "docs"), "*.md").ToArray();
         var result = new List<WikiProjectPage>();
-        foreach (string project in new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" }
-            .SelectMany(folder => RepositorySourceInventory.Files(Path.Combine(root, folder), "*.csproj")))
+        foreach (string project in RepositorySourceInventory.Projects(root))
         {
             string name = Path.GetFileNameWithoutExtension(project);
             string[] matches = pages.Where(page => Path.GetFileNameWithoutExtension(page) == name).ToArray();

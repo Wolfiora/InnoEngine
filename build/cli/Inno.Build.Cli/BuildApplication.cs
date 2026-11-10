@@ -55,6 +55,8 @@ public static partial class BuildApplication
                 case "verify":
                     return ArchitectureValidator.Execute(options, cancellationToken);
                 case "docs":
+                    if (options.Length != 0 && options[0] == "export-projects")
+                        return DocumentationReferences.ExportProjects(options[1..], cancellationToken);
                     return await DocumentationCommand.ExecuteAsync(options, cancellationToken);
                 case "validate":
                     return await ValidationCommand.ExecuteAsync(options, cancellationToken);

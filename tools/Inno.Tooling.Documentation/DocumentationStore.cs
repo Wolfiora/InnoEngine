@@ -110,6 +110,12 @@ public static class DocumentationStore
         }
         if (pages.Count == 0)
             throw new InvalidDataException("The selected Docs checkout has no content. Prepare a documentation source before querying.");
+        // The source manifest supplies project facts; authored page metadata supplies each canonical entry.
+        projects = projects.Select(project => project with
+        {
+            entry = pages.Where(page => page.metadata.kind == "project" && page.metadata.owners.Contains(project.name, StringComparer.Ordinal))
+                .Select(static page => page.metadata.uid).SingleOrDefault()
+        }).ToArray();
         DocumentationCatalog.Validate(root, pages, projects);
         var search = pages.SelectMany(page => page.sections.Select(section =>
         {
@@ -212,7 +218,8 @@ public static class DocumentationStore
     }
 
     private static string[] EnumerateContent(string content)
-        => PathBoundary.EnumerateFiles(content).Where(static path => path.EndsWith(".md", StringComparison.Ordinal)).Order(StringComparer.Ordinal).ToArray();
+        => PathBoundary.EnumerateFiles(content).Where(static path => path.EndsWith(".md", StringComparison.Ordinal))
+            .OrderBy(path => Path.GetRelativePath(content, path).Replace('\\', '/'), StringComparer.Ordinal).ToArray();
 
     private static DocumentationManifest ReadManifest(
         string output,
